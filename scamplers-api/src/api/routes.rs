@@ -74,6 +74,10 @@ async fn list_institutions(
     Ok((StatusCode::OK, items))
 }
 
+#[derive(serde::Deserialize, TypedPath)]
+#[typed_path("/institutions/{id}/members")]
+struct InstitutionMembersEndpoint(InstitutionId);
+
 #[derive(TypedPath)]
 #[typed_path("/people")]
 struct PeopleEndpoint;

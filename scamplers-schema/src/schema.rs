@@ -260,9 +260,6 @@ diesel::table! {
 }
 
 diesel::table! {
-    use diesel::sql_types::*;
-    use super::sql_types::CaseInsensitiveText;
-
     specimens (id) {
         id -> Uuid,
         readable_id -> Text,
@@ -271,7 +268,8 @@ diesel::table! {
         submitted_by -> Uuid,
         lab_id -> Uuid,
         received_at -> Timestamptz,
-        species -> Array<Nullable<CaseInsensitiveText>>,
+        species -> Text,
+        host_species -> Nullable<Text>,
         returned_at -> Nullable<Timestamptz>,
         returned_by -> Nullable<Uuid>,
         #[sql_name = "type"]

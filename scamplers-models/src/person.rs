@@ -4,7 +4,7 @@ mod query;
 mod read;
 mod update;
 
-pub use common::{Fields, UserRole};
+pub use common::UserRole;
 pub use creation::Creation;
 #[cfg(feature = "schema")]
 pub use query::PersonQuery;
