@@ -4,8 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "typedefs": "bunx json-schema-to-typescript --input ../json-schema/ --output src/lib/scamplers-models/",
-    "dev": "bun run typedefs && vite dev",
+    "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
@@ -20,6 +19,7 @@
     "@sveltejs/kit": "^2.48.5",
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
     "@types/bun": "latest",
+    "scamplers-types": "link:scamplers-types",
     "svelte": "^5.43.6",
     "svelte-check": "^4.3.4",
     "typescript": "^5",

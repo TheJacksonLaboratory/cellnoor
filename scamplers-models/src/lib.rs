@@ -7,11 +7,11 @@ pub mod lab;
 // mod nucleic_acid;
 pub mod person;
 // mod sequencing_run;
-pub mod specimen;
+// pub mod specimen;
 // mod suspension;
 // mod tenx_assay;
 // mod units;
-pub mod generic_query;
+pub(crate) mod generic_query;
 mod links;
 #[cfg(feature = "app")]
 mod utils;

@@ -1,4 +1,4 @@
-import type { Institution } from "../scamplers-models/institution";
+import type { Institution } from "scamplers-types/Institution";
 import type { ServerLoadEvent } from "@sveltejs/kit";
 import { hexEncodedApiKeyFromCookies } from "./auth/cookies";
 import { API_KEY_ENCRYPTION_SECRET } from "./auth/crypto";

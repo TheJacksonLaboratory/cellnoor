@@ -1,18 +1,27 @@
-use diesel::{PgConnection, SelectableExpression, prelude::*};
-use scamplers_models::institution::{self, Institution, InstitutionId, OrdinalColumns};
+use axum::{extract::State, http::StatusCode};
+use diesel::{SelectableExpression, prelude::*};
+use scamplers_models::institution::{self, Institution, OrdinalColumns};
 use scamplers_schema::institutions;
+use serde_qs::axum::QsQuery;
 
 use crate::{
+    api::{
+        extract::auth::AuthenticatedUser,
+        routes::{ApiResponse, Root, inner_handler},
+    },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter},
     query,
+    state::AppState,
 };
 
-impl db::Operation<Institution> for InstitutionId {
-    fn execute(self, db_conn: &mut PgConnection) -> Result<Institution, db::Error> {
-        Ok(Institution::query()
-            .filter(institutions::id.eq(&self))
-            .first(db_conn)?)
-    }
+pub(super) async fn list_institutions(
+    _: Root,
+    state: State<AppState>,
+    user: AuthenticatedUser,
+    QsQuery(request): QsQuery<institution::Query>,
+) -> ApiResponse<Vec<Institution>> {
+    let items = inner_handler(state, user, request).await?;
+    Ok((StatusCode::OK, items))
 }
 
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for institution::Filter

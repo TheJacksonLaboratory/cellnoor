@@ -1,7 +1,6 @@
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[cfg_attr(feature = "schema", schemars(with = "Vec<T>"))]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 pub struct DefaultVec<T>(Vec<T>);
 
 impl<T> Default for DefaultVec<T>

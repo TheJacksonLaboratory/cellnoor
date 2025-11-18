@@ -1,45 +1,32 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{ItemEnum, parse};
+use syn::{Item, parse};
 
-fn base_derives(with_default: bool, is_enum: bool) -> proc_macro2::TokenStream {
-    let serde_default = if is_enum {
-        quote! {}
-    } else {
-        quote! { #[serde(default)] }
+fn base_derives(input: TokenStream, with_default: bool) -> proc_macro2::TokenStream {
+    let parsed = parse::<Item>(input).unwrap();
+    let serde_default = match &parsed {
+        Item::Enum(..) => quote! {},
+        Item::Struct(..) => quote! { #[serde(default)] },
+        _ => panic!("only enum definitions and struct definitions are supported"),
     };
 
     if with_default {
         quote! {
             #[derive(Clone, Debug, Default, PartialEq, ::serde::Deserialize, ::serde::Serialize)]
-            #[cfg_attr(feature = "schema", derive(::schemars::JsonSchema))]
-            #[cfg_attr(feature = "schema", schemars(inline))]
+            #[cfg_attr(feature = "typescript", derive(::ts_rs::TS))]
             #serde_default
         }
     } else {
         quote! {
             #[derive(Clone, Debug, PartialEq, ::serde::Deserialize, ::serde::Serialize)]
-            #[cfg_attr(feature = "schema", derive(::schemars::JsonSchema))]
-            #[cfg_attr(feature = "schema", schemars(inline))]
+            #[cfg_attr(feature = "typescript", derive(::ts_rs::TS))]
         }
-    }
-}
-
-trait IsEnum {
-    #[allow(clippy::wrong_self_convention)]
-    fn is_enum(self) -> bool;
-}
-
-impl IsEnum for TokenStream {
-    #[allow(clippy::wrong_self_convention)]
-    fn is_enum(self) -> bool {
-        parse::<ItemEnum>(self).is_ok()
     }
 }
 
 #[proc_macro_attribute]
 pub fn base_model(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let derives = base_derives(false, input.clone().is_enum());
+    let derives = base_derives(input.clone(), false);
     let input: proc_macro2::TokenStream = input.into();
 
     quote! {
@@ -51,7 +38,7 @@ pub fn base_model(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn base_model_default(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let derives = base_derives(true, input.clone().is_enum());
+    let derives = base_derives(input.clone(), true);
     let input: proc_macro2::TokenStream = input.into();
 
     quote! {
@@ -81,7 +68,7 @@ fn diesel_check_for_backend() -> proc_macro2::TokenStream {
 
 #[proc_macro_attribute]
 pub fn insert_select(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let base_derives = base_derives(false, input.clone().is_enum());
+    let base_derives = base_derives(input.clone(), false);
     let insertable = diesel_insertable();
     let has_query = diesel_has_query();
     let check_for_backend = diesel_check_for_backend();
@@ -100,7 +87,7 @@ pub fn insert_select(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn insert(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let base_derives = base_derives(false, input.clone().is_enum());
+    let base_derives = base_derives(input.clone(), false);
     let insertable = diesel_insertable();
     let check_for_backend = diesel_check_for_backend();
 
@@ -116,8 +103,8 @@ pub fn insert(_attr: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn query(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let base_derives = base_derives(true, input.clone().is_enum());
+pub fn filter(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    let base_derives = base_derives(input.clone(), true);
 
     let input: proc_macro2::TokenStream = input.into();
 
@@ -131,13 +118,13 @@ pub fn query(_attr: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn schema_query(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let base_derives = base_derives(true, input.clone().is_enum());
+pub fn typescript_query(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    let base_derives = base_derives(input.clone(), false);
 
     let input: proc_macro2::TokenStream = input.into();
 
     quote! {
-        #[cfg(feature = "schema")]
+        #[cfg(feature = "typescript")]
         #base_derives
         #input
     }
@@ -146,7 +133,7 @@ pub fn schema_query(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn select(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let base_derives = base_derives(false, input.clone().is_enum());
+    let base_derives = base_derives(input.clone(), false);
     let has_query = diesel_has_query();
     let check_for_backend = diesel_check_for_backend();
 
@@ -163,7 +150,7 @@ pub fn select(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn update(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let base_derives = base_derives(true, input.clone().is_enum());
+    let base_derives = base_derives(input.clone(), true);
     let check_for_backend = diesel_check_for_backend();
 
     let input: proc_macro2::TokenStream = input.into();
@@ -179,7 +166,7 @@ pub fn update(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn ordinal_columns(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let base_derives = base_derives(true, input.clone().is_enum());
+    let base_derives = base_derives(input.clone(), true);
 
     let input: proc_macro2::TokenStream = input.into();
 
@@ -194,7 +181,7 @@ pub fn ordinal_columns(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn simple_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let base_derives = base_derives(false, input.clone().is_enum());
+    let base_derives = base_derives(input.clone(), false);
 
     let input: proc_macro2::TokenStream = input.into();
 

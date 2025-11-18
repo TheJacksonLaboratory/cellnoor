@@ -1,13 +1,30 @@
+use axum::{extract::State, http::StatusCode};
 use diesel::{dsl::AssumeNotNull, prelude::*, sql_types::Text};
 use scamplers_models::person::{
     self, OrdinalColumns, Person, PersonId, PersonSummary, PersonSummaryWithParents,
 };
 use scamplers_schema::people;
+use serde_qs::axum::QsQuery;
 
 use crate::{
+    api::{
+        extract::auth::AuthenticatedUser,
+        routes::{ApiResponse, Root, inner_handler},
+    },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter},
     query,
+    state::AppState,
 };
+
+pub(super) async fn list_people(
+    _: Root,
+    state: State<AppState>,
+    user: AuthenticatedUser,
+    QsQuery(request): QsQuery<person::Query>,
+) -> ApiResponse<Vec<PersonSummary>> {
+    let items = inner_handler(state, user, request).await?;
+    Ok((StatusCode::OK, items))
+}
 
 diesel::define_sql_function! {fn get_user_roles(user_id: Text) -> Array<Text>}
 

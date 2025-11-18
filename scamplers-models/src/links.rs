@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use macro_attributes::base_model;
 
 #[base_model]
-#[serde(transparent)]
 #[cfg_attr(
     feature = "app",
     derive(diesel::deserialize::FromSqlRow, diesel::expression::AsExpression)

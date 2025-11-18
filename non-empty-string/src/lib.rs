@@ -1,13 +1,13 @@
 use std::{fmt::Display, str::FromStr};
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(
     feature = "diesel",
     derive(diesel::deserialize::FromSqlRow, diesel::expression::AsExpression)
 )]
 #[cfg_attr(feature = "diesel", diesel(sql_type = ::diesel::sql_types::Text))]
-#[cfg_attr(feature = "schema", schemars(with = "String"))]
+
 pub struct NonEmptyString(String);
 
 #[derive(Debug, thiserror::Error)]

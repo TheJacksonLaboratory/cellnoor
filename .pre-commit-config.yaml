@@ -1,9 +1,15 @@
 repos:
   - repo: local
     hooks:
-      - id: lint_rust
-        name: Lint Rust Code
+      - id: lint_scamplers-api
+        name: Lint scamplers-api
         entry: ./scripts/pre-commit/lint_scamplers-api.sh
+        language: script
+        pass_filenames: false
+
+      - id: lint_scamplers-typescript
+        name: Lint scamplers-typescript
+        entry: ./scripts/pre-commit/lint_scamplers-typescript.sh
         language: script
         pass_filenames: false
 

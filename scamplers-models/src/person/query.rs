@@ -1,10 +1,11 @@
-use macro_attributes::{ordinal_columns, query, schema_query};
+use macro_attributes::{filter, ordinal_columns, typescript_query};
 use macros::uuid_newtype;
 use uuid::Uuid;
 
 use crate::generic_query::{self};
 
 #[ordinal_columns]
+#[cfg_attr(feature = "typescript", ts(rename = "PersonOrdinalColumns"))]
 pub enum OrdinalColumns {
     Id,
     Email,
@@ -12,7 +13,7 @@ pub enum OrdinalColumns {
     Name,
 }
 
-#[query]
+#[filter]
 pub struct Filter {
     ids: Option<Vec<Uuid>>,
     name: Option<String>,
@@ -48,9 +49,11 @@ impl Filter {
     }
 }
 
+#[cfg(not(feature = "typescript"))]
 pub type Query = generic_query::Query<Filter, OrdinalColumns>;
 
-#[schema_query]
-pub struct PersonQuery(Query);
+#[typescript_query]
+#[cfg_attr(feature = "typescript", ts(rename = "PersonQuery"))]
+pub struct Query(#[ts(inline)] generic_query::Query<Filter, OrdinalColumns>);
 
-uuid_newtype!(PersonId, "/people/{id}");
+uuid_newtype!(PersonId, "/{id}");

@@ -1,3 +1,4 @@
+use axum::{extract::State, http::StatusCode};
 use diesel::{
     RunQueryDsl,
     prelude::*,
@@ -7,7 +8,22 @@ use scamplers_models::person::{self, Person, PersonId};
 use scamplers_schema::people;
 use uuid::Uuid;
 
-use crate::db;
+use super::{ApiResponse, Root, inner_handler};
+use crate::{
+    api::extract::{ValidJson, auth::AuthenticatedUser},
+    db,
+    state::AppState,
+};
+
+pub(super) async fn create_person(
+    _: Root,
+    state: State<AppState>,
+    user: AuthenticatedUser,
+    ValidJson(request): ValidJson<person::Creation>,
+) -> ApiResponse<Person> {
+    let item = inner_handler(state, user, request).await?;
+    Ok((StatusCode::CREATED, item))
+}
 
 define_sql_function! {fn create_user_if_not_exists(user_id: Text, password: Text, roles: Array<Text>)}
 

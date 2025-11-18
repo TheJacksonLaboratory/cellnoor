@@ -1,17 +1,8 @@
 use axum::{Json, Router, extract::State, http::StatusCode};
-use axum_extra::routing::{RouterExt, TypedPath};
-use scamplers_models::{
-    institution::{self, Institution, InstitutionId},
-    lab::{self, Lab},
-    person::{self, Person, PersonId, PersonSummary},
-};
-use serde_qs::axum::QsQuery;
+use axum_extra::routing::TypedPath;
 
 use crate::{
-    api::{
-        error::ErrorResponse,
-        extract::{ValidJson, auth::AuthenticatedUser},
-    },
+    api::{error::ErrorResponse, extract::auth::AuthenticatedUser},
     db,
     state::AppState,
 };
@@ -28,102 +19,16 @@ mod suspensions;
 
 pub(super) fn router() -> Router<AppState> {
     Router::new()
-        .typed_post(create_institution)
-        .typed_get(fetch_institution)
-        .typed_get(list_institutions)
-        .typed_post(create_person)
-        .typed_get(fetch_person)
-        .typed_get(list_people)
-        .typed_post(create_lab)
-    // .typed_get(fetch_labs)
-    // .typed_get(list_labs)
+        .nest("/institutions", institutions::router())
+        .nest("/people", people::router())
+        .nest("/labs", labs::router())
 }
 
 type ApiResponse<T> = Result<(StatusCode, Json<T>), super::error::ErrorResponse>;
 
 #[derive(TypedPath)]
-#[typed_path("/institutions")]
-struct InstitutionsEndpoint;
-
-async fn create_institution(
-    _: InstitutionsEndpoint,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    ValidJson(request): ValidJson<institution::Creation>,
-) -> ApiResponse<Institution> {
-    let item = inner_handler(state, user, request).await?;
-    Ok((StatusCode::CREATED, item))
-}
-
-async fn fetch_institution(
-    request: InstitutionId,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-) -> ApiResponse<Institution> {
-    let item = inner_handler(state, user, request).await?;
-    Ok((StatusCode::FOUND, item))
-}
-
-async fn list_institutions(
-    _: InstitutionsEndpoint,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    serde_qs::axum::OptionalQsQuery(request): serde_qs::axum::OptionalQsQuery<institution::Query>,
-) -> ApiResponse<Vec<Institution>> {
-    let items = inner_handler(state, user, request.unwrap_or_default()).await?;
-    Ok((StatusCode::OK, items))
-}
-
-#[derive(serde::Deserialize, TypedPath)]
-#[typed_path("/institutions/{id}/members")]
-struct InstitutionMembersEndpoint(InstitutionId);
-
-#[derive(TypedPath)]
-#[typed_path("/people")]
-struct PeopleEndpoint;
-
-async fn create_person(
-    _: PeopleEndpoint,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    ValidJson(request): ValidJson<person::Creation>,
-) -> ApiResponse<Person> {
-    let item = inner_handler(state, user, request).await?;
-    Ok((StatusCode::CREATED, item))
-}
-
-async fn fetch_person(
-    request: PersonId,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-) -> ApiResponse<Person> {
-    let item = inner_handler(state, user, request).await?;
-    Ok((StatusCode::OK, item))
-}
-
-async fn list_people(
-    _: PeopleEndpoint,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    QsQuery(request): QsQuery<person::Query>,
-) -> ApiResponse<Vec<PersonSummary>> {
-    let items = inner_handler(state, user, request).await?;
-    Ok((StatusCode::OK, items))
-}
-
-#[derive(TypedPath)]
-#[typed_path("/labs")]
-struct LabsEndpoint;
-
-async fn create_lab(
-    _: LabsEndpoint,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    ValidJson(request): ValidJson<lab::Creation>,
-) -> ApiResponse<Lab> {
-    let item = inner_handler(state, user, request).await?;
-    Ok((StatusCode::CREATED, item))
-}
+#[typed_path("/")]
+struct Root;
 
 async fn inner_handler<Request, Response>(
     State(state): State<AppState>,

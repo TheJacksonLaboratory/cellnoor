@@ -14,6 +14,7 @@ pub struct LabSummary {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: Fields,
+    #[cfg_attr(feature = "typescript", ts(inline))]
     links: Links,
 }
 

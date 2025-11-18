@@ -7,7 +7,6 @@ version = "0.1.0"
 axum = { workspace = true, optional = true }
 axum-extra = { workspace = true, optional = true }
 bon = { workspace = true, optional = true }
-clap = { workspace = true, optional = true }
 default-vec = { path = "../default-vec", features = ["serde"] }
 diesel = { workspace = true, optional = true, features = [
   "32-column-tables",
@@ -16,17 +15,16 @@ diesel = { workspace = true, optional = true, features = [
   "uuid",
   "without-deprecated",
 ] }
-heck = { workspace = true, optional = true }
 jiff.workspace = true
 jiff-diesel = { workspace = true, optional = true }
 macro-attributes = { path = "macro-attributes" }
 macros = { path = "macros" }
 non-empty-string = { path = "../non-empty-string", features = ["serde"] }
 scamplers-schema = { path = "../scamplers-schema", optional = true }
-schemars = { workspace = true, optional = true }
 serde.workspace = true
 serde_json.workspace = true
 strum.workspace = true
+ts-rs = { workspace = true, optional = true }
 uuid.workspace = true
 
 [lints]
@@ -34,18 +32,16 @@ workspace = true
 
 [features]
 app = [
-  "axum",
-  "axum-extra",
-  "diesel",
-  "jiff-diesel",
+  "dep:axum",
+  "dep:axum-extra",
+  "dep:diesel",
+  "dep:jiff-diesel",
+  "dep:scamplers-schema",
   "non-empty-string/diesel",
-  "scamplers-schema",
 ]
-builder = ["bon"]
-schema = [
-  "clap",
-  "default-vec/schema",
-  "heck",
-  "non-empty-string/schema",
-  "schemars",
+builder = ["dep:bon"]
+typescript = [
+  "default-vec/typescript",
+  "dep:ts-rs",
+  "non-empty-string/typescript",
 ]

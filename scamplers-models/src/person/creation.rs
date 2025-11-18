@@ -11,11 +11,12 @@ use crate::person::common::{Fields, UserRole};
 #[insert]
 #[cfg_attr(feature = "app", derive(diesel::AsChangeset))]
 #[cfg_attr(feature = "app", diesel(table_name = people))]
-#[cfg_attr(feature = "schema", schemars(title = "PersonCreation"))]
+#[cfg_attr(feature = "typescript", ts(rename = "PersonCreation"))]
 pub struct Creation {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: Fields,
+    #[cfg_attr(feature = "typescript", ts(inline))]
     email: NonEmptyString,
     #[serde(default)]
     #[cfg_attr(feature = "app", diesel(skip_insertion, skip_update))]
@@ -24,9 +25,10 @@ pub struct Creation {
 
 #[cfg_attr(feature = "builder", bon)]
 impl Creation {
-    #[cfg_attr(feature = "builder", builder)]
+    #[cfg(feature = "builder")]
+    #[builder(on(_, into))]
     #[must_use]
-    pub fn new(
+    fn new(
         name: NonEmptyString,
         email: NonEmptyString,
         orcid: Option<NonEmptyString>,

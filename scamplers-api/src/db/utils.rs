@@ -9,7 +9,9 @@ macro_rules! query {
             .offset($query.offset())
             .into_boxed();
 
-            stmt = stmt.filter($query.filter().to_boxed_filter());
+            if let Some(filter) = $query.filter() {
+                stmt = stmt.filter(filter.to_boxed_filter());
+            }
 
             for ordering in $query.order_by() {
                 stmt = match (ordering.field(), ordering.descending()) {
