@@ -59,7 +59,7 @@ jobs:
           cache-workspace-crates: true
 
       - name: Install nightly toolchain
-        run: rustup component add --toolchain nightly-2025-11-10 rustfmt # This is updated weekly-ish
+        run: rustup component add --toolchain nightly-2025-11-17 rustfmt # This is updated weekly-ish
 
       - name: Format
         run: cargo +nightly-2025-11-10 fmt -- --check
