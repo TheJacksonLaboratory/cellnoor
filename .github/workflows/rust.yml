@@ -98,6 +98,13 @@ jobs:
 
   test_scamplers-api:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
     env:
       SCAMPLERS_CONFIG_DIR: .
       SCAMPLERS_GENERATE_SCHEMA: false
@@ -129,13 +136,6 @@ jobs:
 
   test_scamplers-models:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports:
-          - 5432:5432
     env:
       SCAMPLERS_GENERATE_SCHEMA: false
 
