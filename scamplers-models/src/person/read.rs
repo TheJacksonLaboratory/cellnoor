@@ -25,6 +25,7 @@ pub struct PersonSummary {
 }
 
 impl PersonSummary {
+    #[must_use]
     pub fn id(&self) -> Uuid {
         self.id
     }
@@ -53,6 +54,7 @@ impl Person {
         Self { info, roles }
     }
 
+    #[must_use]
     pub fn id(&self) -> Uuid {
         self.info.summary.id
     }

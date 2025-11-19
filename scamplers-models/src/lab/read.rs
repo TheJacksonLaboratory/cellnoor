@@ -28,6 +28,7 @@ pub struct Lab {
     pi: PersonSummary,
 }
 impl Lab {
+    #[must_use]
     pub fn id(&self) -> Uuid {
         self.summary.id
     }
