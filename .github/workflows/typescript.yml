@@ -15,10 +15,16 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: bun install --cwd=scamplers-ui
+        working-directory: scamplers-ui
+        run: bun install
 
       - name: Lint
-        run: bun run --bun --cwd=scamplers-ui check
+        working-directory: scamplers-ui
+        run: bun run --bun check
+
+      - name: Test
+        working-directory: scamplers-ui
+        run: bun test
 
   format:
     runs-on: ubuntu-latest

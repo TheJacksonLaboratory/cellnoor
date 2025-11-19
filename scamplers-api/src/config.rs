@@ -41,7 +41,6 @@ impl std::fmt::Display for AppMode {
 #[derive(Clone, Debug, Parser)]
 struct Cli {
     #[arg(long, env = "SCAMPLERS_CONFIG_DIR")]
-    #[cfg_attr(test, arg(default_value_t))]
     config_dir: Utf8PathBuf,
     #[arg(long, env = "SCAMPLERS_MODE")]
     mode: Option<AppMode>,

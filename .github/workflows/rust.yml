@@ -99,6 +99,7 @@ jobs:
   test_scamplers-api:
     runs-on: ubuntu-latest
     env:
+      SCAMPLERS_CONFIG_DIR: .
       SCAMPLERS_GENERATE_SCHEMA: false
       SCAMPLERS_DB_ROOT_USER: postgres
       SCAMPLERS_DB_ROOT_PASSWORD: ""
@@ -122,7 +123,9 @@ jobs:
           cache-workspace-crates: true
 
       - name: Test scamplers-api
-        run: cargo test --package scamplers-api
+        run: |
+          mv initial_data.sample.json initial_data
+          cargo test --package scamplers-api
 
   test_scamplers-models:
     runs-on: ubuntu-latest
