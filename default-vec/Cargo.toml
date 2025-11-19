@@ -5,11 +5,9 @@ version = "0.1.0"
 
 [dependencies]
 serde = { workspace = true, optional = true }
-ts-rs = { workspace = true, optional = true }
 
 [lints]
 workspace = true
 
 [features]
 serde = ["dep:serde"]
-typescript = ["dep:ts-rs"]

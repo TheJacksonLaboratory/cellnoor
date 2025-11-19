@@ -27,6 +27,9 @@ strum.workspace = true
 ts-rs = { workspace = true, optional = true }
 uuid.workspace = true
 
+[dev-dependencies]
+pretty_assertions.workspace = true
+
 [lints]
 workspace = true
 
@@ -40,8 +43,4 @@ app = [
   "non-empty-string/diesel",
 ]
 builder = ["dep:bon"]
-typescript = [
-  "default-vec/typescript",
-  "dep:ts-rs",
-  "non-empty-string/typescript",
-]
+typescript = ["dep:ts-rs", "non-empty-string/typescript"]

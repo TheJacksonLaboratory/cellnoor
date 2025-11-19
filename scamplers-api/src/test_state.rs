@@ -1,14 +1,11 @@
-use std::{cmp::Ordering, collections::HashSet, fmt::Debug};
+use std::collections::HashSet;
 
-use deadpool_diesel::postgres::Pool;
 use diesel::{PgConnection, prelude::*};
-use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
 use jiff::Timestamp;
 use non_empty_string::non_empty_string;
-use pretty_assertions::{assert_eq, assert_ne};
 use rand::{
     SeedableRng,
-    rngs::{OsRng, StdRng, ThreadRng},
+    rngs::StdRng,
     seq::{IndexedRandom, IteratorRandom},
 };
 use rstest::fixture;
@@ -16,7 +13,7 @@ use scamplers_models::{institution::InstitutionId, person::PersonId, *};
 use tokio::sync::OnceCell;
 use uuid::Uuid;
 
-use crate::{config::Config, db::Operation, initial_data::InitialData, state::AppState};
+use crate::{config::Config, db::Operation, state::AppState};
 
 trait ChooseUnwrap<T> {
     fn choose_unwrap(&self, rng: &mut StdRng) -> &T;
@@ -156,11 +153,6 @@ impl TestState {
 
     fn random_person_id(&mut self) -> Uuid {
         self.people.choose_unwrap(&mut self.rng).id()
-    }
-
-    fn random_people_ids(&mut self, n: usize) -> Vec<Uuid> {
-        let set: HashSet<_> = (0..n).map(|_| self.random_person_id()).collect();
-        set.into_iter().collect()
     }
 
     fn insert_labs(&mut self, db_conn: &mut PgConnection) {

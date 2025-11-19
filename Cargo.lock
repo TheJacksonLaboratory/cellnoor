@@ -472,7 +472,6 @@ name = "default-vec"
 version = "0.1.0"
 dependencies = [
  "serde",
- "ts-rs",
 ]
 
 [[package]]
@@ -1318,6 +1317,7 @@ dependencies = [
  "diesel",
  "pretty_assertions",
  "serde",
+ "serde_json",
  "thiserror 2.0.17",
  "ts-rs",
 ]
@@ -1780,6 +1780,7 @@ dependencies = [
  "macro-attributes",
  "macros",
  "non-empty-string",
+ "pretty_assertions",
  "scamplers-schema",
  "serde",
  "serde_json",

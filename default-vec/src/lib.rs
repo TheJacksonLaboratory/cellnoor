@@ -1,11 +1,14 @@
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 pub struct DefaultVec<T>(Vec<T>);
 
 impl<T> DefaultVec<T> {
+    pub fn new() -> Self {
+        Self(Vec::new())
+    }
+
     pub fn push(&mut self, value: T) {
-        self.0.push(value)
+        self.0.push(value);
     }
 }
 

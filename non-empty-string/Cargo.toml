@@ -20,3 +20,4 @@ typescript = ["dep:ts-rs"]
 [dev-dependencies]
 diesel = { workspace = true, features = ["sqlite"] }
 pretty_assertions.workspace = true
+serde_json.workspace = true

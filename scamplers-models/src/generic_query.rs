@@ -10,9 +10,9 @@ mod rust {
     where
         O: Default,
     {
-        field: O,
+        pub(super) field: O,
         #[cfg_attr(feature = "builder", builder(default))]
-        descending: bool,
+        pub(super) descending: bool,
     }
 
     impl<O> OrderBy<O>
@@ -35,10 +35,10 @@ mod rust {
         O: Default,
     {
         #[serde(flatten)]
-        filter: Option<F>,
-        limit: i64,
-        offset: i64,
-        order_by: DefaultVec<OrderBy<O>>,
+        pub(super) filter: Option<F>,
+        pub(super) limit: i64,
+        pub(super) offset: i64,
+        pub(super) order_by: DefaultVec<OrderBy<O>>,
     }
 
     impl<F, O> Default for Query<F, O>
@@ -55,10 +55,36 @@ mod rust {
         }
     }
 
+    #[cfg_attr(feature = "builder", bon::bon)]
     impl<F, O> Query<F, O>
     where
         O: Default,
     {
+        #[cfg(feature = "builder")]
+        #[builder(on(_, into))]
+        pub fn new(
+            #[builder(field = DefaultVec::new())] order_by: DefaultVec<OrderBy<O>>,
+            filter: Option<F>,
+            limit: Option<i64>,
+            offset: Option<i64>,
+        ) -> Self {
+            let default = Self::default();
+
+            Self {
+                filter,
+                limit: limit.unwrap_or(default.limit()),
+                offset: offset.unwrap_or(default.offset()),
+                order_by,
+            }
+        }
+
+        pub fn from_filter(filter: F) -> Self {
+            Self {
+                filter: Some(filter),
+                ..Default::default()
+            }
+        }
+
         pub fn filter(&self) -> Option<&F> {
             self.filter.as_ref()
         }
@@ -73,36 +99,6 @@ mod rust {
 
         pub fn order_by(&self) -> &[OrderBy<O>] {
             self.order_by.as_ref()
-        }
-    }
-
-    #[cfg_attr(feature = "builder", bon::bon)]
-    impl<F, O> Query<F, O>
-    where
-        F: Default,
-        O: Default,
-    {
-        #[cfg(feature = "builder")]
-        #[builder(on(_, into))]
-        pub fn new(
-            #[builder(field)] order_by: DefaultVec<OrderBy<O>>,
-            filter: Option<F>,
-            #[builder(default)] limit: i64,
-            #[builder(default)] offset: i64,
-        ) -> Self {
-            Self {
-                filter,
-                limit,
-                offset,
-                order_by,
-            }
-        }
-
-        pub fn from_filter(filter: F) -> Self {
-            Self {
-                filter: Some(filter),
-                ..Default::default()
-            }
         }
     }
 
@@ -131,6 +127,57 @@ mod rust {
 
 #[cfg(not(feature = "typescript"))]
 pub(crate) use rust::Query;
+
+#[cfg(all(test, not(feature = "typescript")))]
+mod tests {
+    use pretty_assertions::assert_eq;
+
+    use super::rust::{OrderBy, Query};
+
+    #[test]
+    fn query_builder() {
+        #[derive(Debug, Default, PartialEq)]
+        struct Filter;
+
+        #[derive(Debug, Default, PartialEq)]
+        enum OrdinalColumns {
+            #[default]
+            A,
+            B,
+            C,
+        }
+
+        let q = Query::<Filter, OrdinalColumns>::builder()
+            .order_by_ascending(OrdinalColumns::A)
+            .order_by_descending(OrdinalColumns::B)
+            .order_by(OrdinalColumns::C, false)
+            .build();
+
+        assert_eq!(
+            q,
+            Query {
+                filter: None,
+                limit: 500,
+                offset: 0,
+                order_by: [
+                    OrderBy {
+                        field: OrdinalColumns::A,
+                        descending: false
+                    },
+                    OrderBy {
+                        field: OrdinalColumns::B,
+                        descending: true
+                    },
+                    OrderBy {
+                        field: OrdinalColumns::C,
+                        descending: false
+                    }
+                ]
+                .into()
+            }
+        )
+    }
+}
 
 #[cfg(feature = "typescript")]
 mod typescript {

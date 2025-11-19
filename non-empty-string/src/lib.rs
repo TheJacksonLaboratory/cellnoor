@@ -10,12 +10,25 @@ use std::fmt::Display;
 pub struct NonEmptyString(String);
 
 impl NonEmptyString {
+    #[must_use]
     pub fn new(s: String) -> Option<Self> {
         if s.is_empty() {
             return None;
         }
 
         Some(Self(s))
+    }
+}
+
+impl PartialEq<str> for NonEmptyString {
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other
+    }
+}
+
+impl PartialEq<&str> for NonEmptyString {
+    fn eq(&self, other: &&str) -> bool {
+        self == *other
     }
 }
 
@@ -122,8 +135,55 @@ mod diesel_impls {
 }
 
 #[cfg(test)]
-mod test {
-    #[cfg(feature = "diesel")]
+mod tests {
+    use pretty_assertions::assert_str_eq;
+
+    use crate::NonEmptyString;
+
+    #[test]
+    fn empty_string_fails() {
+        assert!(NonEmptyString::new(String::from("")).is_none())
+    }
+
+    #[test]
+    fn non_empty_string_succeeds() {
+        assert_str_eq!(
+            NonEmptyString::new(String::from("string")).unwrap(),
+            "string"
+        );
+    }
+
+    #[test]
+    fn macro_compiles() {
+        non_empty_string!("string");
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use pretty_assertions::assert_eq;
+
+    use crate::NonEmptyString;
+
+    #[test]
+    fn deserialize_empty_string_fails() {
+        let result: Result<Vec<NonEmptyString>, _> = serde_json::from_str(r#"[""]"#);
+
+        assert!(result.is_err())
+    }
+
+    #[test]
+    fn deserialize_non_empty_string_succeeds() {
+        let deserialized: [NonEmptyString; 1] = serde_json::from_str(r#"["string"]"#).unwrap();
+
+        assert_eq!(deserialized, ["string"]);
+    }
+}
+
+#[cfg(feature = "diesel")]
+#[cfg(test)]
+mod diesel_tests {
     use diesel::{
         serialize::{Output, ToSql},
         sql_query,
@@ -134,21 +194,14 @@ mod test {
 
     use super::NonEmptyString;
 
-    #[test]
-    fn macro_() {
-        non_empty_string!("string");
-    }
-
-    #[cfg(feature = "diesel")]
     impl ToSql<Text, diesel::sqlite::Sqlite> for NonEmptyString {
         fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Sqlite>) -> diesel::serialize::Result {
             <String as ToSql<Text, Sqlite>>::to_sql(&self.0, out)
         }
     }
 
-    #[cfg(feature = "diesel")]
     #[test]
-    fn diesel_compatible() {
+    fn is_diesel_compatible() {
         use diesel::{RunQueryDsl, prelude::*};
 
         diesel::table! {
