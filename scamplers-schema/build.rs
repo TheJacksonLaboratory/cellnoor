@@ -1,11 +1,11 @@
 use std::process::Command;
 
 fn main() {
-    let run_diesel_cli = option_env!("RUN_DIESEL_CLI");
+    let run_build_script = option_env!("SCAMPLERS_GENERATE_SCHEMA");
 
-    if let Some(run_diesel_cli) = run_diesel_cli {
-        let run_diesel_cli: bool = run_diesel_cli.parse().unwrap();
-        if !run_diesel_cli {
+    if let Some(generate_schema) = run_build_script {
+        let generate_schema: bool = generate_schema.parse().unwrap();
+        if !generate_schema {
             return;
         }
     }

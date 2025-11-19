@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RUSTFLAGS: -Dwarnings
-      GENERATE_SCAMPLERS_SCHEMA: false
+      SCAMPLERS_GENERATE_SCHEMA: false
 
     steps:
       - name: Check out repository code
@@ -99,7 +99,7 @@ jobs:
   test_scamplers-api:
     runs-on: ubuntu-latest
     env:
-      GENERATE_SCAMPLERS_SCHEMA: false
+      SCAMPLERS_GENERATE_SCHEMA: false
       SCAMPLERS_DB_ROOT_USER: postgres
       SCAMPLERS_DB_ROOT_PASSWORD: ""
       SCAMPLERS_API_DB_PASSWORD: ""

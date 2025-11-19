@@ -3,6 +3,7 @@
 pub struct DefaultVec<T>(Vec<T>);
 
 impl<T> DefaultVec<T> {
+    #[must_use]
     pub fn new() -> Self {
         Self(Vec::new())
     }

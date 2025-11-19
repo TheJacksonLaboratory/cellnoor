@@ -19,7 +19,7 @@
     "@sveltejs/kit": "^2.48.5",
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
     "@types/bun": "latest",
-    "scamplers-types": "link:scamplers-types",
+    "scamplers-types": "workspace:*",
     "svelte": "^5.43.6",
     "svelte-check": "^4.3.4",
     "typescript": "^5",
