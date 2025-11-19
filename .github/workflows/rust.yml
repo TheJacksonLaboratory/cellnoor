@@ -108,8 +108,8 @@ jobs:
       SCAMPLERS_DB_PORT: 5432
       SCAMPLERS_DB_NAME: postgres
       SCAMPLERS_API_KEY_PREFIX_LENGTH: 8
-      SCAMPLERS_HOST: localhost
-      SCAMPLERS_PORT: 8000
+      SCAMPLERS_API_HOST: localhost
+      SCAMPLERS_API_PORT: 8000
 
     steps:
       - name: Check out repository code

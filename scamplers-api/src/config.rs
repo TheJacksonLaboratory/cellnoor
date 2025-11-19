@@ -112,8 +112,8 @@ impl<T> OptionExt<T> for Option<T> {
             return Ok(value);
         }
 
-        let contents =
-            std::fs::read_to_string(&path).context(format!("failed to read contents of {path}"))?;
+        let contents = std::fs::read_to_string(&path)
+            .context(format!("failed to read contents of file {path}"))?;
 
         contents.parse().context(format!(
             "failed to parse contents of {path} as {}",
