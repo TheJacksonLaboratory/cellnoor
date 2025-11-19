@@ -1,4 +1,3 @@
-use anyhow::ensure;
 use diesel::{
     PgConnection, RunQueryDsl,
     prelude::*,

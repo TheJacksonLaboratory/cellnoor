@@ -53,29 +53,10 @@ impl TestState {
         let config = Config::read()
             .expect("test configuration should be readable from environment variables");
 
-        let app_state = AppState::initialize(&config)
-            .await
-            .expect("should be able to initialize app state");
-        let db_conn = app_state.db_conn().await.unwrap();
-
-        let initial_data = config.initial_data();
-        let app_admin = initial_data.app_admin();
-        let query = person::Query::builder()
-            .filter(person::Filter::builder().name(app_admin.name()).build())
-            .build();
-
-        let app_admin = db_conn
-            .interact(|db_conn| query.execute(db_conn))
-            .await
-            .unwrap()
-            .unwrap()
-            .remove(0);
-
-        let app_admin_id = app_admin.id();
-
         let test_state = Self {
-            app_state: AppState::initialize(&config).await.unwrap(),
-            // app_admin_id,
+            app_state: AppState::initialize(&config)
+                .await
+                .expect("should be able to initialize app state"),
             rng: StdRng::from_rng(&mut rand::rng()),
             institutions: Vec::with_capacity(N_INSTITUTIONS + 1),
             people: Vec::with_capacity(N_PEOPLE + 1),
