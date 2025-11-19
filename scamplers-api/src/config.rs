@@ -3,10 +3,11 @@ use std::{path::Path, str::FromStr};
 use anyhow::Context;
 use camino::{Utf8Path, Utf8PathBuf};
 use clap::Parser;
+use zeroize::Zeroize;
 
 use crate::initial_data::InitialData;
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, Zeroize)]
 pub enum AppMode {
     Development,
     #[default]
@@ -68,7 +69,7 @@ struct Cli {
     log_dir: Option<Utf8PathBuf>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Zeroize)]
 #[cfg_attr(test, derive(bon::Builder))]
 pub struct Config {
     mode: AppMode,
@@ -82,7 +83,9 @@ pub struct Config {
     api_key_prefix_length: usize,
     host: String,
     port: u16,
+    #[zeroize(skip)]
     initial_data: InitialData,
+    #[zeroize(skip)]
     log_dir: Option<Utf8PathBuf>,
 }
 

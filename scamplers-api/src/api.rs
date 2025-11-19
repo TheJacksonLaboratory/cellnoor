@@ -2,6 +2,7 @@ use anyhow::Context;
 use axum::{Router, routing::get};
 use camino::Utf8Path;
 use tokio::net::TcpListener;
+use zeroize::Zeroize;
 
 use crate::{config::Config, state::AppState};
 
@@ -19,7 +20,7 @@ pub async fn serve(config: Config) -> anyhow::Result<()> {
     serve_inner(config).await
 }
 
-async fn serve_inner(config: Config) -> anyhow::Result<()> {
+async fn serve_inner(mut config: Config) -> anyhow::Result<()> {
     let app_state = AppState::initialize(&config)
         .await
         .context("failed to initialize app state")?;
@@ -32,6 +33,8 @@ async fn serve_inner(config: Config) -> anyhow::Result<()> {
         .await
         .context(format!("failed to listen on {app_addr}"))?;
     tracing::info!("scamplers listening on {}", listener.local_addr()?);
+
+    config.zeroize();
 
     axum::serve(listener, app)
         .await

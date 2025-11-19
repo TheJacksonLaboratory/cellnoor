@@ -15,7 +15,7 @@
   "app_admin": {
     "name": "Ahmed Said",
     "email": "ahmed.said@jax.org",
-    "ms_user_id": "00000000-0000-0000-0000-000000000000",
+    "microsoft_entra_oid": "00000000-0000-0000-0000-000000000000",
     "institution_id": "00000000-0000-0000-0000-000000000000"
   },
   "tenx_assays": [
