@@ -1,6 +1,3 @@
-#[cfg(all(feature = "builder", not(feature = "typescript")))]
-pub use generic_query::OrderBy;
-
 // mod chromium_run;
 // mod dataset;
 // mod index_set;

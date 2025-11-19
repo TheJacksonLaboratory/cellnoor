@@ -1,4 +1,4 @@
-use std::{fmt::Display, str::FromStr};
+use std::fmt::Display;
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
@@ -7,34 +7,15 @@ use std::{fmt::Display, str::FromStr};
     derive(diesel::deserialize::FromSqlRow, diesel::expression::AsExpression)
 )]
 #[cfg_attr(feature = "diesel", diesel(sql_type = ::diesel::sql_types::Text))]
-
 pub struct NonEmptyString(String);
 
-#[derive(Debug, thiserror::Error)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize))]
-#[error("empty string '{0}' not allowed")]
-pub struct EmptyStringError(String);
-
 impl NonEmptyString {
-    pub fn new(s: String) -> Result<Self, EmptyStringError> {
+    pub fn new(s: String) -> Option<Self> {
         if s.is_empty() {
-            return Err(EmptyStringError(s));
+            return None;
         }
 
-        Ok(Self(s))
-    }
-
-    #[must_use]
-    pub fn into_inner(self) -> String {
-        self.0
-    }
-}
-
-impl FromStr for NonEmptyString {
-    type Err = EmptyStringError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Self::new(s.to_owned())
+        Some(Self(s))
     }
 }
 
@@ -44,22 +25,20 @@ impl Display for NonEmptyString {
     }
 }
 
-impl From<&str> for NonEmptyString {
-    fn from(value: &str) -> Self {
-        Self::from_str(value).unwrap()
-    }
-}
-
-impl From<String> for NonEmptyString {
-    fn from(value: String) -> Self {
-        Self::from(value.as_str())
-    }
-}
-
 impl AsRef<str> for NonEmptyString {
     fn as_ref(&self) -> &str {
         &self.0
     }
+}
+
+#[macro_export]
+macro_rules! non_empty_string {
+    ("") => {
+        compile_error!("string cannot be empty");
+    };
+    ($s:literal) => {
+        $crate::NonEmptyString::new(format!($s)).unwrap()
+    };
 }
 
 // This is essentially taken from https://github.com/MidasLamb/non-empty-string
@@ -106,7 +85,7 @@ mod serde_impls {
             E: de::Error,
         {
             NonEmptyString::new(value)
-                .map_err(|e| de::Error::invalid_value(Unexpected::Str(&e.0), &self))
+                .ok_or_else(|| de::Error::invalid_value(Unexpected::Str(""), &self))
         }
 
         fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
@@ -142,9 +121,9 @@ mod diesel_impls {
     }
 }
 
-#[cfg(feature = "diesel")]
 #[cfg(test)]
 mod test {
+    #[cfg(feature = "diesel")]
     use diesel::{
         serialize::{Output, ToSql},
         sql_query,
@@ -155,16 +134,21 @@ mod test {
 
     use super::NonEmptyString;
 
+    #[test]
+    fn macro_() {
+        non_empty_string!("string");
+    }
+
+    #[cfg(feature = "diesel")]
     impl ToSql<Text, diesel::sqlite::Sqlite> for NonEmptyString {
         fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Sqlite>) -> diesel::serialize::Result {
             <String as ToSql<Text, Sqlite>>::to_sql(&self.0, out)
         }
     }
 
+    #[cfg(feature = "diesel")]
     #[test]
     fn diesel_compatible() {
-        use std::str::FromStr;
-
         use diesel::{RunQueryDsl, prelude::*};
 
         diesel::table! {
@@ -189,8 +173,8 @@ mod test {
 
         let n = diesel::insert_into(table_with_strings::table)
             .values(TableWithString {
-                string: NonEmptyString::from_str("string").unwrap(),
-                optional_string: Some(NonEmptyString::from_str("string").unwrap()),
+                string: non_empty_string!("string"),
+                optional_string: Some(non_empty_string!("string")),
             })
             .execute(&mut conn)
             .unwrap();

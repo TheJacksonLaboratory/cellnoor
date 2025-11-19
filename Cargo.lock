@@ -1746,6 +1746,7 @@ dependencies = [
  "dotenvy",
  "jiff",
  "jiff-diesel",
+ "non-empty-string",
  "pretty_assertions",
  "rand",
  "regex",

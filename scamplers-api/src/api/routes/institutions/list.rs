@@ -61,7 +61,7 @@ mod tests {
 
     use deadpool_diesel::postgres::Connection;
     use rstest::rstest;
-    use scamplers_models::{OrderBy, institution::*};
+    use scamplers_models::institution::*;
 
     use crate::{
         test_state::{db_conn, institutions},
@@ -95,7 +95,7 @@ mod tests {
     ) {
         let query = Query::builder()
             .filter(Filter::builder().name("institution1").build())
-            .order_by(OrderBy::builder().field(OrdinalColumns::Name).build())
+            .order_by_descending(OrdinalColumns::Name)
             .build();
 
         test_query()

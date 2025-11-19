@@ -4,6 +4,7 @@ use deadpool_diesel::postgres::Pool;
 use diesel::{PgConnection, prelude::*};
 use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
 use jiff::Timestamp;
+use non_empty_string::non_empty_string;
 use pretty_assertions::{assert_eq, assert_ne};
 use rand::{
     SeedableRng,
@@ -11,7 +12,7 @@ use rand::{
     seq::{IndexedRandom, IteratorRandom},
 };
 use rstest::fixture;
-use scamplers_models::{person::PersonId, *};
+use scamplers_models::{institution::InstitutionId, person::PersonId, *};
 use tokio::sync::OnceCell;
 use uuid::Uuid;
 
@@ -104,13 +105,26 @@ impl TestState {
         for i in 0..N_INSTITUTIONS {
             let new_institution = institution::Creation::builder()
                 .id(Uuid::now_v7())
-                .name(format!("institution{i}"))
+                .name(non_empty_string!("institution{i}"))
                 .build()
                 .execute(db_conn)
                 .unwrap();
 
             self.institutions.push(new_institution);
         }
+
+        // We know that initial_data.sample.json contains the Jackson Laboratory so make
+        // sure to add that too
+        let query = institution::Query::builder()
+            .filter(
+                institution::Filter::builder()
+                    .name("Jackson Laboratory")
+                    .build(),
+            )
+            .build();
+        let jax = query.execute(db_conn).unwrap().remove(0);
+        let jax = InstitutionId(jax.id()).execute(db_conn).unwrap();
+        self.institutions.push(jax);
     }
 
     fn random_institution_id(&mut self) -> Uuid {
@@ -120,8 +134,8 @@ impl TestState {
     fn insert_people(&mut self, db_conn: &mut PgConnection) {
         for i in 0..N_PEOPLE {
             let new_person = person::Creation::builder()
-                .name(format!("person{i}"))
-                .email(format!("person{i}@example.com"))
+                .name(non_empty_string!("person{i}"))
+                .email(non_empty_string!("person{i}@example.com"))
                 .institution_id(self.random_institution_id())
                 .roles([])
                 .build()
@@ -152,12 +166,12 @@ impl TestState {
     fn insert_labs(&mut self, db_conn: &mut PgConnection) {
         for i in 0..N_LABS {
             let pi_id = self.random_person_id();
-            let name = format!("lab{i}");
+            let name = non_empty_string!("lab{i}");
 
             let new_lab = lab::Creation::builder()
-                .name(name.as_str())
+                .name(name.clone())
                 .pi_id(pi_id)
-                .delivery_dir(format!("{name}_dir"))
+                .delivery_dir(non_empty_string!("{name}_dir"))
                 .build()
                 .execute(db_conn)
                 .unwrap();

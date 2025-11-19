@@ -15,15 +15,6 @@ mod rust {
         descending: bool,
     }
 
-    impl<O> From<(O, bool)> for OrderBy<O>
-    where
-        O: Default,
-    {
-        fn from((field, descending): (O, bool)) -> Self {
-            Self { field, descending }
-        }
-    }
-
     impl<O> OrderBy<O>
     where
         O: Copy + Default,
@@ -94,10 +85,10 @@ mod rust {
         #[cfg(feature = "builder")]
         #[builder(on(_, into))]
         pub fn new(
+            #[builder(field)] order_by: DefaultVec<OrderBy<O>>,
             filter: Option<F>,
             #[builder(default)] limit: i64,
             #[builder(default)] offset: i64,
-            #[builder(default)] order_by: DefaultVec<OrderBy<O>>,
         ) -> Self {
             Self {
                 filter,
@@ -106,11 +97,38 @@ mod rust {
                 order_by,
             }
         }
+
+        pub fn from_filter(filter: F) -> Self {
+            Self {
+                filter: Some(filter),
+                ..Default::default()
+            }
+        }
+    }
+
+    #[cfg(feature = "builder")]
+    impl<F, O, S> QueryBuilder<F, O, S>
+    where
+        F: Default,
+        O: Default,
+        S: query_builder::State,
+    {
+        pub fn order_by(mut self, field: O, descending: bool) -> Self {
+            self.order_by.push(OrderBy { field, descending });
+
+            self
+        }
+
+        pub fn order_by_ascending(self, field: O) -> Self {
+            self.order_by(field, false)
+        }
+
+        pub fn order_by_descending(self, field: O) -> Self {
+            self.order_by(field, true)
+        }
     }
 }
 
-#[cfg(all(feature = "builder", not(feature = "typescript")))]
-pub use rust::OrderBy;
 #[cfg(not(feature = "typescript"))]
 pub(crate) use rust::Query;
 

@@ -54,8 +54,25 @@ jobs:
 
   lint_scamplers-typescript:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
     env:
       RUSTFLAGS: -Dwarnings
+      SCAMPLERS_DB_ROOT_USER: postgres
+      SCAMPLERS_DB_ROOT_PASSWORD: ""
+      SCAMPLERS_API_DB_PASSWORD: ""
+      SCAMPLERS_UI_DB_PASSWORD: ""
+      SCAMPLERS_DB_HOST: localhost
+      SCAMPLERS_DB_PORT: 5432
+      SCAMPLERS_DB_NAME: postgres
+      SCAMPLERS_API_KEY_PREFIX_LENGTH: 8
+      SCAMPLERS_HOST: localhost
+      SCAMPLERS_PORT: 8000
 
     steps:
       - name: Check out repository code

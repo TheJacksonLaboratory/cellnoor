@@ -3,6 +3,12 @@
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 pub struct DefaultVec<T>(Vec<T>);
 
+impl<T> DefaultVec<T> {
+    pub fn push(&mut self, value: T) {
+        self.0.push(value)
+    }
+}
+
 impl<T> Default for DefaultVec<T>
 where
     T: Default,
