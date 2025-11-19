@@ -9,8 +9,9 @@ mod person;
 #[serde(rename_all = "snake_case", tag = "type", content = "cause")]
 #[error(transparent)]
 pub enum Error {
-    PersonCreation(#[from] person::Error),
-    LabCreation(#[from] lab::Error),
+    InsertInitialData(#[from] initial_data::Error),
+    CreatePerson(#[from] person::Error),
+    CreateLab(#[from] lab::Error),
 }
 
 pub trait Validate {

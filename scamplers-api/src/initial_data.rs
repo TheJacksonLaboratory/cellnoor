@@ -15,11 +15,21 @@ use crate::validate::Validate;
 
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct InitialData {
-    pub institution: institution::Creation,
-    pub app_admin: person::Creation,
+    institution: institution::Creation,
+    app_admin: person::Creation,
     // index_set_urls: Vec<Url>,
     // tenx_assays: Vec<NewTenxAssay>,
     // multiplexing_tags: Vec<NewMultiplexingTag>,
+}
+
+impl InitialData {
+    pub fn institution(&self) -> &institution::Creation {
+        &self.institution
+    }
+
+    pub fn app_admin(&self) -> &person::Creation {
+        &self.app_admin
+    }
 }
 
 pub async fn insert_initial_data(
@@ -82,11 +92,6 @@ impl Upsert for institution::Creation {
 impl Upsert for person::Creation {
     fn upsert(mut self, db_conn: &mut PgConnection) -> anyhow::Result<()> {
         define_sql_function! {fn create_user_if_not_exists(user_id: Text, password: Text, roles: Array<Text>)}
-
-        ensure!(
-            self.microsoft_entra_oid().is_some(),
-            "app admin must have `microsoft_entra_oid`"
-        );
 
         diesel::update(people::table)
             .filter(people::email.eq(self.email()))
