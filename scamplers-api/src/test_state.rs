@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use diesel::{PgConnection, prelude::*};
 use jiff::Timestamp;
 use non_empty_string::non_empty_string;
@@ -15,63 +13,23 @@ use uuid::Uuid;
 
 use crate::{config::Config, db::Operation, state::AppState};
 
-trait ChooseUnwrap<T> {
-    fn choose_unwrap(&self, rng: &mut StdRng) -> &T;
-}
-impl<T> ChooseUnwrap<T> for Vec<T> {
-    fn choose_unwrap(&self, rng: &mut StdRng) -> &T {
-        self.choose(rng).unwrap()
-    }
-}
-trait ChooseUnwrapOwned<T> {
-    fn choose_unwrap_owned(self, rng: &mut StdRng) -> T;
-}
-impl ChooseUnwrapOwned<i64> for std::ops::Range<i64> {
-    fn choose_unwrap_owned(self, rng: &mut StdRng) -> i64 {
-        self.choose(rng).unwrap()
-    }
+static TEST_STATE: OnceCell<TestState> = OnceCell::const_new();
+
+#[fixture]
+pub async fn db_conn() -> deadpool_diesel::postgres::Connection {
+    let test_state = TEST_STATE.get_or_init(TestState::new).await;
+
+    test_state.app_state.db_conn().await.unwrap()
 }
 
-const N_INSTITUTIONS: usize = 10;
-const N_PEOPLE: usize = 250;
-const N_LABS: usize = 50;
-pub const N_LAB_MEMBERS: usize = 5;
-
-pub const N_SPECIMENS: usize = 1000;
-
-const N_MULTIPLEXING_TAGS: usize = 1600;
-
-// 25% of the specimens will be pooled
-pub const N_SUSPENSION_POOLS: usize = N_SPECIMENS / 4;
-pub const N_SUSPENSIONS_PER_POOL: usize = 2;
-
-// The remaining specimens will become singular suspensions
-pub const N_SUSPENSIONS: usize = N_SPECIMENS - (N_SUSPENSION_POOLS * N_SUSPENSIONS_PER_POOL);
-
-const N_TENX_ASSAYS: usize = 15;
-
-const N_GEMS_PER_NONOCM_CHROMIUM_RUN: usize = 8;
-const N_GEMS_PER_OCM_CHROMIUM_RUN: usize = 2;
-const N_SUSPENSIONS_PER_OCM_GEMS: usize = 4;
-
-// Every suspension can be used both for singleplex and OCM runs
-const N_SINGLEPLEX_CHROMIUM_RUNS: usize = N_SUSPENSIONS / N_GEMS_PER_NONOCM_CHROMIUM_RUN;
-const N_OCM_CHROMIUM_RUNS: usize =
-    N_SUSPENSIONS / (N_GEMS_PER_OCM_CHROMIUM_RUN * N_SUSPENSIONS_PER_OCM_GEMS);
-
-// Every suspension pool can be used for a pool multiplex chromium run
-pub const N_POOL_MULTIPLEX_CHROMIUM_RUNS: usize =
-    N_SUSPENSION_POOLS / N_GEMS_PER_NONOCM_CHROMIUM_RUN;
-
-const N_CDNA: usize = (N_SINGLEPLEX_CHROMIUM_RUNS * N_GEMS_PER_NONOCM_CHROMIUM_RUN)
-    + (N_OCM_CHROMIUM_RUNS * N_GEMS_PER_OCM_CHROMIUM_RUN)
-    + (N_POOL_MULTIPLEX_CHROMIUM_RUNS * N_GEMS_PER_NONOCM_CHROMIUM_RUN);
-
-const N_LIBRARIES: usize = N_CDNA;
-
-const N_SEQUENCING_RUNS: usize = 1;
-
-const N_CHROMIUM_DATASETS: usize = N_LIBRARIES;
+#[rstest::fixture]
+pub async fn institutions() -> Vec<institution::Institution> {
+    TEST_STATE
+        .get_or_init(TestState::new)
+        .await
+        .institutions
+        .clone()
+}
 
 pub struct TestState {
     rng: StdRng,
@@ -90,12 +48,54 @@ pub struct TestState {
     // chromium_datasets: Vec<ChromiumDataset>,
 }
 impl TestState {
-    fn random_time(&mut self) -> Timestamp {
-        // These numbers correspond to the first second of the year -4000 and the last second of the year 4000 (https://www.postgresql.org/docs/current/datatype-datetime.html)
-        Timestamp::from_second(
-            (-188_395_009_438..64_092_229_199).choose_unwrap_owned(&mut self.rng),
-        )
-        .unwrap()
+    async fn new() -> Self {
+        let config =
+            Config::read().expect("configuration should be readable from environment variables");
+
+        let test_state = Self {
+            app_state: AppState::initialize(&config).await.unwrap(),
+            rng: StdRng::from_rng(&mut rand::rng()),
+            institutions: Vec::with_capacity(N_INSTITUTIONS + 1),
+            people: Vec::with_capacity(N_PEOPLE + 1),
+            labs: Vec::with_capacity(N_LABS),
+            // specimens: Vec::with_capacity(N_SPECIMENS),
+            // suspension_pools: Vec::with_capacity(N_SUSPENSION_POOLS),
+            // multiplexing_tags: Vec::with_capacity(N_MULTIPLEXING_TAGS),
+            // tenx_assays: Vec::with_capacity(N_TENX_ASSAYS),
+            // chromium_runs: Vec::with_capacity(
+            //     N_SINGLEPLEX_CHROMIUM_RUNS + N_OCM_CHROMIUM_RUNS +
+            // N_POOL_MULTIPLEX_CHROMIUM_RUNS, ),
+            // cdna_groups: Vec::with_capacity(N_CDNA),
+            // libraries: Vec::with_capacity(N_LIBRARIES),
+            // sequencing_runs: Vec::with_capacity(N_SEQUENCING_RUNS),
+            // chromium_datasets: Vec::with_capacity(N_CHROMIUM_DATASETS),
+        };
+
+        let test_state = test_state.populate_db().await;
+
+        test_state
+    }
+
+    async fn populate_db(mut self) -> Self {
+        let db_conn = self.app_state.db_conn().await.unwrap();
+
+        db_conn
+            .interact(|db_conn| {
+                self.insert_institutions(db_conn);
+                self.insert_people(db_conn);
+                self.insert_labs(db_conn);
+                // self.insert_specimens(db_conn);
+                // self.insert_suspension_pools(db_conn);
+                // self.insert_pool_multiplexed_chromium_runs(db_conn);
+                // self.insert_cdna(db_conn);
+                // self.insert_libraries(db_conn);
+                // self.insert_sequencing_runs(db_conn);
+                // self.insert_chromium_datasets(db_conn);
+
+                self
+            })
+            .await
+            .unwrap()
     }
 
     fn insert_institutions(&mut self, db_conn: &mut PgConnection) {
@@ -603,71 +603,69 @@ impl TestState {
     //     }
     // }
 
-    async fn populate_db(mut self) -> Self {
-        let db_conn = self.app_state.db_conn().await.unwrap();
-
-        db_conn
-            .interact(|db_conn| {
-                self.insert_institutions(db_conn);
-                self.insert_people(db_conn);
-                self.insert_labs(db_conn);
-                // self.insert_specimens(db_conn);
-                // self.insert_suspension_pools(db_conn);
-                // self.insert_pool_multiplexed_chromium_runs(db_conn);
-                // self.insert_cdna(db_conn);
-                // self.insert_libraries(db_conn);
-                // self.insert_sequencing_runs(db_conn);
-                // self.insert_chromium_datasets(db_conn);
-
-                self
-            })
-            .await
-            .unwrap()
-    }
-
-    async fn new() -> Self {
-        // This will read configuration values from the environment
-        let config = Config::read().unwrap();
-
-        let test_state = Self {
-            app_state: AppState::initialize(&config).await.unwrap(),
-            rng: StdRng::from_rng(&mut rand::rng()),
-            institutions: Vec::with_capacity(N_INSTITUTIONS + 1),
-            people: Vec::with_capacity(N_PEOPLE + 1),
-            labs: Vec::with_capacity(N_LABS),
-            // specimens: Vec::with_capacity(N_SPECIMENS),
-            // suspension_pools: Vec::with_capacity(N_SUSPENSION_POOLS),
-            // multiplexing_tags: Vec::with_capacity(N_MULTIPLEXING_TAGS),
-            // tenx_assays: Vec::with_capacity(N_TENX_ASSAYS),
-            // chromium_runs: Vec::with_capacity(
-            //     N_SINGLEPLEX_CHROMIUM_RUNS + N_OCM_CHROMIUM_RUNS +
-            // N_POOL_MULTIPLEX_CHROMIUM_RUNS, ),
-            // cdna_groups: Vec::with_capacity(N_CDNA),
-            // libraries: Vec::with_capacity(N_LIBRARIES),
-            // sequencing_runs: Vec::with_capacity(N_SEQUENCING_RUNS),
-            // chromium_datasets: Vec::with_capacity(N_CHROMIUM_DATASETS),
-        };
-
-        let test_state = test_state.populate_db().await;
-
-        test_state
+    fn random_time(&mut self) -> Timestamp {
+        // These numbers correspond to the first second of the year -4000 and the last second of the year 4000 (https://www.postgresql.org/docs/current/datatype-datetime.html)
+        Timestamp::from_second(
+            (-188_395_009_438..64_092_229_199).choose_unwrap_owned(&mut self.rng),
+        )
+        .unwrap()
     }
 }
 
-static TEST_STATE: OnceCell<TestState> = OnceCell::const_new();
+const N_INSTITUTIONS: usize = 10;
+const N_PEOPLE: usize = 250;
+const N_LABS: usize = 50;
+pub const N_LAB_MEMBERS: usize = 5;
 
-#[fixture]
-pub async fn db_conn() -> deadpool_diesel::postgres::Connection {
-    let test_state = TEST_STATE.get_or_init(TestState::new).await;
+pub const N_SPECIMENS: usize = 1000;
 
-    test_state.app_state.db_conn().await.unwrap()
+const N_MULTIPLEXING_TAGS: usize = 1600;
+
+// 25% of the specimens will be pooled
+pub const N_SUSPENSION_POOLS: usize = N_SPECIMENS / 4;
+pub const N_SUSPENSIONS_PER_POOL: usize = 2;
+
+// The remaining specimens will become singular suspensions
+pub const N_SUSPENSIONS: usize = N_SPECIMENS - (N_SUSPENSION_POOLS * N_SUSPENSIONS_PER_POOL);
+
+const N_TENX_ASSAYS: usize = 15;
+
+const N_GEMS_PER_NONOCM_CHROMIUM_RUN: usize = 8;
+const N_GEMS_PER_OCM_CHROMIUM_RUN: usize = 2;
+const N_SUSPENSIONS_PER_OCM_GEMS: usize = 4;
+
+// Every suspension can be used both for singleplex and OCM runs
+const N_SINGLEPLEX_CHROMIUM_RUNS: usize = N_SUSPENSIONS / N_GEMS_PER_NONOCM_CHROMIUM_RUN;
+const N_OCM_CHROMIUM_RUNS: usize =
+    N_SUSPENSIONS / (N_GEMS_PER_OCM_CHROMIUM_RUN * N_SUSPENSIONS_PER_OCM_GEMS);
+
+// Every suspension pool can be used for a pool multiplex chromium run
+pub const N_POOL_MULTIPLEX_CHROMIUM_RUNS: usize =
+    N_SUSPENSION_POOLS / N_GEMS_PER_NONOCM_CHROMIUM_RUN;
+
+const N_CDNA: usize = (N_SINGLEPLEX_CHROMIUM_RUNS * N_GEMS_PER_NONOCM_CHROMIUM_RUN)
+    + (N_OCM_CHROMIUM_RUNS * N_GEMS_PER_OCM_CHROMIUM_RUN)
+    + (N_POOL_MULTIPLEX_CHROMIUM_RUNS * N_GEMS_PER_NONOCM_CHROMIUM_RUN);
+
+const N_LIBRARIES: usize = N_CDNA;
+
+const N_SEQUENCING_RUNS: usize = 1;
+
+const N_CHROMIUM_DATASETS: usize = N_LIBRARIES;
+
+trait ChooseUnwrap<T> {
+    fn choose_unwrap(&self, rng: &mut StdRng) -> &T;
 }
-
-#[rstest::fixture]
-pub async fn institutions() -> Vec<institution::Institution> {
-    TEST_STATE
-        .get_or_init(TestState::new)
-        .await
-        .institutions
-        .clone()
+impl<T> ChooseUnwrap<T> for Vec<T> {
+    fn choose_unwrap(&self, rng: &mut StdRng) -> &T {
+        self.choose(rng).unwrap()
+    }
+}
+trait ChooseUnwrapOwned<T> {
+    fn choose_unwrap_owned(self, rng: &mut StdRng) -> T;
+}
+impl ChooseUnwrapOwned<i64> for std::ops::Range<i64> {
+    fn choose_unwrap_owned(self, rng: &mut StdRng) -> i64 {
+        self.choose(rng).unwrap()
+    }
 }

@@ -124,7 +124,7 @@ jobs:
 
       - name: Test scamplers-api
         run: |
-          mv initial_data.sample.json initial_data
+          mv initial_data.sample.json scamplers-api/initial_data
           cargo test --package scamplers-api
 
   test_scamplers-models:
