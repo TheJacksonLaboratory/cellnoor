@@ -24,7 +24,7 @@ impl Creation {
     #[cfg(feature = "builder")]
     #[builder(on(_, into))]
     #[must_use]
-    fn new(name: NonEmptyString, pi_id: Uuid, delivery_dir: NonEmptyString) -> Self {
+    pub fn new(name: NonEmptyString, pi_id: Uuid, delivery_dir: NonEmptyString) -> Self {
         Self {
             inner: Fields {
                 name,

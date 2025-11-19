@@ -70,7 +70,7 @@ fn set_db_user_password(
 }
 
 impl AppState {
-    pub async fn initialize(config: &mut Config) -> anyhow::Result<Self> {
+    pub async fn initialize(config: &Config) -> anyhow::Result<Self> {
         let mut root_db_conn = PgConnection::establish(&config.db_root_url())
             .context("failed to connect to db as root to run migrations")?;
 

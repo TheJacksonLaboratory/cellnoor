@@ -17,8 +17,8 @@ pub struct Institution {
 
 impl Institution {
     #[must_use]
-    pub fn id(&self) -> &Uuid {
-        &self.inner.id
+    pub fn id(&self) -> Uuid {
+        self.inner.id
     }
 
     #[must_use]

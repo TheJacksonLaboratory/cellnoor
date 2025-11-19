@@ -24,6 +24,12 @@ pub struct PersonSummary {
     links: Links,
 }
 
+impl PersonSummary {
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+}
+
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = people, base_query = people::table.inner_join(institutions::table)))]
 pub struct PersonSummaryWithParents {
@@ -45,5 +51,9 @@ impl Person {
     #[must_use]
     pub fn new(info: PersonSummaryWithParents, roles: Vec<UserRole>) -> Self {
         Self { info, roles }
+    }
+
+    pub fn id(&self) -> Uuid {
+        self.info.summary.id
     }
 }

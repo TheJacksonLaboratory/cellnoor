@@ -19,8 +19,8 @@ pub async fn serve(config: Config) -> anyhow::Result<()> {
     serve_inner(config).await
 }
 
-async fn serve_inner(mut config: Config) -> anyhow::Result<()> {
-    let app_state = AppState::initialize(&mut config)
+async fn serve_inner(config: Config) -> anyhow::Result<()> {
+    let app_state = AppState::initialize(&config)
         .await
         .context("failed to initialize app state")?;
     tracing::info!("initialized app state");

@@ -4,12 +4,24 @@ mod rust {
     use macro_attributes::{base_model, base_model_default};
 
     #[base_model_default]
+    #[cfg_attr(feature = "builder", derive(bon::Builder))]
+    #[cfg_attr(feature = "builder", builder(on(_, into)))]
     pub struct OrderBy<O>
     where
         O: Default,
     {
         field: O,
+        #[cfg_attr(feature = "builder", builder(default))]
         descending: bool,
+    }
+
+    impl<O> From<(O, bool)> for OrderBy<O>
+    where
+        O: Default,
+    {
+        fn from((field, descending): (O, bool)) -> Self {
+            Self { field, descending }
+        }
     }
 
     impl<O> OrderBy<O>
@@ -73,15 +85,15 @@ mod rust {
         }
     }
 
-    #[cfg(feature = "builder")]
-    #[bon::bon]
+    #[cfg_attr(feature = "builder", bon::bon)]
     impl<F, O> Query<F, O>
     where
         F: Default,
         O: Default,
     {
-        #[builder]
-        fn new(
+        #[cfg(feature = "builder")]
+        #[builder(on(_, into))]
+        pub fn new(
             filter: Option<F>,
             #[builder(default)] limit: i64,
             #[builder(default)] offset: i64,
@@ -97,6 +109,8 @@ mod rust {
     }
 }
 
+#[cfg(all(feature = "builder", not(feature = "typescript")))]
+pub use rust::OrderBy;
 #[cfg(not(feature = "typescript"))]
 pub(crate) use rust::Query;
 

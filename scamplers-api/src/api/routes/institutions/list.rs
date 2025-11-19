@@ -54,3 +54,56 @@ impl db::Operation<Vec<Institution>> for institution::Query {
         Ok(stmt.load(db_conn)?)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::cmp::Ordering;
+
+    use deadpool_diesel::postgres::Connection;
+    use rstest::rstest;
+    use scamplers_models::{OrderBy, institution::*};
+
+    use crate::{
+        test_state::{db_conn, institutions},
+        test_util::test_query,
+    };
+
+    fn sort_by_name(i1: &Institution, i2: &Institution) -> Ordering {
+        i1.name().cmp(i2.name())
+    }
+
+    #[rstest]
+    #[awt]
+    #[tokio::test]
+    async fn default_institution_query(
+        #[future] db_conn: Connection,
+        #[future] institutions: Vec<Institution>,
+    ) {
+        test_query::<Query, _>()
+            .all_data(institutions)
+            .sort_by(sort_by_name)
+            .run(db_conn)
+            .await;
+    }
+
+    #[rstest]
+    #[awt]
+    #[tokio::test]
+    async fn specific_institution_query(
+        #[future] db_conn: Connection,
+        #[future] institutions: Vec<Institution>,
+    ) {
+        let query = Query::builder()
+            .filter(Filter::builder().name("institution1").build())
+            .order_by(OrderBy::builder().field(OrdinalColumns::Name).build())
+            .build();
+
+        test_query()
+            .all_data(institutions)
+            .filter(|i| i.name().starts_with("institution1"))
+            .sort_by(|i1, i2| sort_by_name(i1, i2).reverse())
+            .db_query(query)
+            .run(db_conn)
+            .await;
+    }
+}

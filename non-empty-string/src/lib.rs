@@ -50,6 +50,12 @@ impl From<&str> for NonEmptyString {
     }
 }
 
+impl From<String> for NonEmptyString {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
 impl AsRef<str> for NonEmptyString {
     fn as_ref(&self) -> &str {
         &self.0

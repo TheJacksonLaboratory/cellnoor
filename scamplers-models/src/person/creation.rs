@@ -28,7 +28,7 @@ impl Creation {
     #[cfg(feature = "builder")]
     #[builder(on(_, into))]
     #[must_use]
-    fn new(
+    pub fn new(
         name: NonEmptyString,
         email: NonEmptyString,
         orcid: Option<NonEmptyString>,

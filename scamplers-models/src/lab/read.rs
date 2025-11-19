@@ -27,3 +27,8 @@ pub struct Lab {
     #[cfg_attr(feature = "app", diesel(embed))]
     pi: PersonSummary,
 }
+impl Lab {
+    pub fn id(&self) -> Uuid {
+        self.summary.id
+    }
+}

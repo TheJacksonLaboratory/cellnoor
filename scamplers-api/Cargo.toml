@@ -38,4 +38,11 @@ uuid.workspace = true
 workspace = true
 
 [dev-dependencies]
+bon.workspace = true
+jiff.workspace = true
 pretty_assertions.workspace = true
+rand.workspace = true
+scamplers-models = { version = "0.1.0", path = "../scamplers-models", features = [
+  "app",
+  "builder",
+] }
