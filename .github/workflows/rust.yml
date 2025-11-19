@@ -122,4 +122,48 @@ jobs:
           cache-workspace-crates: true
 
       - name: Test scamplers-api
-        run: cargo test --workspace
+        run: cargo test --package scamplers-api
+
+  test_scamplers-models:
+    runs-on: ubuntu-latest
+    env:
+      SCAMPLERS_GENERATE_SCHEMA: false
+      SCAMPLERS_DB_ROOT_USER: postgres
+      SCAMPLERS_DB_ROOT_PASSWORD: ""
+      SCAMPLERS_API_DB_PASSWORD: ""
+      SCAMPLERS_UI_DB_PASSWORD: ""
+      SCAMPLERS_DB_HOST: localhost
+      SCAMPLERS_DB_PORT: 5432
+      SCAMPLERS_DB_NAME: postgres
+      SCAMPLERS_API_KEY_PREFIX_LENGTH: 8
+      SCAMPLERS_HOST: localhost
+      SCAMPLERS_PORT: 8000
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Cache cargo files
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-all-crates: true
+          cache-workspace-crates: true
+
+      - name: Test scamplers-models
+        run: cargo test --package scamplers-models --features builder
+
+  test_non-empty-string:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Cache cargo files
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-all-crates: true
+          cache-workspace-crates: true
+
+      - name: Test non-empty-string
+        run: cargo test --package non-empty-string --all-features

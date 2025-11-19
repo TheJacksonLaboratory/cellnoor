@@ -128,7 +128,7 @@ mod rust {
 #[cfg(not(feature = "typescript"))]
 pub(crate) use rust::Query;
 
-#[cfg(all(test, not(feature = "typescript")))]
+#[cfg(all(test, feature = "builder", not(feature = "typescript")))]
 mod tests {
     use pretty_assertions::assert_eq;
 
