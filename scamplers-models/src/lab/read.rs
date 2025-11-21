@@ -18,6 +18,7 @@ pub struct LabSummary {
     links: Links,
 }
 impl LabSummary {
+    #[must_use]
     pub fn name(&self) -> &str {
         self.inner.name.as_ref()
     }
