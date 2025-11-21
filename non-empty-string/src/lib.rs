@@ -11,12 +11,13 @@ pub struct NonEmptyString(String);
 
 impl NonEmptyString {
     #[must_use]
-    pub fn new(s: String) -> Option<Self> {
+    pub fn new(s: impl AsRef<str>) -> Option<Self> {
+        let s = s.as_ref();
         if s.is_empty() {
             return None;
         }
 
-        Some(Self(s))
+        Some(Self(s.to_owned()))
     }
 }
 
@@ -42,16 +43,6 @@ impl AsRef<str> for NonEmptyString {
     fn as_ref(&self) -> &str {
         &self.0
     }
-}
-
-#[macro_export]
-macro_rules! non_empty_string {
-    ("") => {
-        compile_error!("string cannot be empty");
-    };
-    ($s:literal) => {
-        $crate::NonEmptyString::new(format!($s)).unwrap()
-    };
 }
 
 // This is essentially taken from https://github.com/MidasLamb/non-empty-string
@@ -134,31 +125,6 @@ mod diesel_impls {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use pretty_assertions::assert_str_eq;
-
-    use crate::NonEmptyString;
-
-    #[test]
-    fn empty_string_fails() {
-        assert!(NonEmptyString::new(String::from("")).is_none())
-    }
-
-    #[test]
-    fn non_empty_string_succeeds() {
-        assert_str_eq!(
-            NonEmptyString::new(String::from("string")).unwrap(),
-            "string"
-        );
-    }
-
-    #[test]
-    fn macro_compiles() {
-        non_empty_string!("string");
-    }
-}
-
 #[cfg(feature = "serde")]
 #[cfg(test)]
 mod serde_tests {
@@ -226,8 +192,8 @@ mod diesel_tests {
 
         let n = diesel::insert_into(table_with_strings::table)
             .values(TableWithString {
-                string: non_empty_string!("string"),
-                optional_string: Some(non_empty_string!("string")),
+                string: NonEmptyString::new("string").unwrap(),
+                optional_string: NonEmptyString::new("string"),
             })
             .execute(&mut conn)
             .unwrap();

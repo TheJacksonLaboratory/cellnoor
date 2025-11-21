@@ -21,15 +21,29 @@ impl Validate for person::Creation {
     fn validate(&self, _db_conn: &mut diesel::PgConnection) -> Result<(), super::Error> {
         let email = self.email();
 
-        if !EMAIL_REGEX.is_match(email) {
-            return Err(Error::Email {
-                email: email.to_owned(),
-                message: "invalid email".to_owned(),
-            })?;
+        Ok(validate_email(email)?)
+    }
+}
+
+impl Validate for person::Update {
+    fn validate(&self, _db_conn: &mut diesel::PgConnection) -> Result<(), super::Error> {
+        if let Some(email) = self.email() {
+            validate_email(email)?;
         }
 
         Ok(())
     }
+}
+
+fn validate_email(email: &str) -> Result<(), Error> {
+    if !EMAIL_REGEX.is_match(email) {
+        return Err(Error::Email {
+            email: email.to_owned(),
+            message: "invalid email".to_owned(),
+        });
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]

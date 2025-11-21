@@ -15,7 +15,7 @@ pub enum OrdinalColumns {
 #[filter]
 pub struct Filter {
     ids: Option<Vec<Uuid>>,
-    name: Option<String>,
+    names: Option<Vec<String>>,
 }
 
 impl Filter {
@@ -25,8 +25,8 @@ impl Filter {
     }
 
     #[must_use]
-    pub fn name(&self) -> Option<&str> {
-        self.name.as_deref()
+    pub fn names(&self) -> Option<&[String]> {
+        self.names.as_deref()
     }
 }
 

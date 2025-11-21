@@ -15,3 +15,6 @@ pub(crate) mod generic_query;
 mod links;
 #[cfg(feature = "app")]
 mod utils;
+
+#[cfg(not(feature = "typescript"))]
+pub use generic_query::NoLimit;

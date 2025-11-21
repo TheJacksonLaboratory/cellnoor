@@ -1,3 +1,10 @@
+use diesel::{
+    define_sql_function,
+    sql_types::{Array, Text},
+};
+
+define_sql_function! { fn like_any(string: Text, patterns: Array<Text>) -> Bool }
+
 #[macro_export]
 macro_rules! query {
     ($select:ident::query($query:ident).order_by($($enum_variant:path = $db_col:expr),*)) => {

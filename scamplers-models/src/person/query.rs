@@ -16,9 +16,9 @@ pub enum OrdinalColumns {
 #[filter]
 pub struct Filter {
     ids: Option<Vec<Uuid>>,
-    name: Option<String>,
-    email: Option<String>,
-    orcid: Option<String>,
+    names: Option<Vec<String>>,
+    emails: Option<Vec<String>>,
+    orcids: Option<Vec<String>>,
     microsoft_entra_oids: Option<Vec<Uuid>>,
 }
 
@@ -29,18 +29,18 @@ impl Filter {
     }
 
     #[must_use]
-    pub fn name(&self) -> Option<&str> {
-        self.name.as_deref()
+    pub fn names(&self) -> Option<&[String]> {
+        self.names.as_deref()
     }
 
     #[must_use]
-    pub fn email(&self) -> Option<&str> {
-        self.email.as_deref()
+    pub fn emails(&self) -> Option<&[String]> {
+        self.emails.as_deref()
     }
 
     #[must_use]
-    pub fn orcid(&self) -> Option<&str> {
-        self.orcid.as_deref()
+    pub fn orcids(&self) -> Option<&[String]> {
+        self.orcids.as_deref()
     }
 
     #[must_use]

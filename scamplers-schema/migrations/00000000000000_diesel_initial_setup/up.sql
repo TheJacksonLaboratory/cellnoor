@@ -143,3 +143,14 @@ grant user_creator to scamplers_ui with inherit false; -- noqa: PRS
 
 create collation case_insensitive (provider = icu, deterministic = false, locale = 'en-u-ks-level1');
 create domain case_insensitive_text as text collate case_insensitive;
+
+create function like_any(
+    string text,
+    patterns text []
+) returns bool language plpgsql immutable strict as $$
+    declare match bool;
+    begin
+        select string like any(patterns) into match;
+        return match;
+    end;
+$$;

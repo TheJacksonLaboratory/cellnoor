@@ -1,182 +1,154 @@
-use diesel::{PgConnection, prelude::*};
+#![allow(dead_code)]
+use std::ops::Range;
+
+use deadpool_diesel::postgres::{Connection, Pool};
 use jiff::Timestamp;
-use non_empty_string::non_empty_string;
+use non_empty_string::NonEmptyString;
 use rand::{
-    SeedableRng,
-    rngs::StdRng,
+    Rng, SeedableRng,
+    distr::Alphanumeric,
+    rngs::SmallRng,
     seq::{IndexedRandom, IteratorRandom},
 };
 use rstest::fixture;
-use scamplers_models::{institution::InstitutionId, person::PersonId, *};
-use tokio::sync::OnceCell;
+use scamplers_models::{
+    NoLimit, institution, institution::Institution, lab, person, person::PersonSummary,
+};
+use tokio::{sync::OnceCell, task::JoinSet};
 use uuid::Uuid;
 
-use crate::{config::Config, db::Operation, state::AppState};
+use crate::{
+    config::Config,
+    db,
+    db::Operation,
+    state::{AppState, create_test_db_pool},
+};
 
 static TEST_STATE: OnceCell<TestState> = OnceCell::const_new();
+static DATABASE: OnceCell<Database> = OnceCell::const_new();
 
 #[fixture]
-pub async fn db_conn() -> deadpool_diesel::postgres::Connection {
-    let test_state = TEST_STATE.get_or_init(TestState::new).await;
-
-    test_state.app_state.db_conn().await.unwrap()
+pub async fn database() -> &'static Database {
+    let state = TEST_STATE.get_or_init(TestState::new).await;
+    DATABASE.get_or_init(|| Database::new(state)).await
 }
 
-#[rstest::fixture]
-pub async fn institutions() -> Vec<institution::Institution> {
-    TEST_STATE
-        .get_or_init(TestState::new)
-        .await
-        .institutions
-        .clone()
+#[fixture]
+pub async fn root_db_conn() -> Connection {
+    let state = TEST_STATE.get_or_init(TestState::new).await;
+    state.root_db_conn().await
 }
 
 pub struct TestState {
-    rng: StdRng,
-    // app_admin_id: Uuid,
-    app_state: AppState,
-    institutions: Vec<institution::Institution>,
-    people: Vec<person::Person>,
-    labs: Vec<lab::Lab>,
-    // specimens: Vec<Specimen>,
-    // multiplexing_tags: Vec<MultiplexingTag>,
-    // suspension_pools: Vec<SuspensionPool>,
-    // tenx_assays: Vec<TenxAssay>,
-    // chromium_runs: Vec<ChromiumRun>,
-    // cdna_groups: Vec<Vec<(Cdna, f32, &'static str)>>,
-    // libraries: Vec<Vec<Library>>,
-    // sequencing_runs: Vec<SequencingRun>,
-    // chromium_datasets: Vec<ChromiumDataset>,
+    inner: AppState,
+    root_db_pool: Pool,
 }
+
 impl TestState {
     async fn new() -> Self {
         let config = Config::read()
             .expect("test configuration should be readable from environment variables");
 
-        let test_state = Self {
-            app_state: AppState::initialize(&config)
+        Self {
+            inner: AppState::initialize(&config)
                 .await
                 .expect("should be able to initialize app state"),
-            rng: StdRng::from_rng(&mut rand::rng()),
-            institutions: Vec::with_capacity(N_INSTITUTIONS + 1),
-            people: Vec::with_capacity(N_PEOPLE + 1),
-            labs: Vec::with_capacity(N_LABS),
-            // specimens: Vec::with_capacity(N_SPECIMENS),
-            // suspension_pools: Vec::with_capacity(N_SUSPENSION_POOLS),
-            // multiplexing_tags: Vec::with_capacity(N_MULTIPLEXING_TAGS),
-            // tenx_assays: Vec::with_capacity(N_TENX_ASSAYS),
-            // chromium_runs: Vec::with_capacity(
-            //     N_SINGLEPLEX_CHROMIUM_RUNS + N_OCM_CHROMIUM_RUNS +
-            // N_POOL_MULTIPLEX_CHROMIUM_RUNS, ),
-            // cdna_groups: Vec::with_capacity(N_CDNA),
-            // libraries: Vec::with_capacity(N_LIBRARIES),
-            // sequencing_runs: Vec::with_capacity(N_SEQUENCING_RUNS),
-            // chromium_datasets: Vec::with_capacity(N_CHROMIUM_DATASETS),
-        };
-
-        let test_state = test_state.populate_db().await;
-
-        test_state
+            root_db_pool: create_test_db_pool(&config.db_root_url()).unwrap(),
+        }
     }
 
-    async fn populate_db(mut self) -> Self {
-        let db_conn = self.app_state.db_conn().await.unwrap();
+    async fn populate_db(&'static self) {
+        self.insert_institutions().await;
+        self.insert_people().await;
+        self.insert_labs().await;
+    }
+
+    async fn insert_institutions(&'static self) {
+        let join_set: JoinSet<_> = (0..N_INSTITUTIONS)
+            .map(|_| self.insert_random_institution())
+            .collect();
+
+        join_set.join_all().await;
+    }
+
+    async fn insert_random_institution(&self) {
+        let db_conn = self.root_db_conn().await;
 
         db_conn
             .interact(|db_conn| {
-                self.insert_institutions(db_conn);
-                self.insert_people(db_conn);
-                self.insert_labs(db_conn);
-                // self.insert_specimens(db_conn);
-                // self.insert_suspension_pools(db_conn);
-                // self.insert_pool_multiplexed_chromium_runs(db_conn);
-                // self.insert_cdna(db_conn);
-                // self.insert_libraries(db_conn);
-                // self.insert_sequencing_runs(db_conn);
-                // self.insert_chromium_datasets(db_conn);
-
-                self
+                institution::Creation::builder()
+                    .id(Uuid::now_v7())
+                    .name(NonEmptyString::new(random_string()).unwrap())
+                    .build()
+                    .execute(db_conn)
+                    .unwrap()
             })
             .await
-            .unwrap()
+            .unwrap();
     }
 
-    fn insert_institutions(&mut self, db_conn: &mut PgConnection) {
-        for i in 0..N_INSTITUTIONS {
-            let new_institution = institution::Creation::builder()
-                .id(Uuid::now_v7())
-                .name(non_empty_string!("institution{i}"))
-                .build()
-                .execute(db_conn)
-                .unwrap();
+    async fn insert_people(&'static self) {
+        let institution_ids = self
+            .all_extract::<institution::Query, _, _, _>(Institution::id)
+            .await;
 
-            self.institutions.push(new_institution);
-        }
+        let join_set: JoinSet<_> = (0..N_PEOPLE)
+            .map(|_| self.insert_random_person(institution_ids.choose_unwrap()))
+            .collect();
 
-        // We know that initial_data.sample.json contains the Jackson Laboratory so make
-        // sure to add that too
-        let query = institution::Query::builder()
-            .filter(
-                institution::Filter::builder()
-                    .name("Jackson Laboratory")
-                    .build(),
-            )
-            .build();
-        let jax = query.execute(db_conn).unwrap().remove(0);
-        let jax = InstitutionId(jax.id()).execute(db_conn).unwrap();
-        self.institutions.push(jax);
+        join_set.join_all().await;
     }
 
-    fn random_institution_id(&mut self) -> Uuid {
-        self.institutions.choose_unwrap(&mut self.rng).id()
+    async fn insert_random_person(&self, institution_id: Uuid) {
+        let db_conn = self.root_db_conn().await;
+
+        db_conn
+            .interact(move |db_conn| {
+                let name = random_string();
+                let email = format!("{name}@example.com");
+
+                person::Creation::builder()
+                    .name(NonEmptyString::new(name).unwrap())
+                    .email(NonEmptyString::new(email).unwrap())
+                    .institution_id(institution_id)
+                    .roles([])
+                    .build()
+                    .execute(db_conn)
+                    .unwrap();
+            })
+            .await
+            .unwrap();
     }
 
-    fn insert_people(&mut self, db_conn: &mut PgConnection) {
-        for i in 0..N_PEOPLE {
-            let new_person = person::Creation::builder()
-                .name(non_empty_string!("person{i}"))
-                .email(non_empty_string!("person{i}@example.com"))
-                .institution_id(self.random_institution_id())
-                .roles([])
-                .build()
-                .execute(db_conn)
-                .unwrap();
+    async fn insert_labs(&'static self) {
+        let people_ids = self
+            .all_extract::<person::Query, _, _, _>(PersonSummary::id)
+            .await;
 
-            self.people.push(new_person);
-        }
+        let join_set: JoinSet<_> = (0..N_LABS)
+            .map(|_| self.insert_random_lab(people_ids.choose_unwrap()))
+            .collect();
 
-        // We know that initial_data contains "ahmed said" so make sure we add that too
-        let query = person::Query::builder()
-            .filter(person::Filter::builder().name("ahmed").build())
-            .build();
-        let handsome_cool_dude = query.execute(db_conn).unwrap().remove(0);
-        let handsome_cool_dude = PersonId(handsome_cool_dude.id()).execute(db_conn).unwrap();
-        self.people.push(handsome_cool_dude);
+        join_set.join_all().await;
     }
 
-    fn random_person_id(&mut self) -> Uuid {
-        self.people.choose_unwrap(&mut self.rng).id()
-    }
+    async fn insert_random_lab(&self, pi_id: Uuid) {
+        let db_conn = self.root_db_conn().await;
 
-    fn insert_labs(&mut self, db_conn: &mut PgConnection) {
-        for i in 0..N_LABS {
-            let pi_id = self.random_person_id();
-            let name = non_empty_string!("lab{i}");
+        db_conn
+            .interact(move |db_conn| {
+                let name = NonEmptyString::new(random_string()).unwrap();
 
-            let new_lab = lab::Creation::builder()
-                .name(name.clone())
-                .pi_id(pi_id)
-                .delivery_dir(non_empty_string!("{name}_dir"))
-                .build()
-                .execute(db_conn)
-                .unwrap();
-
-            self.labs.push(new_lab);
-        }
-    }
-
-    fn random_lab_id(&mut self) -> Uuid {
-        self.labs.choose_unwrap(&mut self.rng).id()
+                lab::Creation::builder()
+                    .name(name.clone())
+                    .delivery_dir(name)
+                    .pi_id(pi_id)
+                    .build()
+                    .execute(db_conn)
+                    .unwrap();
+            })
+            .await
+            .unwrap();
     }
 
     // fn insert_specimens(&mut self, db_conn: &mut PgConnection) {
@@ -606,18 +578,74 @@ impl TestState {
     //     }
     // }
 
-    fn random_time(&mut self) -> Timestamp {
-        // These numbers correspond to the first second of the year -4000 and the last second of the year 4000 (https://www.postgresql.org/docs/current/datatype-datetime.html)
-        Timestamp::from_second(
-            (-188_395_009_438..64_092_229_199).choose_unwrap_owned(&mut self.rng),
-        )
-        .unwrap()
+    async fn root_db_conn(&self) -> Connection {
+        self.root_db_pool.get().await.unwrap()
+    }
+
+    async fn all<Q, T>(&self) -> Vec<T>
+    where
+        Q: std::fmt::Debug + NoLimit + db::Operation<Vec<T>>,
+        T: 'static + Send,
+    {
+        let db_conn = self.root_db_conn().await;
+
+        db_conn
+            .interact(|db_conn| Q::no_limit().execute(db_conn).unwrap())
+            .await
+            .unwrap()
+    }
+
+    async fn all_extract<Q, T, F, U>(&self, f: F) -> Vec<U>
+    where
+        Q: std::fmt::Debug + NoLimit + db::Operation<Vec<T>>,
+        T: 'static + Send,
+        F: Fn(&T) -> U,
+    {
+        self.all::<Q, _>().await.iter().map(f).collect()
     }
 }
 
-const N_INSTITUTIONS: usize = 10;
-const N_PEOPLE: usize = 250;
-const N_LABS: usize = 50;
+#[derive(Debug, Default)]
+pub struct Database {
+    pub institutions: Vec<institution::Institution>,
+    pub people: Vec<person::PersonSummary>,
+    pub labs: Vec<lab::LabSummary>,
+}
+
+impl Database {
+    async fn new(test_state: &'static TestState) -> Self {
+        test_state.populate_db().await;
+
+        let (institutions, people, labs) = tokio::join!(
+            test_state.all::<institution::Query, _>(),
+            test_state.all::<person::Query, _>(),
+            test_state.all::<lab::Query, _>()
+        );
+
+        Self {
+            institutions,
+            people,
+            labs,
+        }
+    }
+}
+
+fn random_string() -> String {
+    let mut rng = rand::rng();
+    (0..10).map(|_| rng.sample(Alphanumeric) as char).collect()
+}
+
+// These numbers correspond to the first second of the year -4000 and the last second of the year 4000 (https://www.postgresql.org/docs/current/datatype-datetime.html)
+const TIME: Range<i64> = -188_395_009_438..64_092_229_199;
+
+fn random_time() -> Timestamp {
+    let mut rng = SmallRng::seed_from_u64(0);
+    Timestamp::from_second(TIME.choose(&mut rng).unwrap()).unwrap()
+}
+
+const N_INSTITUTIONS: usize = 50;
+const N_PEOPLE: usize = 200;
+const N_LABS: usize = 100;
 pub const N_LAB_MEMBERS: usize = 5;
 
 pub const N_SPECIMENS: usize = 1000;
@@ -657,18 +685,15 @@ const N_SEQUENCING_RUNS: usize = 1;
 const N_CHROMIUM_DATASETS: usize = N_LIBRARIES;
 
 trait ChooseUnwrap<T> {
-    fn choose_unwrap(&self, rng: &mut StdRng) -> &T;
+    fn choose_unwrap(&self) -> T;
 }
-impl<T> ChooseUnwrap<T> for Vec<T> {
-    fn choose_unwrap(&self, rng: &mut StdRng) -> &T {
-        self.choose(rng).unwrap()
-    }
-}
-trait ChooseUnwrapOwned<T> {
-    fn choose_unwrap_owned(self, rng: &mut StdRng) -> T;
-}
-impl ChooseUnwrapOwned<i64> for std::ops::Range<i64> {
-    fn choose_unwrap_owned(self, rng: &mut StdRng) -> i64 {
-        self.choose(rng).unwrap()
+
+impl<T> ChooseUnwrap<T> for [T]
+where
+    T: Copy,
+{
+    fn choose_unwrap(&self) -> T {
+        let mut rng = SmallRng::seed_from_u64(0);
+        *self.choose(&mut rng).unwrap()
     }
 }

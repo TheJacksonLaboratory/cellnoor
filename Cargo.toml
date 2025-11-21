@@ -32,7 +32,7 @@ camino = { version = "1.2.1", features = ["serde1"] }
 clap = { version = "4.5.50", features = ["derive", "env"] }
 csv = { version = "1.4.0" }
 deadpool-diesel = { version = "0.6.1", features = ["postgres"] }
-diesel = { version = "2.3.2", default-features = false }
+diesel = { version = "2.3.3", default-features = false }
 diesel_migrations = { version = "2.2.0", features = ["postgres"] }
 dotenvy = { version = "0.15.7" }
 heck = { version = "0.5.0" }

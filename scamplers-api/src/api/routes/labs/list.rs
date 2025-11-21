@@ -1,7 +1,7 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{SelectableExpression, prelude::*};
-use scamplers_models::institution::{self, Institution, OrdinalColumns};
-use scamplers_schema::institutions;
+use scamplers_models::lab::{self, LabSummary};
+use scamplers_schema::labs;
 use serde_qs::axum::QsQuery;
 
 use crate::{
@@ -14,41 +14,40 @@ use crate::{
     state::AppState,
 };
 
-pub(super) async fn list_institutions(
+pub(super) async fn list_labs(
     _: Root,
     state: State<AppState>,
     user: AuthenticatedUser,
-    QsQuery(request): QsQuery<institution::Query>,
-) -> ApiResponse<Vec<Institution>> {
+    QsQuery(request): QsQuery<lab::Query>,
+) -> ApiResponse<Vec<LabSummary>> {
     let items = inner_handler(state, user, request).await?;
     Ok((StatusCode::OK, items))
 }
 
-impl db::Operation<Vec<Institution>> for institution::Query {
-    fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Vec<Institution>, db::Error> {
-        let stmt = query!(Institution::query(self).order_by(
-            OrdinalColumns::Id = institutions::id,
-            OrdinalColumns::Name = institutions::name
-        ));
+impl db::Operation<Vec<LabSummary>> for lab::Query {
+    fn execute(self, db_conn: &mut PgConnection) -> Result<Vec<LabSummary>, db::Error> {
+        use lab::OrdinalColumns::{Id, Name};
+
+        let stmt = query!(LabSummary::query(self).order_by(Id = labs::id, Name = labs::name));
 
         Ok(stmt.load(db_conn)?)
     }
 }
 
-impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for institution::Filter
+impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for lab::Filter
 where
-    institutions::id: SelectableExpression<QS>,
-    institutions::name: SelectableExpression<QS>,
+    labs::id: SelectableExpression<QS>,
+    labs::name: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
         let mut filter = BoxedFilter::new();
 
         if let Some(ids) = self.ids() {
-            filter = filter.and_condition(institutions::id.eq_any(ids));
+            filter = filter.and_condition(labs::id.eq_any(ids));
         }
 
         if let Some(names) = self.names() {
-            filter = filter.and_condition(like_any(institutions::name, names));
+            filter = filter.and_condition(like_any(labs::name, names));
         }
 
         filter
@@ -61,26 +60,26 @@ mod tests {
 
     use deadpool_diesel::postgres::Connection;
     use rstest::rstest;
-    use scamplers_models::institution::*;
+    use scamplers_models::lab::*;
 
     use crate::{
         test_state::{Database, database, root_db_conn},
         test_util::test_query,
     };
 
-    fn sort_by_name(i1: &&Institution, i2: &&Institution) -> Ordering {
+    fn sort_by_name(i1: &&LabSummary, i2: &&LabSummary) -> Ordering {
         i1.name().to_lowercase().cmp(&i2.name().to_lowercase())
     }
 
     #[rstest]
     #[awt]
     #[tokio::test]
-    async fn default_institution_query(
+    async fn default_person_query(
         #[future] root_db_conn: Connection,
         #[future] database: &'static Database,
     ) {
         test_query::<Query, _>()
-            .all_data(&database.institutions)
+            .all_data(&database.labs)
             .sort_by(sort_by_name)
             .run(root_db_conn)
             .await;
@@ -89,24 +88,24 @@ mod tests {
     #[rstest]
     #[awt]
     #[tokio::test]
-    async fn specific_institution_query(
+    async fn specific_person_query(
         #[future] root_db_conn: Connection,
         #[future] database: &'static Database,
     ) {
         let query = Query::builder()
             .filter(
                 Filter::builder()
-                    .names(["%a%", "%b%"].map(str::to_owned))
+                    .names(["%l%", "%a%", "%b%"].map(str::to_owned))
                     .build(),
             )
             .order_by_descending(OrdinalColumns::Name)
             .build();
 
         test_query()
-            .all_data(&database.institutions)
+            .all_data(&database.labs)
             .filter(|i| {
                 let s = i.name().to_lowercase();
-                s.contains("a") | s.contains("b")
+                s.contains("l") | s.contains("a") | s.contains("b")
             })
             .sort_by(|i1, i2| sort_by_name(i1, i2).reverse())
             .db_query(query)

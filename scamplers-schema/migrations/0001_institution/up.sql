@@ -2,6 +2,6 @@
 -- `scamplers-models`
 create table institutions (
     id uuid primary key,
-    links jsonb generated always as (construct_links('institutions', id, '{"people"}')) stored not null,
+    links jsonb generated always as (construct_links('institutions', id, '{"members"}')) stored not null,
     name case_insensitive_text unique not null
 );

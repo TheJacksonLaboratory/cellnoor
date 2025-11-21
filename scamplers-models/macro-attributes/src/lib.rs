@@ -157,7 +157,8 @@ pub fn update(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
     quote! {
         #base_derives
-        #[cfg_attr(feature = "app", derive(::diesel::AsChangeSet, ::diesel::Identifiable))]
+        #[serde(deny_unknown_fields)]
+        #[cfg_attr(feature = "app", derive(::diesel::AsChangeset, ::diesel::Identifiable))]
         #check_for_backend
         #input
     }

@@ -58,11 +58,11 @@ impl FromRequestParts<AppState> for AuthenticatedUser {
         app_state: &AppState,
     ) -> Result<Self, api::ErrorResponse> {
         let api_key_prefix_length = match app_state {
-            AppState::Prod {
+            AppState::Production {
                 api_key_prefix_length,
-                ..
+                db_pool: _,
             } => *api_key_prefix_length,
-            AppState::Dev { user_id, .. } => {
+            AppState::Development { user_id, .. } => {
                 return Ok(Self(*user_id));
             }
         };

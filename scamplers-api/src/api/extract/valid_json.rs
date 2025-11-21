@@ -1,4 +1,4 @@
-use axum::{Json, extract::FromRequest, http::StatusCode};
+use axum::{Json, extract::FromRequest};
 use serde::{Serialize, de::DeserializeOwned};
 
 use crate::{api, state::AppState, validate::Validate};
@@ -19,13 +19,12 @@ where
         let Json(data) = <Json<T> as FromRequest<AppState>>::from_request(req, state).await?;
 
         let db_conn = state.db_conn().await?;
-        let mut db_conn = db_conn.lock().map_err(|_| api::ErrorResponse {
-            status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
-            public_error: api::error::Error::Other,
-            internal_error: None,
-        })?;
-        data.validate(&mut db_conn)?;
 
-        Ok(Self(data))
+        db_conn
+            .interact(move |db_conn| {
+                data.validate(db_conn)?;
+                Ok(Self(data))
+            })
+            .await?
     }
 }

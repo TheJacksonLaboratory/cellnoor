@@ -17,6 +17,11 @@ pub struct LabSummary {
     #[cfg_attr(feature = "typescript", ts(inline))]
     links: Links,
 }
+impl LabSummary {
+    pub fn name(&self) -> &str {
+        self.inner.name.as_ref()
+    }
+}
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = labs, base_query = labs::table.inner_join(people::table)))]
@@ -31,5 +36,10 @@ impl Lab {
     #[must_use]
     pub fn id(&self) -> Uuid {
         self.summary.id
+    }
+
+    #[must_use]
+    pub fn name(&self) -> &str {
+        self.summary.name()
     }
 }

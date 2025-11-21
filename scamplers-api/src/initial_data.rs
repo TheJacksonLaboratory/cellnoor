@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use diesel::{
     PgConnection, RunQueryDsl,
     prelude::*,
@@ -118,5 +120,13 @@ impl Upsert for person::Creation {
         .execute(db_conn)?;
 
         Ok(())
+    }
+}
+
+impl FromStr for InitialData {
+    type Err = serde_json::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        serde_json::from_str(s)
     }
 }

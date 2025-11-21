@@ -55,6 +55,23 @@ mod rust {
         }
     }
 
+    pub trait NoLimit {
+        fn no_limit() -> Self;
+    }
+
+    impl<F, O> NoLimit for Query<F, O>
+    where
+        F: Default,
+        O: Default,
+    {
+        fn no_limit() -> Self {
+            Self {
+                limit: i64::MAX,
+                ..Default::default()
+            }
+        }
+    }
+
     #[cfg_attr(feature = "builder", bon::bon)]
     impl<F, O> Query<F, O>
     where
@@ -72,9 +89,9 @@ mod rust {
 
             Self {
                 filter,
-                limit: limit.unwrap_or(default.limit()),
-                offset: offset.unwrap_or(default.offset()),
                 order_by,
+                limit: limit.unwrap_or(default.limit),
+                offset: offset.unwrap_or(default.offset),
             }
         }
 
@@ -125,6 +142,8 @@ mod rust {
     }
 }
 
+#[cfg(not(feature = "typescript"))]
+pub use rust::NoLimit;
 #[cfg(not(feature = "typescript"))]
 pub(crate) use rust::Query;
 

@@ -9,8 +9,10 @@ use crate::{config::Config, state::AppState};
 mod error;
 mod extract;
 mod routes;
+
 pub use error::{Error, ErrorResponse};
 
+#[cfg(test)]
 pub async fn serve_integration_test(config: Config) -> anyhow::Result<()> {
     serve_inner(config).await
 }

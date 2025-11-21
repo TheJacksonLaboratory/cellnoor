@@ -11,7 +11,7 @@ use crate::{
         extract::auth::AuthenticatedUser,
         routes::{ApiResponse, Root, inner_handler},
     },
-    db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter},
+    db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, utils::like_any},
     query,
     state::AppState,
 };
@@ -55,16 +55,16 @@ where
             filter = filter.and_condition(people::id.eq_any(ids));
         }
 
-        if let Some(name) = self.name() {
-            filter = filter.and_condition(people::name.like(name));
+        if let Some(names) = self.names() {
+            filter = filter.and_condition(like_any(people::name, names));
         }
 
-        if let Some(email) = self.email() {
-            filter = filter.and_condition(people::email.assume_not_null().like(email));
+        if let Some(emails) = self.emails() {
+            filter = filter.and_condition(like_any(people::email.assume_not_null(), emails));
         }
 
-        if let Some(orcid) = self.orcid() {
-            filter = filter.and_condition(people::orcid.assume_not_null().like(orcid));
+        if let Some(orcids) = self.orcids() {
+            filter = filter.and_condition(like_any(people::orcid.assume_not_null(), orcids));
         }
 
         if let Some(microsoft_entra_oids) = self.microsoft_entra_oids() {
@@ -88,5 +88,65 @@ impl db::Operation<Vec<PersonSummary>> for person::Query {
         ));
 
         Ok(stmt.load(db_conn)?)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::cmp::Ordering;
+
+    use deadpool_diesel::postgres::Connection;
+    use rstest::rstest;
+    use scamplers_models::person::*;
+
+    use crate::{
+        test_state::{Database, database, root_db_conn},
+        test_util::test_query,
+    };
+
+    fn sort_by_name(i1: &&PersonSummary, i2: &&PersonSummary) -> Ordering {
+        i1.name().to_lowercase().cmp(&i2.name().to_lowercase())
+    }
+
+    #[rstest]
+    #[awt]
+    #[tokio::test]
+    async fn default_person_query(
+        #[future] root_db_conn: Connection,
+        #[future] database: &'static Database,
+    ) {
+        test_query::<Query, _>()
+            .all_data(&database.people)
+            .sort_by(sort_by_name)
+            .run(root_db_conn)
+            .await;
+    }
+
+    #[rstest]
+    #[awt]
+    #[tokio::test]
+    async fn specific_person_query(
+        #[future] root_db_conn: Connection,
+        #[future] database: &'static Database,
+    ) {
+        let query = Query::builder()
+            .filter(
+                Filter::builder()
+                    .names(["%5%", "%h%"].map(str::to_owned))
+                    .build(),
+            )
+            .order_by_descending(OrdinalColumns::Name)
+            .build();
+
+        test_query()
+            .all_data(&database.people)
+            .filter(|i| {
+                let s = i.name().to_lowercase();
+                s.contains("5") | s.contains("h")
+            })
+            .sort_by(|i1, i2| sort_by_name(i1, i2).reverse())
+            .db_query(query)
+            .run(root_db_conn)
+            .await;
     }
 }

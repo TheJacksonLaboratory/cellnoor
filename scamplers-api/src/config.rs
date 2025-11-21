@@ -7,70 +7,7 @@ use zeroize::Zeroize;
 
 use crate::initial_data::InitialData;
 
-#[derive(Clone, Copy, Debug, Default, Zeroize)]
-pub enum AppMode {
-    Development,
-    #[default]
-    Production,
-}
-
-#[derive(Debug, thiserror::Error)]
-#[error("{0} is an invalid AppMode")]
-pub struct ParseModeError(String);
-
-impl FromStr for AppMode {
-    type Err = ParseModeError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "development" => Ok(Self::Development),
-            "production" => Ok(Self::Production),
-            _ => Err(ParseModeError(s.to_owned())),
-        }
-    }
-}
-
-impl std::fmt::Display for AppMode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Development => "development".fmt(f),
-            Self::Production => "production".fmt(f),
-        }
-    }
-}
-
-#[derive(Clone, Debug, Parser)]
-struct Cli {
-    #[arg(long, env = "SCAMPLERS_CONFIG_DIR")]
-    config_dir: Utf8PathBuf,
-    #[arg(long, env = "SCAMPLERS_MODE")]
-    mode: Option<AppMode>,
-    #[arg(long, env = "SCAMPLERS_DB_ROOT_USER")]
-    db_root_user: Option<String>,
-    #[arg(long, env = "SCAMPLERS_DB_ROOT_PASSWORD")]
-    db_root_password: Option<String>,
-    #[arg(long, env = "SCAMPLERS_API_DB_PASSWORD")]
-    scamplers_api_db_password: Option<String>,
-    #[arg(long, env = "SCAMPLERS_UI_DB_PASSWORD")]
-    scamplers_ui_db_password: Option<String>,
-    #[arg(long, env = "SCAMPLERS_DB_HOST")]
-    db_host: Option<String>,
-    #[arg(long, env = "SCAMPLERS_DB_PORT")]
-    db_port: Option<u16>,
-    #[arg(long, env = "SCAMPLERS_DB_NAME")]
-    db_name: Option<String>,
-    #[arg(long, env = "SCAMPLERS_API_KEY_PREFIX_LENGTH")]
-    api_key_prefix_length: Option<usize>,
-    #[arg(long, env = "SCAMPLERS_API_HOST")]
-    host: Option<String>,
-    #[arg(long, env = "SCAMPLERS_API_PORT")]
-    port: Option<u16>,
-    #[arg(long, env = "SCAMPLERS_LOG_DIR")]
-    log_dir: Option<Utf8PathBuf>,
-}
-
-#[derive(Debug, Clone, Zeroize)]
-#[cfg_attr(test, derive(bon::Builder))]
+#[derive(Debug, Zeroize)]
 pub struct Config {
     mode: AppMode,
     db_root_user: String,
@@ -87,49 +24,6 @@ pub struct Config {
     initial_data: InitialData,
     #[zeroize(skip)]
     log_dir: Option<Utf8PathBuf>,
-}
-
-#[derive(Clone, Copy)]
-enum DatabaseUser {
-    Root,
-    ScamplersApi,
-}
-
-trait OptionExt<T> {
-    fn or_load<P>(self, path: P) -> anyhow::Result<T>
-    where
-        T: FromStr,
-        T::Err: Send + Sync + std::error::Error + std::fmt::Display + 'static,
-        P: std::fmt::Display + AsRef<Path>;
-}
-
-impl<T> OptionExt<T> for Option<T> {
-    fn or_load<P>(self, path: P) -> anyhow::Result<T>
-    where
-        T: FromStr,
-        T::Err: Send + Sync + std::error::Error + 'static,
-        P: std::fmt::Display + AsRef<Path>,
-    {
-        if let Some(value) = self {
-            return Ok(value);
-        }
-
-        let contents = std::fs::read_to_string(&path)
-            .context(format!("failed to read contents of file {path}"))?;
-
-        contents.parse().context(format!(
-            "failed to parse contents of {path} as {}",
-            std::any::type_name::<T>()
-        ))
-    }
-}
-
-impl FromStr for InitialData {
-    type Err = serde_json::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        serde_json::from_str(s)
-    }
 }
 
 impl Config {
@@ -171,23 +65,6 @@ impl Config {
     }
 
     #[must_use]
-    pub fn log_dir(&self) -> Option<&Utf8Path> {
-        self.log_dir.as_ref().map(Utf8PathBuf::as_path)
-    }
-
-    #[must_use]
-    pub fn mode(&self) -> AppMode {
-        self.mode
-    }
-
-    #[must_use]
-    pub fn address(&self) -> String {
-        let Self { host, port, .. } = self;
-
-        format!("{host}:{port}")
-    }
-
-    #[must_use]
     pub fn scamplers_api_db_password(&self) -> &str {
         &self.scamplers_api_db_password
     }
@@ -205,7 +82,13 @@ impl Config {
             db_host,
             db_port,
             db_name,
-            ..
+            mode: _,
+            scamplers_ui_db_password: _,
+            api_key_prefix_length: _,
+            host: _,
+            port: _,
+            initial_data: _,
+            log_dir: _,
         } = self;
 
         let base = "postgres://";
@@ -232,12 +115,126 @@ impl Config {
     }
 
     #[must_use]
-    pub fn api_key_prefix_length(&self) -> usize {
-        self.api_key_prefix_length
+    pub fn initial_data(&self) -> InitialData {
+        self.initial_data.clone()
     }
 
     #[must_use]
-    pub fn initial_data(&self) -> InitialData {
-        self.initial_data.clone()
+    pub fn log_dir(&self) -> Option<&Utf8Path> {
+        self.log_dir.as_ref().map(Utf8PathBuf::as_path)
+    }
+
+    #[must_use]
+    pub fn mode(&self) -> AppMode {
+        self.mode
+    }
+
+    #[must_use]
+    pub fn address(&self) -> String {
+        let Self { host, port, .. } = self;
+
+        format!("{host}:{port}")
+    }
+
+    #[must_use]
+    pub fn api_key_prefix_length(&self) -> usize {
+        self.api_key_prefix_length
+    }
+}
+
+#[derive(Clone, Copy)]
+enum DatabaseUser {
+    Root,
+    ScamplersApi,
+}
+
+#[derive(Clone, Debug, Parser)]
+struct Cli {
+    #[arg(long, env = "SCAMPLERS_CONFIG_DIR")]
+    config_dir: Utf8PathBuf,
+    #[arg(long, env = "SCAMPLERS_MODE")]
+    mode: Option<AppMode>,
+    #[arg(long, env = "SCAMPLERS_DB_ROOT_USER")]
+    db_root_user: Option<String>,
+    #[arg(long, env = "SCAMPLERS_DB_ROOT_PASSWORD")]
+    db_root_password: Option<String>,
+    #[arg(long, env = "SCAMPLERS_API_DB_PASSWORD")]
+    scamplers_api_db_password: Option<String>,
+    #[arg(long, env = "SCAMPLERS_UI_DB_PASSWORD")]
+    scamplers_ui_db_password: Option<String>,
+    #[arg(long, env = "SCAMPLERS_DB_HOST")]
+    db_host: Option<String>,
+    #[arg(long, env = "SCAMPLERS_DB_PORT")]
+    db_port: Option<u16>,
+    #[arg(long, env = "SCAMPLERS_DB_NAME")]
+    db_name: Option<String>,
+    #[arg(long, env = "SCAMPLERS_API_KEY_PREFIX_LENGTH")]
+    api_key_prefix_length: Option<usize>,
+    #[arg(long, env = "SCAMPLERS_API_HOST")]
+    host: Option<String>,
+    #[arg(long, env = "SCAMPLERS_API_PORT")]
+    port: Option<u16>,
+    #[arg(long, env = "SCAMPLERS_LOG_DIR")]
+    log_dir: Option<Utf8PathBuf>,
+}
+
+trait OptionExt<T> {
+    fn or_load<P>(self, path: P) -> anyhow::Result<T>
+    where
+        T: FromStr,
+        T::Err: Send + Sync + std::error::Error + std::fmt::Display + 'static,
+        P: std::fmt::Display + AsRef<Path>;
+}
+
+impl<T> OptionExt<T> for Option<T> {
+    fn or_load<P>(self, path: P) -> anyhow::Result<T>
+    where
+        T: FromStr,
+        T::Err: Send + Sync + std::error::Error + 'static,
+        P: std::fmt::Display + AsRef<Path>,
+    {
+        if let Some(value) = self {
+            return Ok(value);
+        }
+
+        let contents = std::fs::read_to_string(&path)
+            .context(format!("failed to read contents of file {path}"))?;
+
+        contents.parse().context(format!(
+            "failed to parse contents of {path} as {}",
+            std::any::type_name::<T>()
+        ))
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default, Zeroize)]
+pub enum AppMode {
+    Development,
+    #[default]
+    Production,
+}
+
+#[derive(Debug, thiserror::Error)]
+#[error("{0} is an invalid AppMode")]
+pub struct ParseModeError(String);
+
+impl FromStr for AppMode {
+    type Err = ParseModeError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "development" => Ok(Self::Development),
+            "production" => Ok(Self::Production),
+            _ => Err(ParseModeError(s.to_owned())),
+        }
+    }
+}
+
+impl std::fmt::Display for AppMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Development => "development".fmt(f),
+            Self::Production => "production".fmt(f),
+        }
     }
 }

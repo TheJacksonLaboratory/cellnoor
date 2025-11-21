@@ -8,21 +8,26 @@ use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
 use uuid::Uuid;
 
 use crate::{
-    config::{self, Config},
+    config::{AppMode, Config},
     db,
     initial_data::insert_initial_data,
 };
 
 #[derive(Clone)]
 pub enum AppState {
-    Dev {
+    Development {
         db_pool: Pool,
         user_id: Uuid,
     },
-    Prod {
+    Production {
         db_pool: Pool,
         api_key_prefix_length: usize,
     },
+}
+
+#[cfg(test)]
+pub fn create_test_db_pool(db_url: &str) -> anyhow::Result<Pool> {
+    create_db_pool(db_url, None)
 }
 
 fn create_db_pool(db_url: &str, max_size: Option<usize>) -> anyhow::Result<Pool> {
@@ -90,25 +95,25 @@ impl AppState {
         // only need one connection here
         let root_db_pool = create_db_pool(&config.db_root_url(), Some(1))?;
         let initial_data = config.initial_data();
-        insert_initial_data(initial_data, reqwest::Client::new(), root_db_pool)
+        insert_initial_data(initial_data, reqwest::Client::new(), root_db_pool.clone())
             .await
             .context("failed to insert initial data")?;
         tracing::info!("inserted initial data");
 
         let db_url = match config.mode() {
-            config::AppMode::Development => config.db_root_url(),
-            config::AppMode::Production => config.scamplers_api_db_url(),
+            AppMode::Development => config.db_root_url(),
+            AppMode::Production => config.scamplers_api_db_url(),
         };
 
         let db_pool = create_db_pool(&db_url, None)?;
 
         let state = match config.mode() {
-            config::AppMode::Development => {
+            AppMode::Development => {
                 let mut db_conn = PgConnection::establish(&config.db_root_url())?;
                 let user_id = create_dev_superuser(&mut db_conn)?;
-                Self::Dev { db_pool, user_id }
+                Self::Development { db_pool, user_id }
             }
-            config::AppMode::Production => Self::Prod {
+            AppMode::Production => Self::Production {
                 db_pool,
                 api_key_prefix_length: config.api_key_prefix_length(),
             },
@@ -119,7 +124,9 @@ impl AppState {
 
     pub async fn db_conn(&self) -> Result<deadpool_diesel::postgres::Connection, db::Error> {
         match self {
-            Self::Dev { db_pool, .. } | Self::Prod { db_pool, .. } => Ok(db_pool.get().await?),
+            Self::Development { db_pool, .. } | Self::Production { db_pool, .. } => {
+                Ok(db_pool.get().await?)
+            }
         }
     }
 }

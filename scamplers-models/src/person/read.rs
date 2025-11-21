@@ -29,6 +29,16 @@ impl PersonSummary {
     pub fn id(&self) -> Uuid {
         self.id
     }
+
+    #[must_use]
+    pub fn name(&self) -> &str {
+        self.inner.name.as_ref()
+    }
+
+    #[must_use]
+    pub fn email(&self) -> Option<&str> {
+        self.email.as_deref()
+    }
 }
 
 #[select]
@@ -57,5 +67,15 @@ impl Person {
     #[must_use]
     pub fn id(&self) -> Uuid {
         self.info.summary.id
+    }
+
+    #[must_use]
+    pub fn name(&self) -> &str {
+        self.info.summary.name()
+    }
+
+    #[must_use]
+    pub fn email(&self) -> Option<&str> {
+        self.info.summary.email()
     }
 }

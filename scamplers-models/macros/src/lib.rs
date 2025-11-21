@@ -70,6 +70,12 @@ macro_rules! uuid_newtype {
             }
         }
 
+        impl PartialEq<Uuid> for $name {
+            fn eq(&self, other: &Uuid) -> bool {
+                self.0 == *other
+            }
+        }
+
         impl AsRef<::uuid::Uuid> for $name {
             fn as_ref(&self) -> &::uuid::Uuid {
                 &self.0
