@@ -1,7 +1,7 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{RunQueryDsl, prelude::*};
-use scamplers_models::lab::{self, Lab};
-use scamplers_schema::labs;
+use scamplers_models::lab::{Creation, Lab};
+use scamplers_schema::labs::dsl::*;
 use uuid::Uuid;
 
 use crate::{
@@ -17,19 +17,19 @@ pub(super) async fn create_lab(
     _: Root,
     state: State<AppState>,
     user: AuthenticatedUser,
-    ValidJson(request): ValidJson<lab::Creation>,
+    ValidJson(request): ValidJson<Creation>,
 ) -> ApiResponse<Lab> {
     let item = inner_handler(state, user, request).await?;
     Ok((StatusCode::CREATED, item))
 }
 
-impl db::Operation<Lab> for lab::Creation {
+impl db::Operation<Lab> for Creation {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Lab, db::Error> {
-        let id: Uuid = diesel::insert_into(labs::table)
+        let created_id: Uuid = diesel::insert_into(labs)
             .values(self)
-            .returning(labs::id)
+            .returning(id)
             .get_result(db_conn)?;
 
-        Ok(Lab::query().filter(labs::id.eq(id)).first(db_conn)?)
+        Ok(Lab::query().filter(id.eq(created_id)).first(db_conn)?)
     }
 }

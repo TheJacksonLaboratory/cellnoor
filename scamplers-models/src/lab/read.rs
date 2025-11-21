@@ -5,11 +5,15 @@ use macro_attributes::select;
 use scamplers_schema::{labs, people};
 use uuid::Uuid;
 
-use crate::{lab::common::Fields, links::Links, person::PersonSummary};
+use crate::{
+    lab::common::Fields,
+    links::Links,
+    person::{self},
+};
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = labs))]
-pub struct LabSummary {
+pub struct Summary {
     id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
@@ -17,7 +21,7 @@ pub struct LabSummary {
     #[cfg_attr(feature = "typescript", ts(inline))]
     links: Links,
 }
-impl LabSummary {
+impl Summary {
     #[must_use]
     pub fn name(&self) -> &str {
         self.inner.name.as_ref()
@@ -29,9 +33,9 @@ impl LabSummary {
 pub struct Lab {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    summary: LabSummary,
+    summary: Summary,
     #[cfg_attr(feature = "app", diesel(embed))]
-    pi: PersonSummary,
+    pi: person::Summary,
 }
 impl Lab {
     #[must_use]

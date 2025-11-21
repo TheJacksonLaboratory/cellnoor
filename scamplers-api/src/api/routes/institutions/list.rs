@@ -1,7 +1,7 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{SelectableExpression, prelude::*};
-use scamplers_models::institution::{self, Institution, OrdinalColumns};
-use scamplers_schema::institutions;
+use scamplers_models::institution::{Filter, Institution, OrdinalColumn, Query};
+use scamplers_schema::institutions::dsl::*;
 use serde_qs::axum::QsQuery;
 
 use crate::{
@@ -18,37 +18,36 @@ pub(super) async fn list_institutions(
     _: Root,
     state: State<AppState>,
     user: AuthenticatedUser,
-    QsQuery(request): QsQuery<institution::Query>,
+    QsQuery(request): QsQuery<Query>,
 ) -> ApiResponse<Vec<Institution>> {
     let items = inner_handler(state, user, request).await?;
     Ok((StatusCode::OK, items))
 }
 
-impl db::Operation<Vec<Institution>> for institution::Query {
+impl db::Operation<Vec<Institution>> for Query {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Vec<Institution>, db::Error> {
-        let stmt = query!(Institution::query(self).order_by(
-            OrdinalColumns::Id = institutions::id,
-            OrdinalColumns::Name = institutions::name
-        ));
+        use OrdinalColumn::{Id, Name};
+
+        let stmt = query!(Institution::query(self).order_by(Id = id, Name = name));
 
         Ok(stmt.load(db_conn)?)
     }
 }
 
-impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for institution::Filter
+impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for Filter
 where
-    institutions::id: SelectableExpression<QS>,
-    institutions::name: SelectableExpression<QS>,
+    id: SelectableExpression<QS>,
+    name: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
         let mut filter = BoxedFilter::new();
 
         if let Some(ids) = self.ids() {
-            filter = filter.and_condition(institutions::id.eq_any(ids));
+            filter = filter.and_condition(id.eq_any(ids));
         }
 
         if let Some(names) = self.names() {
-            filter = filter.and_condition(like_any(institutions::name, names));
+            filter = filter.and_condition(like_any(name, names));
         }
 
         filter
@@ -99,7 +98,7 @@ mod tests {
                     .names(["%a%", "%b%"].map(str::to_owned))
                     .build(),
             )
-            .order_by_descending(OrdinalColumns::Name)
+            .order_by_descending(OrdinalColumn::Name)
             .build();
 
         test_query()

@@ -5,5 +5,5 @@ mod read;
 mod update;
 
 pub use creation::Creation;
-pub use query::{Filter, InstitutionId, OrdinalColumns, Query};
+pub use query::{Filter, Id, IdMembers, OrdinalColumn, Query};
 pub use read::Institution;

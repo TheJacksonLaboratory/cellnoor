@@ -1,18 +1,18 @@
 version: 2
 updates:
-  - package-ecosystem: "cargo"
-    directory: "rust"
+  - package-ecosystem: cargo
+    directory: .
     schedule:
-      interval: "weekly"
+      interval: weekly
     groups:
       all-rust-dependencies:
         patterns:
           - "*"
 
-  - package-ecosystem: "npm"
-    directory: "typescript/scamplers-frontend"
+  - package-ecosystem: npm
+    directory: scamplers-ui
     schedule:
-      interval: "weekly"
+      interval: weekly
     groups:
       all-typescript-dependencies:
         patterns:

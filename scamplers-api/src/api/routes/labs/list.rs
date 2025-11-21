@@ -1,7 +1,7 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{SelectableExpression, prelude::*};
-use scamplers_models::lab::{self, LabSummary};
-use scamplers_schema::labs;
+use scamplers_models::lab::{Filter, OrdinalColumn, Query, Summary};
+use scamplers_schema::labs::dsl::*;
 use serde_qs::axum::QsQuery;
 
 use crate::{
@@ -18,36 +18,36 @@ pub(super) async fn list_labs(
     _: Root,
     state: State<AppState>,
     user: AuthenticatedUser,
-    QsQuery(request): QsQuery<lab::Query>,
-) -> ApiResponse<Vec<LabSummary>> {
+    QsQuery(request): QsQuery<Query>,
+) -> ApiResponse<Vec<Summary>> {
     let items = inner_handler(state, user, request).await?;
     Ok((StatusCode::OK, items))
 }
 
-impl db::Operation<Vec<LabSummary>> for lab::Query {
-    fn execute(self, db_conn: &mut PgConnection) -> Result<Vec<LabSummary>, db::Error> {
-        use lab::OrdinalColumns::{Id, Name};
+impl db::Operation<Vec<Summary>> for Query {
+    fn execute(self, db_conn: &mut PgConnection) -> Result<Vec<Summary>, db::Error> {
+        use OrdinalColumn::{Id, Name};
 
-        let stmt = query!(LabSummary::query(self).order_by(Id = labs::id, Name = labs::name));
+        let stmt = query!(Summary::query(self).order_by(Id = id, Name = name));
 
         Ok(stmt.load(db_conn)?)
     }
 }
 
-impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for lab::Filter
+impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for Filter
 where
-    labs::id: SelectableExpression<QS>,
-    labs::name: SelectableExpression<QS>,
+    id: SelectableExpression<QS>,
+    name: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
         let mut filter = BoxedFilter::new();
 
         if let Some(ids) = self.ids() {
-            filter = filter.and_condition(labs::id.eq_any(ids));
+            filter = filter.and_condition(id.eq_any(ids));
         }
 
         if let Some(names) = self.names() {
-            filter = filter.and_condition(like_any(labs::name, names));
+            filter = filter.and_condition(like_any(name, names));
         }
 
         filter
@@ -67,7 +67,7 @@ mod tests {
         test_util::test_query,
     };
 
-    fn sort_by_name(i1: &&LabSummary, i2: &&LabSummary) -> Ordering {
+    fn sort_by_name(i1: &&Summary, i2: &&Summary) -> Ordering {
         i1.name().to_lowercase().cmp(&i2.name().to_lowercase())
     }
 
@@ -98,7 +98,7 @@ mod tests {
                     .names(["%l%", "%a%", "%b%"].map(str::to_owned))
                     .build(),
             )
-            .order_by_descending(OrdinalColumns::Name)
+            .order_by_descending(OrdinalColumn::Name)
             .build();
 
         test_query()

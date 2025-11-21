@@ -4,7 +4,7 @@ use diesel::{
     prelude::*,
     sql_types::{Array, Text},
 };
-use scamplers_models::person::{self, Person, PersonId};
+use scamplers_models::person::{Id, Person, Update};
 
 use crate::{
     api::{
@@ -16,10 +16,10 @@ use crate::{
 };
 
 pub(super) async fn update_person(
-    id: PersonId,
+    id: Id,
     state: State<AppState>,
     user: AuthenticatedUser,
-    ValidJson(request): ValidJson<person::Update>,
+    ValidJson(request): ValidJson<Update>,
 ) -> ApiResponse<Person> {
     let item = inner_handler(state, user, (id, request)).await?;
     Ok((StatusCode::OK, item))
@@ -29,7 +29,7 @@ define_sql_function! {fn grant_roles_to_user(user_id: Text, roles: Array<Text>)}
 
 define_sql_function! {fn revoke_roles_from_user(user_id: Text, roles: Array<Text>)}
 
-impl db::Operation<Person> for (PersonId, person::Update) {
+impl db::Operation<Person> for (Id, Update) {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Person, db::Error> {
         let (id, mut update) = self;
         update.set_id(id.0);

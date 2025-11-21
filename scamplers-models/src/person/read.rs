@@ -13,7 +13,7 @@ use crate::{
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = people))]
-pub struct PersonSummary {
+pub struct Summary {
     id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
@@ -24,7 +24,7 @@ pub struct PersonSummary {
     links: Links,
 }
 
-impl PersonSummary {
+impl Summary {
     #[must_use]
     pub fn id(&self) -> Uuid {
         self.id
@@ -43,10 +43,10 @@ impl PersonSummary {
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = people, base_query = people::table.inner_join(institutions::table)))]
-pub struct PersonSummaryWithParents {
+pub struct SummaryWithParents {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    summary: PersonSummary,
+    summary: Summary,
     #[cfg_attr(feature = "app", diesel(embed))]
     institution: Institution,
 }
@@ -55,12 +55,12 @@ pub struct PersonSummaryWithParents {
 #[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct Person {
     #[serde(flatten)]
-    info: PersonSummaryWithParents,
+    info: SummaryWithParents,
     roles: Vec<UserRole>,
 }
 impl Person {
     #[must_use]
-    pub fn new(info: PersonSummaryWithParents, roles: Vec<UserRole>) -> Self {
+    pub fn new(info: SummaryWithParents, roles: Vec<UserRole>) -> Self {
         Self { info, roles }
     }
 

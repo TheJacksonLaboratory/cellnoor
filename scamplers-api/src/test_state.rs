@@ -12,7 +12,7 @@ use rand::{
 };
 use rstest::fixture;
 use scamplers_models::{
-    NoLimit, institution, institution::Institution, lab, person, person::PersonSummary,
+    NoLimit, institution, institution::Institution, lab, person, person::Summary,
 };
 use tokio::{sync::OnceCell, task::JoinSet};
 use uuid::Uuid;
@@ -122,7 +122,7 @@ impl TestState {
 
     async fn insert_labs(&'static self) {
         let people_ids = self
-            .all_extract::<person::Query, _, _, _>(PersonSummary::id)
+            .all_extract::<person::Query, _, _, _>(Summary::id)
             .await;
 
         let join_set: JoinSet<_> = (0..N_LABS)
@@ -608,8 +608,8 @@ impl TestState {
 #[derive(Debug, Default)]
 pub struct Database {
     pub institutions: Vec<institution::Institution>,
-    pub people: Vec<person::PersonSummary>,
-    pub labs: Vec<lab::LabSummary>,
+    pub people: Vec<person::Summary>,
+    pub labs: Vec<lab::Summary>,
 }
 
 impl Database {

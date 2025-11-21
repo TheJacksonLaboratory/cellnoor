@@ -166,7 +166,7 @@ pub fn update(_attr: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn ordinal_columns(_attr: TokenStream, input: TokenStream) -> TokenStream {
+pub fn ordinal_column(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let base_derives = base_derives(input.clone(), true);
 
     let input: proc_macro2::TokenStream = input.into();

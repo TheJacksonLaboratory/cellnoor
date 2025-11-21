@@ -1,3 +1,5 @@
+#![rust_analyzer::skip]
+
 use clap::Parser;
 use scamplers_models::{institution, lab, person};
 use ts_rs::TS;
