@@ -74,7 +74,7 @@ mod tests {
     #[rstest]
     #[awt]
     #[tokio::test]
-    async fn default_person_query(
+    async fn default_lab_query(
         #[future] root_db_conn: Connection,
         #[future] database: &'static Database,
     ) {
@@ -88,7 +88,7 @@ mod tests {
     #[rstest]
     #[awt]
     #[tokio::test]
-    async fn specific_person_query(
+    async fn specific_lab_query(
         #[future] root_db_conn: Connection,
         #[future] database: &'static Database,
     ) {

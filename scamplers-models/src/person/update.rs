@@ -27,17 +27,20 @@ pub struct Update {
 }
 impl Update {
     pub fn set_id(&mut self, id: Uuid) {
-        self.id = id
+        self.id = id;
     }
 
+    #[must_use]
     pub fn email(&self) -> Option<&str> {
         self.email.as_ref().map(NonEmptyString::as_ref)
     }
 
+    #[must_use]
     pub fn grant_roles(&self) -> Option<&[UserRole]> {
         self.grant_roles.as_deref()
     }
 
+    #[must_use]
     pub fn revoke_roles(&self) -> Option<&[UserRole]> {
         self.revoke_roles.as_deref()
     }
