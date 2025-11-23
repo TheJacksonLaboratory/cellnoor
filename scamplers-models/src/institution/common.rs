@@ -9,6 +9,6 @@ use uuid::Uuid;
 #[cfg_attr(feature = "app", diesel(table_name = institutions))]
 pub struct Fields {
     pub(super) id: Uuid,
-    #[cfg_attr(feature = "typescript", ts(inline))]
+
     pub(super) name: NonEmptyString,
 }

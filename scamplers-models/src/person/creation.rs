@@ -16,7 +16,7 @@ pub struct Creation {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: Fields,
-    #[cfg_attr(feature = "typescript", ts(inline))]
+
     email: NonEmptyString,
     #[serde(default)]
     #[cfg_attr(feature = "app", diesel(skip_insertion, skip_update))]

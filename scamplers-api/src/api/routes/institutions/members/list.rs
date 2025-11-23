@@ -7,7 +7,7 @@ use crate::{
         extract::auth::AuthenticatedUser,
         routes::{ApiResponse, inner_handler},
     },
-    db,
+    db::{self},
     state::AppState,
 };
 
@@ -26,6 +26,9 @@ impl db::Operation<Vec<person::Summary>> for (institution::IdMembers, person::Qu
         self,
         db_conn: &mut diesel::PgConnection,
     ) -> Result<Vec<person::Summary>, db::Error> {
-        todo!()
+        let (institution::IdMembers(institution_id), mut person_query) = self;
+        person_query.set_institution_id(institution_id);
+
+        person_query.execute(db_conn)
     }
 }

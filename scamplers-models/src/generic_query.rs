@@ -1,7 +1,7 @@
 #[cfg(feature = "app")]
 mod rust {
     use default_vec::DefaultVec;
-    use macro_attributes::{base_model, base_model_default};
+    use macro_attributes::base_model;
 
     #[base_model]
     #[serde(default)]
@@ -9,10 +9,10 @@ mod rust {
     where
         O: Default,
     {
-        pub(super) filter: Option<F>,
-        pub(super) limit: i64,
-        pub(super) offset: i64,
-        pub(super) order_by: DefaultVec<O>,
+        pub(crate) filter: Option<F>,
+        pub(crate) limit: i64,
+        pub(crate) offset: i64,
+        pub(crate) order_by: DefaultVec<O>,
     }
 
     impl<F, O> Default for Query<F, O>
@@ -117,7 +117,7 @@ pub(crate) use rust::Query;
 mod tests {
     use pretty_assertions::assert_eq;
 
-    use super::rust::{OrderBy, Query};
+    use super::rust::Query;
 
     #[test]
     fn query_builder() {
@@ -130,7 +130,13 @@ mod tests {
             Field2 { descending: bool },
         }
 
-        let q = Query::<Filter, OrdinalColumns>::builder()
+        impl Default for OrderBy {
+            fn default() -> Self {
+                Self::Field1 { descending: false }
+            }
+        }
+
+        let q = Query::<Filter, _>::builder()
             .order_by(OrderBy::Field1 { descending: false })
             .order_by(OrderBy::Field2 { descending: true })
             .build();

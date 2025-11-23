@@ -42,9 +42,11 @@ fn main() {
     institution::Creation::export_all_to(&output_dir).unwrap();
     InstitutionQuery::export_all_to(&output_dir).unwrap();
     institution::Institution::export_all_to(&output_dir).unwrap();
+
     person::Creation::export_all_to(&output_dir).unwrap();
     PersonQuery::export_all_to(&output_dir).unwrap();
     person::Person::export_all_to(&output_dir).unwrap();
+
     lab::Creation::export_all_to(&output_dir).unwrap();
     LabQuery::export_all_to(&output_dir).unwrap();
     lab::Lab::export_all_to(&output_dir).unwrap();

@@ -65,13 +65,25 @@ impl Filter {
     pub fn microsoft_entra_oids(&self) -> Option<&[Uuid]> {
         self.microsoft_entra_oids.as_deref()
     }
-
-    pub fn set_institution_id(&mut self, institution_id: Uuid) {
-        self.institution_ids = Some(vec![institution_id])
-    }
 }
 
 #[cfg(feature = "app")]
 pub type Query = crate::generic_query::Query<Filter, OrderBy>;
+
+#[cfg(feature = "app")]
+impl Query {
+    pub fn set_institution_id(&mut self, institution_id: Uuid) {
+        let Some(filter) = &mut self.filter else {
+            self.filter = Some(Filter {
+                institution_ids: Some(vec![institution_id]),
+                ..Default::default()
+            });
+
+            return;
+        };
+
+        filter.institution_ids.replace(vec![institution_id]);
+    }
+}
 
 uuid_newtype!(Id, "/{id}");

@@ -1,4 +1,3 @@
-use jiff::Timestamp;
 use macro_attributes::{insert_select, simple_enum};
 use macros::{impl_enum_from_sql, impl_enum_to_sql};
 use non_empty_string::NonEmptyString;
@@ -7,10 +6,11 @@ use scamplers_schema::specimens;
 use serde_json::Value;
 use uuid::Uuid;
 
+#[cfg(feature = "app")]
 use crate::utils::{EnumFromSql, EnumToSql};
 
 #[simple_enum]
-enum Species {
+pub enum Species {
     AmbystomaMexicanum,
     CanisFamiliaris,
     CallithrixJacchus,
@@ -22,8 +22,10 @@ enum Species {
     SminthopsisCrassicaudata,
 }
 
+#[cfg(feature = "app")]
 impl EnumFromSql for Species {}
 
+#[cfg(feature = "app")]
 impl EnumToSql for Species {}
 
 impl_enum_from_sql!(Species);
@@ -32,24 +34,18 @@ impl_enum_to_sql!(Species);
 
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = specimens))]
-struct Fields {
+pub struct Fields {
     readable_id: NonEmptyString,
     name: NonEmptyString,
     submitted_by: Uuid,
     lab_id: Uuid,
-    #[diesel(
-        serialize_as = jiff_diesel::Timestamp,
-        deserialize_as = jiff_diesel::Timestamp
-    )]
-    received_at: Timestamp,
     species: Species,
     host_species: Option<Species>,
-    tissue: NonEmptyString,
-    #[diesel(
-        serialize_as = jiff_diesel::NullableTimestamp,
-        deserialize_as = jiff_diesel::NullableTimestamp
-    )]
-    returned_at: Option<Timestamp>,
     returned_by: Option<Uuid>,
+    tissue: NonEmptyString,
     additional_data: Option<Value>,
+}
+
+pub(super) const fn true_() -> bool {
+    true
 }

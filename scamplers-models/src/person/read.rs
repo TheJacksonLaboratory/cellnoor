@@ -21,7 +21,7 @@ pub struct Summary {
     inner: Fields,
     email: Option<String>,
     email_verified: bool,
-    #[cfg_attr(feature = "typescript", ts(inline))]
+
     links: Links,
 }
 
