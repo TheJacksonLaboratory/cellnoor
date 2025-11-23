@@ -5,8 +5,9 @@ use diesel::{
 
 define_sql_function! { fn like_any(string: Text, patterns: Array<Text>) -> Bool }
 
-// You will, from time-to-time, have the urge to get rid of this macro, opting to actually type everything out. Don't.
-// do that. It's not that much code, but it's needlessly repetetive, so you actually end up saving a lot of code this
+// You will, from time-to-time, have the urge to get rid of this macro, opting
+// to actually type everything out. Don't. do that. It's not that much code, but
+// it's needlessly repetetive, so you actually end up saving a lot of code this
 // way.
 #[macro_export]
 macro_rules! query {

@@ -1,7 +1,7 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{PgConnection, prelude::*};
 use scamplers_models::institution::{Id, Institution};
-use scamplers_schema::institutions::dsl::*;
+use scamplers_schema::institutions::dsl::id;
 
 use crate::{
     api::{

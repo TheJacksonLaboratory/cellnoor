@@ -1,32 +1,7 @@
-#[cfg(not(feature = "typescript"))]
+#[cfg(feature = "app")]
 mod rust {
     use default_vec::DefaultVec;
     use macro_attributes::{base_model, base_model_default};
-
-    #[base_model_default]
-    #[cfg_attr(feature = "builder", derive(bon::Builder))]
-    #[cfg_attr(feature = "builder", builder(on(_, into)))]
-    pub struct OrderBy<O>
-    where
-        O: Default,
-    {
-        pub(super) field: O,
-        #[cfg_attr(feature = "builder", builder(default))]
-        pub(super) descending: bool,
-    }
-
-    impl<O> OrderBy<O>
-    where
-        O: Copy + Default,
-    {
-        pub fn field(&self) -> O {
-            self.field
-        }
-
-        pub fn descending(&self) -> bool {
-            self.descending
-        }
-    }
 
     #[base_model]
     #[serde(default)]
@@ -34,11 +9,10 @@ mod rust {
     where
         O: Default,
     {
-        #[serde(flatten)]
         pub(super) filter: Option<F>,
         pub(super) limit: i64,
         pub(super) offset: i64,
-        pub(super) order_by: DefaultVec<OrderBy<O>>,
+        pub(super) order_by: DefaultVec<O>,
     }
 
     impl<F, O> Default for Query<F, O>
@@ -80,7 +54,7 @@ mod rust {
         #[cfg(feature = "builder")]
         #[builder(on(_, into))]
         pub fn new(
-            #[builder(field = DefaultVec::new())] order_by: DefaultVec<OrderBy<O>>,
+            #[builder(field = DefaultVec::new())] order_by: DefaultVec<O>,
             filter: Option<F>,
             limit: Option<i64>,
             offset: Option<i64>,
@@ -114,8 +88,8 @@ mod rust {
             self.offset
         }
 
-        pub fn order_by(&self) -> &[OrderBy<O>] {
-            self.order_by.as_ref()
+        pub fn order_by(&self) -> &DefaultVec<O> {
+            &self.order_by
         }
     }
 
@@ -126,28 +100,20 @@ mod rust {
         O: Default,
         S: query_builder::State,
     {
-        pub fn order_by(mut self, field: O, descending: bool) -> Self {
-            self.order_by.push(OrderBy { field, descending });
+        pub fn order_by(mut self, field: O) -> Self {
+            self.order_by.push(field);
 
             self
-        }
-
-        pub fn order_by_ascending(self, field: O) -> Self {
-            self.order_by(field, false)
-        }
-
-        pub fn order_by_descending(self, field: O) -> Self {
-            self.order_by(field, true)
         }
     }
 }
 
-#[cfg(not(feature = "typescript"))]
+#[cfg(feature = "app")]
 pub use rust::NoLimit;
-#[cfg(not(feature = "typescript"))]
+#[cfg(feature = "app")]
 pub(crate) use rust::Query;
 
-#[cfg(all(test, feature = "builder", not(feature = "typescript")))]
+#[cfg(all(test, feature = "builder", feature = "app"))]
 mod tests {
     use pretty_assertions::assert_eq;
 
@@ -158,18 +124,15 @@ mod tests {
         #[derive(Debug, Default, PartialEq)]
         struct Filter;
 
-        #[derive(Debug, Default, PartialEq)]
-        enum OrdinalColumns {
-            #[default]
-            A,
-            B,
-            C,
+        #[derive(Debug, PartialEq)]
+        enum OrderBy {
+            Field1 { descending: bool },
+            Field2 { descending: bool },
         }
 
         let q = Query::<Filter, OrdinalColumns>::builder()
-            .order_by_ascending(OrdinalColumns::A)
-            .order_by_descending(OrdinalColumns::B)
-            .order_by(OrdinalColumns::C, false)
+            .order_by(OrderBy::Field1 { descending: false })
+            .order_by(OrderBy::Field2 { descending: true })
             .build();
 
         assert_eq!(
@@ -179,56 +142,11 @@ mod tests {
                 limit: 500,
                 offset: 0,
                 order_by: [
-                    OrderBy {
-                        field: OrdinalColumns::A,
-                        descending: false
-                    },
-                    OrderBy {
-                        field: OrdinalColumns::B,
-                        descending: true
-                    },
-                    OrderBy {
-                        field: OrdinalColumns::C,
-                        descending: false
-                    }
+                    OrderBy::Field1 { descending: false },
+                    OrderBy::Field2 { descending: true },
                 ]
                 .into()
             }
         )
     }
 }
-
-#[cfg(feature = "typescript")]
-mod typescript {
-    use macro_attributes::base_model;
-
-    #[base_model]
-    #[ts(optional_fields)]
-    pub struct OrderBy<O>
-    where
-        O: ts_rs::TS,
-        <O as ts_rs::TS>::OptionInnerType: ts_rs::TS,
-    {
-        field: O,
-        descending: Option<bool>,
-    }
-
-    #[base_model]
-    #[ts(optional_fields)]
-    pub struct Query<F, O>
-    where
-        F: ts_rs::TS,
-        O: ts_rs::TS,
-        <O as ts_rs::TS>::OptionInnerType: ts_rs::TS,
-    {
-        #[serde(flatten)]
-        filter: Option<F>,
-        limit: Option<i64>,
-        offset: Option<i64>,
-        #[ts(inline)]
-        order_by: Option<Vec<OrderBy<O>>>,
-    }
-}
-
-#[cfg(feature = "typescript")]
-pub use typescript::Query;

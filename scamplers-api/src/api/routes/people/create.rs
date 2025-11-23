@@ -5,7 +5,7 @@ use diesel::{
     sql_types::{Array, Text},
 };
 use scamplers_models::person::{Creation, Id, Person};
-use scamplers_schema::people::dsl::*;
+use scamplers_schema::people::dsl::{id, people};
 use uuid::Uuid;
 
 use super::{ApiResponse, Root, inner_handler};

@@ -16,5 +16,8 @@ mod links;
 #[cfg(feature = "app")]
 mod utils;
 
-#[cfg(not(feature = "typescript"))]
+#[cfg(all(feature = "app", feature = "typescript"))]
+compile_error!("features app and typescript are mutually exclusive");
+
+#[cfg(feature = "app")]
 pub use generic_query::NoLimit;

@@ -13,6 +13,7 @@ use crate::{
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = people))]
+#[cfg_attr(feature = "typescript", ts(rename = "PersonSummary"))]
 pub struct Summary {
     id: Uuid,
     #[serde(flatten)]

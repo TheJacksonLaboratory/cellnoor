@@ -1,7 +1,7 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{RunQueryDsl, prelude::*};
 use scamplers_models::lab::{Creation, Lab};
-use scamplers_schema::labs::dsl::*;
+use scamplers_schema::labs::dsl::{id, labs};
 use uuid::Uuid;
 
 use crate::{

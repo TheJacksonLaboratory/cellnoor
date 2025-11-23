@@ -2,4 +2,4 @@
 import type { Institution } from "./Institution";
 import type { UserRole } from "./UserRole";
 
-export type Person = { roles: Array<UserRole>, institution: Institution, id: string, email: string | null, email_verified: boolean, links: { [key in string]?: string }, name: string, orcid: string | null, institution_id: string, microsoft_entra_oid: string | null, };
+export type Person = { roles: Array<UserRole>, institution: Institution, id: string, email?: string, email_verified: boolean, links: { [key in string]?: string }, name: string, orcid?: string, institution_id: string, microsoft_entra_oid?: string, };

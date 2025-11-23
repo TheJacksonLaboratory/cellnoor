@@ -1,7 +1,7 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{PgConnection, prelude::*, sql_types::Text};
 use scamplers_models::person::{Id, Person, SummaryWithParents};
-use scamplers_schema::people::dsl::*;
+use scamplers_schema::people::dsl::id;
 
 use super::{ApiResponse, inner_handler};
 use crate::{api::extract::auth::AuthenticatedUser, db, state::AppState};

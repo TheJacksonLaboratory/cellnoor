@@ -55,3 +55,38 @@ impl<T, const N: usize> From<[T; N]> for DefaultVec<T> {
         Self(value.into())
     }
 }
+
+#[cfg(feature = "diesel")]
+mod diesel_impl {
+    use diesel::{AppearsOnTable, Expression, pg::Pg, query_builder::QueryFragment};
+
+    use super::DefaultVec;
+
+    impl<T> Expression for DefaultVec<T>
+    where
+        T: Expression,
+    {
+        type SqlType = T::SqlType;
+    }
+
+    impl<T, U> AppearsOnTable<U> for DefaultVec<T> where T: AppearsOnTable<U> {}
+
+    impl<T> QueryFragment<Pg> for DefaultVec<T>
+    where
+        T: QueryFragment<Pg> + PartialEq,
+    {
+        fn walk_ast<'b>(
+            &'b self,
+            mut pass: diesel::query_builder::AstPass<'_, 'b, Pg>,
+        ) -> diesel::QueryResult<()> {
+            for item in self {
+                item.walk_ast(pass.reborrow())?;
+                if item != self.into_iter().last().unwrap() {
+                    pass.push_sql(",");
+                }
+            }
+
+            Ok(())
+        }
+    }
+}

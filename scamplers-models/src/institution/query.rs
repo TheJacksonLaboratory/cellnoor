@@ -1,15 +1,24 @@
-use macro_attributes::{filter, ordinal_column, typescript_query};
+use macro_attributes::{filter, order_by};
 use macros::uuid_newtype;
 use uuid::Uuid;
 
-use crate::generic_query;
+#[order_by(scamplers_schema::institutions)]
+#[allow(non_camel_case_types)]
+pub enum OrderBy {
+    id {
+        #[serde(default)]
+        descending: bool,
+    },
+    name {
+        #[serde(default)]
+        descending: bool,
+    },
+}
 
-#[ordinal_column]
-#[cfg_attr(feature = "typescript", ts(rename = "InstitutionOrdinalColumns"))]
-pub enum OrdinalColumn {
-    Id,
-    #[default]
-    Name,
+impl Default for OrderBy {
+    fn default() -> Self {
+        Self::name { descending: false }
+    }
 }
 
 #[filter]
@@ -30,12 +39,8 @@ impl Filter {
     }
 }
 
-#[cfg(not(feature = "typescript"))]
-pub type Query = generic_query::Query<Filter, OrdinalColumn>;
-
-#[typescript_query]
-#[cfg_attr(feature = "typescript", ts(rename = "InstitutionQuery"))]
-pub struct Query(#[ts(inline)] generic_query::Query<Filter, OrdinalColumn>);
+#[cfg(feature = "app")]
+pub type Query = crate::generic_query::Query<Filter, OrderBy>;
 
 uuid_newtype!(Id, "/{id}");
 

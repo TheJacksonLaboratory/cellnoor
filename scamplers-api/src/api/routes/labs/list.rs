@@ -1,7 +1,7 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{SelectableExpression, prelude::*};
-use scamplers_models::lab::{Filter, OrdinalColumn, Query, Summary};
-use scamplers_schema::labs::dsl::*;
+use scamplers_models::lab::{Filter, Query, Summary};
+use scamplers_schema::labs::dsl::{id, name};
 use serde_qs::axum::QsQuery;
 
 use crate::{
@@ -10,7 +10,6 @@ use crate::{
         routes::{ApiResponse, Root, inner_handler},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, utils::like_any},
-    query,
     state::AppState,
 };
 
@@ -26,9 +25,16 @@ pub(super) async fn list_labs(
 
 impl db::Operation<Vec<Summary>> for Query {
     fn execute(self, db_conn: &mut PgConnection) -> Result<Vec<Summary>, db::Error> {
-        use OrdinalColumn::{Id, Name};
+        let mut stmt = Summary::query()
+            .limit(self.limit())
+            .offset(self.offset())
+            .into_boxed();
 
-        let stmt = query!(Summary::query(self).order_by(Id = id, Name = name));
+        if let Some(filter) = self.filter() {
+            stmt = stmt.filter(filter.to_boxed_filter());
+        }
+
+        stmt = stmt.order_by(self.order_by());
 
         Ok(stmt.load(db_conn)?)
     }
@@ -98,7 +104,7 @@ mod tests {
                     .names(["%l%", "%a%", "%b%"].map(str::to_owned))
                     .build(),
             )
-            .order_by_descending(OrdinalColumn::Name)
+            .order_by(OrderBy::name { descending: true })
             .build();
 
         test_query()

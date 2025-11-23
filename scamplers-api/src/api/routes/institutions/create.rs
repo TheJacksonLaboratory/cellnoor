@@ -1,7 +1,7 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::prelude::*;
 use scamplers_models::institution::{Creation, Institution};
-use scamplers_schema::institutions::dsl::*;
+use scamplers_schema::institutions::dsl::institutions;
 
 use crate::{
     api::{

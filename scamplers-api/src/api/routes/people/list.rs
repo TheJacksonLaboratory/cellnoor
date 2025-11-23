@@ -1,7 +1,7 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{dsl::AssumeNotNull, prelude::*};
-use scamplers_models::person::{Filter, OrdinalColumn, Query, Summary};
-use scamplers_schema::people::dsl::*;
+use scamplers_models::person::{Filter, Query, Summary};
+use scamplers_schema::people::dsl::{email, id, institution_id, microsoft_entra_oid, name, orcid};
 use serde_qs::axum::QsQuery;
 
 use crate::{
@@ -10,7 +10,6 @@ use crate::{
         routes::{ApiResponse, Root, inner_handler},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, utils::like_any},
-    query,
     state::AppState,
 };
 
@@ -49,7 +48,7 @@ where
         }
 
         if let Some(institution_ids) = self.institution_ids() {
-            filter = filter.and_condition(institution_id.eq_any(institution_ids))
+            filter = filter.and_condition(institution_id.eq_any(institution_ids));
         }
 
         if let Some(orcids) = self.orcids() {
@@ -70,9 +69,16 @@ where
 
 impl db::Operation<Vec<Summary>> for Query {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Vec<Summary>, db::Error> {
-        use OrdinalColumn::*;
+        let mut stmt = Summary::query()
+            .limit(self.limit())
+            .offset(self.offset())
+            .into_boxed();
 
-        let stmt = query!(Summary::query(self).order_by(Id = id, Name = name, Email = email));
+        if let Some(filter) = self.filter() {
+            stmt = stmt.filter(filter.to_boxed_filter());
+        }
+
+        stmt = stmt.order_by(self.order_by());
 
         Ok(stmt.load(db_conn)?)
     }
@@ -90,6 +96,10 @@ mod tests {
         test_state::{Database, database, root_db_conn},
         test_util::test_query,
     };
+
+    fn sort_by_id(i1: &&Summary, i2: &&Summary) -> Ordering {
+        i1.id().cmp(&i2.id())
+    }
 
     fn sort_by_name(i1: &&Summary, i2: &&Summary) -> Ordering {
         i1.name().to_lowercase().cmp(&i2.name().to_lowercase())
@@ -122,7 +132,8 @@ mod tests {
                     .names(["%5%", "%h%"].map(str::to_owned))
                     .build(),
             )
-            .order_by_descending(OrdinalColumn::Name)
+            .order_by(OrderBy::id { descending: false })
+            .order_by(OrderBy::name { descending: true })
             .build();
 
         test_query()
@@ -131,7 +142,7 @@ mod tests {
                 let s = i.name().to_lowercase();
                 s.contains("5") | s.contains("h")
             })
-            .sort_by(|i1, i2| sort_by_name(i1, i2).reverse())
+            .sort_by(|i1, i2| sort_by_id(i1, i2).then(sort_by_name(i1, i2).reverse()))
             .db_query(query)
             .run(root_db_conn)
             .await;

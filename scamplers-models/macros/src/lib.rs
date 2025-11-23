@@ -101,28 +101,29 @@ macro_rules! uuid_newtype {
         }
 
         #[cfg(feature = "app")]
-        mod diesel_impls {
-            use crate::utils::{UuidNewtypeFromSql, UuidNewtypeToSql};
-            use super::$name;
+        impl crate::utils::UuidNewtypeFromSql for $name {}
 
-            impl UuidNewtypeFromSql for $name {}
+        #[cfg(feature = "app")]
+        impl crate::utils::UuidNewtypeToSql for $name {}
 
-            impl UuidNewtypeToSql for $name {}
-
-            impl ::diesel::deserialize::FromSql<::diesel::sql_types::Uuid, ::diesel::pg::Pg> for $name {
-                fn from_sql(bytes: ::diesel::pg::PgValue<'_>) -> ::diesel::deserialize::Result<Self> {
-                    Self::from_sql_inner(bytes)
-                }
-            }
-
-            impl ::diesel::serialize::ToSql<::diesel::sql_types::Uuid, ::diesel::pg::Pg> for $name {
-                fn to_sql<'b>(
-                    &'b self,
-                    out: &mut diesel::serialize::Output<'b, '_, ::diesel::pg::Pg>,
-                ) -> ::diesel::serialize::Result {
-                    self.to_sql_inner(out)
-                }
+        #[cfg(feature = "app")]
+        impl ::diesel::deserialize::FromSql<::diesel::sql_types::Uuid, ::diesel::pg::Pg> for $name {
+            fn from_sql(bytes: ::diesel::pg::PgValue<'_>) -> ::diesel::deserialize::Result<Self> {
+                use crate::utils::UuidNewtypeFromSql;
+                Self::from_sql_inner(bytes)
             }
         }
+
+        #[cfg(feature = "app")]
+        impl ::diesel::serialize::ToSql<::diesel::sql_types::Uuid, ::diesel::pg::Pg> for $name {
+            fn to_sql<'b>(
+                &'b self,
+                out: &mut diesel::serialize::Output<'b, '_, ::diesel::pg::Pg>,
+            ) -> ::diesel::serialize::Result {
+                use crate::utils::UuidNewtypeToSql;
+                self.to_sql_inner(out)
+            }
+        }
+
     };
 }

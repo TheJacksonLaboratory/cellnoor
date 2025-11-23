@@ -1,7 +1,7 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{SelectableExpression, prelude::*};
-use scamplers_models::institution::{Filter, Institution, OrdinalColumn, Query};
-use scamplers_schema::institutions::dsl::*;
+use scamplers_models::institution::{Filter, Institution, Query};
+use scamplers_schema::institutions::dsl::{id, name};
 use serde_qs::axum::QsQuery;
 
 use crate::{
@@ -10,7 +10,6 @@ use crate::{
         routes::{ApiResponse, Root, inner_handler},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, utils::like_any},
-    query,
     state::AppState,
 };
 
@@ -26,9 +25,16 @@ pub(super) async fn list_institutions(
 
 impl db::Operation<Vec<Institution>> for Query {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Vec<Institution>, db::Error> {
-        use OrdinalColumn::{Id, Name};
+        let mut stmt = Institution::query()
+            .limit(self.limit())
+            .offset(self.offset())
+            .into_boxed();
 
-        let stmt = query!(Institution::query(self).order_by(Id = id, Name = name));
+        if let Some(filter) = self.filter() {
+            stmt = stmt.filter(filter.to_boxed_filter());
+        }
+
+        stmt = stmt.order_by(self.order_by());
 
         Ok(stmt.load(db_conn)?)
     }
@@ -67,6 +73,10 @@ mod tests {
         test_util::test_query,
     };
 
+    fn sort_by_id(i1: &&Institution, i2: &&Institution) -> Ordering {
+        i1.id().cmp(&i2.id())
+    }
+
     fn sort_by_name(i1: &&Institution, i2: &&Institution) -> Ordering {
         i1.name().to_lowercase().cmp(&i2.name().to_lowercase())
     }
@@ -98,7 +108,8 @@ mod tests {
                     .names(["%a%", "%b%"].map(str::to_owned))
                     .build(),
             )
-            .order_by_descending(OrdinalColumn::Name)
+            .order_by(OrderBy::id { descending: false })
+            .order_by(OrderBy::name { descending: true })
             .build();
 
         test_query()
@@ -107,7 +118,7 @@ mod tests {
                 let s = i.name().to_lowercase();
                 s.contains("a") | s.contains("b")
             })
-            .sort_by(|i1, i2| sort_by_name(i1, i2).reverse())
+            .sort_by(|i1, i2| sort_by_id(i1, i2).then(sort_by_name(i1, i2).reverse()))
             .db_query(query)
             .run(root_db_conn)
             .await;
