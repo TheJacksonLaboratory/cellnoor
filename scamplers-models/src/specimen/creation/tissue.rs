@@ -1,7 +1,7 @@
 use macro_attributes::{base_model, simple_enum};
 
 use crate::specimen::common::{
-    EmbeddingMatrix, Fixative, SpecimenCommonFields, SpecimenType, SpecimenVariableFields,
+    Fixative, SpecimenCommonFields, SpecimenType, SpecimenVariableFields,
 };
 
 const TYPE: SpecimenType = SpecimenType::Tissue;
@@ -14,6 +14,7 @@ pub struct CryopreservedTissueCreation {
 }
 
 impl CryopreservedTissueCreation {
+    #[must_use]
     pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
         let Self { inner } = self;
 
@@ -39,6 +40,7 @@ pub struct FixedTissueCreation {
 }
 
 impl FixedTissueCreation {
+    #[must_use]
     pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
         let Self { inner, fixative } = self;
 
@@ -69,6 +71,7 @@ pub struct FrozenTissueCreation {
 }
 
 impl FrozenTissueCreation {
+    #[must_use]
     pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
         let Self { inner } = self;
 

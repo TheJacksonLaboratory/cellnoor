@@ -1,7 +1,7 @@
 use macro_attributes::{base_model, simple_enum};
 
 use crate::specimen::common::{
-    EmbeddingMatrix, Fixative, SpecimenCommonFields, SpecimenType, SpecimenVariableFields,
+    Fixative, SpecimenCommonFields, SpecimenType, SpecimenVariableFields,
 };
 
 const TYPE: SpecimenType = SpecimenType::Suspension;
@@ -14,6 +14,7 @@ pub struct CryopreservedSuspensionCreation {
 }
 
 impl CryopreservedSuspensionCreation {
+    #[must_use]
     pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
         let Self { inner } = self;
 
@@ -39,6 +40,7 @@ pub struct FixedOrFreshSuspensionCreation {
 }
 
 impl FixedOrFreshSuspensionCreation {
+    #[must_use]
     pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
         let Self { inner, fixative } = self;
 
@@ -70,6 +72,7 @@ pub struct FrozenSuspensionCreation {
 }
 
 impl FrozenSuspensionCreation {
+    #[must_use]
     pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
         let Self { inner } = self;
 

@@ -16,6 +16,7 @@ pub struct FixedBlockCreation {
 }
 
 impl FixedBlockCreation {
+    #[must_use]
     pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
         let Self {
             inner,
@@ -58,6 +59,7 @@ pub struct FrozenBlockCreation {
 }
 
 impl FrozenBlockCreation {
+    #[must_use]
     pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
         let Self {
             inner,

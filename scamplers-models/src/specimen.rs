@@ -26,6 +26,6 @@ pub use creation::{
 pub use query::SpecimenQuery;
 pub use query::{
     SpecimenFilter, SpecimenId, SpecimenIdChromiumDatasets, SpecimenIdMeasurements,
-    SpecimenIdSuspensions,
+    SpecimenIdSuspensions, SpecimenOrderBy,
 };
 pub use read::{Specimen, SpecimenSummary};

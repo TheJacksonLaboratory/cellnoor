@@ -88,7 +88,7 @@ impl_enum_from_sql!(EmbeddingMatrix);
 
 impl From<&EmbeddingMatrix> for &'static str {
     fn from(embedding_matrix: &EmbeddingMatrix) -> &'static str {
-        use EmbeddingMatrix::*;
+        use EmbeddingMatrix::{FixedBlock, FrozenBlock};
 
         match embedding_matrix {
             FixedBlock(em) => em.into(),
@@ -132,7 +132,7 @@ impl_enum_from_sql!(Fixative);
 
 impl From<&Fixative> for &'static str {
     fn from(fixative: &Fixative) -> &'static str {
-        use Fixative::*;
+        use Fixative::{Block, Suspension, Tissue};
 
         match fixative {
             Block(f) => f.into(),

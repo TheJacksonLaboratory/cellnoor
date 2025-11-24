@@ -23,6 +23,7 @@ pub struct SpecimenMeasurement {
 }
 
 impl SpecimenMeasurement {
+    #[must_use]
     pub fn data(&self) -> &MeasurementData {
         &self.data
     }

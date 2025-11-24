@@ -131,10 +131,50 @@ impl SpecimenFilter {
 #[order_by(specimens)]
 #[allow(non_camel_case_types)]
 pub enum SpecimenOrderBy {
-    id { descending: bool },
-    name { descending: bool },
-    readable_id { descending: bool },
-    received_at { descending: bool },
+    id {
+        #[serde(default)]
+        descending: bool,
+    },
+    name {
+        #[serde(default)]
+        descending: bool,
+    },
+    readable_id {
+        #[serde(default)]
+        descending: bool,
+    },
+    received_at {
+        #[serde(default)]
+        descending: bool,
+    },
+    species {
+        #[serde(default)]
+        descending: bool,
+    },
+    host_species {
+        #[serde(default)]
+        descending: bool,
+    },
+    returned_at {
+        #[serde(default)]
+        descending: bool,
+    },
+    type_ {
+        #[serde(default)]
+        descending: bool,
+    },
+    embedded_in {
+        #[serde(default)]
+        descending: bool,
+    },
+    fixative {
+        #[serde(default)]
+        descending: bool,
+    },
+    tissue {
+        #[serde(default)]
+        descending: bool,
+    },
 }
 
 impl Default for SpecimenOrderBy {

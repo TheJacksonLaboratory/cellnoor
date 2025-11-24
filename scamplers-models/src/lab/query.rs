@@ -9,6 +9,10 @@ pub enum LabOrderBy {
         #[serde(default)]
         descending: bool,
     },
+    delivery_dir {
+        #[serde(default)]
+        descending: bool,
+    },
     name {
         #[serde(default)]
         descending: bool,

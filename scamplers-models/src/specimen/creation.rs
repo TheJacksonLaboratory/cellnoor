@@ -32,7 +32,10 @@ pub enum SpecimenCreation {
 
 impl SpecimenCreation {
     fn inner(&self) -> &SpecimenCommonFields {
-        use SpecimenCreation::*;
+        use SpecimenCreation::{
+            CryopreservedSuspension, CryopreservedTissue, FixedBlock, FixedOrFreshSuspension,
+            FixedTissue, FrozenBlock, FrozenSuspension, FrozenTissue,
+        };
 
         match self {
             FixedBlock(s) => &s.inner,
@@ -46,18 +49,22 @@ impl SpecimenCreation {
         }
     }
 
+    #[must_use]
     pub fn received_at(&self) -> Timestamp {
         self.inner().received_at
     }
 
+    #[must_use]
     pub fn returned_at(&self) -> Option<Timestamp> {
         self.inner().returned_at
     }
 
+    #[must_use]
     pub fn species(&self) -> Species {
         self.inner().species
     }
 
+    #[must_use]
     pub fn host_species(&self) -> Option<Species> {
         self.inner().host_species
     }
