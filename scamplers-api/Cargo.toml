@@ -27,6 +27,7 @@ scamplers-schema = { version = "0.1.0", path = "../scamplers-schema" }
 serde.workspace = true
 serde_json.workspace = true
 serde_qs.workspace = true
+strum.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tracing.workspace = true

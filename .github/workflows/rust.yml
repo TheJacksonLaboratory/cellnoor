@@ -31,10 +31,7 @@ jobs:
         working-directory: scamplers-schema
         run: diesel setup --database-url postgres://postgres@localhost/postgres --locked-schema
 
-  # The two binaries of the workspace are linted rather than the entire workspace because `cargo clippy --workspace`
-  # throws an error due to not selecting the correct features. Since scamplers-api and scamplers-typescript together
-  # activate all the features and encompass all the crates, this transitively lints all the Rust code.
-  lint_scamplers-api:
+  lint:
     runs-on: ubuntu-latest
     env:
       RUSTFLAGS: -Dwarnings
@@ -51,32 +48,7 @@ jobs:
           cache-workspace-crates: true
 
       - name: Lint
-        run: cargo clippy --package scamplers-api
-
-  lint_scamplers-typescript:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports:
-          - 5432:5432
-    env:
-      RUSTFLAGS: -Dwarnings
-
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
-
-      - name: Cache cargo files
-        uses: Swatinem/rust-cache@v2
-        with:
-          cache-all-crates: true
-          cache-workspace-crates: true
-
-      - name: Lint
-        run: cargo clippy --package scamplers-typescript
+        run: cargo clippy --workspace --all-features
 
   format:
     runs-on: ubuntu-latest
@@ -91,12 +63,12 @@ jobs:
           cache-workspace-crates: true
 
       - name: Install nightly toolchain
-        run: rustup component add --toolchain nightly-2025-11-17 rustfmt # This is updated weekly-ish
+        run: rustup component add --toolchain nightly-2025-11-24 rustfmt # This is updated weekly-ish
 
       - name: Format
-        run: cargo +nightly-2025-11-17 fmt -- --check
+        run: cargo +nightly-2025-11-24 fmt -- --check
 
-  test_scamplers-api:
+  test:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -129,41 +101,7 @@ jobs:
           cache-all-crates: true
           cache-workspace-crates: true
 
-      - name: Test scamplers-api
+      - name: Test
         run: |
           mv initial_data.sample.json scamplers-api/initial_data
-          cargo test --package scamplers-api
-
-  test_scamplers-models:
-    runs-on: ubuntu-latest
-    env:
-      SCAMPLERS_GENERATE_SCHEMA: false
-
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
-
-      - name: Cache cargo files
-        uses: Swatinem/rust-cache@v2
-        with:
-          cache-all-crates: true
-          cache-workspace-crates: true
-
-      - name: Test scamplers-models
-        run: cargo test --package scamplers-models --features builder
-
-  test_non-empty-string:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
-
-      - name: Cache cargo files
-        uses: Swatinem/rust-cache@v2
-        with:
-          cache-all-crates: true
-          cache-workspace-crates: true
-
-      - name: Test non-empty-string
-        run: cargo test --package non-empty-string --all-features
+          cargo test --workspace

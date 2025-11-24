@@ -112,6 +112,7 @@ pub fn filter(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
     quote! {
         #base_derives
+        #[serde(deny_unknown_fields)]
         #[cfg_attr(feature = "builder", derive(bon::Builder))]
         #[cfg_attr(feature = "builder", builder(on(_, into)))]
         #input

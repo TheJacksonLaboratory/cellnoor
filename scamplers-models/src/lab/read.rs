@@ -18,10 +18,14 @@ pub struct LabSummary {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: LabFields,
-
     links: Links,
 }
 impl LabSummary {
+    #[must_use]
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+
     #[must_use]
     pub fn name(&self) -> &str {
         self.inner.name.as_ref()
@@ -40,7 +44,7 @@ pub struct Lab {
 impl Lab {
     #[must_use]
     pub fn id(&self) -> Uuid {
-        self.summary.id
+        self.summary.id()
     }
 
     #[must_use]

@@ -28,6 +28,12 @@ impl db::Operation<Specimen> for SpecimenCreation {
         let split = match self {
             Self::FixedBlock(s) => s.split_for_insertion(),
             Self::FrozenBlock(s) => s.split_for_insertion(),
+            Self::CryopreservedSuspension(s) => s.split_for_insertion(),
+            Self::FixedOrFreshSuspension(s) => s.split_for_insertion(),
+            Self::FrozenSuspension(s) => s.split_for_insertion(),
+            Self::CryopreservedTissue(s) => s.split_for_insertion(),
+            Self::FixedTissue(s) => s.split_for_insertion(),
+            Self::FrozenTissue(s) => s.split_for_insertion(),
         };
 
         let created_id = diesel::insert_into(specimens)

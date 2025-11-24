@@ -37,74 +37,92 @@ pub struct SpecimenFilter {
 }
 
 impl SpecimenFilter {
+    #[must_use]
     pub fn ids(&self) -> Option<&[Uuid]> {
         self.ids.as_deref()
     }
 
+    #[must_use]
     pub fn names(&self) -> Option<&[String]> {
         self.names.as_deref()
     }
 
+    #[must_use]
     pub fn submitted_by(&self) -> Option<&[Uuid]> {
         self.submitted_by.as_deref()
     }
 
+    #[must_use]
     pub fn labs(&self) -> Option<&[Uuid]> {
         self.labs.as_deref()
     }
 
+    #[must_use]
     pub fn received_before(&self) -> Option<Timestamp> {
         self.received_before
     }
 
+    #[must_use]
     pub fn received_after(&self) -> Option<Timestamp> {
         self.received_after
     }
 
+    #[must_use]
     pub fn species(&self) -> Option<&[Species]> {
         self.species.as_deref()
     }
 
+    #[must_use]
     pub fn host_species(&self) -> Option<&[Species]> {
         self.host_species.as_deref()
     }
 
+    #[must_use]
     pub fn types(&self) -> Option<&[SpecimenType]> {
         self.types.as_deref()
     }
 
+    #[must_use]
     pub fn embedded_in(&self) -> Option<&[EmbeddingMatrix]> {
         self.embedded_in.as_deref()
     }
 
+    #[must_use]
     pub fn fixatives(&self) -> Option<&[Fixative]> {
         self.fixatives.as_deref()
     }
 
+    #[must_use]
     pub fn frozen(&self) -> Option<bool> {
         self.frozen
     }
 
+    #[must_use]
     pub fn cryopreserved(&self) -> Option<bool> {
         self.cryopreserved
     }
 
+    #[must_use]
     pub fn tissues(&self) -> Option<&[String]> {
         self.tissues.as_deref()
     }
 
+    #[must_use]
     pub fn returned_by(&self) -> Option<&[Uuid]> {
         self.submitted_by.as_deref()
     }
 
+    #[must_use]
     pub fn returned_before(&self) -> Option<Timestamp> {
         self.returned_before
     }
 
+    #[must_use]
     pub fn returned_after(&self) -> Option<Timestamp> {
         self.returned_after
     }
 
+    #[must_use]
     pub fn additional_data(&self) -> Option<&[Value]> {
         self.additional_data.as_deref()
     }

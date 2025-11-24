@@ -9,14 +9,17 @@ use scamplers_schema::specimens;
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::specimen::creation::block::{
-    BlockFixative, FixedBlockEmbeddingMatrix, FrozenBlockEmbeddingMatrix,
+use crate::specimen::creation::{
+    block::{BlockFixative, FixedBlockEmbeddingMatrix, FrozenBlockEmbeddingMatrix},
+    suspension::SuspensionFixative,
+    tissue::TissueFixative,
 };
 #[cfg(feature = "app")]
 use crate::utils::{EnumFromSql, EnumToSql};
 
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = specimens))]
+#[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct SpecimenCommonFields {
     pub(super) readable_id: NonEmptyString,
     pub(super) name: NonEmptyString,
@@ -108,13 +111,18 @@ impl_enum_to_sql!(EmbeddingMatrix);
 #[serde(untagged)]
 pub enum Fixative {
     Block(BlockFixative),
+    Suspension(SuspensionFixative),
+    Tissue(TissueFixative),
 }
 
 impl FromStr for Fixative {
     type Err = strum::ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        BlockFixative::from_str(s).map(Self::Block)
+        BlockFixative::from_str(s)
+            .map(Self::Block)
+            .or_else(|_| SuspensionFixative::from_str(s).map(Self::Suspension))
+            .or_else(|_| TissueFixative::from_str(s).map(Self::Tissue))
     }
 }
 
@@ -128,6 +136,8 @@ impl From<&Fixative> for &'static str {
 
         match fixative {
             Block(f) => f.into(),
+            Suspension(f) => f.into(),
+            Tissue(f) => f.into(),
         }
     }
 }
@@ -137,6 +147,7 @@ impl EnumToSql for Fixative {}
 impl_enum_to_sql!(Fixative);
 
 #[simple_enum]
+#[derive(strum::VariantArray)]
 pub enum Species {
     AmbystomaMexicanum,
     CanisFamiliaris,

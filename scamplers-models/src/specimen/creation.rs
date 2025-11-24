@@ -3,7 +3,14 @@ use macro_attributes::base_model;
 
 use crate::specimen::{
     common::{Species, SpecimenCommonFields},
-    creation::block::{FixedBlockCreation, FrozenBlockCreation},
+    creation::{
+        block::{FixedBlockCreation, FrozenBlockCreation},
+        suspension::{
+            CryopreservedSuspensionCreation, FixedOrFreshSuspensionCreation,
+            FrozenSuspensionCreation,
+        },
+        tissue::{CryopreservedTissueCreation, FixedTissueCreation, FrozenTissueCreation},
+    },
 };
 
 pub mod block;
@@ -15,6 +22,12 @@ pub mod tissue;
 pub enum SpecimenCreation {
     FixedBlock(FixedBlockCreation),
     FrozenBlock(FrozenBlockCreation),
+    CryopreservedSuspension(CryopreservedSuspensionCreation),
+    FixedOrFreshSuspension(FixedOrFreshSuspensionCreation),
+    FrozenSuspension(FrozenSuspensionCreation),
+    CryopreservedTissue(CryopreservedTissueCreation),
+    FixedTissue(FixedTissueCreation),
+    FrozenTissue(FrozenTissueCreation),
 }
 
 impl SpecimenCreation {
@@ -24,6 +37,12 @@ impl SpecimenCreation {
         match self {
             FixedBlock(s) => &s.inner,
             FrozenBlock(s) => &s.inner,
+            CryopreservedSuspension(s) => &s.inner,
+            FixedOrFreshSuspension(s) => &s.inner,
+            FrozenSuspension(s) => &s.inner,
+            CryopreservedTissue(s) => &s.inner,
+            FixedTissue(s) => &s.inner,
+            FrozenTissue(s) => &s.inner,
         }
     }
 

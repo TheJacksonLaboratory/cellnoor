@@ -4,7 +4,10 @@ use crate::specimen::common::{
     EmbeddingMatrix, Fixative, SpecimenCommonFields, SpecimenType, SpecimenVariableFields,
 };
 
+const TYPE: SpecimenType = SpecimenType::Block;
+
 #[base_model]
+#[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct FixedBlockCreation {
     #[serde(flatten)]
     pub(super) inner: SpecimenCommonFields,
@@ -23,7 +26,7 @@ impl FixedBlockCreation {
         (
             inner,
             SpecimenVariableFields {
-                type_: SpecimenType::Block,
+                type_: TYPE,
                 embedded_in: Some(EmbeddingMatrix::FixedBlock(embedded_in)),
                 fixative: Some(Fixative::Block(fixative)),
                 frozen: false,
@@ -34,16 +37,19 @@ impl FixedBlockCreation {
 }
 
 #[simple_enum]
+#[derive(strum::VariantArray)]
 pub enum FixedBlockEmbeddingMatrix {
     Paraffin,
 }
 
 #[simple_enum]
+#[derive(strum::VariantArray)]
 pub enum BlockFixative {
     FormaldehydeDerivative,
 }
 
 #[base_model]
+#[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct FrozenBlockCreation {
     #[serde(flatten)]
     pub(super) inner: SpecimenCommonFields,
@@ -62,7 +68,7 @@ impl FrozenBlockCreation {
         (
             inner,
             SpecimenVariableFields {
-                type_: SpecimenType::Block,
+                type_: TYPE,
                 embedded_in: Some(EmbeddingMatrix::FrozenBlock(embedded_in)),
                 fixative: fixative.map(Fixative::Block),
                 frozen: true,
@@ -73,6 +79,7 @@ impl FrozenBlockCreation {
 }
 
 #[simple_enum]
+#[derive(strum::VariantArray)]
 pub enum FrozenBlockEmbeddingMatrix {
     CarboxymethylCellulose,
     OptimalCuttingTemperatureCompound,

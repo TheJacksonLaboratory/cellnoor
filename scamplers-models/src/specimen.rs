@@ -5,7 +5,23 @@ mod query;
 mod read;
 
 pub use common::Species;
+#[cfg(feature = "builder")]
+pub use common::SpecimenCommonFields;
 pub use creation::SpecimenCreation;
+#[cfg(feature = "builder")]
+pub use creation::{
+    block::{
+        BlockFixative, FixedBlockCreation, FixedBlockEmbeddingMatrix, FrozenBlockCreation,
+        FrozenBlockEmbeddingMatrix,
+    },
+    suspension::{
+        CryopreservedSuspensionCreation, FixedOrFreshSuspensionCreation, FrozenSuspensionCreation,
+        SuspensionFixative,
+    },
+    tissue::{
+        CryopreservedTissueCreation, FixedTissueCreation, FrozenTissueCreation, TissueFixative,
+    },
+};
 #[cfg(feature = "app")]
 pub use query::SpecimenQuery;
 pub use query::{

@@ -29,4 +29,4 @@ export SCAMPLERS_API_KEY_PREFIX_LENGTH=8
 export SCAMPLERS_API_HOST=localhost
 export SCAMPLERS_API_PORT=8000
 
-cargo test --package scamplers-api $@
+cargo test --workspace $@

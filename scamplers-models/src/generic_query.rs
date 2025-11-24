@@ -1,7 +1,7 @@
 use default_vec::DefaultVec;
 
 #[derive(Clone, Debug, PartialEq, ::serde::Deserialize, ::serde::Serialize)]
-#[serde(default)]
+#[serde(default, deny_unknown_fields)]
 pub struct Query<F, O>
 where
     O: Default,
@@ -56,6 +56,7 @@ where
         }
     }
 
+    #[must_use]
     pub fn default_with_no_limit() -> Self {
         Self {
             limit: i64::MAX,
