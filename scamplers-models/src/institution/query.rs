@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 #[order_by(scamplers_schema::institutions)]
 #[allow(non_camel_case_types)]
-pub enum OrderBy {
+pub enum InstitutionOrderBy {
     id {
         #[serde(default)]
         descending: bool,
@@ -15,19 +15,19 @@ pub enum OrderBy {
     },
 }
 
-impl Default for OrderBy {
+impl Default for InstitutionOrderBy {
     fn default() -> Self {
         Self::name { descending: false }
     }
 }
 
 #[filter]
-pub struct Filter {
+pub struct InstitutionFilter {
     ids: Option<Vec<Uuid>>,
     names: Option<Vec<String>>,
 }
 
-impl Filter {
+impl InstitutionFilter {
     #[must_use]
     pub fn ids(&self) -> Option<&[Uuid]> {
         self.ids.as_deref()
@@ -40,8 +40,8 @@ impl Filter {
 }
 
 #[cfg(feature = "app")]
-pub type Query = crate::generic_query::Query<Filter, OrderBy>;
+pub type InstitutionQuery = crate::generic_query::Query<InstitutionFilter, InstitutionOrderBy>;
 
-uuid_newtype!(Id, "/{id}");
+uuid_newtype!(InstitutionId, "/{id}");
 
-uuid_newtype!(IdMembers, "/{id}/members");
+uuid_newtype!(InstitutionIdMembers, "/{id}/members");

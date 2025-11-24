@@ -8,26 +8,25 @@ use scamplers_schema::institutions;
 #[cfg(feature = "builder")]
 use uuid::Uuid;
 
-use crate::institution::common::Fields;
+use crate::institution::common::InstitutionFields;
 
 #[insert]
 #[cfg_attr(feature = "app", derive(diesel::AsChangeset))]
 #[cfg_attr(feature = "app", diesel(table_name = institutions))]
-#[cfg_attr(feature = "typescript", ts(rename = "InstitutionCreation"))]
-pub struct Creation {
+pub struct InstitutionCreation {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: Fields,
+    inner: InstitutionFields,
 }
 
 #[cfg_attr(feature = "builder", bon)]
-impl Creation {
+impl InstitutionCreation {
     #[cfg(feature = "builder")]
     #[builder(on(_, into))]
     #[must_use]
     pub fn new(id: Uuid, name: NonEmptyString) -> Self {
         Self {
-            inner: Fields { id, name },
+            inner: InstitutionFields { id, name },
         }
     }
 }

@@ -5,9 +5,9 @@ mod read;
 mod update;
 
 pub use common::UserRole;
-pub use creation::Creation;
+pub use creation::PersonCreation;
 #[cfg(feature = "app")]
-pub use query::Query;
-pub use query::{Filter, Id, OrderBy};
-pub use read::{Person, Summary, SummaryWithParents};
-pub use update::Update;
+pub use query::PersonQuery;
+pub use query::{PersonFilter, PersonId, PersonOrderBy};
+pub use read::{Person, PersonSummary, SummaryWithParents};
+pub use update::PersonUpdate;

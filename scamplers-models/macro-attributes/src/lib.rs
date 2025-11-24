@@ -258,3 +258,18 @@ pub fn simple_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
         #input
     }.into()
 }
+
+#[proc_macro_attribute]
+pub fn json(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    let base_derives = base_derives(input.clone(), false);
+
+    let input: proc_macro2::TokenStream = input.into();
+
+    quote! {
+        #base_derives
+        #[cfg_attr(feature = "app", derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression))]
+        #[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Jsonb))]
+        #[serde(rename_all = "snake_case")]
+        #input
+    }.into()
+}

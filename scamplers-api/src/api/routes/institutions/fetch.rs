@@ -1,6 +1,6 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{PgConnection, prelude::*};
-use scamplers_models::institution::{Id, Institution};
+use scamplers_models::institution::{Institution, InstitutionId};
 use scamplers_schema::institutions::dsl::id;
 
 use crate::{
@@ -13,7 +13,7 @@ use crate::{
 };
 
 pub(super) async fn fetch_institution(
-    request: Id,
+    request: InstitutionId,
     state: State<AppState>,
     user: AuthenticatedUser,
 ) -> ApiResponse<Institution> {
@@ -21,7 +21,7 @@ pub(super) async fn fetch_institution(
     Ok((StatusCode::FOUND, item))
 }
 
-impl db::Operation<Institution> for Id {
+impl db::Operation<Institution> for InstitutionId {
     fn execute(self, db_conn: &mut PgConnection) -> Result<Institution, db::Error> {
         Ok(Institution::query().filter(id.eq(&self)).first(db_conn)?)
     }

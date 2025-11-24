@@ -1,9 +1,37 @@
-use jiff::Timestamp;
-use macro_attributes::{insert, simple_enum};
-#[cfg(feature = "app")]
-use scamplers_schema::specimens;
+use macro_attributes::{base_model, simple_enum};
 
-use crate::specimen::common::Fields;
+use crate::specimen::common::{
+    EmbeddingMatrix, Fixative, SpecimenCommonFields, SpecimenType, SpecimenVariableFields,
+};
+
+#[base_model]
+pub struct FixedBlockCreation {
+    #[serde(flatten)]
+    pub(super) inner: SpecimenCommonFields,
+    embedded_in: FixedBlockEmbeddingMatrix,
+    fixative: BlockFixative,
+}
+
+impl FixedBlockCreation {
+    pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
+        let Self {
+            inner,
+            embedded_in,
+            fixative,
+        } = self;
+
+        (
+            inner,
+            SpecimenVariableFields {
+                type_: SpecimenType::Block,
+                embedded_in: Some(EmbeddingMatrix::FixedBlock(embedded_in)),
+                fixative: Some(Fixative::Block(fixative)),
+                frozen: false,
+                cryopreserved: false,
+            },
+        )
+    }
+}
 
 #[simple_enum]
 pub enum FixedBlockEmbeddingMatrix {
@@ -15,67 +43,37 @@ pub enum BlockFixative {
     FormaldehydeDerivative,
 }
 
-#[simple_enum]
-#[derive(Default)]
-pub enum Type {
-    #[default]
-    Block,
+#[base_model]
+pub struct FrozenBlockCreation {
+    #[serde(flatten)]
+    pub(super) inner: SpecimenCommonFields,
+    embedded_in: FrozenBlockEmbeddingMatrix,
+    fixative: Option<BlockFixative>,
 }
 
-#[insert]
-#[cfg_attr(feature = "app", diesel(table_name = specimens))]
-pub struct Fixed {
-    #[serde(flatten)]
-    #[cfg_attr(feature = "app", diesel(embed))]
-    inner: Fields,
-    #[cfg_attr(feature = "app", diesel(
-        serialize_as = jiff_diesel::Timestamp,
-        deserialize_as = jiff_diesel::Timestamp
-    ))]
-    #[cfg_attr(feature = "typescript", ts(type = "Temporal.Instant"))]
-    received_at: Timestamp,
-    #[serde(skip)]
-    type_: Type,
-    embedded_in: FixedBlockEmbeddingMatrix,
-    fixative: BlockFixative,
-    #[cfg_attr(feature = "app", diesel(
-        serialize_as = jiff_diesel::NullableTimestamp,
-        deserialize_as = jiff_diesel::NullableTimestamp
-    ))]
-    #[cfg_attr(feature = "typescript", ts(type = "Temporal.Instant"))]
-    returned_at: Option<Timestamp>,
+impl FrozenBlockCreation {
+    pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
+        let Self {
+            inner,
+            embedded_in,
+            fixative,
+        } = self;
+
+        (
+            inner,
+            SpecimenVariableFields {
+                type_: SpecimenType::Block,
+                embedded_in: Some(EmbeddingMatrix::FrozenBlock(embedded_in)),
+                fixative: fixative.map(Fixative::Block),
+                frozen: true,
+                cryopreserved: false,
+            },
+        )
+    }
 }
 
 #[simple_enum]
 pub enum FrozenBlockEmbeddingMatrix {
     CarboxymethylCellulose,
     OptimalCuttingTemperatureCompound,
-}
-
-const TRUE: bool = true;
-
-#[insert]
-#[cfg_attr(feature = "app", diesel(table_name = specimens))]
-pub struct Frozen {
-    #[serde(flatten)]
-    #[cfg_attr(feature = "app", diesel(embed))]
-    inner: Fields,
-    #[cfg_attr(feature = "app", diesel(
-        serialize_as = jiff_diesel::Timestamp,
-        deserialize_as = jiff_diesel::Timestamp
-    ))]
-    #[cfg_attr(feature = "typescript", ts(type = "Temporal.Instant"))]
-    received_at: Timestamp,
-    #[serde(skip)]
-    type_: Type,
-    embedded_in: FrozenBlockEmbeddingMatrix,
-    fixative: Option<BlockFixative>,
-    #[serde(skip, default = "crate::specimen::common::true_")]
-    frozen: bool,
-    #[cfg_attr(feature = "app", diesel(
-        serialize_as = jiff_diesel::NullableTimestamp,
-        deserialize_as = jiff_diesel::NullableTimestamp
-    ))]
-    #[cfg_attr(feature = "typescript", ts(type = "Temporal.Instant"))]
-    returned_at: Option<Timestamp>,
 }

@@ -15,6 +15,7 @@ deadpool-diesel.workspace = true
 diesel = { workspace = true, features = ["postgres", "serde_json", "uuid"] }
 diesel_migrations.workspace = true
 dotenvy.workspace = true
+jiff.workspace = true
 jiff-diesel.workspace = true
 regex.workspace = true
 reqwest.workspace = true

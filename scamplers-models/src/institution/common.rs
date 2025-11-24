@@ -7,7 +7,7 @@ use uuid::Uuid;
 #[insert_select]
 #[cfg_attr(feature = "app", derive(diesel::AsChangeset))]
 #[cfg_attr(feature = "app", diesel(table_name = institutions))]
-pub struct Fields {
+pub struct InstitutionFields {
     pub(super) id: Uuid,
 
     pub(super) name: NonEmptyString,

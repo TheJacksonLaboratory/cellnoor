@@ -6,22 +6,22 @@ use scamplers_schema::{labs, people};
 use uuid::Uuid;
 
 use crate::{
-    lab::common::Fields,
+    lab::common::LabFields,
     links::Links,
     person::{self},
 };
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = labs))]
-pub struct Summary {
+pub struct LabSummary {
     id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: Fields,
+    inner: LabFields,
 
     links: Links,
 }
-impl Summary {
+impl LabSummary {
     #[must_use]
     pub fn name(&self) -> &str {
         self.inner.name.as_ref()
@@ -33,9 +33,9 @@ impl Summary {
 pub struct Lab {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    summary: Summary,
+    summary: LabSummary,
     #[cfg_attr(feature = "app", diesel(embed))]
-    pi: person::Summary,
+    pi: person::PersonSummary,
 }
 impl Lab {
     #[must_use]

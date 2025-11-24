@@ -4,7 +4,7 @@ use diesel::{
     prelude::*,
     sql_types::{Array, Text},
 };
-use scamplers_models::person::{Creation, Id, Person};
+use scamplers_models::person::{Person, PersonCreation, PersonId};
 use scamplers_schema::people::dsl::{id, people};
 use uuid::Uuid;
 
@@ -19,7 +19,7 @@ pub(super) async fn create_person(
     _: Root,
     state: State<AppState>,
     user: AuthenticatedUser,
-    ValidJson(request): ValidJson<Creation>,
+    ValidJson(request): ValidJson<PersonCreation>,
 ) -> ApiResponse<Person> {
     let item = inner_handler(state, user, request).await?;
     Ok((StatusCode::CREATED, item))
@@ -27,10 +27,10 @@ pub(super) async fn create_person(
 
 define_sql_function! {fn create_user_if_not_exists(user_id: Text, password: Text, roles: Array<Text>)}
 
-impl db::Operation<Person> for Creation {
+impl db::Operation<Person> for PersonCreation {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Person, db::Error> {
         // Get the ID of the inserted person first, then return the full `Person` struct
-        let created_id: Id = diesel::insert_into(people)
+        let created_id: PersonId = diesel::insert_into(people)
             .values(&self)
             .returning(id)
             .get_result(db_conn)?;

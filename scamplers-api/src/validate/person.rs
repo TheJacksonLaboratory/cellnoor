@@ -1,7 +1,7 @@
 use std::sync::LazyLock;
 
 use regex::Regex;
-use scamplers_models::person;
+use scamplers_models::person::{PersonCreation, PersonUpdate};
 
 use crate::validate::Validate;
 
@@ -17,7 +17,7 @@ pub enum Error {
     Email { email: String, message: String },
 }
 
-impl Validate for person::Creation {
+impl Validate for PersonCreation {
     fn validate(&self, _db_conn: &mut diesel::PgConnection) -> Result<(), super::Error> {
         let email = self.email();
 
@@ -25,7 +25,7 @@ impl Validate for person::Creation {
     }
 }
 
-impl Validate for person::Update {
+impl Validate for PersonUpdate {
     fn validate(&self, _db_conn: &mut diesel::PgConnection) -> Result<(), super::Error> {
         if let Some(email) = self.email() {
             validate_email(email)?;

@@ -12,7 +12,10 @@ use rand::{
 };
 use rstest::fixture;
 use scamplers_models::{
-    NoLimit, institution, institution::Institution, lab, person, person::Summary,
+    generic_query,
+    institution::{self, Institution, InstitutionQuery},
+    lab::{self, LabQuery, LabSummary},
+    person::{self, PersonQuery, PersonSummary},
 };
 use tokio::{sync::OnceCell, task::JoinSet};
 use uuid::Uuid;
@@ -76,7 +79,7 @@ impl TestState {
 
         db_conn
             .interact(|db_conn| {
-                institution::Creation::builder()
+                institution::InstitutionCreation::builder()
                     .id(Uuid::now_v7())
                     .name(NonEmptyString::new(random_string()).unwrap())
                     .build()
@@ -89,7 +92,7 @@ impl TestState {
 
     async fn insert_people(&'static self) {
         let institution_ids = self
-            .all_extract::<institution::Query, _, _, _>(Institution::id)
+            .all_extract::<InstitutionQuery, _, _, _>(Institution::id)
             .await;
 
         let join_set: JoinSet<_> = (0..N_PEOPLE)
@@ -107,7 +110,7 @@ impl TestState {
                 let name = random_string();
                 let email = format!("{name}@example.com");
 
-                person::Creation::builder()
+                person::PersonCreation::builder()
                     .name(NonEmptyString::new(name).unwrap())
                     .email(NonEmptyString::new(email).unwrap())
                     .institution_id(institution_id)
@@ -122,7 +125,7 @@ impl TestState {
 
     async fn insert_labs(&'static self) {
         let people_ids = self
-            .all_extract::<person::Query, _, _, _>(Summary::id)
+            .all_extract::<PersonQuery, _, _, _>(PersonSummary::id)
             .await;
 
         let join_set: JoinSet<_> = (0..N_LABS)
@@ -139,7 +142,7 @@ impl TestState {
             .interact(move |db_conn| {
                 let name = NonEmptyString::new(random_string()).unwrap();
 
-                lab::Creation::builder()
+                lab::LabCreation::builder()
                     .name(name.clone())
                     .delivery_dir(name)
                     .pi_id(pi_id)
@@ -584,20 +587,20 @@ impl TestState {
 
     async fn all<Q, T>(&self) -> Vec<T>
     where
-        Q: std::fmt::Debug + NoLimit + db::Operation<Vec<T>>,
+        Q: DefaultWithNoLimit + db::Operation<Vec<T>>,
         T: 'static + Send,
     {
         let db_conn = self.root_db_conn().await;
 
         db_conn
-            .interact(|db_conn| Q::no_limit().execute(db_conn).unwrap())
+            .interact(|db_conn| Q::default_with_no_limit().execute(db_conn).unwrap())
             .await
             .unwrap()
     }
 
-    async fn all_extract<Q, T, F, U>(&self, f: F) -> Vec<U>
+    async fn all_extract<Q, F, T, U>(&self, f: F) -> Vec<U>
     where
-        Q: std::fmt::Debug + NoLimit + db::Operation<Vec<T>>,
+        Q: DefaultWithNoLimit + db::Operation<Vec<T>>,
         T: 'static + Send,
         F: Fn(&T) -> U,
     {
@@ -605,11 +608,24 @@ impl TestState {
     }
 }
 
+trait DefaultWithNoLimit {
+    fn default_with_no_limit() -> Self;
+}
+
+impl<F, O> DefaultWithNoLimit for generic_query::Query<F, O>
+where
+    O: Default,
+{
+    fn default_with_no_limit() -> Self {
+        Self::default_with_no_limit()
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct Database {
-    pub institutions: Vec<institution::Institution>,
-    pub people: Vec<person::Summary>,
-    pub labs: Vec<lab::Summary>,
+    pub institutions: Vec<Institution>,
+    pub people: Vec<PersonSummary>,
+    pub labs: Vec<LabSummary>,
 }
 
 impl Database {
@@ -617,9 +633,9 @@ impl Database {
         test_state.populate_db().await;
 
         let (institutions, people, labs) = tokio::join!(
-            test_state.all::<institution::Query, _>(),
-            test_state.all::<person::Query, _>(),
-            test_state.all::<lab::Query, _>()
+            test_state.all::<InstitutionQuery, _>(),
+            test_state.all::<PersonQuery, _>(),
+            test_state.all::<LabQuery, _>()
         );
 
         Self {

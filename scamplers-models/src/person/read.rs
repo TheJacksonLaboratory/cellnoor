@@ -8,24 +8,23 @@ use uuid::Uuid;
 use crate::{
     institution::Institution,
     links::Links,
-    person::{UserRole, common::Fields},
+    person::{UserRole, common::PersonFields},
 };
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = people))]
-#[cfg_attr(feature = "typescript", ts(rename = "PersonSummary"))]
-pub struct Summary {
+pub struct PersonSummary {
     id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: Fields,
+    inner: PersonFields,
     email: Option<String>,
     email_verified: bool,
 
     links: Links,
 }
 
-impl Summary {
+impl PersonSummary {
     #[must_use]
     pub fn id(&self) -> Uuid {
         self.id
@@ -47,7 +46,7 @@ impl Summary {
 pub struct SummaryWithParents {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    summary: Summary,
+    summary: PersonSummary,
     #[cfg_attr(feature = "app", diesel(embed))]
     institution: Institution,
 }

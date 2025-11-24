@@ -131,7 +131,21 @@ impl Config {
 
     #[must_use]
     pub fn address(&self) -> String {
-        let Self { host, port, .. } = self;
+        let Self {
+            host,
+            port,
+            mode: _,
+            db_root_user: _,
+            db_root_password: _,
+            scamplers_api_db_password: _,
+            scamplers_ui_db_password: _,
+            db_host: _,
+            db_port: _,
+            db_name: _,
+            api_key_prefix_length: _,
+            initial_data: _,
+            log_dir: _,
+        } = self;
 
         format!("{host}:{port}")
     }

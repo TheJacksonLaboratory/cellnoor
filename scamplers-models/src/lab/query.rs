@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 #[order_by(scamplers_schema::labs)]
 #[allow(non_camel_case_types)]
-pub enum OrderBy {
+pub enum LabOrderBy {
     id {
         #[serde(default)]
         descending: bool,
@@ -15,19 +15,19 @@ pub enum OrderBy {
     },
 }
 
-impl Default for OrderBy {
+impl Default for LabOrderBy {
     fn default() -> Self {
         Self::name { descending: false }
     }
 }
 
 #[filter]
-pub struct Filter {
+pub struct LabFilter {
     ids: Option<Vec<Uuid>>,
     names: Option<Vec<String>>,
 }
 
-impl Filter {
+impl LabFilter {
     #[must_use]
     pub fn ids(&self) -> Option<&[Uuid]> {
         self.ids.as_deref()
@@ -40,6 +40,8 @@ impl Filter {
 }
 
 #[cfg(feature = "app")]
-pub type Query = crate::generic_query::Query<Filter, OrderBy>;
+pub type LabQuery = crate::generic_query::Query<LabFilter, LabOrderBy>;
 
-uuid_newtype!(Id, "/{id}");
+uuid_newtype!(LabId, "/{id}");
+
+uuid_newtype!(LabIdMembers, "/{id}/members");

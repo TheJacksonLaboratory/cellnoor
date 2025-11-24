@@ -11,7 +11,7 @@ use crate::person::UserRole;
 #[cfg_attr(feature = "builder", builder(on(_, into)))]
 #[cfg_attr(feature = "app", diesel(table_name = people))]
 #[cfg_attr(feature = "typescript", ts(rename = "PersonUpdate"))]
-pub struct Update {
+pub struct PersonUpdate {
     #[serde(skip)]
     #[cfg_attr(feature = "builder", builder(skip))]
     id: Uuid,
@@ -25,7 +25,7 @@ pub struct Update {
     #[cfg_attr(feature = "app", diesel(skip_update))]
     revoke_roles: Option<Vec<UserRole>>,
 }
-impl Update {
+impl PersonUpdate {
     pub fn set_id(&mut self, id: Uuid) {
         self.id = id;
     }

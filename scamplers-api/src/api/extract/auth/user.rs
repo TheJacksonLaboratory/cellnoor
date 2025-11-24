@@ -62,7 +62,10 @@ impl FromRequestParts<AppState> for AuthenticatedUser {
                 api_key_prefix_length,
                 db_pool: _,
             } => *api_key_prefix_length,
-            AppState::Development { user_id, .. } => {
+            AppState::Development {
+                user_id,
+                db_pool: _,
+            } => {
                 return Ok(Self(*user_id));
             }
         };

@@ -255,6 +255,7 @@ diesel::table! {
         id -> Uuid,
         specimen_id -> Uuid,
         measured_by -> Uuid,
+        measured_at -> Timestamptz,
         data -> Jsonb,
     }
 }

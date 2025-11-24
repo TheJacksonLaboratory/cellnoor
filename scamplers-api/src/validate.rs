@@ -4,6 +4,7 @@ mod initial_data;
 mod institution;
 mod lab;
 mod person;
+mod specimen;
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
 #[serde(rename_all = "snake_case", tag = "type", content = "cause")]
@@ -12,6 +13,8 @@ pub enum Error {
     InsertInitialData(#[from] initial_data::Error),
     CreatePerson(#[from] person::Error),
     CreateLab(#[from] lab::Error),
+    CreateSpecimen(#[from] specimen::Error),
+    CreateSpecimenMeasurement(#[from] specimen::measurement::Error),
 }
 
 pub trait Validate {

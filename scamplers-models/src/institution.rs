@@ -4,8 +4,8 @@ mod query;
 mod read;
 mod update;
 
-pub use creation::Creation;
+pub use creation::InstitutionCreation;
 #[cfg(feature = "app")]
-pub use query::Query;
-pub use query::{Filter, Id, IdMembers, OrderBy};
+pub use query::InstitutionQuery;
+pub use query::{InstitutionFilter, InstitutionId, InstitutionIdMembers, InstitutionOrderBy};
 pub use read::Institution;

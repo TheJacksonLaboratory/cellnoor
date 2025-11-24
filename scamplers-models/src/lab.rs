@@ -4,8 +4,8 @@ mod query;
 mod read;
 mod update;
 
-pub use creation::Creation;
+pub use creation::LabCreation;
 #[cfg(feature = "app")]
-pub use query::Query;
-pub use query::{Filter, OrderBy};
-pub use read::{Lab, Summary};
+pub use query::LabQuery;
+pub use query::{LabFilter, LabOrderBy};
+pub use read::{Lab, LabSummary};

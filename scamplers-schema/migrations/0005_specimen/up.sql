@@ -35,5 +35,6 @@ create table specimen_measurements (
     id uuid primary key default uuidv7(),
     specimen_id uuid not null references specimens on delete restrict on update restrict,
     measured_by uuid not null references people on delete restrict on update restrict,
+    measured_at timestamptz not null,
     data jsonb not null
 );

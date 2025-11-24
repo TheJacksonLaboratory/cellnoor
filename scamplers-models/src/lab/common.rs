@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = labs))]
-pub struct Fields {
+pub struct LabFields {
     pub(super) name: NonEmptyString,
     pub(super) pi_id: Uuid,
 

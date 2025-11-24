@@ -1,6 +1,6 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{SelectableExpression, prelude::*};
-use scamplers_models::institution::{Filter, Institution, Query};
+use scamplers_models::institution::{Institution, InstitutionFilter, InstitutionQuery};
 use scamplers_schema::institutions::dsl::{id, name};
 use serde_qs::axum::QsQuery;
 
@@ -17,30 +17,25 @@ pub(super) async fn list_institutions(
     _: Root,
     state: State<AppState>,
     user: AuthenticatedUser,
-    QsQuery(request): QsQuery<Query>,
+    QsQuery(request): QsQuery<InstitutionQuery>,
 ) -> ApiResponse<Vec<Institution>> {
     let items = inner_handler(state, user, request).await?;
     Ok((StatusCode::OK, items))
 }
 
-impl db::Operation<Vec<Institution>> for Query {
+impl db::Operation<Vec<Institution>> for InstitutionQuery {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Vec<Institution>, db::Error> {
-        let mut stmt = Institution::query()
+        Ok(Institution::query()
             .limit(self.limit())
             .offset(self.offset())
-            .into_boxed();
-
-        if let Some(filter) = self.filter() {
-            stmt = stmt.filter(filter.to_boxed_filter());
-        }
-
-        stmt = stmt.order_by(self.order_by());
-
-        Ok(stmt.load(db_conn)?)
+            .filter(self.filter().to_boxed_filter())
+            .into_boxed()
+            .order_by(self.order_by())
+            .load(db_conn)?)
     }
 }
 
-impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for Filter
+impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for InstitutionFilter
 where
     id: SelectableExpression<QS>,
     name: SelectableExpression<QS>,
@@ -88,7 +83,7 @@ mod tests {
         #[future] root_db_conn: Connection,
         #[future] database: &'static Database,
     ) {
-        test_query::<Query, _>()
+        test_query::<InstitutionQuery, _>()
             .all_data(&database.institutions)
             .sort_by(sort_by_name)
             .run(root_db_conn)
@@ -102,14 +97,14 @@ mod tests {
         #[future] root_db_conn: Connection,
         #[future] database: &'static Database,
     ) {
-        let query = Query::builder()
+        let query = InstitutionQuery::builder()
             .filter(
-                Filter::builder()
+                InstitutionFilter::builder()
                     .names(["%a%", "%b%"].map(str::to_owned))
                     .build(),
             )
-            .order_by(OrderBy::id { descending: false })
-            .order_by(OrderBy::name { descending: true })
+            .order_by(InstitutionOrderBy::id { descending: false })
+            .order_by(InstitutionOrderBy::name { descending: true })
             .build();
 
         test_query()

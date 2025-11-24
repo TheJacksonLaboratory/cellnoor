@@ -1,6 +1,6 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{SelectableExpression, prelude::*};
-use scamplers_models::lab::{Filter, Query, Summary};
+use scamplers_models::lab::{LabFilter, LabQuery, LabSummary};
 use scamplers_schema::labs::dsl::{id, name};
 use serde_qs::axum::QsQuery;
 
@@ -17,30 +17,25 @@ pub(super) async fn list_labs(
     _: Root,
     state: State<AppState>,
     user: AuthenticatedUser,
-    QsQuery(request): QsQuery<Query>,
-) -> ApiResponse<Vec<Summary>> {
+    QsQuery(request): QsQuery<LabQuery>,
+) -> ApiResponse<Vec<LabSummary>> {
     let items = inner_handler(state, user, request).await?;
     Ok((StatusCode::OK, items))
 }
 
-impl db::Operation<Vec<Summary>> for Query {
-    fn execute(self, db_conn: &mut PgConnection) -> Result<Vec<Summary>, db::Error> {
-        let mut stmt = Summary::query()
+impl db::Operation<Vec<LabSummary>> for LabQuery {
+    fn execute(self, db_conn: &mut PgConnection) -> Result<Vec<LabSummary>, db::Error> {
+        Ok(LabSummary::query()
             .limit(self.limit())
             .offset(self.offset())
-            .into_boxed();
-
-        if let Some(filter) = self.filter() {
-            stmt = stmt.filter(filter.to_boxed_filter());
-        }
-
-        stmt = stmt.order_by(self.order_by());
-
-        Ok(stmt.load(db_conn)?)
+            .filter(self.filter().to_boxed_filter())
+            .into_boxed()
+            .order_by(self.order_by())
+            .load(db_conn)?)
     }
 }
 
-impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for Filter
+impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for LabFilter
 where
     id: SelectableExpression<QS>,
     name: SelectableExpression<QS>,
@@ -73,7 +68,7 @@ mod tests {
         test_util::test_query,
     };
 
-    fn sort_by_name(i1: &&Summary, i2: &&Summary) -> Ordering {
+    fn sort_by_name(i1: &&LabSummary, i2: &&LabSummary) -> Ordering {
         i1.name().to_lowercase().cmp(&i2.name().to_lowercase())
     }
 
@@ -84,7 +79,7 @@ mod tests {
         #[future] root_db_conn: Connection,
         #[future] database: &'static Database,
     ) {
-        test_query::<Query, _>()
+        test_query::<LabQuery, _>()
             .all_data(&database.labs)
             .sort_by(sort_by_name)
             .run(root_db_conn)
@@ -98,13 +93,13 @@ mod tests {
         #[future] root_db_conn: Connection,
         #[future] database: &'static Database,
     ) {
-        let query = Query::builder()
+        let query = LabQuery::builder()
             .filter(
-                Filter::builder()
+                LabFilter::builder()
                     .names(["%l%", "%a%", "%b%"].map(str::to_owned))
                     .build(),
             )
-            .order_by(OrderBy::name { descending: true })
+            .order_by(LabOrderBy::name { descending: true })
             .build();
 
         test_query()

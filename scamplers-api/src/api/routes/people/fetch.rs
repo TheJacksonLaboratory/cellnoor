@@ -1,13 +1,13 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{PgConnection, prelude::*, sql_types::Text};
-use scamplers_models::person::{Id, Person, SummaryWithParents};
+use scamplers_models::person::{Person, PersonId, SummaryWithParents};
 use scamplers_schema::people::dsl::id;
 
 use super::{ApiResponse, inner_handler};
 use crate::{api::extract::auth::AuthenticatedUser, db, state::AppState};
 
 pub(super) async fn fetch_person(
-    request: Id,
+    request: PersonId,
     state: State<AppState>,
     user: AuthenticatedUser,
 ) -> ApiResponse<Person> {
@@ -15,7 +15,7 @@ pub(super) async fn fetch_person(
     Ok((StatusCode::FOUND, item))
 }
 
-impl db::Operation<Person> for Id {
+impl db::Operation<Person> for PersonId {
     fn execute(self, db_conn: &mut PgConnection) -> Result<Person, db::Error> {
         diesel::define_sql_function! {fn get_user_roles(user_id: Text) -> Array<Text>}
 

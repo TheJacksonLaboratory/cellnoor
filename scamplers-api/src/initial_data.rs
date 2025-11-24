@@ -16,19 +16,19 @@ use crate::validate::Validate;
 
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct InitialData {
-    institution: institution::Creation,
-    app_admin: person::Creation,
+    institution: institution::InstitutionCreation,
+    app_admin: person::PersonCreation,
     // index_set_urls: Vec<Url>,
     // tenx_assays: Vec<NewTenxAssay>,
     // multiplexing_tags: Vec<NewMultiplexingTag>,
 }
 
 impl InitialData {
-    pub fn institution(&self) -> &institution::Creation {
+    pub fn institution(&self) -> &institution::InstitutionCreation {
         &self.institution
     }
 
-    pub fn app_admin(&self) -> &person::Creation {
+    pub fn app_admin(&self) -> &person::PersonCreation {
         &self.app_admin
     }
 }
@@ -77,7 +77,7 @@ trait Upsert {
     fn upsert(self, db_conn: &mut PgConnection) -> anyhow::Result<()>;
 }
 
-impl Upsert for institution::Creation {
+impl Upsert for institution::InstitutionCreation {
     fn upsert(self, db_conn: &mut PgConnection) -> anyhow::Result<()> {
         diesel::insert_into(institutions::table)
             .values(&self)
@@ -90,7 +90,7 @@ impl Upsert for institution::Creation {
     }
 }
 
-impl Upsert for person::Creation {
+impl Upsert for person::PersonCreation {
     fn upsert(mut self, db_conn: &mut PgConnection) -> anyhow::Result<()> {
         define_sql_function! {fn create_user_if_not_exists(user_id: Text, password: Text, roles: Array<Text>)}
 

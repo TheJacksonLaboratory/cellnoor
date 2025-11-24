@@ -1,6 +1,6 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{RunQueryDsl, prelude::*};
-use scamplers_models::lab::{Creation, Lab};
+use scamplers_models::lab::{Lab, LabCreation};
 use scamplers_schema::labs::dsl::{id, labs};
 use uuid::Uuid;
 
@@ -17,13 +17,13 @@ pub(super) async fn create_lab(
     _: Root,
     state: State<AppState>,
     user: AuthenticatedUser,
-    ValidJson(request): ValidJson<Creation>,
+    ValidJson(request): ValidJson<LabCreation>,
 ) -> ApiResponse<Lab> {
     let item = inner_handler(state, user, request).await?;
     Ok((StatusCode::CREATED, item))
 }
 
-impl db::Operation<Lab> for Creation {
+impl db::Operation<Lab> for LabCreation {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Lab, db::Error> {
         let created_id: Uuid = diesel::insert_into(labs)
             .values(self)

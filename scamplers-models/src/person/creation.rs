@@ -6,16 +6,15 @@ use non_empty_string::NonEmptyString;
 use scamplers_schema::people;
 use uuid::Uuid;
 
-use crate::person::common::{Fields, UserRole};
+use crate::person::common::{PersonFields, UserRole};
 
 #[insert]
 #[cfg_attr(feature = "app", derive(diesel::AsChangeset))]
 #[cfg_attr(feature = "app", diesel(table_name = people))]
-#[cfg_attr(feature = "typescript", ts(rename = "PersonCreation"))]
-pub struct Creation {
+pub struct PersonCreation {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: Fields,
+    inner: PersonFields,
 
     email: NonEmptyString,
     #[serde(default)]
@@ -24,7 +23,7 @@ pub struct Creation {
 }
 
 #[cfg_attr(feature = "builder", bon)]
-impl Creation {
+impl PersonCreation {
     #[cfg(feature = "builder")]
     #[builder(on(_, into))]
     #[must_use]
@@ -37,7 +36,7 @@ impl Creation {
         roles: Vec<UserRole>,
     ) -> Self {
         Self {
-            inner: Fields {
+            inner: PersonFields {
                 name,
                 orcid,
                 institution_id,

@@ -124,9 +124,14 @@ impl AppState {
 
     pub async fn db_conn(&self) -> Result<deadpool_diesel::postgres::Connection, db::Error> {
         match self {
-            Self::Development { db_pool, .. } | Self::Production { db_pool, .. } => {
-                Ok(db_pool.get().await?)
+            Self::Development {
+                db_pool,
+                user_id: _,
             }
+            | Self::Production {
+                db_pool,
+                api_key_prefix_length: _,
+            } => Ok(db_pool.get().await?),
         }
     }
 }

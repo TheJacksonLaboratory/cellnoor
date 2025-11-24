@@ -1,6 +1,6 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{dsl::AssumeNotNull, prelude::*};
-use scamplers_models::person::{Filter, Query, Summary};
+use scamplers_models::person::{PersonFilter, PersonQuery, PersonSummary};
 use scamplers_schema::people::dsl::{email, id, institution_id, microsoft_entra_oid, name, orcid};
 use serde_qs::axum::QsQuery;
 
@@ -17,13 +17,13 @@ pub(super) async fn list_people(
     _: Root,
     state: State<AppState>,
     user: AuthenticatedUser,
-    QsQuery(request): QsQuery<Query>,
-) -> ApiResponse<Vec<Summary>> {
+    QsQuery(request): QsQuery<PersonQuery>,
+) -> ApiResponse<Vec<PersonSummary>> {
     let items = inner_handler(state, user, request).await?;
     Ok((StatusCode::OK, items))
 }
 
-impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for Filter
+impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for PersonFilter
 where
     id: SelectableExpression<QS>,
     name: SelectableExpression<QS>,
@@ -67,9 +67,9 @@ where
     }
 }
 
-impl db::Operation<Vec<Summary>> for Query {
-    fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Vec<Summary>, db::Error> {
-        let mut stmt = Summary::query()
+impl db::Operation<Vec<PersonSummary>> for PersonQuery {
+    fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Vec<PersonSummary>, db::Error> {
+        let mut stmt = PersonSummary::query()
             .limit(self.limit())
             .offset(self.offset())
             .into_boxed();
@@ -97,11 +97,11 @@ mod tests {
         test_util::test_query,
     };
 
-    fn sort_by_id(i1: &&Summary, i2: &&Summary) -> Ordering {
+    fn sort_by_id(i1: &&PersonSummary, i2: &&PersonSummary) -> Ordering {
         i1.id().cmp(&i2.id())
     }
 
-    fn sort_by_name(i1: &&Summary, i2: &&Summary) -> Ordering {
+    fn sort_by_name(i1: &&PersonSummary, i2: &&PersonSummary) -> Ordering {
         i1.name().to_lowercase().cmp(&i2.name().to_lowercase())
     }
 
@@ -112,7 +112,7 @@ mod tests {
         #[future] root_db_conn: Connection,
         #[future] database: &'static Database,
     ) {
-        test_query::<Query, _>()
+        test_query::<PersonQuery, _>()
             .all_data(&database.people)
             .sort_by(sort_by_name)
             .run(root_db_conn)
@@ -126,14 +126,14 @@ mod tests {
         #[future] root_db_conn: Connection,
         #[future] database: &'static Database,
     ) {
-        let query = Query::builder()
+        let query = PersonQuery::builder()
             .filter(
-                Filter::builder()
+                PersonFilter::builder()
                     .names(["%5%", "%h%"].map(str::to_owned))
                     .build(),
             )
-            .order_by(OrderBy::id { descending: false })
-            .order_by(OrderBy::name { descending: true })
+            .order_by(PersonOrderBy::id { descending: false })
+            .order_by(PersonOrderBy::name { descending: true })
             .build();
 
         test_query()

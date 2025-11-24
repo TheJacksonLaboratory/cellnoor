@@ -28,26 +28,28 @@ where
 }
 
 #[derive(TS)]
-struct InstitutionQuery(#[ts(inline)] Query<institution::Filter, institution::OrderBy>);
+struct InstitutionQuery(
+    #[ts(inline)] Query<institution::InstitutionFilter, institution::InstitutionOrderBy>,
+);
 
 #[derive(TS)]
-struct PersonQuery(#[ts(inline)] Query<person::Filter, person::OrderBy>);
+struct PersonQuery(#[ts(inline)] Query<person::PersonFilter, person::PersonOrderBy>);
 
 #[derive(TS)]
-struct LabQuery(#[ts(inline)] Query<lab::Filter, lab::OrderBy>);
+struct LabQuery(#[ts(inline)] Query<lab::LabFilter, lab::LabOrderBy>);
 
 fn main() {
     let Cli { output_dir } = Cli::parse();
 
-    institution::Creation::export_all_to(&output_dir).unwrap();
+    institution::InstitutionCreation::export_all_to(&output_dir).unwrap();
     InstitutionQuery::export_all_to(&output_dir).unwrap();
     institution::Institution::export_all_to(&output_dir).unwrap();
 
-    person::Creation::export_all_to(&output_dir).unwrap();
+    person::PersonCreation::export_all_to(&output_dir).unwrap();
     PersonQuery::export_all_to(&output_dir).unwrap();
     person::Person::export_all_to(&output_dir).unwrap();
 
-    lab::Creation::export_all_to(&output_dir).unwrap();
+    lab::LabCreation::export_all_to(&output_dir).unwrap();
     LabQuery::export_all_to(&output_dir).unwrap();
     lab::Lab::export_all_to(&output_dir).unwrap();
 }

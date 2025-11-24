@@ -11,13 +11,8 @@ pub mod specimen;
 // mod suspension;
 // mod tenx_assay;
 // mod units;
-pub(crate) mod generic_query;
+#[cfg(feature = "app")]
+pub mod generic_query;
 mod links;
 #[cfg(feature = "app")]
 mod utils;
-
-#[cfg(all(feature = "app", feature = "typescript"))]
-compile_error!("features app and typescript are mutually exclusive");
-
-#[cfg(feature = "app")]
-pub use generic_query::NoLimit;

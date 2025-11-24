@@ -8,25 +8,24 @@ use scamplers_schema::labs;
 #[cfg(feature = "builder")]
 use uuid::Uuid;
 
-use crate::lab::common::Fields;
+use crate::lab::common::LabFields;
 
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = labs))]
-#[cfg_attr(feature = "typescript", ts(rename = "LabCreation"))]
-pub struct Creation {
+pub struct LabCreation {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: Fields,
+    inner: LabFields,
 }
 
 #[cfg_attr(feature = "builder", bon)]
-impl Creation {
+impl LabCreation {
     #[cfg(feature = "builder")]
     #[builder(on(_, into))]
     #[must_use]
     pub fn new(name: NonEmptyString, pi_id: Uuid, delivery_dir: NonEmptyString) -> Self {
         Self {
-            inner: Fields {
+            inner: LabFields {
                 name,
                 pi_id,
                 delivery_dir,

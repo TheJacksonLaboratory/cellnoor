@@ -3,14 +3,14 @@ use macro_attributes::select;
 use scamplers_schema::institutions;
 use uuid::Uuid;
 
-use crate::{institution::common::Fields, links::Links};
+use crate::{institution::common::InstitutionFields, links::Links};
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = institutions))]
 pub struct Institution {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: Fields,
+    inner: InstitutionFields,
 
     links: Links,
 }

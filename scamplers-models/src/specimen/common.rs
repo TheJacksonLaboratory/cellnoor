@@ -1,4 +1,7 @@
-use macro_attributes::{insert_select, simple_enum};
+use std::str::FromStr;
+
+use jiff::Timestamp;
+use macro_attributes::{base_model, insert_select, simple_enum};
 use macros::{impl_enum_from_sql, impl_enum_to_sql};
 use non_empty_string::NonEmptyString;
 #[cfg(feature = "app")]
@@ -6,8 +9,132 @@ use scamplers_schema::specimens;
 use serde_json::Value;
 use uuid::Uuid;
 
+use crate::specimen::creation::block::{
+    BlockFixative, FixedBlockEmbeddingMatrix, FrozenBlockEmbeddingMatrix,
+};
 #[cfg(feature = "app")]
 use crate::utils::{EnumFromSql, EnumToSql};
+
+#[insert_select]
+#[cfg_attr(feature = "app", diesel(table_name = specimens))]
+pub struct SpecimenCommonFields {
+    pub(super) readable_id: NonEmptyString,
+    pub(super) name: NonEmptyString,
+    pub(super) submitted_by: Uuid,
+    #[cfg_attr(feature = "app", diesel(
+        serialize_as = jiff_diesel::Timestamp,
+        deserialize_as = jiff_diesel::Timestamp
+    ))]
+    #[cfg_attr(feature = "typescript", ts(type = "Date"))]
+    pub(super) received_at: Timestamp,
+    pub(super) lab_id: Uuid,
+    pub(super) species: Species,
+    pub(super) host_species: Option<Species>,
+    pub(super) returned_by: Option<Uuid>,
+    #[cfg_attr(feature = "app", diesel(
+        serialize_as = jiff_diesel::NullableTimestamp,
+        deserialize_as = jiff_diesel::NullableTimestamp
+    ))]
+    #[cfg_attr(feature = "typescript", ts(type = "Date"))]
+    pub(super) returned_at: Option<Timestamp>,
+    pub(super) tissue: NonEmptyString,
+    pub(super) additional_data: Option<Value>,
+}
+
+#[simple_enum]
+pub enum SpecimenType {
+    Block,
+    Suspension,
+    Tissue,
+}
+
+#[cfg(feature = "app")]
+impl EnumFromSql for SpecimenType {}
+impl_enum_from_sql!(SpecimenType);
+
+#[cfg(feature = "app")]
+impl EnumToSql for SpecimenType {}
+impl_enum_to_sql!(SpecimenType);
+
+#[base_model]
+#[derive(Copy)]
+#[cfg_attr(
+    feature = "app",
+    derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression)
+)]
+#[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Text))]
+#[serde(untagged)]
+pub enum EmbeddingMatrix {
+    FixedBlock(FixedBlockEmbeddingMatrix),
+    FrozenBlock(FrozenBlockEmbeddingMatrix),
+}
+
+impl FromStr for EmbeddingMatrix {
+    type Err = strum::ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        FixedBlockEmbeddingMatrix::from_str(s)
+            .map(Self::FixedBlock)
+            .or_else(|_| FrozenBlockEmbeddingMatrix::from_str(s).map(Self::FrozenBlock))
+    }
+}
+
+#[cfg(feature = "app")]
+impl EnumFromSql for EmbeddingMatrix {}
+impl_enum_from_sql!(EmbeddingMatrix);
+
+impl From<&EmbeddingMatrix> for &'static str {
+    fn from(embedding_matrix: &EmbeddingMatrix) -> &'static str {
+        use EmbeddingMatrix::*;
+
+        match embedding_matrix {
+            FixedBlock(em) => em.into(),
+            FrozenBlock(em) => em.into(),
+        }
+    }
+}
+
+#[cfg(feature = "app")]
+impl EnumToSql for EmbeddingMatrix {}
+impl_enum_to_sql!(EmbeddingMatrix);
+
+#[base_model]
+#[derive(Copy)]
+#[cfg_attr(
+    feature = "app",
+    derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression)
+)]
+#[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Text))]
+#[serde(untagged)]
+pub enum Fixative {
+    Block(BlockFixative),
+}
+
+impl FromStr for Fixative {
+    type Err = strum::ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        BlockFixative::from_str(s).map(Self::Block)
+    }
+}
+
+#[cfg(feature = "app")]
+impl EnumFromSql for Fixative {}
+impl_enum_from_sql!(Fixative);
+
+impl From<&Fixative> for &'static str {
+    fn from(fixative: &Fixative) -> &'static str {
+        use Fixative::*;
+
+        match fixative {
+            Block(f) => f.into(),
+        }
+    }
+}
+
+#[cfg(feature = "app")]
+impl EnumToSql for Fixative {}
+impl_enum_to_sql!(Fixative);
 
 #[simple_enum]
 pub enum Species {
@@ -24,28 +151,18 @@ pub enum Species {
 
 #[cfg(feature = "app")]
 impl EnumFromSql for Species {}
+impl_enum_from_sql!(Species);
 
 #[cfg(feature = "app")]
 impl EnumToSql for Species {}
-
-impl_enum_from_sql!(Species);
-
 impl_enum_to_sql!(Species);
 
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = specimens))]
-pub struct Fields {
-    readable_id: NonEmptyString,
-    name: NonEmptyString,
-    submitted_by: Uuid,
-    lab_id: Uuid,
-    species: Species,
-    host_species: Option<Species>,
-    returned_by: Option<Uuid>,
-    tissue: NonEmptyString,
-    additional_data: Option<Value>,
-}
-
-pub(super) const fn true_() -> bool {
-    true
+pub struct SpecimenVariableFields {
+    pub(crate) type_: SpecimenType,
+    pub(crate) embedded_in: Option<EmbeddingMatrix>,
+    pub(crate) fixative: Option<Fixative>,
+    pub(crate) frozen: bool,
+    pub(crate) cryopreserved: bool,
 }

@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 #[order_by(scamplers_schema::people)]
 #[allow(non_camel_case_types)]
-pub enum OrderBy {
+pub enum PersonOrderBy {
     email {
         #[serde(default)]
         descending: bool,
@@ -19,14 +19,14 @@ pub enum OrderBy {
     },
 }
 
-impl Default for OrderBy {
+impl Default for PersonOrderBy {
     fn default() -> Self {
         Self::name { descending: false }
     }
 }
 
 #[filter]
-pub struct Filter {
+pub struct PersonFilter {
     ids: Option<Vec<Uuid>>,
     names: Option<Vec<String>>,
     emails: Option<Vec<String>>,
@@ -35,7 +35,7 @@ pub struct Filter {
     microsoft_entra_oids: Option<Vec<Uuid>>,
 }
 
-impl Filter {
+impl PersonFilter {
     #[must_use]
     pub fn ids(&self) -> Option<&[Uuid]> {
         self.ids.as_deref()
@@ -68,13 +68,13 @@ impl Filter {
 }
 
 #[cfg(feature = "app")]
-pub type Query = crate::generic_query::Query<Filter, OrderBy>;
+pub type PersonQuery = crate::generic_query::Query<PersonFilter, PersonOrderBy>;
 
 #[cfg(feature = "app")]
-impl Query {
+impl PersonQuery {
     pub fn set_institution_id(&mut self, institution_id: Uuid) {
         let Some(filter) = &mut self.filter else {
-            self.filter = Some(Filter {
+            self.filter = Some(PersonFilter {
                 institution_ids: Some(vec![institution_id]),
                 ..Default::default()
             });
@@ -86,4 +86,4 @@ impl Query {
     }
 }
 
-uuid_newtype!(Id, "/{id}");
+uuid_newtype!(PersonId, "/{id}");
