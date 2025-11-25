@@ -6,13 +6,17 @@ use crate::validate::Validate;
 pub(super) mod measurement;
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
-#[serde(rename_all = "snake_case", tag = "type", content = "cause")]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(rename = "SpecimenValidationError"))]
+#[serde(rename_all = "snake_case", tag = "type", content = "info")]
 pub enum Error {
     #[error("donor and host species cannot be the same")]
     SameDonorAndHostSpecies { species: Species },
     #[error("received at ({received_at}) cannot be after returned at ({returned_at})")]
     ReturnedBeforeReceived {
+        #[cfg_attr(feature = "typescript", ts(as = "String"))]
         received_at: Timestamp,
+        #[cfg_attr(feature = "typescript", ts(as = "String"))]
         returned_at: Timestamp,
     },
 }

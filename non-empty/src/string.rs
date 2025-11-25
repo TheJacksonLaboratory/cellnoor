@@ -1,6 +1,8 @@
 use std::fmt::Display;
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(try_from = "String"))]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(
     feature = "diesel",
@@ -45,59 +47,15 @@ impl AsRef<str> for NonEmptyString {
     }
 }
 
-// This is essentially taken from https://github.com/MidasLamb/non-empty-string
-#[cfg(feature = "serde")]
-mod serde_impls {
-    use std::fmt;
+#[derive(Debug, thiserror::Error)]
+#[error("string cannot be empty")]
+pub struct Error;
 
-    use serde::{
-        Serialize,
-        de::{self, Deserialize, Deserializer, Unexpected, Visitor},
-    };
+impl TryFrom<String> for NonEmptyString {
+    type Error = Error;
 
-    use super::NonEmptyString;
-
-    impl Serialize for NonEmptyString {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: serde::Serializer,
-        {
-            self.0.serialize(serializer)
-        }
-    }
-
-    struct NonEmptyStringVisitor;
-
-    impl<'de> Deserialize<'de> for NonEmptyString {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
-        {
-            deserializer.deserialize_string(NonEmptyStringVisitor)
-        }
-    }
-
-    impl Visitor<'_> for NonEmptyStringVisitor {
-        type Value = NonEmptyString;
-
-        fn expecting(&self, formatter: &mut fmt::Formatter) -> std::fmt::Result {
-            formatter.write_str("a string with length > 0")
-        }
-
-        fn visit_string<E>(self, value: String) -> Result<Self::Value, E>
-        where
-            E: de::Error,
-        {
-            NonEmptyString::new(value)
-                .ok_or_else(|| de::Error::invalid_value(Unexpected::Str(""), &self))
-        }
-
-        fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-        where
-            E: de::Error,
-        {
-            self.visit_string(value.to_owned())
-        }
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Self::new(value).ok_or(Error)
     }
 }
 
@@ -110,7 +68,7 @@ mod diesel_impls {
         sql_types::Text,
     };
 
-    use crate::NonEmptyString;
+    use super::NonEmptyString;
 
     impl FromSql<Text, Pg> for NonEmptyString {
         fn from_sql(bytes: PgValue<'_>) -> diesel::deserialize::Result<Self> {

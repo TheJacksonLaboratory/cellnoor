@@ -1,54 +1,64 @@
 use std::str::FromStr;
 
-use diesel::{
-    PgConnection, RunQueryDsl,
-    prelude::*,
-    sql_types::{Array, Text},
-};
+use diesel::PgConnection;
 use scamplers_models::{
-    institution,
-    person::{self, UserRole},
+    institution::InstitutionCreation, person::PersonCreation, tenx_assay::TenxAssayCreation,
 };
-use scamplers_schema::{institutions, people};
-use uuid::Uuid;
+use url::Url;
 
-use crate::validate::Validate;
+use crate::{initial_data::index_sets::download_and_insert_index_sets, validate::Validate};
+
+mod app_admin;
+mod index_sets;
+mod institution;
 
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct InitialData {
-    institution: institution::InstitutionCreation,
-    app_admin: person::PersonCreation,
-    // index_set_urls: Vec<Url>,
-    // tenx_assays: Vec<NewTenxAssay>,
+    institution: InstitutionCreation,
+    app_admin: PersonCreation,
+    index_set_urls: Vec<Url>,
+    tenx_assays: Vec<TenxAssayCreation>,
     // multiplexing_tags: Vec<NewMultiplexingTag>,
 }
 
 impl InitialData {
-    pub fn institution(&self) -> &institution::InstitutionCreation {
+    pub fn institution(&self) -> &InstitutionCreation {
         &self.institution
     }
 
-    pub fn app_admin(&self) -> &person::PersonCreation {
+    pub fn app_admin(&self) -> &PersonCreation {
         &self.app_admin
+    }
+
+    pub fn index_set_urls(&self) -> &[Url] {
+        &self.index_set_urls
+    }
+
+    pub fn tenx_assays(&self) -> &[TenxAssayCreation] {
+        &self.tenx_assays
     }
 }
 
 pub async fn insert_initial_data(
     initial_data: InitialData,
-    _http_client: reqwest::Client,
+    http_client: reqwest::Client,
     db_pool: deadpool_diesel::postgres::Pool,
 ) -> anyhow::Result<()> {
+    let db_conn = db_pool.get().await?;
+
+    let initial_data = db_conn
+        .interact(move |db_conn| initial_data.validate(db_conn).map(|()| initial_data))
+        .await
+        .unwrap()?;
+
+    let InitialData {
+        institution,
+        app_admin,
+        index_set_urls,
+        tenx_assays: _,
+    } = initial_data;
+
     let simple_operations = |db_conn: &mut PgConnection| -> Result<(), anyhow::Error> {
-        initial_data.validate(db_conn)?;
-
-        let InitialData {
-            institution,
-            app_admin,
-            // index_set_urls,
-            // tenx_assays,
-            // multiplexing_tags,
-        } = initial_data;
-
         institution.upsert(db_conn)?;
         app_admin.upsert(db_conn)?;
 
@@ -62,10 +72,8 @@ pub async fn insert_initial_data(
         Ok(())
     };
 
-    // Insert index sets first so we can insert library-type specifications as part
-    // of a larger set of operations in one shot
-    // let db_conn = db_pool.get().await?;
-    // download_and_insert_index_sets(&index_set_urls, http_client, db_conn).await?;
+    let db_conn = db_pool.get().await?;
+    download_and_insert_index_sets(index_set_urls, http_client, db_conn).await?;
 
     let db_conn = db_pool.get().await?;
     db_conn.interact(simple_operations).await.unwrap()?;
@@ -75,52 +83,6 @@ pub async fn insert_initial_data(
 
 trait Upsert {
     fn upsert(self, db_conn: &mut PgConnection) -> anyhow::Result<()>;
-}
-
-impl Upsert for institution::InstitutionCreation {
-    fn upsert(self, db_conn: &mut PgConnection) -> anyhow::Result<()> {
-        diesel::insert_into(institutions::table)
-            .values(&self)
-            .on_conflict(institutions::id)
-            .do_update()
-            .set(&self)
-            .execute(db_conn)?;
-
-        Ok(())
-    }
-}
-
-impl Upsert for person::PersonCreation {
-    fn upsert(mut self, db_conn: &mut PgConnection) -> anyhow::Result<()> {
-        define_sql_function! {fn create_user_if_not_exists(user_id: Text, password: Text, roles: Array<Text>)}
-
-        diesel::update(people::table)
-            .filter(people::email.eq(self.email()))
-            .set(people::email.eq(None::<String>))
-            .execute(db_conn)?;
-
-        let id: Uuid = diesel::insert_into(people::table)
-            .values(&self)
-            .on_conflict(people::microsoft_entra_oid)
-            .do_update()
-            .set(&self)
-            .returning(people::id)
-            .get_result(db_conn)?;
-
-        // Create a db user corresponding to this person so we can assign them a role.
-        // Note that we set a random password so that nobody can log into the database
-        // as that user.
-        self.roles_mut().push(UserRole::AppAdmin);
-
-        diesel::select(create_user_if_not_exists(
-            id.to_string(),
-            Uuid::now_v7().to_string(),
-            self.roles(),
-        ))
-        .execute(db_conn)?;
-
-        Ok(())
-    }
 }
 
 impl FromStr for InitialData {

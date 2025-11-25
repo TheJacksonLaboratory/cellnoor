@@ -1,5 +1,5 @@
 use macro_attributes::insert_select;
-use non_empty_string::NonEmptyString;
+use non_empty::NonEmptyString;
 #[cfg(feature = "app")]
 use scamplers_schema::labs;
 use uuid::Uuid;

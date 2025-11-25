@@ -6,6 +6,9 @@ version = "0.1.0"
 [dependencies]
 clap.workspace = true
 heck.workspace = true
+scamplers-api = { version = "0.1.0", path = "../scamplers-api", features = [
+  "typescript",
+] }
 scamplers-models = { version = "0.1.0", path = "../scamplers-models", features = [
   "typescript",
 ] }

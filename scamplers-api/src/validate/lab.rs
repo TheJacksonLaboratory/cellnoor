@@ -3,7 +3,9 @@ use scamplers_models::lab::LabCreation;
 use crate::validate::Validate;
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
-#[serde(rename_all = "snake_case", tag = "type", content = "cause")]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(rename = "LabValidationError"))]
+#[serde(rename_all = "snake_case", tag = "type", content = "info")]
 pub enum Error {
     #[error("{delivery_dir} invalid: {message}")]
     DeliveryDir {

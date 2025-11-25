@@ -191,9 +191,9 @@ diesel::table! {
         library_type -> Text,
         index_kit -> Text,
         #[sql_name = "cdna_volume_µl"]
-        cdna_volume_l -> Float4,
+        cdna_volume_l -> Int4,
         #[sql_name = "library_volume_µl"]
-        library_volume_l -> Float4,
+        library_volume_l -> Int4,
     }
 }
 
@@ -289,6 +289,7 @@ diesel::table! {
         id -> Uuid,
         suspension_id -> Uuid,
         measured_by -> Uuid,
+        measured_at -> Timestamptz,
         data -> Jsonb,
     }
 }
@@ -298,6 +299,7 @@ diesel::table! {
         id -> Uuid,
         pool_id -> Uuid,
         measured_by -> Uuid,
+        measured_at -> Timestamptz,
         data -> Jsonb,
     }
 }
@@ -328,6 +330,14 @@ diesel::table! {
 }
 
 diesel::table! {
+    suspension_tagging (suspension_id, pool_id, tag_id) {
+        suspension_id -> Uuid,
+        pool_id -> Uuid,
+        tag_id -> Uuid,
+    }
+}
+
+diesel::table! {
     suspensions (id) {
         id -> Uuid,
         links -> Jsonb,
@@ -335,8 +345,6 @@ diesel::table! {
         parent_specimen_id -> Uuid,
         biological_material -> Text,
         created_at -> Nullable<Timestamptz>,
-        pooled_into -> Nullable<Uuid>,
-        multiplexing_tag_id -> Nullable<Uuid>,
         lysis_duration_minutes -> Nullable<Float4>,
         target_cell_recovery -> Float4,
         additional_data -> Nullable<Jsonb>,
@@ -406,9 +414,10 @@ diesel::joinable!(suspension_pool_preparers -> people (prepared_by));
 diesel::joinable!(suspension_pool_preparers -> suspension_pools (pool_id));
 diesel::joinable!(suspension_preparers -> people (prepared_by));
 diesel::joinable!(suspension_preparers -> suspensions (suspension_id));
-diesel::joinable!(suspensions -> multiplexing_tags (multiplexing_tag_id));
+diesel::joinable!(suspension_tagging -> multiplexing_tags (tag_id));
+diesel::joinable!(suspension_tagging -> suspension_pools (pool_id));
+diesel::joinable!(suspension_tagging -> suspensions (suspension_id));
 diesel::joinable!(suspensions -> specimens (parent_specimen_id));
-diesel::joinable!(suspensions -> suspension_pools (pooled_into));
 
 diesel::allow_tables_to_appear_in_same_query!(
     api_keys,
@@ -443,6 +452,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     suspension_pool_preparers,
     suspension_pools,
     suspension_preparers,
+    suspension_tagging,
     suspensions,
     tenx_assays,
 );

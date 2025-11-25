@@ -5,9 +5,12 @@ mod institution;
 mod lab;
 mod person;
 mod specimen;
+mod tenx_assay;
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
-#[serde(rename_all = "snake_case", tag = "type", content = "cause")]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(rename = "DataValidationError"))]
+#[serde(rename_all = "snake_case", tag = "type", content = "info")]
 #[error(transparent)]
 pub enum Error {
     InsertInitialData(#[from] initial_data::Error),

@@ -1,7 +1,9 @@
 use uuid::Uuid;
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
-#[serde(tag = "type", content = "cause")]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(rename = "DbError"))]
+#[serde(rename_all = "snake_case", tag = "type", content = "info")]
 pub enum Error {
     #[error("failed to find {resource} with ID {resource_id}")]
     ResourceNotFound { resource: String, resource_id: Uuid },

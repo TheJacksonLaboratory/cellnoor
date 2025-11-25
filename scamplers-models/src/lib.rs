@@ -1,3 +1,5 @@
+#![allow(uncommon_codepoints)]
+
 // mod chromium_run;
 // mod dataset;
 // mod index_set;
@@ -8,8 +10,8 @@ pub mod lab;
 pub mod person;
 // mod sequencing_run;
 pub mod specimen;
-// mod suspension;
-// mod tenx_assay;
+pub mod suspension;
+pub mod tenx_assay;
 // mod units;
 #[cfg(feature = "app")]
 pub mod generic_query;

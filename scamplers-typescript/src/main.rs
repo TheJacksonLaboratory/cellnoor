@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use clap::Parser;
+use scamplers_api::api::ErrorResponse;
 use scamplers_models::{
     institution::{Institution, InstitutionCreation, InstitutionFilter, InstitutionOrderBy},
     lab::{Lab, LabCreation, LabFilter, LabOrderBy},
@@ -62,4 +63,6 @@ fn main() {
     SpecimenCreation::export_all_to(&output_dir).unwrap();
     SpecimenQuery::export_all_to(&output_dir).unwrap();
     Specimen::export_all_to(&output_dir).unwrap();
+
+    ErrorResponse::export_all_to(&output_dir).unwrap();
 }

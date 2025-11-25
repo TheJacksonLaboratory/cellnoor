@@ -1,7 +1,9 @@
 use crate::db;
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
-#[serde(rename_all = "snake_case", tag = "type", content = "cause")]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(rename = "AuthError"))]
+#[serde(rename_all = "snake_case", tag = "type", content = "info")]
 #[error(transparent)]
 pub enum Error {
     #[error("{message}")]

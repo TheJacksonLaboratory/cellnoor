@@ -19,7 +19,8 @@ jiff.workspace = true
 jiff-diesel = { workspace = true, optional = true }
 macro-attributes = { path = "macro-attributes" }
 macros = { path = "macros" }
-non-empty-string = { path = "../non-empty-string", features = ["serde"] }
+non-empty = { path = "../non-empty", features = ["serde"] }
+positive = { version = "0.1.0", path = "../positive", features = ["serde"] }
 scamplers-schema = { path = "../scamplers-schema", optional = true }
 serde.workspace = true
 serde_json.workspace = true
@@ -41,7 +42,8 @@ app = [
   "dep:diesel",
   "dep:jiff-diesel",
   "dep:scamplers-schema",
-  "non-empty-string/diesel",
+  "non-empty/diesel",
+  "positive/diesel",
 ]
 builder = ["dep:bon"]
-typescript = ["dep:ts-rs", "non-empty-string/typescript"]
+typescript = ["dep:ts-rs", "non-empty/typescript", "positive/typescript"]

@@ -2,7 +2,7 @@
 use bon::bon;
 use macro_attributes::insert;
 #[cfg(feature = "builder")]
-use non_empty_string::NonEmptyString;
+use non_empty::NonEmptyString;
 #[cfg(feature = "app")]
 use scamplers_schema::labs;
 #[cfg(feature = "builder")]

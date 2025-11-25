@@ -11,7 +11,9 @@ static EMAIL_REGEX: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
-#[serde(rename_all = "snake_case", tag = "type", content = "cause")]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(rename = "PersonValidationError"))]
+#[serde(rename_all = "snake_case", tag = "type", content = "info")]
 #[error("{email} invalid: {message}")]
 pub enum Error {
     Email { email: String, message: String },

@@ -1,5 +1,6 @@
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "serde", serde(transparent))]
 pub struct DefaultVec<T>(Vec<T>);
 
 impl<T> DefaultVec<T> {

@@ -9,7 +9,7 @@ WORKDIR /app
 RUN --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
     --mount=type=bind,source=default-vec,target=default-vec \
-    --mount=type=bind,source=non-empty-string,target=non-empty-string \
+    --mount=type=bind,source=non-empty,target=non-empty \
     --mount=type=bind,source=scamplers-schema,target=scamplers-schema \
     --mount=type=bind,source=scamplers-models,target=scamplers-models \
     --mount=type=bind,source=scamplers-jsonschema,target=scamplers-jsonschema \

@@ -2,6 +2,7 @@ create table multiplexing_tags (
     id uuid primary key default uuidv7(),
     tag_id case_insensitive_text not null,
     type case_insensitive_text not null,
+
     unique (tag_id, type)
 );
 
@@ -12,20 +13,28 @@ create table suspensions (
     parent_specimen_id uuid references specimens on delete restrict on update restrict not null,
     biological_material case_insensitive_text not null,
     created_at timestamptz,
-    pooled_into uuid references suspension_pools on delete restrict on update restrict,
-    multiplexing_tag_id uuid references multiplexing_tags on delete restrict on update restrict,
     lysis_duration_minutes real,
     target_cell_recovery real not null,
-    additional_data jsonb,
+    additional_data jsonb
+);
 
-    -- two suspensions cannot be pooled together and tagged with the same tag
-    unique (pooled_into, multiplexing_tag_id)
+create table suspension_tagging (
+    suspension_id uuid references suspensions on delete restrict on update restrict not null,
+    pool_id uuid references suspension_pools on delete restrict on update restrict,
+    tag_id uuid references multiplexing_tags on delete restrict on update restrict not null,
+
+    -- the same tag cannot be used more than once in the same suspension pool
+    unique (pool_id, tag_id),
+
+    -- the same suspension cannot be pooled more than once with the same tag in the same pool
+    primary key (suspension_id, pool_id, tag_id)
 );
 
 create table suspension_measurements (
     id uuid primary key default uuidv7(),
     suspension_id uuid references suspensions on delete restrict on update restrict not null,
     measured_by uuid references people on delete restrict on update restrict not null,
+    measured_at timestamptz not null,
     data jsonb not null
 );
 

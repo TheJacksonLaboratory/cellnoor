@@ -1,7 +1,7 @@
 #[cfg(feature = "builder")]
 use bon::bon;
 use macro_attributes::insert;
-use non_empty_string::NonEmptyString;
+use non_empty::NonEmptyString;
 #[cfg(feature = "app")]
 use scamplers_schema::people;
 use uuid::Uuid;

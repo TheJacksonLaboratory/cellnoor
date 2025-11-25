@@ -4,4 +4,4 @@ import type { Species } from "./Species";
 import type { SuspensionFixative } from "./SuspensionFixative";
 import type { JsonValue } from "./serde_json/JsonValue";
 
-export type FixedOrFreshSuspensionCreation = { fixative?: SuspensionFixative, readable_id: NonEmptyString, name: NonEmptyString, submitted_by: string, received_at: Date, lab_id: string, species: Species, host_species?: Species, returned_by?: string, returned_at: Date, tissue: NonEmptyString, additional_data?: JsonValue, };
+export type FixedOrFreshSuspensionCreation = { fixative?: SuspensionFixative, readable_id: NonEmptyString, name: NonEmptyString, submitted_by: string, received_at: string, lab_id: string, species: Species, host_species?: Species, returned_by?: string, returned_at?: string, tissue: NonEmptyString, additional_data?: JsonValue, };

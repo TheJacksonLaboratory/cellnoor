@@ -1,12 +1,14 @@
 [workspace]
 members = [
   "default-vec",
-  "non-empty-string",
+  "non-empty",
+  "positive",
   "scamplers-api",
   "scamplers-models",
   "scamplers-models/macro-attributes",
   "scamplers-schema",
   "scamplers-typescript",
+  "units",
 ]
 resolver = "3"
 

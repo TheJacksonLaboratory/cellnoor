@@ -3,7 +3,7 @@ use std::str::FromStr;
 use jiff::Timestamp;
 use macro_attributes::{base_model, insert_select, simple_enum};
 use macros::{impl_enum_from_sql, impl_enum_to_sql};
-use non_empty_string::NonEmptyString;
+use non_empty::NonEmptyString;
 #[cfg(feature = "app")]
 use scamplers_schema::specimens;
 use serde_json::Value;
@@ -28,7 +28,7 @@ pub struct SpecimenCommonFields {
         serialize_as = jiff_diesel::Timestamp,
         deserialize_as = jiff_diesel::Timestamp
     ))]
-    #[cfg_attr(feature = "typescript", ts(type = "Date"))]
+    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     pub(super) received_at: Timestamp,
     pub(super) lab_id: Uuid,
     pub(super) species: Species,
@@ -38,7 +38,7 @@ pub struct SpecimenCommonFields {
         serialize_as = jiff_diesel::NullableTimestamp,
         deserialize_as = jiff_diesel::NullableTimestamp
     ))]
-    #[cfg_attr(feature = "typescript", ts(type = "Date"))]
+    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     pub(super) returned_at: Option<Timestamp>,
     pub(super) tissue: NonEmptyString,
     pub(super) additional_data: Option<Value>,

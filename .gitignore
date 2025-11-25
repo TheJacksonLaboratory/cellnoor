@@ -17,6 +17,7 @@ target
 # Initial data also useful for development
 initial_data
 !initial_data.sample.json
+!scamplers-api/src/initial_data
 
 # Generated TypesScript code
 pkg

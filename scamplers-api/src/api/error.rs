@@ -8,7 +8,9 @@ use axum::{
 use crate::{api::extract::auth, db, validate};
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
-#[serde(rename_all = "snake_case", tag = "type", content = "cause")]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(rename = "ApiError"))]
+#[serde(rename_all = "snake_case", tag = "type", content = "info")]
 #[error(transparent)]
 pub enum Error {
     Auth(#[from] auth::Error),
@@ -29,6 +31,8 @@ impl From<deadpool_diesel::InteractError> for Error {
 }
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(rename = "ErrorResponse"))]
 #[error("{self:?}")]
 pub struct ErrorResponse {
     pub status: u16,

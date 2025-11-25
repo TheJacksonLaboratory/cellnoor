@@ -16,9 +16,9 @@ pub struct SpecimenFilter {
     names: Option<Vec<String>>,
     submitted_by: Option<Vec<Uuid>>,
     labs: Option<Vec<Uuid>>,
-    #[cfg_attr(feature = "typescript", ts(type = "Date"))]
+    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     received_before: Option<Timestamp>,
-    #[cfg_attr(feature = "typescript", ts(type = "Date"))]
+    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     received_after: Option<Timestamp>,
     species: Option<Vec<Species>>,
     host_species: Option<Vec<Species>>,
@@ -28,9 +28,9 @@ pub struct SpecimenFilter {
     frozen: Option<bool>,
     cryopreserved: Option<bool>,
     tissues: Option<Vec<String>>,
-    #[cfg_attr(feature = "typescript", ts(type = "Date"))]
+    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     returned_before: Option<Timestamp>,
-    #[cfg_attr(feature = "typescript", ts(type = "Date"))]
+    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     returned_after: Option<Timestamp>,
     returned_by: Option<Vec<Uuid>>,
     additional_data: Option<Vec<Value>>,

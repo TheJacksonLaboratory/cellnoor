@@ -9,6 +9,7 @@ use crate::initial_data::InitialData;
 
 #[derive(Debug, Zeroize)]
 pub struct Config {
+    #[zeroize(skip)]
     mode: AppMode,
     db_root_user: String,
     db_root_password: String,
@@ -221,7 +222,7 @@ impl<T> OptionExt<T> for Option<T> {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, Zeroize)]
+#[derive(Clone, Copy, Debug, Default)]
 pub enum AppMode {
     Development,
     #[default]

@@ -1,0 +1,23 @@
+[package]
+edition.workspace = true
+name = "non-empty"
+version = "0.1.0"
+
+[dependencies]
+diesel = { workspace = true, optional = true }
+serde = { workspace = true, optional = true }
+thiserror.workspace = true
+ts-rs = { workspace = true, optional = true }
+
+[lints]
+workspace = true
+
+[features]
+diesel = ["diesel/postgres"]
+serde = ["dep:serde"]
+typescript = ["dep:ts-rs"]
+
+[dev-dependencies]
+diesel = { workspace = true, features = ["sqlite"] }
+pretty_assertions.workspace = true
+serde_json.workspace = true

@@ -3,7 +3,7 @@ use std::ops::Range;
 
 use deadpool_diesel::postgres::{Connection, Pool};
 use jiff::Timestamp;
-use non_empty_string::NonEmptyString;
+use non_empty::NonEmptyString;
 use rand::{
     Rng, SeedableRng,
     distr::Alphanumeric,

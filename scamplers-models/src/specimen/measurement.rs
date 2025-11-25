@@ -1,7 +1,8 @@
 use jiff::Timestamp;
 use macro_attributes::{insert_select, json};
 use macros::{impl_json_from_sql, impl_json_to_sql};
-use non_empty_string::NonEmptyString;
+use non_empty::NonEmptyString;
+use positive::PositiveF32;
 #[cfg(feature = "app")]
 use scamplers_schema::specimen_measurements;
 use uuid::Uuid;
@@ -17,7 +18,7 @@ pub struct SpecimenMeasurement {
         serialize_as = jiff_diesel::Timestamp,
         deserialize_as = jiff_diesel::Timestamp
     ))]
-    #[cfg_attr(feature = "typescript", ts(type = "Date"))]
+    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     measured_at: Timestamp,
     data: MeasurementData,
 }
@@ -34,12 +35,12 @@ pub enum MeasurementData {
     #[serde(rename = "RIN")]
     Rin {
         instrument_name: Option<NonEmptyString>,
-        value: f32,
+        value: PositiveF32,
     },
     #[serde(rename = "DV200")]
     Dv200 {
         instrument_name: Option<NonEmptyString>,
-        value: f32,
+        value: PositiveF32,
     },
 }
 

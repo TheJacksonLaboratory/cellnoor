@@ -13,6 +13,7 @@ create table suspension_pool_measurements (
     id uuid primary key default uuidv7(),
     pool_id uuid references suspension_pools on delete restrict on update restrict not null,
     measured_by uuid references people on delete restrict on update restrict not null,
+    measured_at timestamptz not null,
     data jsonb not null
 );
 

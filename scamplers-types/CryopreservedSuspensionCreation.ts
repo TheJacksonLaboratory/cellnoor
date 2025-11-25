@@ -3,4 +3,4 @@ import type { NonEmptyString } from "./NonEmptyString";
 import type { Species } from "./Species";
 import type { JsonValue } from "./serde_json/JsonValue";
 
-export type CryopreservedSuspensionCreation = { readable_id: NonEmptyString, name: NonEmptyString, submitted_by: string, received_at: Date, lab_id: string, species: Species, host_species?: Species, returned_by?: string, returned_at: Date, tissue: NonEmptyString, additional_data?: JsonValue, };
+export type CryopreservedSuspensionCreation = { readable_id: NonEmptyString, name: NonEmptyString, submitted_by: string, received_at: string, lab_id: string, species: Species, host_species?: Species, returned_by?: string, returned_at?: string, tissue: NonEmptyString, additional_data?: JsonValue, };

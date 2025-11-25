@@ -17,6 +17,7 @@ diesel_migrations.workspace = true
 dotenvy.workspace = true
 jiff.workspace = true
 jiff-diesel.workspace = true
+positive = { version = "0.1.0", path = "../positive", features = ["serde"] }
 regex.workspace = true
 reqwest.workspace = true
 rstest.workspace = true
@@ -33,6 +34,7 @@ tokio.workspace = true
 tracing.workspace = true
 tracing-appender.workspace = true
 tracing-subscriber.workspace = true
+ts-rs = { workspace = true, optional = true }
 url.workspace = true
 uuid.workspace = true
 zeroize.workspace = true
@@ -43,10 +45,13 @@ workspace = true
 [dev-dependencies]
 bon.workspace = true
 jiff.workspace = true
-non-empty-string = { path = "../non-empty-string" }
+non-empty = { path = "../non-empty" }
 pretty_assertions.workspace = true
 rand.workspace = true
 scamplers-models = { version = "0.1.0", path = "../scamplers-models", features = [
   "app",
   "builder",
 ] }
+
+[features]
+typescript = ["dep:ts-rs"]

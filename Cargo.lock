@@ -1312,7 +1312,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "non-empty-string"
+name = "non-empty"
 version = "0.1.0"
 dependencies = [
  "diesel",
@@ -1452,6 +1452,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d8a2f0d8d040d7848a709caf78912debcc3f33ee4b3cac47d73d1e1069e83507"
 dependencies = [
  "portable-atomic",
+]
+
+[[package]]
+name = "positive"
+version = "0.1.0"
+dependencies = [
+ "diesel",
+ "serde",
+ "ts-rs",
 ]
 
 [[package]]
@@ -1747,7 +1756,8 @@ dependencies = [
  "dotenvy",
  "jiff",
  "jiff-diesel",
- "non-empty-string",
+ "non-empty",
+ "positive",
  "pretty_assertions",
  "rand",
  "regex",
@@ -1764,6 +1774,7 @@ dependencies = [
  "tracing",
  "tracing-appender",
  "tracing-subscriber",
+ "ts-rs",
  "url",
  "uuid",
  "zeroize",
@@ -1782,7 +1793,8 @@ dependencies = [
  "jiff-diesel",
  "macro-attributes",
  "macros",
- "non-empty-string",
+ "non-empty",
+ "positive",
  "pretty_assertions",
  "scamplers-schema",
  "serde",
@@ -1805,6 +1817,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "heck",
+ "scamplers-api",
  "scamplers-models",
  "serde_json",
  "ts-rs",
@@ -2475,6 +2488,15 @@ name = "unicode-ident"
 version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "462eeb75aeb73aea900253ce739c8e18a67423fadf006037cd3ff27e82748a06"
+
+[[package]]
+name = "units"
+version = "0.1.0"
+dependencies = [
+ "diesel",
+ "serde",
+ "ts-rs",
+]
 
 [[package]]
 name = "untrusted"
