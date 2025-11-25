@@ -23,6 +23,12 @@ impl NonEmptyString {
     }
 }
 
+impl From<NonEmptyString> for String {
+    fn from(value: NonEmptyString) -> Self {
+        value.0
+    }
+}
+
 impl PartialEq<str> for NonEmptyString {
     fn eq(&self, other: &str) -> bool {
         self.0 == other
@@ -62,6 +68,7 @@ impl TryFrom<String> for NonEmptyString {
 #[cfg(feature = "diesel")]
 mod diesel_impls {
     use diesel::{
+        Expression,
         deserialize::FromSql,
         pg::{Pg, PgValue},
         serialize::{Output, ToSql},

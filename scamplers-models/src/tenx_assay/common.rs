@@ -61,6 +61,12 @@ pub struct LibraryTypeSpecification {
     library_volume_µl: PositiveU32,
 }
 
+impl LibraryTypeSpecification {
+    pub fn library_type(&self) -> LibraryType {
+        self.library_type
+    }
+}
+
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = tenx_assays))]
 pub struct TenxAssayFields {

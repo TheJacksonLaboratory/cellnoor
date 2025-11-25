@@ -13,7 +13,7 @@ use rand::{
 use rstest::fixture;
 use scamplers_models::{
     generic_query,
-    institution::{self, Institution, InstitutionQuery},
+    institution::{self, Institution, InstitutionCreation, InstitutionQuery},
     lab::{self, LabQuery, LabSummary},
     person::{self, PersonQuery, PersonSummary},
     specimen::{
@@ -87,7 +87,7 @@ impl TestState {
 
         db_conn
             .interact(|db_conn| {
-                institution::InstitutionCreation::builder()
+                InstitutionCreation::builder()
                     .id(Uuid::now_v7())
                     .name(NonEmptyString::new(random_string()).unwrap())
                     .build()

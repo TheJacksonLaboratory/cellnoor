@@ -2,7 +2,7 @@
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(try_from = "Vec<T>"))]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "diesel", derive(diesel::deserialize::FromSqlRow))]
+#[cfg_attr(feature = "diesel", derive(diesel::deserialize::FromSqlRow,))]
 pub struct NonEmptyVec<T>(Vec<T>);
 
 impl<T> NonEmptyVec<T> {
@@ -13,6 +13,12 @@ impl<T> NonEmptyVec<T> {
         }
 
         Some(Self(v))
+    }
+}
+
+impl<T> AsRef<[T]> for NonEmptyVec<T> {
+    fn as_ref(&self) -> &[T] {
+        &self.0
     }
 }
 
@@ -28,9 +34,12 @@ impl<T> TryFrom<Vec<T>> for NonEmptyVec<T> {
     }
 }
 
-impl<T> From<NonEmptyVec<T>> for Vec<T> {
+impl<T, U> From<NonEmptyVec<T>> for Vec<U>
+where
+    U: From<T>,
+{
     fn from(value: NonEmptyVec<T>) -> Self {
-        value.0
+        value.0.into_iter().map(U::from).collect()
     }
 }
 
@@ -39,6 +48,7 @@ mod diesel_impls {
     use std::fmt::Debug;
 
     use diesel::{
+        Expression,
         deserialize::FromSql,
         pg::{Pg, PgValue},
         serialize::{Output, ToSql},
@@ -59,7 +69,6 @@ mod diesel_impls {
 
     impl<T, U> ToSql<Array<T>, Pg> for NonEmptyVec<U>
     where
-        T: SqlType,
         U: Debug,
         Vec<U>: ToSql<Array<T>, Pg>,
     {

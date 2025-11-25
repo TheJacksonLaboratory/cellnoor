@@ -11,7 +11,7 @@ use crate::{initial_data::InitialData, validate::Validate};
 pub enum Error {
     #[error("app_admin must have Microsoft Entra OID")]
     AppAdminWithoutMicrosoftEntraOid,
-    #[error("URL ({0}) is not owned by 10X Genomics")]
+    #[error("URL '{0}' does not have domain '10xgenomics.com'")]
     Non10xGenomicsUrl(String),
 }
 
@@ -22,7 +22,10 @@ impl Validate for InitialData {
         if self.app_admin().microsoft_entra_oid().is_none() {
             return Err(Error::AppAdminWithoutMicrosoftEntraOid)?;
         }
-        self.index_set_urls()
+        self.single_index_set_urls()
+            .iter()
+            .try_for_each(validate_10x_genomics_url)?;
+        self.dual_index_set_urls()
             .iter()
             .try_for_each(validate_10x_genomics_url)?;
         self.tenx_assays()

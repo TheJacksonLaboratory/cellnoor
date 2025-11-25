@@ -65,12 +65,17 @@ mod diesel_impl {
 
     impl<T> Expression for DefaultVec<T>
     where
-        T: Expression,
+        Vec<T>: Expression,
     {
-        type SqlType = T::SqlType;
+        type SqlType = <Vec<T> as Expression>::SqlType;
     }
 
-    impl<T, U> AppearsOnTable<U> for DefaultVec<T> where T: AppearsOnTable<U> {}
+    impl<T, U> AppearsOnTable<U> for DefaultVec<T>
+    where
+        T: AppearsOnTable<U>,
+        Vec<T>: Expression,
+    {
+    }
 
     impl<T> QueryFragment<Pg> for DefaultVec<T>
     where
