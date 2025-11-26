@@ -25,6 +25,7 @@ pub(super) fn router() -> Router<AppState> {
         .nest("/labs", labs::router())
         .nest("/specimens", specimens::router())
         .nest("/multiplexing-tags", multiplexing_tags::router())
+        .nest("/suspensions", suspensions::router())
 }
 
 type ApiResponse<T> = Result<(StatusCode, Json<T>), super::error::ErrorResponse>;

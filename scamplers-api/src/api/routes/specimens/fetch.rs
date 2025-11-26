@@ -19,7 +19,7 @@ pub(super) async fn fetch_specimen(
     user: AuthenticatedUser,
 ) -> ApiResponse<Specimen> {
     let item = inner_handler(state, user, specimen_id).await?;
-    Ok((StatusCode::CREATED, item))
+    Ok((StatusCode::OK, item))
 }
 
 impl db::Operation<Specimen> for SpecimenId {

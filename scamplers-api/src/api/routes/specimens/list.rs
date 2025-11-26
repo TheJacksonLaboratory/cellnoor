@@ -25,7 +25,7 @@ pub(super) async fn list_specimens(
     QsQuery(request): QsQuery<SpecimenQuery>,
 ) -> ApiResponse<Vec<SpecimenSummary>> {
     let item = inner_handler(state, user, request).await?;
-    Ok((StatusCode::CREATED, item))
+    Ok((StatusCode::OK, item))
 }
 
 impl db::Operation<Vec<SpecimenSummary>> for SpecimenQuery {

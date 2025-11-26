@@ -5,6 +5,7 @@ mod institution;
 mod lab;
 mod person;
 mod specimen;
+mod suspension;
 mod tenx_assay;
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]

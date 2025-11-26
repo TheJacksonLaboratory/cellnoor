@@ -346,7 +346,7 @@ diesel::table! {
         biological_material -> Text,
         created_at -> Nullable<Timestamptz>,
         lysis_duration_minutes -> Nullable<Float4>,
-        target_cell_recovery -> Float4,
+        target_cell_recovery -> Int4,
         additional_data -> Nullable<Jsonb>,
     }
 }

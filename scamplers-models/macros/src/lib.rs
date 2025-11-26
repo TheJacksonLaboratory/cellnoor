@@ -104,7 +104,7 @@ macro_rules! uuid_newtype {
         #[cfg_attr(feature = "app", derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression, ::axum_extra::routing::TypedPath))]
         #[serde(transparent)]
         #[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Uuid), typed_path($endpoint))]
-        pub struct $name(pub uuid::Uuid);
+        pub struct $name(pub ::uuid::Uuid);
 
         impl $name {
             pub fn to_id_string(&self) -> String {
@@ -112,8 +112,8 @@ macro_rules! uuid_newtype {
             }
         }
 
-        impl PartialEq<Uuid> for $name {
-            fn eq(&self, other: &Uuid) -> bool {
+        impl PartialEq<::uuid::Uuid> for $name {
+            fn eq(&self, other: &::uuid::Uuid) -> bool {
                 self.0 == *other
             }
         }

@@ -14,7 +14,7 @@ create table suspensions (
     biological_material case_insensitive_text not null,
     created_at timestamptz,
     lysis_duration_minutes real,
-    target_cell_recovery real not null,
+    target_cell_recovery integer not null,
     additional_data jsonb
 );
 

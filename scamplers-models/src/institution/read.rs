@@ -11,7 +11,6 @@ pub struct Institution {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: InstitutionFields,
-
     links: Links,
 }
 

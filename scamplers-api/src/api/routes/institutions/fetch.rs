@@ -18,7 +18,7 @@ pub(super) async fn fetch_institution(
     user: AuthenticatedUser,
 ) -> ApiResponse<Institution> {
     let item = inner_handler(state, user, request).await?;
-    Ok((StatusCode::FOUND, item))
+    Ok((StatusCode::OK, item))
 }
 
 impl db::Operation<Institution> for InstitutionId {

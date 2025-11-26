@@ -12,7 +12,7 @@ pub(super) async fn fetch_person(
     user: AuthenticatedUser,
 ) -> ApiResponse<Person> {
     let item = inner_handler(state, user, request).await?;
-    Ok((StatusCode::FOUND, item))
+    Ok((StatusCode::OK, item))
 }
 
 impl db::Operation<Person> for PersonId {

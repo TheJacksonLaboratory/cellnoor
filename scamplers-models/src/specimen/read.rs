@@ -8,6 +8,7 @@ use uuid::Uuid;
 
 use crate::{
     lab::LabSummary,
+    links::Links,
     person::PersonSummary,
     specimen::common::{EmbeddingMatrix, SpecimenCommonFields, SpecimenVariableFields},
 };
@@ -16,6 +17,7 @@ use crate::{
 #[cfg_attr(feature = "app", diesel(table_name = specimens))]
 pub struct SpecimenSummary {
     id: Uuid,
+    links: Links,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     common: SpecimenCommonFields,

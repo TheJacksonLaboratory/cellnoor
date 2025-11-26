@@ -50,7 +50,8 @@ impl PartialEq<&str> for NonEmptyString {
 impl std::fmt::Display for NonEmptyString {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use std::fmt::Display;
-        self.0.fmt(f)
+
+        <String as Display>::fmt(&self.0, f)
     }
 }
 

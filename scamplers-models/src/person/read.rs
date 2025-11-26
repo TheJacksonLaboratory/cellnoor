@@ -20,7 +20,6 @@ pub struct PersonSummary {
     inner: PersonFields,
     email: Option<String>,
     email_verified: bool,
-
     links: Links,
 }
 
