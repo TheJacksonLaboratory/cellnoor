@@ -1,10 +1,7 @@
 use axum::extract::State;
 use diesel::prelude::*;
 use reqwest::StatusCode;
-use scamplers_models::{
-    specimen::{Specimen, SpecimenId},
-    suspension::{Suspension, SuspensionId},
-};
+use scamplers_models::suspension::{Suspension, SuspensionId};
 use scamplers_schema::suspensions::id;
 
 use crate::{

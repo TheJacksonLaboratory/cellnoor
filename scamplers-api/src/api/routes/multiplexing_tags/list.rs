@@ -1,18 +1,14 @@
 use axum::{extract::State, http::StatusCode};
-use diesel::{dsl::AssumeNotNull, prelude::*};
-use scamplers_models::{
-    multiplexing_tag::MultiplexingTag,
-    person::{PersonFilter, PersonQuery, PersonSummary},
-};
+use diesel::prelude::*;
+use scamplers_models::multiplexing_tag::MultiplexingTag;
 use scamplers_schema::multiplexing_tags::dsl::*;
-use serde_qs::axum::QsQuery;
 
 use crate::{
     api::{
         extract::auth::AuthenticatedUser,
         routes::{ApiResponse, Root, inner_handler},
     },
-    db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, utils::like_any},
+    db,
     state::AppState,
 };
 
