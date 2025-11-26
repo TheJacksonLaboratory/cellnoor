@@ -69,16 +69,17 @@ where
 
 impl db::Operation<Vec<PersonSummary>> for PersonQuery {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Vec<PersonSummary>, db::Error> {
+        let filter = self.filter();
+
         let mut stmt = PersonSummary::query()
             .limit(self.limit())
             .offset(self.offset())
+            .filter(filter.to_boxed_filter())
             .into_boxed();
 
-        if let Some(filter) = self.filter() {
-            stmt = stmt.filter(filter.to_boxed_filter());
+        for ordering in self.order_by() {
+            stmt = stmt.then_order_by(ordering);
         }
-
-        stmt = stmt.order_by(self.order_by());
 
         Ok(stmt.load(db_conn)?)
     }
@@ -113,7 +114,7 @@ mod tests {
         #[future] database: &'static Database,
     ) {
         test_query::<PersonQuery, _>()
-            .all_data(&database.people)
+            .all_records(&database.people)
             .sort_by(sort_by_name)
             .run(root_db_conn)
             .await;
@@ -132,12 +133,17 @@ mod tests {
                     .names(["%5%", "%h%"].map(str::to_owned))
                     .build(),
             )
-            .order_by(PersonOrderBy::id { descending: false })
-            .order_by(PersonOrderBy::name { descending: true })
+            .limit(i64::MAX)
+            .order_by(PersonOrderBy::id {
+                descending: Some(false),
+            })
+            .order_by(PersonOrderBy::name {
+                descending: Some(true),
+            })
             .build();
 
         test_query()
-            .all_data(&database.people)
+            .all_records(&database.people)
             .filter(|i| {
                 let s = i.name().to_lowercase();
                 s.contains("5") | s.contains("h")

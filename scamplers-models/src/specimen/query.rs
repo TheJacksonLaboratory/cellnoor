@@ -131,55 +131,27 @@ impl SpecimenFilter {
 #[order_by(specimens)]
 #[allow(non_camel_case_types)]
 pub enum SpecimenOrderBy {
-    id {
-        #[serde(default)]
-        descending: bool,
-    },
-    name {
-        #[serde(default)]
-        descending: bool,
-    },
-    readable_id {
-        #[serde(default)]
-        descending: bool,
-    },
-    received_at {
-        #[serde(default)]
-        descending: bool,
-    },
-    species {
-        #[serde(default)]
-        descending: bool,
-    },
-    host_species {
-        #[serde(default)]
-        descending: bool,
-    },
-    returned_at {
-        #[serde(default)]
-        descending: bool,
-    },
-    type_ {
-        #[serde(default)]
-        descending: bool,
-    },
-    embedded_in {
-        #[serde(default)]
-        descending: bool,
-    },
-    fixative {
-        #[serde(default)]
-        descending: bool,
-    },
-    tissue {
-        #[serde(default)]
-        descending: bool,
-    },
+    id { descending: Option<bool> },
+    readable_id { descending: Option<bool> },
+    name { descending: Option<bool> },
+    submitted_by { descending: Option<bool> },
+    lab_id { descending: Option<bool> },
+    received_at { descending: Option<bool> },
+    species { descending: Option<bool> },
+    host_species { descending: Option<bool> },
+    returned_at { descending: Option<bool> },
+    returned_by { descending: Option<bool> },
+    type_ { descending: Option<bool> },
+    embedded_in { descending: Option<bool> },
+    fixative { descending: Option<bool> },
+    frozen { descending: Option<bool> },
+    cryopreserved { descending: Option<bool> },
+    tissue { descending: Option<bool> },
 }
 
 impl Default for SpecimenOrderBy {
     fn default() -> Self {
-        Self::received_at { descending: false }
+        Self::received_at { descending: None }
     }
 }
 

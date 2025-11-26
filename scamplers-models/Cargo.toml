@@ -36,7 +36,6 @@ workspace = true
 
 [features]
 app = [
-  "default-vec/diesel",
   "dep:axum",
   "dep:axum-extra",
   "dep:diesel",

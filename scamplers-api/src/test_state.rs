@@ -13,9 +13,9 @@ use rand::{
 use rstest::fixture;
 use scamplers_models::{
     generic_query,
-    institution::{self, Institution, InstitutionCreation, InstitutionQuery},
-    lab::{self, LabQuery, LabSummary},
-    person::{self, PersonQuery, PersonSummary},
+    institution::{Institution, InstitutionCreation, InstitutionQuery},
+    lab::{LabCreation, LabQuery, LabSummary},
+    person::{PersonCreation, PersonQuery, PersonSummary},
     specimen::{
         BlockFixative, CryopreservedSuspensionCreation, CryopreservedTissueCreation,
         FixedBlockCreation, FixedBlockEmbeddingMatrix, FixedTissueCreation, FrozenBlockCreation,
@@ -118,7 +118,7 @@ impl TestState {
                 let name = random_string();
                 let email = format!("{name}@example.com");
 
-                person::PersonCreation::builder()
+                PersonCreation::builder()
                     .name(NonEmptyString::new(name).unwrap())
                     .email(NonEmptyString::new(email).unwrap())
                     .institution_id(institution_id)
@@ -150,7 +150,7 @@ impl TestState {
             .interact(move |db_conn| {
                 let name = NonEmptyString::new(random_string()).unwrap();
 
-                lab::LabCreation::builder()
+                LabCreation::builder()
                     .name(name.clone())
                     .delivery_dir(name)
                     .pi_id(pi_id)
@@ -269,7 +269,7 @@ impl TestState {
     }
 }
 
-trait DefaultWithNoLimit {
+pub trait DefaultWithNoLimit {
     fn default_with_no_limit() -> Self;
 }
 
@@ -319,7 +319,7 @@ fn random_string() -> String {
 const TIME: Range<i64> = -188_395_009_438..64_092_229_199;
 
 fn random_time() -> Timestamp {
-    let mut rng = SmallRng::seed_from_u64(0);
+    let mut rng = rand::rng();
     Timestamp::from_second(TIME.choose(&mut rng).unwrap()).unwrap()
 }
 

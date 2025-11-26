@@ -5,23 +5,15 @@ use uuid::Uuid;
 #[order_by(scamplers_schema::labs)]
 #[allow(non_camel_case_types)]
 pub enum LabOrderBy {
-    id {
-        #[serde(default)]
-        descending: bool,
-    },
-    delivery_dir {
-        #[serde(default)]
-        descending: bool,
-    },
-    name {
-        #[serde(default)]
-        descending: bool,
-    },
+    id { descending: Option<bool> },
+    name { descending: Option<bool> },
+    delivery_dir { descending: Option<bool> },
+    pi_id { descending: Option<bool> },
 }
 
 impl Default for LabOrderBy {
     fn default() -> Self {
-        Self::name { descending: false }
+        Self::name { descending: None }
     }
 }
 

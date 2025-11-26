@@ -1,3 +1,5 @@
+#[cfg(feature = "app")]
+use diesel::prelude::*;
 use macro_attributes::{insert_select, simple_enum};
 use macros::{impl_enum_from_sql, impl_enum_to_sql};
 use non_empty::NonEmptyString;
@@ -11,7 +13,6 @@ use scamplers_schema::tenx_assays;
 use crate::utils::{EnumFromSql, EnumToSql};
 
 #[simple_enum]
-#[derive(Eq, PartialOrd, Ord)]
 pub enum LibraryType {
     AntibodyCapture,
     AntigenCapture,
@@ -52,6 +53,7 @@ impl EnumToSql for SampleMultiplexing {}
 impl_enum_to_sql!(SampleMultiplexing);
 
 #[insert_select]
+#[cfg_attr(feature = "app", derive(AsChangeset))]
 pub struct LibraryTypeSpecification {
     library_type: LibraryType,
     index_kit: String,
@@ -68,6 +70,7 @@ impl LibraryTypeSpecification {
 }
 
 #[insert_select]
+#[cfg_attr(feature = "app", derive(AsChangeset))]
 #[cfg_attr(feature = "app", diesel(table_name = tenx_assays))]
 pub struct TenxAssayFields {
     name: NonEmptyString,

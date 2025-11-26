@@ -33,13 +33,19 @@ impl db::Operation<Vec<SpecimenSummary>> for SpecimenQuery {
         self,
         db_conn: &mut diesel::PgConnection,
     ) -> Result<Vec<SpecimenSummary>, db::Error> {
-        Ok(SpecimenSummary::query()
+        let filter = self.filter();
+
+        let mut stmt = SpecimenSummary::query()
             .limit(self.limit())
             .offset(self.offset())
-            .order_by(self.order_by())
-            .into_boxed()
-            .filter(self.filter().to_boxed_filter())
-            .load(db_conn)?)
+            .filter(filter.to_boxed_filter())
+            .into_boxed();
+
+        for ordering in self.order_by() {
+            stmt = stmt.then_order_by(ordering);
+        }
+
+        Ok(stmt.load(db_conn)?)
     }
 }
 
@@ -133,5 +139,75 @@ where
         }
 
         filter
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::cmp::Ordering;
+
+    use deadpool_diesel::postgres::Connection;
+    use rstest::rstest;
+    use scamplers_models::specimen::*;
+
+    use crate::{
+        test_state::{Database, database, root_db_conn},
+        test_util::test_query,
+    };
+
+    fn sort_by_received_at(i1: &&SpecimenSummary, i2: &&SpecimenSummary) -> Ordering {
+        i1.received_at().cmp(&i2.received_at())
+    }
+
+    fn sort_by_tissue(i1: &&SpecimenSummary, i2: &&SpecimenSummary) -> Ordering {
+        i1.tissue().to_lowercase().cmp(&i2.tissue().to_lowercase())
+    }
+
+    #[rstest]
+    #[awt]
+    #[tokio::test]
+    async fn default_specimen_query(
+        #[future] root_db_conn: Connection,
+        #[future] database: &'static Database,
+    ) {
+        test_query::<SpecimenQuery, _>()
+            .all_records(&database.specimens)
+            .sort_by(sort_by_received_at)
+            .run(root_db_conn)
+            .await;
+    }
+
+    #[rstest]
+    #[awt]
+    #[tokio::test]
+    async fn specific_specimen_query(
+        #[future] root_db_conn: Connection,
+        #[future] database: &'static Database,
+    ) {
+        let query = SpecimenQuery::builder()
+            .filter(
+                SpecimenFilter::builder()
+                    .names(["%s", "%p%"].map(str::to_owned))
+                    .build(),
+            )
+            .limit(i64::MAX)
+            .order_by(SpecimenOrderBy::received_at {
+                descending: Some(false),
+            })
+            .order_by(SpecimenOrderBy::tissue {
+                descending: Some(true),
+            })
+            .build();
+
+        test_query()
+            .all_records(&database.specimens)
+            .filter(|i| {
+                let s = i.name().to_lowercase();
+                s.ends_with("s") | s.contains("p")
+            })
+            .sort_by(|i1, i2| sort_by_received_at(i1, i2).then(sort_by_tissue(i1, i2).reverse()))
+            .db_query(query)
+            .run(root_db_conn)
+            .await;
     }
 }

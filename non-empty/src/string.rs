@@ -1,6 +1,4 @@
-use std::fmt::Display;
-
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(try_from = "String"))]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
@@ -8,8 +6,16 @@ use std::fmt::Display;
     feature = "diesel",
     derive(diesel::deserialize::FromSqlRow, diesel::expression::AsExpression)
 )]
-#[cfg_attr(feature = "diesel", diesel(sql_type = ::diesel::sql_types::Text))]
+#[cfg_attr(feature = "diesel", diesel(sql_type = diesel::sql_types::Text))]
 pub struct NonEmptyString(String);
+
+impl std::fmt::Debug for NonEmptyString {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use std::fmt::Debug;
+
+        <String as Debug>::fmt(&self.0, f)
+    }
+}
 
 impl NonEmptyString {
     #[must_use]
@@ -41,8 +47,9 @@ impl PartialEq<&str> for NonEmptyString {
     }
 }
 
-impl Display for NonEmptyString {
+impl std::fmt::Display for NonEmptyString {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use std::fmt::Display;
         self.0.fmt(f)
     }
 }
@@ -68,12 +75,12 @@ impl TryFrom<String> for NonEmptyString {
 #[cfg(feature = "diesel")]
 mod diesel_impls {
     use diesel::{
-        Expression,
         deserialize::FromSql,
         pg::{Pg, PgValue},
         serialize::{Output, ToSql},
-        sql_types::Text,
+        sql_types::{Nullable, Text},
     };
+    use scamplers_schema::sql_types::CaseInsensitiveText;
 
     use super::NonEmptyString;
 
@@ -86,6 +93,12 @@ mod diesel_impls {
     impl ToSql<Text, Pg> for NonEmptyString {
         fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Pg>) -> diesel::serialize::Result {
             <String as ToSql<Text, Pg>>::to_sql(&self.0, out)
+        }
+    }
+
+    impl ToSql<Nullable<CaseInsensitiveText>, Pg> for NonEmptyString {
+        fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Pg>) -> diesel::serialize::Result {
+            <Self as ToSql<Nullable<Text>, Pg>>::to_sql(self, out)
         }
     }
 }

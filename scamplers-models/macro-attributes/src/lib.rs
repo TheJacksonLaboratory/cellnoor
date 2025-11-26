@@ -196,8 +196,8 @@ pub fn order_by(attr: TokenStream, input: TokenStream) -> TokenStream {
 
     let match_bodies = items.map(|(v, asc_static, desc_static)| {
         quote! {
-            Self::#v { descending: false } => #asc_static.walk_ast(pass),
-            Self::#v { descending: true } => #desc_static.walk_ast(pass),
+            Self::#v { descending: None } | Self::#v { descending: Some(false) } => #asc_static.walk_ast(pass),
+            Self::#v { descending: Some(true) } => #desc_static.walk_ast(pass),
         }
     });
 
@@ -251,7 +251,7 @@ pub fn simple_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
     quote! {
         #base_derives
-        #[derive(Copy, ::strum::EnumString, ::strum::IntoStaticStr)]
+        #[derive(Copy, Eq, PartialOrd, Ord, ::strum::EnumString, ::strum::IntoStaticStr)]
         #[cfg_attr(feature = "app", derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression))]
         #[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Text))]
         #[serde(rename_all = "snake_case")]

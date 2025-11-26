@@ -2,7 +2,7 @@
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(try_from = "Vec<T>"))]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "diesel", derive(diesel::deserialize::FromSqlRow,))]
+#[cfg_attr(feature = "diesel", derive(diesel::deserialize::FromSqlRow))]
 pub struct NonEmptyVec<T>(Vec<T>);
 
 impl<T> NonEmptyVec<T> {
@@ -22,6 +22,12 @@ impl<T> AsRef<[T]> for NonEmptyVec<T> {
     }
 }
 
+impl<T> From<NonEmptyVec<T>> for Vec<T> {
+    fn from(value: NonEmptyVec<T>) -> Self {
+        value.0
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 #[error("string cannot be empty")]
 pub struct Error;
@@ -34,21 +40,11 @@ impl<T> TryFrom<Vec<T>> for NonEmptyVec<T> {
     }
 }
 
-impl<T, U> From<NonEmptyVec<T>> for Vec<U>
-where
-    U: From<T>,
-{
-    fn from(value: NonEmptyVec<T>) -> Self {
-        value.0.into_iter().map(U::from).collect()
-    }
-}
-
 #[cfg(feature = "diesel")]
 mod diesel_impls {
     use std::fmt::Debug;
 
     use diesel::{
-        Expression,
         deserialize::FromSql,
         pg::{Pg, PgValue},
         serialize::{Output, ToSql},

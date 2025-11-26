@@ -3,7 +3,7 @@
 set -euo pipefail
 
 function cleanup_docker() {
-    docker kill scamplers-api_test >/dev/null
+    docker stop scamplers-api_test >/dev/null
     docker rm scamplers-api_test --volumes >/dev/null
 }
 trap cleanup_docker EXIT

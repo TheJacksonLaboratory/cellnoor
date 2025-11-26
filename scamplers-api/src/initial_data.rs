@@ -2,7 +2,8 @@ use std::str::FromStr;
 
 use diesel::PgConnection;
 use scamplers_models::{
-    institution::InstitutionCreation, person::PersonCreation, tenx_assay::TenxAssayCreation,
+    institution::InstitutionCreation, multiplexing_tag::MultiplexingTagCreation,
+    person::PersonCreation, tenx_assay::TenxAssayCreation,
 };
 use url::Url;
 
@@ -16,6 +17,7 @@ use crate::{
 mod app_admin;
 mod index_sets;
 mod institution;
+mod multiplexing_tags;
 mod tenx_assays;
 
 #[derive(Debug, Clone, serde::Deserialize)]
@@ -25,7 +27,7 @@ pub struct InitialData {
     single_index_set_urls: Vec<Url>,
     dual_index_set_urls: Vec<Url>,
     tenx_assays: Vec<TenxAssayCreation>,
-    // multiplexing_tags: Vec<NewMultiplexingTag>,
+    multiplexing_tags: Vec<MultiplexingTagCreation>,
 }
 
 impl InitialData {
@@ -68,6 +70,7 @@ pub async fn insert_initial_data(
         single_index_set_urls,
         dual_index_set_urls,
         tenx_assays,
+        multiplexing_tags,
     } = initial_data;
 
     let simple_operations = |db_conn: &mut PgConnection| -> Result<(), anyhow::Error> {
@@ -76,13 +79,9 @@ pub async fn insert_initial_data(
         for assay in tenx_assays {
             assay.upsert(db_conn)?;
         }
-
-        // // This is a loop of like 25 max
-        // for assay in tenx_assays {
-        //     duplicate_resource_ok(assay.execute(db_conn))?;
-        // }
-
-        // multiplexing_tags.execute(db_conn)?;
+        for tag in multiplexing_tags {
+            tag.upsert(db_conn)?;
+        }
 
         Ok(())
     };

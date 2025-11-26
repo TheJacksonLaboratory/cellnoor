@@ -17,19 +17,13 @@ use uuid::Uuid;
 #[order_by(scamplers_schema::institutions)]
 #[allow(non_camel_case_types)]
 pub enum InstitutionOrderBy {
-    id {
-        #[serde(default)]
-        descending: bool,
-    },
-    name {
-        #[serde(default)]
-        descending: bool,
-    },
+    id { descending: Option<bool> },
+    name { descending: Option<bool> },
 }
 
 impl Default for InstitutionOrderBy {
     fn default() -> Self {
-        Self::name { descending: false }
+        Self::name { descending: None }
     }
 }
 

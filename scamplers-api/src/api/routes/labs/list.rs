@@ -25,13 +25,19 @@ pub(super) async fn list_labs(
 
 impl db::Operation<Vec<LabSummary>> for LabQuery {
     fn execute(self, db_conn: &mut PgConnection) -> Result<Vec<LabSummary>, db::Error> {
-        Ok(LabSummary::query()
+        let filter = self.filter();
+
+        let mut stmt = LabSummary::query()
             .limit(self.limit())
             .offset(self.offset())
-            .filter(self.filter().to_boxed_filter())
-            .into_boxed()
-            .order_by(self.order_by())
-            .load(db_conn)?)
+            .filter(filter.to_boxed_filter())
+            .into_boxed();
+
+        for ordering in self.order_by() {
+            stmt = stmt.then_order_by(ordering);
+        }
+
+        Ok(stmt.load(db_conn)?)
     }
 }
 
@@ -80,7 +86,7 @@ mod tests {
         #[future] database: &'static Database,
     ) {
         test_query::<LabQuery, _>()
-            .all_data(&database.labs)
+            .all_records(&database.labs)
             .sort_by(sort_by_name)
             .run(root_db_conn)
             .await;
@@ -99,11 +105,14 @@ mod tests {
                     .names(["%l%", "%a%", "%b%"].map(str::to_owned))
                     .build(),
             )
-            .order_by(LabOrderBy::name { descending: true })
+            .limit(i64::MAX)
+            .order_by(LabOrderBy::name {
+                descending: Some(true),
+            })
             .build();
 
         test_query()
-            .all_data(&database.labs)
+            .all_records(&database.labs)
             .filter(|i| {
                 let s = i.name().to_lowercase();
                 s.contains("l") | s.contains("a") | s.contains("b")

@@ -60,7 +60,7 @@ impl EnumToSql for SpecimenType {}
 impl_enum_to_sql!(SpecimenType);
 
 #[base_model]
-#[derive(Copy)]
+#[derive(Copy, Eq, PartialOrd, Ord)]
 #[cfg_attr(
     feature = "app",
     derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression)

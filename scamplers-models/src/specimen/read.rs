@@ -1,24 +1,49 @@
 #[cfg(feature = "app")]
 use diesel::prelude::*;
+use jiff::Timestamp;
 use macro_attributes::select;
 #[cfg(feature = "app")]
 use scamplers_schema::{labs, people, specimens};
+use uuid::Uuid;
 
 use crate::{
     lab::LabSummary,
     person::PersonSummary,
-    specimen::common::{SpecimenCommonFields, SpecimenVariableFields},
+    specimen::common::{EmbeddingMatrix, SpecimenCommonFields, SpecimenVariableFields},
 };
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = specimens))]
 pub struct SpecimenSummary {
+    id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     common: SpecimenCommonFields,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     variable: SpecimenVariableFields,
+}
+
+impl SpecimenSummary {
+    #[must_use]
+    pub fn name(&self) -> &str {
+        self.common.name.as_ref()
+    }
+
+    #[must_use]
+    pub fn received_at(&self) -> Timestamp {
+        self.common.received_at
+    }
+
+    #[must_use]
+    pub fn embedded_in(&self) -> Option<EmbeddingMatrix> {
+        self.variable.embedded_in
+    }
+
+    #[must_use]
+    pub fn tissue(&self) -> &str {
+        self.common.tissue.as_ref()
+    }
 }
 
 #[select]

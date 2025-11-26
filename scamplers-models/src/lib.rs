@@ -5,7 +5,7 @@
 // mod index_set;
 pub mod institution;
 pub mod lab;
-// mod multiplexing_tag;
+pub mod multiplexing_tag;
 // mod nucleic_acid;
 pub mod person;
 // mod sequencing_run;

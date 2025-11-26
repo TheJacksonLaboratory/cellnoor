@@ -471,7 +471,6 @@ dependencies = [
 name = "default-vec"
 version = "0.1.0"
 dependencies = [
- "diesel",
  "serde",
 ]
 
@@ -1317,6 +1316,7 @@ version = "0.1.0"
 dependencies = [
  "diesel",
  "pretty_assertions",
+ "scamplers-schema",
  "serde",
  "serde_json",
  "thiserror 2.0.17",

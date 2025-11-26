@@ -25,13 +25,19 @@ pub(super) async fn list_institutions(
 
 impl db::Operation<Vec<Institution>> for InstitutionQuery {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Vec<Institution>, db::Error> {
-        Ok(Institution::query()
+        let filter = self.filter();
+
+        let mut stmt = Institution::query()
             .limit(self.limit())
             .offset(self.offset())
-            .filter(self.filter().to_boxed_filter())
-            .into_boxed()
-            .order_by(self.order_by())
-            .load(db_conn)?)
+            .filter(filter.to_boxed_filter())
+            .into_boxed();
+
+        for ordering in self.order_by() {
+            stmt = stmt.then_order_by(ordering);
+        }
+
+        Ok(stmt.load(db_conn)?)
     }
 }
 
@@ -84,7 +90,7 @@ mod tests {
         #[future] database: &'static Database,
     ) {
         test_query::<InstitutionQuery, _>()
-            .all_data(&database.institutions)
+            .all_records(&database.institutions)
             .sort_by(sort_by_name)
             .run(root_db_conn)
             .await;
@@ -103,12 +109,16 @@ mod tests {
                     .names(["%a%", "%b%"].map(str::to_owned))
                     .build(),
             )
-            .order_by(InstitutionOrderBy::id { descending: false })
-            .order_by(InstitutionOrderBy::name { descending: true })
+            .order_by(InstitutionOrderBy::id {
+                descending: Some(false),
+            })
+            .order_by(InstitutionOrderBy::name {
+                descending: Some(true),
+            })
             .build();
 
         test_query()
-            .all_data(&database.institutions)
+            .all_records(&database.institutions)
             .filter(|i| {
                 let s = i.name().to_lowercase();
                 s.contains("a") | s.contains("b")

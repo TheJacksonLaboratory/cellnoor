@@ -11,6 +11,7 @@ mod chromium_datasets;
 mod chromium_runs;
 mod institutions;
 mod labs;
+mod multiplexing_tags;
 mod nucleic_acids;
 mod people;
 mod sequencing_runs;
@@ -23,6 +24,7 @@ pub(super) fn router() -> Router<AppState> {
         .nest("/people", people::router())
         .nest("/labs", labs::router())
         .nest("/specimens", specimens::router())
+        .nest("/multiplexing-tags", multiplexing_tags::router())
 }
 
 type ApiResponse<T> = Result<(StatusCode, Json<T>), super::error::ErrorResponse>;
