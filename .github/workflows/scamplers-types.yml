@@ -7,6 +7,9 @@ on:
 jobs:
   check_scamplers-types:
     runs-on: ubuntu-latest
+    env:
+      SCAMPLERS_GENERATE_SCHEMA: false
+
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4

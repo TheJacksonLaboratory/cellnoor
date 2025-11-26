@@ -1,6 +1,5 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
-#[cfg_attr(feature = "serde", serde(transparent))]
 #[cfg_attr(
     feature = "diesel",
     derive(diesel::deserialize::FromSqlRow, diesel::expression::AsExpression)
@@ -57,7 +56,8 @@ mod diesel_impls {
 
     impl ToSql<Integer, Pg> for PositiveU32 {
         fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Pg>) -> diesel::serialize::Result {
-            <i32 as ToSql<Integer, Pg>>::to_sql(&(self.0 as i32), &mut out.reborrow())
+            let as_int = i32::try_from(self.0)?;
+            <i32 as ToSql<Integer, Pg>>::to_sql(&as_int, &mut out.reborrow())
         }
     }
 }

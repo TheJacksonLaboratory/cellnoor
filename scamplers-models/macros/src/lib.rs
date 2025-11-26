@@ -102,7 +102,6 @@ macro_rules! uuid_newtype {
     ($name:ident, $endpoint:literal) => {
         #[derive(Debug, Clone, Copy, ::serde::Deserialize, ::serde::Serialize)]
         #[cfg_attr(feature = "app", derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression, ::axum_extra::routing::TypedPath))]
-        #[serde(transparent)]
         #[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Uuid), typed_path($endpoint))]
         pub struct $name(pub ::uuid::Uuid);
 
