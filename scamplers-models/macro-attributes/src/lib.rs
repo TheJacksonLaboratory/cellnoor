@@ -196,7 +196,7 @@ pub fn order_by(attr: TokenStream, input: TokenStream) -> TokenStream {
 
     let match_bodies = items.map(|(v, asc_static, desc_static)| {
         quote! {
-            Self::#v { descending: None } | Self::#v { descending: Some(false) } => #asc_static.walk_ast(pass),
+            Self::#v { descending: None | Some(false) } => #asc_static.walk_ast(pass),
             Self::#v { descending: Some(true) } => #desc_static.walk_ast(pass),
         }
     });

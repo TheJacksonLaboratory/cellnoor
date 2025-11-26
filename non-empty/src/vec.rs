@@ -1,6 +1,9 @@
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "serde", serde(try_from = "Vec<T>"))]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "typescript")),
+    serde(try_from = "Vec<T>")
+)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "diesel", derive(diesel::deserialize::FromSqlRow))]
 pub struct NonEmptyVec<T>(Vec<T>);
