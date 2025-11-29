@@ -4,4 +4,4 @@ mod read;
 
 #[derive(TypedPath)]
 #[typed_path("/measurements")]
-struct MeasurementEndpoint;
+pub(super) struct MeasurementsEndpoint;

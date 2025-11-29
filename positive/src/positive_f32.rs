@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, ops::Deref};
 
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
@@ -8,23 +8,11 @@ use std::fmt::Display;
 )]
 #[cfg_attr(feature = "diesel", diesel(sql_type = ::diesel::sql_types::Float))]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-pub struct PositiveF32(f32);
+pub struct PositiveF32(pub f32);
 
 impl Display for PositiveF32 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
-    }
-}
-
-impl PartialEq<f32> for PositiveF32 {
-    fn eq(&self, other: &f32) -> bool {
-        self.0.eq(other)
-    }
-}
-
-impl PartialOrd<f32> for PositiveF32 {
-    fn partial_cmp(&self, other: &f32) -> Option<std::cmp::Ordering> {
-        self.0.partial_cmp(other)
     }
 }
 

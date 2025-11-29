@@ -4,7 +4,7 @@ use scamplers_schema::suspension_measurements;
 
 use crate::suspension::{
     Suspension,
-    measurements::common::{Cells, Nuclei, SuspensionMeasurementFields},
+    measurement::common::{Cells, Nuclei, SuspensionMeasurementFields},
 };
 
 #[base_model]

@@ -9,8 +9,7 @@ use crate::{
     api::{
         extract::{ValidJson, auth::AuthenticatedUser},
         routes::{
-            ApiResponse, Root, inner_handler,
-            suspensions::create::common::insert_suspension_preparers,
+            ApiResponse, Root, inner_handler, suspensions::create::insert_suspension_preparers,
         },
     },
     db,
@@ -35,11 +34,11 @@ impl db::Operation<Suspension> for CellSuspensionCreation {
         } = self;
 
         let suspension_id: SuspensionId = diesel::insert_into(suspensions)
-            .values(values)
+            .values(inner)
             .returning(id)
             .get_result(db_conn)?;
 
-        insert_suspension_preparers(suspension_id);
+        insert_suspension_preparers(suspension_id, &preparer_ids, db_conn);
 
         suspension_id.execute(db_conn)
     }

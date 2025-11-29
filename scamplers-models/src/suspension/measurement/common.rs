@@ -89,7 +89,7 @@ impl EnumToSql for Nuclei {}
 impl_enum_to_sql!(Nuclei);
 
 #[json]
-struct Concentration {
+pub struct Concentration {
     counting_method: Option<CountingMethod>,
     post_hybridization: bool,
     value: PositiveF32,
@@ -97,19 +97,25 @@ struct Concentration {
 }
 
 #[json]
-struct Viability {
+pub struct Viability {
     value: PositiveF32,
 }
 
+impl Viability {
+    pub fn value(&self) -> f32 {
+        self.value.0
+    }
+}
+
 #[json]
-struct Volume {
+pub struct Volume {
     post_hybridization: bool,
     value: PositiveF32,
     unit: Microliter,
 }
 
 #[json]
-struct MeanDiameter {
+pub struct MeanDiameter {
     post_hybridization: bool,
     value: PositiveF32,
     unit: Micrometer,
@@ -125,7 +131,7 @@ mod rust {
 
     #[json]
     #[serde(tag = "quantity")]
-    enum MeasurementData<C> {
+    pub enum SuspensionMeasurementData<C> {
         Concentration {
             #[serde(flatten)]
             inner: Concentration,
@@ -150,12 +156,18 @@ mod rust {
             deserialize_as = jiff_diesel::Timestamp
         ))]
         measured_at: Timestamp,
-        data: MeasurementData<C>,
+        data: SuspensionMeasurementData<C>,
+    }
+
+    impl<C> SuspensionMeasurementFields<C> {
+        pub fn data(&self) -> &SuspensionMeasurementData<C> {
+            &self.data
+        }
     }
 }
 
 #[cfg(feature = "app")]
-pub use rust::SuspensionMeasurementFields;
+pub use rust::{SuspensionMeasurementData, SuspensionMeasurementFields};
 
 #[cfg(all(not(feature = "app"), feature = "typescript"))]
 mod typescript {
@@ -197,7 +209,7 @@ mod typescript {
         measured_by: Uuid,
         #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
         measured_at: Timestamp,
-        data: MeasurementData<C>,
+        data: SuspensionMeasurementData<C>,
     }
 }
 

@@ -1,8 +1,15 @@
 use diesel::prelude::*;
 use scamplers_models::suspension::SuspensionId;
 use scamplers_schema::suspension_preparers;
+use uuid::Uuid;
 
-pub(super) fn insert_suspension_preparers(suspension_id: SuspensionId) {
+use crate::db;
+
+pub(super) fn insert_suspension_preparers(
+    suspension_id: SuspensionId,
+    preparer_ids: &[Uuid],
+    db_conn: &mut PgConnection,
+) -> Result<(), db::Error> {
     let preparer_mappings: Vec<_> = preparer_ids
         .into_iter()
         .map(|p| {
@@ -16,4 +23,6 @@ pub(super) fn insert_suspension_preparers(suspension_id: SuspensionId) {
     diesel::insert_into(suspension_preparers::table)
         .values(preparer_mappings)
         .execute(db_conn)?;
+
+    Ok(())
 }

@@ -1,5 +1,9 @@
-use scamplers_models::suspension::SuspensionCreation;
+use scamplers_models::suspension::{CellSuspensionCreation, NucleusSuspensionCreation};
 
 use crate::validate::Validate;
 
-impl Validate for SuspensionCreation {}
+pub mod measurement;
+
+impl Validate for CellSuspensionCreation {}
+
+impl Validate for NucleusSuspensionCreation {}

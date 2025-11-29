@@ -20,18 +20,18 @@ pub struct SpecimenMeasurement {
     ))]
     #[cfg_attr(feature = "typescript", ts(as = "String"))]
     measured_at: Timestamp,
-    data: MeasurementData,
+    data: SpecimenMeasurementData,
 }
 
 impl SpecimenMeasurement {
     #[must_use]
-    pub fn data(&self) -> &MeasurementData {
+    pub fn data(&self) -> &SpecimenMeasurementData {
         &self.data
     }
 }
 
 #[json]
-pub enum MeasurementData {
+pub enum SpecimenMeasurementData {
     #[serde(rename = "RIN")]
     Rin {
         instrument_name: Option<NonEmptyString>,
@@ -45,9 +45,9 @@ pub enum MeasurementData {
 }
 
 #[cfg(feature = "app")]
-impl JsonFromSql for MeasurementData {}
-impl_json_from_sql!(MeasurementData);
+impl JsonFromSql for SpecimenMeasurementData {}
+impl_json_from_sql!(SpecimenMeasurementData);
 
 #[cfg(feature = "app")]
-impl JsonToSql for MeasurementData {}
-impl_json_to_sql!(MeasurementData);
+impl JsonToSql for SpecimenMeasurementData {}
+impl_json_to_sql!(SpecimenMeasurementData);

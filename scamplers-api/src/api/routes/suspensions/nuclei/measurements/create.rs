@@ -1,10 +1,29 @@
-use diesel::SelectableHelper;
-use scamplers_models::suspension::measurements::{
-    NucleusSuspensionMeasurementCreation, SuspensionMeasurement,
+use axum::extract::State;
+use diesel::prelude::*;
+use reqwest::StatusCode;
+use scamplers_models::suspension::measurement::{
+    CellSuspensionMeasurementCreation, NucleusSuspensionMeasurementCreation, SuspensionMeasurement,
 };
 use scamplers_schema::suspension_measurements::dsl::*;
 
-use crate::db;
+use crate::{
+    api::{
+        extract::{ValidJson, auth::AuthenticatedUser},
+        routes::{ApiResponse, inner_handler, suspensions::measurements::MeasurementsEndpoint},
+    },
+    db,
+    state::AppState,
+};
+
+pub async fn create_nucleus_suspension_measurement(
+    _: MeasurementsEndpoint,
+    state: State<AppState>,
+    user: AuthenticatedUser,
+    ValidJson(request): ValidJson<NucleusSuspensionMeasurementCreation>,
+) -> ApiResponse<SuspensionMeasurement> {
+    let item = inner_handler(state, user, request).await?;
+    Ok((StatusCode::CREATED, item))
+}
 
 impl db::Operation<SuspensionMeasurement> for NucleusSuspensionMeasurementCreation {
     fn execute(

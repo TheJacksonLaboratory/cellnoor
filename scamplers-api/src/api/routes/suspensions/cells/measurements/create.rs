@@ -1,14 +1,22 @@
+use axum::{extract::State, http::StatusCode};
 use axum_extra::routing::TypedPath;
 use diesel::prelude::*;
-use scamplers_models::suspension::measurements::{
+use scamplers_models::suspension::measurement::{
     CellSuspensionMeasurementCreation, SuspensionMeasurement,
 };
 use scamplers_schema::suspension_measurements::dsl::*;
 
-use crate::{api::extract::auth::AuthenticatedUser, db};
+use crate::{
+    api::{
+        extract::{ValidJson, auth::AuthenticatedUser},
+        routes::{ApiResponse, inner_handler, suspensions::measurements::MeasurementsEndpoint},
+    },
+    db,
+    state::AppState,
+};
 
-pub(super) async fn create_cell_suspension_measurement(
-    _: MeasurementEndpoint,
+pub async fn create_cell_suspension_measurement(
+    _: MeasurementsEndpoint,
     state: State<AppState>,
     user: AuthenticatedUser,
     ValidJson(request): ValidJson<CellSuspensionMeasurementCreation>,
@@ -25,6 +33,6 @@ impl db::Operation<SuspensionMeasurement> for CellSuspensionMeasurementCreation 
         Ok(diesel::insert_into(suspension_measurements)
             .values(self.0)
             .returning(SuspensionMeasurement::as_returning())
-            .get_result(db_conn))
+            .get_result(db_conn)?)
     }
 }

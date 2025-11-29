@@ -25,8 +25,6 @@ pub(super) fn router() -> Router<AppState> {
         .nest("/labs", labs::router())
         .nest("/specimens", specimens::router())
         .nest("/multiplexing-tags", multiplexing_tags::router())
-        .nest("/cell-suspensions", cell_suspensions::router())
-        .nest("/nucleus-suspensions", nucleus_suspensions::router())
         .nest("/suspensions", suspensions::router())
 }
 

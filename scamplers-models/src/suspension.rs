@@ -1,6 +1,6 @@
 mod common;
 mod creation;
-pub mod measurements;
+pub mod measurement;
 mod query;
 mod read;
 mod update;

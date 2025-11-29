@@ -1,5 +1,6 @@
 use diesel::PgConnection;
 
+mod common;
 mod initial_data;
 mod institution;
 mod lab;
@@ -19,6 +20,7 @@ pub enum Error {
     CreateLab(#[from] lab::Error),
     CreateSpecimen(#[from] specimen::Error),
     CreateSpecimenMeasurement(#[from] specimen::measurement::Error),
+    CreateSuspensionMeasurement(#[from] suspension::measurement::Error),
 }
 
 pub trait Validate {
