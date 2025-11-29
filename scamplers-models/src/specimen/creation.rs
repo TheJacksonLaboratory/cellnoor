@@ -18,6 +18,7 @@ pub mod suspension;
 pub mod tissue;
 
 #[base_model]
+#[derive(serde::Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum SpecimenCreation {
     FixedBlock(FixedBlockCreation),

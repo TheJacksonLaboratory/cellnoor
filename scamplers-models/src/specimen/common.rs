@@ -60,7 +60,7 @@ impl EnumToSql for SpecimenType {}
 impl_enum_to_sql!(SpecimenType);
 
 #[base_model]
-#[derive(Copy, Eq, PartialOrd, Ord)]
+#[derive(Copy, Eq, PartialOrd, Ord, serde::Deserialize, serde::Serialize)]
 #[cfg_attr(
     feature = "app",
     derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression)
@@ -102,7 +102,7 @@ impl EnumToSql for EmbeddingMatrix {}
 impl_enum_to_sql!(EmbeddingMatrix);
 
 #[base_model]
-#[derive(Copy)]
+#[derive(Copy, serde::Deserialize, serde::Serialize)]
 #[cfg_attr(
     feature = "app",
     derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression)

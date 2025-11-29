@@ -7,6 +7,7 @@ use crate::specimen::common::{
 const TYPE: SpecimenType = SpecimenType::Block;
 
 #[base_model]
+#[derive(serde::Deserialize)]
 #[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct FixedBlockCreation {
     #[serde(flatten)]
@@ -50,6 +51,7 @@ pub enum BlockFixative {
 }
 
 #[base_model]
+#[derive(serde::Deserialize)]
 #[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct FrozenBlockCreation {
     #[serde(flatten)]

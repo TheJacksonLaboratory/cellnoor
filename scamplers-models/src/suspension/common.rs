@@ -11,12 +11,25 @@ use uuid::Uuid;
 #[cfg(feature = "app")]
 use crate::utils::{EnumFromSql, EnumToSql};
 
+#[simple_enum]
+pub enum SuspensionContent {
+    Cells,
+    Nuclei,
+}
+
+#[cfg(feature = "app")]
+impl EnumFromSql for SuspensionContent {}
+impl_enum_from_sql!(SuspensionContent);
+
+#[cfg(feature = "app")]
+impl EnumToSql for SuspensionContent {}
+impl_enum_to_sql!(SuspensionContent);
+
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = suspensions))]
 pub struct SuspensionFields {
     readable_id: NonEmptyString,
     parent_specimen_id: Uuid,
-    biological_material: BiologicalMaterial,
     target_cell_recovery: PositiveU32,
     #[cfg_attr(feature = "app", diesel(
         serialize_as = jiff_diesel::NullableTimestamp,
@@ -27,32 +40,3 @@ pub struct SuspensionFields {
     lysis_duration_minutes: Option<PositiveF32>,
     additional_data: Option<Value>,
 }
-
-#[simple_enum]
-pub enum CellCountingMethod {
-    BrightField,
-    AcridineOrangePropidiumIodide,
-    TrypanBlue,
-}
-
-#[cfg(feature = "app")]
-impl EnumFromSql for CellCountingMethod {}
-impl_enum_from_sql!(CellCountingMethod);
-
-#[cfg(feature = "app")]
-impl EnumToSql for CellCountingMethod {}
-impl_enum_to_sql!(CellCountingMethod);
-
-#[simple_enum]
-pub enum BiologicalMaterial {
-    Cells,
-    Nuclei,
-}
-
-#[cfg(feature = "app")]
-impl EnumFromSql for BiologicalMaterial {}
-impl_enum_from_sql!(BiologicalMaterial);
-
-#[cfg(feature = "app")]
-impl EnumToSql for BiologicalMaterial {}
-impl_enum_to_sql!(BiologicalMaterial);

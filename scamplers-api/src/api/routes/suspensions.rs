@@ -3,13 +3,17 @@ use axum_extra::routing::RouterExt;
 
 use crate::state::AppState;
 
+mod cells;
 mod create;
 mod fetch;
 mod list;
+mod measurements;
+mod nuclei;
 
 pub(super) fn router() -> Router<AppState> {
     Router::new()
-        .typed_post(create::create_suspension)
+        .nest("/cells", cells::router())
+        .nest("/nuclei", nuclei::router())
         .typed_get(fetch::fetch_suspension)
     // .typed_post(measurements::create::create_measurement)
     // .typed_get(measurements::list::list_measurements)

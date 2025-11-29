@@ -7,6 +7,7 @@ use crate::specimen::common::{
 const TYPE: SpecimenType = SpecimenType::Tissue;
 
 #[base_model]
+#[derive(serde::Deserialize)]
 #[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct CryopreservedTissueCreation {
     #[serde(flatten)]
@@ -32,6 +33,7 @@ impl CryopreservedTissueCreation {
 }
 
 #[base_model]
+#[derive(serde::Deserialize)]
 #[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct FixedTissueCreation {
     #[serde(flatten)]
@@ -64,6 +66,7 @@ pub enum TissueFixative {
 }
 
 #[base_model]
+#[derive(serde::Deserialize)]
 #[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct FrozenTissueCreation {
     #[serde(flatten)]

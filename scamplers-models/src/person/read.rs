@@ -51,6 +51,7 @@ pub struct SummaryWithParents {
 }
 
 #[base_model]
+#[derive(serde::Serialize)]
 #[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct Person {
     #[serde(flatten)]

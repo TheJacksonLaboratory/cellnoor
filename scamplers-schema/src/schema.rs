@@ -343,7 +343,7 @@ diesel::table! {
         links -> Jsonb,
         readable_id -> Text,
         parent_specimen_id -> Uuid,
-        biological_material -> Text,
+        content -> Text,
         created_at -> Nullable<Timestamptz>,
         lysis_duration_minutes -> Nullable<Float4>,
         target_cell_recovery -> Int4,

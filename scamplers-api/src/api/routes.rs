@@ -25,6 +25,8 @@ pub(super) fn router() -> Router<AppState> {
         .nest("/labs", labs::router())
         .nest("/specimens", specimens::router())
         .nest("/multiplexing-tags", multiplexing_tags::router())
+        .nest("/cell-suspensions", cell_suspensions::router())
+        .nest("/nucleus-suspensions", nucleus_suspensions::router())
         .nest("/suspensions", suspensions::router())
 }
 
@@ -40,7 +42,7 @@ async fn inner_handler<Request, Response>(
     request: Request,
 ) -> Result<Json<Response>, ErrorResponse>
 where
-    Request: std::fmt::Debug + db::Operation<Response> + Send + serde::Serialize + 'static,
+    Request: std::fmt::Debug + db::Operation<Response> + Send + 'static,
     Response: Send + 'static,
 {
     tracing::info!("{request:?}");

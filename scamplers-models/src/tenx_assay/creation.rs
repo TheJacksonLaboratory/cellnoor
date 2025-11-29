@@ -7,6 +7,7 @@ use crate::tenx_assay::{
 mod chromium;
 
 #[base_model]
+#[derive(serde::Deserialize)]
 #[serde(tag = "platform", rename_all = "snake_case")]
 pub enum TenxAssayCreation {
     Chromium(ChromiumAssayCreation),

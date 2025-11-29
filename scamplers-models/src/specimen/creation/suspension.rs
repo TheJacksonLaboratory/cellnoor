@@ -7,6 +7,7 @@ use crate::specimen::common::{
 const TYPE: SpecimenType = SpecimenType::Suspension;
 
 #[base_model]
+#[derive(serde::Deserialize)]
 #[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct CryopreservedSuspensionCreation {
     #[serde(flatten)]
@@ -32,6 +33,7 @@ impl CryopreservedSuspensionCreation {
 }
 
 #[base_model]
+#[derive(serde::Deserialize)]
 #[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct FixedOrFreshSuspensionCreation {
     #[serde(flatten)]
@@ -65,6 +67,7 @@ pub enum SuspensionFixative {
 }
 
 #[base_model]
+#[derive(serde::Deserialize)]
 #[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct FrozenSuspensionCreation {
     #[serde(flatten)]
