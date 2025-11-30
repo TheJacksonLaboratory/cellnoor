@@ -7,6 +7,13 @@ use scamplers_models::{
     lab::{Lab, LabCreation, LabFilter, LabOrderBy},
     person::{Person, PersonCreation, PersonFilter, PersonOrderBy},
     specimen::{Specimen, SpecimenCreation, SpecimenFilter, SpecimenOrderBy},
+    suspension::{
+        CellSuspensionCreation, NucleusSuspensionCreation, Suspension,
+        measurement::{
+            CellSuspensionMeasurementCreation, NucleusSuspensionMeasurementCreation,
+            SuspensionMeasurement,
+        },
+    },
 };
 use ts_rs::TS;
 
@@ -63,6 +70,13 @@ fn main() {
     SpecimenCreation::export_all_to(&output_dir).unwrap();
     SpecimenQuery::export_all_to(&output_dir).unwrap();
     Specimen::export_all_to(&output_dir).unwrap();
+
+    CellSuspensionCreation::export_all_to(&output_dir).unwrap();
+    NucleusSuspensionCreation::export_all_to(&output_dir).unwrap();
+    Suspension::export_all_to(&output_dir).unwrap();
+    CellSuspensionMeasurementCreation::export_all_to(&output_dir).unwrap();
+    NucleusSuspensionMeasurementCreation::export_all_to(&output_dir).unwrap();
+    SuspensionMeasurement::export_all_to(&output_dir).unwrap();
 
     ErrorResponse::export_all_to(&output_dir).unwrap();
 }
