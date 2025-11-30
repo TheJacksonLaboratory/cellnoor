@@ -7,5 +7,7 @@ mod create;
 mod measurements;
 
 pub(super) fn router() -> Router<AppState> {
-    Router::new().typed_post(create::create_nucleus_suspension)
+    Router::new()
+        .typed_post(create::create_nucleus_suspension)
+        .typed_post(measurements::create_nucleus_suspension_measurement)
 }

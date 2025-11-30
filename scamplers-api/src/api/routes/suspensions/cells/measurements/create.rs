@@ -1,5 +1,4 @@
 use axum::{extract::State, http::StatusCode};
-use axum_extra::routing::TypedPath;
 use diesel::prelude::*;
 use scamplers_models::suspension::measurement::{
     CellSuspensionMeasurementCreation, SuspensionMeasurement,

@@ -2,7 +2,7 @@ use axum::extract::State;
 use diesel::prelude::*;
 use reqwest::StatusCode;
 use scamplers_models::suspension::measurement::{
-    CellSuspensionMeasurementCreation, NucleusSuspensionMeasurementCreation, SuspensionMeasurement,
+    NucleusSuspensionMeasurementCreation, SuspensionMeasurement,
 };
 use scamplers_schema::suspension_measurements::dsl::*;
 

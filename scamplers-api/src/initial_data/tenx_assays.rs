@@ -7,7 +7,7 @@ use crate::initial_data::Upsert;
 
 impl Upsert for TenxAssayCreation {
     fn upsert(self, db_conn: &mut diesel::PgConnection) -> anyhow::Result<()> {
-        let specs = self.library_type_specifications().map(|s| s.to_vec());
+        let specs = self.library_type_specifications().map(<[_]>::to_vec);
 
         let assay_id: Uuid = match self {
             Self::Chromium(a) => {

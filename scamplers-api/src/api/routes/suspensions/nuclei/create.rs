@@ -1,20 +1,14 @@
 use axum::extract::State;
-use axum_extra::routing::TypedPath;
 use diesel::prelude::*;
 use reqwest::StatusCode;
-use scamplers_models::suspension::{
-    CellSuspensionCreation, NucleusSuspensionCreation, Suspension, SuspensionId,
-};
-use scamplers_schema::{suspension_preparers, suspensions::dsl::*};
+use scamplers_models::suspension::{NucleusSuspensionCreation, Suspension, SuspensionContent};
 
 use crate::{
     api::{
         extract::{ValidJson, auth::AuthenticatedUser},
         routes::{
             ApiResponse, Root, inner_handler,
-            suspensions::{
-                create::insert_suspension_preparers, measurements::MeasurementsEndpoint,
-            },
+            suspensions::create::{insert_suspension, insert_suspension_preparers},
         },
     },
     db,
@@ -38,12 +32,9 @@ impl db::Operation<Suspension> for NucleusSuspensionCreation {
             preparer_ids,
         } = self;
 
-        let suspension_id: SuspensionId = diesel::insert_into(suspensions)
-            .values(inner)
-            .returning(id)
-            .get_result(db_conn)?;
+        let suspension_id = insert_suspension(inner, SuspensionContent::Cells, db_conn)?;
 
-        insert_suspension_preparers(suspension_id, &preparer_ids, db_conn);
+        insert_suspension_preparers(suspension_id, &preparer_ids, db_conn)?;
 
         suspension_id.execute(db_conn)
     }

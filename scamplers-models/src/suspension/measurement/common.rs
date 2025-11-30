@@ -1,9 +1,17 @@
-use macro_attributes::{json, simple_enum};
-use macros::{impl_enum_from_sql, impl_enum_to_sql};
+use jiff::Timestamp;
+use macro_attributes::{insert_select, json, simple_enum};
+use macros::{impl_enum_from_sql, impl_enum_to_sql, impl_json_from_sql, impl_json_to_sql};
 use positive::PositiveF32;
+use scamplers_schema::suspension_measurements;
+use serde::{Serialize, de::DeserializeOwned};
+use uuid::Uuid;
 
 #[cfg(feature = "app")]
 use crate::utils::{EnumFromSql, EnumToSql};
+use crate::{
+    suspension::SuspensionContent,
+    utils::{JsonFromSql, JsonToSql},
+};
 
 #[simple_enum]
 enum CountingMethod {
@@ -121,97 +129,50 @@ pub struct MeanDiameter {
     unit: Micrometer,
 }
 
-#[cfg(feature = "app")]
-mod rust {
-    use super::{Concentration, MeanDiameter, Viability, Volume};
-    use jiff::Timestamp;
-    use macro_attributes::{insert_select, json};
-    use scamplers_schema::suspension_measurements;
-    use uuid::Uuid;
-
-    #[json]
-    #[serde(tag = "quantity")]
-    pub enum SuspensionMeasurementData<C> {
-        Concentration {
-            #[serde(flatten)]
-            inner: Concentration,
-            numerator_unit: C,
-        },
-        Viability(Viability),
-        Volume(Volume),
-        MeanDiameter {
-            #[serde(flatten)]
-            inner: MeanDiameter,
-            object: C,
-        },
-    }
-
-    #[insert_select]
-    #[cfg_attr(feature = "app", diesel(table_name = suspension_measurements))]
-    pub struct SuspensionMeasurementFields<C> {
-        suspension_id: Uuid,
-        measured_by: Uuid,
-        #[cfg_attr(feature = "app", diesel(
-            serialize_as = jiff_diesel::Timestamp,
-            deserialize_as = jiff_diesel::Timestamp
-        ))]
-        measured_at: Timestamp,
-        data: SuspensionMeasurementData<C>,
-    }
-
-    impl<C> SuspensionMeasurementFields<C> {
-        pub fn data(&self) -> &SuspensionMeasurementData<C> {
-            &self.data
-        }
-    }
+#[json]
+#[serde(tag = "quantity")]
+#[cfg_attr(feature = "typescript", ts(concrete(C = SuspensionContent)))]
+pub enum SuspensionMeasurementData<C> {
+    Concentration {
+        #[serde(flatten)]
+        inner: Concentration,
+        #[cfg_attr(feature = "typescript", ts(as = "SuspensionContent"))]
+        numerator_unit: C,
+    },
+    Viability(Viability),
+    Volume(Volume),
+    MeanDiameter {
+        #[serde(flatten)]
+        inner: MeanDiameter,
+        #[cfg_attr(feature = "typescript", ts(as = "SuspensionContent"))]
+        object: C,
+    },
 }
 
-#[cfg(feature = "app")]
-pub use rust::{SuspensionMeasurementData, SuspensionMeasurementFields};
+impl<C> JsonFromSql for SuspensionMeasurementData<C> where C: DeserializeOwned {}
+impl_json_from_sql!(SuspensionMeasurementData<SuspensionContent>);
 
-#[cfg(all(not(feature = "app"), feature = "typescript"))]
-mod typescript {
-    use super::{Concentration, MeanDiameter, Viability, Volume};
-    use jiff::Timestamp;
-    use macro_attributes::{insert_select, json};
-    #[cfg(feature = "app")]
-    use scamplers_schema::suspension_measurements;
-    use ts_rs::TS;
-    use uuid::Uuid;
+impl<C> JsonToSql for SuspensionMeasurementData<C> where C: Serialize {}
+impl_json_to_sql!(SuspensionMeasurementData<Cells>);
+impl_json_to_sql!(SuspensionMeasurementData<Nuclei>);
 
-    #[json]
-    #[serde(tag = "quantity")]
-    enum MeasurementData<C>
-    where
-        C: TS,
-        <C as TS>::OptionInnerType: TS,
-    {
-        Concentration {
-            #[serde(flatten)]
-            inner: Concentration,
-            numerator_unit: C,
-        },
-        Viability(Viability),
-        Volume(Volume),
-        MeanDiameter {
-            #[serde(flatten)]
-            inner: MeanDiameter,
-            object: C,
-        },
-    }
-
-    #[insert_select]
-    struct SuspensionMeasurementFields<C>
-    where
-        C: TS,
-        <C as TS>::OptionInnerType: TS,
-    {
-        measured_by: Uuid,
-        #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
-        measured_at: Timestamp,
-        data: SuspensionMeasurementData<C>,
-    }
+#[insert_select]
+#[cfg_attr(feature = "app", diesel(table_name = suspension_measurements))]
+#[cfg_attr(feature = "typescript", ts(concrete(C = SuspensionContent)))]
+pub struct SuspensionMeasurementFields<C> {
+    suspension_id: Uuid,
+    measured_by: Uuid,
+    #[cfg_attr(feature = "app", diesel(
+        serialize_as = jiff_diesel::Timestamp,
+        deserialize_as = jiff_diesel::Timestamp
+    ))]
+    #[cfg_attr(feature = "typescript", ts(as = "String"))]
+    measured_at: Timestamp,
+    data: SuspensionMeasurementData<C>,
 }
 
-#[cfg(all(not(feature = "app"), feature = "typescript"))]
-pub use typescript::SuspensionMeasurementFields;
+impl<C> SuspensionMeasurementFields<C> {
+    pub fn data(&self) -> &SuspensionMeasurementData<C> {
+        &self.data
+    }
+}

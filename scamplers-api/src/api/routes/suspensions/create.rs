@@ -1,9 +1,20 @@
 use diesel::prelude::*;
-use scamplers_models::suspension::SuspensionId;
-use scamplers_schema::suspension_preparers;
+use scamplers_models::suspension::{SuspensionContent, SuspensionFields, SuspensionId};
+use scamplers_schema::{suspension_preparers, suspensions};
 use uuid::Uuid;
 
 use crate::db;
+
+pub(super) fn insert_suspension(
+    fields: SuspensionFields,
+    content: SuspensionContent,
+    db_conn: &mut PgConnection,
+) -> Result<SuspensionId, db::Error> {
+    Ok(diesel::insert_into(suspensions::table)
+        .values((fields, suspensions::content.eq(content)))
+        .returning(suspensions::id)
+        .get_result(db_conn)?)
+}
 
 pub(super) fn insert_suspension_preparers(
     suspension_id: SuspensionId,
@@ -11,7 +22,7 @@ pub(super) fn insert_suspension_preparers(
     db_conn: &mut PgConnection,
 ) -> Result<(), db::Error> {
     let preparer_mappings: Vec<_> = preparer_ids
-        .into_iter()
+        .iter()
         .map(|p| {
             (
                 suspension_preparers::suspension_id.eq(suspension_id),

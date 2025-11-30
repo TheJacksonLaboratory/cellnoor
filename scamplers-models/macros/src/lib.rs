@@ -69,7 +69,7 @@ macro_rules! impl_enum_to_sql {
 
 #[macro_export]
 macro_rules! impl_json_from_sql {
-    ($name:ident) => {
+    ($name:ty) => {
         #[cfg(feature = "app")]
         impl ::diesel::deserialize::FromSql<::diesel::sql_types::Jsonb, ::diesel::pg::Pg>
             for $name
@@ -83,7 +83,7 @@ macro_rules! impl_json_from_sql {
 
 #[macro_export]
 macro_rules! impl_json_to_sql {
-    ($name:ident) => {
+    ($name:ty) => {
         #[cfg(feature = "app")]
         impl ::diesel::serialize::ToSql<::diesel::sql_types::Jsonb, ::diesel::pg::Pg> for $name {
             fn to_sql<'b>(

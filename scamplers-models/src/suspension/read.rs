@@ -1,13 +1,10 @@
 #[cfg(feature = "app")]
 use diesel::prelude::*;
-use macro_attributes::{base_model, select, simple_enum};
-use macros::{impl_enum_from_sql, impl_enum_to_sql};
+use macro_attributes::select;
 #[cfg(feature = "app")]
 use scamplers_schema::{specimens, suspensions};
 use uuid::Uuid;
 
-#[cfg(feature = "app")]
-use crate::utils::{EnumFromSql, EnumToSql};
 use crate::{
     links::Links,
     specimen::SpecimenSummary,

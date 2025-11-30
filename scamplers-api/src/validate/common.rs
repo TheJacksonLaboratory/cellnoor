@@ -1,7 +1,7 @@
 #[derive(Debug, thiserror::Error, serde::Serialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[error("value {found} must be  between {minimum} and {maximum}")]
-pub(super) struct InvalidMeasurement<const MIN: i32, const MAX: i32> {
+pub struct InvalidMeasurement<const MIN: i32, const MAX: i32> {
     minimum: i32,
     maximum: i32,
     found: f32,

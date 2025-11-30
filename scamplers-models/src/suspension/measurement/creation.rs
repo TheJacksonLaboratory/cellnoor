@@ -1,11 +1,6 @@
-use macro_attributes::{base_model, insert};
-#[cfg(feature = "app")]
-use scamplers_schema::suspension_measurements;
+use macro_attributes::base_model;
 
-use crate::suspension::{
-    Suspension,
-    measurement::common::{Cells, Nuclei, SuspensionMeasurementFields},
-};
+use crate::suspension::measurement::common::{Cells, Nuclei, SuspensionMeasurementFields};
 
 #[base_model]
 #[derive(serde::Deserialize)]

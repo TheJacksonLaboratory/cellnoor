@@ -5,4 +5,4 @@ import type { PersonValidationError } from "./PersonValidationError";
 import type { SpecimenMeasurementValidationError } from "./SpecimenMeasurementValidationError";
 import type { SpecimenValidationError } from "./SpecimenValidationError";
 
-export type DataValidationError = { "type": "insert_initial_data", "info": InitialDataValidationError } | { "type": "create_person", "info": PersonValidationError } | { "type": "create_lab", "info": LabValidationError } | { "type": "create_specimen", "info": SpecimenValidationError } | { "type": "create_specimen_measurement", "info": SpecimenMeasurementValidationError };
+export type DataValidationError = { "type": "insert_initial_data", "info": InitialDataValidationError } | { "type": "create_person", "info": PersonValidationError } | { "type": "create_lab", "info": LabValidationError } | { "type": "create_specimen", "info": SpecimenValidationError } | { "type": "create_specimen_measurement", "info": SpecimenMeasurementValidationError } | { "type": "create_suspension_measurement", "info": SpecimenMeasurementValidationError };

@@ -69,6 +69,8 @@ uuid = { version = "1.18.1", features = ["serde", "v7"] }
 zeroize = { version = "1.8.2", features = ["zeroize_derive"] }
 
 [workspace.lints.clippy]
+cast_precision_loss = "allow"
 missing_errors_doc = "allow"
 missing_panics_doc = "allow"
 pedantic = { level = "warn", priority = -1 }
+wildcard_imports = "allow"

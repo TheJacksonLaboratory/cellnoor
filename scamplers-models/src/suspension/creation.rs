@@ -1,6 +1,7 @@
-use crate::suspension::common::SuspensionFields;
 use macro_attributes::base_model;
 use uuid::Uuid;
+
+use crate::suspension::common::SuspensionFields;
 
 #[base_model]
 #[derive(serde::Deserialize)]

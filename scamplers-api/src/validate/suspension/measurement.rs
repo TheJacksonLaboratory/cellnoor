@@ -1,4 +1,3 @@
-use positive::PositiveF32;
 use scamplers_models::suspension::measurement::{
     CellSuspensionMeasurementCreation, NucleusSuspensionMeasurementCreation,
     SuspensionMeasurementData, SuspensionMeasurementFields,
@@ -17,7 +16,7 @@ const MAX_VIABILITY: i32 = 1;
 #[serde(rename_all = "snake_case", tag = "type", content = "info")]
 #[error(transparent)]
 pub enum Error {
-    InvalidViability(InvalidMeasurement<0.0, MAX_VIABILITY>),
+    InvalidViability(InvalidMeasurement<0, MAX_VIABILITY>),
 }
 
 impl Error {
@@ -44,19 +43,19 @@ impl<C> Validate for SuspensionMeasurementFields<C> {
             SuspensionMeasurementData::Concentration {
                 inner: _,
                 numerator_unit: _,
-            } => Ok(()),
-            SuspensionMeasurementData::MeanDiameter {
+            }
+            | SuspensionMeasurementData::MeanDiameter {
                 inner: _,
                 object: _,
-            } => Ok(()),
+            }
+            | SuspensionMeasurementData::Volume(_) => Ok(()),
             SuspensionMeasurementData::Viability(v) => {
                 let value = v.value();
-                if value > MAX_VIABILITY {
+                if value > MAX_VIABILITY as f32 {
                     return Err(Error::invalid_viability(value))?;
                 }
                 Ok(())
             }
-            SuspensionMeasurementData::Volume(_) => Ok(()),
         }
     }
 }
