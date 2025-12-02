@@ -10,11 +10,13 @@ mod list;
 mod measurements;
 mod nuclei;
 
+pub(super) use create::{insert_suspension, insert_suspension_preparers, insert_suspension_tags};
+
 pub(super) fn router() -> Router<AppState> {
     Router::new()
         .nest("/cells", cells::router())
         .nest("/nuclei", nuclei::router())
         .typed_get(fetch::fetch_suspension)
-    // .typed_post(measurements::create::create_measurement)
-    // .typed_get(measurements::list::list_measurements)
+        .typed_get(list::list_suspensions)
+        .typed_get(measurements::list::list_measurements)
 }

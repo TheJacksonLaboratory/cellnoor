@@ -10,6 +10,7 @@ use uuid::Uuid;
 use crate::utils::{EnumFromSql, EnumToSql};
 use crate::{
     suspension::SuspensionContent,
+    units::{Microliter, Micrometer, Milliliter},
     utils::{JsonFromSql, JsonToSql},
 };
 
@@ -27,48 +28,6 @@ impl_enum_from_sql!(CountingMethod);
 #[cfg(feature = "app")]
 impl EnumToSql for CountingMethod {}
 impl_enum_to_sql!(CountingMethod);
-
-#[simple_enum]
-enum Microliter {
-    #[serde(alias = "µL")]
-    Microliter,
-}
-
-#[cfg(feature = "app")]
-impl EnumFromSql for Microliter {}
-impl_enum_from_sql!(Microliter);
-
-#[cfg(feature = "app")]
-impl EnumToSql for Microliter {}
-impl_enum_to_sql!(Microliter);
-
-#[simple_enum]
-enum Milliliter {
-    #[serde(alias = "mL")]
-    Milliliter,
-}
-
-#[cfg(feature = "app")]
-impl EnumFromSql for Milliliter {}
-impl_enum_from_sql!(Milliliter);
-
-#[cfg(feature = "app")]
-impl EnumToSql for Milliliter {}
-impl_enum_to_sql!(Milliliter);
-
-#[simple_enum]
-enum Micrometer {
-    #[serde(alias = "µm")]
-    Micrometer,
-}
-
-#[cfg(feature = "app")]
-impl EnumFromSql for Micrometer {}
-impl_enum_from_sql!(Micrometer);
-
-#[cfg(feature = "app")]
-impl EnumToSql for Micrometer {}
-impl_enum_to_sql!(Micrometer);
 
 #[simple_enum]
 pub enum Cells {
@@ -99,7 +58,6 @@ impl_enum_to_sql!(Nuclei);
 #[json]
 pub struct Concentration {
     counting_method: Option<CountingMethod>,
-    post_hybridization: bool,
     value: PositiveF32,
     denominator_unit: Milliliter,
 }
@@ -117,14 +75,12 @@ impl Viability {
 
 #[json]
 pub struct Volume {
-    post_hybridization: bool,
     value: PositiveF32,
     unit: Microliter,
 }
 
 #[json]
 pub struct MeanDiameter {
-    post_hybridization: bool,
     value: PositiveF32,
     unit: Micrometer,
 }
@@ -136,22 +92,34 @@ pub enum SuspensionMeasurementData<C> {
     Concentration {
         #[serde(flatten)]
         inner: Concentration,
+        post_hybridization: bool,
         #[cfg_attr(feature = "typescript", ts(as = "SuspensionContent"))]
         numerator_unit: C,
     },
-    Viability(Viability),
-    Volume(Volume),
+    Viability {
+        #[serde(flatten)]
+        inner: Viability,
+        post_hybridization: bool,
+    },
+    Volume {
+        #[serde(flatten)]
+        inner: Volume,
+        post_hybridization: bool,
+    },
     MeanDiameter {
         #[serde(flatten)]
         inner: MeanDiameter,
+        post_hybridization: bool,
         #[cfg_attr(feature = "typescript", ts(as = "SuspensionContent"))]
         object: C,
     },
 }
 
+#[cfg(feature = "app")]
 impl<C> JsonFromSql for SuspensionMeasurementData<C> where C: DeserializeOwned {}
 impl_json_from_sql!(SuspensionMeasurementData<SuspensionContent>);
 
+#[cfg(feature = "app")]
 impl<C> JsonToSql for SuspensionMeasurementData<C> where C: Serialize {}
 impl_json_to_sql!(SuspensionMeasurementData<Cells>);
 impl_json_to_sql!(SuspensionMeasurementData<Nuclei>);
@@ -160,7 +128,6 @@ impl_json_to_sql!(SuspensionMeasurementData<Nuclei>);
 #[cfg_attr(feature = "app", diesel(table_name = suspension_measurements))]
 #[cfg_attr(feature = "typescript", ts(concrete(C = SuspensionContent)))]
 pub struct SuspensionMeasurementFields<C> {
-    suspension_id: Uuid,
     measured_by: Uuid,
     #[cfg_attr(feature = "app", diesel(
         serialize_as = jiff_diesel::Timestamp,

@@ -9,6 +9,5 @@ use uuid::Uuid;
 pub struct LabFields {
     pub(super) name: NonEmptyString,
     pub(super) pi_id: Uuid,
-
     pub(super) delivery_dir: NonEmptyString,
 }

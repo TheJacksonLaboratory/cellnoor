@@ -3,12 +3,22 @@
 #[cfg_attr(feature = "serde", serde(try_from = "Vec<T>"))]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "diesel", derive(diesel::deserialize::FromSqlRow))]
-pub struct NonEmptyVec<T>(Vec<T>);
+pub struct NonEmptyVec<T, const N: usize = { usize::MAX }>(Vec<T>);
 
-impl<T> NonEmptyVec<T> {
+impl<T, const N: usize> From<T> for NonEmptyVec<T, N> {
+    fn from(value: T) -> Self {
+        Self(vec![value])
+    }
+}
+
+impl<T, const N: usize> NonEmptyVec<T, N> {
     #[must_use]
     pub fn new(v: Vec<T>) -> Option<Self> {
         if v.is_empty() {
+            return None;
+        }
+
+        if v.len() > N {
             return None;
         }
 
@@ -16,61 +26,42 @@ impl<T> NonEmptyVec<T> {
     }
 }
 
-impl<T> AsRef<[T]> for NonEmptyVec<T> {
+impl<T, const N: usize> IntoIterator for NonEmptyVec<T, N> {
+    type IntoIter = <Vec<T> as IntoIterator>::IntoIter;
+    type Item = T;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
+impl<T, const N: usize> FromIterator<T> for NonEmptyVec<T, N> {
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        Self(Vec::from_iter(iter))
+    }
+}
+
+impl<T, const N: usize> AsRef<[T]> for NonEmptyVec<T, N> {
     fn as_ref(&self) -> &[T] {
         &self.0
     }
 }
 
-impl<T> From<NonEmptyVec<T>> for Vec<T> {
-    fn from(value: NonEmptyVec<T>) -> Self {
+impl<T, const N: usize> From<NonEmptyVec<T, N>> for Vec<T> {
+    fn from(value: NonEmptyVec<T, N>) -> Self {
         value.0
     }
 }
 
 #[derive(Debug, thiserror::Error)]
-#[error("string cannot be empty")]
+#[error("array cannot be empty")]
 pub struct Error;
 
-impl<T> TryFrom<Vec<T>> for NonEmptyVec<T> {
+impl<T, const N: usize> TryFrom<Vec<T>> for NonEmptyVec<T, N> {
     type Error = Error;
 
     fn try_from(value: Vec<T>) -> Result<Self, Self::Error> {
         Self::new(value).ok_or(Error)
-    }
-}
-
-#[cfg(feature = "diesel")]
-mod diesel_impls {
-    use std::fmt::Debug;
-
-    use diesel::{
-        deserialize::FromSql,
-        pg::{Pg, PgValue},
-        serialize::{Output, ToSql},
-        sql_types::{Array, SqlType},
-    };
-
-    use super::NonEmptyVec;
-
-    impl<T, U> FromSql<Array<T>, Pg> for NonEmptyVec<U>
-    where
-        T: SqlType,
-        Vec<U>: FromSql<Array<T>, Pg>,
-    {
-        fn from_sql(bytes: PgValue<'_>) -> diesel::deserialize::Result<Self> {
-            <Vec<U> as FromSql<Array<T>, Pg>>::from_sql(bytes).map(Self)
-        }
-    }
-
-    impl<T, U> ToSql<Array<T>, Pg> for NonEmptyVec<U>
-    where
-        U: Debug,
-        Vec<U>: ToSql<Array<T>, Pg>,
-    {
-        fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Pg>) -> diesel::serialize::Result {
-            <Vec<U> as ToSql<Array<T>, Pg>>::to_sql(&self.0, out)
-        }
     }
 }
 

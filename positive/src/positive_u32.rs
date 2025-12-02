@@ -8,6 +8,17 @@
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 pub struct PositiveU32(u32);
 
+impl PositiveU32 {
+    #[must_use]
+    pub fn new(i: u32) -> Option<Self> {
+        if i <= 0 {
+            return None;
+        }
+
+        Some(Self(i))
+    }
+}
+
 #[cfg(feature = "serde")]
 mod serde_impls {
     use serde::Deserialize;
@@ -19,18 +30,18 @@ mod serde_impls {
         where
             D: serde::Deserializer<'de>,
         {
-            let num = u32::deserialize(deserializer)?;
+            use serde::de;
 
-            if num == 0 {
-                use serde::de;
+            let num = u32::deserialize(deserializer).map(Self::new)?;
 
+            let Some(num) = num else {
                 return Err(de::Error::invalid_value(
-                    de::Unexpected::Unsigned(u64::from(num)),
+                    de::Unexpected::Unsigned(0),
                     &"a positive integer",
                 ));
-            }
+            };
 
-            Ok(Self(num))
+            Ok(num)
         }
     }
 }

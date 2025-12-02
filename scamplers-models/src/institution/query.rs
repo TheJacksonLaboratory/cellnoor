@@ -1,5 +1,7 @@
 use macro_attributes::{filter, order_by};
 use macros::uuid_newtype;
+#[cfg(feature = "app")]
+use scamplers_schema::institutions;
 use uuid::Uuid;
 
 // You might think it would be better to factor out the field definition into
@@ -14,7 +16,7 @@ use uuid::Uuid;
 // where `F` is an enum of the table's columns. Writing the `QueryFragment`
 // implementation is more difficult and less safe for this type of struct (see
 // the `order_by` macro).
-#[order_by(scamplers_schema::institutions)]
+#[order_by(institutions)]
 #[allow(non_camel_case_types)]
 pub enum InstitutionOrderBy {
     id { descending: Option<bool> },
@@ -29,20 +31,8 @@ impl Default for InstitutionOrderBy {
 
 #[filter]
 pub struct InstitutionFilter {
-    ids: Option<Vec<Uuid>>,
-    names: Option<Vec<String>>,
-}
-
-impl InstitutionFilter {
-    #[must_use]
-    pub fn ids(&self) -> Option<&[Uuid]> {
-        self.ids.as_deref()
-    }
-
-    #[must_use]
-    pub fn names(&self) -> Option<&[String]> {
-        self.names.as_deref()
-    }
+    pub ids: Option<Vec<Uuid>>,
+    pub names: Option<Vec<String>>,
 }
 
 #[cfg(feature = "app")]

@@ -1,31 +1,47 @@
-use scamplers_macros::db_simple_enum;
+use macro_attributes::simple_enum;
+use macros::{impl_enum_from_sql, impl_enum_to_sql};
 
-#[db_simple_enum]
-#[cfg_attr(feature = "python", pyo3(module = "scamplepy.common"))]
-pub enum MassUnit {
-    #[serde(rename = "ng")]
-    #[strum(serialize = "ng")]
-    Nanogram,
-    #[serde(rename = "pg")]
-    #[strum(serialize = "pg")]
-    Picogram,
-}
+#[cfg(feature = "app")]
+use crate::utils::{EnumFromSql, EnumToSql};
 
-#[db_simple_enum]
-#[cfg_attr(feature = "python", pyo3(module = "scamplepy.common"))]
-pub enum VolumeUnit {
-    #[serde(rename = "µl")]
-    #[strum(serialize = "µl")]
+#[simple_enum]
+pub enum Microliter {
+    #[serde(alias = "µL")]
     Microliter,
-    #[serde(rename = "ml")]
-    #[strum(serialize = "ml")]
-    Millliter,
 }
 
-#[db_simple_enum]
-#[cfg_attr(feature = "python", pyo3(module = "scamplepy.common"))]
-pub enum LengthUnit {
-    #[serde(rename = "µm")]
-    #[strum(serialize = "µm")]
+#[cfg(feature = "app")]
+impl EnumFromSql for Microliter {}
+impl_enum_from_sql!(Microliter);
+
+#[cfg(feature = "app")]
+impl EnumToSql for Microliter {}
+impl_enum_to_sql!(Microliter);
+
+#[simple_enum]
+pub enum Milliliter {
+    #[serde(alias = "mL")]
+    Milliliter,
+}
+
+#[cfg(feature = "app")]
+impl EnumFromSql for Milliliter {}
+impl_enum_from_sql!(Milliliter);
+
+#[cfg(feature = "app")]
+impl EnumToSql for Milliliter {}
+impl_enum_to_sql!(Milliliter);
+
+#[simple_enum]
+pub enum Micrometer {
+    #[serde(alias = "µm")]
     Micrometer,
 }
+
+#[cfg(feature = "app")]
+impl EnumFromSql for Micrometer {}
+impl_enum_from_sql!(Micrometer);
+
+#[cfg(feature = "app")]
+impl EnumToSql for Micrometer {}
+impl_enum_to_sql!(Micrometer);

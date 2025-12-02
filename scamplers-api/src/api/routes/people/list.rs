@@ -33,29 +33,38 @@ where
     AssumeNotNull<microsoft_entra_oid>: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
+        let Self {
+            ids,
+            names,
+            emails,
+            institution_ids,
+            orcids,
+            microsoft_entra_oids,
+        } = self;
+
         let mut filter = BoxedFilter::new();
 
-        if let Some(ids) = self.ids() {
+        if let Some(ids) = ids {
             filter = filter.and_condition(id.eq_any(ids));
         }
 
-        if let Some(names) = self.names() {
+        if let Some(names) = names {
             filter = filter.and_condition(like_any(name, names));
         }
 
-        if let Some(emails) = self.emails() {
+        if let Some(emails) = emails {
             filter = filter.and_condition(like_any(email.assume_not_null(), emails));
         }
 
-        if let Some(institution_ids) = self.institution_ids() {
+        if let Some(institution_ids) = institution_ids {
             filter = filter.and_condition(institution_id.eq_any(institution_ids));
         }
 
-        if let Some(orcids) = self.orcids() {
+        if let Some(orcids) = orcids {
             filter = filter.and_condition(like_any(orcid.assume_not_null(), orcids));
         }
 
-        if let Some(microsoft_entra_oids) = self.microsoft_entra_oids() {
+        if let Some(microsoft_entra_oids) = microsoft_entra_oids {
             filter = filter.and_condition(
                 microsoft_entra_oid
                     .assume_not_null()
@@ -69,15 +78,20 @@ where
 
 impl db::Operation<Vec<PersonSummary>> for PersonQuery {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Vec<PersonSummary>, db::Error> {
-        let filter = self.filter();
+        let Self {
+            filter,
+            limit,
+            offset,
+            order_by,
+        } = self;
 
         let mut stmt = PersonSummary::query()
-            .limit(self.limit())
-            .offset(self.offset())
+            .limit(limit)
+            .offset(offset)
             .filter(filter.to_boxed_filter())
             .into_boxed();
 
-        for ordering in self.order_by() {
+        for ordering in order_by.as_ref() {
             stmt = stmt.then_order_by(ordering);
         }
 

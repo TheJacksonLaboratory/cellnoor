@@ -23,16 +23,6 @@ where
     }
 }
 
-#[allow(clippy::into_iter_without_iter)]
-impl<'a, T> IntoIterator for &'a DefaultVec<T> {
-    type IntoIter = <&'a Vec<T> as IntoIterator>::IntoIter;
-    type Item = <&'a Vec<T> as IntoIterator>::Item;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.iter()
-    }
-}
-
 impl<T> AsMut<[T]> for DefaultVec<T> {
     fn as_mut(&mut self) -> &mut [T] {
         &mut self.0

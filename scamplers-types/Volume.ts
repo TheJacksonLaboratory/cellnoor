@@ -2,4 +2,4 @@
 import type { Microliter } from "./Microliter";
 import type { PositiveF32 } from "./PositiveF32";
 
-export type Volume = { post_hybridization: boolean, value: PositiveF32, unit: Microliter, };
+export type Volume = { value: PositiveF32, unit: Microliter, };

@@ -3,11 +3,11 @@ use std::ops::Range;
 
 use deadpool_diesel::postgres::{Connection, Pool};
 use jiff::Timestamp;
-use non_empty::NonEmptyString;
+use non_empty::{NonEmptyString, NonEmptyVec};
+use positive::PositiveU32;
 use rand::{
-    Rng, SeedableRng,
+    Rng,
     distr::Alphanumeric,
-    rngs::SmallRng,
     seq::{IndexedRandom, IteratorRandom},
 };
 use rstest::fixture;
@@ -15,12 +15,20 @@ use scamplers_models::{
     generic_query,
     institution::{Institution, InstitutionCreation, InstitutionQuery},
     lab::{LabCreation, LabQuery, LabSummary},
+    multiplexing_tag::MultiplexingTag,
     person::{PersonCreation, PersonQuery, PersonSummary},
     specimen::{
         BlockFixative, CryopreservedSuspensionCreation, CryopreservedTissueCreation,
         FixedBlockCreation, FixedBlockEmbeddingMatrix, FixedTissueCreation, FrozenBlockCreation,
         FrozenBlockEmbeddingMatrix, FrozenSuspensionCreation, FrozenTissueCreation, Species,
         SpecimenCommonFields, SpecimenCreation, SpecimenQuery, SpecimenSummary, TissueFixative,
+    },
+    suspension::{
+        SuspensionContent, SuspensionCreation, SuspensionCreationInner, SuspensionFields,
+        SuspensionQuery, SuspensionSummary,
+    },
+    suspension_pool::{
+        SuspensionPool, SuspensionPoolCreation, SuspensionPoolFields, SuspensionPoolQuery,
     },
 };
 use strum::VariantArray;
@@ -72,6 +80,8 @@ impl TestState {
         self.insert_people().await;
         self.insert_labs().await;
         self.insert_specimens().await;
+        self.insert_suspensions().await;
+        self.insert_suspension_pools().await;
     }
 
     async fn insert_institutions(&'static self) {
@@ -89,7 +99,7 @@ impl TestState {
             .interact(|db_conn| {
                 InstitutionCreation::builder()
                     .id(Uuid::now_v7())
-                    .name(NonEmptyString::new(random_string()).unwrap())
+                    .name(random_non_empty_string())
                     .build()
                     .execute(db_conn)
                     .unwrap()
@@ -148,7 +158,7 @@ impl TestState {
 
         db_conn
             .interact(move |db_conn| {
-                let name = NonEmptyString::new(random_string()).unwrap();
+                let name = random_non_empty_string();
 
                 LabCreation::builder()
                     .name(name.clone())
@@ -181,13 +191,13 @@ impl TestState {
         let db_conn = self.root_db_conn().await;
 
         let inner = SpecimenCommonFields::builder()
-            .readable_id(NonEmptyString::new(random_string()).unwrap())
-            .name(NonEmptyString::new(random_string()).unwrap())
+            .readable_id(random_non_empty_string())
+            .name(random_non_empty_string())
             .submitted_by(submitted_by)
             .lab_id(lab_id)
             .received_at(random_time())
             .species(Species::VARIANTS.choose_unwrap())
-            .tissue(NonEmptyString::new(random_string()).unwrap())
+            .tissue(random_non_empty_string())
             .additional_data(serde_json::json!({"krabby_patty_formular": "secret"}))
             .build();
 
@@ -242,6 +252,110 @@ impl TestState {
             .unwrap();
     }
 
+    async fn insert_suspensions(&'static self) {
+        let specimen_ids = self
+            .all_extract::<SpecimenQuery, _, _, _>(SpecimenSummary::id)
+            .await;
+        let people_ids = self
+            .all_extract::<PersonQuery, _, _, _>(PersonSummary::id)
+            .await;
+
+        let join_set: JoinSet<_> = (0..N_SUSPENSIONS)
+            .map(|_| {
+                self.insert_random_suspension(
+                    specimen_ids.choose_unwrap(),
+                    NonEmptyVec::new(vec![people_ids.choose_unwrap()]).unwrap(),
+                )
+            })
+            .collect();
+
+        join_set.join_all().await;
+    }
+
+    async fn insert_random_suspension(&self, specimen_id: Uuid, preparer_ids: NonEmptyVec<Uuid>) {
+        let new_suspension = SuspensionCreation(SuspensionCreationInner {
+            inner: SuspensionFields::builder()
+                .readable_id(random_non_empty_string())
+                .parent_specimen_id(specimen_id)
+                .target_cell_recovery(PositiveU32::new(10_000).unwrap())
+                .build(),
+            preparer_ids,
+            tag_ids: None,
+        });
+        let new_suspension = (new_suspension, SuspensionContent::VARIANTS.choose_unwrap());
+
+        let db_conn = self.root_db_conn().await;
+
+        db_conn
+            .interact(|db_conn| new_suspension.execute(db_conn).unwrap())
+            .await
+            .unwrap();
+    }
+
+    async fn insert_suspension_pools(&'static self) {
+        let specimen_ids = self
+            .all_extract::<SpecimenQuery, _, _, _>(SpecimenSummary::id)
+            .await;
+        let people_ids = self
+            .all_extract::<PersonQuery, _, _, _>(PersonSummary::id)
+            .await;
+        let multiplexing_tags = self.all_extract::<(), _, _, _>(MultiplexingTag::id).await;
+
+        let join_set: JoinSet<_> = (0..N_SUSPENSION_POOLS)
+            .map(|_| {
+                self.insert_random_suspension_pool(
+                    specimen_ids.choose_unwrap(),
+                    people_ids.choose_unwrap(),
+                    [
+                        multiplexing_tags.choose_unwrap(),
+                        multiplexing_tags.choose_unwrap(),
+                    ],
+                )
+            })
+            .collect();
+
+        join_set.join_all().await;
+    }
+
+    async fn insert_random_suspension_pool(
+        &self,
+        specimen_id: Uuid,
+        preparer_id: Uuid,
+        multiplexing_tag_ids: [Uuid; N_SUSPENSIONS_PER_POOL],
+    ) {
+        let new_suspensions = multiplexing_tag_ids
+            .into_iter()
+            .map(|tag| SuspensionCreationInner {
+                inner: SuspensionFields::builder()
+                    .readable_id(random_non_empty_string())
+                    .parent_specimen_id(specimen_id)
+                    .target_cell_recovery(PositiveU32::new(10_000).unwrap())
+                    .build(),
+                preparer_ids: preparer_id.into(),
+                tag_ids: tag.into(),
+            })
+            .collect();
+
+        let suspension_pool = SuspensionPoolCreation {
+            inner: SuspensionPoolFields::builder()
+                .name(random_non_empty_string())
+                .readable_id(random_non_empty_string())
+                .pooled_at(random_time())
+                .build(),
+            preparer_ids: preparer_id.into(),
+            suspensions: new_suspensions,
+        };
+
+        let suspension_pool = (suspension_pool, SuspensionContent::VARIANTS.choose_unwrap());
+
+        let db_conn = self.root_db_conn().await;
+
+        db_conn
+            .interact(|db_conn| suspension_pool.execute(db_conn).unwrap())
+            .await
+            .unwrap();
+    }
+
     async fn root_db_conn(&self) -> Connection {
         self.root_db_pool.get().await.unwrap()
     }
@@ -282,23 +396,46 @@ where
     }
 }
 
+impl DefaultWithNoLimit for () {
+    fn default_with_no_limit() -> Self {
+        ()
+    }
+}
+
+impl<U, F, O> DefaultWithNoLimit for (U, generic_query::Query<F, O>)
+where
+    U: From<Uuid>,
+    O: Default,
+{
+    fn default_with_no_limit() -> Self {
+        (
+            Uuid::default().into(),
+            generic_query::Query::<F, O>::default_with_no_limit(),
+        )
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct Database {
     pub institutions: Vec<Institution>,
     pub people: Vec<PersonSummary>,
     pub labs: Vec<LabSummary>,
     pub specimens: Vec<SpecimenSummary>,
+    pub suspensions: Vec<SuspensionSummary>,
+    pub suspension_pools: Vec<SuspensionPool>,
 }
 
 impl Database {
     async fn new(test_state: &'static TestState) -> Self {
         test_state.populate_db().await;
 
-        let (institutions, people, labs, specimens) = tokio::join!(
+        let (institutions, people, labs, specimens, suspensions, suspension_pools) = tokio::join!(
             test_state.all::<InstitutionQuery, _>(),
             test_state.all::<PersonQuery, _>(),
             test_state.all::<LabQuery, _>(),
-            test_state.all::<SpecimenQuery, _>()
+            test_state.all::<SpecimenQuery, _>(),
+            test_state.all::<SuspensionQuery, _>(),
+            test_state.all::<SuspensionPoolQuery, _>()
         );
 
         Self {
@@ -306,6 +443,8 @@ impl Database {
             people,
             labs,
             specimens,
+            suspensions,
+            suspension_pools,
         }
     }
 }
@@ -313,6 +452,10 @@ impl Database {
 fn random_string() -> String {
     let mut rng = rand::rng();
     (0..10).map(|_| rng.sample(Alphanumeric) as char).collect()
+}
+
+fn random_non_empty_string() -> NonEmptyString {
+    NonEmptyString::new(random_string()).unwrap()
 }
 
 // These numbers correspond to the first second of the year -4000 and the last second of the year 4000 (https://www.postgresql.org/docs/current/datatype-datetime.html)
@@ -334,7 +477,7 @@ const N_MULTIPLEXING_TAGS: usize = 1600;
 
 // 25% of the specimens will be pooled
 const N_SUSPENSION_POOLS: usize = N_SPECIMENS / 4;
-const N_SUSPENSIONS_PER_POOL: usize = 2;
+pub const N_SUSPENSIONS_PER_POOL: usize = 2;
 
 // The remaining specimens will become singular suspensions
 const N_SUSPENSIONS: usize = N_SPECIMENS - (N_SUSPENSION_POOLS * N_SUSPENSIONS_PER_POOL);
@@ -372,7 +515,7 @@ where
     T: Copy,
 {
     fn choose_unwrap(&self) -> T {
-        let mut rng = SmallRng::seed_from_u64(0);
+        let mut rng = rand::rng();
         *self.choose(&mut rng).unwrap()
     }
 }

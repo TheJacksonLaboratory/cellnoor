@@ -8,10 +8,17 @@ use scamplers_models::{
     person::{Person, PersonCreation, PersonFilter, PersonOrderBy},
     specimen::{Specimen, SpecimenCreation, SpecimenFilter, SpecimenOrderBy},
     suspension::{
-        CellSuspensionCreation, NucleusSuspensionCreation, Suspension,
+        Suspension, SuspensionCreation, SuspensionFilter, SuspensionOrderBy, SuspensionSummary,
         measurement::{
             CellSuspensionMeasurementCreation, NucleusSuspensionMeasurementCreation,
             SuspensionMeasurement,
+        },
+    },
+    suspension_pool::{
+        SuspensionPool, SuspensionPoolCreation, SuspensionPoolFilter, SuspensionPoolOrderBy,
+        measurement::{
+            CellSuspensionPoolMeasurementCreation, NucleusSuspensionPoolMeasurementCreation,
+            SuspensionPoolMeasurement,
         },
     },
 };
@@ -52,6 +59,12 @@ struct LabQuery(#[ts(inline)] Query<LabFilter, LabOrderBy>);
 #[derive(TS)]
 struct SpecimenQuery(#[ts(inline)] Query<SpecimenFilter, SpecimenOrderBy>);
 
+#[derive(TS)]
+struct SuspensionQuery(#[ts(inline)] Query<SuspensionFilter, SuspensionOrderBy>);
+
+#[derive(TS)]
+struct SuspensionPoolQuery(#[ts(inline)] Query<SuspensionPoolFilter, SuspensionPoolOrderBy>);
+
 fn main() {
     let Cli { output_dir } = Cli::parse();
 
@@ -71,12 +84,20 @@ fn main() {
     SpecimenQuery::export_all_to(&output_dir).unwrap();
     Specimen::export_all_to(&output_dir).unwrap();
 
-    CellSuspensionCreation::export_all_to(&output_dir).unwrap();
-    NucleusSuspensionCreation::export_all_to(&output_dir).unwrap();
+    SuspensionCreation::export_all_to(&output_dir).unwrap();
+    SuspensionQuery::export_all_to(&output_dir).unwrap();
+    SuspensionSummary::export_all_to(&output_dir).unwrap();
     Suspension::export_all_to(&output_dir).unwrap();
     CellSuspensionMeasurementCreation::export_all_to(&output_dir).unwrap();
     NucleusSuspensionMeasurementCreation::export_all_to(&output_dir).unwrap();
     SuspensionMeasurement::export_all_to(&output_dir).unwrap();
+
+    SuspensionPoolCreation::export_all_to(&output_dir).unwrap();
+    SuspensionPool::export_all_to(&output_dir).unwrap();
+    SuspensionPoolQuery::export_all_to(&output_dir).unwrap();
+    CellSuspensionPoolMeasurementCreation::export_all_to(&output_dir).unwrap();
+    NucleusSuspensionPoolMeasurementCreation::export_all_to(&output_dir).unwrap();
+    SuspensionPoolMeasurement::export_all_to(&output_dir).unwrap();
 
     ErrorResponse::export_all_to(&output_dir).unwrap();
 }

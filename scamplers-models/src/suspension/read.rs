@@ -31,3 +31,9 @@ pub struct Suspension {
     #[cfg_attr(feature = "app", diesel(embed))]
     parent_specimen: SpecimenSummary,
 }
+impl Suspension {
+    #[must_use]
+    pub fn id(&self) -> Uuid {
+        self.summary.id
+    }
+}

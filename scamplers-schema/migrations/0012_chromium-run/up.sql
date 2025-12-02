@@ -1,8 +1,8 @@
 create table chromium_runs (
     id uuid primary key default uuidv7(),
+    readable_id case_insensitive_text unique not null,
     links jsonb generated always as (construct_links('chromium-runs', id)) stored not null,
     assay_id uuid references tenx_assays on delete restrict on update restrict not null,
-    readable_id case_insensitive_text unique not null,
     run_at timestamptz not null,
     run_by uuid references people on delete restrict on update restrict not null,
     succeeded boolean not null,

@@ -1,4 +1,5 @@
 use default_vec::DefaultVec;
+use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq, ::serde::Deserialize, ::serde::Serialize)]
 #[serde(default, deny_unknown_fields)]
@@ -6,10 +7,10 @@ pub struct Query<F, O>
 where
     O: Default,
 {
-    pub(crate) filter: Option<F>,
-    pub(crate) limit: i64,
-    pub(crate) offset: i64,
-    pub(crate) order_by: DefaultVec<O>,
+    pub filter: Option<F>,
+    pub limit: i64,
+    pub offset: i64,
+    pub order_by: DefaultVec<O>,
 }
 
 impl<F, O> Default for Query<F, O>
@@ -63,21 +64,51 @@ where
             ..Default::default()
         }
     }
+}
 
-    pub fn filter(&self) -> Option<&F> {
-        self.filter.as_ref()
+pub trait SetParentId<T>
+where
+    Uuid: From<T>,
+{
+    fn parent_ids_mut(&mut self) -> &mut Option<Vec<Uuid>>;
+
+    fn set_parent_id(&mut self, id: T) {
+        let parent_ids = self.parent_ids_mut();
+        *parent_ids = Some(vec![id.into()]);
     }
+}
 
-    pub fn limit(&self) -> i64 {
-        self.limit
+pub trait WithParentId<T> {
+    fn with_parent_id(id: T) -> Self;
+}
+
+impl<T, U> WithParentId<U> for T
+where
+    T: Default + SetParentId<U>,
+    Uuid: From<U>,
+{
+    fn with_parent_id(id: U) -> Self {
+        let mut filter = Self::default();
+        filter.set_parent_id(id);
+
+        filter
     }
+}
 
-    pub fn offset(&self) -> i64 {
-        self.offset
-    }
-
-    pub fn order_by(&self) -> &DefaultVec<O> {
-        &self.order_by
+impl<F, O> Query<F, O>
+where
+    O: Default,
+{
+    pub fn set_parent_id<T>(&mut self, id: T)
+    where
+        F: SetParentId<T> + WithParentId<T>,
+        Uuid: From<T>,
+    {
+        if let Some(filter) = &mut self.filter {
+            filter.set_parent_id(id);
+        } else {
+            self.filter = Some(F::with_parent_id(id));
+        }
     }
 }
 

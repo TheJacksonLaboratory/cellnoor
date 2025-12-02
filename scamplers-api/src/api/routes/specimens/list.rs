@@ -3,11 +3,8 @@ use diesel::{dsl::AssumeNotNull, prelude::*};
 use jiff_diesel::ToDiesel;
 use reqwest::StatusCode;
 use scamplers_models::specimen::{SpecimenFilter, SpecimenQuery, SpecimenSummary};
-use scamplers_schema::specimens::dsl::{
-    cryopreserved, embedded_in, fixative, frozen, host_species, id, lab_id, name, received_at,
-    returned_at, returned_by, species, submitted_by, tissue, type_,
-};
-use serde_qs::web::QsQuery;
+use scamplers_schema::specimens as t;
+use serde_qs::axum::QsQuery;
 
 use crate::{
     api::{
@@ -33,15 +30,20 @@ impl db::Operation<Vec<SpecimenSummary>> for SpecimenQuery {
         self,
         db_conn: &mut diesel::PgConnection,
     ) -> Result<Vec<SpecimenSummary>, db::Error> {
-        let filter = self.filter();
+        let Self {
+            filter,
+            limit,
+            offset,
+            order_by,
+        } = self;
 
         let mut stmt = SpecimenSummary::query()
-            .limit(self.limit())
-            .offset(self.offset())
+            .limit(limit)
+            .offset(offset)
             .filter(filter.to_boxed_filter())
             .into_boxed();
 
-        for ordering in self.order_by() {
+        for ordering in order_by.as_ref() {
             stmt = stmt.then_order_by(ordering);
         }
 
@@ -51,91 +53,123 @@ impl db::Operation<Vec<SpecimenSummary>> for SpecimenQuery {
 
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for SpecimenFilter
 where
-    id: SelectableExpression<QS>,
-    name: SelectableExpression<QS>,
-    submitted_by: SelectableExpression<QS>,
-    lab_id: SelectableExpression<QS>,
-    received_at: SelectableExpression<QS>,
-    species: SelectableExpression<QS>,
-    AssumeNotNull<host_species>: SelectableExpression<QS>,
-    type_: SelectableExpression<QS>,
-    AssumeNotNull<tissue>: SelectableExpression<QS>,
-    AssumeNotNull<embedded_in>: SelectableExpression<QS>,
-    AssumeNotNull<fixative>: SelectableExpression<QS>,
-    frozen: SelectableExpression<QS>,
-    cryopreserved: SelectableExpression<QS>,
-    AssumeNotNull<returned_by>: SelectableExpression<QS>,
-    AssumeNotNull<returned_at>: SelectableExpression<QS>,
+    t::id: SelectableExpression<QS>,
+    t::name: SelectableExpression<QS>,
+    t::submitted_by: SelectableExpression<QS>,
+    t::lab_id: SelectableExpression<QS>,
+    t::received_at: SelectableExpression<QS>,
+    t::species: SelectableExpression<QS>,
+    AssumeNotNull<t::host_species>: SelectableExpression<QS>,
+    t::type_: SelectableExpression<QS>,
+    AssumeNotNull<t::tissue>: SelectableExpression<QS>,
+    AssumeNotNull<t::embedded_in>: SelectableExpression<QS>,
+    AssumeNotNull<t::fixative>: SelectableExpression<QS>,
+    t::frozen: SelectableExpression<QS>,
+    t::cryopreserved: SelectableExpression<QS>,
+    AssumeNotNull<t::returned_by>: SelectableExpression<QS>,
+    AssumeNotNull<t::returned_at>: SelectableExpression<QS>,
+    AssumeNotNull<t::additional_data>: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> db::BoxedFilter<'a, QS> {
         let mut filter = BoxedFilter::new();
 
-        if let Some(ids) = self.ids() {
-            filter = filter.and_condition(id.eq_any(ids));
+        let Self {
+            ids,
+            names,
+            submitted_by,
+            labs,
+            received_before,
+            received_after,
+            species,
+            host_species,
+            types,
+            embedded_in,
+            fixatives,
+            frozen,
+            cryopreserved,
+            tissues,
+            returned_before,
+            returned_after,
+            returned_by,
+            additional_data,
+        } = self;
+
+        if let Some(ids) = ids {
+            filter = filter.and_condition(t::id.eq_any(ids));
         }
 
-        if let Some(names) = self.names() {
-            filter = filter.and_condition(like_any(name, names));
+        if let Some(names) = names {
+            filter = filter.and_condition(like_any(t::name, names));
         }
 
-        if let Some(submitter_list) = self.submitted_by() {
-            filter = filter.and_condition(submitted_by.eq_any(submitter_list));
+        if let Some(submitter_list) = submitted_by {
+            filter = filter.and_condition(t::submitted_by.eq_any(submitter_list));
         }
 
-        if let Some(labs) = self.labs() {
-            filter = filter.and_condition(lab_id.eq_any(labs));
+        if let Some(labs) = labs {
+            filter = filter.and_condition(t::lab_id.eq_any(labs));
         }
 
-        if let Some(received_before) = self.received_before().map(ToDiesel::to_diesel) {
-            filter = filter.and_condition(received_at.lt(received_before));
+        if let Some(received_before) = received_before.map(ToDiesel::to_diesel) {
+            filter = filter.and_condition(t::received_at.lt(received_before));
         }
 
-        if let Some(received_after) = self.received_after().map(ToDiesel::to_diesel) {
-            filter = filter.and_condition(received_at.gt(received_after));
+        if let Some(received_after) = received_after.map(ToDiesel::to_diesel) {
+            filter = filter.and_condition(t::received_at.gt(received_after));
         }
 
-        if let Some(species_list) = self.species() {
-            filter = filter.and_condition(species.eq_any(species_list));
+        if let Some(species_list) = species {
+            filter = filter.and_condition(t::species.eq_any(species_list));
         }
 
-        if let Some(host_species_list) = self.host_species() {
-            filter = filter.and_condition(host_species.assume_not_null().eq_any(host_species_list));
+        if let Some(host_species_list) = host_species {
+            filter =
+                filter.and_condition(t::host_species.assume_not_null().eq_any(host_species_list));
         }
 
-        if let Some(types) = self.types() {
-            filter = filter.and_condition(type_.eq_any(types));
+        if let Some(types) = types {
+            filter = filter.and_condition(t::type_.eq_any(types));
         }
 
-        if let Some(embedding_matrices) = self.embedded_in() {
-            filter = filter.and_condition(embedded_in.assume_not_null().eq_any(embedding_matrices));
+        if let Some(embedding_matrices) = embedded_in {
+            filter =
+                filter.and_condition(t::embedded_in.assume_not_null().eq_any(embedding_matrices));
         }
 
-        if let Some(fixatives) = self.fixatives() {
-            filter = filter.and_condition(fixative.assume_not_null().eq_any(fixatives));
+        if let Some(fixatives) = fixatives {
+            filter = filter.and_condition(t::fixative.assume_not_null().eq_any(fixatives));
         }
 
-        if let Some(is_frozen) = self.frozen() {
-            filter = filter.and_condition(frozen.eq(is_frozen));
+        if let Some(is_frozen) = frozen {
+            filter = filter.and_condition(t::frozen.eq(is_frozen));
         }
 
-        if let Some(is_cryopreserved) = self.cryopreserved() {
-            filter = filter.and_condition(cryopreserved.eq(is_cryopreserved));
+        if let Some(is_cryopreserved) = cryopreserved {
+            filter = filter.and_condition(t::cryopreserved.eq(is_cryopreserved));
         }
 
-        if let Some(tissues) = self.tissues() {
-            filter = filter.and_condition(like_any(tissue.assume_not_null(), tissues));
+        if let Some(tissues) = tissues {
+            filter = filter.and_condition(like_any(t::tissue.assume_not_null(), tissues));
         }
 
-        if let Some(returner_list) = self.returned_by() {
-            filter = filter.and_condition(returned_by.assume_not_null().eq_any(returner_list));
+        if let Some(returner_list) = returned_by {
+            filter = filter.and_condition(t::returned_by.assume_not_null().eq_any(returner_list));
         }
 
-        if let Some(returned_before) = self.returned_before().map(ToDiesel::to_diesel) {
-            filter = filter.and_condition(returned_at.assume_not_null().lt(returned_before));
+        if let Some(returned_before) = returned_before.map(ToDiesel::to_diesel) {
+            filter = filter.and_condition(t::returned_at.assume_not_null().lt(returned_before));
         }
 
-        if let Some(returned_after) = self.returned_after().map(ToDiesel::to_diesel) {
-            filter = filter.and_condition(returned_at.assume_not_null().gt(returned_after));
+        if let Some(returned_after) = returned_after.map(ToDiesel::to_diesel) {
+            filter = filter.and_condition(t::returned_at.assume_not_null().gt(returned_after));
+        }
+
+        if let Some(additional_data) = additional_data {
+            filter = filter.and_condition(
+                t::additional_data
+                    .assume_not_null()
+                    .contains(additional_data),
+            );
         }
 
         filter

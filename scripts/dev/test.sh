@@ -6,7 +6,7 @@ function cleanup_docker() {
     docker stop scamplers-api_test >/dev/null
     docker rm scamplers-api_test --volumes >/dev/null
 }
-trap cleanup_docker EXIT
+# trap cleanup_docker EXIT
 
 # Note that this database has port 5432 mapped to the host machine's port 5433, since we know the compilation database
 # (started in restart-compilation-db.sh) is using port 5432

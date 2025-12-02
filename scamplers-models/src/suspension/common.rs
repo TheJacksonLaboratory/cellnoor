@@ -12,6 +12,7 @@ use uuid::Uuid;
 use crate::utils::{EnumFromSql, EnumToSql};
 
 #[simple_enum]
+#[derive(strum::VariantArray)]
 pub enum SuspensionContent {
     Cells,
     Nuclei,
@@ -27,6 +28,7 @@ impl_enum_to_sql!(SuspensionContent);
 
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = suspensions))]
+#[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct SuspensionFields {
     readable_id: NonEmptyString,
     parent_specimen_id: Uuid,

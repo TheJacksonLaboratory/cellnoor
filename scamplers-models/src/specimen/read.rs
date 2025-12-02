@@ -28,6 +28,11 @@ pub struct SpecimenSummary {
 
 impl SpecimenSummary {
     #[must_use]
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+
+    #[must_use]
     pub fn name(&self) -> &str {
         self.common.name.as_ref()
     }

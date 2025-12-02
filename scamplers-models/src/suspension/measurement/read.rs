@@ -10,10 +10,8 @@ use crate::suspension::{
 #[select]
 pub struct SuspensionMeasurement {
     id: Uuid,
+    suspension_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: SuspensionMeasurementFields<SuspensionContent>,
 }
-
-// pub type SuspensionMeasurement =
-// SuspensionMeasurementFields<SuspensionContent>;

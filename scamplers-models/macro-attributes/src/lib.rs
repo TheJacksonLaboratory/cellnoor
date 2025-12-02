@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
-use syn::{Item, ItemEnum, Path, parse, parse_macro_input};
+use syn::{Ident, Item, ItemEnum, parse, parse_macro_input};
 
 fn base_derives(input: TokenStream, with_default: bool) -> proc_macro2::TokenStream {
     let parsed = parse::<Item>(input).unwrap();
@@ -163,7 +163,8 @@ pub fn update(_attr: TokenStream, input: TokenStream) -> TokenStream {
 pub fn order_by(attr: TokenStream, input: TokenStream) -> TokenStream {
     let base_derives = base_derives(input.clone(), false);
 
-    let scamplers_schema_mod = parse_macro_input!(attr as Path);
+    let scamplers_schema_mod = parse_macro_input!(attr as Ident);
+    let diesel_mod = format_ident!("diesel_{scamplers_schema_mod}");
     let enum_def = parse_macro_input!(input as ItemEnum);
 
     let enum_name = &enum_def.ident;
@@ -176,6 +177,8 @@ pub fn order_by(attr: TokenStream, input: TokenStream) -> TokenStream {
 
         (v, asc_static, desc_static)
     });
+
+    let first_field = items.clone().map(|(v, ..)| v).next().unwrap();
 
     let static_defs = items.clone().map(|(v, asc_static, desc_static)| {
         quote! {
@@ -200,7 +203,7 @@ pub fn order_by(attr: TokenStream, input: TokenStream) -> TokenStream {
         #enum_def
 
         #[cfg(feature = "app")]
-        mod diesel_impl {
+        mod #diesel_mod {
             use ::std::sync::LazyLock;
 
             use super::*;
@@ -218,7 +221,7 @@ pub fn order_by(attr: TokenStream, input: TokenStream) -> TokenStream {
                 type SqlType = NotSelectable;
             }
 
-            impl AppearsOnTable<#scamplers_schema_mod::table> for #enum_name {}
+            impl<T> AppearsOnTable<T> for #enum_name where #scamplers_schema_mod::#first_field: AppearsOnTable<T> {}
 
             impl QueryFragment<Pg> for #enum_name {
                 fn walk_ast<'b>(

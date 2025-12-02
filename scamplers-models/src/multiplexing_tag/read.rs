@@ -13,3 +13,10 @@ pub struct MultiplexingTag {
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: MultiplexingTagFields,
 }
+
+impl MultiplexingTag {
+    #[must_use]
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+}

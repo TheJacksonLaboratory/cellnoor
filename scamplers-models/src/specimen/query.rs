@@ -12,120 +12,28 @@ use crate::specimen::common::{EmbeddingMatrix, Fixative, Species, SpecimenType};
 
 #[filter]
 pub struct SpecimenFilter {
-    ids: Option<Vec<Uuid>>,
-    names: Option<Vec<String>>,
-    submitted_by: Option<Vec<Uuid>>,
-    labs: Option<Vec<Uuid>>,
+    pub ids: Option<Vec<Uuid>>,
+    pub names: Option<Vec<String>>,
+    pub submitted_by: Option<Vec<Uuid>>,
+    pub labs: Option<Vec<Uuid>>,
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
-    received_before: Option<Timestamp>,
+    pub received_before: Option<Timestamp>,
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
-    received_after: Option<Timestamp>,
-    species: Option<Vec<Species>>,
-    host_species: Option<Vec<Species>>,
-    types: Option<Vec<SpecimenType>>,
-    embedded_in: Option<Vec<EmbeddingMatrix>>,
-    fixatives: Option<Vec<Fixative>>,
-    frozen: Option<bool>,
-    cryopreserved: Option<bool>,
-    tissues: Option<Vec<String>>,
+    pub received_after: Option<Timestamp>,
+    pub species: Option<Vec<Species>>,
+    pub host_species: Option<Vec<Species>>,
+    pub types: Option<Vec<SpecimenType>>,
+    pub embedded_in: Option<Vec<EmbeddingMatrix>>,
+    pub fixatives: Option<Vec<Fixative>>,
+    pub frozen: Option<bool>,
+    pub cryopreserved: Option<bool>,
+    pub tissues: Option<Vec<String>>,
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
-    returned_before: Option<Timestamp>,
+    pub returned_before: Option<Timestamp>,
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
-    returned_after: Option<Timestamp>,
-    returned_by: Option<Vec<Uuid>>,
-    additional_data: Option<Vec<Value>>,
-}
-
-impl SpecimenFilter {
-    #[must_use]
-    pub fn ids(&self) -> Option<&[Uuid]> {
-        self.ids.as_deref()
-    }
-
-    #[must_use]
-    pub fn names(&self) -> Option<&[String]> {
-        self.names.as_deref()
-    }
-
-    #[must_use]
-    pub fn submitted_by(&self) -> Option<&[Uuid]> {
-        self.submitted_by.as_deref()
-    }
-
-    #[must_use]
-    pub fn labs(&self) -> Option<&[Uuid]> {
-        self.labs.as_deref()
-    }
-
-    #[must_use]
-    pub fn received_before(&self) -> Option<Timestamp> {
-        self.received_before
-    }
-
-    #[must_use]
-    pub fn received_after(&self) -> Option<Timestamp> {
-        self.received_after
-    }
-
-    #[must_use]
-    pub fn species(&self) -> Option<&[Species]> {
-        self.species.as_deref()
-    }
-
-    #[must_use]
-    pub fn host_species(&self) -> Option<&[Species]> {
-        self.host_species.as_deref()
-    }
-
-    #[must_use]
-    pub fn types(&self) -> Option<&[SpecimenType]> {
-        self.types.as_deref()
-    }
-
-    #[must_use]
-    pub fn embedded_in(&self) -> Option<&[EmbeddingMatrix]> {
-        self.embedded_in.as_deref()
-    }
-
-    #[must_use]
-    pub fn fixatives(&self) -> Option<&[Fixative]> {
-        self.fixatives.as_deref()
-    }
-
-    #[must_use]
-    pub fn frozen(&self) -> Option<bool> {
-        self.frozen
-    }
-
-    #[must_use]
-    pub fn cryopreserved(&self) -> Option<bool> {
-        self.cryopreserved
-    }
-
-    #[must_use]
-    pub fn tissues(&self) -> Option<&[String]> {
-        self.tissues.as_deref()
-    }
-
-    #[must_use]
-    pub fn returned_by(&self) -> Option<&[Uuid]> {
-        self.submitted_by.as_deref()
-    }
-
-    #[must_use]
-    pub fn returned_before(&self) -> Option<Timestamp> {
-        self.returned_before
-    }
-
-    #[must_use]
-    pub fn returned_after(&self) -> Option<Timestamp> {
-        self.returned_after
-    }
-
-    #[must_use]
-    pub fn additional_data(&self) -> Option<&[Value]> {
-        self.additional_data.as_deref()
-    }
+    pub returned_after: Option<Timestamp>,
+    pub returned_by: Option<Vec<Uuid>>,
+    pub additional_data: Option<Value>,
 }
 
 #[order_by(specimens)]

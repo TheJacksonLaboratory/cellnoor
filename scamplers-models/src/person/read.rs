@@ -42,7 +42,7 @@ impl PersonSummary {
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = people, base_query = people::table.inner_join(institutions::table)))]
-pub struct SummaryWithParents {
+pub struct PersonSummaryWithParents {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     summary: PersonSummary,
@@ -55,12 +55,12 @@ pub struct SummaryWithParents {
 #[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct Person {
     #[serde(flatten)]
-    info: SummaryWithParents,
+    info: PersonSummaryWithParents,
     roles: Vec<UserRole>,
 }
 impl Person {
     #[must_use]
-    pub fn new(info: SummaryWithParents, roles: Vec<UserRole>) -> Self {
+    pub fn new(info: PersonSummaryWithParents, roles: Vec<UserRole>) -> Self {
         Self { info, roles }
     }
 

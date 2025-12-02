@@ -1,8 +1,10 @@
 use macro_attributes::{filter, order_by};
 use macros::uuid_newtype;
+#[cfg(feature = "app")]
+use scamplers_schema::labs;
 use uuid::Uuid;
 
-#[order_by(scamplers_schema::labs)]
+#[order_by(labs)]
 #[allow(non_camel_case_types)]
 pub enum LabOrderBy {
     id { descending: Option<bool> },
@@ -19,20 +21,8 @@ impl Default for LabOrderBy {
 
 #[filter]
 pub struct LabFilter {
-    ids: Option<Vec<Uuid>>,
-    names: Option<Vec<String>>,
-}
-
-impl LabFilter {
-    #[must_use]
-    pub fn ids(&self) -> Option<&[Uuid]> {
-        self.ids.as_deref()
-    }
-
-    #[must_use]
-    pub fn names(&self) -> Option<&[String]> {
-        self.names.as_deref()
-    }
+    pub ids: Option<Vec<Uuid>>,
+    pub names: Option<Vec<String>>,
 }
 
 #[cfg(feature = "app")]

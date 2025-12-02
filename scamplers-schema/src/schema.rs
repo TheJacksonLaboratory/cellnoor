@@ -85,9 +85,9 @@ diesel::table! {
 diesel::table! {
     chromium_runs (id) {
         id -> Uuid,
+        readable_id -> Text,
         links -> Jsonb,
         assay_id -> Uuid,
-        readable_id -> Text,
         run_at -> Timestamptz,
         run_by -> Uuid,
         succeeded -> Bool,
@@ -330,9 +330,10 @@ diesel::table! {
 }
 
 diesel::table! {
-    suspension_tagging (suspension_id, pool_id, tag_id) {
+    suspension_tagging (id) {
+        id -> Uuid,
         suspension_id -> Uuid,
-        pool_id -> Uuid,
+        pool_id -> Nullable<Uuid>,
         tag_id -> Uuid,
     }
 }

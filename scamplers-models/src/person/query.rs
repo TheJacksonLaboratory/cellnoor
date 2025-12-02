@@ -1,8 +1,12 @@
 use macro_attributes::{filter, order_by};
 use macros::uuid_newtype;
+#[cfg(feature = "app")]
+use scamplers_schema::people;
 use uuid::Uuid;
 
-#[order_by(scamplers_schema::people)]
+use crate::{generic_query::SetParentId, institution::InstitutionIdMembers};
+
+#[order_by(people)]
 #[allow(non_camel_case_types)]
 pub enum PersonOrderBy {
     id { descending: Option<bool> },
@@ -22,63 +26,21 @@ impl Default for PersonOrderBy {
 
 #[filter]
 pub struct PersonFilter {
-    ids: Option<Vec<Uuid>>,
-    names: Option<Vec<String>>,
-    emails: Option<Vec<String>>,
-    institution_ids: Option<Vec<Uuid>>,
-    orcids: Option<Vec<String>>,
-    microsoft_entra_oids: Option<Vec<Uuid>>,
+    pub ids: Option<Vec<Uuid>>,
+    pub names: Option<Vec<String>>,
+    pub emails: Option<Vec<String>>,
+    pub institution_ids: Option<Vec<Uuid>>,
+    pub orcids: Option<Vec<String>>,
+    pub microsoft_entra_oids: Option<Vec<Uuid>>,
 }
 
-impl PersonFilter {
-    #[must_use]
-    pub fn ids(&self) -> Option<&[Uuid]> {
-        self.ids.as_deref()
-    }
-
-    #[must_use]
-    pub fn names(&self) -> Option<&[String]> {
-        self.names.as_deref()
-    }
-
-    #[must_use]
-    pub fn emails(&self) -> Option<&[String]> {
-        self.emails.as_deref()
-    }
-
-    #[must_use]
-    pub fn institution_ids(&self) -> Option<&[Uuid]> {
-        self.institution_ids.as_deref()
-    }
-
-    #[must_use]
-    pub fn orcids(&self) -> Option<&[String]> {
-        self.orcids.as_deref()
-    }
-
-    #[must_use]
-    pub fn microsoft_entra_oids(&self) -> Option<&[Uuid]> {
-        self.microsoft_entra_oids.as_deref()
+impl SetParentId<InstitutionIdMembers> for PersonFilter {
+    fn parent_ids_mut(&mut self) -> &mut Option<Vec<Uuid>> {
+        &mut self.institution_ids
     }
 }
 
 #[cfg(feature = "app")]
 pub type PersonQuery = crate::generic_query::Query<PersonFilter, PersonOrderBy>;
-
-#[cfg(feature = "app")]
-impl PersonQuery {
-    pub fn set_institution_id(&mut self, institution_id: Uuid) {
-        let Some(filter) = &mut self.filter else {
-            self.filter = Some(PersonFilter {
-                institution_ids: Some(vec![institution_id]),
-                ..Default::default()
-            });
-
-            return;
-        };
-
-        filter.institution_ids.replace(vec![institution_id]);
-    }
-}
 
 uuid_newtype!(PersonId, "/{id}");

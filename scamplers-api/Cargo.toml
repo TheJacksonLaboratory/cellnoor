@@ -17,6 +17,7 @@ diesel_migrations.workspace = true
 dotenvy.workspace = true
 jiff.workspace = true
 jiff-diesel.workspace = true
+non-empty = { path = "../non-empty" }
 positive = { version = "0.1.0", path = "../positive", features = ["serde"] }
 regex.workspace = true
 reqwest.workspace = true

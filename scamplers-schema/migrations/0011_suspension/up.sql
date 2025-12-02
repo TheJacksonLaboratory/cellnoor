@@ -19,15 +19,15 @@ create table suspensions (
 );
 
 create table suspension_tagging (
+    id uuid primary key default uuidv7(),
     suspension_id uuid references suspensions on delete restrict on update restrict not null,
     pool_id uuid references suspension_pools on delete restrict on update restrict,
     tag_id uuid references multiplexing_tags on delete restrict on update restrict not null,
 
-    -- the same tag cannot be used more than once in the same suspension pool
+    -- a suspension pool cannot contain the same tag more than once
     unique (pool_id, tag_id),
-
-    -- the same suspension cannot be pooled more than once with the same tag in the same pool
-    primary key (suspension_id, pool_id, tag_id)
+    -- a suspension cannot be tagged twice with the same tag
+    unique (suspension_id, tag_id)
 );
 
 create table suspension_measurements (

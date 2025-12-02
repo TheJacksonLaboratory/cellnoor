@@ -1,5 +1,6 @@
 use diesel::PgConnection;
 
+mod chromium_run;
 mod common;
 mod initial_data;
 mod institution;
@@ -7,6 +8,7 @@ mod lab;
 mod person;
 mod specimen;
 mod suspension;
+mod suspension_pool;
 mod tenx_assay;
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
@@ -21,6 +23,7 @@ pub enum Error {
     CreateSpecimen(#[from] specimen::Error),
     CreateSpecimenMeasurement(#[from] specimen::measurement::Error),
     CreateSuspensionMeasurement(#[from] suspension::measurement::Error),
+    CreateSuspensionPoolMeasurement(#[from] suspension_pool::measurement::Error),
 }
 
 pub trait Validate {

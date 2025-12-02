@@ -29,8 +29,9 @@ impl db::Operation<Vec<person::PersonSummary>> for (InstitutionIdMembers, Person
         self,
         db_conn: &mut diesel::PgConnection,
     ) -> Result<Vec<person::PersonSummary>, db::Error> {
-        let (InstitutionIdMembers(institution_id), mut person_query) = self;
-        person_query.set_institution_id(institution_id);
+        let (institution_id, mut person_query) = self;
+
+        person_query.set_parent_id(institution_id);
 
         person_query.execute(db_conn)
     }

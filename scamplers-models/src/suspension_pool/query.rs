@@ -1,0 +1,34 @@
+use macro_attributes::{filter, order_by};
+use macros::uuid_newtype;
+#[cfg(feature = "app")]
+use scamplers_schema::suspension_pools;
+
+#[cfg(feature = "app")]
+use crate::generic_query;
+
+#[filter]
+pub struct SuspensionPoolFilter {}
+
+#[order_by(suspension_pools)]
+#[allow(non_camel_case_types)]
+pub enum SuspensionPoolOrderBy {
+    id { descending: Option<bool> },
+    readable_id { descending: Option<bool> },
+    name { descending: Option<bool> },
+    pooled_at { descending: Option<bool> },
+}
+
+impl Default for SuspensionPoolOrderBy {
+    fn default() -> Self {
+        Self::pooled_at { descending: None }
+    }
+}
+
+#[cfg(feature = "app")]
+pub type SuspensionPoolQuery = generic_query::Query<SuspensionPoolFilter, SuspensionPoolOrderBy>;
+
+uuid_newtype!(SuspensionPoolId, "/{id}");
+
+uuid_newtype!(SuspensionPoolIdMeasurements, "/{id}/measurements");
+
+uuid_newtype!(SuspensionPoolIdSuspensions, "/{id}/suspensions");

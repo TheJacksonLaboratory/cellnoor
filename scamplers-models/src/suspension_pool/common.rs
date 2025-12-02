@@ -1,0 +1,18 @@
+use jiff::Timestamp;
+use macro_attributes::insert_select;
+use non_empty::NonEmptyString;
+#[cfg(feature = "app")]
+use scamplers_schema::suspension_pools;
+use serde_json::Value;
+
+#[insert_select]
+#[cfg_attr(feature = "app", diesel(table_name = suspension_pools))]
+#[cfg_attr(feature = "builder", derive(bon::Builder))]
+pub struct SuspensionPoolFields {
+    readable_id: NonEmptyString,
+    name: NonEmptyString,
+    #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp, deserialize_as = jiff_diesel::Timestamp))]
+    #[cfg_attr(feature = "typescript", ts(as = "String"))]
+    pooled_at: Timestamp,
+    additional_data: Option<Value>,
+}

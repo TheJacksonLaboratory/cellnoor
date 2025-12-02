@@ -25,15 +25,20 @@ pub(super) async fn list_institutions(
 
 impl db::Operation<Vec<Institution>> for InstitutionQuery {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Vec<Institution>, db::Error> {
-        let filter = self.filter();
+        let Self {
+            filter,
+            limit,
+            offset,
+            order_by,
+        } = self;
 
         let mut stmt = Institution::query()
-            .limit(self.limit())
-            .offset(self.offset())
+            .limit(limit)
+            .offset(offset)
             .filter(filter.to_boxed_filter())
             .into_boxed();
 
-        for ordering in self.order_by() {
+        for ordering in order_by.as_ref() {
             stmt = stmt.then_order_by(ordering);
         }
 
@@ -47,13 +52,15 @@ where
     name: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
+        let Self { ids, names } = self;
+
         let mut filter = BoxedFilter::new();
 
-        if let Some(ids) = self.ids() {
+        if let Some(ids) = ids {
             filter = filter.and_condition(id.eq_any(ids));
         }
 
-        if let Some(names) = self.names() {
+        if let Some(names) = names {
             filter = filter.and_condition(like_any(name, names));
         }
 

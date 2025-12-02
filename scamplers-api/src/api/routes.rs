@@ -9,6 +9,7 @@ use crate::{
 
 mod chromium_datasets;
 mod chromium_runs;
+mod gems;
 mod institutions;
 mod labs;
 mod multiplexing_tags;
@@ -16,6 +17,7 @@ mod nucleic_acids;
 mod people;
 mod sequencing_runs;
 mod specimens;
+mod suspension_pools;
 mod suspensions;
 
 pub(super) fn router() -> Router<AppState> {
@@ -26,6 +28,9 @@ pub(super) fn router() -> Router<AppState> {
         .nest("/specimens", specimens::router())
         .nest("/multiplexing-tags", multiplexing_tags::router())
         .nest("/suspensions", suspensions::router())
+        .nest("/suspension-pools", suspension_pools::router())
+        .nest("/chromium-runs", chromium_runs::router())
+        .nest("/gems", gems::router())
 }
 
 type ApiResponse<T> = Result<(StatusCode, Json<T>), super::error::ErrorResponse>;

@@ -43,14 +43,22 @@ impl<C> Validate for SuspensionMeasurementFields<C> {
             SuspensionMeasurementData::Concentration {
                 inner: _,
                 numerator_unit: _,
+                post_hybridization: _,
             }
             | SuspensionMeasurementData::MeanDiameter {
                 inner: _,
                 object: _,
+                post_hybridization: _,
             }
-            | SuspensionMeasurementData::Volume(_) => Ok(()),
-            SuspensionMeasurementData::Viability(v) => {
-                let value = v.value();
+            | SuspensionMeasurementData::Volume {
+                inner: _,
+                post_hybridization: _,
+            } => Ok(()),
+            SuspensionMeasurementData::Viability {
+                inner,
+                post_hybridization: _,
+            } => {
+                let value = inner.value();
                 if value > MAX_VIABILITY as f32 {
                     return Err(Error::invalid_viability(value))?;
                 }

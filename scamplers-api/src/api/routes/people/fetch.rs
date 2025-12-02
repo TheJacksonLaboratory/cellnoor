@@ -1,6 +1,6 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{PgConnection, prelude::*, sql_types::Text};
-use scamplers_models::person::{Person, PersonId, SummaryWithParents};
+use scamplers_models::person::{Person, PersonId, PersonSummaryWithParents};
 use scamplers_schema::people::dsl::id;
 
 use super::{ApiResponse, inner_handler};
@@ -19,7 +19,7 @@ impl db::Operation<Person> for PersonId {
     fn execute(self, db_conn: &mut PgConnection) -> Result<Person, db::Error> {
         diesel::define_sql_function! {fn get_user_roles(user_id: Text) -> Array<Text>}
 
-        let info = SummaryWithParents::query()
+        let info = PersonSummaryWithParents::query()
             .filter(id.eq(&self))
             .first(db_conn)?;
 
