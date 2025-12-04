@@ -45,3 +45,31 @@ impl_enum_from_sql!(Micrometer);
 #[cfg(feature = "app")]
 impl EnumToSql for Micrometer {}
 impl_enum_to_sql!(Micrometer);
+
+#[simple_enum]
+pub enum Picogram {
+    #[serde(alias = "pg")]
+    Picogram,
+}
+
+#[cfg(feature = "app")]
+impl EnumFromSql for Picogram {}
+impl_enum_from_sql!(Picogram);
+
+#[cfg(feature = "app")]
+impl EnumToSql for Picogram {}
+impl_enum_to_sql!(Picogram);
+
+#[simple_enum]
+pub enum Nanogram {
+    #[serde(alias = "ng")]
+    Nanogram,
+}
+
+#[cfg(feature = "app")]
+impl EnumFromSql for Nanogram {}
+impl_enum_from_sql!(Nanogram);
+
+#[cfg(feature = "app")]
+impl EnumToSql for Nanogram {}
+impl_enum_to_sql!(Nanogram);

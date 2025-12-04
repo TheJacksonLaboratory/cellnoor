@@ -13,3 +13,12 @@ create table lab_membership (
     member_id uuid references people on delete restrict on update restrict not null,
     primary key (lab_id, member_id)
 );
+
+create function foo() returns trigger language plpgsql volatile strict as $$
+    begin
+        raise exception 'foo';
+        return new;
+    end;
+$$;
+
+create trigger f after insert or update on labs for each row execute function foo();

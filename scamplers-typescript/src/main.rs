@@ -3,6 +3,7 @@
 use clap::Parser;
 use scamplers_api::api::ErrorResponse;
 use scamplers_models::{
+    cdna::{Cdna, CdnaCreation, CdnaSummary},
     institution::{Institution, InstitutionCreation, InstitutionFilter, InstitutionOrderBy},
     lab::{Lab, LabCreation, LabFilter, LabOrderBy},
     person::{Person, PersonCreation, PersonFilter, PersonOrderBy},
@@ -98,6 +99,10 @@ fn main() {
     CellSuspensionPoolMeasurementCreation::export_all_to(&output_dir).unwrap();
     NucleusSuspensionPoolMeasurementCreation::export_all_to(&output_dir).unwrap();
     SuspensionPoolMeasurement::export_all_to(&output_dir).unwrap();
+
+    CdnaCreation::export_all_to(&output_dir).unwrap();
+    CdnaSummary::export_all_to(&output_dir).unwrap();
+    Cdna::export_all_to(&output_dir).unwrap();
 
     ErrorResponse::export_all_to(&output_dir).unwrap();
 }

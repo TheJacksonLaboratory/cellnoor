@@ -4,7 +4,7 @@ use macros::{impl_json_from_sql, impl_json_to_sql};
 use non_empty::NonEmptyString;
 use positive::PositiveF32;
 #[cfg(feature = "app")]
-use scamplers_schema::{chip_loadings, chromium_runs, gems};
+use scamplers_schema::{chip_loadings, chromium_runs, gem_pools};
 use serde_json::Value;
 use uuid::Uuid;
 
@@ -14,8 +14,8 @@ use crate::{
 };
 
 #[insert_select]
-#[cfg_attr(feature = "app", diesel(table_name = gems))]
-pub struct GemsFields {
+#[cfg_attr(feature = "app", diesel(table_name = gem_pools))]
+pub struct GemPoolFields {
     readable_id: NonEmptyString,
 }
 

@@ -3,10 +3,10 @@ mod creation;
 mod query;
 mod read;
 
-pub use common::{ChromiumRunFields, GemsFields};
-pub use creation::{ChromiumRunCreation, OcmGems, PoolMultiplexGems, SingleplexGems};
+pub use common::{ChromiumRunFields, GemPoolFields};
+pub use creation::{ChromiumRunCreation, OcmGemPool, PoolMultiplexGemPool, SingleplexGemPool};
 pub use query::{
-    ChromiumRunFilter, ChromiumRunId, ChromiumRunOrderBy, ChromiumRunQuery, GemsFilter,
-    GemsOrderBy, GemsQuery,
+    ChromiumRunFilter, ChromiumRunId, ChromiumRunOrderBy, ChromiumRunQuery, GemPoolFilter,
+    GemPoolOrderBy, GemsQuery,
 };
-pub use read::{ChromiumRun, ChromiumRunSummary, GemsSummary};
+pub use read::{ChromiumRun, ChromiumRunSummary, GemPoolSummary};

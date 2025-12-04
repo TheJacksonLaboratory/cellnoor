@@ -2,8 +2,8 @@ use axum::{extract::State, http::StatusCode};
 use diesel::prelude::*;
 use non_empty::NonEmptyVec;
 use scamplers_models::chromium_run::{
-    ChromiumRun, ChromiumRunCreation, ChromiumRunFields, ChromiumRunId, GemsFields, OcmGems,
-    PoolMultiplexGems, SingleplexGems,
+    ChromiumRun, ChromiumRunCreation, ChromiumRunFields, ChromiumRunId, GemPoolFields, OcmGemPool,
+    PoolMultiplexGemPool, SingleplexGemPool,
 };
 use scamplers_schema::chip_loadings;
 use uuid::Uuid;
@@ -37,16 +37,16 @@ impl Operation<ChromiumRun> for ChromiumRunCreation {
                     run_id,
                     gems.as_ref()
                         .iter()
-                        .map(|OcmGems { inner, loading: _ }| inner),
+                        .map(|OcmGemPool { inner, loading: _ }| inner),
                 )
                     .execute(db_conn)?;
 
                 let loadings: Vec<_> = gems
                     .as_ref()
                     .iter()
-                    .map(|OcmGems { inner: _, loading }| loading)
+                    .map(|OcmGemPool { inner: _, loading }| loading)
                     .flat_map(NonEmptyVec::as_ref)
-                    .map(|l| (chip_loadings::gems_id.eq(gems_id), l))
+                    .map(|l| (chip_loadings::gem_pool_id.eq(gems_id), l))
                     .collect();
 
                 diesel::insert_into(chip_loadings::table)
@@ -62,15 +62,15 @@ impl Operation<ChromiumRun> for ChromiumRunCreation {
                     run_id,
                     gems.as_ref()
                         .iter()
-                        .map(|PoolMultiplexGems { inner, loading: _ }| inner),
+                        .map(|PoolMultiplexGemPool { inner, loading: _ }| inner),
                 )
                     .execute(db_conn)?;
 
                 let loadings: Vec<_> = gems
                     .as_ref()
                     .iter()
-                    .map(|PoolMultiplexGems { inner: _, loading }| {
-                        (chip_loadings::gems_id.eq(gems_id), loading)
+                    .map(|PoolMultiplexGemPool { inner: _, loading }| {
+                        (chip_loadings::gem_pool_id.eq(gems_id), loading)
                     })
                     .collect();
 
@@ -87,15 +87,15 @@ impl Operation<ChromiumRun> for ChromiumRunCreation {
                     run_id,
                     gems.as_ref()
                         .iter()
-                        .map(|SingleplexGems { inner, loading: _ }| inner),
+                        .map(|SingleplexGemPool { inner, loading: _ }| inner),
                 )
                     .execute(db_conn)?;
 
                 let loadings: Vec<_> = gems
                     .as_ref()
                     .iter()
-                    .map(|SingleplexGems { inner: _, loading }| {
-                        (chip_loadings::gems_id.eq(gems_id), loading)
+                    .map(|SingleplexGemPool { inner: _, loading }| {
+                        (chip_loadings::gem_pool_id.eq(gems_id), loading)
                     })
                     .collect();
 
@@ -124,15 +124,15 @@ impl Operation<ChromiumRunId> for ChromiumRunFields {
 
 impl<'a, I> db::Operation<Uuid> for (ChromiumRunId, I)
 where
-    I: Iterator<Item = &'a GemsFields>,
+    I: Iterator<Item = &'a GemPoolFields>,
 {
     fn execute(self, db_conn: &mut PgConnection) -> Result<Uuid, db::Error> {
-        use scamplers_schema::gems::dsl::*;
+        use scamplers_schema::gem_pools::dsl::*;
 
         let (run_id, gems_data) = self;
         let insertions: Vec<_> = gems_data.map(|g| (chromium_run_id.eq(run_id), g)).collect();
 
-        Ok(diesel::insert_into(gems)
+        Ok(diesel::insert_into(gem_pools)
             .values(insertions)
             .returning(id)
             .get_result(db_conn)?)

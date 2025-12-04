@@ -7,12 +7,11 @@ use crate::initial_data::Upsert;
 
 impl Upsert for TenxAssayCreation {
     fn upsert(self, db_conn: &mut diesel::PgConnection) -> anyhow::Result<()> {
-        let specs = self.library_type_specifications().map(<[_]>::to_vec);
+        let lib_type_specs = self.library_type_specifications().map(<[_]>::to_vec);
 
         let assay_id: Uuid = match self {
             Self::Chromium(a) => {
-                let mut library_type_names = a.library_types();
-                library_type_names.sort();
+                let library_type_names = a.library_types();
 
                 diesel::insert_into(tenx_assays)
                     .values((library_types.eq(library_type_names), a.clone()))
@@ -24,11 +23,11 @@ impl Upsert for TenxAssayCreation {
             }
         };
 
-        let Some(specs) = specs else {
+        let Some(lib_type_specs) = lib_type_specs else {
             return Ok(());
         };
 
-        for spec in &specs {
+        for spec in &lib_type_specs {
             let values = (library_type_specifications::assay_id.eq(assay_id), spec);
 
             diesel::insert_into(library_type_specifications::table)

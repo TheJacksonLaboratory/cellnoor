@@ -17,11 +17,12 @@ diesel::table! {
 diesel::table! {
     cdna (id) {
         id -> Uuid,
+        readable_id -> Text,
         links -> Jsonb,
         library_type -> Text,
-        readable_id -> Text,
         prepared_at -> Timestamptz,
-        gems_id -> Nullable<Uuid>,
+        assay_id -> Uuid,
+        gem_pool_id -> Nullable<Uuid>,
         n_amplification_cycles -> Int4,
         additional_data -> Nullable<Jsonb>,
     }
@@ -32,6 +33,7 @@ diesel::table! {
         id -> Uuid,
         cdna_id -> Uuid,
         measured_by -> Uuid,
+        measured_at -> Timestamptz,
         data -> Jsonb,
     }
 }
@@ -46,7 +48,7 @@ diesel::table! {
 diesel::table! {
     chip_loadings (id) {
         id -> Uuid,
-        gems_id -> Uuid,
+        gem_pool_id -> Uuid,
         suspension_id -> Nullable<Uuid>,
         suspension_pool_id -> Nullable<Uuid>,
         suspension_volume_loaded -> Jsonb,
@@ -116,8 +118,9 @@ diesel::table! {
 }
 
 diesel::table! {
-    gems (id) {
+    gem_pools (id) {
         id -> Uuid,
+        links -> Jsonb,
         readable_id -> Text,
         chromium_run_id -> Uuid,
     }
@@ -174,6 +177,7 @@ diesel::table! {
         id -> Uuid,
         library_id -> Uuid,
         measured_by -> Uuid,
+        measured_at -> Timestamptz,
         data -> Jsonb,
     }
 }
@@ -330,10 +334,9 @@ diesel::table! {
 }
 
 diesel::table! {
-    suspension_tagging (id) {
-        id -> Uuid,
+    suspension_tagging (suspension_id, pool_id, tag_id) {
         suspension_id -> Uuid,
-        pool_id -> Nullable<Uuid>,
+        pool_id -> Uuid,
         tag_id -> Uuid,
     }
 }
@@ -370,12 +373,13 @@ diesel::table! {
 }
 
 diesel::joinable!(api_keys -> people (user_id));
-diesel::joinable!(cdna -> gems (gems_id));
+diesel::joinable!(cdna -> gem_pools (gem_pool_id));
+diesel::joinable!(cdna -> tenx_assays (assay_id));
 diesel::joinable!(cdna_measurements -> cdna (cdna_id));
 diesel::joinable!(cdna_measurements -> people (measured_by));
 diesel::joinable!(cdna_preparers -> cdna (cdna_id));
 diesel::joinable!(cdna_preparers -> people (prepared_by));
-diesel::joinable!(chip_loadings -> gems (gems_id));
+diesel::joinable!(chip_loadings -> gem_pools (gem_pool_id));
 diesel::joinable!(chip_loadings -> suspension_pools (suspension_pool_id));
 diesel::joinable!(chip_loadings -> suspensions (suspension_id));
 diesel::joinable!(chromium_dataset_libraries -> chromium_datasets (dataset_id));
@@ -387,7 +391,7 @@ diesel::joinable!(chromium_runs -> tenx_assays (assay_id));
 diesel::joinable!(committee_approval -> institutions (institution_id));
 diesel::joinable!(committee_approval -> specimens (specimen_id));
 diesel::joinable!(dual_index_sets -> index_kits (kit));
-diesel::joinable!(gems -> chromium_runs (chromium_run_id));
+diesel::joinable!(gem_pools -> chromium_runs (chromium_run_id));
 diesel::joinable!(lab_membership -> labs (lab_id));
 diesel::joinable!(lab_membership -> people (member_id));
 diesel::joinable!(labs -> people (pi_id));
@@ -432,7 +436,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     chromium_runs,
     committee_approval,
     dual_index_sets,
-    gems,
+    gem_pools,
     index_kits,
     institutions,
     lab_membership,

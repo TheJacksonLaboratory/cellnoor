@@ -2,23 +2,23 @@
 use diesel::prelude::*;
 use macro_attributes::select;
 #[cfg(feature = "app")]
-use scamplers_schema::{chromium_runs, gems, tenx_assays};
+use scamplers_schema::{chromium_runs, gem_pools, tenx_assays};
 use uuid::Uuid;
 
 use crate::{
-    chromium_run::common::{ChromiumRunFields, GemsFields},
+    chromium_run::common::{ChromiumRunFields, GemPoolFields},
     tenx_assay::TenxAssay,
 };
 
 #[select]
 #[cfg_attr(feature = "app", derive(Identifiable))]
-#[cfg_attr(feature = "app", diesel(table_name = gems))]
-pub struct GemsSummary {
+#[cfg_attr(feature = "app", diesel(table_name = gem_pools))]
+pub struct GemPoolSummary {
     id: Uuid,
     chromium_run_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: GemsFields,
+    inner: GemPoolFields,
 }
 
 #[select]

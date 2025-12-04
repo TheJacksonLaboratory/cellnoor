@@ -3,7 +3,7 @@ use macro_attributes::{base_model, insert};
 use scamplers_schema::chip_loadings;
 use uuid::Uuid;
 
-use crate::chromium_run::common::{ChipLoadingFields, GemsFields};
+use crate::chromium_run::common::{ChipLoadingFields, GemPoolFields};
 
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = chip_loadings))]
@@ -16,8 +16,8 @@ pub struct SingleplexChipLoading {
 
 #[base_model]
 #[derive(serde::Deserialize)]
-pub struct SingleplexGems {
+pub struct SingleplexGemPool {
     #[serde(flatten)]
-    pub inner: GemsFields,
+    pub inner: GemPoolFields,
     pub loading: SingleplexChipLoading,
 }

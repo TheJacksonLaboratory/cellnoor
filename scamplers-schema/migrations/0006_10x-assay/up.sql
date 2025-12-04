@@ -11,3 +11,13 @@ create table tenx_assays (
 
     unique (name, library_types, sample_multiplexing, chemistry_version)
 );
+
+create function sort_library_types() returns trigger language plpgsql volatile strict as $$
+    begin
+        new.library_types = array_sort(new.library_types);
+        return new;
+    end;
+$$;
+
+create trigger sort_assay_library_types before insert or update on tenx_assays for each row execute function
+sort_library_types();

@@ -18,6 +18,7 @@ create table library_measurements (
     id uuid primary key default uuidv7(),
     library_id uuid references libraries on delete restrict on update restrict not null,
     measured_by uuid references people on delete restrict on update restrict not null,
+    measured_at timestamptz not null,
     data jsonb not null
 );
 

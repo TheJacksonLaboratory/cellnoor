@@ -4,7 +4,7 @@ use non_empty::NonEmptyVec;
 use scamplers_schema::chip_loadings;
 use uuid::Uuid;
 
-use crate::chromium_run::common::{ChipLoadingFields, GemsFields};
+use crate::chromium_run::common::{ChipLoadingFields, GemPoolFields};
 
 const MAX_SUSPENSIONS_IN_OCM_GEMS: usize = 4;
 
@@ -19,8 +19,8 @@ pub struct OcmChipLoading {
 
 #[base_model]
 #[derive(serde::Deserialize)]
-pub struct OcmGems {
+pub struct OcmGemPool {
     #[serde(flatten)]
-    pub inner: GemsFields,
+    pub inner: GemPoolFields,
     pub loading: NonEmptyVec<OcmChipLoading, MAX_SUSPENSIONS_IN_OCM_GEMS>,
 }

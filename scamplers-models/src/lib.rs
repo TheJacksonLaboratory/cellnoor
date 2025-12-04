@@ -6,7 +6,7 @@ pub mod chromium_run;
 pub mod institution;
 pub mod lab;
 pub mod multiplexing_tag;
-// mod nucleic_acid;
+mod nucleic_acid;
 pub mod person;
 // mod sequencing_run;
 #[cfg(feature = "app")]
@@ -19,3 +19,5 @@ pub mod tenx_assay;
 mod units;
 #[cfg(feature = "app")]
 mod utils;
+
+pub use nucleic_acid::{cdna, library};

@@ -323,7 +323,7 @@ impl TestState {
         preparer_id: Uuid,
         multiplexing_tag_ids: [Uuid; N_SUSPENSIONS_PER_POOL],
     ) {
-        let new_suspensions = multiplexing_tag_ids
+        let new_suspensions: Vec<_> = multiplexing_tag_ids
             .into_iter()
             .map(|tag| SuspensionCreationInner {
                 inner: SuspensionFields::builder()
@@ -343,7 +343,7 @@ impl TestState {
                 .pooled_at(random_time())
                 .build(),
             preparer_ids: preparer_id.into(),
-            suspensions: new_suspensions,
+            suspensions: NonEmptyVec::new(new_suspensions).unwrap(),
         };
 
         let suspension_pool = (suspension_pool, SuspensionContent::VARIANTS.choose_unwrap());

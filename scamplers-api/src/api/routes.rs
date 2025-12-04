@@ -7,13 +7,13 @@ use crate::{
     state::AppState,
 };
 
+mod cdna;
 mod chromium_datasets;
 mod chromium_runs;
-mod gems;
+mod gem_pools;
 mod institutions;
 mod labs;
 mod multiplexing_tags;
-mod nucleic_acids;
 mod people;
 mod sequencing_runs;
 mod specimens;
@@ -30,7 +30,8 @@ pub(super) fn router() -> Router<AppState> {
         .nest("/suspensions", suspensions::router())
         .nest("/suspension-pools", suspension_pools::router())
         .nest("/chromium-runs", chromium_runs::router())
-        .nest("/gems", gems::router())
+        .nest("/gems", gem_pools::router())
+        .nest("/cdna", cdna::router())
 }
 
 type ApiResponse<T> = Result<(StatusCode, Json<T>), super::error::ErrorResponse>;

@@ -1,7 +1,7 @@
 use macro_attributes::{filter, order_by};
 use macros::uuid_newtype;
 #[cfg(feature = "app")]
-use scamplers_schema::{chromium_runs, gems};
+use scamplers_schema::{chromium_runs, gem_pools};
 use uuid::Uuid;
 
 #[cfg(feature = "app")]
@@ -35,22 +35,22 @@ pub type ChromiumRunQuery = generic_query::Query<ChromiumRunFilter, ChromiumRunO
 uuid_newtype!(ChromiumRunId, "/{id}");
 
 #[filter]
-pub struct GemsFilter {
+pub struct GemPoolFilter {
     pub ids: Option<Vec<Uuid>>,
 }
 
-#[order_by(gems)]
+#[order_by(gem_pools)]
 #[allow(non_camel_case_types)]
-pub enum GemsOrderBy {
+pub enum GemPoolOrderBy {
     id { descending: Option<bool> },
     readable_id { descending: Option<bool> },
 }
 
-impl Default for GemsOrderBy {
+impl Default for GemPoolOrderBy {
     fn default() -> Self {
         Self::id { descending: None }
     }
 }
 
 #[cfg(feature = "app")]
-pub type GemsQuery = generic_query::Query<GemsFilter, GemsOrderBy>;
+pub type GemsQuery = generic_query::Query<GemPoolFilter, GemPoolOrderBy>;

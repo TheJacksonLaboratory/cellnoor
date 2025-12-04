@@ -1,5 +1,8 @@
 use diesel::PgConnection;
 
+use crate::db;
+
+mod cdna;
 mod chromium_run;
 mod common;
 mod initial_data;
@@ -24,6 +27,8 @@ pub enum Error {
     CreateSpecimenMeasurement(#[from] specimen::measurement::Error),
     CreateSuspensionMeasurement(#[from] suspension::measurement::Error),
     CreateSuspensionPoolMeasurement(#[from] suspension_pool::measurement::Error),
+    CreateCdna(#[from] cdna::Error),
+    Other(#[from] db::Error),
 }
 
 pub trait Validate {

@@ -1,7 +1,7 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::prelude::*;
-use scamplers_models::chromium_run::{GemsFilter, GemsQuery, GemsSummary};
-use scamplers_schema::gems;
+use scamplers_models::chromium_run::{GemPoolFilter, GemPoolSummary, GemsQuery};
+use scamplers_schema::gem_pools;
 use serde_qs::axum::QsQuery;
 
 use crate::{
@@ -18,13 +18,13 @@ pub(super) async fn list_gems(
     state: State<AppState>,
     user: AuthenticatedUser,
     QsQuery(request): QsQuery<GemsQuery>,
-) -> ApiResponse<Vec<GemsSummary>> {
+) -> ApiResponse<Vec<GemPoolSummary>> {
     let items = inner_handler(state, user, request).await?;
     Ok((StatusCode::OK, items))
 }
 
-impl db::Operation<Vec<GemsSummary>> for GemsQuery {
-    fn execute(self, db_conn: &mut PgConnection) -> Result<Vec<GemsSummary>, db::Error> {
+impl db::Operation<Vec<GemPoolSummary>> for GemsQuery {
+    fn execute(self, db_conn: &mut PgConnection) -> Result<Vec<GemPoolSummary>, db::Error> {
         let Self {
             filter,
             limit,
@@ -32,7 +32,7 @@ impl db::Operation<Vec<GemsSummary>> for GemsQuery {
             order_by,
         } = self;
 
-        let mut stmt = GemsSummary::query()
+        let mut stmt = GemPoolSummary::query()
             .limit(limit)
             .offset(offset)
             .filter(filter.to_boxed_filter())
@@ -46,16 +46,16 @@ impl db::Operation<Vec<GemsSummary>> for GemsQuery {
     }
 }
 
-impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for GemsFilter
+impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for GemPoolFilter
 where
-    gems::id: SelectableExpression<QS>,
+    gem_pools::id: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
         let Self { ids } = self;
         let mut filter = BoxedFilter::new();
 
         if let Some(ids) = ids {
-            filter = filter.and_condition(gems::id.eq_any(ids));
+            filter = filter.and_condition(gem_pools::id.eq_any(ids));
         }
 
         filter

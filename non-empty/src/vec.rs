@@ -11,18 +11,22 @@ impl<T, const N: usize> From<T> for NonEmptyVec<T, N> {
     }
 }
 
+#[derive(Debug, thiserror::Error, PartialEq)]
+#[error("array must have between 1 and {N} elements")]
+pub struct Error<T, const N: usize>(pub Vec<T>);
+
 impl<T, const N: usize> NonEmptyVec<T, N> {
     #[must_use]
-    pub fn new(v: Vec<T>) -> Option<Self> {
+    pub fn new(v: Vec<T>) -> Result<Self, Error<T, N>> {
         if v.is_empty() {
-            return None;
+            return Err(Error(v));
         }
 
         if v.len() > N {
-            return None;
+            return Err(Error(v));
         }
 
-        Some(Self(v))
+        Ok(Self(v))
     }
 }
 
@@ -32,12 +36,6 @@ impl<T, const N: usize> IntoIterator for NonEmptyVec<T, N> {
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.into_iter()
-    }
-}
-
-impl<T, const N: usize> FromIterator<T> for NonEmptyVec<T, N> {
-    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
-        Self(Vec::from_iter(iter))
     }
 }
 
@@ -53,36 +51,36 @@ impl<T, const N: usize> From<NonEmptyVec<T, N>> for Vec<T> {
     }
 }
 
-#[derive(Debug, thiserror::Error)]
-#[error("array cannot be empty")]
-pub struct Error;
-
 impl<T, const N: usize> TryFrom<Vec<T>> for NonEmptyVec<T, N> {
-    type Error = Error;
+    type Error = Error<T, N>;
 
-    fn try_from(value: Vec<T>) -> Result<Self, Self::Error> {
-        Self::new(value).ok_or(Error)
+    fn try_from(value: Vec<T>) -> Result<Self, Error<T, N>> {
+        Self::new(value)
     }
 }
 
-#[cfg(feature = "serde")]
 #[cfg(test)]
-mod serde_tests {
+mod tests {
     use pretty_assertions::assert_eq;
 
     use super::NonEmptyVec;
 
     #[test]
-    fn deserialize_empty_array_fails() {
-        let result: Result<NonEmptyVec<bool>, _> = serde_json::from_str(r#"[]"#);
+    fn empty_vec() {
+        let err = NonEmptyVec::<bool, 1>::new(vec![]).unwrap_err();
 
-        assert!(result.is_err())
+        assert_eq!(err, super::Error(vec![]));
     }
 
     #[test]
-    fn deserialize_non_empty_vec_succeeds() {
-        let deserialized: NonEmptyVec<bool> = serde_json::from_str(r#"[true]"#).unwrap();
+    fn long_vec() {
+        let err = NonEmptyVec::<_, 1>::new(vec![false, false]).unwrap_err();
 
-        assert_eq!(deserialized, NonEmptyVec::new(vec![true]).unwrap());
+        assert_eq!(err, super::Error(vec![false, false]));
+    }
+
+    #[test]
+    fn good_vec() {
+        NonEmptyVec::<_, 2>::new(vec![true]).unwrap();
     }
 }
