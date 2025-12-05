@@ -111,14 +111,14 @@ mod serde_tests {
 
     use crate::NonEmptyString;
 
-    #[test]
+    #[rstest::rstest]
     fn deserialize_empty_string_fails() {
         let result: Result<Vec<NonEmptyString>, _> = serde_json::from_str(r#"[""]"#);
 
         assert!(result.is_err())
     }
 
-    #[test]
+    #[rstest::rstest]
     fn deserialize_non_empty_string_succeeds() {
         let deserialized: [NonEmptyString; 1] = serde_json::from_str(r#"["string"]"#).unwrap();
 
@@ -145,7 +145,7 @@ mod diesel_tests {
         }
     }
 
-    #[test]
+    #[rstest::rstest]
     fn is_diesel_compatible() {
         use diesel::{RunQueryDsl, prelude::*};
 

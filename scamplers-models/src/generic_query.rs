@@ -132,7 +132,7 @@ mod tests {
 
     use super::Query;
 
-    #[test]
+    #[rstest::rstest]
     fn query_builder() {
         #[derive(Debug, Default, PartialEq)]
         struct Filter;

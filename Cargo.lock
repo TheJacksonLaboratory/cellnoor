@@ -1317,6 +1317,7 @@ version = "0.1.0"
 dependencies = [
  "diesel",
  "pretty_assertions",
+ "rstest",
  "scamplers-schema",
  "serde",
  "serde_json",
@@ -1798,6 +1799,7 @@ dependencies = [
  "non-empty",
  "pretty_assertions",
  "ranged",
+ "rstest",
  "scamplers-schema",
  "serde",
  "serde_json",

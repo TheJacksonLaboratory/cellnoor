@@ -28,4 +28,14 @@ impl SuspensionCreation {
     pub fn preparer_ids(&self) -> &[Uuid] {
         self.preparer_ids.as_ref()
     }
+
+    #[must_use]
+    pub fn created_at(&self) -> Option<Timestamp> {
+        self.created_at
+    }
+
+    #[must_use]
+    pub fn specimen_id(&self) -> Uuid {
+        self.inner.parent_specimen_id
+    }
 }

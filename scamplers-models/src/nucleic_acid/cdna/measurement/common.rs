@@ -22,4 +22,12 @@ impl CdnaMeasurementFields {
     pub fn data(&self) -> &NucleicAcidMeasurementData {
         &self.data
     }
+
+    pub fn cdna_id(&self) -> Uuid {
+        self.cdna_id
+    }
+
+    pub fn measured_at(&self) -> Timestamp {
+        self.measured_at
+    }
 }

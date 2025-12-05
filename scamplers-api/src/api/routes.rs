@@ -13,6 +13,7 @@ mod chromium_runs;
 mod gem_pools;
 mod institutions;
 mod labs;
+mod libraries;
 mod multiplexing_tags;
 mod people;
 mod sequencing_runs;
@@ -33,6 +34,7 @@ pub(super) fn router() -> Router<AppState> {
         .nest("/chromium-runs", chromium_runs::router())
         .nest("/gems", gem_pools::router())
         .nest("/cdna", cdna::router())
+        .nest("/libraries", libraries::router())
 }
 
 type ApiResponse<T> = Result<(StatusCode, Json<T>), super::error::ErrorResponse>;

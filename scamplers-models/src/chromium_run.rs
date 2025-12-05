@@ -11,6 +11,6 @@ pub use creation::{
 };
 pub use query::{
     ChromiumRunFilter, ChromiumRunId, ChromiumRunOrderBy, ChromiumRunQuery, GemPoolFilter,
-    GemPoolOrderBy, GemPoolQuery,
+    GemPoolId, GemPoolOrderBy, GemPoolQuery,
 };
-pub use read::{ChromiumRun, ChromiumRunSummary, GemPoolSummary};
+pub use read::{ChromiumRun, ChromiumRunSummary, GemPool, GemPoolSummary};

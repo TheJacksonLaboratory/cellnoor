@@ -1,5 +1,6 @@
 #[cfg(feature = "app")]
 use diesel::prelude::*;
+use jiff::Timestamp;
 use macro_attributes::select;
 #[cfg(feature = "app")]
 use scamplers_schema::{chromium_runs, gem_pools, tenx_assays};
@@ -35,6 +36,23 @@ pub struct ChromiumRunSummary {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: ChromiumRunFields,
+}
+
+#[select]
+#[cfg_attr(feature = "app", diesel(base_query = gem_pools::table.inner_join(chromium_runs::table)))]
+pub struct GemPool {
+    #[serde(flatten)]
+    #[cfg_attr(feature = "app", diesel(embed))]
+    summary: GemPoolSummary,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    chromium_run: ChromiumRunSummary,
+}
+
+impl GemPool {
+    #[must_use]
+    pub fn chromium_run_at(&self) -> Timestamp {
+        self.chromium_run.inner.run_at
+    }
 }
 
 #[select]

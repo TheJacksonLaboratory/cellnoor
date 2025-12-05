@@ -69,3 +69,10 @@ pub struct Specimen {
     #[cfg_attr(feature = "app", diesel(embed))]
     submitted_by: PersonSummary,
 }
+
+impl Specimen {
+    #[must_use]
+    pub fn received_at(&self) -> Timestamp {
+        self.summary.received_at()
+    }
+}

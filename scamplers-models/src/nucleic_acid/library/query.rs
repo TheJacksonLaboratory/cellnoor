@@ -6,12 +6,10 @@ use uuid::Uuid;
 
 #[cfg(feature = "app")]
 use crate::generic_query;
-use crate::tenx_assay::LibraryType;
 
 #[filter]
 pub struct LibraryFilter {
     pub ids: Option<Vec<Uuid>>,
-    pub library_types: Option<Vec<LibraryType>>,
 }
 
 #[order_by(libraries)]

@@ -1,11 +1,15 @@
 use diesel::prelude::*;
-use scamplers_models::{cdna::CdnaCreation, tenx_assay::LibraryType};
+use jiff::Timestamp;
+use scamplers_models::{cdna::CdnaCreation, chromium_run::GemPoolId, tenx_assay::LibraryType};
 use scamplers_schema::{
     cdna, chromium_runs, gem_pools, library_type_specifications as lib_specs, tenx_assays,
 };
 use uuid::Uuid;
 
-use crate::validate::Validate;
+use crate::{
+    db::{self, Operation},
+    validate::{Validate, common::validate_timestamps},
+};
 
 pub mod measurement;
 
@@ -27,33 +31,60 @@ pub enum Error {
 
 impl Validate for CdnaCreation {
     fn validate(&self, db_conn: &mut diesel::PgConnection) -> Result<(), super::Error> {
-        let Some(gem_pool_id) = self.gem_pool_id() else {
-            return Ok(());
-        };
-
-        let library_type = self.library_type();
-        let (assay_id, library_type, expected) = cdna_to_library_spec()
-            .filter(lib_specs::library_type.eq(library_type))
-            .filter(gem_pools::id.eq(gem_pool_id))
-            .select((
-                chromium_runs::assay_id,
-                lib_specs::library_type,
-                lib_specs::cdna_volume_l,
-            ))
-            .first(db_conn)?;
-
-        let found = self.volume_µl().into();
-        if found != expected {
-            return Err(Error::Volume {
-                assay_id,
-                library_type,
-                expected,
-                found,
-            })?;
+        if let Some(gem_pool_id) = self.gem_pool_id() {
+            validate_volume(gem_pool_id, self.library_type(), self.volume_µl(), db_conn)?;
+            validate_gem_pool_created_before_cdna(gem_pool_id, self.prepared_at(), db_conn)?;
         }
 
         Ok(())
     }
+}
+
+fn validate_volume(
+    gem_pool_id: Uuid,
+    library_type: LibraryType,
+    volume: impl Into<i32>,
+    db_conn: &mut diesel::PgConnection,
+) -> Result<(), super::Error> {
+    let volume = volume.into();
+    let (assay_id, library_type, expected) = fetch_cdna_spec(gem_pool_id, library_type, db_conn)?;
+
+    if volume != expected {
+        Err(Error::Volume {
+            assay_id,
+            library_type,
+            expected,
+            found: volume,
+        })?;
+    }
+
+    Ok(())
+}
+
+fn validate_gem_pool_created_before_cdna(
+    gem_pool_id: impl Into<GemPoolId>,
+    cdna_created_at: Timestamp,
+    db_conn: &mut diesel::PgConnection,
+) -> Result<(), super::Error> {
+    let gem_pool_creation_time = gem_pool_id.into().execute(db_conn)?.chromium_run_at();
+    validate_timestamps(gem_pool_creation_time, cdna_created_at, "prepared_at")?;
+    Ok(())
+}
+
+fn fetch_cdna_spec(
+    gem_pool_id: Uuid,
+    library_type: LibraryType,
+    db_conn: &mut diesel::PgConnection,
+) -> Result<(Uuid, LibraryType, i32), db::Error> {
+    Ok(cdna_to_library_spec()
+        .filter(lib_specs::library_type.eq(library_type))
+        .filter(gem_pools::id.eq(gem_pool_id))
+        .select((
+            chromium_runs::assay_id,
+            lib_specs::library_type,
+            lib_specs::cdna_volume_l,
+        ))
+        .first(db_conn)?)
 }
 
 #[diesel::dsl::auto_type]

@@ -39,4 +39,9 @@ impl CdnaCreation {
     pub fn volume_µl(&self) -> u8 {
         self.volume_µl
     }
+
+    #[must_use]
+    pub fn prepared_at(&self) -> Timestamp {
+        self.prepared_at
+    }
 }

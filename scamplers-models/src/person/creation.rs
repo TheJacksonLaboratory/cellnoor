@@ -1,5 +1,3 @@
-#[cfg(feature = "builder")]
-use bon::bon;
 use macro_attributes::insert;
 use non_empty::NonEmptyString;
 #[cfg(feature = "app")]

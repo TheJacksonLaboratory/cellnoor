@@ -1,3 +1,4 @@
+use jiff::Timestamp;
 use macro_attributes::base_model;
 use non_empty::NonEmptyVec;
 
@@ -33,4 +34,26 @@ pub enum ChromiumRunCreation {
         inner: ChromiumRunFields,
         gem_pools: NonEmptyVec<SingleplexGemPool, MAX_GEM_POOLS_PER_NON_OCM_RUN>,
     },
+}
+
+impl ChromiumRunCreation {
+    #[must_use]
+    pub fn run_at(&self) -> Timestamp {
+        let inner = match self {
+            Self::OnChipMultiplexing {
+                inner,
+                gem_pools: _,
+            }
+            | Self::PoolMultiplex {
+                inner,
+                gem_pools: _,
+            }
+            | Self::Singleplex {
+                inner,
+                gem_pools: _,
+            } => inner,
+        };
+
+        inner.run_at
+    }
 }

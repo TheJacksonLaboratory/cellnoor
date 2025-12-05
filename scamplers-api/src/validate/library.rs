@@ -26,22 +26,30 @@ pub enum Error {
 
 impl Validate for LibraryCreation {
     fn validate(&self, db_conn: &mut diesel::PgConnection) -> Result<(), super::Error> {
-        let cdna_id = self.cdna_id();
-
-        let found = self.volume_µl().into();
-        let (assay_id, library_type, expected) = fetch_library_spec(cdna_id, db_conn)?;
-
-        if found != expected {
-            return Err(Error::Volume {
-                assay_id,
-                library_type,
-                expected,
-                found,
-            })?;
-        }
+        validate_volume(self.cdna_id(), self.volume_µl(), db_conn)?;
 
         Ok(())
     }
+}
+
+fn validate_volume(
+    cdna_id: Uuid,
+    volume: impl Into<i32>,
+    db_conn: &mut diesel::PgConnection,
+) -> Result<(), super::Error> {
+    let volume = volume.into();
+    let (assay_id, library_type, expected) = fetch_library_spec(cdna_id, db_conn)?;
+
+    if volume != expected {
+        Err(Error::Volume {
+            assay_id,
+            library_type,
+            expected,
+            found: volume,
+        })?;
+    }
+
+    Ok(())
 }
 
 fn fetch_library_spec(
@@ -71,7 +79,7 @@ mod tests {
     use scamplers_models::tenx_assay::{
         LibraryType, SampleMultiplexing, TenxAssayFilter, TenxAssayQuery,
     };
-    use scamplers_schema::{cdna, chromium_runs, gem_pools, tenx_assays};
+    use scamplers_schema::{cdna, tenx_assays};
     use uuid::Uuid;
 
     use crate::{

@@ -21,9 +21,7 @@ pub enum Error {
 
 impl Validate for PersonCreation {
     fn validate(&self, _db_conn: &mut diesel::PgConnection) -> Result<(), super::Error> {
-        let email = self.email();
-
-        Ok(validate_email(email)?)
+        Ok(validate_email(self.email())?)
     }
 }
 

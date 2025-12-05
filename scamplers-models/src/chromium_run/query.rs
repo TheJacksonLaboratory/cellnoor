@@ -54,3 +54,5 @@ impl Default for GemPoolOrderBy {
 
 #[cfg(feature = "app")]
 pub type GemPoolQuery = generic_query::Query<GemPoolFilter, GemPoolOrderBy>;
+
+uuid_newtype!(GemPoolId, "/{id}");

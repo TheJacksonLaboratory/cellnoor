@@ -1,6 +1,6 @@
 use diesel::PgConnection;
 
-use crate::db;
+use crate::{db, validate::common::TimestampError};
 
 mod cdna;
 mod chromium_run;
@@ -26,10 +26,12 @@ pub enum Error {
     CreatePerson(#[from] person::Error),
     CreateLab(#[from] lab::Error),
     CreateSpecimen(#[from] specimen::Error),
+    CreateSuspension(#[from] suspension::Error),
     CreateSuspensionPool(#[from] suspension_pool::Error),
     CreateCdna(#[from] cdna::Error),
     CreateLibrary(#[from] library::Error),
     CreateNucleicAcidMeasurement(#[from] nucleic_acid_measurement::Error),
+    Timestamp(#[from] TimestampError),
     Other(#[from] db::Error),
 }
 

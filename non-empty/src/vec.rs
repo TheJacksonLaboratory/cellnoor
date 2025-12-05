@@ -24,7 +24,6 @@ impl<T: Debug, const M: usize, const N: usize> From<[T; M]> for NonEmptyVec<T, N
 pub struct Error<T, const N: usize>(pub Vec<T>);
 
 impl<T, const N: usize> NonEmptyVec<T, N> {
-    #[must_use]
     pub fn new(v: Vec<T>) -> Result<Self, Error<T, N>> {
         if v.is_empty() {
             return Err(Error(v));
@@ -73,21 +72,21 @@ mod tests {
 
     use super::NonEmptyVec;
 
-    #[test]
+    #[rstest::rstest]
     fn empty_vec() {
         let err = NonEmptyVec::<bool, 1>::new(vec![]).unwrap_err();
 
         assert_eq!(err, super::Error(vec![]));
     }
 
-    #[test]
+    #[rstest::rstest]
     fn long_vec() {
         let err = NonEmptyVec::<_, 1>::new(vec![false, false]).unwrap_err();
 
         assert_eq!(err, super::Error(vec![false, false]));
     }
 
-    #[test]
+    #[rstest::rstest]
     fn good_vec() {
         NonEmptyVec::<_, 2>::new(vec![true]).unwrap();
     }

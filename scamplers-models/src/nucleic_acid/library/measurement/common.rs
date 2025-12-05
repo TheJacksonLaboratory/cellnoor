@@ -17,3 +17,17 @@ pub struct LibraryMeasurementFields {
     #[serde(flatten)]
     data: NucleicAcidMeasurementData,
 }
+
+impl LibraryMeasurementFields {
+    pub fn data(&self) -> &NucleicAcidMeasurementData {
+        &self.data
+    }
+
+    pub fn library_id(&self) -> Uuid {
+        self.library_id
+    }
+
+    pub fn measured_at(&self) -> Timestamp {
+        self.measured_at
+    }
+}

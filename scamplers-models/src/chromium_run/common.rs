@@ -52,12 +52,12 @@ pub struct ChipLoadingFields {
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = chromium_runs))]
 pub struct ChromiumRunFields {
-    readable_id: NonEmptyString,
-    assay_id: Uuid,
+    pub(super) readable_id: NonEmptyString,
+    pub(super) assay_id: Uuid,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp, deserialize_as = jiff_diesel::Timestamp))]
     #[cfg_attr(feature = "typescript", ts(as = "String"))]
-    run_at: Timestamp,
-    run_by: Uuid,
-    succeeded: bool,
-    additional_data: Option<Value>,
+    pub(super) run_at: Timestamp,
+    pub(super) run_by: Uuid,
+    pub(super) succeeded: bool,
+    pub(super) additional_data: Option<Value>,
 }

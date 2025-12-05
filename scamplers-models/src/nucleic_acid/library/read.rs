@@ -31,3 +31,15 @@ pub struct Library {
     #[cfg_attr(feature = "app", diesel(embed))]
     cdna: CdnaSummary,
 }
+
+impl Library {
+    #[must_use]
+    pub fn id(&self) -> Uuid {
+        self.summary.id
+    }
+
+    #[must_use]
+    pub fn prepared_at(&self) -> Timestamp {
+        self.summary.prepared_at
+    }
+}

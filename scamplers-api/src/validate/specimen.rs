@@ -23,25 +23,24 @@ pub enum Error {
 
 impl Validate for SpecimenCreation {
     fn validate(&self, _db_conn: &mut diesel::PgConnection) -> Result<(), super::Error> {
-        if let Some(host_species) = self.host_species()
-            && host_species == self.species()
-        {
-            return Err(Error::SameDonorAndHostSpecies {
-                species: host_species,
-            })?;
+        if let Some(host_species) = self.host_species() {
+            validate_species(self.species(), host_species)?;
         }
 
         if let Some(returned_at) = self.returned_at() {
-            let received_at = self.received_at();
-
-            if received_at >= returned_at {
-                return Err(Error::ReturnedBeforeReceived {
-                    received_at,
-                    returned_at,
-                })?;
-            }
+            // validate_timestmaps(self.received_at(), returned_at)?;
         }
 
         Ok(())
     }
+}
+
+fn validate_species(donor_species: Species, host_species: Species) -> Result<(), Error> {
+    if donor_species == host_species {
+        return Err(Error::SameDonorAndHostSpecies {
+            species: host_species,
+        });
+    }
+
+    Ok(())
 }
