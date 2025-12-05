@@ -53,7 +53,7 @@ where
 {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
         let Self { ids, names } = self;
-        let mut filter = BoxedFilter::new();
+        let mut filter = BoxedFilter::new_true();
 
         if let Some(ids) = ids {
             filter = filter.and_condition(id.eq_any(ids));

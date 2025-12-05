@@ -476,18 +476,19 @@ dependencies = [
 
 [[package]]
 name = "deranged"
-version = "0.5.4"
+version = "0.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a41953f86f8a05768a6cda24def994fd2f424b04ec5c719cf89989779f199071"
+checksum = "ececcb659e7ba858fb4f10388c250a7252eb0a27373f1a72b8748afdd248e587"
 dependencies = [
  "powerfmt",
+ "serde_core",
 ]
 
 [[package]]
 name = "diesel"
-version = "2.3.3"
+version = "2.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e7624a3bb9fffd82fff016be9a7f163d20e5a89eb8d28f9daaa6b30fff37500"
+checksum = "0c415189028b232660655e4893e8bc25ca7aee8e96888db66d9edb400535456a"
 dependencies = [
  "bitflags",
  "byteorder",
@@ -1455,15 +1456,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "positive"
-version = "0.1.0"
-dependencies = [
- "diesel",
- "serde",
- "ts-rs",
-]
-
-[[package]]
 name = "potential_utf"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1555,6 +1547,16 @@ name = "rand_core"
 version = "0.10.0-rc-2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "104a23e4e8b77312a823b6b5613edbac78397e2f34320bc7ac4277013ec4478e"
+
+[[package]]
+name = "ranged"
+version = "0.1.0"
+dependencies = [
+ "deranged",
+ "diesel",
+ "serde",
+ "ts-rs",
+]
 
 [[package]]
 name = "regex"
@@ -1757,9 +1759,9 @@ dependencies = [
  "jiff",
  "jiff-diesel",
  "non-empty",
- "positive",
  "pretty_assertions",
  "rand",
+ "ranged",
  "regex",
  "reqwest",
  "rstest",
@@ -1794,8 +1796,8 @@ dependencies = [
  "macro-attributes",
  "macros",
  "non-empty",
- "positive",
  "pretty_assertions",
+ "ranged",
  "scamplers-schema",
  "serde",
  "serde_json",

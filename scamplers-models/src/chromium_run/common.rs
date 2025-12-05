@@ -2,7 +2,6 @@ use jiff::Timestamp;
 use macro_attributes::{insert_select, json};
 use macros::{impl_json_from_sql, impl_json_to_sql};
 use non_empty::NonEmptyString;
-use positive::PositiveF32;
 #[cfg(feature = "app")]
 use scamplers_schema::{chip_loadings, chromium_runs, gem_pools};
 use serde_json::Value;
@@ -21,8 +20,18 @@ pub struct GemPoolFields {
 
 #[json]
 pub struct Volume {
-    value: PositiveF32,
+    value: u8,
     unit: Microliter,
+}
+
+impl Volume {
+    #[must_use]
+    pub fn new(value: u8) -> Self {
+        Self {
+            value,
+            unit: Microliter::Microliter,
+        }
+    }
 }
 
 #[cfg(feature = "app")]

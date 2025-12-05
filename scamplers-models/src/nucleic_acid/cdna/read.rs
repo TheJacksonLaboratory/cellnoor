@@ -15,9 +15,10 @@ pub struct CdnaSummary {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: CdnaFields,
-    #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp, deserialize_as = jiff_diesel::Timestamp))]
+    #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
     #[cfg_attr(feature = "typescript", ts(as = "String"))]
     prepared_at: Timestamp,
+    n_amplification_cycles: i32,
 }
 
 #[select]

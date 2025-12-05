@@ -50,6 +50,6 @@ impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for SuspensionFilter {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
         let Self {} = self;
 
-        BoxedFilter::new()
+        BoxedFilter::new_true()
     }
 }

@@ -18,7 +18,7 @@ dotenvy.workspace = true
 jiff.workspace = true
 jiff-diesel.workspace = true
 non-empty = { path = "../non-empty" }
-positive = { version = "0.1.0", path = "../positive", features = ["serde"] }
+ranged = { version = "0.1.0", path = "../ranged", features = ["serde"] }
 regex.workspace = true
 reqwest.workspace = true
 rstest.workspace = true

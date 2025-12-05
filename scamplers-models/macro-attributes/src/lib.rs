@@ -68,12 +68,20 @@ fn diesel_check_for_backend() -> proc_macro2::TokenStream {
     }
 }
 
+fn builder() -> proc_macro2::TokenStream {
+    quote! {
+        #[cfg_attr(feature = "builder", derive(bon::Builder))]
+        #[cfg_attr(feature = "builder", builder(on(_, into)))]
+    }
+}
+
 #[proc_macro_attribute]
 pub fn insert_select(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let base_derives = base_derives(input.clone(), false);
     let insertable = diesel_insertable();
     let has_query = diesel_has_query();
     let check_for_backend = diesel_check_for_backend();
+    let builder = builder();
 
     let input: proc_macro2::TokenStream = input.into();
 
@@ -83,6 +91,7 @@ pub fn insert_select(_attr: TokenStream, input: TokenStream) -> TokenStream {
         #insertable
         #has_query
         #check_for_backend
+        #builder
         #input
     }
     .into()
@@ -93,6 +102,7 @@ pub fn insert(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let base_derives = base_derives(input.clone(), false);
     let insertable = diesel_insertable();
     let check_for_backend = diesel_check_for_backend();
+    let builder = builder();
 
     let input: proc_macro2::TokenStream = input.into();
 
@@ -101,6 +111,7 @@ pub fn insert(_attr: TokenStream, input: TokenStream) -> TokenStream {
         #base_derives
         #insertable
         #check_for_backend
+        #builder
         #input
     }
     .into()

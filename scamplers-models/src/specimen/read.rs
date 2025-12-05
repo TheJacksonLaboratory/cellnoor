@@ -51,6 +51,11 @@ impl SpecimenSummary {
     pub fn tissue(&self) -> &str {
         self.common.tissue.as_ref()
     }
+
+    #[must_use]
+    pub fn submitted_by(&self) -> Uuid {
+        self.common.submitted_by
+    }
 }
 
 #[select]

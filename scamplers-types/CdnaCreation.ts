@@ -2,7 +2,6 @@
 import type { LibraryType } from "./LibraryType";
 import type { NonEmptyString } from "./NonEmptyString";
 import type { NonEmptyVec } from "./NonEmptyVec";
-import type { PositiveU32 } from "./PositiveU32";
 import type { JsonValue } from "./serde_json/JsonValue";
 
-export type CdnaCreation = { prepared_at: string, volume_µl: PositiveU32, preparer_ids: NonEmptyVec<string>, library_type: LibraryType, readable_id: NonEmptyString, assay_id: string, gem_pool_id?: string, n_amplification_cycles: PositiveU32, additional_data?: JsonValue, };
+export type CdnaCreation = { prepared_at: string, n_amplification_cycles: number, volume_µl: number, preparer_ids: NonEmptyVec<string>, library_type: LibraryType, readable_id: NonEmptyString, gem_pool_id?: string, additional_data?: JsonValue, };

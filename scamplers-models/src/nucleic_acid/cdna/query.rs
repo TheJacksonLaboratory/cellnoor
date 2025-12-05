@@ -33,3 +33,5 @@ impl Default for CdnaOrderBy {
 pub type CdnaQuery = generic_query::Query<CdnaFilter, CdnaOrderBy>;
 
 uuid_newtype!(CdnaId, "/{id}");
+
+uuid_newtype!(CdnaIdMeasurements, "/{id}/measurements");

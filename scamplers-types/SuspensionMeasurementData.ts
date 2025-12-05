@@ -3,7 +3,7 @@ import type { CountingMethod } from "./CountingMethod";
 import type { Microliter } from "./Microliter";
 import type { Micrometer } from "./Micrometer";
 import type { Milliliter } from "./Milliliter";
-import type { PositiveF32 } from "./PositiveF32";
+import type { RangedF32 } from "./RangedF32";
 import type { SuspensionContent } from "./SuspensionContent";
 
-export type SuspensionMeasurementData = { "quantity": "concentration", post_hybridization: boolean, numerator_unit: SuspensionContent, counting_method?: CountingMethod, value: PositiveF32, denominator_unit: Milliliter, } | { "quantity": "viability", post_hybridization: boolean, value: PositiveF32, } | { "quantity": "volume", post_hybridization: boolean, value: PositiveF32, unit: Microliter, } | { "quantity": "mean_diameter", post_hybridization: boolean, object: SuspensionContent, value: PositiveF32, unit: Micrometer, };
+export type SuspensionMeasurementData = { "quantity": "concentration", post_hybridization: boolean, numerator_unit: SuspensionContent, counting_method?: CountingMethod, value: number, denominator_unit: Milliliter, } | { "quantity": "viability", post_hybridization: boolean, value: RangedF32, } | { "quantity": "volume", post_hybridization: boolean, value: RangedF32, unit: Microliter, } | { "quantity": "mean_diameter", post_hybridization: boolean, object: SuspensionContent, value: RangedF32, unit: Micrometer, };

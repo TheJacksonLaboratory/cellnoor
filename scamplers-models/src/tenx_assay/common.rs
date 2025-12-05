@@ -1,9 +1,9 @@
 #[cfg(feature = "app")]
 use diesel::prelude::*;
-use macro_attributes::{insert_select, simple_enum};
+use macro_attributes::{insert, insert_select, simple_enum};
 use macros::{impl_enum_from_sql, impl_enum_to_sql};
 use non_empty::NonEmptyString;
-use positive::PositiveU32;
+use ranged::RangedU16;
 #[cfg(feature = "app")]
 use scamplers_schema::library_type_specifications;
 #[cfg(feature = "app")]
@@ -52,15 +52,15 @@ impl_enum_from_sql!(SampleMultiplexing);
 impl EnumToSql for SampleMultiplexing {}
 impl_enum_to_sql!(SampleMultiplexing);
 
-#[insert_select]
+#[insert]
 #[cfg_attr(feature = "app", derive(AsChangeset))]
 pub struct LibraryTypeSpecification {
     library_type: LibraryType,
     index_kit: String,
     #[cfg_attr(feature = "app", diesel(column_name = cdna_volume_l))]
-    cdna_volume_µl: PositiveU32,
+    cdna_volume_µl: RangedU16<0, { u16::MAX }>,
     #[cfg_attr(feature = "app", diesel(column_name = library_volume_l))]
-    library_volume_µl: PositiveU32,
+    library_volume_µl: RangedU16<0, { u16::MAX }>,
 }
 
 impl LibraryTypeSpecification {

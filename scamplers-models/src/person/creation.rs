@@ -15,38 +15,13 @@ pub struct PersonCreation {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: PersonFields,
-
     email: NonEmptyString,
     #[serde(default)]
     #[cfg_attr(feature = "app", diesel(skip_insertion, skip_update))]
     roles: Vec<UserRole>,
 }
 
-#[cfg_attr(feature = "builder", bon)]
 impl PersonCreation {
-    #[cfg(feature = "builder")]
-    #[builder(on(_, into))]
-    #[must_use]
-    pub fn new(
-        name: NonEmptyString,
-        email: NonEmptyString,
-        orcid: Option<NonEmptyString>,
-        institution_id: Uuid,
-        microsoft_entra_oid: Option<Uuid>,
-        roles: Vec<UserRole>,
-    ) -> Self {
-        Self {
-            inner: PersonFields {
-                name,
-                orcid,
-                institution_id,
-                microsoft_entra_oid,
-            },
-            email,
-            roles,
-        }
-    }
-
     #[must_use]
     pub fn name(&self) -> &str {
         self.inner.name.as_ref()

@@ -18,8 +18,17 @@ pub struct SuspensionSummary {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: SuspensionFields,
+    target_cell_recovery: i64,
+    lysis_duration_minutes: Option<f32>,
     content: SuspensionContent,
     links: Links,
+}
+
+impl SuspensionSummary {
+    #[must_use]
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
 }
 
 #[select]
@@ -34,6 +43,6 @@ pub struct Suspension {
 impl Suspension {
     #[must_use]
     pub fn id(&self) -> Uuid {
-        self.summary.id
+        self.summary.id()
     }
 }

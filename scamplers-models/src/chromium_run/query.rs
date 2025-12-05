@@ -53,4 +53,4 @@ impl Default for GemPoolOrderBy {
 }
 
 #[cfg(feature = "app")]
-pub type GemsQuery = generic_query::Query<GemPoolFilter, GemPoolOrderBy>;
+pub type GemPoolQuery = generic_query::Query<GemPoolFilter, GemPoolOrderBy>;

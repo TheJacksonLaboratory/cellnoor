@@ -10,8 +10,6 @@ mod list;
 mod measurements;
 mod nuclei;
 
-pub(super) use create::{insert_suspension, insert_suspension_preparers, insert_suspension_tags};
-
 pub(super) fn router() -> Router<AppState> {
     Router::new()
         .nest("/cells", cells::router())

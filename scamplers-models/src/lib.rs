@@ -20,4 +20,4 @@ mod units;
 #[cfg(feature = "app")]
 mod utils;
 
-pub use nucleic_acid::{cdna, library};
+pub use nucleic_acid::{cdna, library, measurement as nucleic_acid_measurement};

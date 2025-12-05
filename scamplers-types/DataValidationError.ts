@@ -4,7 +4,7 @@ import type { DbError } from "./DbError";
 import type { InitialDataValidationError } from "./InitialDataValidationError";
 import type { LabValidationError } from "./LabValidationError";
 import type { PersonValidationError } from "./PersonValidationError";
-import type { SpecimenMeasurementValidationError } from "./SpecimenMeasurementValidationError";
 import type { SpecimenValidationError } from "./SpecimenValidationError";
+import type { SuspensionValidationError } from "./SuspensionValidationError";
 
-export type DataValidationError = { "type": "insert_initial_data", "info": InitialDataValidationError } | { "type": "create_person", "info": PersonValidationError } | { "type": "create_lab", "info": LabValidationError } | { "type": "create_specimen", "info": SpecimenValidationError } | { "type": "create_specimen_measurement", "info": SpecimenMeasurementValidationError } | { "type": "create_suspension_measurement", "info": SpecimenMeasurementValidationError } | { "type": "create_suspension_pool_measurement", "info": SpecimenMeasurementValidationError } | { "type": "create_cdna", "info": CdnaValidationError } | { "type": "other", "info": DbError };
+export type DataValidationError = { "type": "insert_initial_data", "info": InitialDataValidationError } | { "type": "create_person", "info": PersonValidationError } | { "type": "create_lab", "info": LabValidationError } | { "type": "create_specimen", "info": SpecimenValidationError } | { "type": "create_suspension_pool", "info": SuspensionValidationError } | { "type": "create_cdna", "info": CdnaValidationError } | { "type": "create_library", "info": CdnaValidationError } | { "type": "create_nucleic_acid_measurement", "info": CdnaValidationError } | { "type": "other", "info": DbError };

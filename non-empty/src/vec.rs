@@ -1,13 +1,21 @@
+use std::fmt::Debug;
+
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(try_from = "Vec<T>"))]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "diesel", derive(diesel::deserialize::FromSqlRow))]
-pub struct NonEmptyVec<T, const N: usize = { usize::MAX }>(Vec<T>);
+pub struct NonEmptyVec<T, const N: usize>(Vec<T>);
 
 impl<T, const N: usize> From<T> for NonEmptyVec<T, N> {
     fn from(value: T) -> Self {
         Self(vec![value])
+    }
+}
+
+impl<T: Debug, const M: usize, const N: usize> From<[T; M]> for NonEmptyVec<T, N> {
+    fn from(value: [T; M]) -> Self {
+        Self::new(value.into())
+            .unwrap_or_else(|_| panic!("static array should not be longer than {N} elements"))
     }
 }
 

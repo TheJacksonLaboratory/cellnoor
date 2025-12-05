@@ -4,7 +4,6 @@ create table cdna (
     links jsonb generated always as (construct_links('cdna', id, '{"measurements", "libraries"}')) stored not null,
     library_type case_insensitive_text not null,
     prepared_at timestamptz not null,
-    assay_id uuid references tenx_assays on delete restrict on update restrict not null,
     gem_pool_id uuid references gem_pools on delete restrict on update restrict,
     n_amplification_cycles integer not null,
     additional_data jsonb,

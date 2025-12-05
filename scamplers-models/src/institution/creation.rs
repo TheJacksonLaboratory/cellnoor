@@ -1,11 +1,7 @@
-#[cfg(feature = "builder")]
-use bon::bon;
 use macro_attributes::insert;
-#[cfg(feature = "builder")]
 use non_empty::NonEmptyString;
 #[cfg(feature = "app")]
 use scamplers_schema::institutions;
-#[cfg(feature = "builder")]
 use uuid::Uuid;
 
 use crate::institution::common::InstitutionFields;
@@ -19,10 +15,7 @@ pub struct InstitutionCreation {
     inner: InstitutionFields,
 }
 
-#[cfg_attr(feature = "builder", bon)]
 impl InstitutionCreation {
-    #[cfg(feature = "builder")]
-    #[builder(on(_, into))]
     #[must_use]
     pub fn new(id: Uuid, name: NonEmptyString) -> Self {
         Self {

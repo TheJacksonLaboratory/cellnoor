@@ -14,7 +14,7 @@ create table suspensions (
     content case_insensitive_text not null,
     created_at timestamptz,
     lysis_duration_minutes real,
-    target_cell_recovery integer not null,
+    target_cell_recovery bigint not null,
     additional_data jsonb
 );
 
@@ -23,6 +23,7 @@ create table suspension_tagging (
     pool_id uuid references suspension_pools on delete restrict on update restrict not null,
     tag_id uuid references multiplexing_tags on delete restrict on update restrict not null,
 
+    unique (pool_id, tag_id),
     primary key (suspension_id, pool_id, tag_id)
 );
 

@@ -19,6 +19,7 @@ mod sequencing_runs;
 mod specimens;
 mod suspension_pools;
 mod suspensions;
+mod tenx_assays;
 
 pub(super) fn router() -> Router<AppState> {
     Router::new()

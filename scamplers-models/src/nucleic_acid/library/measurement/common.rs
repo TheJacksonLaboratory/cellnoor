@@ -4,7 +4,7 @@ use macro_attributes::insert_select;
 use scamplers_schema::library_measurements;
 use uuid::Uuid;
 
-use crate::nucleic_acid::measurement::MeasurementData;
+use crate::nucleic_acid::measurement::NucleicAcidMeasurementData;
 
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = library_measurements))]
@@ -15,5 +15,5 @@ pub struct LibraryMeasurementFields {
     #[cfg_attr(feature = "typescript", ts(as = "String"))]
     measured_at: Timestamp,
     #[serde(flatten)]
-    data: MeasurementData,
+    data: NucleicAcidMeasurementData,
 }

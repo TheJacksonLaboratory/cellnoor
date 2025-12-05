@@ -42,7 +42,7 @@ where
             microsoft_entra_oids,
         } = self;
 
-        let mut filter = BoxedFilter::new();
+        let mut filter = BoxedFilter::new_true();
 
         if let Some(ids) = ids {
             filter = filter.and_condition(id.eq_any(ids));

@@ -1,7 +1,6 @@
 use jiff::Timestamp;
 use macro_attributes::insert;
 use non_empty::NonEmptyVec;
-use positive::PositiveU32;
 #[cfg(feature = "app")]
 use scamplers_schema::cdna;
 use uuid::Uuid;
@@ -14,19 +13,21 @@ pub struct CdnaCreation {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: CdnaFields,
-    #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp, deserialize_as = jiff_diesel::Timestamp))]
+    #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp))]
     #[cfg_attr(feature = "typescript", ts(as = "String"))]
     prepared_at: Timestamp,
+    #[cfg_attr(feature = "app", diesel(serialize_as = i32))]
+    n_amplification_cycles: u8,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
-    volume_µl: PositiveU32,
+    volume_µl: u8,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
-    preparer_ids: NonEmptyVec<Uuid>,
+    preparer_ids: NonEmptyVec<Uuid, { usize::MAX }>,
 }
 
 impl CdnaCreation {
     #[must_use]
-    pub fn assay_id(&self) -> Uuid {
-        self.inner.assay_id
+    pub fn gem_pool_id(&self) -> Option<Uuid> {
+        self.inner.gem_pool_id
     }
 
     #[must_use]
@@ -35,7 +36,7 @@ impl CdnaCreation {
     }
 
     #[must_use]
-    pub fn volume_µl(&self) -> PositiveU32 {
+    pub fn volume_µl(&self) -> u8 {
         self.volume_µl
     }
 }

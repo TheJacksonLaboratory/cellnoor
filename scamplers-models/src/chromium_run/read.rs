@@ -21,6 +21,13 @@ pub struct GemPoolSummary {
     inner: GemPoolFields,
 }
 
+impl GemPoolSummary {
+    #[must_use]
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+}
+
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = chromium_runs))]
 pub struct ChromiumRunSummary {

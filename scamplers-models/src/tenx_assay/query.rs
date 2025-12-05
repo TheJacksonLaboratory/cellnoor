@@ -1,61 +1,40 @@
-use macro_attributes::filter;
+use macro_attributes::{filter, order_by};
+#[cfg(feature = "app")]
+use scamplers_schema::tenx_assays;
 use uuid::Uuid;
 
+#[cfg(feature = "app")]
+use crate::generic_query;
 use crate::tenx_assay::common::{LibraryType, SampleMultiplexing};
 
 #[filter]
 pub struct TenxAssayFilter {
-    ids: Option<Vec<Uuid>>,
-    names: Option<Vec<String>>,
-    library_types: Option<Vec<Vec<LibraryType>>>,
-    sample_multiplexing: Option<Vec<SampleMultiplexing>>,
-    chemistry_versions: Option<Vec<String>>,
-    chromium_chips: Option<Vec<String>>,
-    #[serde(skip)]
-    library_types_are_sorted: bool,
+    pub ids: Option<Vec<Uuid>>,
+    pub names: Option<Vec<String>>,
+    pub library_types: Option<Vec<Vec<LibraryType>>>,
+    pub sample_multiplexing: Option<Vec<SampleMultiplexing>>,
+    pub chemistry_versions: Option<Vec<String>>,
+    pub chromium_chips: Option<Vec<String>>,
 }
 
-impl TenxAssayFilter {
-    #[must_use]
-    pub fn ids(&self) -> Option<&[Uuid]> {
-        self.ids.as_deref()
-    }
+#[order_by(tenx_assays)]
+#[allow(non_camel_case_types)]
+pub enum TenxAssayOrderBy {
+    id { descending: Option<bool> },
+    name { descending: Option<bool> },
+    library_types { descending: Option<bool> },
+    sample_multiplexing { descending: Option<bool> },
+    chemistry_version { descending: Option<bool> },
+    protocol_url { descending: Option<bool> },
+    chromium_chip { descending: Option<bool> },
+    cmdlines { descending: Option<bool> },
+}
 
-    #[must_use]
-    pub fn names(&self) -> Option<&[String]> {
-        self.names.as_deref()
-    }
-
-    pub fn sorted_library_types(&mut self) -> Option<&[Vec<LibraryType>]> {
-        if self.library_types_are_sorted {
-            return self.library_types.as_deref();
-        }
-
-        let Some(library_types) = &mut self.library_types else {
-            self.library_types_are_sorted = true;
-            return None;
-        };
-
-        for library_type_group in &mut *library_types {
-            library_type_group.sort();
-        }
-        self.library_types_are_sorted = true;
-
-        Some(&*library_types)
-    }
-
-    #[must_use]
-    pub fn sample_multiplexing(&self) -> Option<&[SampleMultiplexing]> {
-        self.sample_multiplexing.as_deref()
-    }
-
-    #[must_use]
-    pub fn chemistry_versions(&self) -> Option<&[String]> {
-        self.chemistry_versions.as_deref()
-    }
-
-    #[must_use]
-    pub fn chromium_chips(&self) -> Option<&[String]> {
-        self.chromium_chips.as_deref()
+impl Default for TenxAssayOrderBy {
+    fn default() -> Self {
+        Self::name { descending: None }
     }
 }
+
+#[cfg(feature = "app")]
+pub type TenxAssayQuery = generic_query::Query<TenxAssayFilter, TenxAssayOrderBy>;

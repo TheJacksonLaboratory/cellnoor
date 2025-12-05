@@ -1,6 +1,5 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::prelude::*;
-use non_empty::NonEmptyVec;
 use scamplers_models::chromium_run::{
     ChromiumRun, ChromiumRunCreation, ChromiumRunFields, ChromiumRunId, GemPoolFields, OcmGemPool,
     PoolMultiplexGemPool, SingleplexGemPool,
@@ -30,78 +29,33 @@ pub(super) async fn create_chromium_run(
 impl Operation<ChromiumRun> for ChromiumRunCreation {
     fn execute(self, db_conn: &mut PgConnection) -> Result<ChromiumRun, db::Error> {
         let run_id = match self {
-            Self::OnChipMultiplexing { inner, gems } => {
+            Self::OnChipMultiplexing { inner, gem_pools } => {
                 let run_id = inner.execute(db_conn)?;
 
-                let gems_id = (
-                    run_id,
-                    gems.as_ref()
-                        .iter()
-                        .map(|OcmGemPool { inner, loading: _ }| inner),
-                )
-                    .execute(db_conn)?;
+                let gem_pool_ids =
+                    insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)?;
 
-                let loadings: Vec<_> = gems
-                    .as_ref()
-                    .iter()
-                    .map(|OcmGemPool { inner: _, loading }| loading)
-                    .flat_map(NonEmptyVec::as_ref)
-                    .map(|l| (chip_loadings::gem_pool_id.eq(gems_id), l))
-                    .collect();
-
-                diesel::insert_into(chip_loadings::table)
-                    .values(loadings)
-                    .execute(db_conn)?;
+                insert_ocm_chip_loadings(&gem_pool_ids, gem_pools.as_ref(), db_conn)?;
 
                 run_id
             }
-            Self::PoolMultiplex { inner, gems } => {
+            Self::PoolMultiplex { inner, gem_pools } => {
                 let run_id = inner.execute(db_conn)?;
 
-                let gems_id = (
-                    run_id,
-                    gems.as_ref()
-                        .iter()
-                        .map(|PoolMultiplexGemPool { inner, loading: _ }| inner),
-                )
-                    .execute(db_conn)?;
+                let gem_pool_ids =
+                    insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)?;
 
-                let loadings: Vec<_> = gems
-                    .as_ref()
-                    .iter()
-                    .map(|PoolMultiplexGemPool { inner: _, loading }| {
-                        (chip_loadings::gem_pool_id.eq(gems_id), loading)
-                    })
-                    .collect();
-
-                diesel::insert_into(chip_loadings::table)
-                    .values(loadings)
-                    .execute(db_conn)?;
+                insert_pool_multiplex_chip_loadings(&gem_pool_ids, gem_pools.as_ref(), db_conn)?;
 
                 run_id
             }
-            Self::Singleplex { inner, gems } => {
+            Self::Singleplex { inner, gem_pools } => {
                 let run_id = inner.execute(db_conn)?;
 
-                let gems_id = (
-                    run_id,
-                    gems.as_ref()
-                        .iter()
-                        .map(|SingleplexGemPool { inner, loading: _ }| inner),
-                )
-                    .execute(db_conn)?;
+                let gem_pool_ids =
+                    insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)?;
 
-                let loadings: Vec<_> = gems
-                    .as_ref()
-                    .iter()
-                    .map(|SingleplexGemPool { inner: _, loading }| {
-                        (chip_loadings::gem_pool_id.eq(gems_id), loading)
-                    })
-                    .collect();
-
-                diesel::insert_into(chip_loadings::table)
-                    .values(loadings)
-                    .execute(db_conn)?;
+                insert_singleplex_chip_loadings(&gem_pool_ids, gem_pools.as_ref(), db_conn)?;
 
                 run_id
             }
@@ -122,19 +76,88 @@ impl Operation<ChromiumRunId> for ChromiumRunFields {
     }
 }
 
-impl<'a, I> db::Operation<Uuid> for (ChromiumRunId, I)
+fn insert_gem_pools<'a, I>(
+    chromium_run_id: ChromiumRunId,
+    gem_pool_data: I,
+    db_conn: &mut PgConnection,
+) -> Result<Vec<Uuid>, db::Error>
 where
     I: Iterator<Item = &'a GemPoolFields>,
 {
-    fn execute(self, db_conn: &mut PgConnection) -> Result<Uuid, db::Error> {
-        use scamplers_schema::gem_pools::dsl::*;
+    use scamplers_schema::gem_pools;
 
-        let (run_id, gems_data) = self;
-        let insertions: Vec<_> = gems_data.map(|g| (chromium_run_id.eq(run_id), g)).collect();
+    let insertions: Vec<_> = gem_pool_data
+        .map(|g| (gem_pools::chromium_run_id.eq(chromium_run_id), g))
+        .collect();
 
-        Ok(diesel::insert_into(gem_pools)
-            .values(insertions)
-            .returning(id)
-            .get_result(db_conn)?)
+    Ok(diesel::insert_into(gem_pools::table)
+        .values(insertions)
+        .returning(gem_pools::id)
+        .get_results(db_conn)?)
+}
+
+fn insert_ocm_chip_loadings(
+    gem_pool_ids: &[Uuid],
+    gem_pools: &[OcmGemPool],
+    db_conn: &mut PgConnection,
+) -> Result<(), db::Error> {
+    let mut chip_loading_insertions = Vec::with_capacity(gem_pool_ids.len() * 4);
+
+    for (gem_pool_id, gem_pool) in gem_pool_ids.iter().zip(gem_pools.as_ref()) {
+        for loading in gem_pool.loading.as_ref() {
+            chip_loading_insertions.push((chip_loadings::gem_pool_id.eq(gem_pool_id), loading));
+        }
     }
+
+    diesel::insert_into(chip_loadings::table)
+        .values(chip_loading_insertions)
+        .execute(db_conn)?;
+
+    Ok(())
+}
+
+fn insert_pool_multiplex_chip_loadings(
+    gem_pool_ids: &[Uuid],
+    gem_pools: &[PoolMultiplexGemPool],
+    db_conn: &mut PgConnection,
+) -> Result<(), db::Error> {
+    let chip_loading_insertions: Vec<_> = gem_pool_ids
+        .iter()
+        .zip(gem_pools.as_ref())
+        .map(|(gem_pool_id, gem_pool)| {
+            (
+                chip_loadings::gem_pool_id.eq(gem_pool_id),
+                &gem_pool.loading,
+            )
+        })
+        .collect();
+
+    diesel::insert_into(chip_loadings::table)
+        .values(chip_loading_insertions)
+        .execute(db_conn)?;
+
+    Ok(())
+}
+
+fn insert_singleplex_chip_loadings(
+    gem_pool_ids: &[Uuid],
+    gem_pools: &[SingleplexGemPool],
+    db_conn: &mut PgConnection,
+) -> Result<(), db::Error> {
+    let chip_loading_insertions: Vec<_> = gem_pool_ids
+        .iter()
+        .zip(gem_pools.as_ref())
+        .map(|(gem_pool_id, gem_pool)| {
+            (
+                chip_loadings::gem_pool_id.eq(gem_pool_id),
+                &gem_pool.loading,
+            )
+        })
+        .collect();
+
+    diesel::insert_into(chip_loadings::table)
+        .values(chip_loading_insertions)
+        .execute(db_conn)?;
+
+    Ok(())
 }

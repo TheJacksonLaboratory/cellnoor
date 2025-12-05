@@ -1,5 +1,9 @@
 mod common;
 mod creation;
-mod measurement;
+pub mod measurement;
 mod query;
 mod read;
+
+pub use creation::LibraryCreation;
+pub use query::{LibraryFilter, LibraryId, LibraryIdMeasurements, LibraryQuery};
+pub use read::{Library, LibrarySummary};

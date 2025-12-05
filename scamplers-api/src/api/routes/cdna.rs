@@ -12,7 +12,7 @@ pub(super) fn router() -> Router<AppState> {
     Router::new()
         .typed_post(create::create_cdna)
         .typed_get(fetch::fetch_cdna)
-    // .typed_get(list::list_cdna)
-    // .typed_post(measurements::create::create_measurement)
-    // .typed_get(measurements::list::list_measurements)
+        .typed_get(list::list_cdna)
+        .typed_post(measurements::create::create_measurement)
+        .typed_get(measurements::list::list_measurements)
 }

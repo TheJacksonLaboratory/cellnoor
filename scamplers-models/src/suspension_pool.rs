@@ -5,7 +5,7 @@ mod query;
 mod read;
 
 pub use common::SuspensionPoolFields;
-pub use creation::SuspensionPoolCreation;
+pub use creation::{SuspensionPoolCreation, SuspensionTagging};
 pub use query::{
     SuspensionPoolFilter, SuspensionPoolId, SuspensionPoolIdMeasurements,
     SuspensionPoolIdSuspensions, SuspensionPoolOrderBy, SuspensionPoolQuery,

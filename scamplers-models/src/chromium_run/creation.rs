@@ -7,12 +7,12 @@ mod ocm;
 mod pool_multiplex;
 mod singleplex;
 
-pub use ocm::OcmGemPool;
-pub use pool_multiplex::PoolMultiplexGemPool;
-pub use singleplex::SingleplexGemPool;
+pub use ocm::{MAX_SUSPENSIONS_PER_OCM_GEM_POOL, OcmBarcodeId, OcmChipLoading, OcmGemPool};
+pub use pool_multiplex::{PoolMultiplexChipLoading, PoolMultiplexGemPool};
+pub use singleplex::{SingleplexChipLoading, SingleplexGemPool};
 
-const MAX_GEM_POOLS_IN_OCM_RUN: usize = 2;
-const MAX_GEM_POOLS_IN_NON_OCM_RUN: usize = 8;
+pub const MAX_GEM_POOLS_PER_OCM_RUN: usize = 2;
+pub const MAX_GEM_POOLS_PER_NON_OCM_RUN: usize = 8;
 
 #[base_model]
 #[derive(serde::Deserialize)]
@@ -21,16 +21,16 @@ pub enum ChromiumRunCreation {
     OnChipMultiplexing {
         #[serde(flatten)]
         inner: ChromiumRunFields,
-        gems: NonEmptyVec<OcmGemPool, MAX_GEM_POOLS_IN_OCM_RUN>,
+        gem_pools: NonEmptyVec<OcmGemPool, MAX_GEM_POOLS_PER_OCM_RUN>,
     },
     PoolMultiplex {
         #[serde(flatten)]
         inner: ChromiumRunFields,
-        gems: NonEmptyVec<PoolMultiplexGemPool, MAX_GEM_POOLS_IN_NON_OCM_RUN>,
+        gem_pools: NonEmptyVec<PoolMultiplexGemPool, MAX_GEM_POOLS_PER_NON_OCM_RUN>,
     },
     Singleplex {
         #[serde(flatten)]
         inner: ChromiumRunFields,
-        gems: NonEmptyVec<SingleplexGemPool, MAX_GEM_POOLS_IN_NON_OCM_RUN>,
+        gem_pools: NonEmptyVec<SingleplexGemPool, MAX_GEM_POOLS_PER_NON_OCM_RUN>,
     },
 }

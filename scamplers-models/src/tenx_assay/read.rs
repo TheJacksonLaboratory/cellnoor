@@ -20,3 +20,10 @@ pub struct TenxAssay {
     chromium_chip: Option<String>,
     cmdlines: Option<Vec<Option<String>>>,
 }
+
+impl TenxAssay {
+    #[must_use]
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+}

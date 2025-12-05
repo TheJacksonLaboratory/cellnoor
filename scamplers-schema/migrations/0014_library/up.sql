@@ -8,7 +8,7 @@ create table libraries (
     single_index_set_name case_insensitive_text references single_index_sets on delete restrict on update restrict,
     dual_index_set_name case_insensitive_text references dual_index_sets on delete restrict on update restrict,
     number_of_sample_index_pcr_cycles integer not null,
-    target_reads_per_cell integer not null,
+    target_reads_per_cell bigint not null,
     prepared_at timestamptz not null,
     additional_data jsonb,
     constraint has_index check ((single_index_set_name is null) != (dual_index_set_name is null))

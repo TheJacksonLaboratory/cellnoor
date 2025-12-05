@@ -1,3 +1,3 @@
 pub mod cdna;
 pub mod library;
-mod measurement;
+pub mod measurement;

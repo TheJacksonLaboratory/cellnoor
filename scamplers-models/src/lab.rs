@@ -4,6 +4,7 @@ mod query;
 mod read;
 mod update;
 
+pub use common::LabFields;
 pub use creation::LabCreation;
 #[cfg(feature = "app")]
 pub use query::LabQuery;

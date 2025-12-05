@@ -1,22 +1,30 @@
-#![allow(dead_code)]
 use std::ops::Range;
 
 use deadpool_diesel::postgres::{Connection, Pool};
 use jiff::Timestamp;
 use non_empty::{NonEmptyString, NonEmptyVec};
-use positive::PositiveU32;
+use pretty_assertions::assert_eq;
 use rand::{
     Rng,
     distr::Alphanumeric,
     seq::{IndexedRandom, IteratorRandom},
 };
+use ranged::RangedU32;
 use rstest::fixture;
 use scamplers_models::{
+    cdna::{CdnaCreation, CdnaFields, CdnaQuery, CdnaSummary},
+    chromium_run::{
+        ChipLoadingFields, ChromiumRunCreation, ChromiumRunFields, GemPoolFields, GemPoolQuery,
+        GemPoolSummary, MAX_GEM_POOLS_PER_NON_OCM_RUN, MAX_GEM_POOLS_PER_OCM_RUN,
+        MAX_SUSPENSIONS_PER_OCM_GEM_POOL, OcmBarcodeId, OcmChipLoading, OcmGemPool,
+        PoolMultiplexChipLoading, PoolMultiplexGemPool, SingleplexChipLoading, SingleplexGemPool,
+        Volume,
+    },
     generic_query,
     institution::{Institution, InstitutionCreation, InstitutionQuery},
-    lab::{LabCreation, LabQuery, LabSummary},
+    lab::{LabCreation, LabFields, LabQuery, LabSummary},
     multiplexing_tag::MultiplexingTag,
-    person::{PersonCreation, PersonQuery, PersonSummary},
+    person::{PersonCreation, PersonFields, PersonQuery, PersonSummary},
     specimen::{
         BlockFixative, CryopreservedSuspensionCreation, CryopreservedTissueCreation,
         FixedBlockCreation, FixedBlockEmbeddingMatrix, FixedTissueCreation, FrozenBlockCreation,
@@ -24,12 +32,13 @@ use scamplers_models::{
         SpecimenCommonFields, SpecimenCreation, SpecimenQuery, SpecimenSummary, TissueFixative,
     },
     suspension::{
-        SuspensionContent, SuspensionCreation, SuspensionCreationInner, SuspensionFields,
-        SuspensionQuery, SuspensionSummary,
+        SuspensionContent, SuspensionCreation, SuspensionFields, SuspensionQuery, SuspensionSummary,
     },
     suspension_pool::{
         SuspensionPool, SuspensionPoolCreation, SuspensionPoolFields, SuspensionPoolQuery,
+        SuspensionTagging,
     },
+    tenx_assay::{LibraryType, SampleMultiplexing, TenxAssayFilter, TenxAssayQuery},
 };
 use strum::VariantArray;
 use tokio::{sync::OnceCell, task::JoinSet};
@@ -58,7 +67,7 @@ pub async fn root_db_conn() -> Connection {
 }
 
 pub struct TestState {
-    inner: AppState,
+    _inner: AppState,
     root_db_pool: Pool,
 }
 
@@ -68,7 +77,7 @@ impl TestState {
             .expect("test configuration should be readable from environment variables");
 
         Self {
-            inner: AppState::initialize(&config)
+            _inner: AppState::initialize(&config)
                 .await
                 .expect("should be able to initialize app state"),
             root_db_pool: create_test_db_pool(&config.db_root_url()).unwrap(),
@@ -82,6 +91,10 @@ impl TestState {
         self.insert_specimens().await;
         self.insert_suspensions().await;
         self.insert_suspension_pools().await;
+        self.insert_singleplex_chromium_runs().await;
+        self.insert_ocm_chromium_runs().await;
+        self.insert_pool_multiplex_chromium_runs().await;
+        self.insert_cdna().await;
     }
 
     async fn insert_institutions(&'static self) {
@@ -97,10 +110,7 @@ impl TestState {
 
         db_conn
             .interact(|db_conn| {
-                InstitutionCreation::builder()
-                    .id(Uuid::now_v7())
-                    .name(random_non_empty_string())
-                    .build()
+                InstitutionCreation::new(Uuid::now_v7(), random_non_empty_string())
                     .execute(db_conn)
                     .unwrap()
             })
@@ -113,9 +123,12 @@ impl TestState {
             .all_extract::<InstitutionQuery, _, _, _>(Institution::id)
             .await;
 
-        let join_set: JoinSet<_> = (0..N_PEOPLE)
-            .map(|_| self.insert_random_person(institution_ids.choose_unwrap()))
-            .collect();
+        let mut join_set = JoinSet::new();
+        for inst in institution_ids {
+            for _ in 0..N_PEOPLE_PER_INSTITUTION {
+                join_set.spawn(self.insert_random_person(inst));
+            }
+        }
 
         join_set.join_all().await;
     }
@@ -129,9 +142,13 @@ impl TestState {
                 let email = format!("{name}@example.com");
 
                 PersonCreation::builder()
-                    .name(NonEmptyString::new(name).unwrap())
+                    .inner(
+                        PersonFields::builder()
+                            .name(NonEmptyString::new(name).unwrap())
+                            .institution_id(institution_id)
+                            .build(),
+                    )
                     .email(NonEmptyString::new(email).unwrap())
-                    .institution_id(institution_id)
                     .roles([])
                     .build()
                     .execute(db_conn)
@@ -142,12 +159,10 @@ impl TestState {
     }
 
     async fn insert_labs(&'static self) {
-        let people_ids = self
-            .all_extract::<PersonQuery, _, _, _>(PersonSummary::id)
-            .await;
+        let people_ids = self.all_people_ids().await;
 
         let join_set: JoinSet<_> = (0..N_LABS)
-            .map(|_| self.insert_random_lab(people_ids.choose_unwrap()))
+            .map(|i| self.insert_random_lab(people_ids[i]))
             .collect();
 
         join_set.join_all().await;
@@ -158,12 +173,14 @@ impl TestState {
 
         db_conn
             .interact(move |db_conn| {
-                let name = random_non_empty_string();
-
                 LabCreation::builder()
-                    .name(name.clone())
-                    .delivery_dir(name)
-                    .pi_id(pi_id)
+                    .inner(
+                        LabFields::builder()
+                            .name(random_non_empty_string())
+                            .delivery_dir(random_non_empty_string())
+                            .pi_id(pi_id)
+                            .build(),
+                    )
                     .build()
                     .execute(db_conn)
                     .unwrap();
@@ -173,16 +190,17 @@ impl TestState {
     }
 
     async fn insert_specimens(&'static self) {
-        let people_ids = self
-            .all_extract::<PersonQuery, _, _, _>(PersonSummary::id)
-            .await;
+        let people_ids = self.all_people_ids().await;
         let lab_ids = self.all_extract::<LabQuery, _, _, _>(LabSummary::id).await;
 
-        let join_set: JoinSet<_> = (0..N_SPECIMENS)
-            .map(|i| {
-                self.insert_random_specimen(i, people_ids.choose_unwrap(), lab_ids.choose_unwrap())
-            })
-            .collect();
+        let mut join_set = JoinSet::new();
+        let mut counter = 0;
+        for person_id in people_ids {
+            for j in 0..N_SPECIMENS_PER_PERSON {
+                counter += 1;
+                join_set.spawn(self.insert_random_specimen(counter, *person_id, lab_ids[j]));
+            }
+        }
 
         join_set.join_all().await;
     }
@@ -253,35 +271,29 @@ impl TestState {
     }
 
     async fn insert_suspensions(&'static self) {
-        let specimen_ids = self
-            .all_extract::<SpecimenQuery, _, _, _>(SpecimenSummary::id)
-            .await;
-        let people_ids = self
-            .all_extract::<PersonQuery, _, _, _>(PersonSummary::id)
+        let specimens = self
+            .all_extract::<SpecimenQuery, _, _, _>(|s| (s.id(), s.submitted_by()))
             .await;
 
-        let join_set: JoinSet<_> = (0..N_SUSPENSIONS)
-            .map(|_| {
-                self.insert_random_suspension(
-                    specimen_ids.choose_unwrap(),
-                    NonEmptyVec::new(vec![people_ids.choose_unwrap()]).unwrap(),
-                )
-            })
+        let join_set: JoinSet<_> = specimens
+            .into_iter()
+            .map(|(id, submitter)| self.insert_random_suspension(id, submitter))
             .collect();
 
         join_set.join_all().await;
     }
 
-    async fn insert_random_suspension(&self, specimen_id: Uuid, preparer_ids: NonEmptyVec<Uuid>) {
-        let new_suspension = SuspensionCreation(SuspensionCreationInner {
-            inner: SuspensionFields::builder()
-                .readable_id(random_non_empty_string())
-                .parent_specimen_id(specimen_id)
-                .target_cell_recovery(PositiveU32::new(10_000).unwrap())
-                .build(),
-            preparer_ids,
-            tag_ids: None,
-        });
+    async fn insert_random_suspension(&self, specimen_id: Uuid, preparer_id: Uuid) {
+        let new_suspension = SuspensionCreation::builder()
+            .inner(
+                SuspensionFields::builder()
+                    .readable_id(random_non_empty_string())
+                    .parent_specimen_id(specimen_id)
+                    .build(),
+            )
+            .target_cell_recovery(RangedU32::new(10_000).unwrap())
+            .preparer_ids(preparer_id)
+            .build();
         let new_suspension = (new_suspension, SuspensionContent::VARIANTS.choose_unwrap());
 
         let db_conn = self.root_db_conn().await;
@@ -293,49 +305,36 @@ impl TestState {
     }
 
     async fn insert_suspension_pools(&'static self) {
-        let specimen_ids = self
-            .all_extract::<SpecimenQuery, _, _, _>(SpecimenSummary::id)
-            .await;
-        let people_ids = self
-            .all_extract::<PersonQuery, _, _, _>(PersonSummary::id)
+        let suspension_ids = self
+            .all_extract::<SuspensionQuery, _, _, _>(SuspensionSummary::id)
             .await;
         let multiplexing_tags = self.all_extract::<(), _, _, _>(MultiplexingTag::id).await;
+        let people_ids = self.all_people_ids().await;
 
-        let join_set: JoinSet<_> = (0..N_SUSPENSION_POOLS)
-            .map(|_| {
-                self.insert_random_suspension_pool(
-                    specimen_ids.choose_unwrap(),
-                    people_ids.choose_unwrap(),
-                    [
-                        multiplexing_tags.choose_unwrap(),
-                        multiplexing_tags.choose_unwrap(),
-                    ],
-                )
-            })
-            .collect();
+        let mut join_set = JoinSet::new();
+        for i in 0..N_SUSPENSION_POOLS {
+            let mut suspension_tags = Vec::with_capacity(N_SUSPENSIONS_PER_POOL);
+            for j in 0..N_SUSPENSIONS_PER_POOL {
+                let suspension_tag = SuspensionTagging::builder()
+                    .suspension_id(suspension_ids[i + j])
+                    .tag_id(multiplexing_tags[i + j])
+                    .build();
+
+                suspension_tags.push(suspension_tag);
+            }
+            join_set.spawn(
+                self.insert_random_suspension_pool(suspension_tags, people_ids.choose_unwrap()),
+            );
+        }
 
         join_set.join_all().await;
     }
 
     async fn insert_random_suspension_pool(
         &self,
-        specimen_id: Uuid,
+        suspensions: Vec<SuspensionTagging>,
         preparer_id: Uuid,
-        multiplexing_tag_ids: [Uuid; N_SUSPENSIONS_PER_POOL],
     ) {
-        let new_suspensions: Vec<_> = multiplexing_tag_ids
-            .into_iter()
-            .map(|tag| SuspensionCreationInner {
-                inner: SuspensionFields::builder()
-                    .readable_id(random_non_empty_string())
-                    .parent_specimen_id(specimen_id)
-                    .target_cell_recovery(PositiveU32::new(10_000).unwrap())
-                    .build(),
-                preparer_ids: preparer_id.into(),
-                tag_ids: tag.into(),
-            })
-            .collect();
-
         let suspension_pool = SuspensionPoolCreation {
             inner: SuspensionPoolFields::builder()
                 .name(random_non_empty_string())
@@ -343,15 +342,278 @@ impl TestState {
                 .pooled_at(random_time())
                 .build(),
             preparer_ids: preparer_id.into(),
-            suspensions: NonEmptyVec::new(new_suspensions).unwrap(),
+            suspensions: NonEmptyVec::new(suspensions).unwrap(),
         };
 
-        let suspension_pool = (suspension_pool, SuspensionContent::VARIANTS.choose_unwrap());
+        let db_conn = self.root_db_conn().await;
+        db_conn
+            .interact(|db_conn| suspension_pool.execute(db_conn).unwrap())
+            .await
+            .unwrap();
+    }
+
+    async fn insert_singleplex_chromium_runs(&'static self) {
+        let suspension_ids = self
+            .all_extract::<SuspensionQuery, _, _, _>(SuspensionSummary::id)
+            .await;
+        let people_ids = self.all_people_ids().await;
+        let three_prime_gex_query = TenxAssayQuery::builder()
+            .filter(
+                TenxAssayFilter::builder()
+                    .names(["Universal 3' Gene Expression".to_owned()])
+                    .sample_multiplexing([SampleMultiplexing::Singleplex])
+                    .chemistry_versions(["v4 - GEM-X".to_owned()])
+                    .library_types([vec![LibraryType::GeneExpression]])
+                    .build(),
+            )
+            .build();
+
+        let db_conn = self.root_db_conn().await;
+
+        let three_prime_gex_assay_id = db_conn
+            .interact(|db_conn| three_prime_gex_query.execute(db_conn).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(three_prime_gex_assay_id.len(), 1);
+        let three_prime_gex_assay_id = three_prime_gex_assay_id[0].id();
+
+        let mut join_set = JoinSet::new();
+        for i in 0..N_SINGLEPLEX_CHROMIUM_RUNS {
+            let this_run_suspensions = suspension_ids[i..i + MAX_GEM_POOLS_PER_NON_OCM_RUN]
+                .iter()
+                .copied()
+                .collect();
+
+            join_set.spawn(self.insert_random_singleplex_chromium_run(
+                three_prime_gex_assay_id,
+                people_ids.choose_unwrap(),
+                this_run_suspensions,
+            ));
+        }
+
+        join_set.join_all().await;
+    }
+
+    async fn insert_random_singleplex_chromium_run(
+        &self,
+        assay_id: Uuid,
+        run_by: Uuid,
+        suspension_ids: Vec<Uuid>,
+    ) {
+        let chromium_run = ChromiumRunCreation::Singleplex {
+            inner: random_chromium_run_fields(assay_id, run_by),
+            gem_pools: NonEmptyVec::new(
+                suspension_ids
+                    .into_iter()
+                    .map(|suspension_id| SingleplexGemPool {
+                        inner: random_gem_pool_fields(),
+                        loading: SingleplexChipLoading::builder()
+                            .inner(random_chip_loading_fields())
+                            .suspension_id(suspension_id)
+                            .build(),
+                    })
+                    .collect(),
+            )
+            .unwrap(),
+        };
+
+        let db_conn = self.root_db_conn().await;
+        db_conn
+            .interact(|db_conn| chromium_run.execute(db_conn).unwrap())
+            .await
+            .unwrap();
+    }
+
+    async fn insert_ocm_chromium_runs(&'static self) {
+        let suspension_ids = self
+            .all_extract::<SuspensionQuery, _, _, _>(SuspensionSummary::id)
+            .await;
+        let people_ids = self.all_people_ids().await;
+        let ocm_gex_query = TenxAssayQuery::builder()
+            .filter(
+                TenxAssayFilter::builder()
+                    .names(["Universal 3' Gene Expression".to_owned()])
+                    .sample_multiplexing([SampleMultiplexing::OnChipMultiplexing])
+                    .chemistry_versions(["v4 - GEM-X".to_owned()])
+                    .library_types([vec![LibraryType::GeneExpression]])
+                    .build(),
+            )
+            .build();
+
+        let db_conn = self.root_db_conn().await;
+
+        let ocm_assay_id = db_conn
+            .interact(|db_conn| ocm_gex_query.execute(db_conn).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(ocm_assay_id.len(), 1);
+        let ocm_assay_id = ocm_assay_id[0].id();
+
+        let mut join_set = JoinSet::new();
+        for i in N_SINGLEPLEX_CHROMIUM_RUNS..N_SINGLEPLEX_CHROMIUM_RUNS + N_OCM_CHROMIUM_RUNS {
+            let this_run_suspensions = (0..MAX_GEM_POOLS_PER_OCM_RUN)
+                .map(|j| {
+                    suspension_ids[i + j..i + j + MAX_SUSPENSIONS_PER_OCM_GEM_POOL]
+                        .iter()
+                        .copied()
+                        .collect()
+                })
+                .collect();
+
+            join_set.spawn(self.insert_random_ocm_chromium_run(
+                ocm_assay_id,
+                people_ids.choose_unwrap(),
+                this_run_suspensions,
+            ));
+        }
+
+        join_set.join_all().await;
+    }
+
+    async fn insert_random_ocm_chromium_run(
+        &self,
+        assay_id: Uuid,
+        run_by: Uuid,
+        suspension_ids: Vec<Vec<Uuid>>,
+    ) {
+        let mut gem_pools = Vec::with_capacity(MAX_GEM_POOLS_PER_OCM_RUN);
+        for suspension_id_group in suspension_ids {
+            let loadings = suspension_id_group
+                .into_iter()
+                .enumerate()
+                .map(|(j, id)| {
+                    OcmChipLoading::builder()
+                        .inner(random_chip_loading_fields())
+                        .suspension_id(id)
+                        .ocm_barcode_id(OcmBarcodeId::VARIANTS[j])
+                        .build()
+                })
+                .collect();
+
+            gem_pools.push(OcmGemPool {
+                inner: random_gem_pool_fields(),
+                loading: NonEmptyVec::new(loadings).unwrap(),
+            });
+        }
+
+        let chromium_run = ChromiumRunCreation::OnChipMultiplexing {
+            inner: random_chromium_run_fields(assay_id, run_by),
+            gem_pools: NonEmptyVec::new(gem_pools).unwrap(),
+        };
+
+        let db_conn = self.root_db_conn().await;
+        db_conn
+            .interact(|db_conn| chromium_run.execute(db_conn).unwrap())
+            .await
+            .unwrap();
+    }
+
+    async fn insert_pool_multiplex_chromium_runs(&'static self) {
+        let suspension_pool_ids = self
+            .all_extract::<SuspensionPoolQuery, _, _, _>(SuspensionPool::id)
+            .await;
+        let people_ids = self.all_people_ids().await;
+        let flex_query = TenxAssayQuery::builder()
+            .filter(
+                TenxAssayFilter::builder()
+                    .names(["Flex Gene Expression".to_owned()])
+                    .sample_multiplexing([SampleMultiplexing::FlexBarcode])
+                    .chemistry_versions(["v1 - GEM-X".to_owned()])
+                    .library_types([vec![LibraryType::GeneExpression]])
+                    .build(),
+            )
+            .build();
+
+        let db_conn = self.root_db_conn().await;
+
+        let flex_assay_id = db_conn
+            .interact(|db_conn| flex_query.execute(db_conn).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(flex_assay_id.len(), 1);
+        let flex_assay_id = flex_assay_id[0].id();
+
+        let mut join_set = JoinSet::new();
+        for i in 0..N_POOL_MULTIPLEX_CHROMIUM_RUNS {
+            let this_run_suspension_pool_ids = suspension_pool_ids
+                [i..i + MAX_GEM_POOLS_PER_NON_OCM_RUN]
+                .iter()
+                .copied()
+                .collect();
+
+            join_set.spawn(self.insert_random_pool_multiplex_chromium_run(
+                flex_assay_id,
+                people_ids.choose_unwrap(),
+                this_run_suspension_pool_ids,
+            ));
+        }
+
+        join_set.join_all().await;
+    }
+
+    async fn insert_random_pool_multiplex_chromium_run(
+        &self,
+        assay_id: Uuid,
+        run_by: Uuid,
+        suspension_pool_ids: Vec<Uuid>,
+    ) {
+        let chromium_run = ChromiumRunCreation::PoolMultiplex {
+            inner: random_chromium_run_fields(assay_id, run_by),
+            gem_pools: NonEmptyVec::new(
+                suspension_pool_ids
+                    .into_iter()
+                    .map(|pool_id| PoolMultiplexGemPool {
+                        inner: random_gem_pool_fields(),
+                        loading: PoolMultiplexChipLoading::builder()
+                            .inner(random_chip_loading_fields())
+                            .suspension_pool_id(pool_id)
+                            .build(),
+                    })
+                    .collect(),
+            )
+            .unwrap(),
+        };
+
+        let db_conn = self.root_db_conn().await;
+        db_conn
+            .interact(|db_conn| chromium_run.execute(db_conn).unwrap())
+            .await
+            .unwrap();
+    }
+
+    async fn insert_cdna(&'static self) {
+        let gem_pool_ids = self
+            .all_extract::<GemPoolQuery, _, _, _>(GemPoolSummary::id)
+            .await;
+        let people_ids = self.all_people_ids().await;
+
+        let join_set: JoinSet<_> = gem_pool_ids
+            .into_iter()
+            .map(|id| self.insert_random_cdna(id, people_ids.choose_unwrap()))
+            .collect();
+
+        join_set.join_all().await;
+    }
+
+    async fn insert_random_cdna(&self, gem_pool_id: Uuid, preparer_id: Uuid) {
+        let cdna = CdnaCreation::builder()
+            .inner(
+                CdnaFields::builder()
+                    .gem_pool_id(gem_pool_id)
+                    .library_type(LibraryType::GeneExpression)
+                    .readable_id(random_non_empty_string())
+                    .build(),
+            )
+            .n_amplification_cycles(random_u8())
+            .prepared_at(random_time())
+            .preparer_ids(preparer_id)
+            .volume_µl(random_u8())
+            .build();
 
         let db_conn = self.root_db_conn().await;
 
         db_conn
-            .interact(|db_conn| suspension_pool.execute(db_conn).unwrap())
+            .interact(|db_conn| cdna.execute(db_conn).unwrap())
             .await
             .unwrap();
     }
@@ -380,6 +642,12 @@ impl TestState {
         F: Fn(&T) -> U,
     {
         self.all::<Q, _>().await.iter().map(f).collect()
+    }
+
+    async fn all_people_ids(&'static self) -> &'static [Uuid] {
+        PEOPLE_IDS
+            .get_or_init(|| self.all_extract::<PersonQuery, _, _, _>(PersonSummary::id))
+            .await
     }
 }
 
@@ -421,21 +689,25 @@ pub struct Database {
     pub people: Vec<PersonSummary>,
     pub labs: Vec<LabSummary>,
     pub specimens: Vec<SpecimenSummary>,
-    pub suspensions: Vec<SuspensionSummary>,
+    pub _suspensions: Vec<SuspensionSummary>,
     pub suspension_pools: Vec<SuspensionPool>,
+    pub _gem_pools: Vec<GemPoolSummary>,
+    pub _cdna: Vec<CdnaSummary>,
 }
 
 impl Database {
     async fn new(test_state: &'static TestState) -> Self {
         test_state.populate_db().await;
 
-        let (institutions, people, labs, specimens, suspensions, suspension_pools) = tokio::join!(
+        let (institutions, people, labs, specimens, suspensions, suspension_pools, gem_pools, cdna) = tokio::join!(
             test_state.all::<InstitutionQuery, _>(),
             test_state.all::<PersonQuery, _>(),
             test_state.all::<LabQuery, _>(),
             test_state.all::<SpecimenQuery, _>(),
             test_state.all::<SuspensionQuery, _>(),
-            test_state.all::<SuspensionPoolQuery, _>()
+            test_state.all::<SuspensionPoolQuery, _>(),
+            test_state.all::<GemPoolQuery, _>(),
+            test_state.all::<CdnaQuery, _>(),
         );
 
         Self {
@@ -443,8 +715,10 @@ impl Database {
             people,
             labs,
             specimens,
-            suspensions,
+            _suspensions: suspensions,
             suspension_pools,
+            _gem_pools: gem_pools,
+            _cdna: cdna,
         }
     }
 }
@@ -466,45 +740,54 @@ fn random_time() -> Timestamp {
     Timestamp::from_second(TIME.choose(&mut rng).unwrap()).unwrap()
 }
 
-const N_INSTITUTIONS: usize = 50;
-const N_PEOPLE: usize = 200;
-const N_LABS: usize = 100;
-const N_LAB_MEMBERS: usize = 5;
+fn random_u8() -> u8 {
+    let mut rng = rand::rng();
+    (u8::MIN..u8::MAX).choose(&mut rng).unwrap()
+}
 
-const N_SPECIMENS: usize = 1000;
+fn random_chromium_run_fields(assay_id: Uuid, run_by: Uuid) -> ChromiumRunFields {
+    ChromiumRunFields::builder()
+        .readable_id(random_non_empty_string())
+        .assay_id(assay_id)
+        .run_at(random_time())
+        .run_by(run_by)
+        .succeeded(true)
+        .build()
+}
 
-const N_MULTIPLEXING_TAGS: usize = 1600;
+fn random_gem_pool_fields() -> GemPoolFields {
+    GemPoolFields::builder()
+        .readable_id(random_non_empty_string())
+        .build()
+}
 
-// 25% of the specimens will be pooled
-const N_SUSPENSION_POOLS: usize = N_SPECIMENS / 4;
+fn random_chip_loading_fields() -> ChipLoadingFields {
+    ChipLoadingFields::builder()
+        .suspension_volume_loaded(Volume::new(0))
+        .buffer_volume_loaded(Volume::new(0))
+        .build()
+}
+
+const N_INSTITUTIONS: usize = 4;
+const N_PEOPLE_PER_INSTITUTION: usize = 32;
+const N_LABS: usize = N_INSTITUTIONS * 4;
+
+const N_SPECIMENS_PER_PERSON: usize = 2;
+const N_SPECIMENS: usize = N_SPECIMENS_PER_PERSON * N_PEOPLE_PER_INSTITUTION * N_INSTITUTIONS;
+
+const N_SUSPENSIONS: usize = N_SPECIMENS;
+
+const N_SUSPENSION_POOLS: usize = N_SUSPENSIONS / 4;
 pub const N_SUSPENSIONS_PER_POOL: usize = 2;
 
-// The remaining specimens will become singular suspensions
-const N_SUSPENSIONS: usize = N_SPECIMENS - (N_SUSPENSION_POOLS * N_SUSPENSIONS_PER_POOL);
+const N_SINGLEPLEX_CHROMIUM_RUNS: usize = N_SUSPENSIONS / MAX_GEM_POOLS_PER_NON_OCM_RUN;
 
-const N_TENX_ASSAYS: usize = 15;
-
-const N_GEMS_PER_NONOCM_CHROMIUM_RUN: usize = 8;
-const N_GEMS_PER_OCM_CHROMIUM_RUN: usize = 2;
-const N_SUSPENSIONS_PER_OCM_GEMS: usize = 4;
-
-// Every suspension can be used both for singleplex and OCM runs
-const N_SINGLEPLEX_CHROMIUM_RUNS: usize = N_SUSPENSIONS / N_GEMS_PER_NONOCM_CHROMIUM_RUN;
 const N_OCM_CHROMIUM_RUNS: usize =
-    N_SUSPENSIONS / (N_GEMS_PER_OCM_CHROMIUM_RUN * N_SUSPENSIONS_PER_OCM_GEMS);
+    N_SUSPENSIONS / (MAX_GEM_POOLS_PER_OCM_RUN * MAX_SUSPENSIONS_PER_OCM_GEM_POOL);
 
-// Every suspension pool can be used for a pool multiplex chromium run
-const N_POOL_MULTIPLEX_CHROMIUM_RUNS: usize = N_SUSPENSION_POOLS / N_GEMS_PER_NONOCM_CHROMIUM_RUN;
+const N_POOL_MULTIPLEX_CHROMIUM_RUNS: usize = N_SUSPENSION_POOLS / MAX_GEM_POOLS_PER_NON_OCM_RUN;
 
-const N_CDNA: usize = (N_SINGLEPLEX_CHROMIUM_RUNS * N_GEMS_PER_NONOCM_CHROMIUM_RUN)
-    + (N_OCM_CHROMIUM_RUNS * N_GEMS_PER_OCM_CHROMIUM_RUN)
-    + (N_POOL_MULTIPLEX_CHROMIUM_RUNS * N_GEMS_PER_NONOCM_CHROMIUM_RUN);
-
-const N_LIBRARIES: usize = N_CDNA;
-
-const N_SEQUENCING_RUNS: usize = 1;
-
-const N_CHROMIUM_DATASETS: usize = N_LIBRARIES;
+static PEOPLE_IDS: OnceCell<Vec<Uuid>> = OnceCell::const_new();
 
 trait ChooseUnwrap<T> {
     fn choose_unwrap(&self) -> T;

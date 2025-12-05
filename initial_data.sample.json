@@ -6349,22 +6349,6 @@
     {
       "tag_id": "C1177",
       "type_": "TotalSeq-C"
-    },
-    {
-      "tag_id": "OB1",
-      "type_": "on_chip_multiplexing"
-    },
-    {
-      "tag_id": "OB2",
-      "type_": "on_chip_multiplexing"
-    },
-    {
-      "tag_id": "OB3",
-      "type_": "on_chip_multiplexing"
-    },
-    {
-      "tag_id": "OB4",
-      "type_": "on_chip_multiplexing"
     }
   ]
 }

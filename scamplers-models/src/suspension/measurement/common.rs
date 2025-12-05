@@ -1,7 +1,7 @@
 use jiff::Timestamp;
 use macro_attributes::{insert_select, json, simple_enum};
 use macros::{impl_enum_from_sql, impl_enum_to_sql, impl_json_from_sql, impl_json_to_sql};
-use positive::PositiveF32;
+use ranged::RangedF32;
 use scamplers_schema::suspension_measurements;
 use serde::{Serialize, de::DeserializeOwned};
 use uuid::Uuid;
@@ -58,30 +58,30 @@ impl_enum_to_sql!(Nuclei);
 #[json]
 pub struct Concentration {
     counting_method: Option<CountingMethod>,
-    value: PositiveF32,
+    value: u32,
     denominator_unit: Milliliter,
 }
 
 #[json]
 pub struct Viability {
-    value: PositiveF32,
+    value: RangedF32<0, 1>,
 }
 
 impl Viability {
-    pub fn value(&self) -> f32 {
-        self.value.0
+    pub fn value(&self) -> RangedF32<0, 1> {
+        self.value
     }
 }
 
 #[json]
 pub struct Volume {
-    value: PositiveF32,
+    value: RangedF32<0, { u32::MAX }>,
     unit: Microliter,
 }
 
 #[json]
 pub struct MeanDiameter {
-    value: PositiveF32,
+    value: RangedF32<0, { u32::MAX }>,
     unit: Micrometer,
 }
 

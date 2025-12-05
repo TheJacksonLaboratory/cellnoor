@@ -19,7 +19,6 @@ use crate::utils::{EnumFromSql, EnumToSql};
 
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = specimens))]
-#[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct SpecimenCommonFields {
     pub(super) readable_id: NonEmptyString,
     pub(super) name: NonEmptyString,

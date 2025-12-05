@@ -3,10 +3,14 @@ mod creation;
 mod query;
 mod read;
 
-pub use common::{ChromiumRunFields, GemPoolFields};
-pub use creation::{ChromiumRunCreation, OcmGemPool, PoolMultiplexGemPool, SingleplexGemPool};
+pub use common::{ChipLoadingFields, ChromiumRunFields, GemPoolFields, Volume};
+pub use creation::{
+    ChromiumRunCreation, MAX_GEM_POOLS_PER_NON_OCM_RUN, MAX_GEM_POOLS_PER_OCM_RUN,
+    MAX_SUSPENSIONS_PER_OCM_GEM_POOL, OcmBarcodeId, OcmChipLoading, OcmGemPool,
+    PoolMultiplexChipLoading, PoolMultiplexGemPool, SingleplexChipLoading, SingleplexGemPool,
+};
 pub use query::{
     ChromiumRunFilter, ChromiumRunId, ChromiumRunOrderBy, ChromiumRunQuery, GemPoolFilter,
-    GemPoolOrderBy, GemsQuery,
+    GemPoolOrderBy, GemPoolQuery,
 };
 pub use read::{ChromiumRun, ChromiumRunSummary, GemPoolSummary};

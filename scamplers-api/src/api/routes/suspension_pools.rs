@@ -13,6 +13,7 @@ mod suspensions;
 
 pub(super) fn router() -> Router<AppState> {
     Router::new()
+        .typed_post(create::create_suspension_pool)
         .nest("/cells", cells::router())
         .nest("/nuclei", nuclei::router())
         .typed_get(fetch::fetch_suspension_pool)

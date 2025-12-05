@@ -7,7 +7,6 @@ use serde_json::Value;
 
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = suspension_pools))]
-#[cfg_attr(feature = "builder", derive(bon::Builder))]
 pub struct SuspensionPoolFields {
     readable_id: NonEmptyString,
     name: NonEmptyString,

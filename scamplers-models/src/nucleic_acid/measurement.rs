@@ -1,7 +1,6 @@
 use macro_attributes::json;
 use macros::{impl_json_from_sql, impl_json_to_sql};
 use non_empty::NonEmptyString;
-use positive::{PositiveF32, PositiveU32};
 
 #[cfg(feature = "app")]
 use crate::utils::JsonToSql;
@@ -13,7 +12,7 @@ use crate::{
 #[json]
 #[cfg_attr(feature = "typescript", ts(concrete(N = String)))]
 pub struct Concentration<N> {
-    value: PositiveF32,
+    value: u32,
     #[cfg_attr(feature = "typescript", ts(as = "String"))]
     numerator_unit: N,
     denominator_unit: Microliter,
@@ -21,11 +20,11 @@ pub struct Concentration<N> {
 
 #[json]
 #[serde(tag = "type")]
-pub enum MeasurementData {
+pub enum NucleicAcidMeasurementData {
     Electrophoretic {
         instrument_name: NonEmptyString,
-        mean_size_bp: Option<PositiveU32>,
-        sizing_range: (PositiveU32, PositiveU32),
+        mean_size_bp: Option<u16>,
+        sizing_range: (u16, u16),
         concentration: Concentration<Picogram>,
     },
     Fluorometric {
@@ -35,9 +34,9 @@ pub enum MeasurementData {
 }
 
 #[cfg(feature = "app")]
-impl JsonFromSql for MeasurementData {}
-impl_json_from_sql!(MeasurementData);
+impl JsonFromSql for NucleicAcidMeasurementData {}
+impl_json_from_sql!(NucleicAcidMeasurementData);
 
 #[cfg(feature = "app")]
-impl JsonToSql for MeasurementData {}
-impl_json_to_sql!(MeasurementData);
+impl JsonToSql for NucleicAcidMeasurementData {}
+impl_json_to_sql!(NucleicAcidMeasurementData);

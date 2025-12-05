@@ -19,9 +19,9 @@ pub struct ChromiumAssayCreation {
     sample_multiplexing: SampleMultiplexing,
     chromium_chip: NonEmptyString,
     #[cfg_attr(feature = "app", diesel(serialize_as = Vec<NonEmptyString>))]
-    cmdlines: NonEmptyVec<NonEmptyString>,
+    cmdlines: NonEmptyVec<NonEmptyString, { usize::MAX }>,
     #[cfg_attr(feature = "app", diesel(skip_insertion, skip_update))]
-    library_type_specifications: NonEmptyVec<LibraryTypeSpecification>,
+    library_type_specifications: NonEmptyVec<LibraryTypeSpecification, { usize::MAX }>,
 }
 
 impl ChromiumAssayCreation {

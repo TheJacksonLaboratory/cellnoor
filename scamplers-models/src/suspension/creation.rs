@@ -1,21 +1,31 @@
-use macro_attributes::base_model;
+use jiff::Timestamp;
+use macro_attributes::insert;
 use non_empty::NonEmptyVec;
+use ranged::{RangedF32, RangedU32};
+#[cfg(feature = "app")]
+use scamplers_schema::suspensions;
 use uuid::Uuid;
 
 use crate::suspension::common::SuspensionFields;
 
-#[base_model]
-#[derive(serde::Deserialize)]
-#[cfg_attr(feature = "typescript", ts(concrete(V = Option<Vec<Uuid>>)))]
-
-pub struct SuspensionCreationInner<V> {
+#[insert]
+#[cfg_attr(feature = "app", diesel(table_name = suspensions))]
+pub struct SuspensionCreation {
     #[serde(flatten)]
-    pub inner: SuspensionFields,
-    pub preparer_ids: NonEmptyVec<Uuid>,
-    #[cfg_attr(feature = "typescript", ts(as = "Option<Vec<Uuid>>"))]
-    pub tag_ids: V,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    inner: SuspensionFields,
+    #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::NullableTimestamp))]
+    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
+    created_at: Option<Timestamp>,
+    target_cell_recovery: RangedU32<0, { u32::MAX }>,
+    lysis_duration_minutes: Option<RangedF32<0, { u32::MAX }>>,
+    #[cfg_attr(feature = "app", diesel(skip_insertion))]
+    preparer_ids: NonEmptyVec<Uuid, { usize::MAX }>,
 }
 
-#[base_model]
-#[derive(serde::Deserialize)]
-pub struct SuspensionCreation(pub SuspensionCreationInner<Option<Vec<Uuid>>>);
+impl SuspensionCreation {
+    #[must_use]
+    pub fn preparer_ids(&self) -> &[Uuid] {
+        self.preparer_ids.as_ref()
+    }
+}

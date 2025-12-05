@@ -2,9 +2,9 @@
 import type { CountingMethod } from "./CountingMethod";
 import type { Micrometer } from "./Micrometer";
 import type { Milliliter } from "./Milliliter";
-import type { PositiveF32 } from "./PositiveF32";
+import type { RangedF32 } from "./RangedF32";
 import type { SuspensionContent } from "./SuspensionContent";
 import type { Viability } from "./Viability";
 import type { Volume } from "./Volume";
 
-export type SuspensionPoolMeasurementData = { "quantity": "concentration", numerator_unit: SuspensionContent, counting_method?: CountingMethod, value: PositiveF32, denominator_unit: Milliliter, } | { "quantity": "viability" } & Viability | { "quantity": "volume" } & Volume | { "quantity": "mean_diameter", object: SuspensionContent, value: PositiveF32, unit: Micrometer, };
+export type SuspensionPoolMeasurementData = { "quantity": "concentration", numerator_unit: SuspensionContent, counting_method?: CountingMethod, value: number, denominator_unit: Milliliter, } | { "quantity": "viability" } & Viability | { "quantity": "volume" } & Volume | { "quantity": "mean_diameter", object: SuspensionContent, value: RangedF32, unit: Micrometer, };

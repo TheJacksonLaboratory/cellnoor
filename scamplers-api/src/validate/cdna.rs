@@ -1,10 +1,13 @@
 use diesel::prelude::*;
-use positive::PositiveU32;
 use scamplers_models::{cdna::CdnaCreation, tenx_assay::LibraryType};
-use scamplers_schema::library_type_specifications;
+use scamplers_schema::{
+    cdna, chromium_runs, gem_pools, library_type_specifications as lib_specs, tenx_assays,
+};
 use uuid::Uuid;
 
-use crate::{db, validate::Validate};
+use crate::validate::Validate;
+
+pub mod measurement;
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
@@ -17,27 +20,29 @@ pub enum Error {
     Volume {
         assay_id: Uuid,
         library_type: LibraryType,
-        expected: PositiveU32,
-        found: PositiveU32,
+        expected: i32,
+        found: i32,
     },
 }
 
 impl Validate for CdnaCreation {
     fn validate(&self, db_conn: &mut diesel::PgConnection) -> Result<(), super::Error> {
-        use library_type_specifications as t;
+        let Some(gem_pool_id) = self.gem_pool_id() else {
+            return Ok(());
+        };
 
         let library_type = self.library_type();
-        let assay_id = self.assay_id();
-        let expected = t::table
-            .filter(t::assay_id.eq(assay_id))
-            .filter(t::library_type.eq(library_type))
-            .select(t::cdna_volume_l)
-            .first(db_conn)
-            .optional()
-            .map_err(db::Error::from)?
-            .ok_or(Error::NonExistentAssayLibraryType { assay_id })?;
+        let (assay_id, library_type, expected) = cdna_to_library_spec()
+            .filter(lib_specs::library_type.eq(library_type))
+            .filter(gem_pools::id.eq(gem_pool_id))
+            .select((
+                chromium_runs::assay_id,
+                lib_specs::library_type,
+                lib_specs::cdna_volume_l,
+            ))
+            .first(db_conn)?;
 
-        let found = self.volume_µl();
+        let found = self.volume_µl().into();
         if found != expected {
             return Err(Error::Volume {
                 assay_id,
@@ -49,4 +54,11 @@ impl Validate for CdnaCreation {
 
         Ok(())
     }
+}
+
+#[diesel::dsl::auto_type]
+pub(super) fn cdna_to_library_spec() -> _ {
+    cdna::table.inner_join(gem_pools::table.inner_join(
+        chromium_runs::table.inner_join(tenx_assays::table.inner_join(lib_specs::table)),
+    ))
 }

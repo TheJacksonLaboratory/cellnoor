@@ -1,6 +1,6 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::prelude::*;
-use scamplers_models::chromium_run::{GemPoolFilter, GemPoolSummary, GemsQuery};
+use scamplers_models::chromium_run::{GemPoolFilter, GemPoolQuery, GemPoolSummary};
 use scamplers_schema::gem_pools;
 use serde_qs::axum::QsQuery;
 
@@ -17,13 +17,13 @@ pub(super) async fn list_gems(
     _: Root,
     state: State<AppState>,
     user: AuthenticatedUser,
-    QsQuery(request): QsQuery<GemsQuery>,
+    QsQuery(request): QsQuery<GemPoolQuery>,
 ) -> ApiResponse<Vec<GemPoolSummary>> {
     let items = inner_handler(state, user, request).await?;
     Ok((StatusCode::OK, items))
 }
 
-impl db::Operation<Vec<GemPoolSummary>> for GemsQuery {
+impl db::Operation<Vec<GemPoolSummary>> for GemPoolQuery {
     fn execute(self, db_conn: &mut PgConnection) -> Result<Vec<GemPoolSummary>, db::Error> {
         let Self {
             filter,
@@ -52,7 +52,7 @@ where
 {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
         let Self { ids } = self;
-        let mut filter = BoxedFilter::new();
+        let mut filter = BoxedFilter::new_true();
 
         if let Some(ids) = ids {
             filter = filter.and_condition(gem_pools::id.eq_any(ids));

@@ -2,7 +2,6 @@
 import type { GemPoolSummary } from "./GemPoolSummary";
 import type { LibraryType } from "./LibraryType";
 import type { NonEmptyString } from "./NonEmptyString";
-import type { PositiveU32 } from "./PositiveU32";
 import type { JsonValue } from "./serde_json/JsonValue";
 
-export type Cdna = { gem_pool: GemPoolSummary, id: string, prepared_at: string, library_type: LibraryType, readable_id: NonEmptyString, assay_id: string, gem_pool_id?: string, n_amplification_cycles: PositiveU32, additional_data?: JsonValue, };
+export type Cdna = { gem_pool: GemPoolSummary, id: string, prepared_at: string, n_amplification_cycles: number, library_type: LibraryType, readable_id: NonEmptyString, gem_pool_id?: string, additional_data?: JsonValue, };

@@ -4,7 +4,7 @@ use macro_attributes::insert_select;
 use scamplers_schema::cdna_measurements;
 use uuid::Uuid;
 
-use crate::nucleic_acid::measurement::MeasurementData;
+use crate::nucleic_acid::measurement::NucleicAcidMeasurementData;
 
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = cdna_measurements))]
@@ -15,5 +15,11 @@ pub struct CdnaMeasurementFields {
     #[cfg_attr(feature = "typescript", ts(as = "String"))]
     measured_at: Timestamp,
     #[serde(flatten)]
-    data: MeasurementData,
+    data: NucleicAcidMeasurementData,
+}
+
+impl CdnaMeasurementFields {
+    pub fn data(&self) -> &NucleicAcidMeasurementData {
+        &self.data
+    }
 }

@@ -1,9 +1,10 @@
 [package]
 edition.workspace = true
-name = "positive"
+name = "ranged"
 version = "0.1.0"
 
 [dependencies]
+deranged.workspace = true
 diesel = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 ts-rs = { workspace = true, optional = true }
@@ -14,5 +15,5 @@ workspace = true
 
 [features]
 diesel = ["dep:diesel"]
-serde = ["dep:serde"]
+serde = ["dep:serde", "deranged/serde"]
 typescript = ["dep:ts-rs"]

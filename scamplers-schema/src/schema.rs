@@ -21,7 +21,6 @@ diesel::table! {
         links -> Jsonb,
         library_type -> Text,
         prepared_at -> Timestamptz,
-        assay_id -> Uuid,
         gem_pool_id -> Nullable<Uuid>,
         n_amplification_cycles -> Int4,
         additional_data -> Nullable<Jsonb>,
@@ -50,6 +49,7 @@ diesel::table! {
         id -> Uuid,
         gem_pool_id -> Uuid,
         suspension_id -> Nullable<Uuid>,
+        ocm_barcode_id -> Nullable<Text>,
         suspension_pool_id -> Nullable<Uuid>,
         suspension_volume_loaded -> Jsonb,
         buffer_volume_loaded -> Jsonb,
@@ -166,7 +166,7 @@ diesel::table! {
         single_index_set_name -> Nullable<Text>,
         dual_index_set_name -> Nullable<Text>,
         number_of_sample_index_pcr_cycles -> Int4,
-        target_reads_per_cell -> Int4,
+        target_reads_per_cell -> Int8,
         prepared_at -> Timestamptz,
         additional_data -> Nullable<Jsonb>,
     }
@@ -350,7 +350,7 @@ diesel::table! {
         content -> Text,
         created_at -> Nullable<Timestamptz>,
         lysis_duration_minutes -> Nullable<Float4>,
-        target_cell_recovery -> Int4,
+        target_cell_recovery -> Int8,
         additional_data -> Nullable<Jsonb>,
     }
 }
@@ -374,7 +374,6 @@ diesel::table! {
 
 diesel::joinable!(api_keys -> people (user_id));
 diesel::joinable!(cdna -> gem_pools (gem_pool_id));
-diesel::joinable!(cdna -> tenx_assays (assay_id));
 diesel::joinable!(cdna_measurements -> cdna (cdna_id));
 diesel::joinable!(cdna_measurements -> people (measured_by));
 diesel::joinable!(cdna_preparers -> cdna (cdna_id));

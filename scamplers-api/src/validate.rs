@@ -8,6 +8,8 @@ mod common;
 mod initial_data;
 mod institution;
 mod lab;
+mod library;
+mod nucleic_acid_measurement;
 mod person;
 mod specimen;
 mod suspension;
@@ -24,11 +26,17 @@ pub enum Error {
     CreatePerson(#[from] person::Error),
     CreateLab(#[from] lab::Error),
     CreateSpecimen(#[from] specimen::Error),
-    CreateSpecimenMeasurement(#[from] specimen::measurement::Error),
-    CreateSuspensionMeasurement(#[from] suspension::measurement::Error),
-    CreateSuspensionPoolMeasurement(#[from] suspension_pool::measurement::Error),
+    CreateSuspensionPool(#[from] suspension_pool::Error),
     CreateCdna(#[from] cdna::Error),
+    CreateLibrary(#[from] library::Error),
+    CreateNucleicAcidMeasurement(#[from] nucleic_acid_measurement::Error),
     Other(#[from] db::Error),
+}
+
+impl From<diesel::result::Error> for Error {
+    fn from(error: diesel::result::Error) -> Self {
+        Self::Other(db::Error::from(error))
+    }
 }
 
 pub trait Validate {

@@ -1,12 +1,29 @@
-use macro_attributes::{base_model, insert};
+use macro_attributes::{base_model, insert, simple_enum};
+use macros::impl_enum_to_sql;
 use non_empty::NonEmptyVec;
 #[cfg(feature = "app")]
 use scamplers_schema::chip_loadings;
 use uuid::Uuid;
 
-use crate::chromium_run::common::{ChipLoadingFields, GemPoolFields};
+use crate::{
+    chromium_run::common::{ChipLoadingFields, GemPoolFields},
+    utils::EnumToSql,
+};
 
-const MAX_SUSPENSIONS_IN_OCM_GEMS: usize = 4;
+pub const MAX_SUSPENSIONS_PER_OCM_GEM_POOL: usize = 4;
+
+#[simple_enum]
+#[derive(strum::VariantArray)]
+pub enum OcmBarcodeId {
+    Ob1,
+    Ob2,
+    Ob3,
+    Ob4,
+}
+
+#[cfg(feature = "app")]
+impl EnumToSql for OcmBarcodeId {}
+impl_enum_to_sql!(OcmBarcodeId);
 
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = chip_loadings))]
@@ -15,6 +32,7 @@ pub struct OcmChipLoading {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: ChipLoadingFields,
+    ocm_barcode_id: OcmBarcodeId,
 }
 
 #[base_model]
@@ -22,5 +40,5 @@ pub struct OcmChipLoading {
 pub struct OcmGemPool {
     #[serde(flatten)]
     pub inner: GemPoolFields,
-    pub loading: NonEmptyVec<OcmChipLoading, MAX_SUSPENSIONS_IN_OCM_GEMS>,
+    pub loading: NonEmptyVec<OcmChipLoading, MAX_SUSPENSIONS_PER_OCM_GEM_POOL>,
 }

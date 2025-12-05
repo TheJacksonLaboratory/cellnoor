@@ -71,7 +71,7 @@ where
     AssumeNotNull<t::additional_data>: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> db::BoxedFilter<'a, QS> {
-        let mut filter = BoxedFilter::new();
+        let mut filter = BoxedFilter::new_true();
 
         let Self {
             ids,

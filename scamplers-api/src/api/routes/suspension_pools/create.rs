@@ -1,67 +1,53 @@
+use axum::extract::State;
 use diesel::prelude::*;
-use scamplers_models::{
-    suspension::{SuspensionContent, SuspensionCreationInner},
-    suspension_pool::{
-        SuspensionPool, SuspensionPoolCreation, SuspensionPoolFields, SuspensionPoolId,
-    },
+use reqwest::StatusCode;
+use scamplers_models::suspension_pool::{
+    SuspensionPool, SuspensionPoolCreation, SuspensionPoolId, SuspensionTagging,
 };
-use scamplers_schema::{suspension_pool_preparers, suspension_pools};
+use scamplers_schema::{suspension_pool_preparers, suspension_pools, suspension_tagging};
 use uuid::Uuid;
 
 use crate::{
-    api::routes::suspensions::{
-        insert_suspension, insert_suspension_preparers, insert_suspension_tags,
+    api::{
+        extract::{ValidJson, auth::AuthenticatedUser},
+        routes::{ApiResponse, Root, inner_handler},
     },
     db,
+    state::AppState,
 };
 
-impl db::Operation<SuspensionPool> for (SuspensionPoolCreation, SuspensionContent) {
-    fn execute(self, db_conn: &mut PgConnection) -> Result<SuspensionPool, db::Error> {
-        let (
-            SuspensionPoolCreation {
-                inner,
-                preparer_ids,
-                suspensions,
-            },
-            content,
-        ) = self;
+pub(super) async fn create_suspension_pool(
+    _: Root,
+    state: State<AppState>,
+    user: AuthenticatedUser,
+    ValidJson(request): ValidJson<SuspensionPoolCreation>,
+) -> ApiResponse<SuspensionPool> {
+    let item = inner_handler(state, user, request).await?;
+    Ok((StatusCode::CREATED, item))
+}
 
-        let suspension_pool = insert_suspension_pool(inner, db_conn)?;
+impl db::Operation<SuspensionPool> for SuspensionPoolCreation {
+    fn execute(self, db_conn: &mut PgConnection) -> Result<SuspensionPool, db::Error> {
+        let SuspensionPoolCreation {
+            inner,
+            preparer_ids,
+            suspensions,
+        } = self;
+
+        let suspension_pool: SuspensionPool = diesel::insert_into(suspension_pools::table)
+            .values(inner)
+            .returning(SuspensionPool::as_returning())
+            .get_result(db_conn)?;
         let suspension_pool_id = suspension_pool.id().into();
 
         insert_suspension_pool_preparers(suspension_pool_id, preparer_ids.as_ref(), db_conn)?;
-
-        for SuspensionCreationInner {
-            inner,
-            preparer_ids,
-            tag_ids,
-        } in suspensions
-        {
-            let suspension_id = insert_suspension(inner, content, db_conn)?;
-            insert_suspension_preparers(suspension_id, preparer_ids.as_ref(), db_conn)?;
-            insert_suspension_tags(
-                suspension_id,
-                Some(suspension_pool_id),
-                tag_ids.as_ref(),
-                db_conn,
-            )?;
-        }
+        insert_suspension_tags(suspension_pool_id, suspensions.as_ref(), db_conn)?;
 
         Ok(suspension_pool)
     }
 }
 
-pub(super) fn insert_suspension_pool(
-    fields: SuspensionPoolFields,
-    db_conn: &mut PgConnection,
-) -> Result<SuspensionPool, db::Error> {
-    Ok(diesel::insert_into(suspension_pools::table)
-        .values(fields)
-        .returning(SuspensionPool::as_returning())
-        .get_result(db_conn)?)
-}
-
-pub(super) fn insert_suspension_pool_preparers(
+fn insert_suspension_pool_preparers(
     pool_id: SuspensionPoolId,
     preparer_ids: &[Uuid],
     db_conn: &mut PgConnection,
@@ -78,6 +64,23 @@ pub(super) fn insert_suspension_pool_preparers(
 
     diesel::insert_into(suspension_pool_preparers::table)
         .values(preparer_mappings)
+        .execute(db_conn)?;
+
+    Ok(())
+}
+
+fn insert_suspension_tags(
+    pool_id: SuspensionPoolId,
+    taggings: &[SuspensionTagging],
+    db_conn: &mut PgConnection,
+) -> Result<(), db::Error> {
+    let tag_mappings: Vec<_> = taggings
+        .iter()
+        .map(|t| (suspension_tagging::pool_id.eq(pool_id), t))
+        .collect();
+
+    diesel::insert_into(suspension_tagging::table)
+        .values(tag_mappings)
         .execute(db_conn)?;
 
     Ok(())
