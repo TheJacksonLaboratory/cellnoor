@@ -30,12 +30,12 @@ impl SuspensionCreation {
     }
 
     #[must_use]
-    pub fn created_at(&self) -> Option<Timestamp> {
-        self.created_at
+    pub fn parent_specimen_id(&self) -> Uuid {
+        self.inner.parent_specimen_id
     }
 
     #[must_use]
-    pub fn specimen_id(&self) -> Uuid {
-        self.inner.parent_specimen_id
+    pub fn created_at(&self) -> Option<Timestamp> {
+        self.created_at
     }
 }

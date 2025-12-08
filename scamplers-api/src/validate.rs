@@ -32,12 +32,12 @@ pub enum Error {
     CreateLibrary(#[from] library::Error),
     CreateNucleicAcidMeasurement(#[from] nucleic_acid_measurement::Error),
     Timestamp(#[from] TimestampError),
-    Other(#[from] db::Error),
+    Database(#[from] db::Error),
 }
 
 impl From<diesel::result::Error> for Error {
     fn from(error: diesel::result::Error) -> Self {
-        Self::Other(db::Error::from(error))
+        Self::Database(db::Error::from(error))
     }
 }
 

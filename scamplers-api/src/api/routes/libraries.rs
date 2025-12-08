@@ -1,5 +1,6 @@
-use axum::Router;
-use axum_extra::routing::RouterExt;
+use axum::{Router, routing::post};
+use axum_extra::routing::{RouterExt, TypedPath};
+use scamplers_models::library::LibraryIdMeasurements;
 
 use crate::state::AppState;
 
@@ -13,6 +14,9 @@ pub(super) fn router() -> Router<AppState> {
         .typed_post(create::create_library)
         .typed_get(fetch::fetch_library)
         .typed_get(list::list_libraries)
-        .typed_post(measurements::create::create_measurement)
+        .route(
+            LibraryIdMeasurements::PATH,
+            post(measurements::create::create_measurement),
+        )
         .typed_get(measurements::list::list_measurements)
 }

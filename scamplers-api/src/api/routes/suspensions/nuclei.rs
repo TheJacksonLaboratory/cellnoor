@@ -1,5 +1,6 @@
-use axum::Router;
-use axum_extra::routing::RouterExt;
+use axum::{Router, routing::post};
+use axum_extra::routing::{RouterExt, TypedPath};
+use scamplers_models::suspension::SuspensionIdMeasurements;
 
 use crate::state::AppState;
 
@@ -9,5 +10,8 @@ mod measurements;
 pub(super) fn router() -> Router<AppState> {
     Router::new()
         .typed_post(create::create_nucleus_suspension)
-        .typed_post(measurements::create_nucleus_suspension_measurement)
+        .route(
+            SuspensionIdMeasurements::PATH,
+            post(measurements::create_nucleus_suspension_measurement),
+        )
 }

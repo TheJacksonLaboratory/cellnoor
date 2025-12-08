@@ -35,6 +35,13 @@ pub struct OcmChipLoading {
     ocm_barcode_id: OcmBarcodeId,
 }
 
+impl OcmChipLoading {
+    #[must_use]
+    pub fn suspension_id(&self) -> Uuid {
+        self.suspension_id
+    }
+}
+
 #[base_model]
 #[derive(serde::Deserialize)]
 pub struct OcmGemPool {

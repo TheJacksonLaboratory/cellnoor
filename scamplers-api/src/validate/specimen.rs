@@ -1,7 +1,7 @@
 use jiff::Timestamp;
 use scamplers_models::specimen::{Species, SpecimenCreation};
 
-use crate::validate::Validate;
+use crate::validate::{Validate, common::validate_timestamps};
 
 pub(super) mod measurement;
 
@@ -28,7 +28,7 @@ impl Validate for SpecimenCreation {
         }
 
         if let Some(returned_at) = self.returned_at() {
-            // validate_timestmaps(self.received_at(), returned_at)?;
+            validate_received_before_returned(self.received_at(), returned_at)?;
         }
 
         Ok(())
@@ -41,6 +41,15 @@ fn validate_species(donor_species: Species, host_species: Species) -> Result<(),
             species: host_species,
         });
     }
+
+    Ok(())
+}
+
+fn validate_received_before_returned(
+    received_at: Timestamp,
+    returned_at: Timestamp,
+) -> Result<(), super::Error> {
+    validate_timestamps(received_at, returned_at, "returned_at")?;
 
     Ok(())
 }

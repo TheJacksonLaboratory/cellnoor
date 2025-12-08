@@ -1,7 +1,11 @@
+use diesel::PgConnection;
 use jiff::Timestamp;
-use scamplers_models::suspension::SuspensionCreation;
+use scamplers_models::{specimen::SpecimenId, suspension::SuspensionCreation};
 
-use crate::validate::Validate;
+use crate::{
+    db::Operation,
+    validate::{Validate, common::validate_timestamps},
+};
 
 pub mod measurement;
 
@@ -22,31 +26,25 @@ pub enum Error {
 impl Validate for SuspensionCreation {
     fn validate(&self, db_conn: &mut diesel::PgConnection) -> Result<(), super::Error> {
         if let Some(created_at) = self.created_at() {
-            // validate_specimen_received_before_suspension_created(
-            //     self.specimen_id(),
-            //     created_at,
-            //     db_conn,
-            // )?;
+            validate_specimen_received_before_suspension_created(
+                self.parent_specimen_id(),
+                created_at,
+                db_conn,
+            )?;
         }
 
         Ok(())
     }
 }
 
-// fn validate_specimen_received_before_suspension_created(
-//     specimen_id: impl Into<SpecimenId>,
-//     created_at: Timestamp,
-//     db_conn: &mut PgConnection,
-// ) -> Result<(), super::Error> {
-//     let specimen_received_at =
-// specimen_id.into().execute(db_conn)?.received_at();
+fn validate_specimen_received_before_suspension_created(
+    specimen_id: impl Into<SpecimenId>,
+    created_at: Timestamp,
+    db_conn: &mut PgConnection,
+) -> Result<(), super::Error> {
+    let specimen_received_at = specimen_id.into().execute(db_conn)?.received_at();
 
-//     if specimen_received_at > created_at {
-//         return Err(Error::CreatedBeforeSpecimenReceived {
-//             created_at,
-//             specimen_received_at,
-//         })?;
-//     }
+    validate_timestamps(specimen_received_at, created_at, "created_at")?;
 
-//     Ok(())
-// }
+    Ok(())
+}

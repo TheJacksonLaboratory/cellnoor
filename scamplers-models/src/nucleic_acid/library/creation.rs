@@ -32,6 +32,11 @@ impl LibraryCreation {
     }
 
     #[must_use]
+    pub fn prepared_at(&self) -> Timestamp {
+        self.prepared_at
+    }
+
+    #[must_use]
     pub fn single_index_set_name(&self) -> Option<&str> {
         self.inner
             .single_index_set_name

@@ -15,3 +15,10 @@ pub struct SuspensionPoolFields {
     pooled_at: Timestamp,
     additional_data: Option<Value>,
 }
+
+impl SuspensionPoolFields {
+    #[must_use]
+    pub fn pooled_at(&self) -> Timestamp {
+        self.pooled_at
+    }
+}

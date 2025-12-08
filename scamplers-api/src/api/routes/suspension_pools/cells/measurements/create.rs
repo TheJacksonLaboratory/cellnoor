@@ -7,7 +7,7 @@ use scamplers_models::suspension_pool::{
 
 use crate::{
     api::{
-        extract::{ValidJson, auth::AuthenticatedUser},
+        extract::{ValidPathJson, auth::AuthenticatedUser},
         routes::{ApiResponse, inner_handler},
     },
     db,
@@ -15,12 +15,14 @@ use crate::{
 };
 
 pub async fn create_cell_suspension_pool_measurement(
-    pool_id: SuspensionPoolIdMeasurements,
     state: State<AppState>,
     user: AuthenticatedUser,
-    ValidJson(request): ValidJson<CellSuspensionPoolMeasurementCreation>,
+    ValidPathJson(pool_id, measurement): ValidPathJson<
+        SuspensionPoolIdMeasurements,
+        CellSuspensionPoolMeasurementCreation,
+    >,
 ) -> ApiResponse<SuspensionPoolMeasurement> {
-    let item = inner_handler(state, user, (pool_id, request)).await?;
+    let item = inner_handler(state, user, (pool_id, measurement)).await?;
     Ok((StatusCode::CREATED, item))
 }
 
@@ -36,7 +38,7 @@ impl db::Operation<SuspensionPoolMeasurement>
     ) -> Result<SuspensionPoolMeasurement, db::Error> {
         use scamplers_schema::suspension_pool_measurements::dsl::*;
 
-        let (p_id, CellSuspensionPoolMeasurementCreation(measurement_data)) = self;
+        let (p_id, measurement_data) = self;
 
         Ok(diesel::insert_into(suspension_pool_measurements)
             .values((pool_id.eq(p_id), measurement_data))

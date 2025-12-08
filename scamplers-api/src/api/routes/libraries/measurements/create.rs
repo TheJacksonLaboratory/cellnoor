@@ -8,7 +8,7 @@ use scamplers_schema::library_measurements;
 
 use crate::{
     api::{
-        extract::{ValidJson, auth::AuthenticatedUser},
+        extract::{ValidPathJson, auth::AuthenticatedUser},
         routes::{ApiResponse, inner_handler},
     },
     db,
@@ -16,12 +16,14 @@ use crate::{
 };
 
 pub async fn create_measurement(
-    library_id: LibraryIdMeasurements,
     state: State<AppState>,
     user: AuthenticatedUser,
-    ValidJson(request): ValidJson<LibraryMeasurementCreation>,
+    ValidPathJson(library_id, measurement): ValidPathJson<
+        LibraryIdMeasurements,
+        LibraryMeasurementCreation,
+    >,
 ) -> ApiResponse<LibraryMeasurement> {
-    let item = inner_handler(state, user, (library_id, request)).await?;
+    let item = inner_handler(state, user, (library_id, measurement)).await?;
     Ok((StatusCode::CREATED, item))
 }
 

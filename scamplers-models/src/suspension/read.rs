@@ -1,5 +1,6 @@
 #[cfg(feature = "app")]
 use diesel::prelude::*;
+use jiff::Timestamp;
 use macro_attributes::select;
 #[cfg(feature = "app")]
 use scamplers_schema::{specimens, suspensions};
@@ -18,6 +19,9 @@ pub struct SuspensionSummary {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: SuspensionFields,
+    #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::NullableTimestamp))]
+    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
+    created_at: Option<Timestamp>,
     target_cell_recovery: i64,
     lysis_duration_minutes: Option<f32>,
     content: SuspensionContent,
@@ -28,6 +32,11 @@ impl SuspensionSummary {
     #[must_use]
     pub fn id(&self) -> Uuid {
         self.id
+    }
+
+    #[must_use]
+    pub fn created_at(&self) -> Option<Timestamp> {
+        self.created_at
     }
 }
 
@@ -40,9 +49,20 @@ pub struct Suspension {
     #[cfg_attr(feature = "app", diesel(embed))]
     parent_specimen: SpecimenSummary,
 }
+
 impl Suspension {
     #[must_use]
     pub fn id(&self) -> Uuid {
         self.summary.id()
+    }
+
+    #[must_use]
+    pub fn created_at(&self) -> Option<Timestamp> {
+        self.summary.created_at()
+    }
+
+    #[must_use]
+    pub fn parent_specimen_received_at(&self) -> Timestamp {
+        self.parent_specimen.received_at()
     }
 }

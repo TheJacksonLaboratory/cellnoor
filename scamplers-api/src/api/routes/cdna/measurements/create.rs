@@ -8,7 +8,7 @@ use scamplers_schema::cdna_measurements;
 
 use crate::{
     api::{
-        extract::{ValidJson, auth::AuthenticatedUser},
+        extract::{ValidPathJson, auth::AuthenticatedUser},
         routes::{ApiResponse, inner_handler},
     },
     db,
@@ -16,12 +16,11 @@ use crate::{
 };
 
 pub async fn create_measurement(
-    specimen_id: CdnaIdMeasurements,
     state: State<AppState>,
     user: AuthenticatedUser,
-    ValidJson(request): ValidJson<CdnaMeasurementCreation>,
+    ValidPathJson(cdna_id, measurement): ValidPathJson<CdnaIdMeasurements, CdnaMeasurementCreation>,
 ) -> ApiResponse<CdnaMeasurement> {
-    let item = inner_handler(state, user, (specimen_id, request)).await?;
+    let item = inner_handler(state, user, (cdna_id, measurement)).await?;
     Ok((StatusCode::CREATED, item))
 }
 

@@ -1,11 +1,14 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::{RunQueryDsl, prelude::*};
-use scamplers_models::specimen::{SpecimenIdMeasurements, measurement::SpecimenMeasurement};
+use scamplers_models::specimen::{
+    SpecimenIdMeasurements,
+    measurement::{SpecimenMeasurement, SpecimenMeasurementCreation},
+};
 use scamplers_schema::specimen_measurements;
 
 use crate::{
     api::{
-        extract::{ValidJson, auth::AuthenticatedUser},
+        extract::{ValidPathJson, auth::AuthenticatedUser},
         routes::{ApiResponse, inner_handler},
     },
     db,
@@ -13,16 +16,18 @@ use crate::{
 };
 
 pub async fn create_measurement(
-    specimen_id: SpecimenIdMeasurements,
     state: State<AppState>,
     user: AuthenticatedUser,
-    ValidJson(request): ValidJson<SpecimenMeasurement>,
+    ValidPathJson(specimen_id, measurement): ValidPathJson<
+        SpecimenIdMeasurements,
+        SpecimenMeasurementCreation,
+    >,
 ) -> ApiResponse<SpecimenMeasurement> {
-    let item = inner_handler(state, user, (specimen_id, request)).await?;
+    let item = inner_handler(state, user, (specimen_id, measurement)).await?;
     Ok((StatusCode::CREATED, item))
 }
 
-impl db::Operation<SpecimenMeasurement> for (SpecimenIdMeasurements, SpecimenMeasurement) {
+impl db::Operation<SpecimenMeasurement> for (SpecimenIdMeasurements, SpecimenMeasurementCreation) {
     fn execute(self, db_conn: &mut PgConnection) -> Result<SpecimenMeasurement, db::Error> {
         let (specimen_id, measurement) = self;
 

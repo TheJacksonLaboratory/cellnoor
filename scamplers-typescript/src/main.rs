@@ -7,7 +7,10 @@ use scamplers_models::{
     institution::{Institution, InstitutionCreation, InstitutionFilter, InstitutionOrderBy},
     lab::{Lab, LabCreation, LabFilter, LabOrderBy},
     person::{Person, PersonCreation, PersonFilter, PersonOrderBy},
-    specimen::{Specimen, SpecimenCreation, SpecimenFilter, SpecimenOrderBy},
+    specimen::{
+        Specimen, SpecimenCreation, SpecimenFilter, SpecimenOrderBy,
+        measurement::{SpecimenMeasurement, SpecimenMeasurementCreation},
+    },
     suspension::{
         Suspension, SuspensionCreation, SuspensionFilter, SuspensionOrderBy, SuspensionSummary,
         measurement::{
@@ -84,6 +87,8 @@ fn main() {
     SpecimenCreation::export_all_to(&output_dir).unwrap();
     SpecimenQuery::export_all_to(&output_dir).unwrap();
     Specimen::export_all_to(&output_dir).unwrap();
+    SpecimenMeasurementCreation::export_all_to(&output_dir).unwrap();
+    SpecimenMeasurement::export_all_to(&output_dir).unwrap();
 
     SuspensionCreation::export_all_to(&output_dir).unwrap();
     SuspensionQuery::export_all_to(&output_dir).unwrap();

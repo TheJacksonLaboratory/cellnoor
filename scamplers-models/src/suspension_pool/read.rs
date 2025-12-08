@@ -1,3 +1,4 @@
+use jiff::Timestamp;
 use macro_attributes::select;
 #[cfg(feature = "app")]
 use scamplers_schema::suspension_pools;
@@ -18,5 +19,10 @@ impl SuspensionPool {
     #[must_use]
     pub fn id(&self) -> Uuid {
         self.id
+    }
+
+    #[must_use]
+    pub fn pooled_at(&self) -> Timestamp {
+        self.inner.pooled_at()
     }
 }

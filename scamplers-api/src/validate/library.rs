@@ -1,11 +1,12 @@
 use diesel::prelude::*;
+use jiff::Timestamp;
 use scamplers_models::{library::LibraryCreation, tenx_assay::LibraryType};
 use scamplers_schema::{chromium_runs, library_type_specifications as lib_specs};
 use uuid::Uuid;
 
 use crate::{
-    db,
-    validate::{Validate, cdna::cdna_to_library_spec},
+    db::{self},
+    validate::{Validate, cdna::cdna_to_library_spec, common::validate_timestamps},
 };
 
 pub mod measurement;
@@ -26,19 +27,29 @@ pub enum Error {
 
 impl Validate for LibraryCreation {
     fn validate(&self, db_conn: &mut diesel::PgConnection) -> Result<(), super::Error> {
-        validate_volume(self.cdna_id(), self.volume_µl(), db_conn)?;
+        let cdna_id = self.cdna_id();
+        let (cdna_prepared_at, assay_id, library_type, expected_library_volume) =
+            fetch_cdna_data(cdna_id, db_conn)?;
+
+        validate_volume(
+            assay_id,
+            library_type,
+            self.volume_µl(),
+            expected_library_volume,
+        )?;
+        validate_cdna_created_before_library(cdna_prepared_at.to_jiff(), self.prepared_at())?;
 
         Ok(())
     }
 }
 
 fn validate_volume(
-    cdna_id: Uuid,
+    assay_id: Uuid,
+    library_type: LibraryType,
     volume: impl Into<i32>,
-    db_conn: &mut diesel::PgConnection,
+    expected: i32,
 ) -> Result<(), super::Error> {
     let volume = volume.into();
-    let (assay_id, library_type, expected) = fetch_library_spec(cdna_id, db_conn)?;
 
     if volume != expected {
         Err(Error::Volume {
@@ -52,10 +63,19 @@ fn validate_volume(
     Ok(())
 }
 
-fn fetch_library_spec(
+fn validate_cdna_created_before_library(
+    cdna_prepared_at: Timestamp,
+    library_prepared_at: Timestamp,
+) -> Result<(), super::Error> {
+    validate_timestamps(cdna_prepared_at, library_prepared_at, "prepared_at")?;
+
+    Ok(())
+}
+
+fn fetch_cdna_data(
     cdna_id: Uuid,
     db_conn: &mut diesel::PgConnection,
-) -> Result<(Uuid, LibraryType, i32), db::Error> {
+) -> Result<(jiff_diesel::Timestamp, Uuid, LibraryType, i32), db::Error> {
     use scamplers_schema::{cdna, library_type_specifications as specs};
 
     Ok(cdna_to_library_spec()
@@ -63,6 +83,7 @@ fn fetch_library_spec(
         .filter(specs::assay_id.eq(chromium_runs::assay_id))
         .filter(specs::library_type.eq(cdna::library_type))
         .select((
+            cdna::prepared_at,
             chromium_runs::assay_id,
             lib_specs::library_type,
             lib_specs::library_volume_l,
@@ -85,7 +106,7 @@ mod tests {
     use crate::{
         db::Operation,
         test_state::{Database, database, root_db_conn},
-        validate::{cdna::cdna_to_library_spec, library::fetch_library_spec},
+        validate::{cdna::cdna_to_library_spec, library::fetch_cdna_data},
     };
 
     #[rstest]
@@ -123,14 +144,14 @@ mod tests {
             .unwrap()
             .unwrap();
 
-        let spec = root_db_conn
-            .interact(move |db_conn| fetch_library_spec(cdna_id, db_conn))
+        let (_, assay_id, library_type, volume) = root_db_conn
+            .interact(move |db_conn| fetch_cdna_data(cdna_id, db_conn))
             .await
             .unwrap()
             .unwrap();
 
         assert_eq!(
-            spec,
+            (assay_id, library_type, volume),
             (three_prime_gex_assay_id, LibraryType::GeneExpression, 35)
         );
     }

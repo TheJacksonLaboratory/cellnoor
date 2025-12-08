@@ -56,9 +56,9 @@ where
 
     let db_conn = state.db_conn().await?;
 
-    let response = db_conn
+    db_conn
         .interact(move |db_conn| request.execute_as_user(user.id(), db_conn))
-        .await??;
-
-    Ok(Json(response))
+        .await?
+        .map(Json)
+        .map_err(ErrorResponse::from)
 }

@@ -14,6 +14,13 @@ pub struct PoolMultiplexChipLoading {
     inner: ChipLoadingFields,
 }
 
+impl PoolMultiplexChipLoading {
+    #[must_use]
+    pub fn suspension_pool_id(&self) -> Uuid {
+        self.suspension_pool_id
+    }
+}
+
 #[base_model]
 #[derive(serde::Deserialize)]
 pub struct PoolMultiplexGemPool {

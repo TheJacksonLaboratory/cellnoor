@@ -1,22 +1,23 @@
 use diesel::PgConnection;
 use jiff::Timestamp;
-use scamplers_models::cdna::{CdnaId, measurement::CdnaMeasurementCreation};
+use scamplers_models::cdna::{CdnaId, CdnaIdMeasurements, measurement::CdnaMeasurementCreation};
 
 use crate::{
     db::Operation,
     validate::{Validate, common::validate_timestamps},
 };
 
-impl Validate for CdnaMeasurementCreation {
+impl Validate for (CdnaIdMeasurements, CdnaMeasurementCreation) {
     fn validate(&self, db_conn: &mut diesel::PgConnection) -> Result<(), crate::validate::Error> {
-        self.data().validate(db_conn)?;
-        validate_measurement_time(self.cdna_id(), self.measured_at(), db_conn)?;
+        let (CdnaIdMeasurements(cdna_id), measurement) = self;
+        measurement.data().validate(db_conn)?;
+        validate_cdna_created_before_measurement(*cdna_id, measurement.measured_at(), db_conn)?;
 
         Ok(())
     }
 }
 
-fn validate_measurement_time(
+fn validate_cdna_created_before_measurement(
     cdna_id: impl Into<CdnaId>,
     measured_at: Timestamp,
     db_conn: &mut PgConnection,

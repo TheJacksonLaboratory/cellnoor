@@ -14,11 +14,11 @@ use crate::{
 };
 
 pub async fn list_measurements(
-    specimen_id: CdnaIdMeasurements,
+    cdna_id: CdnaIdMeasurements,
     state: State<AppState>,
     user: AuthenticatedUser,
 ) -> ApiResponse<Vec<CdnaMeasurement>> {
-    let item = inner_handler(state, user, specimen_id).await?;
+    let item = inner_handler(state, user, cdna_id).await?;
     Ok((StatusCode::OK, item))
 }
 

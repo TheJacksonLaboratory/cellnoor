@@ -8,7 +8,7 @@ use scamplers_models::suspension::{
 
 use crate::{
     api::{
-        extract::{ValidJson, auth::AuthenticatedUser},
+        extract::{ValidPathJson, auth::AuthenticatedUser},
         routes::{ApiResponse, inner_handler},
     },
     db,
@@ -16,12 +16,14 @@ use crate::{
 };
 
 pub async fn create_nucleus_suspension_measurement(
-    suspension_id: SuspensionIdMeasurements,
     state: State<AppState>,
     user: AuthenticatedUser,
-    ValidJson(request): ValidJson<NucleusSuspensionMeasurementCreation>,
+    ValidPathJson(suspension_id, measurement): ValidPathJson<
+        SuspensionIdMeasurements,
+        NucleusSuspensionMeasurementCreation,
+    >,
 ) -> ApiResponse<SuspensionMeasurement> {
-    let item = inner_handler(state, user, (suspension_id, request)).await?;
+    let item = inner_handler(state, user, (suspension_id, measurement)).await?;
     Ok((StatusCode::CREATED, item))
 }
 
@@ -37,7 +39,7 @@ impl db::Operation<SuspensionMeasurement>
     ) -> Result<SuspensionMeasurement, db::Error> {
         use scamplers_schema::suspension_measurements::dsl::*;
 
-        let (susp_id, NucleusSuspensionMeasurementCreation(measurement_data)) = self;
+        let (susp_id, measurement_data) = self;
 
         Ok(diesel::insert_into(suspension_measurements)
             .values((suspension_id.eq(susp_id), measurement_data))

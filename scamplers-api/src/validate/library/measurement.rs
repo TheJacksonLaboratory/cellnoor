@@ -1,21 +1,28 @@
 use diesel::PgConnection;
 use jiff::Timestamp;
-use scamplers_models::library::{LibraryId, measurement::LibraryMeasurementCreation};
+use scamplers_models::library::{
+    LibraryId, LibraryIdMeasurements, measurement::LibraryMeasurementCreation,
+};
 
 use crate::{
     db::Operation,
     validate::{Validate, common::validate_timestamps},
 };
 
-impl Validate for LibraryMeasurementCreation {
+impl Validate for (LibraryIdMeasurements, LibraryMeasurementCreation) {
     fn validate(&self, db_conn: &mut diesel::PgConnection) -> Result<(), crate::validate::Error> {
-        self.data().validate(db_conn)?;
-        validate_measurement_time(self.library_id(), self.measured_at(), db_conn)?;
+        let (LibraryIdMeasurements(library_id), measurement) = self;
+        measurement.data().validate(db_conn)?;
+        validate_library_created_before_measurement(
+            *library_id,
+            measurement.measured_at(),
+            db_conn,
+        )?;
         Ok(())
     }
 }
 
-fn validate_measurement_time(
+fn validate_library_created_before_measurement(
     library_id: impl Into<LibraryId>,
     measured_at: Timestamp,
     db_conn: &mut PgConnection,

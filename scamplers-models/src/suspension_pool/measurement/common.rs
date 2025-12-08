@@ -14,6 +14,30 @@ use crate::suspension::{
 #[cfg(feature = "app")]
 use crate::utils::{JsonFromSql, JsonToSql};
 
+#[insert_select]
+#[cfg_attr(feature = "app", diesel(table_name = suspension_pool_measurements))]
+#[cfg_attr(feature = "typescript", ts(concrete(C = SuspensionContent)))]
+pub struct SuspensionPoolMeasurementFields<C> {
+    measured_by: Uuid,
+    #[cfg_attr(feature = "app", diesel(
+        serialize_as = jiff_diesel::Timestamp,
+        deserialize_as = jiff_diesel::Timestamp
+    ))]
+    #[cfg_attr(feature = "typescript", ts(as = "String"))]
+    measured_at: Timestamp,
+    data: SuspensionPoolMeasurementData<C>,
+}
+
+impl<C> SuspensionPoolMeasurementFields<C> {
+    pub fn measured_at(&self) -> Timestamp {
+        self.measured_at
+    }
+
+    pub fn data(&self) -> &SuspensionPoolMeasurementData<C> {
+        &self.data
+    }
+}
+
 #[json]
 #[serde(tag = "quantity")]
 #[cfg_attr(feature = "typescript", ts(concrete(C = SuspensionContent)))]
@@ -42,23 +66,3 @@ impl_json_from_sql!(SuspensionPoolMeasurementData<SuspensionContent>);
 impl<C> JsonToSql for SuspensionPoolMeasurementData<C> where C: Serialize {}
 impl_json_to_sql!(SuspensionPoolMeasurementData<Cells>);
 impl_json_to_sql!(SuspensionPoolMeasurementData<Nuclei>);
-
-#[insert_select]
-#[cfg_attr(feature = "app", diesel(table_name = suspension_pool_measurements))]
-#[cfg_attr(feature = "typescript", ts(concrete(C = SuspensionContent)))]
-pub struct SuspensionPoolMeasurementFields<C> {
-    measured_by: Uuid,
-    #[cfg_attr(feature = "app", diesel(
-        serialize_as = jiff_diesel::Timestamp,
-        deserialize_as = jiff_diesel::Timestamp
-    ))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
-    measured_at: Timestamp,
-    data: SuspensionPoolMeasurementData<C>,
-}
-
-impl<C> SuspensionPoolMeasurementFields<C> {
-    pub fn data(&self) -> &SuspensionPoolMeasurementData<C> {
-        &self.data
-    }
-}

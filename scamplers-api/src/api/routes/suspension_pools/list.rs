@@ -4,6 +4,7 @@ use reqwest::StatusCode;
 use scamplers_models::suspension_pool::{
     SuspensionPool, SuspensionPoolFilter, SuspensionPoolQuery,
 };
+use scamplers_schema::suspension_pools::id;
 use serde_qs::axum::QsQuery;
 
 use crate::{
@@ -48,10 +49,18 @@ impl db::Operation<Vec<SuspensionPool>> for SuspensionPoolQuery {
     }
 }
 
-impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for SuspensionPoolFilter {
+impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for SuspensionPoolFilter
+where
+    id: SelectableExpression<QS>,
+{
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
-        let Self {} = self;
+        let Self { ids } = self;
+        let mut filter = BoxedFilter::new_true();
 
-        BoxedFilter::new_true()
+        if let Some(ids) = ids {
+            filter = filter.and_condition(id.eq_any(ids));
+        }
+
+        filter
     }
 }

@@ -122,10 +122,13 @@ impl From<db::Error> for ErrorResponse {
 
 impl From<validate::Error> for ErrorResponse {
     fn from(err: validate::Error) -> Self {
-        Self {
-            status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
-            public_error: err.into(),
-            internal_error: None,
+        match err {
+            validate::Error::Database(e) => Self::from(e),
+            err => Self {
+                status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
+                public_error: err.into(),
+                internal_error: None,
+            },
         }
     }
 }

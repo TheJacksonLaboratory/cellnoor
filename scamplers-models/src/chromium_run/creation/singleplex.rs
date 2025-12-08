@@ -14,6 +14,13 @@ pub struct SingleplexChipLoading {
     inner: ChipLoadingFields,
 }
 
+impl SingleplexChipLoading {
+    #[must_use]
+    pub fn suspension_id(&self) -> Uuid {
+        self.suspension_id
+    }
+}
+
 #[base_model]
 #[derive(serde::Deserialize)]
 pub struct SingleplexGemPool {

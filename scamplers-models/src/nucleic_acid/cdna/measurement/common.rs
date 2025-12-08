@@ -9,7 +9,6 @@ use crate::nucleic_acid::measurement::NucleicAcidMeasurementData;
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = cdna_measurements))]
 pub struct CdnaMeasurementFields {
-    cdna_id: Uuid,
     measured_by: Uuid,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp, deserialize_as = jiff_diesel::Timestamp))]
     #[cfg_attr(feature = "typescript", ts(as = "String"))]
@@ -21,10 +20,6 @@ pub struct CdnaMeasurementFields {
 impl CdnaMeasurementFields {
     pub fn data(&self) -> &NucleicAcidMeasurementData {
         &self.data
-    }
-
-    pub fn cdna_id(&self) -> Uuid {
-        self.cdna_id
     }
 
     pub fn measured_at(&self) -> Timestamp {

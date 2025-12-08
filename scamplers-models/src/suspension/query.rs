@@ -2,12 +2,15 @@ use macro_attributes::{filter, order_by};
 use macros::uuid_newtype;
 #[cfg(feature = "app")]
 use scamplers_schema::suspensions;
+use uuid::Uuid;
 
 #[cfg(feature = "app")]
 use crate::generic_query;
 
 #[filter]
-pub struct SuspensionFilter {}
+pub struct SuspensionFilter {
+    pub ids: Option<Vec<Uuid>>,
+}
 
 #[order_by(suspensions)]
 #[allow(non_camel_case_types)]

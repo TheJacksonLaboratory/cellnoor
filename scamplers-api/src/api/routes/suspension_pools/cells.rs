@@ -1,10 +1,14 @@
-use axum::Router;
-use axum_extra::routing::RouterExt;
+use axum::{Router, routing::post};
+use axum_extra::routing::TypedPath;
+use scamplers_models::suspension_pool::SuspensionPoolIdMeasurements;
 
 use crate::state::AppState;
 
 mod measurements;
 
 pub(super) fn router() -> Router<AppState> {
-    Router::new().typed_post(measurements::create_cell_suspension_pool_measurement)
+    Router::new().route(
+        SuspensionPoolIdMeasurements::PATH,
+        post(measurements::create_cell_suspension_pool_measurement),
+    )
 }

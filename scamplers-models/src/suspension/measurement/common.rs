@@ -14,75 +14,28 @@ use crate::{
     utils::{JsonFromSql, JsonToSql},
 };
 
-#[simple_enum]
-enum CountingMethod {
-    BrightField,
-    AcridineOrangePropidiumIodide,
-    TrypanBlue,
+#[insert_select]
+#[cfg_attr(feature = "app", diesel(table_name = suspension_measurements))]
+#[cfg_attr(feature = "typescript", ts(concrete(C = SuspensionContent)))]
+pub struct SuspensionMeasurementFields<C> {
+    measured_by: Uuid,
+    #[cfg_attr(feature = "app", diesel(
+        serialize_as = jiff_diesel::Timestamp,
+        deserialize_as = jiff_diesel::Timestamp
+    ))]
+    #[cfg_attr(feature = "typescript", ts(as = "String"))]
+    measured_at: Timestamp,
+    data: SuspensionMeasurementData<C>,
 }
 
-#[cfg(feature = "app")]
-impl EnumFromSql for CountingMethod {}
-impl_enum_from_sql!(CountingMethod);
-
-#[cfg(feature = "app")]
-impl EnumToSql for CountingMethod {}
-impl_enum_to_sql!(CountingMethod);
-
-#[simple_enum]
-pub enum Cells {
-    Cells,
-}
-
-#[cfg(feature = "app")]
-impl EnumFromSql for Cells {}
-impl_enum_from_sql!(Cells);
-
-#[cfg(feature = "app")]
-impl EnumToSql for Cells {}
-impl_enum_to_sql!(Cells);
-
-#[simple_enum]
-pub enum Nuclei {
-    Nuclei,
-}
-
-#[cfg(feature = "app")]
-impl EnumFromSql for Nuclei {}
-impl_enum_from_sql!(Nuclei);
-
-#[cfg(feature = "app")]
-impl EnumToSql for Nuclei {}
-impl_enum_to_sql!(Nuclei);
-
-#[json]
-pub struct Concentration {
-    counting_method: Option<CountingMethod>,
-    value: u32,
-    denominator_unit: Milliliter,
-}
-
-#[json]
-pub struct Viability {
-    value: RangedF32<0, 1>,
-}
-
-impl Viability {
-    pub fn value(&self) -> RangedF32<0, 1> {
-        self.value
+impl<C> SuspensionMeasurementFields<C> {
+    pub fn measured_at(&self) -> Timestamp {
+        self.measured_at
     }
-}
 
-#[json]
-pub struct Volume {
-    value: RangedF32<0, { u32::MAX }>,
-    unit: Microliter,
-}
-
-#[json]
-pub struct MeanDiameter {
-    value: RangedF32<0, { u32::MAX }>,
-    unit: Micrometer,
+    pub fn data(&self) -> &SuspensionMeasurementData<C> {
+        &self.data
+    }
 }
 
 #[json]
@@ -124,22 +77,73 @@ impl<C> JsonToSql for SuspensionMeasurementData<C> where C: Serialize {}
 impl_json_to_sql!(SuspensionMeasurementData<Cells>);
 impl_json_to_sql!(SuspensionMeasurementData<Nuclei>);
 
-#[insert_select]
-#[cfg_attr(feature = "app", diesel(table_name = suspension_measurements))]
-#[cfg_attr(feature = "typescript", ts(concrete(C = SuspensionContent)))]
-pub struct SuspensionMeasurementFields<C> {
-    measured_by: Uuid,
-    #[cfg_attr(feature = "app", diesel(
-        serialize_as = jiff_diesel::Timestamp,
-        deserialize_as = jiff_diesel::Timestamp
-    ))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
-    measured_at: Timestamp,
-    data: SuspensionMeasurementData<C>,
+#[json]
+pub struct Concentration {
+    counting_method: Option<CountingMethod>,
+    value: u32,
+    denominator_unit: Milliliter,
 }
 
-impl<C> SuspensionMeasurementFields<C> {
-    pub fn data(&self) -> &SuspensionMeasurementData<C> {
-        &self.data
+#[json]
+pub struct Viability {
+    value: RangedF32<0, 1>,
+}
+
+impl Viability {
+    pub fn value(&self) -> RangedF32<0, 1> {
+        self.value
     }
 }
+
+#[json]
+pub struct Volume {
+    value: RangedF32<0, { u32::MAX }>,
+    unit: Microliter,
+}
+
+#[json]
+pub struct MeanDiameter {
+    value: RangedF32<0, { u32::MAX }>,
+    unit: Micrometer,
+}
+
+#[simple_enum]
+enum CountingMethod {
+    BrightField,
+    AcridineOrangePropidiumIodide,
+    TrypanBlue,
+}
+
+#[cfg(feature = "app")]
+impl EnumFromSql for CountingMethod {}
+impl_enum_from_sql!(CountingMethod);
+
+#[cfg(feature = "app")]
+impl EnumToSql for CountingMethod {}
+impl_enum_to_sql!(CountingMethod);
+
+#[simple_enum]
+pub enum Cells {
+    Cells,
+}
+
+#[cfg(feature = "app")]
+impl EnumFromSql for Cells {}
+impl_enum_from_sql!(Cells);
+
+#[cfg(feature = "app")]
+impl EnumToSql for Cells {}
+impl_enum_to_sql!(Cells);
+
+#[simple_enum]
+pub enum Nuclei {
+    Nuclei,
+}
+
+#[cfg(feature = "app")]
+impl EnumFromSql for Nuclei {}
+impl_enum_from_sql!(Nuclei);
+
+#[cfg(feature = "app")]
+impl EnumToSql for Nuclei {}
+impl_enum_to_sql!(Nuclei);

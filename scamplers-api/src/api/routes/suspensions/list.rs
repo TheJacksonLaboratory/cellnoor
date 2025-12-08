@@ -2,6 +2,7 @@ use axum::extract::State;
 use diesel::prelude::*;
 use reqwest::StatusCode;
 use scamplers_models::suspension::{SuspensionFilter, SuspensionQuery, SuspensionSummary};
+use scamplers_schema::suspensions::id;
 use serde_qs::axum::QsQuery;
 
 use crate::{
@@ -46,10 +47,18 @@ impl db::Operation<Vec<SuspensionSummary>> for SuspensionQuery {
     }
 }
 
-impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for SuspensionFilter {
+impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for SuspensionFilter
+where
+    id: SelectableExpression<QS>,
+{
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
-        let Self {} = self;
+        let Self { ids } = self;
+        let mut filter = BoxedFilter::new_true();
 
-        BoxedFilter::new_true()
+        if let Some(ids) = ids {
+            filter = filter.and_condition(id.eq_any(ids));
+        }
+
+        filter
     }
 }
