@@ -2,12 +2,9 @@ use macro_attributes::json;
 use macros::{impl_json_from_sql, impl_json_to_sql};
 use non_empty::NonEmptyString;
 
+use crate::units::{Microliter, Nanogram, Picogram};
 #[cfg(feature = "app")]
-use crate::utils::JsonToSql;
-use crate::{
-    units::{Microliter, Nanogram, Picogram},
-    utils::JsonFromSql,
-};
+use crate::utils::{JsonFromSql, JsonToSql};
 
 #[json]
 #[cfg_attr(feature = "typescript", ts(concrete(N = String)))]

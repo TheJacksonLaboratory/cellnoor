@@ -2,16 +2,16 @@ use jiff::Timestamp;
 use macro_attributes::{insert_select, json, simple_enum};
 use macros::{impl_enum_from_sql, impl_enum_to_sql, impl_json_from_sql, impl_json_to_sql};
 use ranged::RangedF32;
+#[cfg(feature = "app")]
 use scamplers_schema::suspension_measurements;
 use serde::{Serialize, de::DeserializeOwned};
 use uuid::Uuid;
 
 #[cfg(feature = "app")]
-use crate::utils::{EnumFromSql, EnumToSql};
+use crate::utils::{EnumFromSql, EnumToSql, JsonFromSql, JsonToSql};
 use crate::{
     suspension::SuspensionContent,
     units::{Microliter, Micrometer, Milliliter},
-    utils::{JsonFromSql, JsonToSql},
 };
 
 #[insert_select]

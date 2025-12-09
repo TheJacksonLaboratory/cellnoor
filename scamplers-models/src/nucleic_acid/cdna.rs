@@ -6,5 +6,7 @@ mod read;
 
 pub use common::CdnaFields;
 pub use creation::CdnaCreation;
-pub use query::{CdnaFilter, CdnaId, CdnaIdMeasurements, CdnaQuery};
+#[cfg(feature = "app")]
+pub use query::CdnaQuery;
+pub use query::{CdnaFilter, CdnaId, CdnaIdMeasurements};
 pub use read::{Cdna, CdnaSummary};

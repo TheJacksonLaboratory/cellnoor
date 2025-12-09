@@ -1,9 +1,7 @@
 #[cfg(feature = "app")]
 use diesel::prelude::*;
 use macro_attributes::{insert_select, simple_enum};
-use macros::impl_enum_from_sql;
-#[cfg(feature = "app")]
-use macros::impl_enum_to_sql;
+use macros::{impl_enum_from_sql, impl_enum_to_sql};
 use non_empty::NonEmptyString;
 #[cfg(feature = "app")]
 use scamplers_schema::multiplexing_tags;

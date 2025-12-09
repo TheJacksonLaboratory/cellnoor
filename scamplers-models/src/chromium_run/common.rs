@@ -7,10 +7,9 @@ use scamplers_schema::{chip_loadings, chromium_runs, gem_pools};
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::{
-    units::Microliter,
-    utils::{JsonFromSql, JsonToSql},
-};
+use crate::units::Microliter;
+#[cfg(feature = "app")]
+use crate::utils::{JsonFromSql, JsonToSql};
 
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = gem_pools))]
@@ -38,6 +37,7 @@ impl Volume {
 impl JsonFromSql for Volume {}
 impl_json_from_sql!(Volume);
 
+#[cfg(feature = "app")]
 impl JsonToSql for Volume {}
 impl_json_to_sql!(Volume);
 

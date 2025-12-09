@@ -1,7 +1,7 @@
 use axum::{extract::State, http::StatusCode};
 use scamplers_models::{
     institution::{self, InstitutionIdMembers},
-    person::{self, PersonQuery},
+    person::{self, PersonFilter, PersonQuery},
 };
 use serde_qs::axum::QsQuery;
 
@@ -29,9 +29,17 @@ impl db::Operation<Vec<person::PersonSummary>> for (InstitutionIdMembers, Person
         self,
         db_conn: &mut diesel::PgConnection,
     ) -> Result<Vec<person::PersonSummary>, db::Error> {
-        let (institution_id, mut person_query) = self;
+        let (InstitutionIdMembers(institution_id), mut person_query) = self;
 
-        person_query.set_parent_id(institution_id);
+        let institution_ids = Some(vec![institution_id]);
+        if let Some(q) = &mut person_query.filter {
+            q.institution_ids = institution_ids;
+        } else {
+            person_query.filter = Some(PersonFilter {
+                institution_ids,
+                ..Default::default()
+            });
+        }
 
         person_query.execute(db_conn)
     }

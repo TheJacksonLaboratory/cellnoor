@@ -5,10 +5,9 @@ use non_empty::NonEmptyVec;
 use scamplers_schema::chip_loadings;
 use uuid::Uuid;
 
-use crate::{
-    chromium_run::common::{ChipLoadingFields, GemPoolFields},
-    utils::EnumToSql,
-};
+use crate::chromium_run::common::{ChipLoadingFields, GemPoolFields};
+#[cfg(feature = "app")]
+use crate::utils::EnumToSql;
 
 pub const MAX_SUSPENSIONS_PER_OCM_GEM_POOL: usize = 4;
 

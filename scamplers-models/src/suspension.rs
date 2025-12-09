@@ -7,7 +7,7 @@ mod update;
 
 pub use common::{SuspensionContent, SuspensionFields};
 pub use creation::SuspensionCreation;
-pub use query::{
-    SuspensionFilter, SuspensionId, SuspensionIdMeasurements, SuspensionOrderBy, SuspensionQuery,
-};
+#[cfg(feature = "app")]
+pub use query::SuspensionQuery;
+pub use query::{SuspensionFilter, SuspensionId, SuspensionIdMeasurements, SuspensionOrderBy};
 pub use read::{Suspension, SuspensionSummary};

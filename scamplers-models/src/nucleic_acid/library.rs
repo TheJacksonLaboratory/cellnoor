@@ -5,5 +5,7 @@ mod query;
 mod read;
 
 pub use creation::LibraryCreation;
-pub use query::{LibraryFilter, LibraryId, LibraryIdMeasurements, LibraryQuery};
+#[cfg(feature = "app")]
+pub use query::LibraryQuery;
+pub use query::{LibraryFilter, LibraryId, LibraryIdMeasurements};
 pub use read::{Library, LibrarySummary};

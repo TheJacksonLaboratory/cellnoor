@@ -11,3 +11,10 @@ pub struct ChromiumDatasetFields {
     lab_id: Uuid,
     data_path: NonEmptyString,
 }
+
+#[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize, Eq)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+pub(super) struct MetricsFile {
+    pub(super) filename: NonEmptyString,
+    pub(super) raw_contents: String,
+}

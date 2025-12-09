@@ -4,8 +4,6 @@ use macros::uuid_newtype;
 use scamplers_schema::people;
 use uuid::Uuid;
 
-use crate::{generic_query::SetParentId, institution::InstitutionIdMembers};
-
 #[order_by(people)]
 #[allow(non_camel_case_types)]
 pub enum PersonOrderBy {
@@ -32,12 +30,6 @@ pub struct PersonFilter {
     pub institution_ids: Option<Vec<Uuid>>,
     pub orcids: Option<Vec<String>>,
     pub microsoft_entra_oids: Option<Vec<Uuid>>,
-}
-
-impl SetParentId<InstitutionIdMembers> for PersonFilter {
-    fn parent_ids_mut(&mut self) -> &mut Option<Vec<Uuid>> {
-        &mut self.institution_ids
-    }
 }
 
 #[cfg(feature = "app")]
