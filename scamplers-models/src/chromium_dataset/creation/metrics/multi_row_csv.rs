@@ -2,18 +2,31 @@ use serde::{Deserialize, de};
 use serde_json::Value;
 
 use crate::{
-    chromium_dataset::{common::MetricsFile, creation::metrics::common::parse_str_as_number},
+    chromium_dataset::{
+        common::{MetricsFile, ParsedMetrics, ParsedMultiRowCsv},
+        creation::metrics::common::parse_str_as_number,
+    },
     tenx_assay::LibraryType,
 };
 
-#[derive(Clone, Debug, PartialEq, serde::Serialize, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(optional_fields))]
 pub struct MultiRowCsv {
-    #[serde(flatten)]
     file: MetricsFile,
     #[cfg_attr(feature = "typescript", ts(skip))]
     parsed_data: Vec<Row>,
+}
+
+impl From<Vec<MultiRowCsv>> for ParsedMetrics {
+    fn from(files: Vec<MultiRowCsv>) -> Self {
+        ParsedMetrics::MultiRowCsv {
+            files: files
+                .into_iter()
+                .map(|MultiRowCsv { file, parsed_data }| ParsedMultiRowCsv { file, parsed_data })
+                .collect(),
+        }
+    }
 }
 
 impl<'de> Deserialize<'de> for MultiRowCsv {
@@ -55,15 +68,17 @@ impl<'de> Deserialize<'de> for MultiRowCsv {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, serde::Serialize, Eq)]
-struct Row {
+#[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize, Eq)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+pub struct Row {
     #[serde(flatten)]
     simple_fields: SimpleFields,
     metric_value: Value,
 }
 
 #[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize, Eq)]
-struct SimpleFields {
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+pub struct SimpleFields {
     #[serde(rename(deserialize = "Category"))]
     category: String,
     #[serde(rename(deserialize = "Library Type"))]

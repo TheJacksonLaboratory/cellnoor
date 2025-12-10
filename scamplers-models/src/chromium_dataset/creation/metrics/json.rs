@@ -3,19 +3,19 @@ use std::collections::HashMap;
 use serde::{Deserialize, de};
 use serde_json::Value;
 
-use crate::chromium_dataset::common::MetricsFile;
+use crate::chromium_dataset::common::{MetricsFile, ParsedMetrics};
 
-#[derive(Clone, Debug, PartialEq, serde::Serialize, Eq)]
-#[cfg_attr(
-    feature = "app",
-    derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression)
-)]
-#[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Jsonb))]
+#[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 pub struct Json {
-    #[serde(flatten)]
     file: MetricsFile,
     parsed_data: HashMap<String, Value>,
+}
+
+impl From<Json> for ParsedMetrics {
+    fn from(Json { file, parsed_data }: Json) -> Self {
+        ParsedMetrics::Json { file, parsed_data }
+    }
 }
 
 impl<'de> Deserialize<'de> for Json {

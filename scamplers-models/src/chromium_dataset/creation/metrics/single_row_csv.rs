@@ -5,20 +5,21 @@ use serde::{Deserialize, de};
 use serde_json::Number;
 
 use crate::chromium_dataset::{
-    common::MetricsFile, creation::metrics::common::parse_str_as_number,
+    common::{MetricsFile, ParsedMetrics},
+    creation::metrics::common::parse_str_as_number,
 };
 
-#[derive(Clone, Debug, PartialEq, serde::Serialize, Eq)]
-#[cfg_attr(
-    feature = "app",
-    derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression)
-)]
-#[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Jsonb))]
+#[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 pub struct SingleRowCsv {
-    #[serde(flatten)]
     file: MetricsFile,
     parsed_data: HashMap<String, Number>,
+}
+
+impl From<SingleRowCsv> for ParsedMetrics {
+    fn from(SingleRowCsv { file, parsed_data }: SingleRowCsv) -> Self {
+        ParsedMetrics::SingleRowCsv { file, parsed_data }
+    }
 }
 
 impl<'de> Deserialize<'de> for SingleRowCsv {

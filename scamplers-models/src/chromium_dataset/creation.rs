@@ -1,16 +1,15 @@
 use jiff::Timestamp;
-use macro_attributes::{insert, json};
-use non_empty::NonEmptyVec;
+use macro_attributes::{base_model, insert};
 #[cfg(feature = "app")]
 use scamplers_schema::chromium_datasets;
 use uuid::Uuid;
 
 use crate::chromium_dataset::{
     common::ChromiumDatasetFields,
-    creation::metrics::{Json, MultiRowCsv, SingleRowCsv},
+    creation::metrics::{json::Json, multi_row_csv::MultiRowCsv, single_row_csv::SingleRowCsv},
 };
 
-mod metrics;
+pub(super) mod metrics;
 
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = chromium_datasets))]
@@ -23,6 +22,7 @@ pub struct CellrangerarcCountDatasetCreation {
     delivered_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
     library_ids: Vec<Uuid>,
+    #[cfg_attr(feature = "app", diesel(serialize_as = super::common::ParsedMetrics))]
     metrics: SingleRowCsv,
 }
 
@@ -37,6 +37,7 @@ pub struct CellrangeratacCountDatasetCreation {
     delivered_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
     library_ids: Vec<Uuid>,
+    #[cfg_attr(feature = "app", diesel(serialize_as = super::common::ParsedMetrics))]
     metrics: Json,
 }
 
@@ -51,11 +52,9 @@ pub struct CellrangerCountDatasetCreation {
     delivered_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
     library_ids: Vec<Uuid>,
+    #[cfg_attr(feature = "app", diesel(serialize_as = super::common::ParsedMetrics))]
     metrics: SingleRowCsv,
 }
-
-#[json]
-pub struct MultiRowCsvGroup(NonEmptyVec<MultiRowCsv, { usize::MAX }>);
 
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = chromium_datasets))]
@@ -68,7 +67,8 @@ pub struct CellrangerMultiDatasetCreation {
     delivered_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
     library_ids: Vec<Uuid>,
-    metrics: MultiRowCsvGroup,
+    #[cfg_attr(feature = "app", diesel(serialize_as = super::common::ParsedMetrics))]
+    metrics: Vec<MultiRowCsv>,
 }
 
 #[insert]
@@ -82,5 +82,34 @@ pub struct CellrangerVdjDatasetCreation {
     delivered_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
     library_ids: Vec<Uuid>,
+    #[cfg_attr(feature = "app", diesel(serialize_as = super::common::ParsedMetrics))]
     metrics: SingleRowCsv,
+}
+
+#[base_model]
+#[derive(serde::Deserialize)]
+#[serde(tag = "cmdline")]
+#[derive(strum::IntoStaticStr)]
+pub enum ChromiumDatasetCreation {
+    #[serde(rename = "cellranger-arc count")]
+    #[strum(serialize = "cellranger-arc count")]
+    CellrangerarcCount(CellrangerarcCountDatasetCreation),
+    #[serde(rename = "cellranger-atac count")]
+    #[strum(serialize = "cellranger-atac count")]
+    CellrangeratacCount(CellrangeratacCountDatasetCreation),
+    #[serde(rename = "cellranger count")]
+    #[strum(serialize = "cellranger count")]
+    CellrangerCount(CellrangerCountDatasetCreation),
+    #[serde(rename = "cellranger multi")]
+    #[strum(serialize = "cellranger multi")]
+    CellrangerMulti(CellrangerMultiDatasetCreation),
+    #[serde(rename = "cellranger vdj")]
+    #[strum(serialize = "cellranger vdj")]
+    CellrangerVdj(CellrangerVdjDatasetCreation),
+}
+
+impl ChromiumDatasetCreation {
+    pub fn cmdline(&self) -> &str {
+        self.into()
+    }
 }
