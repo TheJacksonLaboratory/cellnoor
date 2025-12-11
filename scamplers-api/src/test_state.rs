@@ -1,4 +1,4 @@
-use std::{collections::HashSet, ops::Range};
+use std::ops::Range;
 
 use deadpool_diesel::postgres::{Connection, Pool};
 use jiff::Timestamp;
@@ -13,10 +13,7 @@ use ranged::{RangedU16, RangedU32};
 use rstest::fixture;
 use scamplers_models::{
     cdna::{CdnaCreation, CdnaFields, CdnaQuery, CdnaSummary},
-    chromium_dataset::{
-        ChromiumDatasetCreation, ChromiumDatasetFields, ChromiumDatasetQuery,
-        ChromiumDatasetSummary,
-    },
+    chromium_dataset::{ChromiumDatasetCreation, ChromiumDatasetQuery, ChromiumDatasetSummary},
     chromium_run::{
         ChipLoadingFields, ChromiumRunCreation, ChromiumRunFields, GemPoolFields, GemPoolQuery,
         GemPoolSummary, MAX_GEM_POOLS_PER_NON_OCM_RUN, MAX_GEM_POOLS_PER_OCM_RUN,
@@ -790,7 +787,7 @@ pub struct Database {
     pub _gem_pools: Vec<GemPoolSummary>,
     pub _cdna: Vec<CdnaSummary>,
     pub _libraries: Vec<LibrarySummary>,
-    pub chromium_datasets: Vec<ChromiumDatasetSummary>,
+    pub _chromium_datasets: Vec<ChromiumDatasetSummary>,
 }
 
 impl Database {
@@ -831,7 +828,7 @@ impl Database {
             _gem_pools: gem_pools,
             _cdna: cdna,
             _libraries: libraries,
-            chromium_datasets,
+            _chromium_datasets: chromium_datasets,
         }
     }
 }

@@ -63,11 +63,8 @@ mod tests {
     use scamplers_models::{
         chromium_dataset::{
             ChromiumDatasetFilter, ChromiumDatasetIdSpecimens, ChromiumDatasetQuery,
-            ChromiumDatasetSummary,
         },
         chromium_run::MAX_SUSPENSIONS_PER_OCM_GEM_POOL,
-        suspension::SuspensionQuery,
-        suspension_pool::*,
         tenx_assay::{SampleMultiplexing, TenxAssayFilter},
     };
 
