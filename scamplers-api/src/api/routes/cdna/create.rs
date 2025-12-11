@@ -1,6 +1,8 @@
 use axum::{extract::State, http::StatusCode};
-use diesel::RunQueryDsl;
+use diesel::{RunQueryDsl, prelude::*};
 use scamplers_models::cdna::{Cdna, CdnaCreation, CdnaId};
+use scamplers_schema::cdna_preparers;
+use uuid::Uuid;
 
 use crate::{
     api::{
@@ -25,11 +27,37 @@ impl db::Operation<Cdna> for CdnaCreation {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Cdna, db::Error> {
         use scamplers_schema::cdna::dsl::*;
 
-        let created_id: CdnaId = diesel::insert_into(cdna)
+        let preparer_ids = self.preparer_ids().to_vec();
+
+        let cdna_id: CdnaId = diesel::insert_into(cdna)
             .values(self)
             .returning(id)
             .get_result(db_conn)?;
 
-        created_id.execute(db_conn)
+        insert_cdna_preparers(cdna_id, &preparer_ids, db_conn)?;
+
+        cdna_id.execute(db_conn)
     }
+}
+
+fn insert_cdna_preparers(
+    cdna_id: CdnaId,
+    preparer_ids: &[Uuid],
+    db_conn: &mut diesel::PgConnection,
+) -> Result<(), db::Error> {
+    let preparer_mappings: Vec<_> = preparer_ids
+        .iter()
+        .map(|p| {
+            (
+                cdna_preparers::cdna_id.eq(cdna_id),
+                cdna_preparers::prepared_by.eq(p),
+            )
+        })
+        .collect();
+
+    diesel::insert_into(cdna_preparers::table)
+        .values(preparer_mappings)
+        .execute(db_conn)?;
+
+    Ok(())
 }

@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use diesel::PgConnection;
+pub(crate) use index_sets::IndexSetName;
 use scamplers_models::{
     institution::InstitutionCreation, multiplexing_tag::MultiplexingTagCreation,
     person::PersonCreation, tenx_assay::TenxAssayCreation,

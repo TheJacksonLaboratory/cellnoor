@@ -1,6 +1,9 @@
 use axum::{
     Json,
-    extract::rejection::{JsonRejection, PathRejection},
+    extract::{
+        multipart::MultipartError,
+        rejection::{JsonRejection, PathRejection},
+    },
     http::StatusCode,
     response::IntoResponse,
 };
@@ -56,6 +59,18 @@ impl From<JsonRejection> for ErrorResponse {
 
 impl From<PathRejection> for ErrorResponse {
     fn from(err: PathRejection) -> Self {
+        Self {
+            status: err.status().as_u16(),
+            public_error: Error::MalformedRequest {
+                message: err.body_text(),
+            },
+            internal_error: None,
+        }
+    }
+}
+
+impl From<MultipartError> for ErrorResponse {
+    fn from(err: MultipartError) -> Self {
         Self {
             status: err.status().as_u16(),
             public_error: Error::MalformedRequest {

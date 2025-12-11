@@ -1,6 +1,8 @@
 use axum::{extract::State, http::StatusCode};
-use diesel::RunQueryDsl;
+use diesel::prelude::*;
 use scamplers_models::library::{Library, LibraryCreation, LibraryId};
+use scamplers_schema::library_preparers;
+use uuid::Uuid;
 
 use crate::{
     api::{
@@ -25,11 +27,37 @@ impl db::Operation<Library> for LibraryCreation {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Library, db::Error> {
         use scamplers_schema::libraries::dsl::*;
 
-        let created_id: LibraryId = diesel::insert_into(libraries)
+        let preparer_ids = self.preparer_ids().to_vec();
+
+        let library_id: LibraryId = diesel::insert_into(libraries)
             .values(self)
             .returning(id)
             .get_result(db_conn)?;
 
-        created_id.execute(db_conn)
+        insert_library_preparers(library_id, &preparer_ids, db_conn)?;
+
+        library_id.execute(db_conn)
     }
+}
+
+fn insert_library_preparers(
+    library_id: LibraryId,
+    preparer_ids: &[Uuid],
+    db_conn: &mut diesel::PgConnection,
+) -> Result<(), db::Error> {
+    let preparer_mappings: Vec<_> = preparer_ids
+        .iter()
+        .map(|p| {
+            (
+                library_preparers::library_id.eq(library_id),
+                library_preparers::prepared_by.eq(p),
+            )
+        })
+        .collect();
+
+    diesel::insert_into(library_preparers::table)
+        .values(preparer_mappings)
+        .execute(db_conn)?;
+
+    Ok(())
 }

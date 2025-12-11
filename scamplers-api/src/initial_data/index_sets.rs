@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+pub(crate) use common::IndexSetName;
 use serde::de::DeserializeOwned;
 use tokio::task::JoinSet;
 use url::Url;

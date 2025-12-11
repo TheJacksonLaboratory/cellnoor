@@ -44,4 +44,9 @@ impl CdnaCreation {
     pub fn prepared_at(&self) -> Timestamp {
         self.prepared_at
     }
+
+    #[must_use]
+    pub fn preparer_ids(&self) -> &[Uuid] {
+        self.preparer_ids.as_ref()
+    }
 }

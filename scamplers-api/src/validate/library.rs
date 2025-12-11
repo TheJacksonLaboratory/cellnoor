@@ -6,6 +6,7 @@ use uuid::Uuid;
 
 use crate::{
     db::{self},
+    initial_data::IndexSetName,
     validate::{Validate, cdna::cdna_to_library_spec, common::validate_timestamps},
 };
 
@@ -13,38 +14,41 @@ pub mod measurement;
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(rename = "CdnaValidationError"))]
+#[cfg_attr(feature = "typescript", ts(rename = "LibraryValidationError"))]
 #[serde(rename_all = "snake_case", tag = "type", content = "info")]
 pub enum Error {
     #[error("wrong volume found")]
     Volume {
-        assay_id: Uuid,
         library_type: LibraryType,
         expected: i32,
         found: i32,
+    },
+    #[error("invalid index set")]
+    IndexSet {
+        expected: String,
+        found: Option<String>,
     },
 }
 
 impl Validate for LibraryCreation {
     fn validate(&self, db_conn: &mut diesel::PgConnection) -> Result<(), super::Error> {
         let cdna_id = self.cdna_id();
-        let (cdna_prepared_at, assay_id, library_type, expected_library_volume) =
+        let (cdna_prepared_at, library_type, expected_library_volume, expected_index_kit) =
             fetch_cdna_data(cdna_id, db_conn)?;
 
-        validate_volume(
-            assay_id,
-            library_type,
-            self.volume_µl(),
-            expected_library_volume,
-        )?;
+        validate_volume(library_type, self.volume_µl(), expected_library_volume)?;
         validate_cdna_created_before_library(cdna_prepared_at.to_jiff(), self.prepared_at())?;
+        validate_index_kit(
+            &expected_index_kit,
+            self.single_index_set_name()
+                .unwrap_or(self.dual_index_set_name().unwrap_or_default()),
+        )?;
 
         Ok(())
     }
 }
 
 fn validate_volume(
-    assay_id: Uuid,
     library_type: LibraryType,
     volume: impl Into<i32>,
     expected: i32,
@@ -53,7 +57,6 @@ fn validate_volume(
 
     if volume != expected {
         Err(Error::Volume {
-            assay_id,
             library_type,
             expected,
             found: volume,
@@ -72,10 +75,25 @@ fn validate_cdna_created_before_library(
     Ok(())
 }
 
+fn validate_index_kit(expected_index_kit: &str, index_set: &str) -> Result<(), super::Error> {
+    let found_index_kit = index_set.kit_name().map_err(|_| Error::IndexSet {
+        expected: expected_index_kit.to_owned(),
+        found: None,
+    })?;
+
+    if expected_index_kit != found_index_kit {
+        Err(Error::IndexSet {
+            expected: expected_index_kit.to_owned(),
+            found: Some(found_index_kit.to_owned()),
+        })?;
+    }
+    Ok(())
+}
+
 fn fetch_cdna_data(
     cdna_id: Uuid,
     db_conn: &mut diesel::PgConnection,
-) -> Result<(jiff_diesel::Timestamp, Uuid, LibraryType, i32), db::Error> {
+) -> Result<(jiff_diesel::Timestamp, LibraryType, i32, String), db::Error> {
     use scamplers_schema::{cdna, library_type_specifications as specs};
 
     Ok(cdna_to_library_spec()
@@ -84,9 +102,9 @@ fn fetch_cdna_data(
         .filter(specs::library_type.eq(cdna::library_type))
         .select((
             cdna::prepared_at,
-            chromium_runs::assay_id,
             lib_specs::library_type,
             lib_specs::library_volume_l,
+            lib_specs::index_kit,
         ))
         .first(db_conn)?)
 }
@@ -144,15 +162,15 @@ mod tests {
             .unwrap()
             .unwrap();
 
-        let (_, assay_id, library_type, volume) = root_db_conn
+        let (_, library_type, volume, index_kit) = root_db_conn
             .interact(move |db_conn| fetch_cdna_data(cdna_id, db_conn))
             .await
             .unwrap()
             .unwrap();
 
         assert_eq!(
-            (assay_id, library_type, volume),
-            (three_prime_gex_assay_id, LibraryType::GeneExpression, 35)
+            (library_type, volume, index_kit.as_str()),
+            (LibraryType::GeneExpression, 35, "TT")
         );
     }
 }

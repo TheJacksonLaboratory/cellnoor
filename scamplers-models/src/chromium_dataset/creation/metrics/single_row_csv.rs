@@ -5,20 +5,20 @@ use serde::{Deserialize, de};
 use serde_json::Number;
 
 use crate::chromium_dataset::{
-    common::{MetricsFile, ParsedMetrics},
+    common::{ParsedMetrics, ParsedMetricsFile, RawMetricsFile},
     creation::metrics::common::parse_str_as_number,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 pub struct SingleRowCsv {
-    file: MetricsFile,
+    file: RawMetricsFile,
     parsed_data: HashMap<String, Number>,
 }
 
 impl From<SingleRowCsv> for ParsedMetrics {
     fn from(SingleRowCsv { file, parsed_data }: SingleRowCsv) -> Self {
-        ParsedMetrics::SingleRowCsv { file, parsed_data }
+        ParsedMetrics::SingleRowCsv(vec![ParsedMetricsFile { file, parsed_data }])
     }
 }
 
@@ -27,7 +27,7 @@ impl<'de> Deserialize<'de> for SingleRowCsv {
     where
         D: serde::Deserializer<'de>,
     {
-        let file = MetricsFile::deserialize(deserializer)?;
+        let file = RawMetricsFile::deserialize(deserializer)?;
         let mut csv = csv::Reader::from_reader(file.raw_contents.as_bytes());
 
         let header = csv.headers().map_err(de::Error::custom)?;

@@ -65,8 +65,8 @@ diesel::table! {
 }
 
 diesel::table! {
-    chromium_dataset_web_summaries (id) {
-        id -> Uuid,
+    chromium_dataset_web_summaries (filename, dataset_id) {
+        filename -> Text,
         dataset_id -> Uuid,
         content -> Bytea,
     }
@@ -80,7 +80,7 @@ diesel::table! {
         lab_id -> Uuid,
         data_path -> Text,
         delivered_at -> Timestamptz,
-        metrics -> Jsonb,
+        parsed_metrics_files -> Jsonb,
     }
 }
 

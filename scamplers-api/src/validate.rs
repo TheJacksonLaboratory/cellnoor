@@ -3,6 +3,7 @@ use diesel::PgConnection;
 use crate::{db, validate::common::TimestampError};
 
 mod cdna;
+mod chromium_dataset;
 mod chromium_run;
 mod common;
 mod initial_data;
@@ -31,6 +32,7 @@ pub enum Error {
     CreateCdna(#[from] cdna::Error),
     CreateLibrary(#[from] library::Error),
     CreateNucleicAcidMeasurement(#[from] nucleic_acid_measurement::Error),
+    CreateChromiumDataset(#[from] chromium_dataset::Error),
     Timestamp(#[from] TimestampError),
     Database(#[from] db::Error),
 }

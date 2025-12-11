@@ -1,15 +1,16 @@
 use std::collections::HashMap;
 
-use macro_attributes::base_model;
+use macro_attributes::json;
 
-#[base_model]
-#[derive(serde::Deserialize, serde::Serialize)]
-#[cfg_attr(
-    feature = "app",
-    derive(diesel::deserialize::FromSqlRow, diesel::expression::AsExpression)
-)]
-#[cfg_attr(feature = "app", diesel(sql_type = diesel::sql_types::Jsonb))]
-pub struct Links(HashMap<String, String>);
+#[json]
+#[serde(untagged)]
+enum Link {
+    One(String),
+    Many(Vec<String>),
+}
+
+#[json]
+pub struct Links(HashMap<String, Link>);
 
 #[cfg(feature = "app")]
 mod diesel_impls {

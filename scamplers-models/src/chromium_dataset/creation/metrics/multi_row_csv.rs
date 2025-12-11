@@ -3,7 +3,7 @@ use serde_json::Value;
 
 use crate::{
     chromium_dataset::{
-        common::{MetricsFile, ParsedMetrics, ParsedMultiRowCsv},
+        common::{ParsedMetrics, ParsedMetricsFile, RawMetricsFile},
         creation::metrics::common::parse_str_as_number,
     },
     tenx_assay::LibraryType,
@@ -13,19 +13,19 @@ use crate::{
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(optional_fields))]
 pub struct MultiRowCsv {
-    file: MetricsFile,
+    file: RawMetricsFile,
     #[cfg_attr(feature = "typescript", ts(skip))]
     parsed_data: Vec<Row>,
 }
 
 impl From<Vec<MultiRowCsv>> for ParsedMetrics {
     fn from(files: Vec<MultiRowCsv>) -> Self {
-        ParsedMetrics::MultiRowCsv {
-            files: files
+        ParsedMetrics::MultiRowCsv(
+            files
                 .into_iter()
-                .map(|MultiRowCsv { file, parsed_data }| ParsedMultiRowCsv { file, parsed_data })
+                .map(|MultiRowCsv { file, parsed_data }| ParsedMetricsFile { file, parsed_data })
                 .collect(),
-        }
+        )
     }
 }
 
@@ -34,7 +34,7 @@ impl<'de> Deserialize<'de> for MultiRowCsv {
     where
         D: serde::Deserializer<'de>,
     {
-        let file = MetricsFile::deserialize(deserializer)?;
+        let file = RawMetricsFile::deserialize(deserializer)?;
         let mut csv = csv::Reader::from_reader(file.raw_contents.as_bytes());
         let headers = csv.headers().map_err(de::Error::custom)?.clone();
 

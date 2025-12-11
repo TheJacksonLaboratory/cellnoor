@@ -14,7 +14,7 @@ pub(super) static DNA_REGEX: LazyLock<Regex> =
 
 pub(super) const INDEX_SET_NAME_ERROR_MESSAGE: &str = "malformed index set name";
 
-pub(super) trait IndexSetName: AsRef<str> {
+pub(crate) trait IndexSetName: AsRef<str> {
     fn kit_name(&self) -> anyhow::Result<&str> {
         self.as_ref()
             .get(3..5)

@@ -35,6 +35,7 @@ pub(super) fn router() -> Router<AppState> {
         .nest("/gems", gem_pools::router())
         .nest("/cdna", cdna::router())
         .nest("/libraries", libraries::router())
+        .nest("/chromium-datasets", chromium_datasets::router())
 }
 
 type ApiResponse<T> = Result<(StatusCode, Json<T>), super::error::ErrorResponse>;

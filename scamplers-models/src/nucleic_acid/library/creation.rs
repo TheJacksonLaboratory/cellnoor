@@ -56,4 +56,9 @@ impl LibraryCreation {
     pub fn volume_µl(&self) -> u8 {
         self.volume_µl
     }
+
+    #[must_use]
+    pub fn preparer_ids(&self) -> &[Uuid] {
+        self.preparer_ids.as_ref()
+    }
 }
