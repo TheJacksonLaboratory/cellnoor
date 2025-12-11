@@ -36,3 +36,6 @@ venv
 
 # Secrets
 *secret*
+
+# Generated when running scamplers-ui
+node_modules

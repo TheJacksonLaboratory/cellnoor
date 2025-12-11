@@ -4,7 +4,7 @@ use crate::validate::Validate;
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(rename = "CdnaValidationError"))]
+#[cfg_attr(feature = "typescript", ts(rename = "NucleicAcidMeasurementError"))]
 #[serde(rename_all = "snake_case", tag = "type", content = "info")]
 pub enum Error {
     #[error("electrophoretic sizing range minimum must be <= maximum")]

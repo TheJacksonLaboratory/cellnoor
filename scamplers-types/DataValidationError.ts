@@ -5,9 +5,10 @@ import type { DatabaseError } from "./DatabaseError";
 import type { InitialDataValidationError } from "./InitialDataValidationError";
 import type { LabValidationError } from "./LabValidationError";
 import type { LibraryValidationError } from "./LibraryValidationError";
+import type { NucleicAcidMeasurementError } from "./NucleicAcidMeasurementError";
 import type { PersonValidationError } from "./PersonValidationError";
 import type { SpecimenValidationError } from "./SpecimenValidationError";
 import type { SuspensionValidationError } from "./SuspensionValidationError";
 import type { TimestampError } from "./TimestampError";
 
-export type DataValidationError = { "type": "insert_initial_data", "info": InitialDataValidationError } | { "type": "create_person", "info": PersonValidationError } | { "type": "create_lab", "info": LabValidationError } | { "type": "create_specimen", "info": SpecimenValidationError } | { "type": "create_suspension", "info": SuspensionValidationError } | { "type": "create_suspension_pool", "info": SuspensionValidationError } | { "type": "create_cdna", "info": CdnaValidationError } | { "type": "create_library", "info": LibraryValidationError } | { "type": "create_nucleic_acid_measurement", "info": CdnaValidationError } | { "type": "create_chromium_dataset", "info": ChromiumDatasetValidationError } | { "type": "timestamp", "info": TimestampError } | { "type": "database", "info": DatabaseError };
+export type DataValidationError = { "type": "insert_initial_data", "info": InitialDataValidationError } | { "type": "create_person", "info": PersonValidationError } | { "type": "create_lab", "info": LabValidationError } | { "type": "create_specimen", "info": SpecimenValidationError } | { "type": "create_suspension", "info": SuspensionValidationError } | { "type": "create_suspension_pool", "info": SuspensionValidationError } | { "type": "create_cdna", "info": CdnaValidationError } | { "type": "create_library", "info": LibraryValidationError } | { "type": "create_nucleic_acid_measurement", "info": NucleicAcidMeasurementError } | { "type": "create_chromium_dataset", "info": ChromiumDatasetValidationError } | { "type": "timestamp", "info": TimestampError } | { "type": "database", "info": DatabaseError };
