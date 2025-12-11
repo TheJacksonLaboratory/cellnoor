@@ -3,6 +3,7 @@ use axum_extra::routing::RouterExt;
 
 use crate::state::AppState;
 
+pub(crate) mod common;
 mod create;
 mod fetch;
 mod libraries;
@@ -16,8 +17,8 @@ pub(super) fn router() -> Router<AppState> {
         .typed_post(create::create_chromium_dataset)
         .typed_post(web_summaries::upload::upload_web_summary)
         .typed_get(fetch::fetch_chromium_dataset)
-        // .typed_get(list::list_chromium_datasets)
-        // .typed_get(specimens::list::list_specimens)
-        // .typed_get(libraries::list::list_libraries)
+        .typed_get(list::list_chromium_datasets)
+        .typed_get(specimens::list::list_specimens)
+        .typed_get(libraries::list::list_libraries)
         .typed_get(web_summaries::fetch::fetch_web_summary)
 }

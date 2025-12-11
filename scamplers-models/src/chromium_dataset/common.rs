@@ -50,9 +50,15 @@ where
 #[json]
 #[serde(tag = "format")]
 pub enum ParsedMetrics {
-    Json(Vec<ParsedMetricsFile<HashMap<String, Value>>>),
-    SingleRowCsv(Vec<ParsedMetricsFile<HashMap<String, Number>>>),
-    MultiRowCsv(Vec<ParsedMetricsFile<Vec<multi_row_csv::Row>>>),
+    Json {
+        files: Vec<ParsedMetricsFile<HashMap<String, Value>>>,
+    },
+    SingleRowCsv {
+        files: Vec<ParsedMetricsFile<HashMap<String, Number>>>,
+    },
+    MultiRowCsv {
+        files: Vec<ParsedMetricsFile<Vec<multi_row_csv::Row>>>,
+    },
 }
 
 #[cfg(feature = "app")]

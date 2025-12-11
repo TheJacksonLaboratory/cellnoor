@@ -3,10 +3,17 @@
 use clap::Parser;
 use scamplers_api::api::ErrorResponse;
 use scamplers_models::{
-    cdna::{Cdna, CdnaCreation, CdnaSummary},
+    cdna::{Cdna, CdnaCreation, CdnaFilter, CdnaOrderBy, CdnaSummary},
+    chromium_dataset::{
+        ChromiumDataset, ChromiumDatasetCreation, ChromiumDatasetFilter, ChromiumDatasetOrderBy,
+        ChromiumDatasetSummary,
+    },
+    chromium_run::{ChromiumRunFilter, ChromiumRunOrderBy, GemPoolFilter, GemPoolOrderBy},
     institution::{Institution, InstitutionCreation, InstitutionFilter, InstitutionOrderBy},
     lab::{Lab, LabCreation, LabFilter, LabOrderBy},
+    library::{Library, LibraryCreation, LibraryFilter, LibraryOrderBy, LibrarySummary},
     person::{Person, PersonCreation, PersonFilter, PersonOrderBy},
+    sequencing_run::{SequencingRun, SequencingRunCreation},
     specimen::{
         Specimen, SpecimenCreation, SpecimenFilter, SpecimenOrderBy,
         measurement::{SpecimenMeasurement, SpecimenMeasurementCreation},
@@ -69,6 +76,21 @@ struct SuspensionQuery(#[ts(inline)] Query<SuspensionFilter, SuspensionOrderBy>)
 #[derive(TS)]
 struct SuspensionPoolQuery(#[ts(inline)] Query<SuspensionPoolFilter, SuspensionPoolOrderBy>);
 
+#[derive(TS)]
+struct GemPoolQuery(#[ts(inline)] Query<GemPoolFilter, GemPoolOrderBy>);
+
+#[derive(TS)]
+struct ChromiumRunQuery(#[ts(inline)] Query<ChromiumRunFilter, ChromiumRunOrderBy>);
+
+#[derive(TS)]
+struct CdnaQuery(#[ts(inline)] Query<CdnaFilter, CdnaOrderBy>);
+
+#[derive(TS)]
+struct LibraryQuery(#[ts(inline)] Query<LibraryFilter, LibraryOrderBy>);
+
+#[derive(TS)]
+struct ChromiumDatasetQuery(#[ts(inline)] Query<ChromiumDatasetFilter, ChromiumDatasetOrderBy>);
+
 fn main() {
     let Cli { output_dir } = Cli::parse();
 
@@ -90,6 +112,9 @@ fn main() {
     SpecimenMeasurementCreation::export_all_to(&output_dir).unwrap();
     SpecimenMeasurement::export_all_to(&output_dir).unwrap();
 
+    SequencingRunCreation::export_all_to(&output_dir).unwrap();
+    SequencingRun::export_all_to(&output_dir).unwrap();
+
     SuspensionCreation::export_all_to(&output_dir).unwrap();
     SuspensionQuery::export_all_to(&output_dir).unwrap();
     SuspensionSummary::export_all_to(&output_dir).unwrap();
@@ -106,8 +131,19 @@ fn main() {
     SuspensionPoolMeasurement::export_all_to(&output_dir).unwrap();
 
     CdnaCreation::export_all_to(&output_dir).unwrap();
+    CdnaQuery::export_all_to(&output_dir).unwrap();
     CdnaSummary::export_all_to(&output_dir).unwrap();
     Cdna::export_all_to(&output_dir).unwrap();
+
+    LibraryCreation::export_all_to(&output_dir).unwrap();
+    LibraryQuery::export_all_to(&output_dir).unwrap();
+    LibrarySummary::export_all_to(&output_dir).unwrap();
+    Library::export_all_to(&output_dir).unwrap();
+
+    ChromiumDatasetCreation::export_all_to(&output_dir).unwrap();
+    ChromiumDatasetQuery::export_all_to(&output_dir).unwrap();
+    ChromiumDatasetSummary::export_all_to(&output_dir).unwrap();
+    ChromiumDataset::export_all_to(&output_dir).unwrap();
 
     ErrorResponse::export_all_to(&output_dir).unwrap();
 }

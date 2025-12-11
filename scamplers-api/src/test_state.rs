@@ -1,4 +1,4 @@
-use std::ops::Range;
+use std::{collections::HashSet, ops::Range};
 
 use deadpool_diesel::postgres::{Connection, Pool};
 use jiff::Timestamp;
@@ -9,10 +9,14 @@ use rand::{
     distr::Alphanumeric,
     seq::{IndexedRandom, IteratorRandom},
 };
-use ranged::RangedU32;
+use ranged::{RangedU16, RangedU32};
 use rstest::fixture;
 use scamplers_models::{
     cdna::{CdnaCreation, CdnaFields, CdnaQuery, CdnaSummary},
+    chromium_dataset::{
+        ChromiumDatasetCreation, ChromiumDatasetFields, ChromiumDatasetQuery,
+        ChromiumDatasetSummary,
+    },
     chromium_run::{
         ChipLoadingFields, ChromiumRunCreation, ChromiumRunFields, GemPoolFields, GemPoolQuery,
         GemPoolSummary, MAX_GEM_POOLS_PER_NON_OCM_RUN, MAX_GEM_POOLS_PER_OCM_RUN,
@@ -23,6 +27,7 @@ use scamplers_models::{
     generic_query,
     institution::{Institution, InstitutionCreation, InstitutionQuery},
     lab::{LabCreation, LabFields, LabQuery, LabSummary},
+    library::{LibraryCreation, LibraryFields, LibraryQuery, LibrarySummary},
     multiplexing_tag::MultiplexingTag,
     person::{PersonCreation, PersonFields, PersonQuery, PersonSummary},
     specimen::{
@@ -40,6 +45,7 @@ use scamplers_models::{
     },
     tenx_assay::{LibraryType, SampleMultiplexing, TenxAssayFilter, TenxAssayQuery},
 };
+use serde_json::json;
 use strum::VariantArray;
 use tokio::{sync::OnceCell, task::JoinSet};
 use uuid::Uuid;
@@ -85,6 +91,14 @@ impl TestState {
     }
 
     async fn populate_db(&'static self) {
+        // This is a safeguard so that a failure to initialize test state doesn't cause
+        // endless repetition
+        let institution_ids = self
+            .all_extract::<InstitutionQuery, _, _, _>(Institution::id)
+            .await;
+        if institution_ids.len() > 1 {
+            return;
+        }
         self.insert_institutions().await;
         self.insert_people().await;
         self.insert_labs().await;
@@ -95,6 +109,8 @@ impl TestState {
         self.insert_ocm_chromium_runs().await;
         self.insert_pool_multiplex_chromium_runs().await;
         self.insert_cdna().await;
+        self.insert_libraries().await;
+        self.insert_chromium_datasets().await;
     }
 
     async fn insert_institutions(&'static self) {
@@ -124,9 +140,10 @@ impl TestState {
             .await;
 
         let mut join_set = JoinSet::new();
-        for inst in institution_ids {
+        // Skip the first institution since that already has a person
+        for inst in &institution_ids[1..] {
             for _ in 0..N_PEOPLE_PER_INSTITUTION {
-                join_set.spawn(self.insert_random_person(inst));
+                join_set.spawn(self.insert_random_person(*inst));
             }
         }
 
@@ -195,7 +212,8 @@ impl TestState {
 
         let mut join_set = JoinSet::new();
         let mut counter = 0;
-        for person_id in people_ids {
+        // Skip the first person
+        for person_id in &people_ids[1..] {
             for j in 0..N_SPECIMENS_PER_PERSON {
                 counter += 1;
                 join_set.spawn(self.insert_random_specimen(counter, *person_id, lab_ids[j]));
@@ -305,19 +323,19 @@ impl TestState {
     }
 
     async fn insert_suspension_pools(&'static self) {
-        let suspension_ids = self
+        let mut suspension_ids = self
             .all_extract::<SuspensionQuery, _, _, _>(SuspensionSummary::id)
             .await;
-        let multiplexing_tags = self.all_extract::<(), _, _, _>(MultiplexingTag::id).await;
+        let mut multiplexing_tags = self.all_extract::<(), _, _, _>(MultiplexingTag::id).await;
         let people_ids = self.all_people_ids().await;
 
         let mut join_set = JoinSet::new();
-        for i in 0..N_SUSPENSION_POOLS {
+        for _ in 0..N_SUSPENSION_POOLS {
             let mut suspension_tags = Vec::with_capacity(N_SUSPENSIONS_PER_POOL);
-            for j in 0..N_SUSPENSIONS_PER_POOL {
+            for _ in 0..N_SUSPENSIONS_PER_POOL {
                 let suspension_tag = SuspensionTagging::builder()
-                    .suspension_id(suspension_ids[i + j])
-                    .tag_id(multiplexing_tags[i + j])
+                    .suspension_id(suspension_ids.swap_remove(0))
+                    .tag_id(multiplexing_tags.swap_remove(0))
                     .build();
 
                 suspension_tags.push(suspension_tag);
@@ -353,7 +371,7 @@ impl TestState {
     }
 
     async fn insert_singleplex_chromium_runs(&'static self) {
-        let suspension_ids = self
+        let mut suspension_ids = self
             .all_extract::<SuspensionQuery, _, _, _>(SuspensionSummary::id)
             .await;
         let people_ids = self.all_people_ids().await;
@@ -378,10 +396,9 @@ impl TestState {
         let three_prime_gex_assay_id = three_prime_gex_assay_id[0].id();
 
         let mut join_set = JoinSet::new();
-        for i in 0..N_SINGLEPLEX_CHROMIUM_RUNS {
-            let this_run_suspensions = suspension_ids[i..i + MAX_GEM_POOLS_PER_NON_OCM_RUN]
-                .iter()
-                .copied()
+        for _ in 0..N_SINGLEPLEX_CHROMIUM_RUNS {
+            let this_run_suspensions = (0..MAX_GEM_POOLS_PER_NON_OCM_RUN)
+                .map(|_| suspension_ids.swap_remove(0))
                 .collect();
 
             join_set.spawn(self.insert_random_singleplex_chromium_run(
@@ -425,7 +442,7 @@ impl TestState {
     }
 
     async fn insert_ocm_chromium_runs(&'static self) {
-        let suspension_ids = self
+        let mut suspension_ids = self
             .all_extract::<SuspensionQuery, _, _, _>(SuspensionSummary::id)
             .await;
         let people_ids = self.all_people_ids().await;
@@ -450,12 +467,14 @@ impl TestState {
         let ocm_assay_id = ocm_assay_id[0].id();
 
         let mut join_set = JoinSet::new();
-        for i in N_SINGLEPLEX_CHROMIUM_RUNS..N_SINGLEPLEX_CHROMIUM_RUNS + N_OCM_CHROMIUM_RUNS {
+        // We already used up all the suspension IDs when inserting singleplex Chromium
+        // runs, so no matter what we will have to reuse suspension IDs. These OCM runs
+        // will also use them all up anyways.
+        for _ in 0..N_OCM_CHROMIUM_RUNS {
             let this_run_suspensions = (0..MAX_GEM_POOLS_PER_OCM_RUN)
-                .map(|j| {
-                    suspension_ids[i + j..i + j + MAX_SUSPENSIONS_PER_OCM_GEM_POOL]
-                        .iter()
-                        .copied()
+                .map(|_| {
+                    (0..MAX_SUSPENSIONS_PER_OCM_GEM_POOL)
+                        .map(|_| suspension_ids.swap_remove(0))
                         .collect()
                 })
                 .collect();
@@ -509,7 +528,7 @@ impl TestState {
     }
 
     async fn insert_pool_multiplex_chromium_runs(&'static self) {
-        let suspension_pool_ids = self
+        let mut suspension_pool_ids = self
             .all_extract::<SuspensionPoolQuery, _, _, _>(SuspensionPool::id)
             .await;
         let people_ids = self.all_people_ids().await;
@@ -534,11 +553,9 @@ impl TestState {
         let flex_assay_id = flex_assay_id[0].id();
 
         let mut join_set = JoinSet::new();
-        for i in 0..N_POOL_MULTIPLEX_CHROMIUM_RUNS {
-            let this_run_suspension_pool_ids = suspension_pool_ids
-                [i..i + MAX_GEM_POOLS_PER_NON_OCM_RUN]
-                .iter()
-                .copied()
+        for _ in 0..N_POOL_MULTIPLEX_CHROMIUM_RUNS {
+            let this_run_suspension_pool_ids = (0..MAX_GEM_POOLS_PER_NON_OCM_RUN)
+                .map(|_| suspension_pool_ids.swap_remove(0))
                 .collect();
 
             join_set.spawn(self.insert_random_pool_multiplex_chromium_run(
@@ -618,6 +635,85 @@ impl TestState {
             .unwrap();
     }
 
+    async fn insert_libraries(&'static self) {
+        let cdna_ids = self
+            .all_extract::<CdnaQuery, _, _, _>(CdnaSummary::id)
+            .await;
+        let people_ids = self.all_people_ids().await;
+
+        let join_set: JoinSet<_> = cdna_ids
+            .into_iter()
+            .map(|id| self.insert_random_library(id, people_ids.choose_unwrap()))
+            .collect();
+
+        join_set.join_all().await;
+    }
+
+    async fn insert_random_library(&self, cdna_id: Uuid, preparer_id: Uuid) {
+        // Technically this isn't 100% correct because Flex libraries and Universal 3'
+        // GEX libraries have different index sets and volumes, but we don't care here
+        let library = LibraryCreation::builder()
+            .inner(
+                LibraryFields::builder()
+                    .cdna_id(cdna_id)
+                    .dual_index_set_name(NonEmptyString::new("SI-TT-A1").unwrap())
+                    .readable_id(random_non_empty_string())
+                    .build(),
+            )
+            .number_of_sample_index_pcr_cycles(RangedU16::new(10).unwrap())
+            .prepared_at(random_time())
+            .preparer_ids(preparer_id)
+            .volume_µl(35)
+            .target_reads_per_cell(RangedU32::new(50_000).unwrap())
+            .build();
+
+        let db_conn = self.root_db_conn().await;
+        db_conn
+            .interact(|db_conn| library.execute(db_conn).unwrap())
+            .await
+            .unwrap();
+    }
+
+    async fn insert_chromium_datasets(&'static self) {
+        let library_ids = self
+            .all_extract::<LibraryQuery, _, _, _>(LibrarySummary::id)
+            .await;
+        let lab_ids = self.all_extract::<LabQuery, _, _, _>(LabSummary::id).await;
+
+        let join_set: JoinSet<_> = library_ids
+            .into_iter()
+            .map(|id| self.insert_random_chromium_dataset(id, lab_ids.choose_unwrap()))
+            .collect();
+
+        join_set.join_all().await;
+    }
+
+    async fn insert_random_chromium_dataset(&self, library_id: Uuid, lab_id: Uuid) {
+        let raw_metrics_contents = include_str!(
+            "../../scamplers-models/src/chromium_dataset/creation/metrics/test-data/\
+             cellranger_multi.csv"
+        );
+        // It's easier to construct this as JSON
+        let dataset = json!(
+            {
+                "name": random_non_empty_string(),
+                "lab_id": lab_id,
+                "data_path": random_non_empty_string(),
+                "delivered_at": random_time(),
+                "library_ids": vec![library_id],
+                "metrics_files": [{"filename": "file", "raw_contents": raw_metrics_contents}],
+                "cmdline": "cellranger multi"
+            }
+        );
+        let dataset: ChromiumDatasetCreation = serde_json::from_value(dataset).unwrap();
+
+        let db_conn = self.root_db_conn().await;
+        db_conn
+            .interact(|db_conn| dataset.execute(db_conn).unwrap())
+            .await
+            .unwrap();
+    }
+
     async fn root_db_conn(&self) -> Connection {
         self.root_db_pool.get().await.unwrap()
     }
@@ -693,13 +789,26 @@ pub struct Database {
     pub suspension_pools: Vec<SuspensionPool>,
     pub _gem_pools: Vec<GemPoolSummary>,
     pub _cdna: Vec<CdnaSummary>,
+    pub _libraries: Vec<LibrarySummary>,
+    pub chromium_datasets: Vec<ChromiumDatasetSummary>,
 }
 
 impl Database {
     async fn new(test_state: &'static TestState) -> Self {
         test_state.populate_db().await;
 
-        let (institutions, people, labs, specimens, suspensions, suspension_pools, gem_pools, cdna) = tokio::join!(
+        let (
+            institutions,
+            people,
+            labs,
+            specimens,
+            suspensions,
+            suspension_pools,
+            gem_pools,
+            cdna,
+            libraries,
+            chromium_datasets,
+        ) = tokio::join!(
             test_state.all::<InstitutionQuery, _>(),
             test_state.all::<PersonQuery, _>(),
             test_state.all::<LabQuery, _>(),
@@ -708,6 +817,8 @@ impl Database {
             test_state.all::<SuspensionPoolQuery, _>(),
             test_state.all::<GemPoolQuery, _>(),
             test_state.all::<CdnaQuery, _>(),
+            test_state.all::<LibraryQuery, _>(),
+            test_state.all::<ChromiumDatasetQuery, _>()
         );
 
         Self {
@@ -719,6 +830,8 @@ impl Database {
             suspension_pools,
             _gem_pools: gem_pools,
             _cdna: cdna,
+            _libraries: libraries,
+            chromium_datasets,
         }
     }
 }

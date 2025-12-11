@@ -4,5 +4,7 @@ create table sequencing_runs (
     readable_id case_insensitive_text unique not null,
     begun_at timestamptz not null,
     finished_at timestamptz,
-    additional_data jsonb
+    additional_data jsonb,
+
+    constraint begun_before_finished check (begun_at <= finished_at)
 );

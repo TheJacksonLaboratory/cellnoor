@@ -1,19 +1,23 @@
 #[cfg(feature = "app")]
-use diesel::prelude::*;
+use diesel::pg::Pg;
 use jiff::Timestamp;
-use macro_attributes::select;
 #[cfg(feature = "app")]
-use scamplers_schema::{chromium_datasets, labs};
+use scamplers_schema::chromium_datasets;
 use uuid::Uuid;
 
 use crate::{
     chromium_dataset::common::{ChromiumDatasetFields, ParsedMetrics},
     lab::LabSummary,
     links::Links,
+    tenx_assay::TenxAssay,
 };
 
-#[select]
-#[cfg_attr(feature = "app", diesel(table_name = chromium_datasets))]
+// Manually derive everything because the query is too complicated to write here
+#[derive(Clone, Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "app", derive(diesel::Selectable, diesel::Queryable))]
+#[cfg_attr(feature = "typescript", derive(::ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(optional_fields))]
+#[cfg_attr(feature = "app", diesel(table_name = chromium_datasets, check_for_backend(Pg)))]
 pub struct ChromiumDatasetSummary {
     id: Uuid,
     #[serde(flatten)]
@@ -26,12 +30,30 @@ pub struct ChromiumDatasetSummary {
     parsed_metrics_files: ParsedMetrics,
 }
 
-#[select]
-#[cfg_attr(feature = "app", diesel(base_query = chromium_datasets::table.inner_join(labs::table)))]
+impl ChromiumDatasetSummary {
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+}
+
+// Manually derive everything because the query is too complicated to write here
+#[derive(Clone, Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "app", derive(diesel::Selectable, diesel::Queryable))]
+#[cfg_attr(feature = "typescript", derive(::ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(optional_fields))]
+#[cfg_attr(feature = "app", diesel(table_name = chromium_datasets, check_for_backend(Pg)))]
 pub struct ChromiumDataset {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     summary: ChromiumDatasetSummary,
     #[cfg_attr(feature = "app", diesel(embed))]
     lab: LabSummary,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    assay: TenxAssay,
+}
+
+impl ChromiumDataset {
+    pub fn id(&self) -> Uuid {
+        self.summary.id()
+    }
 }

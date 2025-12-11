@@ -18,7 +18,9 @@ pub struct SingleRowCsv {
 
 impl From<SingleRowCsv> for ParsedMetrics {
     fn from(SingleRowCsv { file, parsed_data }: SingleRowCsv) -> Self {
-        ParsedMetrics::SingleRowCsv(vec![ParsedMetricsFile { file, parsed_data }])
+        ParsedMetrics::SingleRowCsv {
+            files: vec![ParsedMetricsFile { file, parsed_data }],
+        }
     }
 }
 

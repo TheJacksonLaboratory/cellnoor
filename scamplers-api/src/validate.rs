@@ -12,6 +12,7 @@ mod lab;
 mod library;
 mod nucleic_acid_measurement;
 mod person;
+mod sequencing_run;
 mod specimen;
 mod suspension;
 mod suspension_pool;

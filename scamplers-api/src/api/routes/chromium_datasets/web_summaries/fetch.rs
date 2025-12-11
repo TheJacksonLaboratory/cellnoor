@@ -14,6 +14,12 @@ pub async fn fetch_web_summary(
     state: State<AppState>,
     user: AuthenticatedUser,
 ) -> Result<(StatusCode, Html<Vec<u8>>), api::ErrorResponse> {
+    tracing::info!(
+        "fetching web summary {} for Chromium dataset {}",
+        web_summary_path.1,
+        web_summary_path.0
+    );
+
     let db_conn = state.db_conn().await?;
     let file = db_conn
         .interact(move |db_conn| web_summary_path.execute_as_user(user.id(), db_conn))

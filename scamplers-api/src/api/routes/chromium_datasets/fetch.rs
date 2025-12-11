@@ -6,7 +6,13 @@ use scamplers_schema::chromium_datasets;
 use crate::{
     api::{
         extract::auth::AuthenticatedUser,
-        routes::{ApiResponse, inner_handler},
+        routes::{
+            ApiResponse,
+            chromium_datasets::common::{
+                chromium_datasets_to_pooled_specimens, chromium_datasets_to_specimens,
+            },
+            inner_handler,
+        },
     },
     db,
     state::AppState,
@@ -23,8 +29,23 @@ pub(super) async fn fetch_chromium_dataset(
 
 impl db::Operation<ChromiumDataset> for ChromiumDatasetId {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<ChromiumDataset, db::Error> {
-        Ok(ChromiumDataset::query()
-            .filter(chromium_datasets::id.eq(self))
+        let filter = chromium_datasets::id.eq(&self);
+
+        let pooled = chromium_datasets_to_pooled_specimens()
+            .select(ChromiumDataset::as_select())
+            .filter(filter)
+            .first(db_conn)
+            .optional()?;
+
+        if let Some(ds) = pooled {
+            return Ok(ds);
+        }
+
+        // If we couldn't find a dataset that derives from a suspension pool, then we
+        // know it derived from individual suspensions
+        Ok(chromium_datasets_to_specimens()
+            .select(ChromiumDataset::as_select())
+            .filter(filter)
             .first(db_conn)?)
     }
 }

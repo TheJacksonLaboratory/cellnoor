@@ -20,14 +20,14 @@ create table chip_loadings (
     id uuid primary key default uuidv7(),
     gem_pool_id uuid references gem_pools on delete restrict on update restrict not null,
     suspension_id uuid references suspensions on delete restrict on update restrict,
-    ocm_barcode_id text,
+    ocm_barcode_id case_insensitive_text,
     suspension_pool_id uuid references suspension_pools on delete restrict on update restrict,
     suspension_volume_loaded jsonb not null,
     buffer_volume_loaded jsonb not null,
     additional_data jsonb,
 
-    -- In theory, someone could insert a row with a `suspension_id` and no `ocm_barcode_id` and then another row with a
-    -- `suspension_id` and an `ocm_barcode_id`, but the application prevents this
+    -- In theory, someone could insert two rows with the same `gem_pool_id` and `suspension_id` - one with an
+    -- `ocm_barcode_id` and another without one, but the application prevents this
     unique nulls not distinct (gem_pool_id, suspension_id, ocm_barcode_id),
     unique nulls not distinct (gem_pool_id, suspension_pool_id, ocm_barcode_id),
     constraint has_suspension check ((suspension_id is null) != (suspension_pool_id is null))

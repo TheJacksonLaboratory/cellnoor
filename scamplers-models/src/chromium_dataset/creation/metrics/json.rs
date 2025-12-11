@@ -14,7 +14,9 @@ pub struct Json {
 
 impl From<Json> for ParsedMetrics {
     fn from(Json { file, parsed_data }: Json) -> Self {
-        ParsedMetrics::Json(vec![ParsedMetricsFile { file, parsed_data }])
+        ParsedMetrics::Json {
+            files: vec![ParsedMetricsFile { file, parsed_data }],
+        }
     }
 }
 

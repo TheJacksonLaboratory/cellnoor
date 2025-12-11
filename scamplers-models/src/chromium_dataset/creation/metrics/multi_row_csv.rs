@@ -20,12 +20,12 @@ pub struct MultiRowCsv {
 
 impl From<Vec<MultiRowCsv>> for ParsedMetrics {
     fn from(files: Vec<MultiRowCsv>) -> Self {
-        ParsedMetrics::MultiRowCsv(
-            files
+        ParsedMetrics::MultiRowCsv {
+            files: files
                 .into_iter()
                 .map(|MultiRowCsv { file, parsed_data }| ParsedMetricsFile { file, parsed_data })
                 .collect(),
-        )
+        }
     }
 }
 
@@ -79,15 +79,15 @@ pub struct Row {
 #[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize, Eq)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 pub struct SimpleFields {
-    #[serde(rename(deserialize = "Category"))]
+    #[serde(alias = "Category")]
     category: String,
-    #[serde(rename(deserialize = "Library Type"))]
+    #[serde(alias = "Library Type")]
     library_type: LibraryType,
-    #[serde(rename(deserialize = "Grouped By"))]
+    #[serde(alias = "Grouped By")]
     grouped_by: String,
-    #[serde(rename(deserialize = "Group Name"))]
+    #[serde(alias = "Group Name")]
     group_name: String,
-    #[serde(rename(deserialize = "Metric Name"))]
+    #[serde(alias = "Metric Name")]
     metric_name: String,
 }
 

@@ -21,6 +21,12 @@ pub struct CdnaSummary {
     n_amplification_cycles: i32,
 }
 
+impl CdnaSummary {
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+}
+
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = cdna, base_query = cdna::table.inner_join(gem_pools::table)))]
 pub struct Cdna {
@@ -34,7 +40,7 @@ pub struct Cdna {
 impl Cdna {
     #[must_use]
     pub fn id(&self) -> Uuid {
-        self.summary.id
+        self.summary.id()
     }
 
     #[must_use]
