@@ -94,6 +94,7 @@ fn validate_sequencing_runs_finished(
     Ok(())
 }
 
+#[allow(clippy::type_complexity)]
 fn fetch_validation_data(
     library_ids: &[Uuid],
     db_conn: &mut diesel::PgConnection,

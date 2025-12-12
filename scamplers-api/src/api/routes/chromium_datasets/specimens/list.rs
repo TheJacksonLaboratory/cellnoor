@@ -1,18 +1,15 @@
 use axum::{extract::State, http::StatusCode};
 use diesel::prelude::*;
 use scamplers_models::{chromium_dataset::ChromiumDatasetIdSpecimens, specimen::SpecimenSummary};
-use scamplers_schema::{chromium_datasets, specimens};
+use scamplers_schema::{
+    cdna, chip_loadings, chromium_dataset_libraries, chromium_datasets, gem_pools, libraries,
+    specimens, suspension_pools, suspension_tagging, suspensions,
+};
 
 use crate::{
     api::{
         extract::auth::AuthenticatedUser,
-        routes::{
-            ApiResponse,
-            chromium_datasets::common::{
-                chromium_datasets_to_pooled_specimens, chromium_datasets_to_specimens,
-            },
-            inner_handler,
-        },
+        routes::{ApiResponse, inner_handler},
     },
     db,
     state::AppState,
@@ -37,7 +34,7 @@ impl db::Operation<Vec<SpecimenSummary>> for ChromiumDatasetIdSpecimens {
         let filter = chromium_datasets::id.eq(&self);
         let ordering = specimens::received_at;
 
-        let mut specimens: Vec<SpecimenSummary> = chromium_datasets_to_pooled_specimens()
+        let mut specimens = chromium_datasets_to_pooled_specimens()
             .select(SpecimenSummary::as_select())
             .filter(filter)
             .order_by(ordering)
@@ -45,7 +42,7 @@ impl db::Operation<Vec<SpecimenSummary>> for ChromiumDatasetIdSpecimens {
 
         // If we couldn't find pooled specimens, then we know they weren't pooled
         if specimens.is_empty() {
-            specimens = chromium_datasets_to_specimens()
+            specimens = chromium_datasets_to_unpooled_specimens()
                 .select(SpecimenSummary::as_select())
                 .filter(filter)
                 .order_by(ordering)
@@ -54,6 +51,35 @@ impl db::Operation<Vec<SpecimenSummary>> for ChromiumDatasetIdSpecimens {
 
         Ok(specimens)
     }
+}
+
+#[diesel::dsl::auto_type]
+fn chromium_datasets_to_unpooled_specimens() -> _ {
+    chromium_datasets::table.inner_join(chromium_dataset_libraries::table.inner_join(
+        libraries::table.inner_join(cdna::table.inner_join(gem_pools::table.inner_join(
+            chip_loadings::table.inner_join(suspensions::table.inner_join(specimens::table)),
+        ))),
+    ))
+}
+
+#[diesel::dsl::auto_type]
+fn chromium_datasets_to_pooled_specimens() -> _ {
+    chromium_datasets::table.inner_join(
+        chromium_dataset_libraries::table.inner_join(
+            libraries::table.inner_join(
+                cdna::table.inner_join(
+                    gem_pools::table.inner_join(
+                        chip_loadings::table.inner_join(
+                            suspension_pools::table.inner_join(
+                                suspension_tagging::table
+                                    .inner_join(suspensions::table.inner_join(specimens::table)),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+    )
 }
 
 #[cfg(test)]

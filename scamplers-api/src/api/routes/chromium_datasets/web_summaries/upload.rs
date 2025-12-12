@@ -62,7 +62,7 @@ impl WebSummary {
     }
 }
 
-impl<'a> db::Operation<()> for Vec<WebSummary> {
+impl db::Operation<()> for Vec<WebSummary> {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<(), db::Error> {
         diesel::insert_into(chromium_dataset_web_summaries::table)
             .values(self)

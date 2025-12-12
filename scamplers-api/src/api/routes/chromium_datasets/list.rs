@@ -5,20 +5,26 @@ use jiff_diesel::ToDiesel;
 use scamplers_models::chromium_dataset::{
     ChromiumDatasetFilter, ChromiumDatasetQuery, ChromiumDatasetSummary,
 };
-use scamplers_schema::{chromium_datasets::dsl::*, specimens, tenx_assays};
+use scamplers_schema::{
+    cdna::dsl::cdna,
+    chip_loadings::dsl::chip_loadings,
+    chromium_dataset_libraries::dsl::chromium_dataset_libraries,
+    chromium_datasets::dsl::*,
+    chromium_runs::dsl::chromium_runs,
+    gem_pools::dsl::gem_pools,
+    libraries::dsl::libraries,
+    specimens::{self, table as specimens_table},
+    suspension_pools::dsl::suspension_pools,
+    suspension_tagging::dsl::suspension_tagging,
+    suspensions::{self, table as suspensions_table},
+    tenx_assays::{self, table as tenx_assays_table},
+};
 use serde_qs::axum::QsQuery;
-use uuid::Uuid;
 
 use crate::{
     api::{
         extract::auth::AuthenticatedUser,
-        routes::{
-            ApiResponse, Root,
-            chromium_datasets::common::{
-                chromium_datasets_to_pooled_specimens, chromium_datasets_to_specimens,
-            },
-            inner_handler,
-        },
+        routes::{ApiResponse, Root, inner_handler},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter},
     state::AppState,
@@ -45,52 +51,63 @@ impl db::Operation<Vec<ChromiumDatasetSummary>> for ChromiumDatasetQuery {
             order_by,
         } = self;
 
-        let dataset_ids_derived_from_suspensions: Vec<Uuid> = chromium_datasets_to_specimens()
-            .select(id)
-            .filter(filter.to_boxed_filter())
-            .load(db_conn)?;
-
-        let dataset_ids_derived_from_suspension_pools: Vec<Uuid> =
-            chromium_datasets_to_pooled_specimens()
-                .select(id)
-                .filter(filter.to_boxed_filter())
-                .load(db_conn)?;
-
-        let all: Vec<_> = dataset_ids_derived_from_suspensions
-            .into_iter()
-            .chain(dataset_ids_derived_from_suspension_pools)
-            .collect();
-
-        let mut all = chromium_datasets
+        let mut stmt = chromium_datasets_to_all_specimens()
             .select(ChromiumDatasetSummary::as_select())
-            .filter(id.eq_any(&all))
             .limit(limit)
             .offset(offset)
+            .filter(filter.to_boxed_filter())
             .into_boxed();
+
         for ordering in order_by.as_ref() {
-            all = all.order_by(ordering);
+            stmt = stmt.then_order_by(ordering);
         }
 
-        Ok(all.load(db_conn)?)
+        Ok(stmt.load(db_conn)?)
     }
+}
+
+diesel::alias!(specimens as pooled_specimens: PooledSpecimens);
+diesel::alias!(suspensions as pooled_suspensions: PooledSuspensions);
+
+#[diesel::dsl::auto_type]
+pub(crate) fn chromium_datasets_to_all_specimens() -> _ {
+    chromium_datasets.inner_join(
+        chromium_dataset_libraries.inner_join(
+            libraries.inner_join(
+                cdna.inner_join(
+                    gem_pools
+                        .inner_join(
+                            chip_loadings
+                                .left_join(suspensions_table.inner_join(specimens_table))
+                                .left_join(suspension_pools.inner_join(
+                                    suspension_tagging.inner_join(
+                                        pooled_suspensions.inner_join(pooled_specimens),
+                                    ),
+                                )),
+                        )
+                        .inner_join(chromium_runs.inner_join(tenx_assays_table)),
+                ),
+            ),
+        ),
+    )
 }
 
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for ChromiumDatasetFilter
 where
     id: SelectableExpression<QS>,
-    specimens::id: SelectableExpression<QS>,
-    specimens::name: SelectableExpression<QS>,
-    specimens::submitted_by: SelectableExpression<QS>,
-    specimens::lab_id: SelectableExpression<QS>,
-    specimens::received_at: SelectableExpression<QS>,
-    specimens::species: SelectableExpression<QS>,
+    AssumeNotNull<specimens::id>: SelectableExpression<QS>,
+    AssumeNotNull<specimens::name>: SelectableExpression<QS>,
+    AssumeNotNull<specimens::submitted_by>: SelectableExpression<QS>,
+    AssumeNotNull<specimens::lab_id>: SelectableExpression<QS>,
+    AssumeNotNull<specimens::received_at>: SelectableExpression<QS>,
+    AssumeNotNull<specimens::species>: SelectableExpression<QS>,
     AssumeNotNull<specimens::host_species>: SelectableExpression<QS>,
-    specimens::type_: SelectableExpression<QS>,
+    AssumeNotNull<specimens::type_>: SelectableExpression<QS>,
     AssumeNotNull<specimens::tissue>: SelectableExpression<QS>,
     AssumeNotNull<specimens::embedded_in>: SelectableExpression<QS>,
     AssumeNotNull<specimens::fixative>: SelectableExpression<QS>,
-    specimens::frozen: SelectableExpression<QS>,
-    specimens::cryopreserved: SelectableExpression<QS>,
+    AssumeNotNull<specimens::frozen>: SelectableExpression<QS>,
+    AssumeNotNull<specimens::cryopreserved>: SelectableExpression<QS>,
     AssumeNotNull<specimens::returned_by>: SelectableExpression<QS>,
     AssumeNotNull<specimens::returned_at>: SelectableExpression<QS>,
     AssumeNotNull<specimens::additional_data>: SelectableExpression<QS>,

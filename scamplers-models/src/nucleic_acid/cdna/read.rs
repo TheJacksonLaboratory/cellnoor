@@ -22,6 +22,7 @@ pub struct CdnaSummary {
 }
 
 impl CdnaSummary {
+    #[must_use]
     pub fn id(&self) -> Uuid {
         self.id
     }

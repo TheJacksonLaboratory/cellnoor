@@ -24,10 +24,12 @@ pub struct LibrarySummary {
 }
 
 impl LibrarySummary {
+    #[must_use]
     pub fn id(&self) -> Uuid {
         self.id
     }
 
+    #[must_use]
     pub fn prepared_at(&self) -> Timestamp {
         self.prepared_at
     }

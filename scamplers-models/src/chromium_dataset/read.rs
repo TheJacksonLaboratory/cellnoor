@@ -31,6 +31,7 @@ pub struct ChromiumDatasetSummary {
 }
 
 impl ChromiumDatasetSummary {
+    #[must_use]
     pub fn id(&self) -> Uuid {
         self.id
     }
@@ -53,6 +54,7 @@ pub struct ChromiumDataset {
 }
 
 impl ChromiumDataset {
+    #[must_use]
     pub fn id(&self) -> Uuid {
         self.summary.id()
     }

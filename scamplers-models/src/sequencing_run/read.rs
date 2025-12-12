@@ -22,6 +22,7 @@ pub struct SequencingRun {
 }
 
 impl SequencingRun {
+    #[must_use]
     pub fn id(&self) -> Uuid {
         self.id
     }

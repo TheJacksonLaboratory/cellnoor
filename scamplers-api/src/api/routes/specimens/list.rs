@@ -51,21 +51,23 @@ impl db::Operation<Vec<SpecimenSummary>> for SpecimenQuery {
     }
 }
 
+// In order to be composed into a `ChromiumDatasetFilter`, we need calls to
+// `assume_not_null`, which has no essentially no runtime impact
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for SpecimenFilter
 where
-    t::id: SelectableExpression<QS>,
-    t::name: SelectableExpression<QS>,
-    t::submitted_by: SelectableExpression<QS>,
-    t::lab_id: SelectableExpression<QS>,
-    t::received_at: SelectableExpression<QS>,
-    t::species: SelectableExpression<QS>,
+    AssumeNotNull<t::id>: SelectableExpression<QS>,
+    AssumeNotNull<t::name>: SelectableExpression<QS>,
+    AssumeNotNull<t::submitted_by>: SelectableExpression<QS>,
+    AssumeNotNull<t::lab_id>: SelectableExpression<QS>,
+    AssumeNotNull<t::received_at>: SelectableExpression<QS>,
+    AssumeNotNull<t::species>: SelectableExpression<QS>,
     AssumeNotNull<t::host_species>: SelectableExpression<QS>,
-    t::type_: SelectableExpression<QS>,
+    AssumeNotNull<t::type_>: SelectableExpression<QS>,
     AssumeNotNull<t::tissue>: SelectableExpression<QS>,
     AssumeNotNull<t::embedded_in>: SelectableExpression<QS>,
     AssumeNotNull<t::fixative>: SelectableExpression<QS>,
-    t::frozen: SelectableExpression<QS>,
-    t::cryopreserved: SelectableExpression<QS>,
+    AssumeNotNull<t::frozen>: SelectableExpression<QS>,
+    AssumeNotNull<t::cryopreserved>: SelectableExpression<QS>,
     AssumeNotNull<t::returned_by>: SelectableExpression<QS>,
     AssumeNotNull<t::returned_at>: SelectableExpression<QS>,
     AssumeNotNull<t::additional_data>: SelectableExpression<QS>,
@@ -95,31 +97,31 @@ where
         } = self;
 
         if let Some(ids) = ids {
-            filter = filter.and_condition(t::id.eq_any(ids));
+            filter = filter.and_condition(t::id.assume_not_null().eq_any(ids));
         }
 
         if let Some(names) = names {
-            filter = filter.and_condition(like_any(t::name, names));
+            filter = filter.and_condition(like_any(t::name.assume_not_null(), names));
         }
 
         if let Some(submitter_list) = submitted_by {
-            filter = filter.and_condition(t::submitted_by.eq_any(submitter_list));
+            filter = filter.and_condition(t::submitted_by.assume_not_null().eq_any(submitter_list));
         }
 
         if let Some(labs) = labs {
-            filter = filter.and_condition(t::lab_id.eq_any(labs));
+            filter = filter.and_condition(t::lab_id.assume_not_null().eq_any(labs));
         }
 
         if let Some(received_before) = received_before.map(ToDiesel::to_diesel) {
-            filter = filter.and_condition(t::received_at.lt(received_before));
+            filter = filter.and_condition(t::received_at.assume_not_null().lt(received_before));
         }
 
         if let Some(received_after) = received_after.map(ToDiesel::to_diesel) {
-            filter = filter.and_condition(t::received_at.gt(received_after));
+            filter = filter.and_condition(t::received_at.assume_not_null().gt(received_after));
         }
 
         if let Some(species_list) = species {
-            filter = filter.and_condition(t::species.eq_any(species_list));
+            filter = filter.and_condition(t::species.assume_not_null().eq_any(species_list));
         }
 
         if let Some(host_species_list) = host_species {
@@ -128,7 +130,7 @@ where
         }
 
         if let Some(types) = types {
-            filter = filter.and_condition(t::type_.eq_any(types));
+            filter = filter.and_condition(t::type_.assume_not_null().eq_any(types));
         }
 
         if let Some(embedding_matrices) = embedded_in {
@@ -141,11 +143,11 @@ where
         }
 
         if let Some(is_frozen) = frozen {
-            filter = filter.and_condition(t::frozen.eq(is_frozen));
+            filter = filter.and_condition(t::frozen.assume_not_null().eq(is_frozen));
         }
 
         if let Some(is_cryopreserved) = cryopreserved {
-            filter = filter.and_condition(t::cryopreserved.eq(is_cryopreserved));
+            filter = filter.and_condition(t::cryopreserved.assume_not_null().eq(is_cryopreserved));
         }
 
         if let Some(tissues) = tissues {

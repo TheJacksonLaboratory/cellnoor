@@ -1,9 +1,9 @@
 use axum::Router;
 use axum_extra::routing::RouterExt;
+pub(crate) use list::chromium_datasets_to_all_specimens;
 
 use crate::state::AppState;
 
-pub(crate) mod common;
 mod create;
 mod fetch;
 mod libraries;

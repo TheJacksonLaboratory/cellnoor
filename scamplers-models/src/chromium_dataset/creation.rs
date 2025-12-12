@@ -86,10 +86,12 @@ pub struct GenericChromiumDatasetCreation {
 }
 
 impl ChromiumDatasetCreation {
+    #[must_use]
     pub fn cmdline(&self) -> &str {
         self.into()
     }
 
+    #[must_use]
     pub fn library_ids(&self) -> &[Uuid] {
         match self {
             Self::CellrangerarcCount { library_ids, .. }
@@ -100,6 +102,7 @@ impl ChromiumDatasetCreation {
         }
     }
 
+    #[must_use]
     pub fn delivered_at(&self) -> Timestamp {
         match self {
             Self::CellrangerarcCount { delivered_at, .. }
@@ -110,6 +113,7 @@ impl ChromiumDatasetCreation {
         }
     }
 
+    #[must_use]
     pub fn data_path(&self) -> &str {
         match self {
             Self::CellrangerarcCount { inner, .. }
@@ -120,6 +124,7 @@ impl ChromiumDatasetCreation {
         }
     }
 
+    #[must_use]
     pub fn split_for_insertion(self) -> (GenericChromiumDatasetCreation, Vec<Uuid>) {
         match self {
             Self::CellrangerarcCount {

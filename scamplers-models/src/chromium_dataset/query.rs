@@ -1,3 +1,5 @@
+#![allow(clippy::implicit_clone)]
+
 use jiff::Timestamp;
 use macro_attributes::{filter, order_by};
 use macros::uuid_newtype;
