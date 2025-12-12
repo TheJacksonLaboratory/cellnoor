@@ -1,3 +1,8 @@
 {
-  "workspaces": ["scamplers-ui", "scamplers-types"]
+  "workspaces": ["scamplers-ui", "scamplers-types"],
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "daisyui": "^5.5.13",
+    "tailwindcss": "^4.1.18"
+  }
 }

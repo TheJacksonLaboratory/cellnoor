@@ -4,10 +4,22 @@ import { hexEncodedApiKeyFromCookies } from "./auth/cookies";
 import { API_KEY_ENCRYPTION_SECRET } from "./auth/crypto";
 import { readConfig } from "$lib/server/config";
 
-class ApiClient {
+let apiClient: ApiClient | null = null;
+
+export class ApiClient {
   readonly apiBaseUrl: string;
 
-  constructor(apiBaseUrl: string) {
+  static async get(): Promise<ApiClient> {
+    if (apiClient !== null) {
+      return apiClient;
+    }
+
+    apiClient = new ApiClient((await readConfig()).apiUrl);
+
+    return apiClient;
+  }
+
+  private constructor(apiBaseUrl: string) {
     this.apiBaseUrl = apiBaseUrl;
   }
 
@@ -59,16 +71,4 @@ class ApiClient {
   async listInstitutions(event: ServerLoadEvent): Promise<Institution[]> {
     return await this.get(event, "institutions");
   }
-}
-
-let apiClient: ApiClient | null = null;
-
-export async function getApiClient(): Promise<ApiClient> {
-  if (apiClient !== null) {
-    return apiClient;
-  }
-
-  apiClient = new ApiClient((await readConfig()).apiUrl);
-
-  return apiClient;
 }
