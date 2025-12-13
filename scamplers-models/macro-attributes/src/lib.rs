@@ -210,7 +210,7 @@ pub fn order_by(attr: TokenStream, input: TokenStream) -> TokenStream {
         #base_derives
         #[derive(::serde::Deserialize, ::serde::Serialize)]
         #[derive(Copy)]
-        #[serde(rename_all = "snake_case", tag = "field")]
+        #[serde(rename_all = "snake_case")]
         #enum_def
 
         #[cfg(feature = "app")]
