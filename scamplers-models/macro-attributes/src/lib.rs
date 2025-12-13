@@ -124,7 +124,7 @@ pub fn filter(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let input: proc_macro2::TokenStream = input.into();
 
     quote! {
-        #[derive(::serde::Deserialize)]
+        #[derive(::serde::Deserialize, ::serde::Serialize)]
         #base_derives
         #[serde(deny_unknown_fields)]
         #[cfg_attr(feature = "builder", derive(bon::Builder))]
@@ -208,7 +208,7 @@ pub fn order_by(attr: TokenStream, input: TokenStream) -> TokenStream {
 
     quote! {
         #base_derives
-        #[derive(::serde::Deserialize)]
+        #[derive(::serde::Deserialize, ::serde::Serialize)]
         #[derive(Copy)]
         #[serde(rename_all = "snake_case", tag = "field")]
         #enum_def

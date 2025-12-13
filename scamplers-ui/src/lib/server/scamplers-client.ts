@@ -1,15 +1,15 @@
-import type { Institution } from "scamplers-types/Institution";
 import type { ServerLoadEvent } from "@sveltejs/kit";
 import { hexEncodedApiKeyFromCookies } from "./auth/cookies";
 import { API_KEY_ENCRYPTION_SECRET } from "./auth/crypto";
 import { readConfig } from "$lib/server/config";
+import qs from "qs";
 
 let apiClient: ApiClient | null = null;
 
 export class ApiClient {
   readonly apiBaseUrl: string;
 
-  static async get(): Promise<ApiClient> {
+  static async new(): Promise<ApiClient> {
     if (apiClient !== null) {
       return apiClient;
     }
@@ -29,9 +29,17 @@ export class ApiClient {
       endpoint,
       method,
       data,
-    }: { endpoint: string; method: string; data?: unknown },
+    }: { endpoint?: string; method: string; data?: unknown },
   ): Promise<T> {
-    const apiUrl = `${this.apiBaseUrl}/${endpoint}?${url.search}`;
+    if (!endpoint) {
+      endpoint = url.pathname;
+    }
+    console.log(qs.parse(url.search.replace("?", "")));
+
+    let apiUrl = `${this.apiBaseUrl}${endpoint}${url.search}`;
+    if (!url.search.includes("limit=")) {
+      apiUrl = `${apiUrl}&limit=50`;
+    }
 
     const apiKey = await hexEncodedApiKeyFromCookies(
       cookies,
@@ -56,19 +64,15 @@ export class ApiClient {
     return asJson;
   }
 
-  private async get<T>(event: ServerLoadEvent, endpoint: string): Promise<T> {
+  async get<T>(event: ServerLoadEvent, endpoint?: string): Promise<T> {
     return await this.sendRequest(event, { endpoint, method: "GET" });
   }
 
-  private async post<T>(
+  async post<T>(
     event: ServerLoadEvent,
     endpoint: string,
     data: unknown,
   ): Promise<T> {
     return await this.sendRequest(event, { endpoint, method: "POST", data });
-  }
-
-  async listInstitutions(event: ServerLoadEvent): Promise<Institution[]> {
-    return await this.get(event, "institutions");
   }
 }

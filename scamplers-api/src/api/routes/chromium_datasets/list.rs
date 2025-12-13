@@ -71,25 +71,27 @@ diesel::alias!(suspensions as pooled_suspensions: PooledSuspensions);
 
 #[diesel::dsl::auto_type]
 pub(crate) fn chromium_datasets_to_all_specimens() -> _ {
-    chromium_datasets.inner_join(
-        chromium_dataset_libraries.inner_join(
-            libraries.inner_join(
-                cdna.inner_join(
-                    gem_pools
-                        .inner_join(
-                            chip_loadings
-                                .left_join(suspensions_table.inner_join(specimens_table))
-                                .left_join(suspension_pools.inner_join(
-                                    suspension_tagging.inner_join(
-                                        pooled_suspensions.inner_join(pooled_specimens),
-                                    ),
-                                )),
-                        )
-                        .inner_join(chromium_runs.inner_join(tenx_assays_table)),
+    chromium_datasets
+        .inner_join(
+            chromium_dataset_libraries.inner_join(
+                libraries.inner_join(
+                    cdna.inner_join(
+                        gem_pools
+                            .inner_join(
+                                chip_loadings
+                                    .left_join(suspensions_table.inner_join(specimens_table))
+                                    .left_join(suspension_pools.inner_join(
+                                        suspension_tagging.inner_join(
+                                            pooled_suspensions.inner_join(pooled_specimens),
+                                        ),
+                                    )),
+                            )
+                            .inner_join(chromium_runs.inner_join(tenx_assays_table)),
+                    ),
                 ),
             ),
-        ),
-    )
+        )
+        .distinct()
 }
 
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for ChromiumDatasetFilter

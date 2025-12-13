@@ -3,9 +3,12 @@
 </script>
 
 <div class="flex place-content-center place-items-center h-screen">
-<button class="btn btn-ghost p-0"     onclick={async () => {
+  <button
+    class="btn btn-ghost p-0"
+    onclick={async () => {
       await authClient.signIn.social({ provider: "microsoft" });
-    }}>
+    }}
+  >
     <!-- https://learn.microsoft.com/en-us/entra/identity-platform/howto-add-branding-in-apps -->
     <svg
       aria-label="Microsoft Logo"
@@ -98,5 +101,5 @@
       <rect x="23" y="11" width="9" height="9" fill="#7fba00" />
       <rect x="23" y="21" width="9" height="9" fill="#ffb900" />
     </svg>
-    </button>
+  </button>
 </div>

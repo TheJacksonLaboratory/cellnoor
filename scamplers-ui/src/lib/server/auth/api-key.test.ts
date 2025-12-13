@@ -24,8 +24,6 @@ test("API key should be the same after encryption and decryption", async () => {
       encryptedApiKey.hexEncode(),
     ),
   );
-  console.log(randomValues);
-  console.log(decryptedApiKey);
 
   expect(decryptedApiKey).toEqual(randomValues);
 });

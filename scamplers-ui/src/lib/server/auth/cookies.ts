@@ -1,5 +1,6 @@
 import type { Cookies } from "@sveltejs/kit";
-import { decryptApiKey } from "./crypto";
+import { API_KEY_ENCRYPTION_SECRET, decryptApiKey } from "./crypto";
+import { readConfig } from "../config";
 
 export class CookieNames {
   static get encryptedApiKey(): string {
@@ -40,4 +41,26 @@ export async function hexEncodedApiKeyFromCookies(
   }
 
   return new Uint8Array(decryptedBytes).toHex();
+}
+
+export async function userIdFromCookies(
+  cookies: Cookies,
+  dbClient: Bun.SQL,
+): Promise<string | null> {
+  const config = await readConfig();
+  const apiKeyPrefixLength = config.apiKeyPrefixLength;
+
+  const userApiKey = await apiKeyFromCookies(
+    cookies,
+    API_KEY_ENCRYPTION_SECRET,
+  );
+  if (!userApiKey) {
+    return null;
+  }
+
+  const userApiKeyPrefix = userApiKey.slice(0, apiKeyPrefixLength);
+  const results =
+    await dbClient`select user_id from api_keys where prefix = ${userApiKeyPrefix};`;
+
+  return results[0].user_id;
 }
