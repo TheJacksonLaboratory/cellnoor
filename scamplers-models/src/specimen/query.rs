@@ -59,7 +59,9 @@ pub enum SpecimenOrderBy {
 
 impl Default for SpecimenOrderBy {
     fn default() -> Self {
-        Self::received_at { descending: None }
+        Self::received_at {
+            descending: Some(true),
+        }
     }
 }
 

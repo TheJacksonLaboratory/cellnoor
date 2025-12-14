@@ -40,15 +40,18 @@ export const AUTH_SECRET = new Uint8Array(
   ),
 ).toHex();
 
-export async function decryptApiKey(
-  initializationVector: string,
+export async function decryptHexEncodedApiKey(
+  hexEncodedInitializationVector: string,
   encryptionSecret: CryptoKey,
-  encryptedApiKey: string,
+  hexEncodedEncryptedApiKey: string,
 ): Promise<ArrayBuffer> {
   const decrypt = await crypto.subtle.decrypt(
-    { iv: Uint8Array.fromHex(initializationVector), ...ENCRYPTION_ALGORITHM },
+    {
+      iv: Uint8Array.fromHex(hexEncodedInitializationVector),
+      ...ENCRYPTION_ALGORITHM,
+    },
     encryptionSecret,
-    Uint8Array.fromHex(encryptedApiKey),
+    Uint8Array.fromHex(hexEncodedEncryptedApiKey),
   );
 
   return decrypt;

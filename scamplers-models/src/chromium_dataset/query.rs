@@ -35,7 +35,9 @@ pub enum ChromiumDatasetOrderBy {
 
 impl Default for ChromiumDatasetOrderBy {
     fn default() -> Self {
-        Self::delivered_at { descending: None }
+        Self::delivered_at {
+            descending: Some(true),
+        }
     }
 }
 

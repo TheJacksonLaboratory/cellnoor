@@ -2,5 +2,6 @@
 import type { Links } from "./Links";
 import type { NonEmptyString } from "./NonEmptyString";
 import type { ParsedMetrics } from "./ParsedMetrics";
+import type { TenxAssay } from "./TenxAssay";
 
-export type ChromiumDatasetSummary = { id: string, links: Links, delivered_at: string, parsed_metrics_files: ParsedMetrics, name: NonEmptyString, lab_id: string, data_path: NonEmptyString, };
+export type ChromiumDatasetSummary = { id: string, links: Links, delivered_at: string, parsed_metrics_files: ParsedMetrics, assay: TenxAssay, name: NonEmptyString, lab_id: string, data_path: NonEmptyString, };

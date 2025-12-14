@@ -25,7 +25,9 @@ pub enum CdnaOrderBy {
 
 impl Default for CdnaOrderBy {
     fn default() -> Self {
-        Self::prepared_at { descending: None }
+        Self::prepared_at {
+            descending: Some(true),
+        }
     }
 }
 

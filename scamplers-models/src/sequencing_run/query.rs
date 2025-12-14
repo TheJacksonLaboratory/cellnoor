@@ -14,7 +14,9 @@ pub enum SequencingRunOrderBy {
 
 impl Default for SequencingRunOrderBy {
     fn default() -> Self {
-        Self::begun_at { descending: None }
+        Self::begun_at {
+            descending: Some(true),
+        }
     }
 }
 

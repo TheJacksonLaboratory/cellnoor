@@ -27,7 +27,9 @@ pub enum LibraryOrderBy {
 
 impl Default for LibraryOrderBy {
     fn default() -> Self {
-        Self::prepared_at { descending: None }
+        Self::prepared_at {
+            descending: Some(true),
+        }
     }
 }
 

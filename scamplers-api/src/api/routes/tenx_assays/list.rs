@@ -1,8 +1,26 @@
+use axum::{extract::State, http::StatusCode};
 use diesel::{dsl::AssumeNotNull, prelude::*};
 use scamplers_models::tenx_assay::{TenxAssay, TenxAssayFilter, TenxAssayQuery};
 use scamplers_schema::tenx_assays::dsl::*;
+use serde_qs::axum::QsQuery;
 
-use crate::db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, utils::like_any};
+use crate::{
+    api::{
+        extract::auth::AuthenticatedUser,
+        routes::{ApiResponse, Root, inner_handler},
+    },
+    db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, utils::like_any},
+    state::AppState,
+};
+
+pub async fn list_tenx_assays(
+    _: Root,
+    state: State<AppState>,
+    user: AuthenticatedUser,
+    QsQuery(request): QsQuery<TenxAssayQuery>,
+) -> ApiResponse<Vec<TenxAssay>> {
+    Ok((StatusCode::OK, inner_handler(state, user, request).await?))
+}
 
 impl db::Operation<Vec<TenxAssay>> for TenxAssayQuery {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Vec<TenxAssay>, db::Error> {

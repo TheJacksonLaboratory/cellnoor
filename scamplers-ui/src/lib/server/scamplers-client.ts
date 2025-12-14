@@ -34,10 +34,10 @@ export class ApiClient {
     if (!endpoint) {
       endpoint = url.pathname;
     }
-    console.log(qs.parse(url.search.replace("?", "")));
+    const querystring = url.search ? url.search : "?";
 
-    let apiUrl = `${this.apiBaseUrl}${endpoint}${url.search}`;
-    if (!url.search.includes("limit=")) {
+    let apiUrl = `${this.apiBaseUrl}${endpoint}${querystring}`;
+    if (!querystring.includes("limit=")) {
       apiUrl = `${apiUrl}&limit=50`;
     }
 
@@ -45,6 +45,7 @@ export class ApiClient {
       cookies,
       API_KEY_ENCRYPTION_SECRET,
     );
+
     const options: RequestInit = {
       method,
       headers: {

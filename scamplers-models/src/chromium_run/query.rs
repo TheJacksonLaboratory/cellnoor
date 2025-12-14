@@ -25,7 +25,9 @@ pub enum ChromiumRunOrderBy {
 
 impl Default for ChromiumRunOrderBy {
     fn default() -> Self {
-        Self::run_at { descending: None }
+        Self::run_at {
+            descending: Some(true),
+        }
     }
 }
 

@@ -1,35 +1,41 @@
 <script lang="ts">
   import { authClient } from "$lib/auth-client";
+  import { DATETIME_FORMATTER } from "$lib/date.js";
 
   const session = authClient.useSession();
-  let apiKeyPrefixes: string[] = $state([]);
+  const { data } = $props();
+  let apiKeyPrefixes = $state(data.apiKeyPrefixes);
   let newApiKey: string | undefined = $state();
   let developerToolsDialogBox: HTMLDialogElement;
-
-  async function getApiKeyPrefixes() {
-    const response = await fetch("/ui-api/api-keys");
-    const json = await response.json();
-
-    apiKeyPrefixes = json.apiKeyPrefixes;
-  }
 
   async function createApiKey() {
     const response = await fetch("/ui-api/api-keys", { method: "POST" });
     const json = await response.json();
 
-    await getApiKeyPrefixes();
-    newApiKey = json.apiKey;
+    const { api_key, created_at } = json;
+    if (api_key) {
+      // The apiKey is returned as a hex-encoded, meaning each byte is represented by two characters
+      apiKeyPrefixes.push({
+        prefix: api_key.slice(0, data.apiKeyPrefixLength * 2),
+        created_at: new Date(created_at),
+      });
+      newApiKey = api_key;
+    }
   }
 
-  async function deleteApiKey(apiKeyPrefix: string) {
-    await fetch("/ui-api/api-keys", {
+  async function deleteApiKey(apiKeyPrefix: string, idx: number) {
+    const response = await fetch("/ui-api/api-keys", {
       body: JSON.stringify({
         apiKeyPrefix,
       }),
       method: "DELETE",
     });
 
-    await getApiKeyPrefixes();
+    const { error } = await response.json();
+
+    if (!error) {
+      apiKeyPrefixes.splice(idx, 1);
+    }
   }
 </script>
 
@@ -53,32 +59,39 @@
           class="btn btn-primary"
           onclick={async () => {
             developerToolsDialogBox.showModal();
-            await getApiKeyPrefixes();
           }}
         >
-          Developer tools
+          API Keys
         </button>
         <dialog bind:this={developerToolsDialogBox} class="modal">
-          <div class="modal-box">
+          <div class="modal-box max-w-full xl:max-w-1/2 lg:max-w-3/4">
             {#if apiKeyPrefixes.length > 0}
               <p class="font-bold text-lg">API keys</p>
               <table class="table">
                 <thead>
                   <tr>
-                    <th>API Key Prefix (hex-encoded)</th>
+                    <th>API key prefix (hex-encoded)</th>
+                    <th>Created at</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {#each apiKeyPrefixes as apiKeyPrefix}
+                  {#each apiKeyPrefixes as { prefix, created_at }, i}
                     <tr>
                       <td>
-                        {apiKeyPrefix}
+                        {prefix}
+                      </td>
+                      <td>
+                        {
+                          DATETIME_FORMATTER.format(
+                            created_at,
+                          )
+                        }
                       </td>
                       <td>
                         <button
                           onclick={async () => {
-                            await deleteApiKey(apiKeyPrefix);
+                            await deleteApiKey(prefix, i);
                           }}
                           class="btn btn-error"
                         >
@@ -95,9 +108,10 @@
             </button>
             {#if newApiKey}
               <div class="wrap-anywhere py-1 text-left">
-                Your new API key is <span class="font-bold">{newApiKey}</span>.
-                You will not be able to view this API key after leaving or
-                refreshing this page.
+                Your new (hex-encoded) API key is <code class="font-extrabold">{
+                  newApiKey
+                }</code>. You will not be able to view this API key after
+                leaving or refreshing this page.
               </div>
             {/if}
             <div class="modal-action">

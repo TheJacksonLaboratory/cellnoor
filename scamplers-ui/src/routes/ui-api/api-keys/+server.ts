@@ -1,81 +1,74 @@
 import type { RequestHandler } from "./$types";
-import { apiKeyFromCookies, userIdFromCookies } from "$lib/server/auth/cookies";
+import { apiKeyFromCookies } from "$lib/server/auth/cookies";
 import { API_KEY_ENCRYPTION_SECRET } from "$lib/server/auth/crypto";
 import { readConfig } from "$lib/server/config";
 import { getDbClient } from "$lib/server/db-client";
 import { EncryptedApiKey } from "$lib/server/auth/api-key";
-import { insertApiKey } from "$lib/server/auth/db";
+import { getUserByApiKeyFromDb, insertApiKeyIntoDb } from "$lib/server/auth/db";
 
-export const GET: RequestHandler = async ({ cookies }) => {
-  const config = await readConfig();
-  const apiKeyPrefixLength = config.apiKeyPrefixLength;
+function permissionDenied(): Response {
+  return new Response(JSON.stringify({ error: "permission denied" }), {
+    status: 401,
+    "headers": { "Content-Type": "application/json" },
+  });
+}
 
-  const thisSessionApiKey = await apiKeyFromCookies(
+export const POST: RequestHandler = async ({ cookies }) => {
+  const currentApiKey = await apiKeyFromCookies(
     cookies,
     API_KEY_ENCRYPTION_SECRET,
   );
-  const thisSessionApiKeyPrefix = thisSessionApiKey?.slice(
-    0,
-    apiKeyPrefixLength,
-  );
+  if (!currentApiKey) {
+    return permissionDenied();
+  }
 
   const dbClient = await getDbClient();
-  const userId = await userIdFromCookies(cookies, dbClient);
-  const apiKeyPrefixResults: { prefix: string }[] =
-    await dbClient`select encode(prefix, 'hex') as prefix from api_keys where user_id = ${userId} and prefix != ${thisSessionApiKeyPrefix} order by prefix`;
-
-  return new Response(
-    JSON.stringify({
-      apiKeyPrefixes: apiKeyPrefixResults.map(
-        ({ prefix }) => {
-          return prefix;
-        },
-      ),
-    }),
-    { headers: { "Content-Type": "application/json" } },
-  );
-};
-
-export const POST: RequestHandler = async ({ cookies }) => {
+  const userId = await getUserByApiKeyFromDb(currentApiKey, dbClient);
   const config = await readConfig();
-  const apiKeyPrefixLength = config.apiKeyPrefixLength;
-  const dbClient = await getDbClient();
-
   const newUnencryptedApiKey = EncryptedApiKey.newUnencrypted();
   const newEncryptedApiKey = await EncryptedApiKey.fromRandomValues(
     newUnencryptedApiKey,
     API_KEY_ENCRYPTION_SECRET,
-    apiKeyPrefixLength,
+    config.apiKeyPrefixLength,
   );
-  const userId = await userIdFromCookies(cookies, dbClient) as string;
 
-  await insertApiKey(newEncryptedApiKey, userId, dbClient);
+  const created_at = await insertApiKeyIntoDb(
+    newEncryptedApiKey,
+    userId,
+    dbClient,
+  );
 
   return new Response(
-    JSON.stringify({ apiKey: newUnencryptedApiKey.toHex() }),
+    JSON.stringify({ api_key: newUnencryptedApiKey.toHex(), created_at }),
     { headers: { "Content-Type": "application/json" } },
   );
 };
 
 export const DELETE: RequestHandler = async ({ cookies, request }) => {
-  const config = await readConfig();
-  const apiKeyPrefixLength = config.apiKeyPrefixLength;
-  const dbClient = await getDbClient();
-
-  const userId = await userIdFromCookies(cookies, dbClient);
-
-  const thisSessionApiKey = await apiKeyFromCookies(
+  const currentApiKey = await apiKeyFromCookies(
     cookies,
     API_KEY_ENCRYPTION_SECRET,
   );
-  const thisSessionApiKeyPrefix = thisSessionApiKey?.slice(
-    0,
-    apiKeyPrefixLength,
-  );
+  if (!currentApiKey) {
+    return permissionDenied();
+  }
 
   const { apiKeyPrefix } = await request.json();
+  if (!apiKeyPrefix) {
+    return new Response(
+      JSON.stringify({ error: "must supply an API key prefix to delete" }),
+      { status: 422, headers: { "Content-Type": "application/json" } },
+    );
+  }
 
-  await dbClient`delete from api_keys where user_id = ${userId} and prefix=decode(${apiKeyPrefix}, 'hex') and prefix != ${thisSessionApiKeyPrefix};`;
+  const dbClient = await getDbClient();
+  const userId = await getUserByApiKeyFromDb(currentApiKey, dbClient);
+  const config = await readConfig();
+  const currentApiKeyPrefix = currentApiKey.slice(0, config.apiKeyPrefixLength);
+  await dbClient`delete from api_keys where user_id = ${userId} and prefix=decode(${apiKeyPrefix}, 'hex') and prefix != ${currentApiKeyPrefix}`;
 
-  return new Response();
+  return new Response(JSON.stringify({}), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 };

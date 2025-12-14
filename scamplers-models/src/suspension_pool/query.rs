@@ -23,7 +23,9 @@ pub enum SuspensionPoolOrderBy {
 
 impl Default for SuspensionPoolOrderBy {
     fn default() -> Self {
-        Self::pooled_at { descending: None }
+        Self::pooled_at {
+            descending: Some(true),
+        }
     }
 }
 

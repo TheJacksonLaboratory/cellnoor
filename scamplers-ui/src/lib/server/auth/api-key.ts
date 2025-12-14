@@ -55,6 +55,10 @@ export class EncryptedApiKey {
     });
   }
 
+  static newUnencrypted(): Uint8Array<ArrayBuffer> {
+    return crypto.getRandomValues(new Uint8Array(API_KEY_LENGTH));
+  }
+
   static async new(
     encryptionSecret: CryptoKey,
     apiKeyPrefixLength: number,
@@ -66,10 +70,6 @@ export class EncryptedApiKey {
       encryptionSecret,
       apiKeyPrefixLength,
     );
-  }
-
-  static newUnencrypted(): Uint8Array<ArrayBuffer> {
-    return crypto.getRandomValues(new Uint8Array(API_KEY_LENGTH));
   }
 
   hexEncode(): string {

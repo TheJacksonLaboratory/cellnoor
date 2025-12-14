@@ -21,6 +21,7 @@ create table people (
 
 create table api_keys (
     prefix bytea unique not null,
+    created_at timestamptz not null default current_timestamp,
     hash text unique not null,
     user_id uuid references people on delete cascade on update cascade not null,
     primary key (prefix, hash)

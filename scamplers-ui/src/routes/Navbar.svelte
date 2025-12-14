@@ -5,19 +5,19 @@
   const { user_name } = $props();
 </script>
 
-<div class="navbar bg-base-300 shadow sticky top-0">
+<nav class="navbar bg-base-300 shadow sticky top-0 z-50">
   <div class="navbar-start">
     <a href={resolve("/")} class="btn btn-lg btn-ghost font-bold">scamplers</a>
   </div>
   <div class="navbar-end">
-    <button class="btn btn-ghost font-bold">
+    <button class="btn btn-ghost font-bold mx-2">
       <a href={resolve("/chromium-datasets")}>Chromium Datasets</a>
     </button>
-    <button class="btn btn-ghost font-bold">
+    <button class="btn btn-ghost font-bold mx-2">
       <a href={resolve("/specimens")}>Specimens</a>
     </button>
     <button
-      class="btn btn-outline btn-primary"
+      class="btn btn-outline btn-primary mx-2"
       popovertarget="name-popover"
       style="anchor-name: --name-anchor"
     >
@@ -44,4 +44,4 @@
       </li>
     </ul>
   </div>
-</div>
+</nav>

@@ -25,7 +25,9 @@ pub enum SuspensionOrderBy {
 
 impl Default for SuspensionOrderBy {
     fn default() -> Self {
-        Self::created_at { descending: None }
+        Self::created_at {
+            descending: Some(true),
+        }
     }
 }
 

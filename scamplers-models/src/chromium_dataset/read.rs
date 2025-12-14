@@ -28,6 +28,8 @@ pub struct ChromiumDatasetSummary {
     #[cfg_attr(feature = "typescript", ts(as = "String"))]
     delivered_at: Timestamp,
     parsed_metrics_files: ParsedMetrics,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    assay: TenxAssay,
 }
 
 impl ChromiumDatasetSummary {
@@ -49,8 +51,6 @@ pub struct ChromiumDataset {
     summary: ChromiumDatasetSummary,
     #[cfg_attr(feature = "app", diesel(embed))]
     lab: LabSummary,
-    #[cfg_attr(feature = "app", diesel(embed))]
-    assay: TenxAssay,
 }
 
 impl ChromiumDataset {

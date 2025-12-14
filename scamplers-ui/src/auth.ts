@@ -10,7 +10,11 @@ import {
 } from "$lib/server/auth/crypto";
 import type { MicrosoftEntraIDProfile } from "better-auth/social-providers";
 import { CookieNames } from "$lib/server/auth/cookies";
-import { deleteApiKey, insertApiKey, insertPerson } from "$lib/server/auth/db";
+import {
+  deleteApiKeyFromDb as deleteApiKeyfromDb,
+  insertApiKeyIntoDb as insertApiKeyIntoDb,
+  upsertPersonIntoDb as upsertPersonIntoDb,
+} from "$lib/server/auth/db";
 import { EncryptedApiKey } from "$lib/server/auth/api-key";
 
 const ONE_YEAR = 60 * 60 * 24 * 365;
@@ -68,16 +72,17 @@ export const auth = betterAuth({
       const appConfig = await readConfig();
       const dbClient = await getDbClient();
 
+      const user_is_signing_out = ctx.path.includes("sign-out");
+
       // If the user is signing out, erase cookies and delete the API key from the database. Note this check is necessarily performed before checking `newSession`
-      if (ctx.path.includes("sign-out")) {
+      if (user_is_signing_out) {
         const [encryptedApiKey, initializationVector] = COOKIE_NAMES.map(
           deleteCookie,
         );
 
-        // Delete the API key from the database
-        await deleteApiKey(
+        await deleteApiKeyfromDb(
           {
-            encryptedApiKey: encryptedApiKey!,
+            hexEncodedEncryptedApiKey: encryptedApiKey!,
             initializationVector: initializationVector!,
             encryptionSecret: API_KEY_ENCRYPTION_SECRET,
             apiKeyPrefixLength: appConfig.apiKeyPrefixLength,
@@ -98,8 +103,7 @@ export const auth = betterAuth({
       }
       delete microsoftEntraProfiles[email];
 
-      // Upsert the user in the database
-      const personId = await insertPerson(
+      const personId = await upsertPersonIntoDb(
         {
           emailVerified,
           ...microsoftEntraProfile,
@@ -107,26 +111,26 @@ export const auth = betterAuth({
         dbClient,
       );
 
-      // Generate an encrypted API key
       const encryptedApiKey = await EncryptedApiKey.new(
         API_KEY_ENCRYPTION_SECRET,
         appConfig.apiKeyPrefixLength,
       );
 
-      await insertApiKey(encryptedApiKey, personId, dbClient);
+      await insertApiKeyIntoDb(encryptedApiKey, personId, dbClient);
 
-      const cookieValues = [
+      const cookies = [[
+        CookieNames.encryptedApiKey,
         encryptedApiKey.hexEncode(),
+      ], [
+        CookieNames.apiKeyInitializationVector,
         encryptedApiKey.hexEncodedInitializationVector(),
-      ];
-      const setCookie = (cookieName: string, cookieValueIdx: number) => {
-        ctx.setCookie(cookieName, cookieValues[cookieValueIdx]!, {
+      ]];
+      for (const [cookieName, cookieValue] of cookies) {
+        ctx.setCookie(cookieName!, cookieValue!, {
           maxAge: ONE_YEAR,
           ...COOKIE_OPTIONS,
         });
-      };
-
-      COOKIE_NAMES.map(setCookie);
+      }
     }),
   },
 });

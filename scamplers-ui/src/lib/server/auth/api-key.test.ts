@@ -1,5 +1,5 @@
 import { EncryptedApiKey } from "./api-key";
-import { decryptApiKey, ENCRYPTION_ALGORITHM } from "./crypto";
+import { decryptHexEncodedApiKey, ENCRYPTION_ALGORITHM } from "./crypto";
 import { expect, test } from "bun:test";
 
 test("API key should be the same after encryption and decryption", async () => {
@@ -18,7 +18,7 @@ test("API key should be the same after encryption and decryption", async () => {
   );
 
   const decryptedApiKey = new Uint8Array(
-    await decryptApiKey(
+    await decryptHexEncodedApiKey(
       encryptedApiKey.hexEncodedInitializationVector(),
       secret,
       encryptedApiKey.hexEncode(),
