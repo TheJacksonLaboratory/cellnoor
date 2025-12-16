@@ -14,7 +14,7 @@
     }) as
       libraryType
     }
-      <span class="badge badge-neutral badge-sm">{
+      <span class="badge badge-neutral badge-sm h-auto">{
         libraryTypeMap.get(libraryType)
       }</span>
     {/each}
