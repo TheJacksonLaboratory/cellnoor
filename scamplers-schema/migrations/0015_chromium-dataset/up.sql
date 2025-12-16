@@ -25,10 +25,10 @@ create table chromium_dataset_web_summaries (
 create function initialize_chromium_dataset_links() returns trigger language plpgsql volatile strict as $$
     begin
         new.links = json_object(
-            'self': '/chromium-datasets/' || new.id,
+            'self_': '/chromium-datasets/' || new.id,
             'specimens': '/chromium-datasets/' || new.id || '/specimens',
             'libraries': '/chromium-datasets/' || new.id || '/libraries',
-            'web-summaries': '[]'
+            'web-summaries': jsonb_build_array()
         );
         return new;
     end;
@@ -36,7 +36,7 @@ $$;
 
 create function update_web_summary_links() returns trigger language plpgsql volatile strict as $$
     begin
-        update chromium_datasets set links = jsonb_set(links, '{web-summaries}', links -> 'web-summaries' || jsonb_build_array('/chromium-datasets/' || id || '/web-summaries/' || new.filename));
+        update chromium_datasets set links = jsonb_set(links, '{web-summaries}', links -> 'web-summaries' || jsonb_build_array('/chromium-datasets/' || id || '/web-summaries/' || new.filename)) where id = new.dataset_id;
         return new;
     end;
 $$;

@@ -4,7 +4,7 @@
 
   const session = authClient.useSession();
   const { data } = $props();
-  let apiKeyPrefixes = $state(data.apiKeyPrefixes);
+  let apiKeyPrefixes = $derived(data.apiKeyPrefixes);
   let newApiKey: string | undefined = $state();
   let developerToolsDialogBox: HTMLDialogElement;
 

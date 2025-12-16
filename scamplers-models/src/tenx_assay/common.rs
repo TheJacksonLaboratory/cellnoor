@@ -14,27 +14,16 @@ use crate::utils::{EnumFromSql, EnumToSql};
 
 #[simple_enum]
 pub enum LibraryType {
-    #[serde(alias = "Antibody Capture")]
     AntibodyCapture,
-    #[serde(alias = "Antigen Capture")]
     AntigenCapture,
-    #[serde(alias = "Chromatin Accessibility")]
     ChromatinAccessibility,
-    #[serde(alias = "CRISPR Guide Capture")]
     CrisprGuideCapture,
-    #[serde(alias = "Custom")]
     Custom,
-    #[serde(alias = "Gene Expression")]
     GeneExpression,
-    #[serde(alias = "Multiplexing Capture")]
     MultiplexingCapture,
-    #[serde(alias = "VDJ")]
     Vdj,
-    #[serde(alias = "VDJ-B")]
     VdjB,
-    #[serde(alias = "VDJ-T")]
     VdjT,
-    #[serde(alias = "VDJ-T-GD")]
     VdjTGd,
 }
 

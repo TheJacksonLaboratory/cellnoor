@@ -3,24 +3,14 @@
   import { DATE_FORMATTER } from "$lib/date.js";
   import { type ChromiumDatasetQuery } from "scamplers-types/ChromiumDatasetQuery";
   import { type LibraryType } from "scamplers-types/LibraryType";
+  import type { SampleMultiplexing } from "scamplers-types/SampleMultiplexing.js";
+  import Header from "../Header.svelte";
+  import LinkButton from "../LinkButton.svelte";
+  import { libraryTypeMap, multiplexingTypeMap } from "$lib/string-maps";
 
   const { data } = $props();
+  const { chromiumDatasets } = $derived(data);
 
-  const assayNames = new Set(data.assays.map((a) => {
-    return a.name;
-  }));
-  const libraryTypes: LibraryType[] = [
-    "antibody_capture",
-    "antigen_capture",
-    "chromatin_accessibility",
-    "crispr_guide_capture",
-    "custom",
-    "gene_expression",
-    "vdj",
-    "vdj_b",
-    "vdj_t",
-    "vdj_t_gd",
-  ];
   let query: ChromiumDatasetQuery = $state({
     filter: {
       ids: [],
@@ -55,40 +45,76 @@
 <div class="drawer lg:drawer-open">
   <input id="filter-drawer" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content">
-    <div class="text-center">
-      <h1 class="text-4xl font-bold my-4">Chromium Datasets</h1>
-    </div>
+    <Header header="Chromium Datasets" />
     <label for="filter-drawer" class="btn mx-2 drawer-button lg:hidden">
       Filter and sort
     </label>
     <table class="table">
       <thead>
         <tr>
-          <td>
-            Name
-          </td>
-          <td>
-            Delivered on
-          </td>
-          <td>Assay</td>
-          <td></td>
+          {#each             [
+              "Name",
+              "Delivered on",
+              "Assay",
+              "Library types",
+              "Sample multiplexing",
+              "Web summaries",
+              "",
+              "",
+              "",
+            ] as
+            column
+          }
+            <td>{column}</td>
+          {/each}
         </tr>
       </thead>
       <tbody>
-        {#each data.chromiumDatasets as ds}
+        {#each chromiumDatasets as { name, delivered_at, assay, links }}
           <tr>
             <td>
-              {ds.name}
+              {name}
             </td>
             <td>
-              {DATE_FORMATTER.format(new Date(ds.delivered_at))}
+              {DATE_FORMATTER.format(new Date(delivered_at))}
             </td>
-            <td>my assay</td>
             <td>
-              <button class="btn btn-outline btn-primary">
-                <a href={resolve(`/chromium-datasets/${ds.id}`)}>Details</a>
-              </button>
+              {assay.name}
             </td>
+            <td>
+              {
+                assay.library_types?.map((libTy) => {
+                  return libraryTypeMap.get(libTy);
+                }).join(", ")
+              }
+            </td>
+            <td>
+              {multiplexingTypeMap.get(assay.sample_multiplexing)}
+            </td>
+            <td>
+              <ul class="list">
+                {#each links["web-summaries"] as summaryLink}
+                  <li class="list-row">
+                    <a target="_blank" class="link" href={summaryLink}>{
+                      summaryLink.split("/").at(-1)
+                    }</a>
+                  </li>
+                {/each}
+              </ul>
+            </td>
+            {#each             [[links.specimens, "Specimens"], [
+              links.self_,
+              "Details",
+            ]] as
+              [link, buttonText]
+            }
+              <td>
+                <LinkButton
+                  link={link as string}
+                  buttonText={buttonText as string}
+                />
+              </td>
+            {/each}
           </tr>
         {/each}
       </tbody>
@@ -100,19 +126,6 @@
       aria-label="close sidebar"
       class="drawer-overlay"
     ></label>
-    <form class="menu bg-base-300 min-h-full">
-      <fieldset class="fieldset">
-        <legend class="text-lg fieldset-legend">Assay Name</legend>
-        {#each assayNames as assay}
-          <input
-            onclick={() => {query.filter?.assay?.names?.push(assay)}}
-            class="btn"
-            type="checkbox"
-            name="assay-name"
-            aria-label={assay}
-          />
-        {/each}
-      </fieldset>
-    </form>
+    <form class="menu bg-base-300 min-h-full"></form>
   </div>
 </div>

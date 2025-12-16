@@ -192,7 +192,7 @@ mod tests {
     };
 
     fn sort_by_received_at(i1: &&SpecimenSummary, i2: &&SpecimenSummary) -> Ordering {
-        i1.received_at().cmp(&i2.received_at())
+        i2.received_at().cmp(&i1.received_at())
     }
 
     fn sort_by_tissue(i1: &&SpecimenSummary, i2: &&SpecimenSummary) -> Ordering {
@@ -241,7 +241,11 @@ mod tests {
                 let s = i.name().to_lowercase();
                 s.ends_with("s") | s.contains("p")
             })
-            .sort_by(|i1, i2| sort_by_received_at(i1, i2).then(sort_by_tissue(i1, i2).reverse()))
+            .sort_by(|i1, i2| {
+                sort_by_received_at(i1, i2)
+                    .reverse()
+                    .then(sort_by_tissue(i1, i2).reverse())
+            })
             .db_query(query)
             .run(root_db_conn)
             .await;

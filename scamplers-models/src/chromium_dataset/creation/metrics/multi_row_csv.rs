@@ -1,12 +1,9 @@
 use serde::{Deserialize, de};
 use serde_json::Value;
 
-use crate::{
-    chromium_dataset::{
-        common::{ParsedMetrics, ParsedMetricsFile, RawMetricsFile},
-        creation::metrics::common::parse_str_as_number,
-    },
-    tenx_assay::LibraryType,
+use crate::chromium_dataset::{
+    common::{ParsedMetrics, ParsedMetricsFile, RawMetricsFile},
+    creation::metrics::common::parse_str_as_number,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -82,7 +79,7 @@ pub struct SimpleFields {
     #[serde(alias = "Category")]
     category: String,
     #[serde(alias = "Library Type")]
-    library_type: LibraryType,
+    library_type: String,
     #[serde(alias = "Grouped By")]
     grouped_by: String,
     #[serde(alias = "Group Name")]
@@ -98,7 +95,6 @@ mod tests {
     use serde_json::{Number, Value};
 
     use super::{MultiRowCsv, Row, SimpleFields};
-    use crate::tenx_assay::LibraryType;
 
     #[rstest]
     fn parse_cellranger_multi_csv() {
@@ -116,7 +112,7 @@ mod tests {
             &Row {
                 simple_fields: SimpleFields {
                     category: "Cells".to_owned(),
-                    library_type: LibraryType::GeneExpression,
+                    library_type: "Gene Expression".to_owned(),
                     grouped_by: String::new(),
                     group_name: String::new(),
                     metric_name: "Cells".to_owned()

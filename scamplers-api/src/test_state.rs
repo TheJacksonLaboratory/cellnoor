@@ -1,6 +1,7 @@
 use std::ops::Range;
 
 use deadpool_diesel::postgres::{Connection, Pool};
+use diesel::prelude::*;
 use jiff::Timestamp;
 use non_empty::{NonEmptyString, NonEmptyVec};
 use pretty_assertions::assert_eq;
@@ -706,7 +707,12 @@ impl TestState {
 
         let db_conn = self.root_db_conn().await;
         db_conn
-            .interact(|db_conn| dataset.execute(db_conn).unwrap())
+            .interact(|db_conn| {
+                use scamplers_schema::chromium_dataset_web_summaries::dsl::*;
+                let created_ds_id = dataset.execute(db_conn).unwrap().id();
+                let values = (dataset_id.eq(created_ds_id), filename.eq("file.html"), content.eq(b"<!DOCTYPE html><html><head><title>Web summary</title></head><body>web summary</body></html>"));
+                diesel::insert_into(chromium_dataset_web_summaries).values(values).execute(db_conn).unwrap();
+            })
             .await
             .unwrap();
     }
