@@ -4,9 +4,10 @@
 
   const session = authClient.useSession();
   const { data } = $props();
-  let apiKeyPrefixes = $derived(data.apiKeyPrefixes);
+  // svelte-ignore state_referenced_locally
+  let apiKeyPrefixes = $state(data.apiKeyPrefixes);
   let newApiKey: string | undefined = $state();
-  let developerToolsDialogBox: HTMLDialogElement;
+  let apiKeysDialogBox: HTMLDialogElement;
 
   async function createApiKey() {
     const response = await fetch("/ui-api/api-keys", { method: "POST" });
@@ -39,92 +40,83 @@
   }
 </script>
 
-<div class="h-screen">
-  <div class="hero bg-base h-1/2">
-    <div class="hero-content text-center">
-      <div>
-        {#if $session.data?.user.name}
-          <div class="avatar">
-            <img
-              class="rounded-full"
-              src={$session.data.user.image}
-              alt="profile"
-            />
-          </div>
-        {/if}
-        <h1 class="text-4xl font-bold">{$session.data?.user.name}</h1>
-        <p class="text-2xl font-bold">{$session.data?.user.email}</p>
-        <div class="divider"></div>
-        <button
-          class="btn btn-primary"
-          onclick={async () => {
-            developerToolsDialogBox.showModal();
-          }}
-        >
-          API Keys
+<div class="min-h-1/2 mx-auto flex flex-col items-center w-fit">
+  {#if $session.data?.user.name}
+    <div class="avatar">
+      <img
+        class="rounded-full"
+        src={$session.data.user.image}
+        alt="profile"
+      />
+    </div>
+  {/if}
+  <h1 class="text-4xl font-bold">{$session.data?.user.name}</h1>
+  <p class="text-xl font-bold">{$session.data?.user.email}</p>
+  <div class="divider"></div>
+  <button
+    class="btn btn-primary btn-outline"
+    onclick={async () => {
+      apiKeysDialogBox.showModal();
+    }}
+  >
+    API Keys
+  </button>
+  <dialog bind:this={apiKeysDialogBox} class="modal">
+    <div class="modal-box max-w-full xl:max-w-1/2 lg:max-w-3/4">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>API key prefix (hex-encoded)</th>
+            <th>Created at</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each apiKeyPrefixes as { prefix, created_at }, i}
+            <tr>
+              <td>
+                {prefix}
+              </td>
+              <td>
+                {
+                  DATETIME_FORMATTER.format(
+                    created_at,
+                  )
+                }
+              </td>
+              <td>
+                <button
+                  onclick={async () => {
+                    await deleteApiKey(prefix, i);
+                  }}
+                  class="btn btn-error"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+      {#if newApiKey}
+        <div class="wrap-anywhere py-1 text-left">
+          Your new (hex-encoded) API key is <code class="font-bold">{
+            newApiKey
+          }</code>. You will not be able to view this API key after leaving or
+          refreshing this page.
+        </div>
+      {/if}
+      <div class="modal-action flex flex-row justify-evenly">
+        <button onclick={createApiKey} class="btn btn-success">
+          Create new API key
         </button>
-        <dialog bind:this={developerToolsDialogBox} class="modal">
-          <div class="modal-box max-w-full xl:max-w-1/2 lg:max-w-3/4">
-            {#if apiKeyPrefixes.length > 0}
-              <p class="font-bold text-lg">API keys</p>
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>API key prefix (hex-encoded)</th>
-                    <th>Created at</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {#each apiKeyPrefixes as { prefix, created_at }, i}
-                    <tr>
-                      <td>
-                        {prefix}
-                      </td>
-                      <td>
-                        {
-                          DATETIME_FORMATTER.format(
-                            created_at,
-                          )
-                        }
-                      </td>
-                      <td>
-                        <button
-                          onclick={async () => {
-                            await deleteApiKey(prefix, i);
-                          }}
-                          class="btn btn-error"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  {/each}
-                </tbody>
-              </table>
-            {/if}
-            <button onclick={createApiKey} class="btn btn-accent">
-              Create new API Key
-            </button>
-            {#if newApiKey}
-              <div class="wrap-anywhere py-1 text-left">
-                Your new (hex-encoded) API key is <code class="font-extrabold">{
-                  newApiKey
-                }</code>. You will not be able to view this API key after
-                leaving or refreshing this page.
-              </div>
-            {/if}
-            <div class="modal-action">
-              <form method="dialog">
-                <button class="btn btn-secondary">Close</button>
-              </form>
-            </div>
-          </div>
-          <form method="dialog" class="modal-backdrop">
-            <button>close</button>
-          </form>
-        </dialog>
+        <form method="dialog">
+          <button class="btn btn-secondary btn-outline">Close</button>
+        </form>
       </div>
     </div>
-  </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
 </div>

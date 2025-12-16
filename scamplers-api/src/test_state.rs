@@ -687,10 +687,6 @@ impl TestState {
     }
 
     async fn insert_random_chromium_dataset(&self, library_id: Uuid, lab_id: Uuid) {
-        let raw_metrics_contents = include_str!(
-            "../../scamplers-models/src/chromium_dataset/creation/metrics/test-data/\
-             cellranger_multi.csv"
-        );
         // It's easier to construct this as JSON
         let dataset = json!(
             {
@@ -699,7 +695,6 @@ impl TestState {
                 "data_path": random_non_empty_string(),
                 "delivered_at": random_time(),
                 "library_ids": vec![library_id],
-                "metrics_files": [{"filename": "file", "raw_contents": raw_metrics_contents}],
                 "cmdline": "cellranger multi"
             }
         );
@@ -708,10 +703,16 @@ impl TestState {
         let db_conn = self.root_db_conn().await;
         db_conn
             .interact(|db_conn| {
-                use scamplers_schema::chromium_dataset_web_summaries::dsl::*;
+                use scamplers_schema::{chromium_dataset_web_summaries as ws, chromium_dataset_metrics_files as mf};
                 let created_ds_id = dataset.execute(db_conn).unwrap().id();
-                let values = (dataset_id.eq(created_ds_id), filename.eq("file.html"), content.eq(b"<!DOCTYPE html><html><head><title>Web summary</title></head><body>web summary</body></html>"));
-                diesel::insert_into(chromium_dataset_web_summaries).values(values).execute(db_conn).unwrap();
+                let values = |i| (ws::dataset_id.eq(created_ds_id), ws::filename.eq(format!("file{i}.html")), ws::content.eq(b"<!DOCTYPE html><html><head><title>Web summary</title></head><body>web summary</body></html>"));
+                diesel::insert_into(ws::table).values([values(0), values(1)]).execute(db_conn).unwrap();
+
+                let raw_content = b"some_metric,another_metric\n100,42";
+                let parsed_data = serde_json::json!({"some_metric": 100, "another_metric": 42});
+
+                let values = |i| (mf::dataset_id.eq(created_ds_id), mf::filename.eq(format!("file{i}.csv")), mf::raw_content.eq(raw_content), mf::content_type.eq("text/csv"), mf::parsed_data.eq(parsed_data.clone()));
+                diesel::insert_into(mf::table).values([values(0), values(1)]).execute(db_conn).unwrap();
             })
             .await
             .unwrap();

@@ -33,6 +33,14 @@ impl From<deadpool_diesel::InteractError> for Error {
     }
 }
 
+impl From<csv::Error> for Error {
+    fn from(err: csv::Error) -> Self {
+        Self::MalformedRequest {
+            message: format!("failed to parse CSV: {err}"),
+        }
+    }
+}
+
 #[derive(Debug, thiserror::Error, serde::Serialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(rename = "ErrorResponse"))]

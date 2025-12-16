@@ -11,11 +11,9 @@ export const load: PageServerLoad = async (
   const apiClient = await ApiClient.new();
 
   const [chromiumDatasets, assays] = await Promise.all([
-    apiClient.get<ChromiumDatasetSummary[]>(event),
-    apiClient.get<TenxAssay[]>(event, "/10x-assays"),
+    apiClient.getJson<ChromiumDatasetSummary[]>(event),
+    apiClient.getJson<TenxAssay[]>(event, "/10x-assays"),
   ]);
-
-  // const chromiumDatasets = await Promise.all(datasetSummaries.map(async (ds) => { return { dataset: ds, specimens: await apiClient.get<SpecimenSummary[]>(event, ds.links.specimens as string) }; }))
 
   return {
     chromiumDatasets,

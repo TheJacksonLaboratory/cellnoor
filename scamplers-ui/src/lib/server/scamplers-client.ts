@@ -1,9 +1,16 @@
-import type { RequestEvent, ServerLoadEvent } from "@sveltejs/kit";
+import type { Cookies, RequestEvent, ServerLoadEvent } from "@sveltejs/kit";
 import { hexEncodedApiKeyFromCookies } from "./auth/cookies";
 import { API_KEY_ENCRYPTION_SECRET } from "./auth/crypto";
 import { readConfig } from "$lib/server/config";
 
 let apiClient: ApiClient | null = null;
+
+type RequestSubset = {
+  cookies: Cookies;
+  fetch: typeof globalThis.fetch;
+  url: URL;
+  request: Request;
+};
 
 export class ApiClient {
   readonly apiBaseUrl: string;
@@ -22,13 +29,9 @@ export class ApiClient {
     this.apiBaseUrl = apiBaseUrl;
   }
 
-  private async sendRequest<T>(
-    { cookies, fetch, url }: ServerLoadEvent | RequestEvent,
-    {
-      endpoint,
-      method,
-      data,
-    }: { endpoint?: string; method: string; data?: unknown },
+  private async sendRequest(
+    { cookies, fetch, url, request }: RequestSubset,
+    endpoint?: string,
   ): Promise<Response> {
     const isSubRequest = endpoint !== undefined;
 
@@ -54,49 +57,30 @@ export class ApiClient {
       API_KEY_ENCRYPTION_SECRET,
     );
 
-    const options: RequestInit = {
-      method,
-      headers: {
-        "X-API-Key": apiKey || "",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    };
-
-    return await fetch(apiUrl, options);
-  }
-
-  async get<T>(event: ServerLoadEvent, endpoint?: string): Promise<T> {
-    const response = await this.sendRequest(event, { endpoint, method: "GET" });
-    const asJson = await response.json();
-
-    if (asJson.error) {
-      throw asJson;
+    if (apiKey) {
+      request.headers.set("X-API-Key", apiKey);
     }
 
-    return asJson;
+    return await fetch(apiUrl, request);
   }
 
-  async getRaw(event: RequestEvent, endpoint?: string): Promise<Response> {
-    return await this.sendRequest(event, { endpoint, method: "GET" });
-  }
-
-  async post<T>(
-    event: ServerLoadEvent,
-    endpoint: string,
-    data: unknown,
+  async getJson<T>(
+    requestSubset: RequestSubset,
+    endpoint?: string,
   ): Promise<T> {
-    const response = await this.sendRequest(event, {
-      endpoint,
-      method: "POST",
-      data,
-    });
+    const response = await this.sendRequest(requestSubset, endpoint);
     const asJson = await response.json();
-
-    if (asJson.error) {
-      throw asJson;
+    if (response.status != 200) {
+      throw new Error(JSON.stringify(asJson));
     }
 
     return asJson;
+  }
+
+  async getRaw(
+    requestSubset: RequestSubset,
+    endpoint?: string,
+  ): Promise<Response> {
+    return await this.sendRequest(requestSubset, endpoint);
   }
 }

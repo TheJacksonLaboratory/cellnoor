@@ -9,10 +9,13 @@ export const load: PageServerLoad = async (
 ) => {
   const apiClient = await ApiClient.new();
 
-  const dataset = await apiClient.get<ChromiumDataset>(event);
+  const dataset = await apiClient.getJson<ChromiumDataset>(event);
   const [specimens, libraries] = await Promise.all([
-    apiClient.get<SpecimenSummary>(event, dataset.links.specimens as string),
-    apiClient.get<LibrarySummary>(event, dataset.links.libraries as string),
+    apiClient.getJson<SpecimenSummary>(
+      event,
+      dataset.links.specimens as string,
+    ),
+    apiClient.getJson<LibrarySummary>(event, dataset.links.libraries as string),
   ]);
 
   return {

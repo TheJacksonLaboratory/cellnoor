@@ -45,6 +45,16 @@ impl WebSummary {
         dataset_id: ChromiumDatasetIdWebSummaries,
         field: Field<'_>,
     ) -> Result<Self, ErrorResponse> {
+        if field.content_type() != Some("text/html") {
+            return Err(ErrorResponse {
+                status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
+                public_error: api::Error::MalformedRequest {
+                    message: "expected HTML".to_owned(),
+                },
+                internal_error: None,
+            });
+        }
+
         Ok(Self {
             dataset_id,
             filename: field

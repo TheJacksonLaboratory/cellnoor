@@ -11,10 +11,13 @@ axum-extra.workspace = true
 base16ct.workspace = true
 camino.workspace = true
 clap.workspace = true
+csv.workspace = true
 deadpool-diesel.workspace = true
 diesel = { workspace = true, features = ["postgres", "serde_json", "uuid"] }
 diesel_migrations.workspace = true
 dotenvy.workspace = true
+headers.workspace = true
+heck.workspace = true
 jiff.workspace = true
 jiff-diesel.workspace = true
 non-empty = { path = "../non-empty" }

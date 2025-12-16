@@ -1,6 +1,8 @@
 <script lang="ts">
   import { libraryTypeMap, multiplexingTypeMap } from "$lib/string-maps";
   import Header from "../../Header.svelte";
+  import LibraryTypeBadges from "../../LibraryTypeBadges.svelte";
+  import LinkButton from "../../LinkButton.svelte";
 
   const { data } = $props();
 
@@ -9,7 +11,6 @@
       name,
       lab,
       assay,
-      parsed_metrics_files,
       links,
       delivered_at,
     },
@@ -17,32 +18,40 @@
     libraries,
   } = $derived(data);
 </script>
+
 <Header header={name} />
-<div class="px-8 mx-auto flex flex-col items-center lg:max-w-3/4">
-  <div class="grid md:grid-cols-2 gap-4">
-    <div>
-      <div class="py-4 border-b">
-        <span class="font-bold mb-2">{assay.name}:</span><span>({
-            assay.chemistry_version
-          })</span>
-        <div class="flex flex-row flex-wrap gap-1">
-          {#each assay.library_types as libType}
-            <div class="badge badge-neutral">{libraryTypeMap.get(libType)}</div>
-          {/each}
-        </div>
-      </div>
-      <a class="px-0 btn btn-ghost" href={assay.protocol_url}>Protocol</a>
-    </div>
-    <div
-      class="p-4 border border-base-300 rounded-box min-w-full"
-      id="metrics"
-    >
-      <h2 class="text-3xl font-semibold">Metrics</h2>
-      <p>
-        some awesome content skljfsdlkjfskdljfklsdjflksdjfskldfjklsdj
-        sklfjdsflkjdskfljsdklfjdsklfjsdklfjkljsdfj sdkfljdskfljdsklfjdkslf
-        sdklfjsdlkfjsdklfjsdklfjklj
-      </p>
-    </div>
+
+<!-- TODO: factor this layout into a component -->
+
+<div class="grid md:grid-cols-3 gap-4 lg:max-w-4/5 mx-auto align-top">
+  <div
+    class="p-4 border border-base-300 rounded-box min-w-full col-span-2"
+    id="metrics"
+  >
+    <h2 class="text-3xl font-semibold">Metrics</h2>
+    <p>this box is under construction. sorry :)</p>
+  </div>
+  <div class="col-span-1">
+    <span class="font-bold">{assay.name}:</span> <span>({
+        assay.chemistry_version
+      })</span>
+    <LibraryTypeBadges libraryTypes={assay.library_types} />
+    <div class="divider"></div>
+    <LinkButton link={assay.protocol_url} buttonText={"Protocol"} />
+    <LinkButton link={assay.protocol_url} buttonText={"Protocol"} />
+  </div>
+  <div
+    class="p-4 border border-base-300 rounded-box min-w-full col-span-2"
+    id="specimens"
+  >
+    <h2 class="text-3xl font-semibold">Specimens</h2>
+    <p>Here's another box under construction</p>
+  </div>
+  <div
+    class="p-4 border border-base-300 rounded-box min-w-full col-span-2"
+    id="specimens"
+  >
+    <h2 class="text-3xl font-semibold">Libraries</h2>
+    <p>and yeet one more!</p>
   </div>
 </div>

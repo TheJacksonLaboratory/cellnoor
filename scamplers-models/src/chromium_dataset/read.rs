@@ -6,9 +6,7 @@ use scamplers_schema::chromium_datasets;
 use uuid::Uuid;
 
 use crate::{
-    chromium_dataset::common::{ChromiumDatasetFields, ParsedMetrics},
-    lab::LabSummary,
-    links::Links,
+    chromium_dataset::common::ChromiumDatasetFields, lab::LabSummary, links::Links,
     tenx_assay::TenxAssay,
 };
 
@@ -27,7 +25,6 @@ pub struct ChromiumDatasetSummary {
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
     #[cfg_attr(feature = "typescript", ts(as = "String"))]
     delivered_at: Timestamp,
-    parsed_metrics_files: ParsedMetrics,
     #[cfg_attr(feature = "app", diesel(embed))]
     assay: TenxAssay,
 }

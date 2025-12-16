@@ -27,10 +27,10 @@ pub(super) async fn create_chromium_dataset(
 
 impl db::Operation<ChromiumDataset> for ChromiumDatasetCreation {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<ChromiumDataset, db::Error> {
-        let (dataset, library_ids) = self.split_for_insertion();
+        let library_ids = self.library_ids().to_owned();
 
         let dataset_id: ChromiumDatasetId = diesel::insert_into(chromium_datasets::table)
-            .values(dataset)
+            .values(self)
             .returning(chromium_datasets::id)
             .get_result(db_conn)?;
 

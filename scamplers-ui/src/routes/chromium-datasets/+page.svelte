@@ -7,6 +7,7 @@
   import Header from "../Header.svelte";
   import LinkButton from "../LinkButton.svelte";
   import { libraryTypeMap, multiplexingTypeMap } from "$lib/string-maps";
+  import LibraryTypeBadges from "../LibraryTypeBadges.svelte";
 
   const { data } = $props();
   const { chromiumDatasets } = $derived(data);
@@ -40,8 +41,11 @@
     },
     order_by: [],
   });
+
+  let currentSpecimenName = $state("");
 </script>
 
+<!-- TODO: factor this layout into a common table component -->
 <div class="drawer lg:drawer-open">
   <input id="filter-drawer" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content">
@@ -59,6 +63,7 @@
               "Library types",
               "Sample multiplexing",
               "Web summaries",
+              "Metrics files",
               "",
               "",
               "",
@@ -82,19 +87,15 @@
               {assay.name}
             </td>
             <td>
-              {
-                assay.library_types?.map((libTy) => {
-                  return libraryTypeMap.get(libTy);
-                }).join(", ")
-              }
+              <LibraryTypeBadges libraryTypes={assay.library_types} />
             </td>
             <td>
               {multiplexingTypeMap.get(assay.sample_multiplexing)}
             </td>
             <td>
-              <ul class="list">
+              <ul>
                 {#each links["web-summaries"] as summaryLink}
-                  <li class="list-row">
+                  <li>
                     <a target="_blank" class="link" href={summaryLink}>{
                       summaryLink.split("/").at(-1)
                     }</a>
@@ -102,30 +103,60 @@
                 {/each}
               </ul>
             </td>
-            {#each             [[links.specimens, "Specimens"], [
-              links.self_,
-              "Details",
-            ]] as
-              [link, buttonText]
-            }
-              <td>
-                <LinkButton
-                  link={link as string}
-                  buttonText={buttonText as string}
-                />
-              </td>
-            {/each}
+            <td>
+              <ul>
+                {#each links["metrics-files"] as summaryLink}
+                  <li>
+                    <a target="_blank" class="link" href={summaryLink}>{
+                      summaryLink.split("/").at(-1)
+                    }</a>
+                  </li>
+                {/each}
+              </ul>
+            </td>
+            <td>
+              <div class="flex flex-row flex-wrap gap-1 place-content-between">
+                {#each                 [[links.specimens, "Specimens"], [
+                  links.self_,
+                  "Details",
+                ]] as
+                  [link, buttonText]
+                }
+                  <LinkButton
+                    link={link as string}
+                    buttonText={buttonText as string}
+                  />
+                {/each}
+              </div>
+            </td>
           </tr>
         {/each}
       </tbody>
     </table>
   </div>
-  <div class="drawer-side">
+  <div class="drawer-side bg-base">
     <label
       for="filter-drawer"
       aria-label="close sidebar"
       class="drawer-overlay"
     ></label>
-    <form class="menu bg-base-300 min-h-full"></form>
+    <div class="flex flex-col items-center">
+      <form
+        onsubmit={() => {
+          if (currentSpecimenName) {
+            query.filter?.specimen?.names?.push(currentSpecimenName);
+          }
+        }}
+      >
+        <input class="input" type="text" bind:value={currentSpecimenName} />
+      </form>
+      <ul>
+        {#each query.filter?.specimen?.names as specimenName}
+          <li>
+            {specimenName}
+          </li>
+        {/each}
+      </ul>
+    </div>
   </div>
 </div>

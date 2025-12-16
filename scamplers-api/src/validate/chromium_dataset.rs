@@ -1,6 +1,6 @@
 use diesel::prelude::*;
 use jiff::Timestamp;
-use scamplers_models::chromium_dataset::ChromiumDatasetCreation;
+use scamplers_models::chromium_dataset::{ChromiumDatasetCmdline, ChromiumDatasetCreation};
 use scamplers_schema::{
     gem_pools, libraries, sequencing_runs, sequencing_submissions, tenx_assays,
 };
@@ -19,7 +19,9 @@ pub enum Error {
     #[error("all libraries must come from same GEM pool")]
     DifferentGemPools,
     #[error("expected one of the following cmdlines: {expected:?}")]
-    Cmdline { expected: Vec<String> },
+    Cmdline {
+        expected: Vec<ChromiumDatasetCmdline>,
+    },
     #[error("data path does not match expected pattern")]
     DataPath,
     #[error("libraries were not sequenced")]
@@ -39,7 +41,7 @@ impl Validate for ChromiumDatasetCreation {
     }
 }
 
-type ValidationDatum = (Uuid, Option<Timestamp>, Vec<String>);
+type ValidationDatum = (Uuid, Option<Timestamp>, Vec<ChromiumDatasetCmdline>);
 
 fn validate_same_gem_pool(validation_data: &[ValidationDatum]) -> Result<(), Error> {
     fn extract_gem_pool_id((gem_pool_id, ..): &ValidationDatum) -> &Uuid {
@@ -58,16 +60,18 @@ fn validate_same_gem_pool(validation_data: &[ValidationDatum]) -> Result<(), Err
     Ok(())
 }
 
-fn validate_cmdline(validation_data: &[ValidationDatum], cmdline: &str) -> Result<(), Error> {
-    let expected_cmdlines: Vec<&str> = validation_data
+fn validate_cmdline(
+    validation_data: &[ValidationDatum],
+    cmdline: ChromiumDatasetCmdline,
+) -> Result<(), Error> {
+    let expected_cmdlines: Vec<ChromiumDatasetCmdline> = validation_data
         .iter()
-        .flat_map(|(_, _, c)| c)
-        .map(String::as_str)
+        .flat_map(|(_, _, c)| c.clone())
         .collect();
 
     if !expected_cmdlines.contains(&cmdline) {
         return Err(Error::Cmdline {
-            expected: expected_cmdlines.into_iter().map(String::from).collect(),
+            expected: expected_cmdlines,
         });
     }
 
@@ -102,7 +106,7 @@ fn fetch_validation_data(
     let results: Vec<(
         Uuid,
         jiff_diesel::NullableTimestamp,
-        Option<Vec<Option<String>>>,
+        Option<Vec<Option<ChromiumDatasetCmdline>>>,
     )> = libraries::table
         .inner_join(cdna_to_library_spec())
         .inner_join(sequencing_submissions::table.inner_join(sequencing_runs::table))

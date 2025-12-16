@@ -1,7 +1,3 @@
-import { apiKeyFromCookies } from "$lib/server/auth/cookies";
-import { API_KEY_ENCRYPTION_SECRET } from "$lib/server/auth/crypto";
-import { getUserByApiKeyFromDb } from "$lib/server/auth/db";
-import { getDbClient } from "$lib/server/db-client";
 import { ApiClient } from "$lib/server/scamplers-client";
 import type { RequestHandler } from "./$types";
 

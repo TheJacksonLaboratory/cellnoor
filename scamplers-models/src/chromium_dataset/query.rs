@@ -52,7 +52,14 @@ uuid_newtype!(ChromiumDatasetIdLibraries, "/{id}/libraries");
 
 uuid_newtype!(ChromiumDatasetIdWebSummaries, "/{id}/web-summaries");
 
+uuid_newtype!(ChromiumDatasetIdMetrics, "/{id}/metrics-files");
+
 #[derive(Debug, Clone, ::serde::Deserialize, ::serde::Serialize)]
 #[cfg_attr(feature = "app", derive(axum_extra::routing::TypedPath))]
 #[cfg_attr(feature = "app", typed_path("/{dataset_id}/web-summaries/{filename}"))]
 pub struct ChromiumDatasetWebSummaryFilename(pub ChromiumDatasetId, pub String);
+
+#[derive(Debug, Clone, ::serde::Deserialize, ::serde::Serialize)]
+#[cfg_attr(feature = "app", derive(axum_extra::routing::TypedPath))]
+#[cfg_attr(feature = "app", typed_path("/{dataset_id}/metrics-files/{filename}"))]
+pub struct ChromiumDatasetMetricsFilename(pub ChromiumDatasetId, pub String);
