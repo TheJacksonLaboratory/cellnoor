@@ -21,6 +21,8 @@ heck.workspace = true
 jiff.workspace = true
 jiff-diesel.workspace = true
 non-empty = { path = "../non-empty" }
+pretty_assertions = { workspace = true, optional = true }
+rand = { workspace = true, optional = true }
 ranged = { version = "0.1.0", path = "../ranged", features = ["serde"] }
 regex.workspace = true
 reqwest.workspace = true
@@ -48,8 +50,6 @@ workspace = true
 
 [dev-dependencies]
 bon.workspace = true
-jiff.workspace = true
-non-empty = { path = "../non-empty" }
 pretty_assertions.workspace = true
 rand.workspace = true
 scamplers-models = { version = "0.1.0", path = "../scamplers-models", features = [
@@ -58,4 +58,5 @@ scamplers-models = { version = "0.1.0", path = "../scamplers-models", features =
 ] }
 
 [features]
+dummy-data = ["dep:pretty_assertions", "dep:rand", "scamplers-models/builder"]
 typescript = ["dep:ts-rs"]

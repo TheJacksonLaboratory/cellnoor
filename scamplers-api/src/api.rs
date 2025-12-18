@@ -17,6 +17,16 @@ pub async fn serve_integration_test(config: Config) -> anyhow::Result<()> {
     serve_inner(config).await
 }
 
+#[cfg(feature = "dummy-data")]
+pub async fn serve(config: Config) -> anyhow::Result<()> {
+    use crate::test_state::database;
+
+    initialize_logging(config.log_dir());
+    database().await;
+    serve_inner(config).await
+}
+
+#[cfg(not(feature = "dummy-data"))]
 pub async fn serve(config: Config) -> anyhow::Result<()> {
     initialize_logging(config.log_dir());
     serve_inner(config).await

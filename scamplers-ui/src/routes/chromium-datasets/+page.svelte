@@ -45,11 +45,10 @@
   let currentSpecimenName = $state("");
 </script>
 
-<!-- TODO: factor this layout into a common table component -->
+<!-- TODO: this layout isn't great! -->
 <div class="drawer lg:drawer-open">
   <input id="filter-drawer" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content">
-    <Header header="Chromium Datasets" />
     <label for="filter-drawer" class="btn mx-2 drawer-button lg:hidden">
       Filter and sort
     </label>
@@ -62,11 +61,7 @@
               "Assay",
               "Library types",
               "Sample multiplexing",
-              "Web summaries",
-              "Metrics files",
-              "",
-              "",
-              "",
+              "Files",
             ] as
             column
           }
@@ -78,7 +73,9 @@
         {#each chromiumDatasets as { name, delivered_at, assay, links }}
           <tr>
             <td>
-              {name}
+              <a class="btn btn-ghost p-0" href={links.self_ as string}>{
+                name
+              }</a>
             </td>
             <td>
               {DATE_FORMATTER.format(new Date(delivered_at))}
@@ -93,39 +90,15 @@
               {multiplexingTypeMap.get(assay.sample_multiplexing)}
             </td>
             <td>
-              <ul>
-                {#each links["web-summaries"] as summaryLink}
-                  <li>
-                    <a target="_blank" class="link" href={summaryLink}>{
-                      summaryLink.split("/").at(-1)
-                    }</a>
-                  </li>
-                {/each}
-              </ul>
-            </td>
-            <td>
-              <ul>
-                {#each links["metrics-files"] as summaryLink}
-                  <li>
-                    <a target="_blank" class="link" href={summaryLink}>{
-                      summaryLink.split("/").at(-1)
-                    }</a>
-                  </li>
-                {/each}
-              </ul>
-            </td>
-            <td>
-              <div class="flex flex-row flex-wrap gap-1 place-content-between">
-                {#each                 [[links.specimens, "Specimens"], [
-                  links.self_,
-                  "Details",
-                ]] as
-                  [link, buttonText]
+              <div class="flex flex-row flex-wrap gap-1">
+                {#each                 (links["web-summaries"] as string[]).concat(
+                  links["metrics-files"] as string[],
+                ) as
+                  summaryLink
                 }
-                  <LinkButton
-                    link={link as string}
-                    buttonText={buttonText as string}
-                  />
+                  <a target="_blank" class="btn btn-" href={summaryLink}>{
+                    summaryLink.split("/").at(-1)
+                  }</a>
                 {/each}
               </div>
             </td>

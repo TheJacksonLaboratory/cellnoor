@@ -20,7 +20,7 @@ done
 # The build script scamplers-schema/build.rs calls the diesel-cli, which may need a connection to a database. We
 # provide the URL of the database spun up in restart-compilation-db.sh via an environment variable, which diesel picks
 # up automatically
-DATABASE_URL="postgres://postgres@localhost:5432/scamplers-compilation" cargo build --package scamplers-api
+DATABASE_URL="postgres://postgres@localhost:5432/scamplers-compilation" cargo run --package scamplers-api $@
 
-# Run scamplers-api, passing along any command-line arguments to override configuration values
-./target/debug/scamplers-api $@
+# # Run scamplers-api, passing along any command-line arguments to override configuration values
+# ./target/debug/scamplers-api $@

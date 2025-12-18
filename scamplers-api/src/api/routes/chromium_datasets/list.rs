@@ -26,7 +26,7 @@ use crate::{
         extract::auth::AuthenticatedUser,
         routes::{ApiResponse, Root, inner_handler},
     },
-    db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter},
+    db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, utils::like_any},
     state::AppState,
 };
 
@@ -97,6 +97,7 @@ pub(crate) fn chromium_datasets_to_all_specimens() -> _ {
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for ChromiumDatasetFilter
 where
     id: SelectableExpression<QS>,
+    name: SelectableExpression<QS>,
     AssumeNotNull<specimens::id>: SelectableExpression<QS>,
     AssumeNotNull<specimens::name>: SelectableExpression<QS>,
     AssumeNotNull<specimens::submitted_by>: SelectableExpression<QS>,
@@ -125,6 +126,7 @@ where
     fn to_boxed_filter(&'a self) -> db::BoxedFilter<'a, QS> {
         let Self {
             ids,
+            names,
             specimen,
             assay,
             lab_ids,
@@ -135,6 +137,10 @@ where
 
         if let Some(ids) = ids {
             filter = filter.and_condition(id.eq_any(ids));
+        }
+
+        if let Some(names) = names {
+            filter = filter.and_condition(like_any(name, names));
         }
 
         if let Some(specimen_filter) = specimen {

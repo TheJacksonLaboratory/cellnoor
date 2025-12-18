@@ -783,6 +783,7 @@ where
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Default)]
 pub struct Database {
     pub institutions: Vec<Institution>,

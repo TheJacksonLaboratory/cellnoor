@@ -14,6 +14,7 @@ use crate::{specimen::SpecimenFilter, tenx_assay::TenxAssayFilter};
 #[filter]
 pub struct ChromiumDatasetFilter {
     pub ids: Option<Vec<Uuid>>,
+    pub names: Option<Vec<String>>,
     pub specimen: Option<SpecimenFilter>,
     pub assay: Option<TenxAssayFilter>,
     pub lab_ids: Option<Vec<Uuid>>,

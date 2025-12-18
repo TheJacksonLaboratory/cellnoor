@@ -25,7 +25,7 @@ pub enum AppState {
     },
 }
 
-#[cfg(test)]
+#[cfg(any(feature = "dummy-data", test))]
 pub fn create_test_db_pool(db_url: &str) -> anyhow::Result<Pool> {
     create_db_pool(db_url, None)
 }

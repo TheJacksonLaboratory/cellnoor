@@ -1,4 +1,4 @@
-import { ApiClient } from "$lib/server/scamplers-client";
+import { ApiClient } from "$lib/server/cellnoor-client";
 import type { ChromiumDataset } from "scamplers-types/ChromiumDataset";
 import type { PageServerLoad } from "./$types";
 import type { SpecimenSummary } from "scamplers-types/SpecimenSummary";
@@ -13,9 +13,15 @@ export const load: PageServerLoad = async (
   const [specimens, libraries] = await Promise.all([
     apiClient.getJson<SpecimenSummary>(
       event,
-      dataset.links.specimens as string,
+      undefined,
+      { endpoint: dataset.links.specimens as string, queryString: "" },
     ),
-    apiClient.getJson<LibrarySummary>(event, dataset.links.libraries as string),
+    apiClient.getJson<SpecimenSummary>(
+      event,
+      undefined,
+      { endpoint: dataset.links.libraries as string, queryString: "" },
+    ),
+    ,
   ]);
 
   return {

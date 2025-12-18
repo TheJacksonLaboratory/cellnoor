@@ -1,12 +1,10 @@
-import { ApiClient } from "$lib/server/scamplers-client";
+import { ApiClient } from "$lib/server/cellnoor-client";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async (event) => {
   const apiClient = await ApiClient.new();
 
-  if (event.request.url.endsWith(".csv")) {
-    event.request.headers.set("Accept", "text/csv");
-  }
-
-  return await apiClient.getRaw(event);
+  return await apiClient.get(event, {
+    headers: { accept: "text/csv", "X-API-Key": event.locals.apiKey },
+  });
 };

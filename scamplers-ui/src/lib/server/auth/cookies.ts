@@ -30,15 +30,3 @@ export async function apiKeyFromCookies(
     hexEncodedEncryptedApiKey,
   );
 }
-
-export async function hexEncodedApiKeyFromCookies(
-  cookies: Cookies,
-  encryptionSecret: CryptoKey,
-): Promise<string | null> {
-  const decryptedBytes = await apiKeyFromCookies(cookies, encryptionSecret);
-  if (!decryptedBytes) {
-    return null;
-  }
-
-  return new Uint8Array(decryptedBytes).toHex();
-}
