@@ -30,7 +30,6 @@ pub enum ChromiumDatasetOrderBy {
     id { descending: Option<bool> },
     name { descending: Option<bool> },
     lab_id { descending: Option<bool> },
-    data_path { descending: Option<bool> },
     delivered_at { descending: Option<bool> },
 }
 
@@ -57,10 +56,16 @@ uuid_newtype!(ChromiumDatasetIdMetrics, "/{id}/metrics-files");
 
 #[derive(Debug, Clone, ::serde::Deserialize, ::serde::Serialize)]
 #[cfg_attr(feature = "app", derive(axum_extra::routing::TypedPath))]
-#[cfg_attr(feature = "app", typed_path("/{dataset_id}/web-summaries/{filename}"))]
-pub struct ChromiumDatasetWebSummaryFilename(pub ChromiumDatasetId, pub String);
+#[cfg_attr(
+    feature = "app",
+    typed_path("/{dataset_id}/web-summaries/{directory}/{filename}")
+)]
+pub struct ChromiumDatasetWebSummaryFilename(pub ChromiumDatasetId, pub String, pub String);
 
 #[derive(Debug, Clone, ::serde::Deserialize, ::serde::Serialize)]
 #[cfg_attr(feature = "app", derive(axum_extra::routing::TypedPath))]
-#[cfg_attr(feature = "app", typed_path("/{dataset_id}/metrics-files/{filename}"))]
-pub struct ChromiumDatasetMetricsFilename(pub ChromiumDatasetId, pub String);
+#[cfg_attr(
+    feature = "app",
+    typed_path("/{dataset_id}/metrics-files/{directory}/{filename}")
+)]
+pub struct ChromiumDatasetMetricsFilename(pub ChromiumDatasetId, pub String, pub String);

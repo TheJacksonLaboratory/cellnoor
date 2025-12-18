@@ -4,4 +4,4 @@ import type { Links } from "./Links";
 import type { NonEmptyString } from "./NonEmptyString";
 import type { TenxAssay } from "./TenxAssay";
 
-export type ChromiumDataset = { lab: LabSummary, id: string, links: Links, delivered_at: string, assay: TenxAssay, name: NonEmptyString, lab_id: string, data_path: NonEmptyString, };
+export type ChromiumDataset = { lab: LabSummary, id: string, links: Links, delivered_at: string, assay: TenxAssay, name: NonEmptyString, lab_id: string, };

@@ -2,17 +2,17 @@ use axum::{extract::State, http::StatusCode};
 use diesel::{SelectableExpression, prelude::*};
 use scamplers_models::cdna::{CdnaFilter, CdnaQuery, CdnaSummary};
 use scamplers_schema::cdna::dsl::id;
-use serde_qs::axum::QsQuery;
 
 use crate::{
     api::{
-        extract::auth::AuthenticatedUser,
+        extract::{auth::AuthenticatedUser, query::QsQuery},
         routes::{ApiResponse, Root, inner_handler},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter},
     state::AppState,
 };
 
+#[axum::debug_handler]
 pub(super) async fn list_cdna(
     _: Root,
     state: State<AppState>,

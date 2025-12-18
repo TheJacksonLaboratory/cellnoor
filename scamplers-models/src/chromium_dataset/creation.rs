@@ -68,9 +68,4 @@ impl ChromiumDatasetCreation {
     pub fn delivered_at(&self) -> Timestamp {
         self.delivered_at
     }
-
-    #[must_use]
-    pub fn data_path(&self) -> &str {
-        self.inner.data_path.as_ref()
-    }
 }

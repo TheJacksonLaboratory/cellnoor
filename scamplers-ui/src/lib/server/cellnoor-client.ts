@@ -1,5 +1,6 @@
 import type { Cookies, RequestEvent, ServerLoadEvent } from "@sveltejs/kit";
 import { readConfig } from "$lib/server/config";
+import type { ApiErrorResponse } from "scamplers-types/ApiErrorResponse";
 
 let apiClient: ApiClient | null = null;
 
@@ -78,7 +79,7 @@ export class ApiClient {
       endpoint: string;
       queryString: string;
     } = { endpoint: event.url.pathname, queryString: event.url.search },
-  ): Promise<T> {
+  ): Promise<T | ApiErrorResponse> {
     const response = await this.get(
       event,
       requestData,
@@ -88,10 +89,6 @@ export class ApiClient {
       },
     );
     const asJson = await response.json();
-
-    if (asJson.error) {
-      throw new Error(JSON.stringify(asJson));
-    }
 
     return asJson;
   }

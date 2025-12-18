@@ -2,11 +2,10 @@ use std::{collections::HashMap, str::FromStr};
 
 use axum::{
     Json,
-    extract::{Multipart, State, multipart::Field},
+    extract::{Multipart, State},
     http::StatusCode,
 };
 use diesel::prelude::*;
-use headers::ContentType;
 use heck::ToSnekCase;
 use scamplers_models::chromium_dataset::{
     ChromiumDatasetIdMetrics,
@@ -15,18 +14,23 @@ use scamplers_models::chromium_dataset::{
         multi_row_csv::{self},
     },
 };
-use scamplers_schema::chromium_dataset_metrics_files;
 use serde_json::{Number, Value};
 
 use crate::{
     api::{
         self,
         extract::auth::AuthenticatedUser,
-        routes::{ApiResponse, inner_handler},
+        routes::{
+            ApiResponse,
+            chromium_datasets::files::common::{FieldExt, ParsedMultipartFormField},
+            inner_handler,
+        },
     },
     db,
     state::AppState,
 };
+
+static ALLOWED_CONTENT_TYPES: &[&str] = &["application/json", "text/csv"];
 
 pub async fn upload_metrics_file(
     chromium_dataset_id: ChromiumDatasetIdMetrics,
@@ -35,89 +39,61 @@ pub async fn upload_metrics_file(
     mut request: Multipart,
 ) -> ApiResponse<()> {
     let mut extracted_metrics_files = Vec::with_capacity(16);
-    while let Some(field) = request.next_field().await.unwrap() {
-        extracted_metrics_files.push(
-            MetricsFile::from_field(chromium_dataset_id, field)
-                .await
+    while let Some(field) = request.next_field().await? {
+        let extracted = field.parse(ALLOWED_CONTENT_TYPES).await?;
+        let content = extracted.content();
+        let parsed_content = if extracted.content_type() == "application/json" {
+            serde_json::from_slice(content).map_err(|e| api::ErrorResponse {
+                status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
+                public_error: api::Error::MalformedRequest {
+                    message: format!("error parsing JSON: {e}"),
+                },
+                internal_error: None,
+            })?
+        } else {
+            parse_single_row_csv(content)
+                .map(ParsedMetricsData::KeyValue)
+                .or_else(|_| parse_multi_row_csv(content).map(ParsedMetricsData::Tabular))
                 .map_err(|e| api::ErrorResponse {
                     status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
                     public_error: e,
                     internal_error: None,
-                })?,
-        );
+                })?
+        };
+
+        extracted_metrics_files.push((extracted, parsed_content));
     }
 
-    let _ = inner_handler(state, user, extracted_metrics_files).await?;
+    let _ = inner_handler(state, user, (chromium_dataset_id, extracted_metrics_files)).await?;
     Ok((StatusCode::CREATED, Json(())))
 }
 
-#[derive(Debug, Insertable)]
-#[diesel(table_name = chromium_dataset_metrics_files, check_for_backend(Pg))]
-struct MetricsFile {
-    dataset_id: ChromiumDatasetIdMetrics,
-    filename: String,
-    raw_content: Vec<u8>,
-    content_type: String,
-    parsed_data: ParsedMetricsData,
-}
-
-impl MetricsFile {
-    async fn from_field(
-        dataset_id: ChromiumDatasetIdMetrics,
-        field: Field<'_>,
-    ) -> Result<Self, api::Error> {
-        let filename = field
-            .file_name()
-            .ok_or(api::Error::MalformedRequest {
-                message: "Chromium metrics file must have filename".to_owned(),
-            })?
-            .to_owned();
-
-        let content_type = field
-            .content_type()
-            .ok_or(api::Error::MalformedRequest {
-                message: "Chromium metrics file must have content-type".to_owned(),
-            })?
-            .to_owned();
-
-        let raw_content = field
-            .bytes()
-            .await
-            .map_err(|e| api::Error::MalformedRequest {
-                message: format!("failed to read form data: {e}"),
-            })?
-            .to_vec();
-
-        let parsed_data = if content_type == ContentType::json().to_string() {
-            serde_json::from_slice(&raw_content)
-                .map(ParsedMetricsData::KeyValue)
-                .map_err(|e| api::Error::MalformedRequest {
-                    message: format!("failed to parse JSON: {e}"),
-                })?
-        } else if content_type == "text/csv" {
-            parse_single_row_csv(&raw_content)
-                .map(ParsedMetricsData::KeyValue)
-                .or_else(|_| parse_multi_row_csv(&raw_content).map(ParsedMetricsData::Tabular))?
-        } else {
-            return Err(api::Error::MalformedRequest {
-                message: format!("expected either CSV or JSON, got {content_type}"),
-            });
-        };
-
-        Ok(Self {
-            dataset_id,
-            filename,
-            raw_content,
-            content_type,
-            parsed_data,
-        })
-    }
-}
-
-impl db::Operation<()> for Vec<MetricsFile> {
+impl db::Operation<()>
+    for (
+        ChromiumDatasetIdMetrics,
+        Vec<(ParsedMultipartFormField, ParsedMetricsData)>,
+    )
+{
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<(), db::Error> {
-        diesel::insert_into(chromium_dataset_metrics_files::table)
-            .values(self)
+        use scamplers_schema::chromium_dataset_metrics_files::dsl::*;
+
+        let (ds_id, data) = self;
+        let insertables: Vec<_> = data
+            .iter()
+            .map(|(form_field, parsed)| {
+                (
+                    dataset_id.eq(ds_id),
+                    directory.eq(form_field.directory()),
+                    filename.eq(form_field.filename()),
+                    content_type.eq(form_field.content_type()),
+                    raw_content.eq(form_field.content()),
+                    parsed_data.eq(parsed),
+                )
+            })
+            .collect();
+
+        diesel::insert_into(chromium_dataset_metrics_files)
+            .values(&insertables)
             .execute(db_conn)?;
 
         Ok(())

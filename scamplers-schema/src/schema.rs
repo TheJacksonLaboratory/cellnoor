@@ -66,19 +66,21 @@ diesel::table! {
 }
 
 diesel::table! {
-    chromium_dataset_metrics_files (filename, dataset_id) {
-        filename -> Text,
+    chromium_dataset_metrics_files (dataset_id, directory, filename) {
         dataset_id -> Uuid,
-        raw_content -> Bytea,
+        directory -> Text,
+        filename -> Text,
         content_type -> Text,
+        raw_content -> Bytea,
         parsed_data -> Jsonb,
     }
 }
 
 diesel::table! {
-    chromium_dataset_web_summaries (filename, dataset_id) {
-        filename -> Text,
+    chromium_dataset_web_summaries (dataset_id, directory, filename) {
         dataset_id -> Uuid,
+        directory -> Text,
+        filename -> Text,
         content -> Bytea,
     }
 }
@@ -89,7 +91,6 @@ diesel::table! {
         links -> Jsonb,
         name -> Text,
         lab_id -> Uuid,
-        data_path -> Text,
         delivered_at -> Timestamptz,
     }
 }

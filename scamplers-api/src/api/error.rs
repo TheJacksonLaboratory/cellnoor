@@ -43,11 +43,11 @@ impl From<csv::Error> for Error {
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(rename = "ErrorResponse"))]
+#[cfg_attr(feature = "typescript", ts(rename = "ApiErrorResponse"))]
 #[error("{self:?}")]
 pub struct ErrorResponse {
     pub status: u16,
-    #[serde(rename = "error")]
+    #[serde(flatten)]
     pub public_error: Error,
     #[serde(skip)]
     pub internal_error: Option<Error>,
@@ -83,6 +83,18 @@ impl From<MultipartError> for ErrorResponse {
             status: err.status().as_u16(),
             public_error: Error::MalformedRequest {
                 message: err.body_text(),
+            },
+            internal_error: None,
+        }
+    }
+}
+
+impl From<serde_qs::axum::QsQueryRejection> for ErrorResponse {
+    fn from(err: serde_qs::axum::QsQueryRejection) -> Self {
+        Self {
+            status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
+            public_error: Error::MalformedRequest {
+                message: err.to_string(),
             },
             internal_error: None,
         }

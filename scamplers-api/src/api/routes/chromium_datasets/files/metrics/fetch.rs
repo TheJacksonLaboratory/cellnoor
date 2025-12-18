@@ -28,9 +28,10 @@ pub async fn fetch_metrics_file(
     request: axum::extract::Request,
 ) -> Result<(StatusCode, Response<Body>), api::ErrorResponse> {
     tracing::info!(
-        "fetching metrics file {} for Chromium dataset {}",
+        "fetching Chromium dataset metrics file {}/{}/{}",
+        path.0,
         path.1,
-        path.0
+        path.2
     );
 
     let db_conn = state.db_conn().await?;
@@ -52,9 +53,10 @@ pub async fn fetch_metrics_file(
 
 impl db::Operation<Response<Body>> for (ChromiumDatasetMetricsFilename, &[u8]) {
     fn execute(self, db_conn: &mut PgConnection) -> Result<Response<Body>, db::Error> {
-        let (ChromiumDatasetMetricsFilename(dataset_id, filename), content_type) = self;
+        let (ChromiumDatasetMetricsFilename(dataset_id, directory, filename), content_type) = self;
         let query = chromium_dataset_metrics_files::table
             .filter(chromium_dataset_metrics_files::dataset_id.eq(dataset_id))
+            .filter(chromium_dataset_metrics_files::directory.eq(directory))
             .filter(chromium_dataset_metrics_files::filename.eq(filename));
 
         let response = if content_type == CSV_CONTENT_TYPE.as_bytes() {

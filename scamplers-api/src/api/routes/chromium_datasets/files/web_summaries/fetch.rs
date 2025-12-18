@@ -30,11 +30,12 @@ pub async fn fetch_web_summary(
 
 impl db::Operation<Vec<u8>> for ChromiumDatasetWebSummaryFilename {
     fn execute(self, db_conn: &mut PgConnection) -> Result<Vec<u8>, db::Error> {
-        let Self(dataset_id, filename) = self;
+        let Self(dataset_id, directory, filename) = self;
 
         Ok(chromium_dataset_web_summaries::table
             .select(chromium_dataset_web_summaries::content)
             .filter(chromium_dataset_web_summaries::dataset_id.eq(dataset_id))
+            .filter(chromium_dataset_web_summaries::directory.eq(directory))
             .filter(chromium_dataset_web_summaries::filename.eq(filename))
             .first(db_conn)?)
     }

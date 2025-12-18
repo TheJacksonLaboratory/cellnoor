@@ -2,4 +2,4 @@
 import type { ChromiumDatasetCmdline } from "./ChromiumDatasetCmdline";
 import type { NonEmptyString } from "./NonEmptyString";
 
-export type ChromiumDatasetCreation = { delivered_at: string, library_ids: Array<string>, cmdline: ChromiumDatasetCmdline, name: NonEmptyString, lab_id: string, data_path: NonEmptyString, };
+export type ChromiumDatasetCreation = { delivered_at: string, library_ids: Array<string>, cmdline: ChromiumDatasetCmdline, name: NonEmptyString, lab_id: string, };

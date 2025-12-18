@@ -9,5 +9,4 @@ use uuid::Uuid;
 pub struct ChromiumDatasetFields {
     pub(super) name: NonEmptyString,
     pub(super) lab_id: Uuid,
-    pub(super) data_path: NonEmptyString,
 }

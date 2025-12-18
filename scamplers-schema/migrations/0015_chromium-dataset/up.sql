@@ -3,7 +3,6 @@ create table chromium_datasets (
     links jsonb default '{}' not null,
     name case_insensitive_text not null,
     lab_id uuid references labs on delete restrict on update restrict not null,
-    data_path case_insensitive_text not null,
     delivered_at timestamptz not null
 );
 
@@ -14,19 +13,21 @@ create table chromium_dataset_libraries (
 );
 
 create table chromium_dataset_metrics_files (
-    filename case_insensitive_text not null,
     dataset_id uuid references chromium_datasets on delete restrict on update restrict not null,
-    raw_content bytea not null,
+    directory case_insensitive_text not null,
+    filename case_insensitive_text not null,
     content_type case_insensitive_text not null,
+    raw_content bytea not null,
     parsed_data jsonb not null,
-    primary key (filename, dataset_id)
+    primary key (dataset_id, directory, filename)
 );
 
 create table chromium_dataset_web_summaries (
-    filename case_insensitive_text not null,
     dataset_id uuid references chromium_datasets on delete restrict on update restrict not null,
+    directory case_insensitive_text not null,
+    filename case_insensitive_text not null,
     content bytea not null,
-    primary key (filename, dataset_id)
+    primary key (dataset_id, directory, filename)
 );
 
 create function initialize_chromium_dataset_links() returns trigger language plpgsql volatile strict as $$
@@ -44,14 +45,14 @@ $$;
 
 create function update_web_summaries_links() returns trigger language plpgsql volatile strict as $$
     begin
-        update chromium_datasets set links = jsonb_set(links, '{web-summaries}', links -> 'web-summaries' || jsonb_build_array('/chromium-datasets/' || id || '/web-summaries/' || new.filename)) where id = new.dataset_id;
+        update chromium_datasets set links = jsonb_set(links, '{web-summaries}', links -> 'web-summaries' || jsonb_build_array('/chromium-datasets/' || id || '/web-summaries/' || new.directory || '/' || new.filename)) where id = new.dataset_id;
         return new;
     end;
 $$;
 
 create function update_metrics_files_links() returns trigger language plpgsql volatile strict as $$
     begin
-        update chromium_datasets set links = jsonb_set(links, '{metrics-files}', links -> 'metrics-files' || jsonb_build_array('/chromium-datasets/' || id || '/metrics-files/' || new.filename)) where id = new.dataset_id;
+        update chromium_datasets set links = jsonb_set(links, '{metrics-files}', links -> 'metrics-files' || jsonb_build_array('/chromium-datasets/' || id || '/metrics-files/' || new.directory || '/' || new.filename)) where id = new.dataset_id;
         return new;
     end;
 $$;
