@@ -81,6 +81,8 @@ fn initialize_logging(log_dir: Option<&Utf8Path>) {
 }
 
 fn app(app_state: AppState) -> Router {
+    // The browser form-encodes everything so we have to enable the less-readable
+    // form-encoding
     let query_string_config =
         QsQueryConfig::new().config(serde_qs::Config::new().use_form_encoding(true));
     let api_router = routes::router()

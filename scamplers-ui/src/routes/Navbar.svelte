@@ -2,7 +2,7 @@
   import { resolve } from "$app/paths";
   import "../app.css";
   import { authClient } from "$lib/auth-client";
-  import { afterNavigate } from "$app/navigation";
+  import { afterNavigate, goto } from "$app/navigation";
   import type { ChromiumDatasetQuery } from "scamplers-types/ChromiumDatasetQuery";
   import qs from "qs";
 
@@ -10,11 +10,9 @@
   const links = [[resolve("/chromium-datasets"), "Chromium Datasets"]];
 
   let searchBarValue = $state("");
-  const queryShape: ChromiumDatasetQuery = {
-    filter: { specimen: { names: [""] } },
-  };
-  const searchBarName = qs.stringify(queryShape, { encodeValuesOnly: true })
-    .split("=").at(0);
+  let query: ChromiumDatasetQuery = $derived({
+    filter: { specimen: { names: [`%${searchBarValue}%`] } },
+  });
   afterNavigate(() => searchBarValue = searchBarValue.replaceAll("%", ""));
 </script>
 
@@ -48,14 +46,19 @@
       </svg>
       <form
         class="grow"
-        action="/chromium-datasets"
-        onsubmit={() => searchBarValue = `%${searchBarValue}%`}
+        onsubmit={(event) => {
+          event.preventDefault();
+          goto(
+            `/chromium-datasets?${
+              qs.stringify(query, { encodeValuesOnly: true })
+            }`,
+          );
+        }}
       >
         <input
           bind:value={searchBarValue}
           aria-label="search for Chromium datasets by specimen name"
           type="search"
-          name={searchBarName}
           placeholder="Search Chromium datasets by specimen name"
         />
       </form>
