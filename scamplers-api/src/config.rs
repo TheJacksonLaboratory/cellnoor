@@ -1,3 +1,5 @@
+// The three fields not zeroized in `Config` cause a linting error
+#![allow(unused)]
 use std::{path::Path, str::FromStr};
 
 use anyhow::Context;
