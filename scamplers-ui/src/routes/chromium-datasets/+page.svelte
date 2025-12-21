@@ -1,12 +1,6 @@
 <script lang="ts">
-  import { resolve } from "$app/paths";
   import { DATE_FORMATTER } from "$lib/date.js";
-  import { type ChromiumDatasetQuery } from "scamplers-types/ChromiumDatasetQuery";
-  import { type LibraryType } from "scamplers-types/LibraryType";
-  import type { SampleMultiplexing } from "scamplers-types/SampleMultiplexing.js";
-  import Header from "../Header.svelte";
-  import LinkButton from "../LinkButton.svelte";
-  import { libraryTypeMap, multiplexingTypeMap } from "$lib/string-maps";
+  import type { ChromiumDatasetQuery } from "scamplers-types/ChromiumDatasetQuery";
   import LibraryTypeBadges from "../LibraryTypeBadges.svelte";
   import { isSuccess } from "$lib/cellnoor-typeguard";
   import type { ChromiumDatasetSummary } from "scamplers-types/ChromiumDatasetSummary";

@@ -2,17 +2,11 @@
   import { resolve } from "$app/paths";
   import "../app.css";
   import { authClient } from "$lib/auth-client";
-  import { afterNavigate } from "$app/navigation";
 
   let { userName }: { userName: string } = $props();
   const links = [[resolve("/chromium-datasets"), "Chromium Datasets"]];
 
-  let searchBar: HTMLInputElement | undefined = $state();
-  afterNavigate(() => {
-    if (searchBar) {
-      searchBar.value = "";
-    }
-  });
+  let searchBar = $state("");
 </script>
 
 <nav class="navbar bg-base-200 sticky top-0 z-50 mb-4 justify-between">
@@ -30,16 +24,20 @@
     </a>
   </div>
   <div class="flex flex-row items-center">
-    <form action={resolve("/chromium-datasets")}>
-      <input
-        bind:this={searchBar}
-        aria-label="search for Chromium datasets"
-        type="text"
-        name="search"
-        class="input input-neutral lg:w-xs h-8"
-        placeholder="Search for Chromium datasets"
-      />
-    </form>
+      <label class="input lg:w-lg h-8">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
+            <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
+          </svg>
+          <form class="grow" action="/chromium-datasets">
+              <input
+                bind:value={searchBar}
+                aria-label="search for Chromium datasets by specimen name"
+                type="search"
+                name="filter[specimen][names][0]"
+                placeholder="Search Chromium datasets by specimen name"
+              />
+          </form>
+      </label>
     <ul class="menu menu-horizontal">
       {#each links as [link, buttonText]}
         <li>

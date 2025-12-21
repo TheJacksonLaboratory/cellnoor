@@ -51,7 +51,7 @@ reqwest = { version = "0.12.24", features = ["json"] }
 rstest = { version = "0.26.1", default-features = false }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = { version = "1.0.145" }
-serde_qs = { version = "1.0.0-rc.3", features = ["axum"] }
+serde_qs = { version = "1.0.0-rc.4", features = ["axum"] }
 strum = { version = "0.27.2", features = ["derive"] }
 syn = { version = "2.0.108", default-features = false, features = [
   "full",

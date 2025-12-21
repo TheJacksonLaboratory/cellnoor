@@ -1978,9 +1978,9 @@ dependencies = [
 
 [[package]]
 name = "serde_qs"
-version = "1.0.0-rc.3"
+version = "1.0.0-rc.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4cb0b9062a400c31442e67d1f2b1e7746bebd691110ebee1b7d0c7293b04fab1"
+checksum = "18c21dc864770a74dc4d61d6454bf3b5eb7bc7014d0cead189aa909472a70c9c"
 dependencies = [
  "axum",
  "futures",

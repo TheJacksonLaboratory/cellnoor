@@ -1,6 +1,7 @@
 use anyhow::Context;
-use axum::{Router, routing::get};
+use axum::{Extension, Router, routing::get};
 use camino::Utf8Path;
+use serde_qs::axum::QsQueryConfig;
 use tokio::net::TcpListener;
 use zeroize::Zeroize;
 
@@ -17,18 +18,16 @@ pub async fn serve_integration_test(config: Config) -> anyhow::Result<()> {
     serve_inner(config).await
 }
 
-#[cfg(feature = "dummy-data")]
 pub async fn serve(config: Config) -> anyhow::Result<()> {
+    #[cfg(feature = "dummy-data")]
     use crate::test_state::database;
 
     initialize_logging(config.log_dir());
-    database().await;
-    serve_inner(config).await
-}
-
-#[cfg(not(feature = "dummy-data"))]
-pub async fn serve(config: Config) -> anyhow::Result<()> {
-    initialize_logging(config.log_dir());
+    #[cfg(feature = "dummy-data")]
+    {
+        // This populates the database with dummy-data
+        database().await;
+    }
     serve_inner(config).await
 }
 
@@ -82,8 +81,11 @@ fn initialize_logging(log_dir: Option<&Utf8Path>) {
 }
 
 fn app(app_state: AppState) -> Router {
+    let query_string_config =
+        QsQueryConfig::new().config(serde_qs::Config::new().use_form_encoding(true));
     let api_router = routes::router()
         .route("/health", get(async || "OK"))
+        .layer(Extension(query_string_config))
         .with_state(app_state);
 
     Router::new().nest("/api", api_router)

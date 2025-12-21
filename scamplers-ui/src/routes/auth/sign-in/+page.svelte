@@ -2,7 +2,18 @@
   import { authClient } from "$lib/auth-client";
 </script>
 
-<div class="flex place-content-center place-items-center h-screen">
+<div class="flex flex-col place-items-center place-content-center h-screen">
+<div class="flex flex-col place-items-center place-content-between border rounded-box h-1/4 p-4">
+    <div class="flex flex-row items-center">
+        <img
+          class="h-12 w-25 object-cover"
+          src="/jax-logo.png"
+          alt="The Jackson Laboratory Logo"
+        />
+        <h1 class="font-comfortaa text-6xl">
+            cellnoor
+        </h1>
+    </div>
   <button
     class="btn btn-ghost p-0"
     onclick={async () => {
@@ -102,4 +113,5 @@
       <rect x="23" y="21" width="9" height="9" fill="#ffb900" />
     </svg>
   </button>
+</div>
 </div>

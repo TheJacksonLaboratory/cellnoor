@@ -1,9 +1,7 @@
 import { ApiClient } from "$lib/server/cellnoor-client";
 import type { ChromiumDataset } from "scamplers-types/ChromiumDataset";
-import type { PageServerLoad } from "./$types";
 import type { SpecimenSummary } from "scamplers-types/SpecimenSummary";
 import type { LibrarySummary } from "scamplers-types/LibrarySummary";
-import type { ApiErrorResponse } from "scamplers-types/ApiErrorResponse";
 import { isSuccess } from "$lib/cellnoor-typeguard";
 
 export async function load(
@@ -20,7 +18,7 @@ export async function load(
         undefined,
         { endpoint: dataset.links.specimens as string, queryString: "" },
       ),
-      apiClient.getJson<SpecimenSummary>(
+      apiClient.getJson<LibrarySummary>(
         event,
         undefined,
         { endpoint: dataset.links.libraries as string, queryString: "" },

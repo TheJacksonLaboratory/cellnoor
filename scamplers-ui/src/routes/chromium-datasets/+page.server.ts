@@ -9,22 +9,6 @@ import type { ApiErrorResponse } from "scamplers-types/ApiErrorResponse";
 export async function load(event) {
   const apiClient = await ApiClient.new();
 
-  let names: string[] | undefined = event.url.searchParams.getAll("search").map(
-    (s) => {
-      return `%${s}%`;
-    },
-  );
-  if (names.length == 0) {
-    names = undefined;
-  }
-  const query: ChromiumDatasetQuery = { filter: { specimen: { names } } };
-  const queryString = qs.stringify(query, {
-    addQueryPrefix: true,
-    encodeValuesOnly: true,
-  });
-
-  event.url = new URL(queryString, event.url);
-
   const [chromiumDatasets, assays] = await Promise.all([
     apiClient.getJson<ChromiumDatasetSummary[]>(event),
     apiClient.getJson<TenxAssay[]>(event, undefined, {
