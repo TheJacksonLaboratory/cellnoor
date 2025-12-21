@@ -8,8 +8,6 @@
   const { data } = $props();
   const { chromiumDatasets } = $derived(data);
 
-  let fileTrees: Map<string, string[]>[] = $state([]);
-
   function createFileTree(dataset: ChromiumDatasetSummary) {
     const linkMap: Map<string, string[]> = new Map();
 
@@ -33,14 +31,9 @@
     return linkMap;
   }
 
-  function fillFileTrees() {
-    if (!isSuccess(chromiumDatasets)) {
-      return;
-    }
-    fileTrees = chromiumDatasets.map(createFileTree);
-  }
-
-  fillFileTrees();
+  const fileTrees = $derived(
+    isSuccess(chromiumDatasets) ? chromiumDatasets.map(createFileTree) : [],
+  );
 
   let query: ChromiumDatasetQuery = $state({
     filter: {
@@ -71,8 +64,6 @@
     },
     order_by: [],
   });
-
-  let currentSpecimenName = $state("");
 </script>
 
 <div class="drawer lg:drawer-open">

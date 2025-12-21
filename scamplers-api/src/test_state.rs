@@ -706,13 +706,17 @@ impl TestState {
                 use scamplers_schema::{chromium_dataset_web_summaries as ws, chromium_dataset_metrics_files as mf};
                 let created_ds_id = dataset.execute(db_conn).unwrap().id();
 
-                let values = |i| (ws::dataset_id.eq(created_ds_id), ws::directory.eq(format!("specimen{i}")), ws::filename.eq("web_summary.html"), ws::content.eq(b"<!DOCTYPE html><html><head><title>Web summary</title></head><body>web summary</body></html>"));
+                let values = |i| {
+                    let content = format!("<!DOCTYPE html><html><head><title>Web summary</title></head><body>web summary{i} - {created_ds_id}</body></html>");
+                    (ws::dataset_id.eq(created_ds_id), ws::directory.eq(format!("specimen{i}")), ws::filename.eq("web_summary.html"), ws::content.eq(content.into_bytes()))
+                };
                 diesel::insert_into(ws::table).values([values(0), values(1)]).execute(db_conn).unwrap();
 
-                let raw_content = b"some_metric,another_metric\n100,42";
-                let parsed_data = serde_json::json!({"some_metric": 100, "another_metric": 42});
-
-                let values = |i| (mf::dataset_id.eq(created_ds_id), mf::directory.eq(format!("specimen{i}")), mf::filename.eq("metrics_summary.csv"), mf::raw_content.eq(raw_content), mf::content_type.eq("text/csv"), mf::parsed_data.eq(parsed_data.clone()));
+                let values = |i| {
+                    let raw_content = format!("ds_id, some_metric,another_metric,n\n{created_ds_id}100,42,{i}");
+                    let parsed_data = serde_json::json!({"ds_id": created_ds_id, "some_metric": 100, "another_metric": 42, "n": i});
+                    (mf::dataset_id.eq(created_ds_id), mf::directory.eq(format!("specimen{i}")), mf::filename.eq("metrics_summary.csv"), mf::raw_content.eq(raw_content.into_bytes()), mf::content_type.eq("text/csv"), mf::parsed_data.eq(parsed_data))
+                };
                 diesel::insert_into(mf::table).values([values(0), values(1)]).execute(db_conn).unwrap();
             })
             .await
