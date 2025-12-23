@@ -21,7 +21,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-  &api_host scamplers-api:
+  &api_host cellnoor-api:
     build:
       args:
         UID: &uid "10001"
@@ -36,9 +36,9 @@ services:
     secrets:
       - source: db_root_password
         uid: *uid
-      - source: scamplers_api_db_password
+      - source: cellnoor_api_db_password
         uid: *uid
-      - source: scamplers_ui_db_password
+      - source: cellnoor_ui_db_password
         uid: *uid
       - source: db_name
         uid: *uid
@@ -56,15 +56,15 @@ services:
       start_interval: 1s
       timeout: 5s
       retries: 10
-  &ui_host scamplers-ui:
+  &ui_host cellnoor-ui:
     environment:
       DB_HOST: *db_host
       DB_PORT: *db_port
-      PUBLIC_URL: ${SCAMPLERS_PUBLIC_URL:?}
+      PUBLIC_URL: ${cellnoor_PUBLIC_URL:?}
       API_KEY_PREFIX_LENGTH: *api_key_prefix_length
       PORT: &ui_port 80
     depends_on:
-      scamplers-api:
+      cellnoor-api:
         condition: service_healthy
     healthcheck:
       test: curl http://localhost/health || exit 1
@@ -74,7 +74,7 @@ services:
       timeout: 1s
       retries: 5
     secrets:
-      - source: scamplers_ui_db_password
+      - source: cellnoor_ui_db_password
         uid: *uid
       - source: db_name
         uid: *uid
@@ -87,7 +87,7 @@ services:
   caddy:
     image: caddy:2-alpine
     environment:
-      PUBLIC_URL: ${SCAMPLERS_PUBLIC_URL:?}
+      PUBLIC_URL: ${cellnoor_PUBLIC_URL:?}
       API_HOST: *api_host
       API_PORT: *api_port
       UI_HOST: *ui_host
@@ -104,7 +104,7 @@ services:
       - caddy-data:/data
       - caddy-config:/config
     depends_on:
-      scamplers-ui:
+      cellnoor-ui:
         condition: service_healthy
 volumes:
   logs:
@@ -112,18 +112,18 @@ volumes:
   caddy-config:
 secrets:
   db_root_password:
-    environment: SCAMPLERS_DB_ROOT_PASSWORD
-  scamplers_api_db_password:
-    environment: SCAMPLERS_API_DB_PASSWORD
-  scamplers_ui_db_password:
-    environment: SCAMPLERS_UI_DB_PASSWORD
+    environment: cellnoor_DB_ROOT_PASSWORD
+  cellnoor_api_db_password:
+    environment: cellnoor_API_DB_PASSWORD
+  cellnoor_ui_db_password:
+    environment: cellnoor_UI_DB_PASSWORD
   db_name:
-    environment: SCAMPLERS_DB_NAME
+    environment: cellnoor_DB_NAME
   microsoft_entra_client_id:
-    environment: SCAMPLERS_MICROSOFT_ENTRA_CLIENT_ID
+    environment: cellnoor_MICROSOFT_ENTRA_CLIENT_ID
   microsoft_entra_client_secret:
-    environment: SCAMPLERS_MICROSOFT_ENTRA_CLIENT_SECRET
+    environment: cellnoor_MICROSOFT_ENTRA_CLIENT_SECRET
   microsoft_entra_tenant:
-    environment: SCAMPLERS_MICROSOFT_ENTRA_TENANT
+    environment: cellnoor_MICROSOFT_ENTRA_TENANT
   initial_data:
-    file: ${SCAMPLERS_INITIAL_DATA_PATH:?}
+    file: ${cellnoor_INITIAL_DATA_PATH:?}

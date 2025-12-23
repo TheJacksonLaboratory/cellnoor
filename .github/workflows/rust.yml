@@ -5,7 +5,7 @@ on:
       - "**/*.rs"
 
 jobs:
-  check_scamplers-schema:
+  check_cellnoor-schema:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -28,14 +28,14 @@ jobs:
         run: cargo install diesel_cli --no-default-features --features postgres
 
       - name: Check schema
-        working-directory: scamplers-schema
+        working-directory: cellnoor-schema
         run: diesel setup --database-url postgres://postgres@localhost/postgres --locked-schema
 
   lint:
     runs-on: ubuntu-latest
     env:
       RUSTFLAGS: -Dwarnings
-      SCAMPLERS_GENERATE_SCHEMA: false
+      cellnoor_GENERATE_SCHEMA: false
 
     steps:
       - name: Check out repository code
@@ -78,18 +78,18 @@ jobs:
         ports:
           - 5432:5432
     env:
-      SCAMPLERS_CONFIG_DIR: .
-      SCAMPLERS_GENERATE_SCHEMA: false
-      SCAMPLERS_DB_ROOT_USER: postgres
-      SCAMPLERS_DB_ROOT_PASSWORD: ""
-      SCAMPLERS_API_DB_PASSWORD: ""
-      SCAMPLERS_UI_DB_PASSWORD: ""
-      SCAMPLERS_DB_HOST: localhost
-      SCAMPLERS_DB_PORT: 5432
-      SCAMPLERS_DB_NAME: postgres
-      SCAMPLERS_API_KEY_PREFIX_LENGTH: 8
-      SCAMPLERS_API_HOST: localhost
-      SCAMPLERS_API_PORT: 8000
+      cellnoor_CONFIG_DIR: .
+      cellnoor_GENERATE_SCHEMA: false
+      cellnoor_DB_ROOT_USER: postgres
+      cellnoor_DB_ROOT_PASSWORD: ""
+      cellnoor_API_DB_PASSWORD: ""
+      cellnoor_UI_DB_PASSWORD: ""
+      cellnoor_DB_HOST: localhost
+      cellnoor_DB_PORT: 5432
+      cellnoor_DB_NAME: postgres
+      cellnoor_API_KEY_PREFIX_LENGTH: 8
+      cellnoor_API_HOST: localhost
+      cellnoor_API_PORT: 8000
 
     steps:
       - name: Check out repository code
@@ -103,5 +103,5 @@ jobs:
 
       - name: Test
         run: |
-          mv initial_data.sample.json scamplers-api/initial_data
+          mv initial_data.sample.json cellnoor-api/initial_data
           cargo test --workspace

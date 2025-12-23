@@ -7,9 +7,9 @@ repos:
         language: script
         pass_filenames: false
 
-      - id: lint_scamplers-ui
-        name: Lint scamplers-ui
-        entry: ./scripts/pre-commit/lint_scamplers-ui.sh
+      - id: lint_cellnoor-ui
+        name: Lint cellnoor-ui
+        entry: ./scripts/pre-commit/lint_cellnoor-ui.sh
         language: script
         pass_filenames: false
 

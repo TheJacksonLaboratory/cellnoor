@@ -10,7 +10,7 @@ updates:
           - "*"
 
   - package-ecosystem: npm
-    directory: scamplers-ui
+    directory: cellnoor-ui
     schedule:
       interval: weekly
     groups:

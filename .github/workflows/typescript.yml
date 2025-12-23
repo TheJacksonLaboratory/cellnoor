@@ -2,7 +2,7 @@ name: Check TypeScript Code
 on:
   push:
     paths:
-      - scamplers-ui/**
+      - cellnoor-ui/**
 
 jobs:
   lint-and-test:
@@ -15,15 +15,15 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        working-directory: scamplers-ui
+        working-directory: cellnoor-ui
         run: bun install
 
       - name: Lint
-        working-directory: scamplers-ui
+        working-directory: cellnoor-ui
         run: bun run --bun check
 
       - name: Test
-        working-directory: scamplers-ui
+        working-directory: cellnoor-ui
         run: bun test
 
   format:
@@ -36,4 +36,4 @@ jobs:
         uses: denoland/setup-deno@v2
 
       - name: Format
-        run: deno fmt --check --unstable-component scamplers-ui
+        run: deno fmt --check --unstable-component cellnoor-ui

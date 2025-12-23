@@ -7,6 +7,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: build_scamplers-api
+      - name: build_cellnoor-api
         run: |
-          VERSION=$(cargo metadata | jq --raw-output '.packages[] | select(.name == "scamplers-api").version')
+          VERSION=$(cargo metadata | jq --raw-output '.packages[] | select(.name == "cellnoor-api").version')

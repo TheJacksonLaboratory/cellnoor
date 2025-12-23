@@ -280,6 +280,97 @@ dependencies = [
 ]
 
 [[package]]
+name = "cellnoor-api"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "argon2",
+ "axum",
+ "axum-extra",
+ "base16ct",
+ "bon",
+ "camino",
+ "cellnoor-models",
+ "cellnoor-schema",
+ "clap",
+ "csv",
+ "deadpool-diesel",
+ "diesel",
+ "diesel_migrations",
+ "dotenvy",
+ "headers",
+ "heck",
+ "jiff",
+ "jiff-diesel",
+ "non-empty",
+ "pretty_assertions",
+ "rand",
+ "ranged",
+ "regex",
+ "reqwest",
+ "rstest",
+ "serde",
+ "serde_json",
+ "serde_qs",
+ "strum",
+ "thiserror 2.0.17",
+ "tokio",
+ "tracing",
+ "tracing-appender",
+ "tracing-subscriber",
+ "ts-rs",
+ "url",
+ "uuid",
+ "zeroize",
+]
+
+[[package]]
+name = "cellnoor-models"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "axum-extra",
+ "bon",
+ "cellnoor-schema",
+ "csv",
+ "default-vec",
+ "diesel",
+ "heck",
+ "jiff",
+ "jiff-diesel",
+ "macro-attributes",
+ "macros",
+ "non-empty",
+ "pretty_assertions",
+ "ranged",
+ "rstest",
+ "serde",
+ "serde_json",
+ "strum",
+ "ts-rs",
+ "uuid",
+]
+
+[[package]]
+name = "cellnoor-schema"
+version = "0.1.0"
+dependencies = [
+ "diesel",
+]
+
+[[package]]
+name = "cellnoor-typescript"
+version = "0.1.0"
+dependencies = [
+ "cellnoor-api",
+ "cellnoor-models",
+ "clap",
+ "heck",
+ "serde_json",
+ "ts-rs",
+]
+
+[[package]]
 name = "cfg-if"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1354,10 +1445,10 @@ dependencies = [
 name = "non-empty"
 version = "0.1.0"
 dependencies = [
+ "cellnoor-schema",
  "diesel",
  "pretty_assertions",
  "rstest",
- "scamplers-schema",
  "serde",
  "serde_json",
  "thiserror 2.0.17",
@@ -1779,97 +1870,6 @@ name = "ryu"
 version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "28d3b2b1366ec20994f1fd18c3c594f05c5dd4bc44d8bb0c1c632c8d6829481f"
-
-[[package]]
-name = "scamplers-api"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "argon2",
- "axum",
- "axum-extra",
- "base16ct",
- "bon",
- "camino",
- "clap",
- "csv",
- "deadpool-diesel",
- "diesel",
- "diesel_migrations",
- "dotenvy",
- "headers",
- "heck",
- "jiff",
- "jiff-diesel",
- "non-empty",
- "pretty_assertions",
- "rand",
- "ranged",
- "regex",
- "reqwest",
- "rstest",
- "scamplers-models",
- "scamplers-schema",
- "serde",
- "serde_json",
- "serde_qs",
- "strum",
- "thiserror 2.0.17",
- "tokio",
- "tracing",
- "tracing-appender",
- "tracing-subscriber",
- "ts-rs",
- "url",
- "uuid",
- "zeroize",
-]
-
-[[package]]
-name = "scamplers-models"
-version = "0.1.0"
-dependencies = [
- "axum",
- "axum-extra",
- "bon",
- "csv",
- "default-vec",
- "diesel",
- "heck",
- "jiff",
- "jiff-diesel",
- "macro-attributes",
- "macros",
- "non-empty",
- "pretty_assertions",
- "ranged",
- "rstest",
- "scamplers-schema",
- "serde",
- "serde_json",
- "strum",
- "ts-rs",
- "uuid",
-]
-
-[[package]]
-name = "scamplers-schema"
-version = "0.1.0"
-dependencies = [
- "diesel",
-]
-
-[[package]]
-name = "scamplers-typescript"
-version = "0.1.0"
-dependencies = [
- "clap",
- "heck",
- "scamplers-api",
- "scamplers-models",
- "serde_json",
- "ts-rs",
-]
 
 [[package]]
 name = "schannel"

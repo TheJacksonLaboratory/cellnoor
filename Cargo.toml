@@ -1,13 +1,13 @@
 [workspace]
 members = [
-  "default-vec",
-  "non-empty",
-  "ranged",
-  "scamplers-api",
-  "scamplers-models",
-  "scamplers-models/macro-attributes",
-  "scamplers-schema",
-  "scamplers-typescript",
+  "cellnoor-api",
+  "crates/cellnoor-models",
+  "crates/cellnoor-models/macro-attributes",
+  "crates/cellnoor-schema",
+  "crates/cellnoor-typescript",
+  "crates/default-vec",
+  "crates/non-empty",
+  "crates/ranged",
 ]
 resolver = "3"
 

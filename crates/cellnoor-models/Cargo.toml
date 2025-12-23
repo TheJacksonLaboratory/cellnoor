@@ -1,0 +1,51 @@
+[package]
+edition.workspace = true
+name = "cellnoor-models"
+version = "0.1.0"
+
+[dependencies]
+axum = { workspace = true, optional = true }
+axum-extra = { workspace = true, optional = true }
+bon = { workspace = true, optional = true }
+cellnoor-schema = { path = "../cellnoor-schema", optional = true }
+csv.workspace = true
+default-vec = { path = "../default-vec", features = ["serde"] }
+diesel = { workspace = true, optional = true, features = [
+  "32-column-tables",
+  "postgres",
+  "serde_json",
+  "uuid",
+  "without-deprecated",
+] }
+heck.workspace = true
+jiff.workspace = true
+jiff-diesel = { workspace = true, optional = true }
+macro-attributes = { path = "macro-attributes" }
+macros = { path = "macros" }
+non-empty = { path = "../non-empty", features = ["serde"] }
+ranged = { version = "0.1.0", path = "../ranged", features = ["serde"] }
+serde.workspace = true
+serde_json.workspace = true
+strum.workspace = true
+ts-rs = { workspace = true, optional = true }
+uuid.workspace = true
+
+[dev-dependencies]
+pretty_assertions.workspace = true
+rstest.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+app = [
+  "dep:axum",
+  "dep:axum-extra",
+  "dep:cellnoor-schema",
+  "dep:diesel",
+  "dep:jiff-diesel",
+  "non-empty/diesel",
+  "ranged/diesel",
+]
+builder = ["dep:bon"]
+typescript = ["dep:ts-rs", "non-empty/typescript", "ranged/typescript"]

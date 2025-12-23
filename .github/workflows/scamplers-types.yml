@@ -1,14 +1,14 @@
-name: Check scamplers-types
+name: Check cellnoor-types
 on:
   push:
     paths:
       - "**/*.rs"
 
 jobs:
-  check_scamplers-types:
+  check_cellnoor-types:
     runs-on: ubuntu-latest
     env:
-      SCAMPLERS_GENERATE_SCHEMA: false
+      cellnoor_GENERATE_SCHEMA: false
 
     steps:
       - name: Check out repository code
@@ -20,8 +20,8 @@ jobs:
           cache-all-crates: true
           cache-workspace-crates: true
 
-      - name: Rerun scamplers-typescript
-        run: cargo run --package scamplers-typescript -- --output-dir regenerated-typescript-type-definitions
+      - name: Rerun cellnoor-typescript
+        run: cargo run --package cellnoor-typescript -- --output-dir regenerated-typescript-type-definitions
 
-      - name: Compare committed scamplers-types to regenerated scamplers-types
-        run: diff --exclude package.json --recursive scamplers-types regenerated-typescript-type-definitions
+      - name: Compare committed cellnoor-types to regenerated cellnoor-types
+        run: diff --exclude package.json --recursive cellnoor-types regenerated-typescript-type-definitions

@@ -1,11 +1,11 @@
 services:
-  scamplers-api:
+  cellnoor-api:
     build:
       context: .
-      dockerfile: scamplers-api.Dockerfile
+      dockerfile: cellnoor-api.Dockerfile
       target: final
-  scamplers-ui:
+  cellnoor-ui:
     build:
       context: .
-      dockerfile: scamplers-ui.Dockerfile
+      dockerfile: cellnoor-ui.Dockerfile
       target: final

@@ -17,7 +17,7 @@ target
 # Initial data also useful for development
 initial_data
 !initial_data.sample.json
-!scamplers-api/src/initial_data
+!cellnoor-api/src/initial_data
 
 # Generated TypesScript code
 pkg
@@ -37,5 +37,5 @@ venv
 # Secrets
 *secret*
 
-# Generated when running scamplers-ui
+# Generated when running cellnoor-ui
 node_modules

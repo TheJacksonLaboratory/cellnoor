@@ -1,5 +1,5 @@
-# **[scamplers](https://scbldata.jax.org)**
-[scamplers](https://scbldata.jax.org) is a web application and RESTful API that aggregates, displays, and allows comprehensive querying of single-cell biological data.
+# **[cellnoor](https://scbldata.jax.org)**
+[cellnoor](https://scbldata.jax.org) is a web application and RESTful API that aggregates, displays, and allows comprehensive querying of single-cell biological data.
 ### **Using the API**
 First, obtain an API key:
 1. visit [https://scbldata.jax.org](https://scbldata.jax.org)
@@ -17,26 +17,26 @@ Currently, `scamplepy` requires python 3.13 or above. You can install it in an i
 ```bash
 uv init my-project
 cd my-project
-uv add git+https://github.com/demhadais/scamplers#subdirectory=rust/scamplers/scamplepy
+uv add git+https://github.com/demhadais/cellnoor#subdirectory=rust/cellnoor/scamplepy
 ```
 or using [pip](https://github.com/pypa/pip):
 ```bash
 python3 -m venv venv
 . venv/bin/activate
-pip3 install git+https://github.com/demhadais/scamplers#subdirectory=rust/scamplers/scamplepy
+pip3 install git+https://github.com/demhadais/cellnoor#subdirectory=rust/cellnoor/scamplepy
 ```
-Installation with other tools, like [poetry](https://python-poetry.org), is untested but likely works. After installation, you can use it to query scamplers like so:
+Installation with other tools, like [poetry](https://python-poetry.org), is untested but likely works. After installation, you can use it to query cellnoor like so:
 #### **Usage**
 ```python
 import asyncio
 
-from scamplepy import ScamplersClient
+from scamplepy import cellnoorClient
 from scamplepy.query import Pagination, PersonQuery
 
 
 async def main():
     # Set up the client
-    client = ScamplersClient(
+    client = cellnoorClient(
         api_base_url="https://ctscmongo01lp.jax.org/api",
         api_key="api-key",
     )

@@ -10,15 +10,15 @@ RUN --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
     --mount=type=bind,source=default-vec,target=default-vec \
     --mount=type=bind,source=non-empty,target=non-empty \
-    --mount=type=bind,source=scamplers-schema,target=scamplers-schema \
-    --mount=type=bind,source=scamplers-models,target=scamplers-models \
-    --mount=type=bind,source=scamplers-jsonschema,target=scamplers-jsonschema \
-    --mount=type=bind,source=scamplers-api,target=scamplers-api \
+    --mount=type=bind,source=cellnoor-schema,target=cellnoor-schema \
+    --mount=type=bind,source=cellnoor-models,target=cellnoor-models \
+    --mount=type=bind,source=cellnoor-jsonschema,target=cellnoor-jsonschema \
+    --mount=type=bind,source=cellnoor-api,target=cellnoor-api \
     --mount=type=cache,target=/app/target/ \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
-    RUN_DIESEL_CLI=false cargo build --release --package scamplers-api && \
-    cp ./target/release/scamplers-api /bin/scamplers-api
+    RUN_DIESEL_CLI=false cargo build --release --package cellnoor-api && \
+    cp ./target/release/cellnoor-api /bin/cellnoor-api
 
 FROM debian:bookworm AS final
 
@@ -26,7 +26,7 @@ RUN apt update && apt install curl libpq5 --yes
 
 RUN mkdir app
 
-COPY --from=build /bin/scamplers-api /bin/
+COPY --from=build /bin/cellnoor-api /bin/
 
 ARG UID=10001
 RUN adduser \
@@ -42,4 +42,4 @@ USER appuser
 
 EXPOSE ${PORT:-80}
 
-CMD /bin/scamplers-api --mode ${MODE:-production} --db-host ${DB_HOST} --db-port ${DB_PORT} --api-key-prefix-length ${API_KEY_PREFIX_LENGTH} --host 0.0.0.0 --port ${PORT} --db-root-user ${DB_ROOT_USER} --log-dir logs --config-dir /run/secrets
+CMD /bin/cellnoor-api --mode ${MODE:-production} --db-host ${DB_HOST} --db-port ${DB_PORT} --api-key-prefix-length ${API_KEY_PREFIX_LENGTH} --host 0.0.0.0 --port ${PORT} --db-root-user ${DB_ROOT_USER} --log-dir logs --config-dir /run/secrets
