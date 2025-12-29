@@ -35,13 +35,13 @@ impl CryopreservedSuspensionCreation {
 #[base_model]
 #[derive(serde::Deserialize)]
 #[cfg_attr(feature = "builder", derive(bon::Builder))]
-pub struct FixedOrFreshSuspensionCreation {
+pub struct FixedSuspensionCreation {
     #[serde(flatten)]
     pub(super) inner: SpecimenCommonFields,
-    fixative: Option<SuspensionFixative>,
+    fixative: SuspensionFixative,
 }
 
-impl FixedOrFreshSuspensionCreation {
+impl FixedSuspensionCreation {
     #[must_use]
     pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
         let Self { inner, fixative } = self;
@@ -51,7 +51,33 @@ impl FixedOrFreshSuspensionCreation {
             SpecimenVariableFields {
                 type_: TYPE,
                 embedded_in: None,
-                fixative: fixative.map(Fixative::Suspension),
+                fixative: Some(Fixative::Suspension(fixative)),
+                frozen: false,
+                cryopreserved: false,
+            },
+        )
+    }
+}
+
+#[base_model]
+#[derive(serde::Deserialize)]
+#[cfg_attr(feature = "builder", derive(bon::Builder))]
+pub struct FreshSuspensionCreation {
+    #[serde(flatten)]
+    pub(super) inner: SpecimenCommonFields,
+}
+
+impl FreshSuspensionCreation {
+    #[must_use]
+    pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
+        let Self { inner } = self;
+
+        (
+            inner,
+            SpecimenVariableFields {
+                type_: TYPE,
+                embedded_in: None,
+                fixative: None,
                 frozen: false,
                 cryopreserved: false,
             },

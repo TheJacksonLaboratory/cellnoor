@@ -15,7 +15,7 @@ pub use creation::{
         FrozenBlockEmbeddingMatrix,
     },
     suspension::{
-        CryopreservedSuspensionCreation, FixedOrFreshSuspensionCreation, FrozenSuspensionCreation,
+        CryopreservedSuspensionCreation, FixedSuspensionCreation, FrozenSuspensionCreation,
         SuspensionFixative,
     },
     tissue::{

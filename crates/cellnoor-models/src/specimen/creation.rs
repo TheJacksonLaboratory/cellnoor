@@ -6,7 +6,7 @@ use crate::specimen::{
     creation::{
         block::{FixedBlockCreation, FrozenBlockCreation},
         suspension::{
-            CryopreservedSuspensionCreation, FixedOrFreshSuspensionCreation,
+            CryopreservedSuspensionCreation, FixedSuspensionCreation, FreshSuspensionCreation,
             FrozenSuspensionCreation,
         },
         tissue::{CryopreservedTissueCreation, FixedTissueCreation, FrozenTissueCreation},
@@ -24,7 +24,8 @@ pub enum SpecimenCreation {
     FixedBlock(FixedBlockCreation),
     FrozenBlock(FrozenBlockCreation),
     CryopreservedSuspension(CryopreservedSuspensionCreation),
-    FixedOrFreshSuspension(FixedOrFreshSuspensionCreation),
+    FixedSuspension(FixedSuspensionCreation),
+    FreshSuspension(FreshSuspensionCreation),
     FrozenSuspension(FrozenSuspensionCreation),
     CryopreservedTissue(CryopreservedTissueCreation),
     FixedTissue(FixedTissueCreation),
@@ -34,15 +35,16 @@ pub enum SpecimenCreation {
 impl SpecimenCreation {
     fn inner(&self) -> &SpecimenCommonFields {
         use SpecimenCreation::{
-            CryopreservedSuspension, CryopreservedTissue, FixedBlock, FixedOrFreshSuspension,
-            FixedTissue, FrozenBlock, FrozenSuspension, FrozenTissue,
+            CryopreservedSuspension, CryopreservedTissue, FixedBlock, FixedSuspension, FixedTissue,
+            FreshSuspension, FrozenBlock, FrozenSuspension, FrozenTissue,
         };
 
         match self {
             FixedBlock(s) => &s.inner,
             FrozenBlock(s) => &s.inner,
             CryopreservedSuspension(s) => &s.inner,
-            FixedOrFreshSuspension(s) => &s.inner,
+            FixedSuspension(s) => &s.inner,
+            FreshSuspension(s) => &s.inner,
             FrozenSuspension(s) => &s.inner,
             CryopreservedTissue(s) => &s.inner,
             FixedTissue(s) => &s.inner,
