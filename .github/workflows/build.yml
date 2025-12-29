@@ -8,5 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: build_cellnoor-api
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION=$(cargo metadata | jq --raw-output '.packages[] | select(.name == "cellnoor-api").version')
+          VERSION=$(cargo metadata --format-version 1 | jq --raw-output '.packages[] | select(.name == "cellnoor-api").version')
+          docker push ghcr.io/demhadais/cellnoor-api:${VERSION}

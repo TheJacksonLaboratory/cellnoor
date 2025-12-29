@@ -8,7 +8,7 @@ jobs:
   check_cellnoor-types:
     runs-on: ubuntu-latest
     env:
-      cellnoor_GENERATE_SCHEMA: false
+      CELLNOOR_GENERATE_SCHEMA: false
 
     steps:
       - name: Check out repository code

@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RUSTFLAGS: -Dwarnings
-      cellnoor_GENERATE_SCHEMA: false
+      CELLNOOR_GENERATE_SCHEMA: false
 
     steps:
       - name: Check out repository code
@@ -81,18 +81,18 @@ jobs:
         ports:
           - 5432:5432
     env:
-      cellnoor_CONFIG_DIR: .
-      cellnoor_GENERATE_SCHEMA: false
-      cellnoor_DB_ROOT_USER: postgres
-      cellnoor_DB_ROOT_PASSWORD: ""
-      cellnoor_API_DB_PASSWORD: ""
-      cellnoor_UI_DB_PASSWORD: ""
-      cellnoor_DB_HOST: localhost
-      cellnoor_DB_PORT: 5432
-      cellnoor_DB_NAME: postgres
-      cellnoor_API_KEY_PREFIX_LENGTH: 8
-      cellnoor_API_HOST: localhost
-      cellnoor_API_PORT: 8000
+      CELLNOOR_CONFIG_DIR: .
+      CELLNOOR_GENERATE_SCHEMA: false
+      CELLNOOR_DB_ROOT_USER: postgres
+      CELLNOOR_DB_ROOT_PASSWORD: ""
+      CELLNOOR_API_DB_PASSWORD: ""
+      CELLNOOR_UI_DB_PASSWORD: ""
+      CELLNOOR_DB_HOST: localhost
+      CELLNOOR_DB_PORT: 5432
+      CELLNOOR_DB_NAME: postgres
+      CELLNOOR_API_KEY_PREFIX_LENGTH: 8
+      CELLNOOR_API_HOST: localhost
+      CELLNOOR_API_PORT: 8000
 
     steps:
       - name: Check out repository code
