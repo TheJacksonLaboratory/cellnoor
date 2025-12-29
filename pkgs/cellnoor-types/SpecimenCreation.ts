@@ -2,10 +2,11 @@
 import type { CryopreservedSuspensionCreation } from "./CryopreservedSuspensionCreation";
 import type { CryopreservedTissueCreation } from "./CryopreservedTissueCreation";
 import type { FixedBlockCreation } from "./FixedBlockCreation";
-import type { FixedOrFreshSuspensionCreation } from "./FixedOrFreshSuspensionCreation";
+import type { FixedSuspensionCreation } from "./FixedSuspensionCreation";
 import type { FixedTissueCreation } from "./FixedTissueCreation";
+import type { FreshSuspensionCreation } from "./FreshSuspensionCreation";
 import type { FrozenBlockCreation } from "./FrozenBlockCreation";
 import type { FrozenSuspensionCreation } from "./FrozenSuspensionCreation";
 import type { FrozenTissueCreation } from "./FrozenTissueCreation";
 
-export type SpecimenCreation = { "type": "fixed_block" } & FixedBlockCreation | { "type": "frozen_block" } & FrozenBlockCreation | { "type": "cryopreserved_suspension" } & CryopreservedSuspensionCreation | { "type": "fixed_or_fresh_suspension" } & FixedOrFreshSuspensionCreation | { "type": "frozen_suspension" } & FrozenSuspensionCreation | { "type": "cryopreserved_tissue" } & CryopreservedTissueCreation | { "type": "fixed_tissue" } & FixedTissueCreation | { "type": "frozen_tissue" } & FrozenTissueCreation;
+export type SpecimenCreation = { "type": "fixed_block" } & FixedBlockCreation | { "type": "frozen_block" } & FrozenBlockCreation | { "type": "cryopreserved_suspension" } & CryopreservedSuspensionCreation | { "type": "fixed_suspension" } & FixedSuspensionCreation | { "type": "fresh_suspension" } & FreshSuspensionCreation | { "type": "frozen_suspension" } & FrozenSuspensionCreation | { "type": "cryopreserved_tissue" } & CryopreservedTissueCreation | { "type": "fixed_tissue" } & FixedTissueCreation | { "type": "frozen_tissue" } & FrozenTissueCreation;

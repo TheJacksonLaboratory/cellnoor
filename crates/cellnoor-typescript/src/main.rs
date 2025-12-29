@@ -38,7 +38,7 @@ use ts_rs::TS;
 #[derive(clap::Parser)]
 #[command(version, about)]
 struct Cli {
-    #[arg(short, long, default_value = "../pkgs/cellnoor-types")]
+    #[arg(short, long, default_value = "pkgs/cellnoor-types")]
     output_dir: String,
 }
 
