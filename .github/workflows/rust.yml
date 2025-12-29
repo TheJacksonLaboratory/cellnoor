@@ -28,7 +28,7 @@ jobs:
         run: cargo install diesel_cli --no-default-features --features postgres
 
       - name: Check schema
-        working-directory: cellnoor-schema
+        working-directory: crates/cellnoor-schema
         run: diesel setup --database-url postgres://postgres@localhost/postgres --locked-schema
 
   lint:
@@ -46,6 +46,9 @@ jobs:
         with:
           cache-all-crates: true
           cache-workspace-crates: true
+
+      - name: Install diesel-cli
+        run: cargo install diesel_cli --no-default-features --features postgres
 
       - name: Lint
         run: cargo clippy --workspace --all-features
@@ -100,6 +103,9 @@ jobs:
         with:
           cache-all-crates: true
           cache-workspace-crates: true
+
+      - name: Install diesel-cli
+        run: cargo install diesel_cli --no-default-features --features postgres
 
       - name: Test
         run: |
