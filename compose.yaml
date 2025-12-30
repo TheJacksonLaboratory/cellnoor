@@ -60,7 +60,7 @@ services:
     environment:
       DB_HOST: *db_host
       DB_PORT: *db_port
-      PUBLIC_URL: ${cellnoor_PUBLIC_URL:?}
+      PUBLIC_URL: ${CELLNOOR_PUBLIC_URL:?}
       API_KEY_PREFIX_LENGTH: *api_key_prefix_length
       PORT: &ui_port 80
     depends_on:
@@ -87,7 +87,7 @@ services:
   caddy:
     image: caddy:2-alpine
     environment:
-      PUBLIC_URL: ${cellnoor_PUBLIC_URL:?}
+      PUBLIC_URL: ${CELLNOOR_PUBLIC_URL:?}
       API_HOST: *api_host
       API_PORT: *api_port
       UI_HOST: *ui_host
@@ -112,18 +112,18 @@ volumes:
   caddy-config:
 secrets:
   db_root_password:
-    environment: cellnoor_DB_ROOT_PASSWORD
+    environment: CELLNOOR_DB_ROOT_PASSWORD
   cellnoor_api_db_password:
-    environment: cellnoor_API_DB_PASSWORD
+    environment: CELLNOOR_API_DB_PASSWORD
   cellnoor_ui_db_password:
-    environment: cellnoor_UI_DB_PASSWORD
+    environment: CELLNOOR_UI_DB_PASSWORD
   db_name:
-    environment: cellnoor_DB_NAME
+    environment: CELLNOOR_DB_NAME
   microsoft_entra_client_id:
-    environment: cellnoor_MICROSOFT_ENTRA_CLIENT_ID
+    environment: CELLNOOR_MICROSOFT_ENTRA_CLIENT_ID
   microsoft_entra_client_secret:
-    environment: cellnoor_MICROSOFT_ENTRA_CLIENT_SECRET
+    environment: CELLNOOR_MICROSOFT_ENTRA_CLIENT_SECRET
   microsoft_entra_tenant:
-    environment: cellnoor_MICROSOFT_ENTRA_TENANT
+    environment: CELLNOOR_MICROSOFT_ENTRA_TENANT
   initial_data:
-    file: ${cellnoor_INITIAL_DATA_PATH:?}
+    file: ${CELLNOOR_INITIAL_DATA_PATH:?}

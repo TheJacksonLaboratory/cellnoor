@@ -8,16 +8,12 @@ WORKDIR /app
 # Build the app, bind-mounting all the workspace crates and cache-mounting useful directories
 RUN --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
-    --mount=type=bind,source=default-vec,target=default-vec \
-    --mount=type=bind,source=non-empty,target=non-empty \
-    --mount=type=bind,source=cellnoor-schema,target=cellnoor-schema \
-    --mount=type=bind,source=cellnoor-models,target=cellnoor-models \
-    --mount=type=bind,source=cellnoor-jsonschema,target=cellnoor-jsonschema \
     --mount=type=bind,source=cellnoor-api,target=cellnoor-api \
+    --mount=type=bind,source=crates,target=crates \
     --mount=type=cache,target=/app/target/ \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
-    RUN_DIESEL_CLI=false cargo build --release --package cellnoor-api && \
+    CELLNOOR_GENERATE_SCHEMA=false cargo build --release --package cellnoor-api && \
     cp ./target/release/cellnoor-api /bin/cellnoor-api
 
 FROM debian:bookworm AS final

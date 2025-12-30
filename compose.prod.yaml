@@ -11,6 +11,6 @@ services:
       - tls_key
 secrets:
   tls_certificate:
-    file: ${cellnoor_TLS_CERTIFICATE_PATH}
+    file: ${CELLNOOR_TLS_CERTIFICATE_PATH}
   tls_key:
-    file: ${cellnoor_TLS_KEY_PATH}
+    file: ${CELLNOOR_TLS_KEY_PATH}
