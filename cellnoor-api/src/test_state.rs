@@ -235,32 +235,32 @@ impl TestState {
             .additional_data(serde_json::json!({"krabby_patty_formular": "secret"}))
             .build();
 
-        let new_specimen = if i % 7 == 0 {
+        let new_specimen = if i.is_multiple_of(7) {
             let s = CryopreservedSuspensionCreation::builder()
                 .inner(inner)
                 .build();
 
             SpecimenCreation::CryopreservedSuspension(s)
-        } else if i % 6 == 0 {
+        } else if i.is_multiple_of(6) {
             let s = FrozenSuspensionCreation::builder().inner(inner).build();
 
             SpecimenCreation::FrozenSuspension(s)
-        } else if i % 5 == 0 {
+        } else if i.is_multiple_of(5) {
             let s = CryopreservedTissueCreation::builder().inner(inner).build();
 
             SpecimenCreation::CryopreservedTissue(s)
-        } else if i % 4 == 0 {
+        } else if i.is_multiple_of(4) {
             let s = FixedTissueCreation::builder()
                 .inner(inner)
                 .fixative(TissueFixative::VARIANTS.choose_unwrap())
                 .build();
 
             SpecimenCreation::FixedTissue(s)
-        } else if i % 3 == 0 {
+        } else if i.is_multiple_of(3) {
             let s = FrozenTissueCreation::builder().inner(inner).build();
 
             SpecimenCreation::FrozenTissue(s)
-        } else if i % 2 == 0 {
+        } else if i.is_multiple_of(2) {
             let s = FixedBlockCreation::builder()
                 .inner(inner)
                 .fixative(BlockFixative::VARIANTS.choose_unwrap())
@@ -770,9 +770,7 @@ where
 }
 
 impl DefaultWithNoLimit for () {
-    fn default_with_no_limit() -> Self {
-        ()
-    }
+    fn default_with_no_limit() -> Self {}
 }
 
 impl<U, F, O> DefaultWithNoLimit for (U, generic_query::Query<F, O>)

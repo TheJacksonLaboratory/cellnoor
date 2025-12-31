@@ -24,4 +24,4 @@ jobs:
         run: cargo run --package cellnoor-typescript -- --output-dir regenerated-typescript-type-definitions
 
       - name: Compare committed cellnoor-types to regenerated cellnoor-types
-        run: diff --exclude package.json --recursive cellnoor-types regenerated-typescript-type-definitions
+        run: diff --exclude package.json --recursive pkgs/cellnoor-types regenerated-typescript-type-definitions
