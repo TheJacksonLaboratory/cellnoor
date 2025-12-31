@@ -17,9 +17,8 @@ const config: Config = {
         "default-src": ["self"],
         "img-src": ["self", "data:"],
         "style-src": [
-          "unsafe-hashes",
-          "sha256-tcbDxjMo+xKqM21aCGYbs/QAJqB7yUXC06oPWDapBgc=",
-          "sha256-S8qMpvofolR8Mpjy4kQvEm7m1q8clzU4dfDH0AmvZjo=",
+          "self",
+          "unsafe-inline",
         ],
         "frame-ancestors": ["none"],
         "form-action": ["self"],

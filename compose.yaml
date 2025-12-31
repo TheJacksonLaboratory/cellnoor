@@ -23,8 +23,13 @@ services:
       retries: 10
   &api_host cellnoor-api:
     build:
+      context: .
+      dockerfile: cellnoor-api/Dockerfile
+      target: final
       args:
         UID: &uid "10001"
+      tags:
+        - ghcr.io/demhadais/cellnoor-api:latest
     environment:
       DB_ROOT_USER: *db_root_user
       DB_HOST: *db_host
@@ -57,7 +62,14 @@ services:
       timeout: 5s
       retries: 10
   &ui_host cellnoor-ui:
+    build:
+      context: .
+      dockerfile: cellnoor-ui/Dockerfile
+      target: final
+      tags:
+        - ghcr.io/demhadais/cellnoor-ui:latest
     environment:
+      IN_DOCKER: "true"
       DB_HOST: *db_host
       DB_PORT: *db_port
       PUBLIC_URL: ${CELLNOOR_PUBLIC_URL:?}

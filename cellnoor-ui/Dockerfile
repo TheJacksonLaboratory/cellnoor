@@ -1,5 +1,4 @@
-# Adapted from https://bun.com/docs/guides/ecosystem/docker. This could probably be improved to be more consistent with
-# cellnoor-api.Dockerfile but for now this is fine
+# Adapted from https://bun.com/docs/guides/ecosystem/docker. It's an absolute mess
 FROM oven/bun:1 AS base
 WORKDIR /usr/src/app
 

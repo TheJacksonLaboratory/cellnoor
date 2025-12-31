@@ -17,7 +17,7 @@ async function readRequiredEnvVar(name: string): Promise<string> {
 }
 
 async function readSecret(name: string): Promise<string> {
-  if (Bun.env.IN_DOCKER) {
+  if (Bun.env.IN_DOCKER?.toLowerCase() === "true") {
     return await Bun.file(`/run/secrets/${name}`).text();
   }
 
