@@ -39,3 +39,6 @@ venv
 
 # Generated when running cellnoor-ui
 node_modules
+
+# MacOS GUI folder
+.DS_Store
