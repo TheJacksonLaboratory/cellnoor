@@ -6,6 +6,9 @@ on:
 jobs:
   build:
     environment: production
+    env:
+      CELLNOOR_PUBLIC_URL: ${{ vars.CELLNOOR_PUBLIC_URL }}
+      CELLNOOR_INITIAL_DATA_PATH: ${{ vars.CELLNOOR_INITIAL_DATA_PATH }}
     runs-on: ubuntu-latest
     steps:
       - name: Login to GitHub Container Registry
