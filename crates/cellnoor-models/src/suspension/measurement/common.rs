@@ -4,15 +4,15 @@ use jiff::Timestamp;
 use macro_attributes::{insert_select, json, simple_enum};
 use macros::{impl_enum_from_sql, impl_enum_to_sql, impl_json_from_sql, impl_json_to_sql};
 use ranged::RangedF32;
+#[cfg(feature = "app")]
 use serde::{Serialize, de::DeserializeOwned};
 use uuid::Uuid;
 
+#[cfg(any(feature = "app", feature = "typescript"))]
+use crate::suspension::SuspensionContent;
+use crate::units::{Microliter, Micrometer, Milliliter};
 #[cfg(feature = "app")]
 use crate::utils::{EnumFromSql, EnumToSql, JsonFromSql, JsonToSql};
-use crate::{
-    suspension::SuspensionContent,
-    units::{Microliter, Micrometer, Milliliter},
-};
 
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = suspension_measurements))]

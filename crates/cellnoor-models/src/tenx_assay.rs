@@ -5,7 +5,7 @@ mod read;
 
 pub use common::{LibraryType, SampleMultiplexing};
 pub use creation::TenxAssayCreation;
-pub use query::TenxAssayFilter;
 #[cfg(feature = "app")]
 pub use query::TenxAssayQuery;
+pub use query::{TenxAssayFilter, TenxAssayOrderBy};
 pub use read::TenxAssay;

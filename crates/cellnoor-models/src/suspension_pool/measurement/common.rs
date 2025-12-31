@@ -7,10 +7,11 @@ use macros::{impl_json_from_sql, impl_json_to_sql};
 use serde::{Serialize, de::DeserializeOwned};
 use uuid::Uuid;
 
-use crate::suspension::{
-    SuspensionContent,
-    measurement::common::{Cells, Concentration, MeanDiameter, Nuclei, Viability, Volume},
-};
+#[cfg(any(feature = "app", feature = "typescript"))]
+use crate::suspension::SuspensionContent;
+#[cfg(feature = "app")]
+use crate::suspension::measurement::common::{Cells, Nuclei};
+use crate::suspension::measurement::common::{Concentration, MeanDiameter, Viability, Volume};
 #[cfg(feature = "app")]
 use crate::utils::{JsonFromSql, JsonToSql};
 
