@@ -1,0 +1,62 @@
+[package]
+edition.workspace = true
+name = "cellnoor-api"
+version = "0.1.0"
+
+[dependencies]
+anyhow.workspace = true
+argon2.workspace = true
+axum.workspace = true
+axum-extra.workspace = true
+base16ct.workspace = true
+camino.workspace = true
+cellnoor-models = { version = "0.1.0", path = "../crates/cellnoor-models", features = [
+  "app",
+] }
+cellnoor-schema = { version = "0.1.0", path = "../crates/cellnoor-schema" }
+clap.workspace = true
+csv.workspace = true
+deadpool-diesel.workspace = true
+diesel = { workspace = true, features = ["postgres", "serde_json", "uuid"] }
+diesel_migrations.workspace = true
+dotenvy.workspace = true
+headers.workspace = true
+heck.workspace = true
+jiff.workspace = true
+jiff-diesel.workspace = true
+non-empty = { path = "../crates/non-empty" }
+pretty_assertions = { workspace = true, optional = true }
+rand = { workspace = true, optional = true }
+ranged = { version = "0.1.0", path = "../crates/ranged", features = ["serde"] }
+regex.workspace = true
+reqwest.workspace = true
+rstest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_qs.workspace = true
+strum.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-appender.workspace = true
+tracing-subscriber.workspace = true
+ts-rs = { workspace = true, optional = true }
+url.workspace = true
+uuid.workspace = true
+zeroize.workspace = true
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+bon.workspace = true
+cellnoor-models = { version = "0.1.0", path = "../crates/cellnoor-models", features = [
+  "app",
+  "builder",
+] }
+pretty_assertions.workspace = true
+rand.workspace = true
+
+[features]
+dummy-data = ["cellnoor-models/builder", "dep:pretty_assertions", "dep:rand"]
+typescript = ["dep:ts-rs"]

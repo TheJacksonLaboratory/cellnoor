@@ -1,5 +1,6 @@
-{$PUBLIC_ADDRESS} {
+{$PUBLIC_URL} {
     {$TLS_SETTINGS}
-    reverse_proxy {$API_PATH}/* {$API_HOST}:{$API_PORT}
-	reverse_proxy {$FRONTEND_HOST}:{$FRONTEND_PORT}
+    reverse_proxy api/auth/* {$UI_HOST}:{$UI_PORT}
+    reverse_proxy api/* {$API_HOST}:{$API_PORT}
+    reverse_proxy /* {$UI_HOST}:{$UI_PORT}
 }

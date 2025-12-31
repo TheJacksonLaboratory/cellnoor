@@ -1,0 +1,11 @@
+services:
+  cellnoor-api:
+    build:
+      context: .
+      dockerfile: cellnoor-api.Dockerfile
+      target: final
+  cellnoor-ui:
+    build:
+      context: .
+      dockerfile: cellnoor-ui.Dockerfile
+      target: final

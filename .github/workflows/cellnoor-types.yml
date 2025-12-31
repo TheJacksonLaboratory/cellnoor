@@ -1,0 +1,27 @@
+name: Check cellnoor-types
+on:
+  push:
+    paths:
+      - "**/*.rs"
+
+jobs:
+  check_cellnoor-types:
+    runs-on: ubuntu-latest
+    env:
+      CELLNOOR_GENERATE_SCHEMA: false
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Cache cargo files
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-all-crates: true
+          cache-workspace-crates: true
+
+      - name: Rerun cellnoor-typescript
+        run: cargo run --package cellnoor-typescript -- --output-dir regenerated-typescript-type-definitions
+
+      - name: Compare committed cellnoor-types to regenerated cellnoor-types
+        run: diff --exclude package.json --recursive pkgs/cellnoor-types regenerated-typescript-type-definitions

@@ -1,0 +1,6 @@
+{
+  "workspaces": [
+    "cellnoor-ui",
+    "pkgs/cellnoor-types"
+  ]
+}

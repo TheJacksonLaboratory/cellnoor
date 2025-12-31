@@ -1,50 +1,39 @@
 name: Check TypeScript Code
 on:
-  pull_request:
+  push:
     paths:
-      - typescript/**
-    branches:
-      - main
+      - cellnoor-ui/**
 
 jobs:
-  lint:
+  lint-and-test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
 
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+
       - name: Install dependencies
-        working-directory: typescript/scamplers-frontend
-        run: npm install
+        working-directory: cellnoor-ui
+        run: bun install
 
       - name: Lint
-        working-directory: typescript/scamplers-frontend
-        run: npm run lint
+        working-directory: cellnoor-ui
+        run: bun run --bun check
 
-  svelte-check:
+      - name: Test
+        working-directory: cellnoor-ui
+        run: bun test
+
+  format:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        working-directory: typescript/scamplers-frontend
-        run: npm install
+      - name: Install Deno
+        uses: denoland/setup-deno@v2
 
-      - name: Svelte check
-        working-directory: typescript/scamplers-frontend
-        run: npm run check
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
-
-      - name: Install dependencies
-        working-directory: typescript/scamplers-frontend
-        run: npm install
-
-      - name: Unit test
-        working-directory: typescript/scamplers-frontend
-        run: npm run test:unit -- --run
+      - name: Format
+        run: deno fmt --check --unstable-component cellnoor-ui

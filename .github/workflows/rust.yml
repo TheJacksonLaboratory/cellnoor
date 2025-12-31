@@ -1,14 +1,19 @@
 name: Check Rust Code
 on:
-  pull_request:
+  push:
     paths:
-      - rust/**
-    branches:
-      - main
+      - "**/*.rs"
 
 jobs:
-  lint-app:
+  check_cellnoor-schema:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -16,21 +21,22 @@ jobs:
       - name: Cache cargo files
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: "rust -> target"
+          cache-all-crates: true
+          cache-workspace-crates: true
 
-      - name: Install diesel
+      - name: Install diesel-cli
         run: cargo install diesel_cli --no-default-features --features postgres
 
-      - name: Install clippy
-        run: |
-          rustup component add --toolchain stable-x86_64-unknown-linux-gnu clippy
+      - name: Check schema
+        working-directory: crates/cellnoor-schema
+        run: diesel setup --database-url postgres://postgres@localhost/postgres --locked-schema
 
-      - name: Lint app
-        working-directory: rust
-        run: cargo clippy --workspace --exclude scamplers-schema --exclude scamplepy --features app
-
-  lint-wasm:
+  lint:
     runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -Dwarnings
+      CELLNOOR_GENERATE_SCHEMA: false
+
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -38,16 +44,14 @@ jobs:
       - name: Cache cargo files
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: "rust -> target"
+          cache-all-crates: true
+          cache-workspace-crates: true
 
-      # For some reason, the installation of the target, toolchain, and clippy need to happen in the same step as the actual linting :)
-      - name: Lint Wasm
-        working-directory: rust
-        run: |
-          rustup target add wasm32-unknown-unknown
-          rustup toolchain install stable-x86_64-unknown-linux-gnu
-          rustup component add --toolchain stable-x86_64-unknown-linux-gnu clippy
-          cargo clippy --workspace --exclude scamplepy --exclude scamplers-schema --target wasm32-unknown-unknown
+      - name: Install diesel-cli
+        run: cargo install diesel_cli --no-default-features --features postgres
+
+      - name: Lint
+        run: cargo clippy --workspace --all-features
 
   format:
     runs-on: ubuntu-latest
@@ -58,19 +62,37 @@ jobs:
       - name: Cache cargo files
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: "rust -> target"
+          cache-all-crates: true
+          cache-workspace-crates: true
 
       - name: Install nightly toolchain
-        run: rustup component add --toolchain nightly-2025-09-26 rustfmt
+        run: rustup component add --toolchain nightly-2025-11-24 rustfmt # This is updated weekly-ish
 
       - name: Format
-        working-directory: rust
-        run: cargo +nightly-2025-09-26 fmt -- --check
+        run: cargo +nightly-2025-11-24 fmt -- --check
 
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
     env:
-      RUSTFLAGS: -Dwarnings --cfg tracing_unstable
+      CELLNOOR_CONFIG_DIR: .
+      CELLNOOR_GENERATE_SCHEMA: false
+      CELLNOOR_DB_ROOT_USER: postgres
+      CELLNOOR_DB_ROOT_PASSWORD: ""
+      CELLNOOR_API_DB_PASSWORD: ""
+      CELLNOOR_UI_DB_PASSWORD: ""
+      CELLNOOR_DB_HOST: localhost
+      CELLNOOR_DB_PORT: 5432
+      CELLNOOR_DB_NAME: postgres
+      CELLNOOR_API_KEY_PREFIX_LENGTH: 8
+      CELLNOOR_API_HOST: localhost
+      CELLNOOR_API_PORT: 8000
 
     steps:
       - name: Check out repository code
@@ -79,20 +101,13 @@ jobs:
       - name: Cache cargo files
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: "rust -> target"
+          cache-all-crates: true
+          cache-workspace-crates: true
 
-      - name: Install diesel
+      - name: Install diesel-cli
         run: cargo install diesel_cli --no-default-features --features postgres
 
       - name: Test
-        working-directory: rust
-        run: ./test.sh
-
-  check-wasm-source:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
-
-      - name: Compare typescript/scamplers/rust-src to rust/scamplers/src
-        run: diff --recursive typescript/scamplers/rust-src rust/scamplers/src
+        run: |
+          mv initial_data.sample.json cellnoor-api/initial_data
+          cargo test --workspace

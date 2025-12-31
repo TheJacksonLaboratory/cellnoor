@@ -1,0 +1,6354 @@
+{
+  "single_index_set_urls": [
+    "https://cdn.10xgenomics.com/raw/upload/v1655155349/support/in-line%20documents/Single_Index_Kit_N_Set_A.json",
+    "https://cdn.10xgenomics.com/raw/upload/v1655155616/support/in-line%20documents/Single_Index_Kit_T_Set_A.json"
+  ],
+  "dual_index_set_urls": [
+    "https://cdn.10xgenomics.com/raw/upload/v1655155126/support/in-line%20documents/Dual_Index_Kit_TS_Set_A.json",
+    "https://cdn.10xgenomics.com/raw/upload/v1655151898/support/in-line%20documents/Dual_Index_Kit_TT_Set_A.json",
+    "https://cdn.10xgenomics.com/raw/upload/v1655156423/support/in-line%20documents/Dual_Index_Kit_NT_Set_A.json",
+    "https://cdn.10xgenomics.com/raw/upload/v1655156427/support/in-line%20documents/Dual_Index_Kit_NN_Set_A.json",
+    "https://cdn.10xgenomics.com/raw/upload/v1655156218/support/in-line%20documents/Dual_Index_Kit_TN_Set_A.json"
+  ],
+  "institution": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "name": "Jackson Laboratory"
+  },
+  "app_admin": {
+    "name": "Ahmed Said",
+    "email": "ahmed.said@jax.org",
+    "microsoft_entra_oid": "00000000-0000-0000-0000-000000000000",
+    "institution_id": "00000000-0000-0000-0000-000000000000"
+  },
+  "tenx_assays": [
+    {
+      "name": "Epi ATAC",
+      "chemistry_version": "v2",
+      "protocol_url": "https://www.10xgenomics.com/support/epi-atac/documentation/steps/library-prep/chromium-single-cell-atac-reagent-kits-user-guide-v-2-chemistry",
+      "sample_multiplexing": "singleplex",
+      "cmdlines": ["cellranger-atac count"],
+      "chromium_chip": "H",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "chromatin_accessibility",
+          "index_kit": "NA",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 20
+        }
+      ]
+    },
+    {
+      "name": "Epi Multiome ATAC + Gene Expression",
+      "chemistry_version": "v1",
+      "protocol_url": "https://www.10xgenomics.com/support/epi-multiome/documentation/steps/library-prep/chromium-next-gem-single-cell-multiome-atac-plus-gene-expression-reagent-kits-user-guide",
+      "sample_multiplexing": "singleplex",
+      "cmdlines": ["cellranger-arc count"],
+      "chromium_chip": "J",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "chromatin_accessibility",
+          "index_kit": "NA",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 20
+        },
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TT",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 35
+        }
+      ]
+    },
+    {
+      "name": "Flex Gene Expression",
+      "chemistry_version": "v1 - GEM-X",
+      "protocol_url": "https://www.10xgenomics.com/support/flex-gene-expression/documentation/steps/library-prep/gem-x-flex-gene-expression-reagent-kit-for-multiplex-samples",
+      "sample_multiplexing": "flex_barcode",
+      "cmdlines": ["cellranger multi"],
+      "chromium_chip": "GEM-X FX",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TS",
+          "cdna_volume_µl": 100,
+          "library_volume_µl": 40
+        }
+      ]
+    },
+    {
+      "name": "Flex Gene Expression",
+      "chemistry_version": "v1 - GEM-X",
+      "protocol_url": "https://www.10xgenomics.com/support/flex-gene-expression/documentation/steps/library-prep/gem-x-flex-gene-expression-reagent-kit-for-singleplex-samples",
+      "sample_multiplexing": "singleplex",
+      "cmdlines": ["cellranger multi"],
+      "chromium_chip": "GEM-X FX",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TS",
+          "cdna_volume_µl": 100,
+          "library_volume_µl": 40
+        }
+      ]
+    },
+    {
+      "name": "Flex Gene Expression",
+      "chemistry_version": "v1 - Next GEM",
+      "protocol_url": "https://www.10xgenomics.com/support/flex-gene-expression/documentation/steps/library-prep/chromium-single-cell-gene-expression-flex-reagent-kits-for-multiplexed-samples",
+      "sample_multiplexing": "flex_barcode",
+      "cmdlines": ["cellranger multi"],
+      "chromium_chip": "Q",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TS",
+          "cdna_volume_µl": 100,
+          "library_volume_µl": 40
+        }
+      ]
+    },
+    {
+      "name": "Flex Gene Expression",
+      "chemistry_version": "v1 - Next GEM",
+      "protocol_url": "https://www.10xgenomics.com/support/flex-gene-expression/documentation/steps/library-prep/chromium-fixed-rna-profiling-reagent-kits-for-singleplexed-samples",
+      "sample_multiplexing": "singleplex",
+      "cmdlines": ["cellranger multi"],
+      "chromium_chip": "Q",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TS",
+          "cdna_volume_µl": 100,
+          "library_volume_µl": 40
+        }
+      ]
+    },
+    {
+      "name": "Universal 3' Gene Expression",
+      "chemistry_version": "v4 - GEM-X",
+      "protocol_url": "https://www.10xgenomics.com/support/universal-three-prime-gene-expression/documentation/steps/library-prep/chromium-gem-x-single-cell-3-v4-gene-expression-with-feature-barcoding-technology-for-cell-surface-protein-user-guide",
+      "sample_multiplexing": "singleplex",
+      "cmdlines": ["cellranger count", "cellranger multi"],
+      "chromium_chip": "GEM-X 3'",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "antibody_capture",
+          "index_kit": "NT",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 35
+        },
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TT",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 35
+        }
+      ]
+    },
+    {
+      "name": "Universal 3' Gene Expression",
+      "chemistry_version": "v4 - GEM-X",
+      "protocol_url": "https://www.10xgenomics.com/support/universal-three-prime-gene-expression/documentation/steps/library-prep/gem-x-universal-3-prime-gene-expression-v-4-4-plex-reagent-kits-with-feature-barcode-technology-for-cell-surface-protein",
+      "sample_multiplexing": "on_chip_multiplexing",
+      "cmdlines": ["cellranger multi"],
+      "chromium_chip": "GEM-X OCM 3'",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "antibody_capture",
+          "index_kit": "NT",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 35
+        },
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TT",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 35
+        }
+      ]
+    },
+    {
+      "name": "Universal 3' Gene Expression",
+      "chemistry_version": "v4 - GEM-X",
+      "protocol_url": "https://www.10xgenomics.com/support/universal-three-prime-gene-expression/documentation/steps/library-prep/chromium-gem-x-single-cell-3-v4-gene-expression-user-guide",
+      "sample_multiplexing": "singleplex",
+      "cmdlines": ["cellranger count", "cellranger multi"],
+      "chromium_chip": "GEM-X 3'",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TT",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 35
+        }
+      ]
+    },
+    {
+      "name": "Universal 3' Gene Expression",
+      "chemistry_version": "v4 - GEM-X",
+      "protocol_url": "https://www.10xgenomics.com/support/universal-three-prime-gene-expression/documentation/steps/library-prep/gem-x-universal-3-prime-gene-expression-v-4-4-plex-reagent-kits",
+      "sample_multiplexing": "on_chip_multiplexing",
+      "cmdlines": ["cellranger multi"],
+      "chromium_chip": "GEM-X OCM 3'",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TT",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 35
+        }
+      ]
+    },
+    {
+      "name": "Universal 5' Gene Expression",
+      "chemistry_version": "v3 - GEM-X",
+      "protocol_url": "https://www.10xgenomics.com/support/universal-five-prime-gene-expression/documentation/steps/library-prep/chromium-gem-x-single-cell-5-v3-gene-expression-with-feature-barcoding-technology-for-crispr-screening",
+      "sample_multiplexing": "singleplex",
+      "cmdlines": ["cellranger count", "cellranger multi"],
+      "chromium_chip": "GEM-X 5'",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "crispr_guide_capture",
+          "index_kit": "TT",
+          "cdna_volume_µl": 50,
+          "library_volume_µl": 40
+        },
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TT",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 35
+        }
+      ]
+    },
+    {
+      "name": "Universal 5' Gene Expression",
+      "chemistry_version": "v3 - GEM-X",
+      "protocol_url": "https://www.10xgenomics.com/support/universal-five-prime-gene-expression/documentation/steps/library-prep/gem-x-universal-5-prime-gene-expression-v-3-4-plex-reagent-kits",
+      "sample_multiplexing": "on_chip_multiplexing",
+      "cmdlines": ["cellranger multi"],
+      "chromium_chip": "GEM-X OCM 5'",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TT",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 35
+        }
+      ]
+    },
+    {
+      "name": "Universal 5' Gene Expression",
+      "chemistry_version": "v3 - GEM-X",
+      "protocol_url": "https://www.10xgenomics.com/support/universal-five-prime-gene-expression/documentation/steps/library-prep/chromium-gem-x-single-cell-5-v3-gene-expression-user-guide",
+      "sample_multiplexing": "singleplex",
+      "cmdlines": ["cellranger count", "cellranger multi"],
+      "chromium_chip": "GEM-X 5'",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TT",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 35
+        }
+      ]
+    },
+    {
+      "name": "Universal 5' Gene Expression",
+      "chemistry_version": "v3 - GEM-X",
+      "protocol_url": "https://www.10xgenomics.com/support/universal-five-prime-gene-expression/documentation/steps/library-prep/gem-x-universal-5-prime-gene-expression-v-3-4-plex-reagent-kits",
+      "sample_multiplexing": "on_chip_multiplexing",
+      "cmdlines": ["cellranger multi"],
+      "chromium_chip": "GEM-X OCM 5'",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TT",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 35
+        },
+        {
+          "library_type": "vdj",
+          "index_kit": "TT",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 35
+        }
+      ]
+    },
+    {
+      "name": "Universal 5' Gene Expression",
+      "chemistry_version": "v3 - GEM-X",
+      "protocol_url": "https://www.10xgenomics.com/support/universal-five-prime-gene-expression/documentation/steps/library-prep/chromium-gem-x-single-cell-5-v3-gene-expression-user-guide",
+      "sample_multiplexing": "singleplex",
+      "cmdlines": ["cellranger multi"],
+      "chromium_chip": "GEM-X 5'",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TT",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 35
+        },
+        {
+          "library_type": "vdj",
+          "index_kit": "TT",
+          "cdna_volume_µl": 40,
+          "library_volume_µl": 35
+        }
+      ]
+    }
+  ],
+  "multiplexing_tags": [
+    {
+      "tag_id": "BC001",
+      "type_": "flex_barcode"
+    },
+    {
+      "tag_id": "BC002",
+      "type_": "flex_barcode"
+    },
+    {
+      "tag_id": "BC003",
+      "type_": "flex_barcode"
+    },
+    {
+      "tag_id": "BC004",
+      "type_": "flex_barcode"
+    },
+    {
+      "tag_id": "BC005",
+      "type_": "flex_barcode"
+    },
+    {
+      "tag_id": "BC006",
+      "type_": "flex_barcode"
+    },
+    {
+      "tag_id": "BC007",
+      "type_": "flex_barcode"
+    },
+    {
+      "tag_id": "BC008",
+      "type_": "flex_barcode"
+    },
+    {
+      "tag_id": "BC009",
+      "type_": "flex_barcode"
+    },
+    {
+      "tag_id": "BC010",
+      "type_": "flex_barcode"
+    },
+    {
+      "tag_id": "BC011",
+      "type_": "flex_barcode"
+    },
+    {
+      "tag_id": "BC012",
+      "type_": "flex_barcode"
+    },
+    {
+      "tag_id": "BC013",
+      "type_": "flex_barcode"
+    },
+    {
+      "tag_id": "BC014",
+      "type_": "flex_barcode"
+    },
+    {
+      "tag_id": "BC015",
+      "type_": "flex_barcode"
+    },
+    {
+      "tag_id": "BC016",
+      "type_": "flex_barcode"
+    },
+    {
+      "tag_id": "A0001",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0002",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0003",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0004",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0005",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0006",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0007",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0008",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0009",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0010",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0012",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0013",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0014",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0015",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0020",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0022",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0023",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0024",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0026",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0027",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0028",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0029",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0031",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0032",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0033",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0034",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0045",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0046",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0047",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0048",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0049",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0050",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0051",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0052",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0053",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0054",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0055",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0056",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0057",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0058",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0060",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0061",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0062",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0063",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0064",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0066",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0068",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0069",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0070",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0071",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0072",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0073",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0074",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0075",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0076",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0077",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0078",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0079",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0080",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0081",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0083",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0084",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0085",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0087",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0088",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0089",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0090",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0091",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0092",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0093",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0095",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0096",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0097",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0098",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0100",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0101",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0102",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0103",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0104",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0105",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0106",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0107",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0108",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0109",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0110",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0111",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0112",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0113",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0114",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0115",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0116",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0117",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0118",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0119",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0120",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0121",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0122",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0123",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0124",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0125",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0126",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0127",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0128",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0129",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0130",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0131",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0132",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0133",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0134",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0135",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0136",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0138",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0139",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0140",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0141",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0142",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0143",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0144",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0145",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0146",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0147",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0148",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0149",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0151",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0152",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0153",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0154",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0155",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0156",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0157",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0158",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0159",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0160",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0161",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0162",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0163",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0164",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0165",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0166",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0167",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0168",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0169",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0170",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0171",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0172",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0174",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0175",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0176",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0177",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0178",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0179",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0180",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0181",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0182",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0184",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0185",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0187",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0188",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0189",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0190",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0191",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0192",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0193",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0194",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0195",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0196",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0197",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0198",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0200",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0201",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0202",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0203",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0205",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0206",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0207",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0208",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0209",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0210",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0211",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0212",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0213",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0214",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0215",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0216",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0217",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0218",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0219",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0224",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0225",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0226",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0230",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0231",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0232",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0233",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0235",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0236",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0237",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0238",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0240",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0241",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0242",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0244",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0245",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0246",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0247",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0248",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0250",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0251",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0252",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0253",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0254",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0255",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0256",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0257",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0258",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0259",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0260",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0262",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0263",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0264",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0265",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0276",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0277",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0278",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0279",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0280",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0281",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0282",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0284",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0296",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0297",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0301",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0302",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0303",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0304",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0305",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0306",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0307",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0308",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0309",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0310",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0311",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0312",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0313",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0314",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0315",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0351",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0352",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0353",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0354",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0355",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0356",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0357",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0358",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0359",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0360",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0361",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0362",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0364",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0366",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0367",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0368",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0369",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0370",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0371",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0372",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0373",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0374",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0375",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0376",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0378",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0380",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0381",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0382",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0383",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0384",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0385",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0386",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0387",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0388",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0389",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0390",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0391",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0392",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0393",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0394",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0395",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0396",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0397",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0398",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0399",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0400",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0401",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0402",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0403",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0404",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0405",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0406",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0407",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0408",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0409",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0410",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0415",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0416",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0417",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0418",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0419",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0420",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0421",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0422",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0423",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0424",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0426",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0427",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0428",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0429",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0430",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0431",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0432",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0433",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0436",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0439",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0440",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0441",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0442",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0443",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0444",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0445",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0446",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0447",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0448",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0449",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0450",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0451",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0452",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0453",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0454",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0455",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0456",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0457",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0458",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0459",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0460",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0461",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0462",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0463",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0464",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0465",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0551",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0552",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0553",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0554",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0555",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0557",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0558",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0559",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0560",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0561",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0562",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0563",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0564",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0566",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0567",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0568",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0569",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0570",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0571",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0572",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0573",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0574",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0575",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0576",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0577",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0579",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0581",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0582",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0583",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0584",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0586",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0588",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0590",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0591",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0592",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0593",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0594",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0595",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0596",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0597",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0598",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0599",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0600",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0801",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0802",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0803",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0804",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0805",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0807",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0808",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0809",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0810",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0811",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0812",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0813",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0814",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0816",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0817",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0818",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0819",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0821",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0822",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0824",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0825",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0826",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0827",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0828",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0829",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0830",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0831",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0834",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0835",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0836",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0837",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0839",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0840",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0841",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0842",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0843",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0844",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0845",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0846",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0847",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0848",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0849",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0850",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0851",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0852",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0853",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0854",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0857",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0858",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0861",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0862",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0863",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0864",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0865",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0866",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0867",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0868",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0869",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0870",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0871",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0872",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0874",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0875",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0876",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0877",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0880",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0881",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0882",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0883",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0884",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0885",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0887",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0888",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0889",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0890",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0891",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0892",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0893",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0894",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0895",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0896",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0897",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0898",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0899",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0900",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0901",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0902",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0903",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0904",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0905",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0906",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0908",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0910",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0911",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0912",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0913",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0914",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0915",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0916",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0917",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0918",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0919",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0920",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0922",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0923",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0925",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0926",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0927",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0928",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0930",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0931",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0932",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0934",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0935",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0937",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0940",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0941",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0944",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0948",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0951",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0952",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0953",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0954",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0955",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0961",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0962",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0963",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0981",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0985",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0988",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A0989",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1006",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1007",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1008",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1009",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1010",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1011",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1012",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1013",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1015",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1016",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1018",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1019",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1024",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1027",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1029",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1030",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1031",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1033",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1035",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1036",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1037",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1038",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1039",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1040",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1041",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1042",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1043",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1044",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1046",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1052",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1059",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1064",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1129",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1132",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1133",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "A1139",
+      "type_": "TotalSeq-A"
+    },
+    {
+      "tag_id": "B0001",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0002",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0003",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0004",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0005",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0006",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0007",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0008",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0009",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0012",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0013",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0014",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0015",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0020",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0022",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0023",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0024",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0026",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0027",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0028",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0029",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0031",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0032",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0033",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0034",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0046",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0047",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0048",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0049",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0050",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0051",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0052",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0053",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0054",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0055",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0056",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0058",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0060",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0061",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0062",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0063",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0064",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0066",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0068",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0069",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0070",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0071",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0072",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0073",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0074",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0075",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0076",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0077",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0078",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0079",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0080",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0081",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0083",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0084",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0085",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0087",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0088",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0089",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0090",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0091",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0092",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0093",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0095",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0096",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0097",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0098",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0100",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0101",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0103",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0105",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0106",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0109",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0111",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0112",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0114",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0115",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0116",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0117",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0118",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0120",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0122",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0123",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0124",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0125",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0127",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0128",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0130",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0132",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0133",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0134",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0136",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0138",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0139",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0140",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0141",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0142",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0143",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0144",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0145",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0146",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0147",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0148",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0149",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0151",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0152",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0153",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0154",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0155",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0156",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0157",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0158",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0159",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0160",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0161",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0162",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0163",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0164",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0165",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0166",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0167",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0168",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0169",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0170",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0171",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0174",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0175",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0176",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0178",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0179",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0180",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0181",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0182",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0184",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0185",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0187",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0189",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0190",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0191",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0192",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0193",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0196",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0197",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0198",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0200",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0201",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0202",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0203",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0205",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0206",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0207",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0208",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0211",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0212",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0213",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0214",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0215",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0216",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0217",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0218",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0219",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0224",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0225",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0226",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0227",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0228",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0229",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0230",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0232",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0233",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0235",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0236",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0238",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0242",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0246",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0247",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0250",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0251",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0252",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0253",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0254",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0255",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0256",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0257",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0258",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0259",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0260",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0301",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0302",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0303",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0304",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0305",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0306",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0307",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0308",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0309",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0310",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0311",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0312",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0313",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0314",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0315",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0316",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0317",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0318",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0319",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0320",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0321",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0322",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0323",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0324",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0325",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0326",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0327",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0328",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0329",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0330",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0331",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0332",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0333",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0334",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0335",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0336",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0337",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0338",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0339",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0340",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0341",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0342",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0343",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0344",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0345",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0346",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0347",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0348",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0349",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0350",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0351",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0352",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0353",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0355",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0358",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0359",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0360",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0361",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0363",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0364",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0366",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0367",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0368",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0369",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0370",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0371",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0373",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0374",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0375",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0377",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0378",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0380",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0381",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0384",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0385",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0386",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0388",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0389",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0390",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0391",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0392",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0393",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0394",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0395",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0396",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0398",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0399",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0402",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0404",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0406",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0407",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0408",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0409",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0410",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0416",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0417",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0419",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0420",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0422",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0424",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0426",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0427",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0428",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0429",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0431",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0437",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0439",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0440",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0442",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0443",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0444",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0446",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0448",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0449",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0450",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0451",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0452",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0453",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0457",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0458",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0552",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0553",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0555",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0557",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0558",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0559",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0560",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0561",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0562",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0563",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0564",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0565",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0566",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0567",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0568",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0571",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0575",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0576",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0577",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0579",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0581",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0582",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0583",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0584",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0591",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0592",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0594",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0595",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0801",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0810",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0811",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0813",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0814",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0815",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0816",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0817",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0818",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0819",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0820",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0821",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0822",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0823",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0824",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0825",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0826",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0827",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0828",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0829",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0830",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0831",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0833",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0835",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0836",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0839",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0840",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0841",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0842",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0843",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0845",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0846",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0847",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0848",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0849",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0850",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0851",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0854",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0857",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0864",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0870",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0871",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0884",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0887",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0888",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0894",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0895",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0896",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0897",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0898",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0900",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0901",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0902",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0903",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0904",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0905",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0906",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0907",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0908",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0909",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0910",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0911",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0918",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0920",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0924",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0930",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0944",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0952",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0953",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0954",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0987",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B0989",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B1016",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B1026",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B1028",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B1032",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B1045",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B1046",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B1047",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B1050",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B1051",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B1052",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B1053",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B1057",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B1129",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B1132",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "B1182",
+      "type_": "TotalSeq-B"
+    },
+    {
+      "tag_id": "C0001",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0002",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0003",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0004",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0005",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0006",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0007",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0008",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0009",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0012",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0013",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0014",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0015",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0020",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0022",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0023",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0024",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0026",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0027",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0028",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0029",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0031",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0032",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0033",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0034",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0045",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0046",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0047",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0048",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0049",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0050",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0051",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0052",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0053",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0054",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0055",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0056",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0057",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0058",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0060",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0061",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0062",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0063",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0064",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0066",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0068",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0069",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0070",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0071",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0072",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0073",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0074",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0075",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0076",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0077",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0078",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0079",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0080",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0081",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0083",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0084",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0085",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0087",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0088",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0089",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0090",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0091",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0092",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0093",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0095",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0096",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0097",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0098",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0100",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0101",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0102",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0103",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0105",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0106",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0107",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0108",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0109",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0110",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0111",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0112",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0113",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0114",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0115",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0116",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0117",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0118",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0119",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0120",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0121",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0122",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0123",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0124",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0125",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0126",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0127",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0128",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0129",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0130",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0131",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0132",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0133",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0134",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0135",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0136",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0138",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0139",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0140",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0141",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0142",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0143",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0144",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0145",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0146",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0147",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0148",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0149",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0151",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0152",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0154",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0155",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0156",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0157",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0158",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0159",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0160",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0161",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0162",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0163",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0164",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0165",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0166",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0167",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0168",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0169",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0170",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0171",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0174",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0175",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0176",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0177",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0178",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0179",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0180",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0181",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0182",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0184",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0185",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0187",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0188",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0189",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0190",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0191",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0192",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0193",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0194",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0195",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0196",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0197",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0198",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0199",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0200",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0201",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0202",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0203",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0204",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0205",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0206",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0207",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0208",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0209",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0210",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0211",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0212",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0213",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0214",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0215",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0216",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0217",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0218",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0219",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0224",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0225",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0226",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0227",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0228",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0229",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0230",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0231",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0232",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0233",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0235",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0236",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0237",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0238",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0240",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0241",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0242",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0245",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0246",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0247",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0248",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0250",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0251",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0252",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0253",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0254",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0255",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0256",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0257",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0258",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0259",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0260",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0301",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0302",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0303",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0304",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0305",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0306",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0307",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0308",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0309",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0310",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0351",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0352",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0353",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0354",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0355",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0356",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0358",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0359",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0360",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0361",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0362",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0363",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0364",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0366",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0367",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0368",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0369",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0370",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0371",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0372",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0373",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0374",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0375",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0377",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0378",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0380",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0383",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0384",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0385",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0386",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0387",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0388",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0389",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0390",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0391",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0392",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0393",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0394",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0395",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0396",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0397",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0398",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0399",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0400",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0402",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0403",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0404",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0405",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0406",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0407",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0408",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0409",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0410",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0416",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0417",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0419",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0420",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0421",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0422",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0423",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0424",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0426",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0427",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0428",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0429",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0431",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0433",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0436",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0437",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0439",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0440",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0441",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0442",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0443",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0446",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0447",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0448",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0449",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0450",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0552",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0553",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0556",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0557",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0558",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0559",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0560",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0561",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0562",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0563",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0565",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0566",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0567",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0568",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0569",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0570",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0571",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0572",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0573",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0574",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0575",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0576",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0577",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0579",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0581",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0582",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0583",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0584",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0586",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0590",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0591",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0592",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0593",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0594",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0595",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0596",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0597",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0599",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0600",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0801",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0802",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0804",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0805",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0807",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0808",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0810",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0811",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0812",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0813",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0814",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0815",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0816",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0817",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0818",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0819",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0820",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0821",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0822",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0823",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0824",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0825",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0826",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0827",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0828",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0829",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0830",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0831",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0833",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0834",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0835",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0836",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0837",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0839",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0840",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0841",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0842",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0843",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0844",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0845",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0846",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0847",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0848",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0849",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0850",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0851",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0852",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0853",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0857",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0863",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0864",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0865",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0867",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0869",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0870",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0872",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0877",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0879",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0881",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0884",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0885",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0888",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0892",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0894",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0895",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0896",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0897",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0898",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0900",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0901",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0902",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0903",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0904",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0905",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0907",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0908",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0909",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0910",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0911",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0912",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0914",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0915",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0916",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0917",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0918",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0920",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0924",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0930",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0935",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0944",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0951",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0952",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0953",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0954",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0955",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0956",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0957",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0958",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0959",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0960",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0961",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0962",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0963",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0964",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0965",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0966",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0967",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0968",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0969",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0970",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0971",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0972",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0973",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0974",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0975",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0981",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0982",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0983",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0984",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0985",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0986",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0987",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0988",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0989",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0991",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0992",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0993",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0994",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C0995",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1006",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1007",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1009",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1010",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1011",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1012",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1021",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1024",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1026",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1028",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1032",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1034",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1042",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1045",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1046",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1047",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1050",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1051",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1052",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1053",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1054",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1056",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1057",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1058",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1060",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1062",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1063",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1064",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1129",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1132",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1136",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1137",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1138",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1176",
+      "type_": "TotalSeq-C"
+    },
+    {
+      "tag_id": "C1177",
+      "type_": "TotalSeq-C"
+    }
+  ]
+}
