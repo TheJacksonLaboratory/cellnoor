@@ -212,9 +212,9 @@ impl TestState {
         let mut counter = 0;
         // Skip the first person
         for person_id in &people_ids[1..] {
-            for j in 0..N_SPECIMENS_PER_PERSON {
+            for lab_id in lab_ids.iter().copied().take(N_SPECIMENS_PER_PERSON) {
                 counter += 1;
-                join_set.spawn(self.insert_random_specimen(counter, *person_id, lab_ids[j]));
+                join_set.spawn(self.insert_random_specimen(counter, *person_id, lab_id));
             }
         }
 

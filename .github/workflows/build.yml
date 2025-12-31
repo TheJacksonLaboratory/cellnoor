@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: build_cellnoor-api
+      - name: Login to GitHub Container Registry
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
