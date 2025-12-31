@@ -1,4 +1,6 @@
 name: Build
+permissions:
+  packages: write
 on:
   push:
     branches:
