@@ -2,6 +2,7 @@
 members = [
   "cellnoor-api",
   "crates/cellnoor-models",
+  "crates/cellnoor-models/macros",
   "crates/cellnoor-models/macro-attributes",
   "crates/cellnoor-schema",
   "crates/cellnoor-typescript",
