@@ -1,0 +1,14 @@
+services:
+  cellnoor-api:
+    secrets:
+      - source: initial_data
+        uid: "10001"
+  caddy:
+    environment:
+      PUBLIC_URL: localhost
+  cellnoor-ui:
+    environment:
+      PUBLIC_URL: https://caddy
+secrets:
+  initial_data:
+    file: initial_data
