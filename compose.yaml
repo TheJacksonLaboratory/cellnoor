@@ -47,8 +47,6 @@ services:
         uid: *uid
       - source: db_name
         uid: *uid
-      - source: initial_data
-        uid: *uid
     volumes:
       - logs:/logs
     depends_on:
@@ -72,7 +70,6 @@ services:
       IN_DOCKER: "true"
       DB_HOST: *db_host
       DB_PORT: *db_port
-      PUBLIC_URL: ${CELLNOOR_PUBLIC_URL:?}
       API_KEY_PREFIX_LENGTH: *api_key_prefix_length
       PORT: &ui_port 80
     depends_on:
@@ -99,7 +96,6 @@ services:
   caddy:
     image: caddy:2-alpine
     environment:
-      PUBLIC_URL: ${CELLNOOR_PUBLIC_URL:?}
       API_HOST: *api_host
       API_PORT: *api_port
       UI_HOST: *ui_host
@@ -137,5 +133,3 @@ secrets:
     environment: CELLNOOR_MICROSOFT_ENTRA_CLIENT_SECRET
   microsoft_entra_tenant:
     environment: CELLNOOR_MICROSOFT_ENTRA_TENANT
-  initial_data:
-    file: ${CELLNOOR_INITIAL_DATA_PATH:?}
