@@ -16,7 +16,7 @@ RUN --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
     CELLNOOR_GENERATE_SCHEMA=false cargo build --release --package cellnoor-api && \
-    cp ./target/target/cellnoor-api /bin/cellnoor-api
+    cp ./target/release/cellnoor-api /bin/cellnoor-api
 
 FROM debian:bookworm AS final
 
