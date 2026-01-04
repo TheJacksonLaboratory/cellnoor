@@ -16,9 +16,9 @@ services:
       - tls_certificate
       - tls_key
 secrets:
+  initial_data:
+    file: ${CELLNOOR_INITIAL_DATA_PATH}
   tls_certificate:
     file: ${CELLNOOR_TLS_CERTIFICATE_PATH}
   tls_key:
     file: ${CELLNOOR_TLS_KEY_PATH}
-  initial_data:
-    file: initial_data

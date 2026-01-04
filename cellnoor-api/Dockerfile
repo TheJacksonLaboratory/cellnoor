@@ -1,8 +1,10 @@
 # syntax=docker/dockerfile:1
 
 ARG RUST_VERSION=1
+ARG BUILD_PROFILE=release
 
-FROM rust:${RUST_VERSION:-1}-bookworm AS build
+FROM rust:${RUST_VERSION}-bookworm AS build
+ARG BUILD_PROFILE
 WORKDIR /app
 
 RUN apt update && apt install libpq5 --yes
@@ -15,8 +17,12 @@ RUN --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=cache,target=/app/target/ \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
-    CELLNOOR_GENERATE_SCHEMA=false cargo build --release --package cellnoor-api && \
-    cp ./target/release/cellnoor-api /bin/cellnoor-api
+    CELLNOOR_GENERATE_SCHEMA=false cargo build --profile ${BUILD_PROFILE} --package cellnoor-api && \
+    if [ ${BUILD_PROFILE} = "dev" ]; then \
+    cp ./target/debug/cellnoor-api /bin/cellnoor-api; \
+    else \
+    cp ./target/${BUILD_PROFILE}/cellnoor-api /bin/cellnoor-api; \
+    fi
 
 FROM debian:bookworm AS final
 
