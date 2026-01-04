@@ -3,11 +3,14 @@
 ARG RUST_VERSION=1
 ARG BUILD_PROFILE=release
 
-FROM rust:${RUST_VERSION}-bookworm AS build
+FROM rust:${RUST_VERSION}-trixie AS build
 ARG BUILD_PROFILE
 WORKDIR /app
 
-RUN apt update && apt install libpq5 --yes
+RUN apt update && \
+    apt install postgresql-common --yes && \
+    /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y && \
+    apt install libpq5 --yes
 
 # Build the app, bind-mounting all the workspace crates and cache-mounting useful directories
 RUN --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
@@ -24,9 +27,12 @@ RUN --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     cp ./target/${BUILD_PROFILE}/cellnoor-api /bin/cellnoor-api; \
     fi
 
-FROM debian:bookworm AS final
+FROM debian:trixie AS final
 
-RUN apt update && apt install curl libpq5 --yes
+RUN apt update && \
+    apt install postgresql-common --yes && \
+    /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y && \
+    apt install libpq5 adduser --yes
 
 RUN mkdir app
 
