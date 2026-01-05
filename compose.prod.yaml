@@ -1,11 +1,15 @@
 services:
   cellnoor-api:
-    image: ghcr.io/demhadais/cellnoor-api:latest
+    build: !reset null
+    image: ghcr.io/thejacksonlaboratory/cellnoor-api:latest
+    pull_policy: every_12h
     secrets:
       - source: initial_data
         uid: "10001"
   cellnoor-ui:
-    image: ghcr.io/demhadais/cellnoor-ui:latest
+    build: !reset null
+    image: ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
+    pull_policy: every_12h
     environment:
       PUBLIC_URL: &public_url https://cellnoor.jax.org
   caddy:
