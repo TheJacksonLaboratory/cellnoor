@@ -1,11 +1,15 @@
 services:
   cellnoor-api:
-    image: ghcr.io/demhadais/cellnoor-api:latest
+    build: !reset null
+    image: ghcr.io/thejacksonlaboratory/cellnoor-api:latest
+    pull_policy: always
     secrets:
       - source: initial_data
         uid: "10001"
   cellnoor-ui:
-    image: ghcr.io/demhadais/cellnoor-ui:latest
+    build: !reset null
+    image: ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
+    pull_policy: always
     environment:
       PUBLIC_URL: &public_url https://cellnoor.jax.org
   caddy:
@@ -16,9 +20,9 @@ services:
       - tls_certificate
       - tls_key
 secrets:
+  initial_data:
+    file: ${CELLNOOR_INITIAL_DATA_PATH}
   tls_certificate:
     file: ${CELLNOOR_TLS_CERTIFICATE_PATH}
   tls_key:
     file: ${CELLNOOR_TLS_KEY_PATH}
-  initial_data:
-    file: initial_data

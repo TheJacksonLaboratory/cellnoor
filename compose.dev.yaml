@@ -1,5 +1,8 @@
 services:
   cellnoor-api:
+    build:
+      args:
+        BUILD_PROFILE: "dev"
     secrets:
       - source: initial_data
         uid: "10001"
@@ -8,7 +11,7 @@ services:
       PUBLIC_URL: localhost
   cellnoor-ui:
     environment:
-      PUBLIC_URL: https://caddy
+      API_URL: http://cellnoor-api/api
 secrets:
   initial_data:
     file: initial_data

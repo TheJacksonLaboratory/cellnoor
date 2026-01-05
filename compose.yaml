@@ -29,7 +29,8 @@ services:
       args:
         UID: &uid "10001"
       tags:
-        - ghcr.io/demhadais/cellnoor-api:latest
+        - ghcr.io/thejacksonlaboratory/cellnoor-api:latest
+        - ghcr.io/thejacksonlaboratory/cellnoor-api:${CELLNOOR_API_VERSION:?cellnoor-api_version_missing}
     environment:
       DB_ROOT_USER: *db_root_user
       DB_HOST: *db_host
@@ -65,7 +66,8 @@ services:
       dockerfile: cellnoor-ui/Dockerfile
       target: final
       tags:
-        - ghcr.io/demhadais/cellnoor-ui:latest
+        - ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
+        - ghcr.io/thejacksonlaboratory/cellnoor-ui:${CELLNOOR_UI_VERSION:?cellnoor-ui_version_missing}
     environment:
       IN_DOCKER: "true"
       DB_HOST: *db_host
