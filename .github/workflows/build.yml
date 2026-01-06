@@ -10,6 +10,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6
+
       - name: Set cellnoor-api version
         run: |
           export CELLNOOR_API_VERSION=$(cargo metadata --format-version 1 --no-deps | jq --raw-output '.packages[] | select(.name=="cellnoor-api") | .version')
