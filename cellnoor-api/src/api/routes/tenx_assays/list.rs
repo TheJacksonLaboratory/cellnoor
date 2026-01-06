@@ -1,4 +1,4 @@
-use axum::{extract::State, http::StatusCode};
+use axum::{extract::State, http::status::StatusCode};
 use cellnoor_models::tenx_assay::{TenxAssay, TenxAssayFilter, TenxAssayQuery};
 use cellnoor_schema::tenx_assays::dsl::*;
 use diesel::{dsl::AssumeNotNull, prelude::*};

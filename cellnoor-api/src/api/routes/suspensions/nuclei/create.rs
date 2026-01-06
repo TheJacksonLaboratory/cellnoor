@@ -1,6 +1,5 @@
-use axum::extract::State;
+use axum::{extract::State, http::StatusCode};
 use cellnoor_models::suspension::{Suspension, SuspensionContent, SuspensionCreation};
-use reqwest::StatusCode;
 
 use crate::{
     api::{

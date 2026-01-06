@@ -1,4 +1,4 @@
-use axum::{extract::State, http::StatusCode};
+use axum::{extract::State, http::status::StatusCode};
 use cellnoor_models::person::{Person, PersonId, PersonSummaryWithParents};
 use cellnoor_schema::people::dsl::id;
 use diesel::{PgConnection, prelude::*, sql_types::Text};

@@ -1,9 +1,8 @@
-use axum::extract::State;
+use axum::{extract::State, http::StatusCode};
 use cellnoor_models::specimen::{SpecimenFilter, SpecimenQuery, SpecimenSummary};
 use cellnoor_schema::specimens as t;
 use diesel::{dsl::AssumeNotNull, prelude::*};
 use jiff_diesel::ToDiesel;
-use reqwest::StatusCode;
 use serde_qs::axum::QsQuery;
 
 use crate::{

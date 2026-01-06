@@ -1,4 +1,4 @@
-use axum::{extract::State, http::StatusCode};
+use axum::{extract::State, http::status::StatusCode};
 use cellnoor_models::lab::{LabFilter, LabQuery, LabSummary};
 use cellnoor_schema::labs::dsl::{id, name};
 use diesel::{SelectableExpression, prelude::*};

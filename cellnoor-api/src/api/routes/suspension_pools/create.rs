@@ -1,10 +1,9 @@
-use axum::extract::State;
+use axum::{extract::State, http::StatusCode};
 use cellnoor_models::suspension_pool::{
     SuspensionPool, SuspensionPoolCreation, SuspensionPoolId, SuspensionTagging,
 };
 use cellnoor_schema::{suspension_pool_preparers, suspension_pools, suspension_tagging};
 use diesel::prelude::*;
-use reqwest::StatusCode;
 use uuid::Uuid;
 
 use crate::{
