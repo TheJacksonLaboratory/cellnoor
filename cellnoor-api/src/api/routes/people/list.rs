@@ -1,4 +1,4 @@
-use axum::{extract::State, http::StatusCode};
+use axum::{extract::State, http::status::StatusCode};
 use cellnoor_models::person::{PersonFilter, PersonQuery, PersonSummary};
 use cellnoor_schema::people::dsl::{email, id, institution_id, microsoft_entra_oid, name, orcid};
 use diesel::{dsl::AssumeNotNull, prelude::*};

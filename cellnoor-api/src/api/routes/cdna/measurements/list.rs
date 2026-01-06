@@ -1,8 +1,7 @@
-use axum::extract::State;
+use axum::{extract::State, http::StatusCode};
 use cellnoor_models::cdna::{CdnaIdMeasurements, measurement::CdnaMeasurement};
 use cellnoor_schema::cdna_measurements;
 use diesel::prelude::*;
-use reqwest::StatusCode;
 
 use crate::{
     api::{

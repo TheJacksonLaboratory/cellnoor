@@ -1,4 +1,4 @@
-use axum::{extract::State, http::StatusCode};
+use axum::{extract::State, http::status::StatusCode};
 use cellnoor_models::cdna::{Cdna, CdnaCreation, CdnaId};
 use cellnoor_schema::cdna_preparers;
 use diesel::{RunQueryDsl, prelude::*};

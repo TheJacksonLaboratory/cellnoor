@@ -1,8 +1,7 @@
-use axum::extract::State;
+use axum::{extract::State, http::StatusCode};
 use cellnoor_models::specimen::{SpecimenIdMeasurements, measurement::SpecimenMeasurement};
 use cellnoor_schema::specimen_measurements;
 use diesel::prelude::*;
-use reqwest::StatusCode;
 
 use crate::{
     api::{

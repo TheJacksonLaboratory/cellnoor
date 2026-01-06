@@ -1,4 +1,4 @@
-use axum::{extract::State, http::StatusCode};
+use axum::{extract::State, http::status::StatusCode};
 use cellnoor_models::multiplexing_tag::MultiplexingTag;
 use cellnoor_schema::multiplexing_tags::dsl::*;
 use diesel::prelude::*;

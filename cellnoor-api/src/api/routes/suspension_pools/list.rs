@@ -1,8 +1,7 @@
-use axum::extract::State;
+use axum::{extract::State, http::StatusCode};
 use cellnoor_models::suspension_pool::{SuspensionPool, SuspensionPoolFilter, SuspensionPoolQuery};
 use cellnoor_schema::suspension_pools::id;
 use diesel::prelude::*;
-use reqwest::StatusCode;
 use serde_qs::axum::QsQuery;
 
 use crate::{

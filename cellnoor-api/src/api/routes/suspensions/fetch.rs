@@ -1,8 +1,7 @@
-use axum::extract::State;
+use axum::{extract::State, http::StatusCode};
 use cellnoor_models::suspension::{Suspension, SuspensionId};
 use cellnoor_schema::suspensions::id;
 use diesel::prelude::*;
-use reqwest::StatusCode;
 
 use crate::{
     api::{

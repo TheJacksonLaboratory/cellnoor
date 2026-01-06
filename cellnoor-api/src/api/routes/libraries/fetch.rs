@@ -1,4 +1,4 @@
-use axum::{extract::State, http::StatusCode};
+use axum::{extract::State, http::status::StatusCode};
 use cellnoor_models::library::{Library, LibraryId};
 use cellnoor_schema::libraries;
 use diesel::{PgConnection, prelude::*};

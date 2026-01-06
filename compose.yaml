@@ -30,7 +30,7 @@ services:
         UID: &uid "10001"
       tags:
         - ghcr.io/thejacksonlaboratory/cellnoor-api:latest
-        - ghcr.io/thejacksonlaboratory/cellnoor-api:${CELLNOOR_API_VERSION:?cellnoor-api_version_missing}
+        - ghcr.io/thejacksonlaboratory/cellnoor-api:${CELLNOOR_API_VERSION:?}
     environment:
       DB_ROOT_USER: *db_root_user
       DB_HOST: *db_host
@@ -67,7 +67,7 @@ services:
       target: final
       tags:
         - ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
-        - ghcr.io/thejacksonlaboratory/cellnoor-ui:${CELLNOOR_UI_VERSION:?cellnoor-ui_version_missing}
+        - ghcr.io/thejacksonlaboratory/cellnoor-ui:${CELLNOOR_UI_VERSION:?}
     environment:
       IN_DOCKER: "true"
       DB_HOST: *db_host
