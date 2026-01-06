@@ -5,4 +5,4 @@ import type { SpecimenSummary } from "./SpecimenSummary";
 import type { SuspensionContent } from "./SuspensionContent";
 import type { JsonValue } from "./serde_json/JsonValue";
 
-export type Suspension = { parent_specimen: SpecimenSummary, id: string, created_at?: string, target_cell_recovery: bigint, lysis_duration_minutes?: number, content: SuspensionContent, links: Links, readable_id: NonEmptyString, parent_specimen_id: string, additional_data?: JsonValue, };
+export type Suspension = { parent_specimen: SpecimenSummary, id: string, created_at?: string, target_cell_recovery?: bigint, lysis_duration_minutes?: number, content: SuspensionContent, links: Links, readable_id: NonEmptyString, parent_specimen_id: string, additional_data?: JsonValue, };

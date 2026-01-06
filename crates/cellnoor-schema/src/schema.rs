@@ -361,7 +361,7 @@ diesel::table! {
         content -> Text,
         created_at -> Nullable<Timestamptz>,
         lysis_duration_minutes -> Nullable<Float4>,
-        target_cell_recovery -> Int8,
+        target_cell_recovery -> Nullable<Int8>,
         additional_data -> Nullable<Jsonb>,
     }
 }

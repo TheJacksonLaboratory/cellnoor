@@ -17,7 +17,7 @@ pub struct SuspensionCreation {
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::NullableTimestamp))]
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     created_at: Option<Timestamp>,
-    target_cell_recovery: RangedU32<0, { u32::MAX }>,
+    target_cell_recovery: Option<RangedU32<0, { u32::MAX }>>,
     lysis_duration_minutes: Option<RangedF32<0, { u32::MAX }>>,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
     preparer_ids: NonEmptyVec<Uuid, { usize::MAX }>,

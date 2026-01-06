@@ -22,7 +22,7 @@ pub struct SuspensionSummary {
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::NullableTimestamp))]
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     created_at: Option<Timestamp>,
-    target_cell_recovery: i64,
+    target_cell_recovery: Option<i64>,
     lysis_duration_minutes: Option<f32>,
     content: SuspensionContent,
     links: Links,
