@@ -236,28 +236,28 @@ impl TestState {
             .additional_data(serde_json::json!({"krabby_patty_formular": "secret"}))
             .build();
 
-        let new_specimen = if i.is_multiple_of(5) {
+        let new_specimen = if i.is_multiple_of(6) {
             let s = CryopreservedSuspensionCreation::builder()
                 .inner(inner)
                 .build();
 
             SpecimenCreation::CryopreservedSuspension(s)
-        } else if i.is_multiple_of(4) {
+        } else if i.is_multiple_of(5) {
             let s = NonCryopreservedSuspensionCreation::builder()
                 .inner(inner)
-                .flash_frozen(i.is_multiple_of(8))
+                .flash_frozen(i.is_multiple_of(10))
                 .build();
 
             SpecimenCreation::NonCryopreservedSuspsension(s)
-        } else if i.is_multiple_of(3) {
+        } else if i.is_multiple_of(4) {
             let s = CryopreservedTissueCreation::builder().inner(inner).build();
 
             SpecimenCreation::CryopreservedTissue(s)
-        } else if i.is_multiple_of(2) {
+        } else if i.is_multiple_of(3) {
             let s = NonCryopreservedTissueCreation::builder()
                 .inner(inner)
                 .fixative(TissueFixative::VARIANTS.choose_unwrap())
-                .flash_frozen(i.is_multiple_of(4))
+                .flash_frozen(i.is_multiple_of(6))
                 .build();
 
             SpecimenCreation::NonCryopreservedTissue(s)
