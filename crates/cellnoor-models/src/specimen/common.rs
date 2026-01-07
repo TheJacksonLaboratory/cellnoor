@@ -182,7 +182,7 @@ impl_enum_from_sql!(PreservationMethod);
 impl EnumToSql for PreservationMethod {}
 impl_enum_to_sql!(PreservationMethod);
 
-pub fn preservation_methods_from_fixative_and_flash_frozen<T>(
+pub fn preservation_methods_from_fixative_and_flash_frozen<T: Copy>(
     fixative: Option<T>,
     flash_frozen: bool,
 ) -> Vec<Option<PreservationMethod>> {
