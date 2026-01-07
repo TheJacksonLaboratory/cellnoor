@@ -65,8 +65,7 @@ where
     AssumeNotNull<t::tissue>: SelectableExpression<QS>,
     AssumeNotNull<t::embedded_in>: SelectableExpression<QS>,
     AssumeNotNull<t::fixative>: SelectableExpression<QS>,
-    AssumeNotNull<t::frozen>: SelectableExpression<QS>,
-    AssumeNotNull<t::cryopreserved>: SelectableExpression<QS>,
+    AssumeNotNull<t::preservation_methods>: SelectableExpression<QS>,
     AssumeNotNull<t::returned_by>: SelectableExpression<QS>,
     AssumeNotNull<t::returned_at>: SelectableExpression<QS>,
     AssumeNotNull<t::additional_data>: SelectableExpression<QS>,
@@ -86,8 +85,7 @@ where
             types,
             embedded_in,
             fixatives,
-            frozen,
-            cryopreserved,
+            preservation_methods,
             tissues,
             returned_before,
             returned_after,
@@ -141,12 +139,12 @@ where
             filter = filter.and_condition(t::fixative.assume_not_null().eq_any(fixatives));
         }
 
-        if let Some(is_frozen) = frozen {
-            filter = filter.and_condition(t::frozen.assume_not_null().eq(is_frozen));
-        }
-
-        if let Some(is_cryopreserved) = cryopreserved {
-            filter = filter.and_condition(t::cryopreserved.assume_not_null().eq(is_cryopreserved));
+        if let Some(preservation_methods) = preservation_methods {
+            filter = filter.and_condition(
+                t::preservation_methods
+                    .assume_not_null()
+                    .contains(preservation_methods),
+            );
         }
 
         if let Some(tissues) = tissues {

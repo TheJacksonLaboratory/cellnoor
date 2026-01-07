@@ -18,9 +18,10 @@ use cellnoor_models::{
     person::{PersonCreation, PersonFields, PersonQuery, PersonSummary},
     specimen::{
         BlockFixative, CryopreservedSuspensionCreation, CryopreservedTissueCreation,
-        FixedBlockCreation, FixedBlockEmbeddingMatrix, FixedTissueCreation, FrozenBlockCreation,
-        FrozenBlockEmbeddingMatrix, FrozenSuspensionCreation, FrozenTissueCreation, Species,
-        SpecimenCommonFields, SpecimenCreation, SpecimenQuery, SpecimenSummary, TissueFixative,
+        FixedBlockCreation, FixedBlockEmbeddingMatrix, FlashFrozenBlockCreation,
+        FlashFrozenBlockEmbeddingMatrix, NonCryopreservedSuspensionCreation,
+        NonCryopreservedTissueCreation, Species, SpecimenCommonFields, SpecimenCreation,
+        SpecimenQuery, SpecimenSummary, TissueFixative,
     },
     suspension::{
         SuspensionContent, SuspensionCreation, SuspensionFields, SuspensionQuery, SuspensionSummary,
@@ -235,31 +236,31 @@ impl TestState {
             .additional_data(serde_json::json!({"krabby_patty_formular": "secret"}))
             .build();
 
-        let new_specimen = if i.is_multiple_of(7) {
+        let new_specimen = if i.is_multiple_of(5) {
             let s = CryopreservedSuspensionCreation::builder()
                 .inner(inner)
                 .build();
 
             SpecimenCreation::CryopreservedSuspension(s)
-        } else if i.is_multiple_of(6) {
-            let s = FrozenSuspensionCreation::builder().inner(inner).build();
+        } else if i.is_multiple_of(4) {
+            let s = NonCryopreservedSuspensionCreation::builder()
+                .inner(inner)
+                .flash_frozen(i.is_multiple_of(8))
+                .build();
 
-            SpecimenCreation::FrozenSuspension(s)
-        } else if i.is_multiple_of(5) {
+            SpecimenCreation::NonCryopreservedSuspsension(s)
+        } else if i.is_multiple_of(3) {
             let s = CryopreservedTissueCreation::builder().inner(inner).build();
 
             SpecimenCreation::CryopreservedTissue(s)
-        } else if i.is_multiple_of(4) {
-            let s = FixedTissueCreation::builder()
+        } else if i.is_multiple_of(2) {
+            let s = NonCryopreservedTissueCreation::builder()
                 .inner(inner)
                 .fixative(TissueFixative::VARIANTS.choose_unwrap())
+                .flash_frozen(i.is_multiple_of(4))
                 .build();
 
-            SpecimenCreation::FixedTissue(s)
-        } else if i.is_multiple_of(3) {
-            let s = FrozenTissueCreation::builder().inner(inner).build();
-
-            SpecimenCreation::FrozenTissue(s)
+            SpecimenCreation::NonCryopreservedTissue(s)
         } else if i.is_multiple_of(2) {
             let s = FixedBlockCreation::builder()
                 .inner(inner)
@@ -269,13 +270,13 @@ impl TestState {
 
             SpecimenCreation::FixedBlock(s)
         } else {
-            let s = FrozenBlockCreation::builder()
+            let s = FlashFrozenBlockCreation::builder()
                 .inner(inner)
-                .embedded_in(FrozenBlockEmbeddingMatrix::VARIANTS.choose_unwrap())
+                .embedded_in(FlashFrozenBlockEmbeddingMatrix::VARIANTS.choose_unwrap())
                 .fixative(BlockFixative::VARIANTS.choose_unwrap())
                 .build();
 
-            SpecimenCreation::FrozenBlock(s)
+            SpecimenCreation::FlashFrozenBlock(s)
         };
 
         db_conn

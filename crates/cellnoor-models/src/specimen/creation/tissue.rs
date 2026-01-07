@@ -1,7 +1,8 @@
 use macro_attributes::{base_model, simple_enum};
 
 use crate::specimen::common::{
-    Fixative, SpecimenCommonFields, SpecimenType, SpecimenVariableFields,
+    Fixative, PreservationMethod, SpecimenCommonFields, SpecimenType, SpecimenVariableFields,
+    preservation_methods_from_fixative_and_flash_frozen,
 };
 
 const TYPE: SpecimenType = SpecimenType::Tissue;
@@ -25,35 +26,7 @@ impl CryopreservedTissueCreation {
                 type_: TYPE,
                 embedded_in: None,
                 fixative: None,
-                frozen: false,
-                cryopreserved: true,
-            },
-        )
-    }
-}
-
-#[base_model]
-#[derive(serde::Deserialize)]
-#[cfg_attr(feature = "builder", derive(bon::Builder))]
-pub struct FixedTissueCreation {
-    #[serde(flatten)]
-    pub(super) inner: SpecimenCommonFields,
-    fixative: TissueFixative,
-}
-
-impl FixedTissueCreation {
-    #[must_use]
-    pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
-        let Self { inner, fixative } = self;
-
-        (
-            inner,
-            SpecimenVariableFields {
-                type_: TYPE,
-                embedded_in: None,
-                fixative: Some(Fixative::Tissue(fixative)),
-                frozen: false,
-                cryopreserved: false,
+                preservation_methods: vec![Some(PreservationMethod::Cryopreservation)],
             },
         )
     }
@@ -68,24 +41,32 @@ pub enum TissueFixative {
 #[base_model]
 #[derive(serde::Deserialize)]
 #[cfg_attr(feature = "builder", derive(bon::Builder))]
-pub struct FrozenTissueCreation {
+pub struct NonCryopreservedTissueCreation {
     #[serde(flatten)]
     pub(super) inner: SpecimenCommonFields,
+    fixative: Option<TissueFixative>,
+    flash_frozen: bool,
 }
 
-impl FrozenTissueCreation {
+impl NonCryopreservedTissueCreation {
     #[must_use]
     pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
-        let Self { inner } = self;
+        let Self {
+            inner,
+            fixative,
+            flash_frozen,
+        } = self;
+
+        let preservation_methods =
+            preservation_methods_from_fixative_and_flash_frozen(fixative, flash_frozen);
 
         (
             inner,
             SpecimenVariableFields {
                 type_: TYPE,
                 embedded_in: None,
-                fixative: None,
-                frozen: true,
-                cryopreserved: false,
+                fixative: fixative.map(Fixative::Tissue),
+                preservation_methods,
             },
         )
     }

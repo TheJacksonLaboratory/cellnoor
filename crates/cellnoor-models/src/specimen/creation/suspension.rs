@@ -1,7 +1,8 @@
 use macro_attributes::{base_model, simple_enum};
 
 use crate::specimen::common::{
-    Fixative, SpecimenCommonFields, SpecimenType, SpecimenVariableFields,
+    Fixative, PreservationMethod, SpecimenCommonFields, SpecimenType, SpecimenVariableFields,
+    preservation_methods_from_fixative_and_flash_frozen,
 };
 
 const TYPE: SpecimenType = SpecimenType::Suspension;
@@ -25,61 +26,7 @@ impl CryopreservedSuspensionCreation {
                 type_: TYPE,
                 embedded_in: None,
                 fixative: None,
-                frozen: false,
-                cryopreserved: true,
-            },
-        )
-    }
-}
-
-#[base_model]
-#[derive(serde::Deserialize)]
-#[cfg_attr(feature = "builder", derive(bon::Builder))]
-pub struct FixedSuspensionCreation {
-    #[serde(flatten)]
-    pub(super) inner: SpecimenCommonFields,
-    fixative: SuspensionFixative,
-}
-
-impl FixedSuspensionCreation {
-    #[must_use]
-    pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
-        let Self { inner, fixative } = self;
-
-        (
-            inner,
-            SpecimenVariableFields {
-                type_: TYPE,
-                embedded_in: None,
-                fixative: Some(Fixative::Suspension(fixative)),
-                frozen: false,
-                cryopreserved: false,
-            },
-        )
-    }
-}
-
-#[base_model]
-#[derive(serde::Deserialize)]
-#[cfg_attr(feature = "builder", derive(bon::Builder))]
-pub struct FreshSuspensionCreation {
-    #[serde(flatten)]
-    pub(super) inner: SpecimenCommonFields,
-}
-
-impl FreshSuspensionCreation {
-    #[must_use]
-    pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
-        let Self { inner } = self;
-
-        (
-            inner,
-            SpecimenVariableFields {
-                type_: TYPE,
-                embedded_in: None,
-                fixative: None,
-                frozen: false,
-                cryopreserved: false,
+                preservation_methods: vec![Some(PreservationMethod::Cryopreservation)],
             },
         )
     }
@@ -95,24 +42,32 @@ pub enum SuspensionFixative {
 #[base_model]
 #[derive(serde::Deserialize)]
 #[cfg_attr(feature = "builder", derive(bon::Builder))]
-pub struct FrozenSuspensionCreation {
+pub struct NonCryopreservedSuspensionCreation {
     #[serde(flatten)]
     pub(super) inner: SpecimenCommonFields,
+    fixative: Option<SuspensionFixative>,
+    flash_frozen: bool,
 }
 
-impl FrozenSuspensionCreation {
+impl NonCryopreservedSuspensionCreation {
     #[must_use]
     pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
-        let Self { inner } = self;
+        let Self {
+            inner,
+            fixative,
+            flash_frozen,
+        } = self;
+
+        let preservation_methods =
+            preservation_methods_from_fixative_and_flash_frozen(fixative, flash_frozen);
 
         (
             inner,
             SpecimenVariableFields {
                 type_: TYPE,
                 embedded_in: None,
-                fixative: None,
-                frozen: true,
-                cryopreserved: false,
+                fixative: fixative.map(Fixative::Suspension),
+                preservation_methods,
             },
         )
     }

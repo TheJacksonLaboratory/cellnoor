@@ -4,12 +4,9 @@ use macro_attributes::base_model;
 use crate::specimen::{
     common::{Species, SpecimenCommonFields},
     creation::{
-        block::{FixedBlockCreation, FrozenBlockCreation},
-        suspension::{
-            CryopreservedSuspensionCreation, FixedSuspensionCreation, FreshSuspensionCreation,
-            FrozenSuspensionCreation,
-        },
-        tissue::{CryopreservedTissueCreation, FixedTissueCreation, FrozenTissueCreation},
+        block::{FixedBlockCreation, FlashFrozenBlockCreation},
+        suspension::{CryopreservedSuspensionCreation, NonCryopreservedSuspensionCreation},
+        tissue::{CryopreservedTissueCreation, NonCryopreservedTissueCreation},
     },
 };
 
@@ -22,33 +19,27 @@ pub mod tissue;
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum SpecimenCreation {
     FixedBlock(FixedBlockCreation),
-    FrozenBlock(FrozenBlockCreation),
+    FlashFrozenBlock(FlashFrozenBlockCreation),
     CryopreservedSuspension(CryopreservedSuspensionCreation),
-    FixedSuspension(FixedSuspensionCreation),
-    FreshSuspension(FreshSuspensionCreation),
-    FrozenSuspension(FrozenSuspensionCreation),
+    NonCryopreservedSuspsension(NonCryopreservedSuspensionCreation),
     CryopreservedTissue(CryopreservedTissueCreation),
-    FixedTissue(FixedTissueCreation),
-    FrozenTissue(FrozenTissueCreation),
+    NonCryopreservedTissue(NonCryopreservedTissueCreation),
 }
 
 impl SpecimenCreation {
     fn inner(&self) -> &SpecimenCommonFields {
         use SpecimenCreation::{
-            CryopreservedSuspension, CryopreservedTissue, FixedBlock, FixedSuspension, FixedTissue,
-            FreshSuspension, FrozenBlock, FrozenSuspension, FrozenTissue,
+            CryopreservedSuspension, CryopreservedTissue, FixedBlock, FlashFrozenBlock,
+            NonCryopreservedSuspsension, NonCryopreservedTissue,
         };
 
         match self {
             FixedBlock(s) => &s.inner,
-            FrozenBlock(s) => &s.inner,
+            FlashFrozenBlock(s) => &s.inner,
             CryopreservedSuspension(s) => &s.inner,
-            FixedSuspension(s) => &s.inner,
-            FreshSuspension(s) => &s.inner,
-            FrozenSuspension(s) => &s.inner,
+            NonCryopreservedSuspsension(s) => &s.inner,
             CryopreservedTissue(s) => &s.inner,
-            FixedTissue(s) => &s.inner,
-            FrozenTissue(s) => &s.inner,
+            NonCryopreservedTissue(s) => &s.inner,
         }
     }
 

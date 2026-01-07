@@ -26,14 +26,11 @@ impl db::Operation<Specimen> for SpecimenCreation {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Specimen, db::Error> {
         let split = match self {
             Self::FixedBlock(s) => s.split_for_insertion(),
-            Self::FrozenBlock(s) => s.split_for_insertion(),
+            Self::FlashFrozenBlock(s) => s.split_for_insertion(),
             Self::CryopreservedSuspension(s) => s.split_for_insertion(),
-            Self::FixedSuspension(s) => s.split_for_insertion(),
-            Self::FreshSuspension(s) => s.split_for_insertion(),
-            Self::FrozenSuspension(s) => s.split_for_insertion(),
+            Self::NonCryopreservedSuspsension(s) => s.split_for_insertion(),
             Self::CryopreservedTissue(s) => s.split_for_insertion(),
-            Self::FixedTissue(s) => s.split_for_insertion(),
-            Self::FrozenTissue(s) => s.split_for_insertion(),
+            Self::NonCryopreservedTissue(s) => s.split_for_insertion(),
         };
 
         let created_id = diesel::insert_into(specimens)

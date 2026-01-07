@@ -11,16 +11,13 @@ pub use creation::SpecimenCreation;
 #[cfg(feature = "builder")]
 pub use creation::{
     block::{
-        BlockFixative, FixedBlockCreation, FixedBlockEmbeddingMatrix, FrozenBlockCreation,
-        FrozenBlockEmbeddingMatrix,
+        BlockFixative, FixedBlockCreation, FixedBlockEmbeddingMatrix, FlashFrozenBlockCreation,
+        FlashFrozenBlockEmbeddingMatrix,
     },
     suspension::{
-        CryopreservedSuspensionCreation, FixedSuspensionCreation, FrozenSuspensionCreation,
-        SuspensionFixative,
+        CryopreservedSuspensionCreation, NonCryopreservedSuspensionCreation, SuspensionFixative,
     },
-    tissue::{
-        CryopreservedTissueCreation, FixedTissueCreation, FrozenTissueCreation, TissueFixative,
-    },
+    tissue::{CryopreservedTissueCreation, NonCryopreservedTissueCreation, TissueFixative},
 };
 #[cfg(feature = "app")]
 pub use query::SpecimenQuery;

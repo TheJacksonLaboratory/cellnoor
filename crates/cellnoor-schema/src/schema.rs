@@ -276,6 +276,9 @@ diesel::table! {
 }
 
 diesel::table! {
+    use diesel::sql_types::*;
+    use super::sql_types::CaseInsensitiveText;
+
     specimens (id) {
         id -> Uuid,
         readable_id -> Text,
@@ -292,8 +295,7 @@ diesel::table! {
         type_ -> Text,
         embedded_in -> Nullable<Text>,
         fixative -> Nullable<Text>,
-        frozen -> Bool,
-        cryopreserved -> Bool,
+        preservation_methods -> Array<Nullable<CaseInsensitiveText>>,
         tissue -> Text,
         additional_data -> Nullable<Jsonb>,
     }

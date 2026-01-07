@@ -9,13 +9,35 @@ use non_empty::NonEmptyString;
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::specimen::creation::{
-    block::{BlockFixative, FixedBlockEmbeddingMatrix, FrozenBlockEmbeddingMatrix},
+use super::creation::{
+    block::{BlockFixative, FixedBlockEmbeddingMatrix, FlashFrozenBlockEmbeddingMatrix},
     suspension::SuspensionFixative,
     tissue::TissueFixative,
 };
 #[cfg(feature = "app")]
 use crate::utils::{EnumFromSql, EnumToSql};
+
+#[simple_enum]
+#[derive(strum::VariantArray)]
+pub enum Species {
+    AmbystomaMexicanum,
+    CanisFamiliaris,
+    CallithrixJacchus,
+    DrosophilaMelanogaster,
+    GasterosteusAculeatus,
+    HomoSapiens,
+    MusMusculus,
+    RattusNorvegicus,
+    SminthopsisCrassicaudata,
+}
+
+#[cfg(feature = "app")]
+impl EnumFromSql for Species {}
+impl_enum_from_sql!(Species);
+
+#[cfg(feature = "app")]
+impl EnumToSql for Species {}
+impl_enum_to_sql!(Species);
 
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = specimens))]
@@ -68,7 +90,7 @@ impl_enum_to_sql!(SpecimenType);
 #[serde(untagged)]
 pub enum EmbeddingMatrix {
     FixedBlock(FixedBlockEmbeddingMatrix),
-    FrozenBlock(FrozenBlockEmbeddingMatrix),
+    FlashFrozenBlock(FlashFrozenBlockEmbeddingMatrix),
 }
 
 impl FromStr for EmbeddingMatrix {
@@ -77,7 +99,7 @@ impl FromStr for EmbeddingMatrix {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         FixedBlockEmbeddingMatrix::from_str(s)
             .map(Self::FixedBlock)
-            .or_else(|_| FrozenBlockEmbeddingMatrix::from_str(s).map(Self::FrozenBlock))
+            .or_else(|_| FlashFrozenBlockEmbeddingMatrix::from_str(s).map(Self::FlashFrozenBlock))
     }
 }
 
@@ -87,11 +109,11 @@ impl_enum_from_sql!(EmbeddingMatrix);
 
 impl From<&EmbeddingMatrix> for &'static str {
     fn from(embedding_matrix: &EmbeddingMatrix) -> &'static str {
-        use EmbeddingMatrix::{FixedBlock, FrozenBlock};
+        use EmbeddingMatrix::{FixedBlock, FlashFrozenBlock};
 
         match embedding_matrix {
             FixedBlock(em) => em.into(),
-            FrozenBlock(em) => em.into(),
+            FlashFrozenBlock(em) => em.into(),
         }
     }
 }
@@ -146,26 +168,36 @@ impl EnumToSql for Fixative {}
 impl_enum_to_sql!(Fixative);
 
 #[simple_enum]
-#[derive(strum::VariantArray)]
-pub enum Species {
-    AmbystomaMexicanum,
-    CanisFamiliaris,
-    CallithrixJacchus,
-    DrosophilaMelanogaster,
-    GasterosteusAculeatus,
-    HomoSapiens,
-    MusMusculus,
-    RattusNorvegicus,
-    SminthopsisCrassicaudata,
+pub enum PreservationMethod {
+    Cryopreservation,
+    Fixation,
+    FlashFreezing,
 }
 
 #[cfg(feature = "app")]
-impl EnumFromSql for Species {}
-impl_enum_from_sql!(Species);
+impl EnumFromSql for PreservationMethod {}
+impl_enum_from_sql!(PreservationMethod);
 
 #[cfg(feature = "app")]
-impl EnumToSql for Species {}
-impl_enum_to_sql!(Species);
+impl EnumToSql for PreservationMethod {}
+impl_enum_to_sql!(PreservationMethod);
+
+pub fn preservation_methods_from_fixative_and_flash_frozen<T>(
+    fixative: Option<T>,
+    flash_frozen: bool,
+) -> Vec<Option<PreservationMethod>> {
+    let mut preservation_methods = Vec::with_capacity(2);
+
+    if fixative.is_some() {
+        preservation_methods.push(Some(PreservationMethod::Fixation));
+    }
+
+    if flash_frozen {
+        preservation_methods.push(Some(PreservationMethod::FlashFreezing));
+    }
+
+    preservation_methods
+}
 
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = specimens))]
@@ -173,6 +205,5 @@ pub struct SpecimenVariableFields {
     pub(crate) type_: SpecimenType,
     pub(crate) embedded_in: Option<EmbeddingMatrix>,
     pub(crate) fixative: Option<Fixative>,
-    pub(crate) frozen: bool,
-    pub(crate) cryopreserved: bool,
+    pub(crate) preservation_methods: Vec<Option<PreservationMethod>>,
 }
