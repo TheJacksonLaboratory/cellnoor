@@ -4,9 +4,7 @@ use macro_attributes::base_model;
 use crate::specimen::{
     common::{Species, SpecimenCommonFields},
     creation::{
-        block::{FixedBlockCreation, FlashFrozenBlockCreation},
-        suspension::{CryopreservedSuspensionCreation, NonCryopreservedSuspensionCreation},
-        tissue::{CryopreservedTissueCreation, NonCryopreservedTissueCreation},
+        block::BlockCreation, suspension::SuspensionSpecimenCreation, tissue::TissueCreation,
     },
 };
 
@@ -18,28 +16,19 @@ pub mod tissue;
 #[derive(serde::Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum SpecimenCreation {
-    FixedBlock(FixedBlockCreation),
-    FlashFrozenBlock(FlashFrozenBlockCreation),
-    CryopreservedSuspension(CryopreservedSuspensionCreation),
-    NonCryopreservedSuspsension(NonCryopreservedSuspensionCreation),
-    CryopreservedTissue(CryopreservedTissueCreation),
-    NonCryopreservedTissue(NonCryopreservedTissueCreation),
+    Block(BlockCreation),
+    Suspension(SuspensionSpecimenCreation),
+    Tissue(TissueCreation),
 }
 
 impl SpecimenCreation {
     fn inner(&self) -> &SpecimenCommonFields {
-        use SpecimenCreation::{
-            CryopreservedSuspension, CryopreservedTissue, FixedBlock, FlashFrozenBlock,
-            NonCryopreservedSuspsension, NonCryopreservedTissue,
-        };
+        use SpecimenCreation::{Block, Suspension, Tissue};
 
         match self {
-            FixedBlock(s) => &s.inner,
-            FlashFrozenBlock(s) => &s.inner,
-            CryopreservedSuspension(s) => &s.inner,
-            NonCryopreservedSuspsension(s) => &s.inner,
-            CryopreservedTissue(s) => &s.inner,
-            NonCryopreservedTissue(s) => &s.inner,
+            Block(s) => s.inner(),
+            Suspension(s) => s.inner(),
+            Tissue(s) => s.inner(),
         }
     }
 

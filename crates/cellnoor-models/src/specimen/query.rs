@@ -8,8 +8,10 @@ use uuid::Uuid;
 
 #[cfg(feature = "app")]
 use crate::generic_query;
-use crate::specimen::common::{
-    EmbeddingMatrix, Fixative, PreservationMethod, Species, SpecimenType,
+use crate::specimen::{
+    Species,
+    creation::block::BlockEmbeddingMatrix,
+    variable::{Fixative, SpecimenType, ThermalPreservationMethod},
 };
 
 #[filter]
@@ -25,9 +27,9 @@ pub struct SpecimenFilter {
     pub species: Option<Vec<Species>>,
     pub host_species: Option<Vec<Species>>,
     pub types: Option<Vec<SpecimenType>>,
-    pub embedded_in: Option<Vec<EmbeddingMatrix>>,
+    pub embedded_in: Option<Vec<BlockEmbeddingMatrix>>,
     pub fixatives: Option<Vec<Fixative>>,
-    pub preservation_methods: Option<Vec<PreservationMethod>>,
+    pub thermal_preservation_methods: Option<Vec<ThermalPreservationMethod>>,
     pub tissues: Option<Vec<String>>,
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     pub returned_before: Option<Timestamp>,
@@ -53,7 +55,7 @@ pub enum SpecimenOrderBy {
     type_ { descending: Option<bool> },
     embedded_in { descending: Option<bool> },
     fixative { descending: Option<bool> },
-    preservation_methods { descending: Option<bool> },
+    thermal_preservation_method { descending: Option<bool> },
     tissue { descending: Option<bool> },
 }
 

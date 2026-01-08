@@ -5,11 +5,10 @@ use cellnoor_models::{
 };
 use cellnoor_schema::{suspension_tagging, suspensions};
 use diesel::prelude::*;
-use serde_qs::axum::QsQuery;
 
 use crate::{
     api::{
-        extract::auth::AuthenticatedUser,
+        extract::{auth::AuthenticatedUser, query::QsQuery},
         routes::{ApiResponse, inner_handler},
     },
     db::{self, ToBoxedFilter},

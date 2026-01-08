@@ -3,11 +3,10 @@ use cellnoor_models::{
     institution::{self, InstitutionIdMembers},
     person::{self, PersonFilter, PersonQuery},
 };
-use serde_qs::axum::QsQuery;
 
 use crate::{
     api::{
-        extract::auth::AuthenticatedUser,
+        extract::{auth::AuthenticatedUser, query::QsQuery},
         routes::{ApiResponse, inner_handler},
     },
     db::{self},

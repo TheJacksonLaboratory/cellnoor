@@ -25,12 +25,9 @@ pub(super) async fn create_specimen(
 impl db::Operation<Specimen> for SpecimenCreation {
     fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Specimen, db::Error> {
         let split = match self {
-            Self::FixedBlock(s) => s.split_for_insertion(),
-            Self::FlashFrozenBlock(s) => s.split_for_insertion(),
-            Self::CryopreservedSuspension(s) => s.split_for_insertion(),
-            Self::NonCryopreservedSuspsension(s) => s.split_for_insertion(),
-            Self::CryopreservedTissue(s) => s.split_for_insertion(),
-            Self::NonCryopreservedTissue(s) => s.split_for_insertion(),
+            Self::Block(s) => s.split_for_insertion(),
+            Self::Suspension(s) => s.split_for_insertion(),
+            Self::Tissue(s) => s.split_for_insertion(),
         };
 
         let created_id = diesel::insert_into(specimens)

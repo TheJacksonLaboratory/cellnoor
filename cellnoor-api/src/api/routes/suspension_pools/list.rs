@@ -2,11 +2,10 @@ use axum::{extract::State, http::StatusCode};
 use cellnoor_models::suspension_pool::{SuspensionPool, SuspensionPoolFilter, SuspensionPoolQuery};
 use cellnoor_schema::suspension_pools::id;
 use diesel::prelude::*;
-use serde_qs::axum::QsQuery;
 
 use crate::{
     api::{
-        extract::auth::AuthenticatedUser,
+        extract::{auth::AuthenticatedUser, query::QsQuery},
         routes::{ApiResponse, Root, inner_handler},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter},

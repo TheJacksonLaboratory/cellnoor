@@ -1,19 +1,12 @@
-use std::str::FromStr;
-
 #[cfg(feature = "app")]
 use cellnoor_schema::specimens;
 use jiff::Timestamp;
-use macro_attributes::{base_model, insert_select, simple_enum};
+use macro_attributes::{insert_select, simple_enum};
 use macros::{impl_enum_from_sql, impl_enum_to_sql};
 use non_empty::NonEmptyString;
 use serde_json::Value;
 use uuid::Uuid;
 
-use super::creation::{
-    block::{BlockFixative, FixedBlockEmbeddingMatrix, FlashFrozenBlockEmbeddingMatrix},
-    suspension::SuspensionFixative,
-    tissue::TissueFixative,
-};
 #[cfg(feature = "app")]
 use crate::utils::{EnumFromSql, EnumToSql};
 
@@ -63,147 +56,4 @@ pub struct SpecimenCommonFields {
     pub(super) returned_at: Option<Timestamp>,
     pub(super) tissue: NonEmptyString,
     pub(super) additional_data: Option<Value>,
-}
-
-#[simple_enum]
-pub enum SpecimenType {
-    Block,
-    Suspension,
-    Tissue,
-}
-
-#[cfg(feature = "app")]
-impl EnumFromSql for SpecimenType {}
-impl_enum_from_sql!(SpecimenType);
-
-#[cfg(feature = "app")]
-impl EnumToSql for SpecimenType {}
-impl_enum_to_sql!(SpecimenType);
-
-#[base_model]
-#[derive(Copy, Eq, PartialOrd, Ord, serde::Deserialize, serde::Serialize)]
-#[cfg_attr(
-    feature = "app",
-    derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression)
-)]
-#[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Text))]
-#[serde(untagged)]
-pub enum EmbeddingMatrix {
-    FixedBlock(FixedBlockEmbeddingMatrix),
-    FlashFrozenBlock(FlashFrozenBlockEmbeddingMatrix),
-}
-
-impl FromStr for EmbeddingMatrix {
-    type Err = strum::ParseError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        FixedBlockEmbeddingMatrix::from_str(s)
-            .map(Self::FixedBlock)
-            .or_else(|_| FlashFrozenBlockEmbeddingMatrix::from_str(s).map(Self::FlashFrozenBlock))
-    }
-}
-
-#[cfg(feature = "app")]
-impl EnumFromSql for EmbeddingMatrix {}
-impl_enum_from_sql!(EmbeddingMatrix);
-
-impl From<&EmbeddingMatrix> for &'static str {
-    fn from(embedding_matrix: &EmbeddingMatrix) -> &'static str {
-        use EmbeddingMatrix::{FixedBlock, FlashFrozenBlock};
-
-        match embedding_matrix {
-            FixedBlock(em) => em.into(),
-            FlashFrozenBlock(em) => em.into(),
-        }
-    }
-}
-
-#[cfg(feature = "app")]
-impl EnumToSql for EmbeddingMatrix {}
-impl_enum_to_sql!(EmbeddingMatrix);
-
-#[base_model]
-#[derive(Copy, serde::Deserialize, serde::Serialize)]
-#[cfg_attr(
-    feature = "app",
-    derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression)
-)]
-#[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Text))]
-#[serde(untagged)]
-pub enum Fixative {
-    Block(BlockFixative),
-    Suspension(SuspensionFixative),
-    Tissue(TissueFixative),
-}
-
-impl FromStr for Fixative {
-    type Err = strum::ParseError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        BlockFixative::from_str(s)
-            .map(Self::Block)
-            .or_else(|_| SuspensionFixative::from_str(s).map(Self::Suspension))
-            .or_else(|_| TissueFixative::from_str(s).map(Self::Tissue))
-    }
-}
-
-#[cfg(feature = "app")]
-impl EnumFromSql for Fixative {}
-impl_enum_from_sql!(Fixative);
-
-impl From<&Fixative> for &'static str {
-    fn from(fixative: &Fixative) -> &'static str {
-        use Fixative::{Block, Suspension, Tissue};
-
-        match fixative {
-            Block(f) => f.into(),
-            Suspension(f) => f.into(),
-            Tissue(f) => f.into(),
-        }
-    }
-}
-
-#[cfg(feature = "app")]
-impl EnumToSql for Fixative {}
-impl_enum_to_sql!(Fixative);
-
-#[simple_enum]
-pub enum PreservationMethod {
-    Cryopreservation,
-    Fixation,
-    FlashFreezing,
-}
-
-#[cfg(feature = "app")]
-impl EnumFromSql for PreservationMethod {}
-impl_enum_from_sql!(PreservationMethod);
-
-#[cfg(feature = "app")]
-impl EnumToSql for PreservationMethod {}
-impl_enum_to_sql!(PreservationMethod);
-
-pub fn preservation_methods_from_fixative_and_flash_frozen<T: Copy>(
-    fixative: Option<T>,
-    flash_frozen: bool,
-) -> Vec<Option<PreservationMethod>> {
-    let mut preservation_methods = Vec::with_capacity(2);
-
-    if fixative.is_some() {
-        preservation_methods.push(Some(PreservationMethod::Fixation));
-    }
-
-    if flash_frozen {
-        preservation_methods.push(Some(PreservationMethod::FlashFreezing));
-    }
-
-    preservation_methods
-}
-
-#[insert_select]
-#[cfg_attr(feature = "app", diesel(table_name = specimens))]
-pub struct SpecimenVariableFields {
-    pub(crate) type_: SpecimenType,
-    pub(crate) embedded_in: Option<EmbeddingMatrix>,
-    pub(crate) fixative: Option<Fixative>,
-    pub(crate) preservation_methods: Vec<Option<PreservationMethod>>,
 }

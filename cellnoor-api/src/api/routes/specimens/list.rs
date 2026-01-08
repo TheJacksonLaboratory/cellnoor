@@ -3,11 +3,10 @@ use cellnoor_models::specimen::{SpecimenFilter, SpecimenQuery, SpecimenSummary};
 use cellnoor_schema::specimens as t;
 use diesel::{dsl::AssumeNotNull, prelude::*};
 use jiff_diesel::ToDiesel;
-use serde_qs::axum::QsQuery;
 
 use crate::{
     api::{
-        extract::auth::AuthenticatedUser,
+        extract::{auth::AuthenticatedUser, query::QsQuery},
         routes::{ApiResponse, Root, inner_handler},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, utils::like_any},
@@ -65,7 +64,7 @@ where
     AssumeNotNull<t::tissue>: SelectableExpression<QS>,
     AssumeNotNull<t::embedded_in>: SelectableExpression<QS>,
     AssumeNotNull<t::fixative>: SelectableExpression<QS>,
-    AssumeNotNull<t::preservation_methods>: SelectableExpression<QS>,
+    AssumeNotNull<t::thermal_preservation_method>: SelectableExpression<QS>,
     AssumeNotNull<t::returned_by>: SelectableExpression<QS>,
     AssumeNotNull<t::returned_at>: SelectableExpression<QS>,
     AssumeNotNull<t::additional_data>: SelectableExpression<QS>,
@@ -85,7 +84,7 @@ where
             types,
             embedded_in,
             fixatives,
-            preservation_methods,
+            thermal_preservation_methods,
             tissues,
             returned_before,
             returned_after,
@@ -139,11 +138,11 @@ where
             filter = filter.and_condition(t::fixative.assume_not_null().eq_any(fixatives));
         }
 
-        if let Some(preservation_methods) = preservation_methods {
+        if let Some(thermal_preservation_methods) = thermal_preservation_methods {
             filter = filter.and_condition(
-                t::preservation_methods
+                t::thermal_preservation_method
                     .assume_not_null()
-                    .contains(preservation_methods),
+                    .eq_any(thermal_preservation_methods),
             );
         }
 

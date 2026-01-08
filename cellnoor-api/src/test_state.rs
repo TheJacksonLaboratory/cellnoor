@@ -17,11 +17,9 @@ use cellnoor_models::{
     multiplexing_tag::MultiplexingTag,
     person::{PersonCreation, PersonFields, PersonQuery, PersonSummary},
     specimen::{
-        BlockFixative, CryopreservedSuspensionCreation, CryopreservedTissueCreation,
-        FixedBlockCreation, FixedBlockEmbeddingMatrix, FlashFrozenBlockCreation,
-        FlashFrozenBlockEmbeddingMatrix, NonCryopreservedSuspensionCreation,
-        NonCryopreservedTissueCreation, Species, SpecimenCommonFields, SpecimenCreation,
-        SpecimenQuery, SpecimenSummary, TissueFixative,
+        BlockCreation, BlockFixative, Species, SpecimenCommonFields, SpecimenCreation,
+        SpecimenQuery, SpecimenSummary, SuspensionFixative, SuspensionSpecimenCreation,
+        TissueCreation, TissueFixative,
     },
     suspension::{
         SuspensionContent, SuspensionCreation, SuspensionFields, SuspensionQuery, SuspensionSummary,
@@ -236,47 +234,41 @@ impl TestState {
             .additional_data(serde_json::json!({"krabby_patty_formular": "secret"}))
             .build();
 
-        let new_specimen = if i.is_multiple_of(6) {
-            let s = CryopreservedSuspensionCreation::builder()
-                .inner(inner)
-                .build();
-
-            SpecimenCreation::CryopreservedSuspension(s)
+        let new_specimen = if i.is_multiple_of(9) {
+            SpecimenCreation::Block(BlockCreation::CarboxymethylCellulose {
+                inner,
+                fixative: None,
+            })
+        } else if i.is_multiple_of(8) {
+            SpecimenCreation::Block(BlockCreation::OptimalCuttingTemperatureCompound {
+                inner,
+                fixative: None,
+            })
+        } else if i.is_multiple_of(7) {
+            SpecimenCreation::Block(BlockCreation::Paraffin {
+                inner,
+                fixative: BlockFixative::VARIANTS.choose_unwrap(),
+            })
+        } else if i.is_multiple_of(6) {
+            SpecimenCreation::Suspension(SuspensionSpecimenCreation::ControlledRateFreezing {
+                inner,
+            })
         } else if i.is_multiple_of(5) {
-            let s = NonCryopreservedSuspensionCreation::builder()
-                .inner(inner)
-                .flash_frozen(i.is_multiple_of(10))
-                .build();
-
-            SpecimenCreation::NonCryopreservedSuspsension(s)
+            SpecimenCreation::Suspension(SuspensionSpecimenCreation::Fixation {
+                inner,
+                fixative: SuspensionFixative::VARIANTS.choose_unwrap(),
+            })
         } else if i.is_multiple_of(4) {
-            let s = CryopreservedTissueCreation::builder().inner(inner).build();
-
-            SpecimenCreation::CryopreservedTissue(s)
+            SpecimenCreation::Suspension(SuspensionSpecimenCreation::FlashFreezing { inner })
         } else if i.is_multiple_of(3) {
-            let s = NonCryopreservedTissueCreation::builder()
-                .inner(inner)
-                .fixative(TissueFixative::VARIANTS.choose_unwrap())
-                .flash_frozen(i.is_multiple_of(6))
-                .build();
-
-            SpecimenCreation::NonCryopreservedTissue(s)
+            SpecimenCreation::Tissue(TissueCreation::ControlledRateFreezing { inner })
         } else if i.is_multiple_of(2) {
-            let s = FixedBlockCreation::builder()
-                .inner(inner)
-                .fixative(BlockFixative::VARIANTS.choose_unwrap())
-                .embedded_in(FixedBlockEmbeddingMatrix::VARIANTS.choose_unwrap())
-                .build();
-
-            SpecimenCreation::FixedBlock(s)
+            SpecimenCreation::Tissue(TissueCreation::Fixation {
+                inner,
+                fixative: TissueFixative::VARIANTS.choose_unwrap(),
+            })
         } else {
-            let s = FlashFrozenBlockCreation::builder()
-                .inner(inner)
-                .embedded_in(FlashFrozenBlockEmbeddingMatrix::VARIANTS.choose_unwrap())
-                .fixative(BlockFixative::VARIANTS.choose_unwrap())
-                .build();
-
-            SpecimenCreation::FlashFrozenBlock(s)
+            SpecimenCreation::Tissue(TissueCreation::FlashFreezing { inner })
         };
 
         db_conn

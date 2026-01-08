@@ -108,7 +108,7 @@ where
     AssumeNotNull<specimens::tissue>: SelectableExpression<QS>,
     AssumeNotNull<specimens::embedded_in>: SelectableExpression<QS>,
     AssumeNotNull<specimens::fixative>: SelectableExpression<QS>,
-    AssumeNotNull<specimens::preservation_methods>: SelectableExpression<QS>,
+    AssumeNotNull<specimens::thermal_preservation_method>: SelectableExpression<QS>,
     AssumeNotNull<specimens::returned_by>: SelectableExpression<QS>,
     AssumeNotNull<specimens::returned_at>: SelectableExpression<QS>,
     AssumeNotNull<specimens::additional_data>: SelectableExpression<QS>,

@@ -10,7 +10,10 @@ use crate::{
     lab::LabSummary,
     links::Links,
     person::PersonSummary,
-    specimen::common::{EmbeddingMatrix, SpecimenCommonFields, SpecimenVariableFields},
+    specimen::{
+        common::SpecimenCommonFields, creation::block::BlockEmbeddingMatrix,
+        variable::SpecimenVariableFields,
+    },
 };
 
 #[select]
@@ -43,7 +46,7 @@ impl SpecimenSummary {
     }
 
     #[must_use]
-    pub fn embedded_in(&self) -> Option<EmbeddingMatrix> {
+    pub fn embedded_in(&self) -> Option<BlockEmbeddingMatrix> {
         self.variable.embedded_in
     }
 

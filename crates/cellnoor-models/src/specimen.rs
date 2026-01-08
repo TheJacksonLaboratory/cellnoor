@@ -3,6 +3,7 @@ mod creation;
 pub mod measurement;
 mod query;
 mod read;
+mod variable;
 
 pub use common::Species;
 #[cfg(feature = "builder")]
@@ -10,14 +11,9 @@ pub use common::SpecimenCommonFields;
 pub use creation::SpecimenCreation;
 #[cfg(feature = "builder")]
 pub use creation::{
-    block::{
-        BlockFixative, FixedBlockCreation, FixedBlockEmbeddingMatrix, FlashFrozenBlockCreation,
-        FlashFrozenBlockEmbeddingMatrix,
-    },
-    suspension::{
-        CryopreservedSuspensionCreation, NonCryopreservedSuspensionCreation, SuspensionFixative,
-    },
-    tissue::{CryopreservedTissueCreation, NonCryopreservedTissueCreation, TissueFixative},
+    block::{BlockCreation, BlockFixative},
+    suspension::{SuspensionFixative, SuspensionSpecimenCreation},
+    tissue::{TissueCreation, TissueFixative},
 };
 #[cfg(feature = "app")]
 pub use query::SpecimenQuery;

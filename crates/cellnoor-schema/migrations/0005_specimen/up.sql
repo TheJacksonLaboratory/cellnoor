@@ -15,20 +15,10 @@ create table specimens (
     type case_insensitive_text not null,
     embedded_in case_insensitive_text,
     fixative case_insensitive_text,
-    preservation_methods case_insensitive_text [] not null,
+    thermal_preservation_method case_insensitive_text,
     tissue case_insensitive_text not null,
     additional_data jsonb
 );
-
-create function sort_preservation_methods() returns trigger language plpgsql volatile strict as $$
-    begin
-        new.preservation_methods = array(select distinct unnest(new.preservation_methods) order by 1);
-        return new;
-    end;
-$$;
-
-create trigger sort_specimen_preservation_methods before insert or update on specimens for each row execute function
-sort_preservation_methods();
 
 create table committee_approval (
     institution_id uuid references institutions on delete restrict on update restrict not null,
