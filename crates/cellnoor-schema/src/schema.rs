@@ -261,7 +261,7 @@ diesel::table! {
         name -> Text,
         kit -> Text,
         well -> Text,
-        sequences -> Array<Nullable<CaseInsensitiveText>>,
+        sequences -> Array<CaseInsensitiveText>,
     }
 }
 
@@ -373,12 +373,12 @@ diesel::table! {
         id -> Uuid,
         links -> Jsonb,
         name -> Text,
-        library_types -> Nullable<Array<Nullable<CaseInsensitiveText>>>,
+        library_types -> Nullable<Array<CaseInsensitiveText>>,
         sample_multiplexing -> Nullable<Text>,
         chemistry_version -> Text,
         protocol_url -> Text,
         chromium_chip -> Nullable<Text>,
-        cmdlines -> Nullable<Array<Nullable<CaseInsensitiveText>>>,
+        cmdlines -> Nullable<Array<CaseInsensitiveText>>,
     }
 }
 

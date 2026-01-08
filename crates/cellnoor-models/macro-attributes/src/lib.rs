@@ -260,7 +260,7 @@ pub fn simple_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
         #base_derives
         #[derive(Copy, Eq, PartialOrd, Ord, ::strum::EnumString, ::strum::IntoStaticStr)]
         #[cfg_attr(feature = "app", derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression))]
-        #[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Text))]
+        #[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Text, sql_type = ::cellnoor_schema::sql_types::CaseInsensitiveText))]
         #[serde(rename_all = "snake_case")]
         #[strum(serialize_all = "snake_case")]
         #input

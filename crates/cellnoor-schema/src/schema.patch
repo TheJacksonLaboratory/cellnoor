@@ -1,0 +1,40 @@
+diff --git a/crates/cellnoor-schema/src/schema.rs b/crates/cellnoor-schema/src/schema.rs
+index b3489d4..193bc35 100644
+--- a/crates/cellnoor-schema/src/schema.rs
++++ b/crates/cellnoor-schema/src/schema.rs
+@@ -258,13 +258,13 @@ diesel::table! {
+     use super::sql_types::CaseInsensitiveText;
+ 
+     single_index_sets (name) {
+         name -> Text,
+         kit -> Text,
+         well -> Text,
+-        sequences -> Array<Nullable<CaseInsensitiveText>>,
++        sequences -> Array<CaseInsensitiveText>,
+     }
+ }
+ 
+ diesel::table! {
+     specimen_measurements (id) {
+         id -> Uuid,
+@@ -370,18 +370,18 @@ diesel::table! {
+     use super::sql_types::CaseInsensitiveText;
+ 
+     tenx_assays (id) {
+         id -> Uuid,
+         links -> Jsonb,
+         name -> Text,
+-        library_types -> Nullable<Array<Nullable<CaseInsensitiveText>>>,
++        library_types -> Nullable<Array<CaseInsensitiveText>>,
+         sample_multiplexing -> Nullable<Text>,
+         chemistry_version -> Text,
+         protocol_url -> Text,
+         chromium_chip -> Nullable<Text>,
+-        cmdlines -> Nullable<Array<Nullable<CaseInsensitiveText>>>,
++        cmdlines -> Nullable<Array<CaseInsensitiveText>>,
+     }
+ }
+ 
+ diesel::joinable!(api_keys -> people (user_id));
+ diesel::joinable!(cdna -> gem_pools (gem_pool_id));
+ diesel::joinable!(cdna_measurements -> cdna (cdna_id));

@@ -49,21 +49,6 @@ macro_rules! impl_enum_to_sql {
                 self.to_sql_inner(out)
             }
         }
-
-        #[cfg(feature = "app")]
-        impl
-            ::diesel::serialize::ToSql<
-                ::diesel::sql_types::Nullable<cellnoor_schema::sql_types::CaseInsensitiveText>,
-                ::diesel::pg::Pg,
-            > for $name
-        {
-            fn to_sql<'b>(
-                &'b self,
-                out: &mut diesel::serialize::Output<'b, '_, ::diesel::pg::Pg>,
-            ) -> ::diesel::serialize::Result {
-                self.to_sql_inner(out)
-            }
-        }
     };
 }
 

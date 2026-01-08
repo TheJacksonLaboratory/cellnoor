@@ -4,7 +4,7 @@ use diesel::{
     pg::Pg,
     prelude::*,
     serialize::{Output, ToSql},
-    sql_types::{Nullable, Text},
+    sql_types::Text,
 };
 
 use crate::initial_data::{
@@ -83,8 +83,8 @@ impl Upsert for Vec<SingleIndexSet> {
 #[derive(Clone, Debug, serde::Deserialize)]
 struct StringWrapper(String);
 
-impl ToSql<Nullable<CaseInsensitiveText>, Pg> for StringWrapper {
+impl ToSql<CaseInsensitiveText, Pg> for StringWrapper {
     fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Pg>) -> diesel::serialize::Result {
-        <String as ToSql<Nullable<Text>, Pg>>::to_sql(&self.0, out)
+        <String as ToSql<Text, Pg>>::to_sql(&self.0, out)
     }
 }

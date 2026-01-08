@@ -127,6 +127,7 @@ pub enum Cells {
     Cells,
 }
 
+#[cfg(feature = "app")]
 impl TryFrom<SuspensionContent> for Cells {
     type Error = ();
 
@@ -151,6 +152,7 @@ pub enum Nuclei {
     Nuclei,
 }
 
+#[cfg(feature = "app")]
 impl TryFrom<SuspensionContent> for Nuclei {
     type Error = ();
 
