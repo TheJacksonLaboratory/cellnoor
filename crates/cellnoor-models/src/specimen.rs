@@ -12,8 +12,8 @@ pub use creation::SpecimenCreation;
 #[cfg(feature = "builder")]
 pub use creation::{
     block::{BlockCreation, BlockFixative},
-    suspension::{SuspensionFixative, SuspensionSpecimenCreation},
-    tissue::{TissueCreation, TissueFixative},
+    suspension::{SuspensionSpecimenCreation, SuspensionThermalPreservation},
+    tissue::TissueCreation,
 };
 #[cfg(feature = "app")]
 pub use query::SpecimenQuery;
@@ -23,4 +23,4 @@ pub use query::{
 };
 pub use read::{Specimen, SpecimenSummary};
 #[cfg(feature = "builder")]
-pub use variable::ThermalPreservationMethod;
+pub use variable::{Fixative, ThermalPreservationMethod};

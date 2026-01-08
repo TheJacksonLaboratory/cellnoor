@@ -7,9 +7,14 @@ use crate::specimen::{
 
 #[simple_enum]
 #[derive(strum::VariantArray)]
-pub enum SuspensionFixative {
-    DithiobisSuccinimidylpropionate,
-    FormaldehydeDerivative,
+pub enum SuspensionThermalPreservation {
+    ControlledRateFreezing,
+}
+
+impl From<SuspensionThermalPreservation> for ThermalPreservationMethod {
+    fn from(_: SuspensionThermalPreservation) -> Self {
+        Self::ControlledRateFreezing
+    }
 }
 
 #[base_model]
@@ -19,7 +24,7 @@ pub enum SuspensionSpecimenCreation {
     Fixed {
         #[serde(flatten)]
         inner: SpecimenCommonFields,
-        fixative: SuspensionFixative,
+        fixative: Fixative,
     },
     Fresh {
         #[serde(flatten)]
@@ -28,7 +33,7 @@ pub enum SuspensionSpecimenCreation {
     ThermallyPreserved {
         #[serde(flatten)]
         inner: SpecimenCommonFields,
-        thermal_preservation_method: ThermalPreservationMethod,
+        thermal_preservation_method: SuspensionThermalPreservation,
     },
 }
 
@@ -55,7 +60,7 @@ impl SuspensionSpecimenCreation {
         }
     }
 
-    fn fixative(&self) -> Option<SuspensionFixative> {
+    fn fixative(&self) -> Option<Fixative> {
         match self {
             Self::Fixed { inner: _, fixative } => Some(*fixative),
             Self::Fresh { inner: _ }
@@ -66,7 +71,7 @@ impl SuspensionSpecimenCreation {
         }
     }
 
-    fn thermal_preservation_method(&self) -> Option<ThermalPreservationMethod> {
+    fn thermal_preservation_method(&self) -> Option<SuspensionThermalPreservation> {
         match self {
             Self::Fixed { .. } | Self::Fresh { .. } => None,
             Self::ThermallyPreserved {
@@ -86,8 +91,8 @@ impl SuspensionSpecimenCreation {
             SpecimenVariableFields {
                 type_: SpecimenType::Suspension,
                 embedded_in: None,
-                fixative: fixative.map(Fixative::Suspension),
-                thermal_preservation_method,
+                fixative,
+                thermal_preservation_method: thermal_preservation_method.map(Into::into),
             },
         )
     }

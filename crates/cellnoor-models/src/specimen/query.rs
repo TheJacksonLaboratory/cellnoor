@@ -30,6 +30,7 @@ pub struct SpecimenFilter {
     pub embedded_in: Option<Vec<BlockEmbeddingMatrix>>,
     pub fixatives: Option<Vec<Fixative>>,
     pub thermal_preservation_methods: Option<Vec<ThermalPreservationMethod>>,
+    pub fresh: Option<bool>,
     pub tissues: Option<Vec<String>>,
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     pub returned_before: Option<Timestamp>,

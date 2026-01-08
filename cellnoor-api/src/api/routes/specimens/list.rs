@@ -84,6 +84,7 @@ where
             types,
             embedded_in,
             fixatives,
+            fresh,
             thermal_preservation_methods,
             tissues,
             returned_before,
@@ -143,6 +144,21 @@ where
                 t::thermal_preservation_method
                     .assume_not_null()
                     .eq_any(thermal_preservation_methods),
+            );
+        }
+
+        // There are some calls to `assume_not_null` to satisfy the type-system. This
+        // has no impact on the generated SQL.
+        if let Some(true) = fresh {
+            filter = filter
+                .and_condition(t::thermal_preservation_method.assume_not_null().is_null())
+                .and_condition(t::fixative.assume_not_null().is_null());
+        } else if let Some(false) = fresh {
+            filter = filter.and_condition(
+                t::thermal_preservation_method
+                    .assume_not_null()
+                    .is_not_null()
+                    .or(t::fixative.assume_not_null().is_not_null()),
             );
         }
 

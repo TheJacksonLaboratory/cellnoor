@@ -14,6 +14,12 @@ pub enum BlockFixative {
     FormaldehydeDerivative,
 }
 
+impl From<BlockFixative> for Fixative {
+    fn from(_: BlockFixative) -> Self {
+        Fixative::FormaldehydeDerivative
+    }
+}
+
 #[base_model]
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "snake_case", tag = "embedded_in")]
@@ -21,11 +27,13 @@ pub enum BlockCreation {
     OptimalCuttingTemperatureCompound {
         #[serde(flatten)]
         inner: SpecimenCommonFields,
+        #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
         fixative: Option<BlockFixative>,
     },
     CarboxymethylCellulose {
         #[serde(flatten)]
         inner: SpecimenCommonFields,
+        #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
         fixative: Option<BlockFixative>,
     },
     Paraffin {
@@ -105,7 +113,7 @@ impl BlockCreation {
             SpecimenVariableFields {
                 type_: SpecimenType::Block,
                 embedded_in,
-                fixative: fixative.map(Fixative::Block),
+                fixative: fixative.map(Into::into),
                 thermal_preservation_method,
             },
         )

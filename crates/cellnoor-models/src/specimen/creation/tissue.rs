@@ -1,15 +1,9 @@
-use macro_attributes::{base_model, simple_enum};
+use macro_attributes::base_model;
 
 use crate::specimen::{
     common::SpecimenCommonFields,
     variable::{Fixative, SpecimenType, SpecimenVariableFields, ThermalPreservationMethod},
 };
-
-#[simple_enum]
-#[derive(strum::VariantArray)]
-pub enum TissueFixative {
-    DithiobisSuccinimidylpropionate,
-}
 
 #[base_model]
 #[derive(serde::Deserialize)]
@@ -18,7 +12,7 @@ pub enum TissueCreation {
     Fixed {
         #[serde(flatten)]
         inner: SpecimenCommonFields,
-        fixative: TissueFixative,
+        fixative: Fixative,
     },
     Fresh {
         #[serde(flatten)]
@@ -54,7 +48,7 @@ impl TissueCreation {
         }
     }
 
-    fn fixative(&self) -> Option<TissueFixative> {
+    fn fixative(&self) -> Option<Fixative> {
         match self {
             Self::Fixed { inner: _, fixative } => Some(*fixative),
             Self::Fresh { inner: _ }
@@ -76,6 +70,7 @@ impl TissueCreation {
         }
     }
 
+    #[must_use]
     pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
         let fixative = self.fixative();
         let thermal_preservation_method = self.thermal_preservation_method();
@@ -85,7 +80,7 @@ impl TissueCreation {
             SpecimenVariableFields {
                 type_: SpecimenType::Suspension,
                 embedded_in: None,
-                fixative: fixative.map(Fixative::Tissue),
+                fixative,
                 thermal_preservation_method,
             },
         )

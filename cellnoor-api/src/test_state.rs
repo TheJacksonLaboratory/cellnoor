@@ -17,9 +17,9 @@ use cellnoor_models::{
     multiplexing_tag::MultiplexingTag,
     person::{PersonCreation, PersonFields, PersonQuery, PersonSummary},
     specimen::{
-        BlockCreation, BlockFixative, Species, SpecimenCommonFields, SpecimenCreation,
-        SpecimenQuery, SpecimenSummary, SuspensionFixative, SuspensionSpecimenCreation,
-        ThermalPreservationMethod, TissueCreation, TissueFixative,
+        BlockCreation, BlockFixative, Fixative, Species, SpecimenCommonFields, SpecimenCreation,
+        SpecimenQuery, SpecimenSummary, SuspensionSpecimenCreation, SuspensionThermalPreservation,
+        ThermalPreservationMethod, TissueCreation,
     },
     suspension::{
         CellSuspensionCreation, SuspensionCreationCommonFields, SuspensionFields, SuspensionQuery,
@@ -255,19 +255,20 @@ impl TestState {
         } else if i.is_multiple_of(5) {
             SpecimenCreation::Suspension(SuspensionSpecimenCreation::Fixed {
                 inner,
-                fixative: SuspensionFixative::VARIANTS.choose_unwrap(),
+                fixative: Fixative::VARIANTS.choose_unwrap(),
             })
         } else if i.is_multiple_of(4) {
             SpecimenCreation::Suspension(SuspensionSpecimenCreation::ThermallyPreserved {
                 inner,
-                thermal_preservation_method: ThermalPreservationMethod::VARIANTS.choose_unwrap(),
+                thermal_preservation_method: SuspensionThermalPreservation::VARIANTS
+                    .choose_unwrap(),
             })
         } else if i.is_multiple_of(3) {
             SpecimenCreation::Tissue(TissueCreation::Fresh { inner })
         } else if i.is_multiple_of(2) {
             SpecimenCreation::Tissue(TissueCreation::Fixed {
                 inner,
-                fixative: TissueFixative::VARIANTS.choose_unwrap(),
+                fixative: Fixative::VARIANTS.choose_unwrap(),
             })
         } else {
             SpecimenCreation::Tissue(TissueCreation::ThermallyPreserved {
