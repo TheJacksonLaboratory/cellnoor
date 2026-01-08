@@ -74,6 +74,7 @@ impl EnumToSql for Fixative {}
 impl_enum_to_sql!(Fixative);
 
 #[simple_enum]
+#[derive(strum::VariantArray)]
 pub enum ThermalPreservationMethod {
     ControlledRateFreezing,
     FlashFreezing,

@@ -22,3 +22,5 @@ pub use query::{
     SpecimenIdSuspensions, SpecimenOrderBy,
 };
 pub use read::{Specimen, SpecimenSummary};
+#[cfg(feature = "builder")]
+pub use variable::ThermalPreservationMethod;

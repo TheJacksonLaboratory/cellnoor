@@ -51,11 +51,27 @@ impl EnumToSql for BlockEmbeddingMatrix {}
 impl_enum_to_sql!(BlockEmbeddingMatrix);
 
 impl BlockCreation {
-    pub fn inner(&self) -> &SpecimenCommonFields {
+    pub(super) fn common(&self) -> &SpecimenCommonFields {
         match self {
             Self::CarboxymethylCellulose { inner, .. }
             | Self::OptimalCuttingTemperatureCompound { inner, .. }
             | Self::Paraffin { inner, .. } => inner,
+        }
+    }
+
+    fn into_common(self) -> SpecimenCommonFields {
+        match self {
+            Self::CarboxymethylCellulose { inner, fixative: _ }
+            | Self::OptimalCuttingTemperatureCompound { inner, fixative: _ }
+            | Self::Paraffin { inner, fixative: _ } => inner,
+        }
+    }
+
+    fn fixative(&self) -> Option<BlockFixative> {
+        match self {
+            Self::CarboxymethylCellulose { inner: _, fixative }
+            | Self::OptimalCuttingTemperatureCompound { inner: _, fixative } => *fixative,
+            Self::Paraffin { inner: _, fixative } => Some(*fixative),
         }
     }
 
@@ -80,17 +96,12 @@ impl BlockCreation {
     }
 
     pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
+        let fixative = self.fixative();
         let embedded_in = Some(self.embedding_matrix());
         let thermal_preservation_method = self.thermal_preservation_method();
 
-        let (inner, fixative) = match self {
-            Self::CarboxymethylCellulose { inner, fixative }
-            | Self::OptimalCuttingTemperatureCompound { inner, fixative } => (inner, fixative),
-            Self::Paraffin { inner, fixative } => (inner, Some(fixative)),
-        };
-
         (
-            inner,
+            self.into_common(),
             SpecimenVariableFields {
                 type_: SpecimenType::Block,
                 embedded_in,

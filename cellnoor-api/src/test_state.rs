@@ -19,7 +19,7 @@ use cellnoor_models::{
     specimen::{
         BlockCreation, BlockFixative, Species, SpecimenCommonFields, SpecimenCreation,
         SpecimenQuery, SpecimenSummary, SuspensionFixative, SuspensionSpecimenCreation,
-        TissueCreation, TissueFixative,
+        ThermalPreservationMethod, TissueCreation, TissueFixative,
     },
     suspension::{
         SuspensionContent, SuspensionCreation, SuspensionFields, SuspensionQuery, SuspensionSummary,
@@ -250,25 +250,29 @@ impl TestState {
                 fixative: BlockFixative::VARIANTS.choose_unwrap(),
             })
         } else if i.is_multiple_of(6) {
-            SpecimenCreation::Suspension(SuspensionSpecimenCreation::ControlledRateFreezing {
-                inner,
-            })
+            SpecimenCreation::Suspension(SuspensionSpecimenCreation::Fresh { inner })
         } else if i.is_multiple_of(5) {
-            SpecimenCreation::Suspension(SuspensionSpecimenCreation::Fixation {
+            SpecimenCreation::Suspension(SuspensionSpecimenCreation::Fixed {
                 inner,
                 fixative: SuspensionFixative::VARIANTS.choose_unwrap(),
             })
         } else if i.is_multiple_of(4) {
-            SpecimenCreation::Suspension(SuspensionSpecimenCreation::FlashFreezing { inner })
+            SpecimenCreation::Suspension(SuspensionSpecimenCreation::ThermallyPreserved {
+                inner,
+                thermal_preservation_method: ThermalPreservationMethod::VARIANTS.choose_unwrap(),
+            })
         } else if i.is_multiple_of(3) {
-            SpecimenCreation::Tissue(TissueCreation::ControlledRateFreezing { inner })
+            SpecimenCreation::Tissue(TissueCreation::Fresh { inner })
         } else if i.is_multiple_of(2) {
-            SpecimenCreation::Tissue(TissueCreation::Fixation {
+            SpecimenCreation::Tissue(TissueCreation::Fixed {
                 inner,
                 fixative: TissueFixative::VARIANTS.choose_unwrap(),
             })
         } else {
-            SpecimenCreation::Tissue(TissueCreation::FlashFreezing { inner })
+            SpecimenCreation::Tissue(TissueCreation::ThermallyPreserved {
+                inner,
+                thermal_preservation_method: ThermalPreservationMethod::VARIANTS.choose_unwrap(),
+            })
         };
 
         db_conn

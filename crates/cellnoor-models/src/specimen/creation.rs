@@ -26,9 +26,9 @@ impl SpecimenCreation {
         use SpecimenCreation::{Block, Suspension, Tissue};
 
         match self {
-            Block(s) => s.inner(),
-            Suspension(s) => s.inner(),
-            Tissue(s) => s.inner(),
+            Block(s) => s.common(),
+            Suspension(s) => s.common(),
+            Tissue(s) => s.common(),
         }
     }
 
