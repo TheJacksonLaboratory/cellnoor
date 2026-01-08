@@ -36,6 +36,7 @@ impl SpecimenMeasurementFields {
 }
 
 #[json]
+#[serde(tag = "quantity")]
 pub enum SpecimenMeasurementData {
     #[serde(rename = "DV200")]
     Dv200 {
