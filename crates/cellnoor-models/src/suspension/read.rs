@@ -65,4 +65,9 @@ impl Suspension {
     pub fn parent_specimen_received_at(&self) -> Timestamp {
         self.parent_specimen.received_at()
     }
+
+    #[must_use]
+    pub fn content(&self) -> SuspensionContent {
+        self.summary.content
+    }
 }

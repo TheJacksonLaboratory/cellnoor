@@ -1,11 +1,18 @@
 use axum::{extract::State, http::StatusCode};
-use cellnoor_models::suspension::{Suspension, SuspensionContent, SuspensionCreation};
+use cellnoor_models::suspension::{
+    CellSuspensionCreation, Suspension, SuspensionContent, SuspensionId,
+};
+use cellnoor_schema::suspensions;
+use diesel::{PgConnection, prelude::*};
 
 use crate::{
     api::{
         extract::{ValidJson, auth::AuthenticatedUser},
-        routes::{ApiResponse, Root, inner_handler},
+        routes::{
+            ApiResponse, Root, inner_handler, suspensions::create::insert_suspension_preparers,
+        },
     },
+    db,
     state::AppState,
 };
 
@@ -13,8 +20,23 @@ pub(super) async fn create_cell_suspension(
     _: Root,
     state: State<AppState>,
     user: AuthenticatedUser,
-    ValidJson(request): ValidJson<SuspensionCreation>,
+    ValidJson(request): ValidJson<CellSuspensionCreation>,
 ) -> ApiResponse<Suspension> {
-    let item = inner_handler(state, user, (request, SuspensionContent::Cells)).await?;
+    let item = inner_handler(state, user, request).await?;
     Ok((StatusCode::CREATED, item))
+}
+
+impl db::Operation<Suspension> for CellSuspensionCreation {
+    fn execute(self, db_conn: &mut PgConnection) -> Result<Suspension, db::Error> {
+        let preparer_ids = self.common().preparer_ids().to_vec();
+
+        let suspension_id: SuspensionId = diesel::insert_into(suspensions::table)
+            .values((self, suspensions::content.eq(SuspensionContent::Cells)))
+            .returning(suspensions::id)
+            .get_result(db_conn)?;
+
+        insert_suspension_preparers(suspension_id, &preparer_ids, db_conn)?;
+
+        suspension_id.execute(db_conn)
+    }
 }

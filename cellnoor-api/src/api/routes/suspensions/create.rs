@@ -1,30 +1,11 @@
-use cellnoor_models::suspension::{
-    Suspension, SuspensionContent, SuspensionCreation, SuspensionId,
-};
-use cellnoor_schema::{suspension_preparers, suspensions};
+use cellnoor_models::suspension::SuspensionId;
+use cellnoor_schema::suspension_preparers;
 use diesel::prelude::*;
 use uuid::Uuid;
 
 use crate::db;
 
-impl db::Operation<Suspension> for (SuspensionCreation, SuspensionContent) {
-    fn execute(self, db_conn: &mut PgConnection) -> Result<Suspension, db::Error> {
-        let (suspension_creation, content) = self;
-
-        let preparer_ids = suspension_creation.preparer_ids().to_vec();
-
-        let suspension_id: SuspensionId = diesel::insert_into(suspensions::table)
-            .values((suspension_creation, suspensions::content.eq(content)))
-            .returning(suspensions::id)
-            .get_result(db_conn)?;
-
-        insert_suspension_preparers(suspension_id, &preparer_ids, db_conn)?;
-
-        suspension_id.execute(db_conn)
-    }
-}
-
-fn insert_suspension_preparers(
+pub(super) fn insert_suspension_preparers(
     suspension_id: SuspensionId,
     preparer_ids: &[Uuid],
     db_conn: &mut PgConnection,

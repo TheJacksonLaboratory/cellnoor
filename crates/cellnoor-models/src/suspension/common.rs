@@ -10,7 +10,7 @@ use uuid::Uuid;
 use crate::utils::{EnumFromSql, EnumToSql};
 
 #[simple_enum]
-#[derive(strum::VariantArray)]
+#[derive(strum::VariantArray, strum::Display)]
 pub enum SuspensionContent {
     Cells,
     Nuclei,

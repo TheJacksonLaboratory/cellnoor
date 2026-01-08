@@ -22,7 +22,8 @@ use cellnoor_models::{
         ThermalPreservationMethod, TissueCreation, TissueFixative,
     },
     suspension::{
-        SuspensionContent, SuspensionCreation, SuspensionFields, SuspensionQuery, SuspensionSummary,
+        CellSuspensionCreation, SuspensionCreationCommonFields, SuspensionFields, SuspensionQuery,
+        SuspensionSummary,
     },
     suspension_pool::{
         SuspensionPool, SuspensionPoolCreation, SuspensionPoolFields, SuspensionPoolQuery,
@@ -297,17 +298,20 @@ impl TestState {
     }
 
     async fn insert_random_suspension(&self, specimen_id: Uuid, preparer_id: Uuid) {
-        let new_suspension = SuspensionCreation::builder()
-            .inner(
-                SuspensionFields::builder()
-                    .readable_id(random_non_empty_string())
-                    .parent_specimen_id(specimen_id)
-                    .build(),
-            )
-            .target_cell_recovery(RangedU32::new(10_000).unwrap())
-            .preparer_ids(preparer_id)
-            .build();
-        let new_suspension = (new_suspension, SuspensionContent::VARIANTS.choose_unwrap());
+        let new_suspension = {
+            let common = SuspensionCreationCommonFields::builder()
+                .inner(
+                    SuspensionFields::builder()
+                        .readable_id(random_non_empty_string())
+                        .parent_specimen_id(specimen_id)
+                        .build(),
+                )
+                .target_cell_recovery(RangedU32::new(10_000).unwrap())
+                .preparer_ids(preparer_id)
+                .build();
+
+            CellSuspensionCreation::builder().common(common).build()
+        };
 
         let db_conn = self.root_db_conn().await;
 
