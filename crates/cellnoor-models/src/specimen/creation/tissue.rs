@@ -13,7 +13,7 @@ pub enum TissueFixative {
 
 #[base_model]
 #[derive(serde::Deserialize)]
-#[serde(untagged)]
+#[serde(rename_all = "snake_case", tag = "preservation_state")]
 pub enum TissueCreation {
     Fixed {
         #[serde(flatten)]
