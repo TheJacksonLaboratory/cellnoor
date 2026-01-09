@@ -29,6 +29,7 @@ pub enum Error {
     CreateLab(#[from] lab::Error),
     CreateSpecimen(#[from] specimen::Error),
     CreateSuspension(#[from] suspension::Error),
+    CreateSuspensionMeasurement(#[from] suspension::measurement::Error),
     CreateSuspensionPool(#[from] suspension_pool::Error),
     CreateCdna(#[from] cdna::Error),
     CreateLibrary(#[from] library::Error),

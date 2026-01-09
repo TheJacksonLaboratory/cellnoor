@@ -3,4 +3,4 @@ import type { LibraryType } from "./LibraryType";
 import type { Links } from "./Links";
 import type { SampleMultiplexing } from "./SampleMultiplexing";
 
-export type TenxAssay = { id: string, links: Links, name: string, library_types?: Array<LibraryType | null>, sample_multiplexing?: SampleMultiplexing, chemistry_version: string, protocol_url: string, chromium_chip?: string, cmdlines?: Array<string | null>, };
+export type TenxAssay = { id: string, links: Links, name: string, library_types?: Array<LibraryType>, sample_multiplexing?: SampleMultiplexing, chemistry_version: string, protocol_url: string, chromium_chip?: string, cmdlines?: Array<string>, };

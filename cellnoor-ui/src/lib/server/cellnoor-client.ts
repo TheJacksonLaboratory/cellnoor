@@ -1,4 +1,4 @@
-import type { Cookies, RequestEvent, ServerLoadEvent } from "@sveltejs/kit";
+import type { RequestEvent, ServerLoadEvent } from "@sveltejs/kit";
 import { readConfig } from "$lib/server/config";
 import type { ApiErrorResponse } from "cellnoor-types/ApiErrorResponse";
 

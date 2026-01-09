@@ -6,7 +6,7 @@
     feature = "diesel",
     derive(diesel::deserialize::FromSqlRow, diesel::expression::AsExpression)
 )]
-#[cfg_attr(feature = "diesel", diesel(sql_type = diesel::sql_types::Text))]
+#[cfg_attr(feature = "diesel", diesel(sql_type = diesel::sql_types::Text, sql_type = cellnoor_schema::sql_types::CaseInsensitiveText))]
 pub struct NonEmptyString(String);
 
 impl std::fmt::Debug for NonEmptyString {
@@ -91,13 +91,19 @@ mod diesel_impls {
         }
     }
 
+    impl FromSql<CaseInsensitiveText, Pg> for NonEmptyString {
+        fn from_sql(bytes: PgValue<'_>) -> diesel::deserialize::Result<Self> {
+            <String as FromSql<CaseInsensitiveText, Pg>>::from_sql(bytes).map(Self)
+        }
+    }
+
     impl ToSql<Text, Pg> for NonEmptyString {
         fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Pg>) -> diesel::serialize::Result {
             <String as ToSql<Text, Pg>>::to_sql(&self.0, out)
         }
     }
 
-    impl ToSql<Nullable<CaseInsensitiveText>, Pg> for NonEmptyString {
+    impl ToSql<CaseInsensitiveText, Pg> for NonEmptyString {
         fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Pg>) -> diesel::serialize::Result {
             <Self as ToSql<Nullable<Text>, Pg>>::to_sql(self, out)
         }

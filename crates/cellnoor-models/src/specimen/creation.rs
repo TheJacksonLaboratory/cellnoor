@@ -4,12 +4,7 @@ use macro_attributes::base_model;
 use crate::specimen::{
     common::{Species, SpecimenCommonFields},
     creation::{
-        block::{FixedBlockCreation, FrozenBlockCreation},
-        suspension::{
-            CryopreservedSuspensionCreation, FixedSuspensionCreation, FreshSuspensionCreation,
-            FrozenSuspensionCreation,
-        },
-        tissue::{CryopreservedTissueCreation, FixedTissueCreation, FrozenTissueCreation},
+        block::BlockCreation, suspension::SuspensionSpecimenCreation, tissue::TissueCreation,
     },
 };
 
@@ -21,34 +16,19 @@ pub mod tissue;
 #[derive(serde::Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum SpecimenCreation {
-    FixedBlock(FixedBlockCreation),
-    FrozenBlock(FrozenBlockCreation),
-    CryopreservedSuspension(CryopreservedSuspensionCreation),
-    FixedSuspension(FixedSuspensionCreation),
-    FreshSuspension(FreshSuspensionCreation),
-    FrozenSuspension(FrozenSuspensionCreation),
-    CryopreservedTissue(CryopreservedTissueCreation),
-    FixedTissue(FixedTissueCreation),
-    FrozenTissue(FrozenTissueCreation),
+    Block(BlockCreation),
+    Suspension(SuspensionSpecimenCreation),
+    Tissue(TissueCreation),
 }
 
 impl SpecimenCreation {
     fn inner(&self) -> &SpecimenCommonFields {
-        use SpecimenCreation::{
-            CryopreservedSuspension, CryopreservedTissue, FixedBlock, FixedSuspension, FixedTissue,
-            FreshSuspension, FrozenBlock, FrozenSuspension, FrozenTissue,
-        };
+        use SpecimenCreation::{Block, Suspension, Tissue};
 
         match self {
-            FixedBlock(s) => &s.inner,
-            FrozenBlock(s) => &s.inner,
-            CryopreservedSuspension(s) => &s.inner,
-            FixedSuspension(s) => &s.inner,
-            FreshSuspension(s) => &s.inner,
-            FrozenSuspension(s) => &s.inner,
-            CryopreservedTissue(s) => &s.inner,
-            FixedTissue(s) => &s.inner,
-            FrozenTissue(s) => &s.inner,
+            Block(s) => s.common(),
+            Suspension(s) => s.common(),
+            Tissue(s) => s.common(),
         }
     }
 

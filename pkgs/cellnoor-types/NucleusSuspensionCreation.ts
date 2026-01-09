@@ -5,4 +5,4 @@ import type { RangedF32 } from "./RangedF32";
 import type { RangedU32 } from "./RangedU32";
 import type { JsonValue } from "./serde_json/JsonValue";
 
-export type SuspensionCreation = { created_at?: string, target_cell_recovery: RangedU32, lysis_duration_minutes?: RangedF32, preparer_ids: NonEmptyVec<string>, readable_id: NonEmptyString, parent_specimen_id: string, additional_data?: JsonValue, };
+export type NucleusSuspensionCreation = { created_at?: string, lysis_duration_minutes: RangedF32, target_cell_recovery?: RangedU32, preparer_ids: NonEmptyVec<string>, readable_id: NonEmptyString, parent_specimen_id: string, additional_data?: JsonValue, };

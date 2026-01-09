@@ -14,7 +14,7 @@ create table suspensions (
     content case_insensitive_text not null,
     created_at timestamptz,
     lysis_duration_minutes real,
-    target_cell_recovery bigint not null,
+    target_cell_recovery bigint,
     additional_data jsonb
 );
 

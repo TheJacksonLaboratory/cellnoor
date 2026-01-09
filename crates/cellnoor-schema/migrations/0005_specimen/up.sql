@@ -15,12 +15,9 @@ create table specimens (
     type case_insensitive_text not null,
     embedded_in case_insensitive_text,
     fixative case_insensitive_text,
-    frozen bool not null default false,
-    cryopreserved bool not null default false,
+    thermal_preservation_method case_insensitive_text,
     tissue case_insensitive_text not null,
-    additional_data jsonb,
-
-    constraint not_both_frozen_and_cryopreserved check (not (cryopreserved and frozen))
+    additional_data jsonb
 );
 
 create table committee_approval (

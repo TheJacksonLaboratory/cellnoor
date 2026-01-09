@@ -2,11 +2,10 @@ use axum::{extract::State, http::StatusCode};
 use cellnoor_models::chromium_run::{GemPoolFilter, GemPoolQuery, GemPoolSummary};
 use cellnoor_schema::gem_pools;
 use diesel::prelude::*;
-use serde_qs::axum::QsQuery;
 
 use crate::{
     api::{
-        extract::auth::AuthenticatedUser,
+        extract::{auth::AuthenticatedUser, query::QsQuery},
         routes::{ApiResponse, Root, inner_handler},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter},

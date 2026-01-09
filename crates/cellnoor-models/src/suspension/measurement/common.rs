@@ -128,6 +128,18 @@ pub enum Cells {
 }
 
 #[cfg(feature = "app")]
+impl TryFrom<SuspensionContent> for Cells {
+    type Error = ();
+
+    fn try_from(value: SuspensionContent) -> Result<Self, Self::Error> {
+        match value {
+            SuspensionContent::Cells => Ok(Self::Cells),
+            SuspensionContent::Nuclei => Err(()),
+        }
+    }
+}
+
+#[cfg(feature = "app")]
 impl EnumFromSql for Cells {}
 impl_enum_from_sql!(Cells);
 
@@ -138,6 +150,18 @@ impl_enum_to_sql!(Cells);
 #[simple_enum]
 pub enum Nuclei {
     Nuclei,
+}
+
+#[cfg(feature = "app")]
+impl TryFrom<SuspensionContent> for Nuclei {
+    type Error = ();
+
+    fn try_from(value: SuspensionContent) -> Result<Self, Self::Error> {
+        match value {
+            SuspensionContent::Cells => Err(()),
+            SuspensionContent::Nuclei => Ok(Self::Nuclei),
+        }
+    }
 }
 
 #[cfg(feature = "app")]

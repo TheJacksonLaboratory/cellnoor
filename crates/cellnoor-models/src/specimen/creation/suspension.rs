@@ -1,118 +1,98 @@
 use macro_attributes::{base_model, simple_enum};
 
-use crate::specimen::common::{
-    Fixative, SpecimenCommonFields, SpecimenType, SpecimenVariableFields,
+use crate::specimen::{
+    common::SpecimenCommonFields,
+    variable::{Fixative, SpecimenType, SpecimenVariableFields, ThermalPreservationMethod},
 };
-
-const TYPE: SpecimenType = SpecimenType::Suspension;
-
-#[base_model]
-#[derive(serde::Deserialize)]
-#[cfg_attr(feature = "builder", derive(bon::Builder))]
-pub struct CryopreservedSuspensionCreation {
-    #[serde(flatten)]
-    pub(super) inner: SpecimenCommonFields,
-}
-
-impl CryopreservedSuspensionCreation {
-    #[must_use]
-    pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
-        let Self { inner } = self;
-
-        (
-            inner,
-            SpecimenVariableFields {
-                type_: TYPE,
-                embedded_in: None,
-                fixative: None,
-                frozen: false,
-                cryopreserved: true,
-            },
-        )
-    }
-}
-
-#[base_model]
-#[derive(serde::Deserialize)]
-#[cfg_attr(feature = "builder", derive(bon::Builder))]
-pub struct FixedSuspensionCreation {
-    #[serde(flatten)]
-    pub(super) inner: SpecimenCommonFields,
-    fixative: SuspensionFixative,
-}
-
-impl FixedSuspensionCreation {
-    #[must_use]
-    pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
-        let Self { inner, fixative } = self;
-
-        (
-            inner,
-            SpecimenVariableFields {
-                type_: TYPE,
-                embedded_in: None,
-                fixative: Some(Fixative::Suspension(fixative)),
-                frozen: false,
-                cryopreserved: false,
-            },
-        )
-    }
-}
-
-#[base_model]
-#[derive(serde::Deserialize)]
-#[cfg_attr(feature = "builder", derive(bon::Builder))]
-pub struct FreshSuspensionCreation {
-    #[serde(flatten)]
-    pub(super) inner: SpecimenCommonFields,
-}
-
-impl FreshSuspensionCreation {
-    #[must_use]
-    pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
-        let Self { inner } = self;
-
-        (
-            inner,
-            SpecimenVariableFields {
-                type_: TYPE,
-                embedded_in: None,
-                fixative: None,
-                frozen: false,
-                cryopreserved: false,
-            },
-        )
-    }
-}
 
 #[simple_enum]
 #[derive(strum::VariantArray)]
-pub enum SuspensionFixative {
-    DithiobisSuccinimidylpropionate,
-    FormaldehydeDerivative,
+pub enum SuspensionThermalPreservation {
+    ControlledRateFreezing,
+}
+
+impl From<SuspensionThermalPreservation> for ThermalPreservationMethod {
+    fn from(_: SuspensionThermalPreservation) -> Self {
+        Self::ControlledRateFreezing
+    }
 }
 
 #[base_model]
 #[derive(serde::Deserialize)]
-#[cfg_attr(feature = "builder", derive(bon::Builder))]
-pub struct FrozenSuspensionCreation {
-    #[serde(flatten)]
-    pub(super) inner: SpecimenCommonFields,
+#[serde(rename_all = "snake_case", tag = "preservation_state")]
+pub enum SuspensionSpecimenCreation {
+    Fixed {
+        #[serde(flatten)]
+        inner: SpecimenCommonFields,
+        fixative: Fixative,
+    },
+    Fresh {
+        #[serde(flatten)]
+        inner: SpecimenCommonFields,
+    },
+    ThermallyPreserved {
+        #[serde(flatten)]
+        inner: SpecimenCommonFields,
+        thermal_preservation_method: SuspensionThermalPreservation,
+    },
 }
 
-impl FrozenSuspensionCreation {
-    #[must_use]
+impl SuspensionSpecimenCreation {
+    pub(super) fn common(&self) -> &SpecimenCommonFields {
+        match self {
+            Self::Fixed { inner, fixative: _ }
+            | Self::Fresh { inner }
+            | Self::ThermallyPreserved {
+                inner,
+                thermal_preservation_method: _,
+            } => inner,
+        }
+    }
+
+    fn into_common(self) -> SpecimenCommonFields {
+        match self {
+            Self::Fixed { inner, fixative: _ }
+            | Self::Fresh { inner }
+            | Self::ThermallyPreserved {
+                inner,
+                thermal_preservation_method: _,
+            } => inner,
+        }
+    }
+
+    fn fixative(&self) -> Option<Fixative> {
+        match self {
+            Self::Fixed { inner: _, fixative } => Some(*fixative),
+            Self::Fresh { inner: _ }
+            | Self::ThermallyPreserved {
+                inner: _,
+                thermal_preservation_method: _,
+            } => None,
+        }
+    }
+
+    fn thermal_preservation_method(&self) -> Option<SuspensionThermalPreservation> {
+        match self {
+            Self::Fixed { .. } | Self::Fresh { .. } => None,
+            Self::ThermallyPreserved {
+                inner: _,
+                thermal_preservation_method,
+                ..
+            } => Some(*thermal_preservation_method),
+        }
+    }
+
     pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
-        let Self { inner } = self;
+        let fixative = self.fixative();
+        let thermal_preservation_method = self.thermal_preservation_method();
 
         (
-            inner,
+            self.into_common(),
             SpecimenVariableFields {
-                type_: TYPE,
+                type_: SpecimenType::Suspension,
                 embedded_in: None,
-                fixative: None,
-                frozen: true,
-                cryopreserved: false,
+                fixative,
+                thermal_preservation_method: thermal_preservation_method.map(Into::into),
             },
         )
     }

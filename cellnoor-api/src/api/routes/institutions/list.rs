@@ -2,11 +2,10 @@ use axum::{extract::State, http::StatusCode};
 use cellnoor_models::institution::{Institution, InstitutionFilter, InstitutionQuery};
 use cellnoor_schema::institutions::dsl::{id, name};
 use diesel::{SelectableExpression, prelude::*};
-use serde_qs::axum::QsQuery;
 
 use crate::{
     api::{
-        extract::auth::AuthenticatedUser,
+        extract::{auth::AuthenticatedUser, query::QsQuery},
         routes::{ApiResponse, Root, inner_handler},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, utils::like_any},

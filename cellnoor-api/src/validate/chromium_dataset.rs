@@ -104,7 +104,7 @@ fn fetch_validation_data(
     let results: Vec<(
         Uuid,
         jiff_diesel::NullableTimestamp,
-        Option<Vec<Option<ChromiumDatasetCmdline>>>,
+        Option<Vec<ChromiumDatasetCmdline>>,
     )> = libraries::table
         .inner_join(cdna_to_library_spec())
         .inner_join(sequencing_submissions::table.inner_join(sequencing_runs::table))
@@ -118,12 +118,6 @@ fn fetch_validation_data(
 
     Ok(results
         .into_iter()
-        .map(|(id, ts, cmdlines)| {
-            (
-                id,
-                ts.to_jiff(),
-                cmdlines.into_iter().flatten().flatten().collect(),
-            )
-        })
+        .map(|(id, ts, cmdlines)| (id, ts.to_jiff(), cmdlines.into_iter().flatten().collect()))
         .collect())
 }

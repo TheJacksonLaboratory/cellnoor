@@ -22,7 +22,7 @@ pub struct SuspensionSummary {
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::NullableTimestamp))]
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     created_at: Option<Timestamp>,
-    target_cell_recovery: i64,
+    target_cell_recovery: Option<i64>,
     lysis_duration_minutes: Option<f32>,
     content: SuspensionContent,
     links: Links,
@@ -64,5 +64,10 @@ impl Suspension {
     #[must_use]
     pub fn parent_specimen_received_at(&self) -> Timestamp {
         self.parent_specimen.received_at()
+    }
+
+    #[must_use]
+    pub fn content(&self) -> SuspensionContent {
+        self.summary.content
     }
 }

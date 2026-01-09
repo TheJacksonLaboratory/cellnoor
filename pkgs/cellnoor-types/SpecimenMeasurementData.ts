@@ -2,4 +2,4 @@
 import type { NonEmptyString } from "./NonEmptyString";
 import type { RangedF32 } from "./RangedF32";
 
-export type SpecimenMeasurementData = { "DV200": { instrument_name?: NonEmptyString, value: RangedF32, } } | { "RIN": { instrument_name?: NonEmptyString, value: RangedF32, } };
+export type SpecimenMeasurementData = { "quantity": "DV200", instrument_name?: NonEmptyString, value: RangedF32, } | { "quantity": "RIN", instrument_name?: NonEmptyString, value: RangedF32, };

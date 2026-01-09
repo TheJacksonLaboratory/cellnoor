@@ -18,7 +18,8 @@ use cellnoor_models::{
         measurement::{SpecimenMeasurement, SpecimenMeasurementCreation},
     },
     suspension::{
-        Suspension, SuspensionCreation, SuspensionFilter, SuspensionOrderBy, SuspensionSummary,
+        CellSuspensionCreation, NucleusSuspensionCreation, Suspension, SuspensionFilter,
+        SuspensionOrderBy, SuspensionSummary,
         measurement::{
             CellSuspensionMeasurementCreation, NucleusSuspensionMeasurementCreation,
             SuspensionMeasurement,
@@ -115,7 +116,8 @@ fn main() {
     SequencingRunCreation::export_all_to(&output_dir).unwrap();
     SequencingRun::export_all_to(&output_dir).unwrap();
 
-    SuspensionCreation::export_all_to(&output_dir).unwrap();
+    CellSuspensionCreation::export_all_to(&output_dir).unwrap();
+    NucleusSuspensionCreation::export_all_to(&output_dir).unwrap();
     SuspensionQuery::export_all_to(&output_dir).unwrap();
     SuspensionSummary::export_all_to(&output_dir).unwrap();
     Suspension::export_all_to(&output_dir).unwrap();

@@ -3,11 +3,10 @@ use cellnoor_models::specimen::{SpecimenFilter, SpecimenQuery, SpecimenSummary};
 use cellnoor_schema::specimens as t;
 use diesel::{dsl::AssumeNotNull, prelude::*};
 use jiff_diesel::ToDiesel;
-use serde_qs::axum::QsQuery;
 
 use crate::{
     api::{
-        extract::auth::AuthenticatedUser,
+        extract::{auth::AuthenticatedUser, query::QsQuery},
         routes::{ApiResponse, Root, inner_handler},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, utils::like_any},
@@ -65,8 +64,7 @@ where
     AssumeNotNull<t::tissue>: SelectableExpression<QS>,
     AssumeNotNull<t::embedded_in>: SelectableExpression<QS>,
     AssumeNotNull<t::fixative>: SelectableExpression<QS>,
-    AssumeNotNull<t::frozen>: SelectableExpression<QS>,
-    AssumeNotNull<t::cryopreserved>: SelectableExpression<QS>,
+    AssumeNotNull<t::thermal_preservation_method>: SelectableExpression<QS>,
     AssumeNotNull<t::returned_by>: SelectableExpression<QS>,
     AssumeNotNull<t::returned_at>: SelectableExpression<QS>,
     AssumeNotNull<t::additional_data>: SelectableExpression<QS>,
@@ -86,8 +84,8 @@ where
             types,
             embedded_in,
             fixatives,
-            frozen,
-            cryopreserved,
+            fresh,
+            thermal_preservation_methods,
             tissues,
             returned_before,
             returned_after,
@@ -141,12 +139,27 @@ where
             filter = filter.and_condition(t::fixative.assume_not_null().eq_any(fixatives));
         }
 
-        if let Some(is_frozen) = frozen {
-            filter = filter.and_condition(t::frozen.assume_not_null().eq(is_frozen));
+        if let Some(thermal_preservation_methods) = thermal_preservation_methods {
+            filter = filter.and_condition(
+                t::thermal_preservation_method
+                    .assume_not_null()
+                    .eq_any(thermal_preservation_methods),
+            );
         }
 
-        if let Some(is_cryopreserved) = cryopreserved {
-            filter = filter.and_condition(t::cryopreserved.assume_not_null().eq(is_cryopreserved));
+        // There are some calls to `assume_not_null` to satisfy the type-system. This
+        // has no impact on the generated SQL.
+        if let Some(true) = fresh {
+            filter = filter
+                .and_condition(t::thermal_preservation_method.assume_not_null().is_null())
+                .and_condition(t::fixative.assume_not_null().is_null());
+        } else if let Some(false) = fresh {
+            filter = filter.and_condition(
+                t::thermal_preservation_method
+                    .assume_not_null()
+                    .is_not_null()
+                    .or(t::fixative.assume_not_null().is_not_null()),
+            );
         }
 
         if let Some(tissues) = tissues {

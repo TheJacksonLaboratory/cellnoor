@@ -17,13 +17,13 @@ use cellnoor_models::{
     multiplexing_tag::MultiplexingTag,
     person::{PersonCreation, PersonFields, PersonQuery, PersonSummary},
     specimen::{
-        BlockFixative, CryopreservedSuspensionCreation, CryopreservedTissueCreation,
-        FixedBlockCreation, FixedBlockEmbeddingMatrix, FixedTissueCreation, FrozenBlockCreation,
-        FrozenBlockEmbeddingMatrix, FrozenSuspensionCreation, FrozenTissueCreation, Species,
-        SpecimenCommonFields, SpecimenCreation, SpecimenQuery, SpecimenSummary, TissueFixative,
+        BlockCreation, BlockFixative, Fixative, Species, SpecimenCommonFields, SpecimenCreation,
+        SpecimenQuery, SpecimenSummary, SuspensionSpecimenCreation, SuspensionThermalPreservation,
+        ThermalPreservationMethod, TissueCreation,
     },
     suspension::{
-        SuspensionContent, SuspensionCreation, SuspensionFields, SuspensionQuery, SuspensionSummary,
+        CellSuspensionCreation, SuspensionCreationCommonFields, SuspensionFields, SuspensionQuery,
+        SuspensionSummary,
     },
     suspension_pool::{
         SuspensionPool, SuspensionPoolCreation, SuspensionPoolFields, SuspensionPoolQuery,
@@ -235,47 +235,46 @@ impl TestState {
             .additional_data(serde_json::json!({"krabby_patty_formular": "secret"}))
             .build();
 
-        let new_specimen = if i.is_multiple_of(7) {
-            let s = CryopreservedSuspensionCreation::builder()
-                .inner(inner)
-                .build();
-
-            SpecimenCreation::CryopreservedSuspension(s)
+        let new_specimen = if i.is_multiple_of(9) {
+            SpecimenCreation::Block(BlockCreation::CarboxymethylCellulose {
+                inner,
+                fixative: None,
+            })
+        } else if i.is_multiple_of(8) {
+            SpecimenCreation::Block(BlockCreation::OptimalCuttingTemperatureCompound {
+                inner,
+                fixative: None,
+            })
+        } else if i.is_multiple_of(7) {
+            SpecimenCreation::Block(BlockCreation::Paraffin {
+                inner,
+                fixative: BlockFixative::VARIANTS.choose_unwrap(),
+            })
         } else if i.is_multiple_of(6) {
-            let s = FrozenSuspensionCreation::builder().inner(inner).build();
-
-            SpecimenCreation::FrozenSuspension(s)
+            SpecimenCreation::Suspension(SuspensionSpecimenCreation::Fresh { inner })
         } else if i.is_multiple_of(5) {
-            let s = CryopreservedTissueCreation::builder().inner(inner).build();
-
-            SpecimenCreation::CryopreservedTissue(s)
+            SpecimenCreation::Suspension(SuspensionSpecimenCreation::Fixed {
+                inner,
+                fixative: Fixative::VARIANTS.choose_unwrap(),
+            })
         } else if i.is_multiple_of(4) {
-            let s = FixedTissueCreation::builder()
-                .inner(inner)
-                .fixative(TissueFixative::VARIANTS.choose_unwrap())
-                .build();
-
-            SpecimenCreation::FixedTissue(s)
+            SpecimenCreation::Suspension(SuspensionSpecimenCreation::ThermallyPreserved {
+                inner,
+                thermal_preservation_method: SuspensionThermalPreservation::VARIANTS
+                    .choose_unwrap(),
+            })
         } else if i.is_multiple_of(3) {
-            let s = FrozenTissueCreation::builder().inner(inner).build();
-
-            SpecimenCreation::FrozenTissue(s)
+            SpecimenCreation::Tissue(TissueCreation::Fresh { inner })
         } else if i.is_multiple_of(2) {
-            let s = FixedBlockCreation::builder()
-                .inner(inner)
-                .fixative(BlockFixative::VARIANTS.choose_unwrap())
-                .embedded_in(FixedBlockEmbeddingMatrix::VARIANTS.choose_unwrap())
-                .build();
-
-            SpecimenCreation::FixedBlock(s)
+            SpecimenCreation::Tissue(TissueCreation::Fixed {
+                inner,
+                fixative: Fixative::VARIANTS.choose_unwrap(),
+            })
         } else {
-            let s = FrozenBlockCreation::builder()
-                .inner(inner)
-                .embedded_in(FrozenBlockEmbeddingMatrix::VARIANTS.choose_unwrap())
-                .fixative(BlockFixative::VARIANTS.choose_unwrap())
-                .build();
-
-            SpecimenCreation::FrozenBlock(s)
+            SpecimenCreation::Tissue(TissueCreation::ThermallyPreserved {
+                inner,
+                thermal_preservation_method: ThermalPreservationMethod::VARIANTS.choose_unwrap(),
+            })
         };
 
         db_conn
@@ -300,17 +299,20 @@ impl TestState {
     }
 
     async fn insert_random_suspension(&self, specimen_id: Uuid, preparer_id: Uuid) {
-        let new_suspension = SuspensionCreation::builder()
-            .inner(
-                SuspensionFields::builder()
-                    .readable_id(random_non_empty_string())
-                    .parent_specimen_id(specimen_id)
-                    .build(),
-            )
-            .target_cell_recovery(RangedU32::new(10_000).unwrap())
-            .preparer_ids(preparer_id)
-            .build();
-        let new_suspension = (new_suspension, SuspensionContent::VARIANTS.choose_unwrap());
+        let new_suspension = {
+            let common = SuspensionCreationCommonFields::builder()
+                .inner(
+                    SuspensionFields::builder()
+                        .readable_id(random_non_empty_string())
+                        .parent_specimen_id(specimen_id)
+                        .build(),
+                )
+                .target_cell_recovery(RangedU32::new(10_000).unwrap())
+                .preparer_ids(preparer_id)
+                .build();
+
+            CellSuspensionCreation::builder().common(common).build()
+        };
 
         let db_conn = self.root_db_conn().await;
 

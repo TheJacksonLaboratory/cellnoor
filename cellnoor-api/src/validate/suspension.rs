@@ -1,4 +1,9 @@
-use cellnoor_models::{specimen::SpecimenId, suspension::SuspensionCreation};
+use cellnoor_models::{
+    specimen::SpecimenId,
+    suspension::{
+        CellSuspensionCreation, NucleusSuspensionCreation, SuspensionCreationCommonFields,
+    },
+};
 use diesel::PgConnection;
 use jiff::Timestamp;
 
@@ -23,18 +28,36 @@ pub enum Error {
     },
 }
 
-impl Validate for SuspensionCreation {
+impl Validate for CellSuspensionCreation {
     fn validate(&self, db_conn: &mut diesel::PgConnection) -> Result<(), super::Error> {
-        if let Some(created_at) = self.created_at() {
-            validate_specimen_received_before_suspension_created(
-                self.parent_specimen_id(),
-                created_at,
-                db_conn,
-            )?;
-        }
+        validate_suspension_creation(self.common(), self.created_at(), db_conn)?;
 
         Ok(())
     }
+}
+
+impl Validate for NucleusSuspensionCreation {
+    fn validate(&self, db_conn: &mut diesel::PgConnection) -> Result<(), super::Error> {
+        validate_suspension_creation(self.common(), self.created_at(), db_conn)?;
+
+        Ok(())
+    }
+}
+
+fn validate_suspension_creation(
+    common_fields: &SuspensionCreationCommonFields,
+    created_at: Option<Timestamp>,
+    db_conn: &mut PgConnection,
+) -> Result<(), super::Error> {
+    if let Some(created_at) = created_at {
+        validate_specimen_received_before_suspension_created(
+            common_fields.parent_specimen_id(),
+            created_at,
+            db_conn,
+        )?;
+    }
+
+    Ok(())
 }
 
 fn validate_specimen_received_before_suspension_created(

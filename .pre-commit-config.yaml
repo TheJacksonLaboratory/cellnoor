@@ -17,9 +17,7 @@ repos:
     rev: 3.5.0
     hooks:
       - id: sqlfluff-lint
-        exclude: ^db/migrations/00000000000000_diesel_initial_setup/down\.sql|migrations/0009_library-type-specification/up\.sql$
       - id: sqlfluff-fix
-        exclude: ^db/migrations/00000000000000_diesel_initial_setup/down\.sql|migrations/0009_library-type-specification/up\.sql$
 
   - repo: https://github.com/ComPWA/taplo-pre-commit
     rev: v0.9.3
