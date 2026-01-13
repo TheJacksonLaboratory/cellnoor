@@ -7,15 +7,6 @@ pub mod sql_types {
 }
 
 diesel::table! {
-    api_keys (prefix, hash) {
-        prefix -> Bytea,
-        created_at -> Timestamptz,
-        hash -> Text,
-        user_id -> Uuid,
-    }
-}
-
-diesel::table! {
     cdna (id) {
         id -> Uuid,
         readable_id -> Text,
@@ -254,6 +245,14 @@ diesel::table! {
 }
 
 diesel::table! {
+    service_accounts (id) {
+        id -> Uuid,
+        created_by -> Uuid,
+        created_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
     use diesel::sql_types::*;
     use super::sql_types::CaseInsensitiveText;
 
@@ -261,7 +260,7 @@ diesel::table! {
         name -> Text,
         kit -> Text,
         well -> Text,
-        sequences -> Array<CaseInsensitiveText>,
+        sequences -> Array<Nullable<CaseInsensitiveText>>,
     }
 }
 
@@ -373,16 +372,15 @@ diesel::table! {
         id -> Uuid,
         links -> Jsonb,
         name -> Text,
-        library_types -> Nullable<Array<CaseInsensitiveText>>,
+        library_types -> Nullable<Array<Nullable<CaseInsensitiveText>>>,
         sample_multiplexing -> Nullable<Text>,
         chemistry_version -> Text,
         protocol_url -> Text,
         chromium_chip -> Nullable<Text>,
-        cmdlines -> Nullable<Array<CaseInsensitiveText>>,
+        cmdlines -> Nullable<Array<Nullable<CaseInsensitiveText>>>,
     }
 }
 
-diesel::joinable!(api_keys -> people (user_id));
 diesel::joinable!(cdna -> gem_pools (gem_pool_id));
 diesel::joinable!(cdna_measurements -> cdna (cdna_id));
 diesel::joinable!(cdna_measurements -> people (measured_by));
@@ -417,6 +415,7 @@ diesel::joinable!(library_type_specifications -> tenx_assays (assay_id));
 diesel::joinable!(people -> institutions (institution_id));
 diesel::joinable!(sequencing_submissions -> libraries (library_id));
 diesel::joinable!(sequencing_submissions -> sequencing_runs (sequencing_run_id));
+diesel::joinable!(service_accounts -> people (created_by));
 diesel::joinable!(single_index_sets -> index_kits (kit));
 diesel::joinable!(specimen_measurements -> people (measured_by));
 diesel::joinable!(specimen_measurements -> specimens (specimen_id));
@@ -435,7 +434,6 @@ diesel::joinable!(suspension_tagging -> suspensions (suspension_id));
 diesel::joinable!(suspensions -> specimens (parent_specimen_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
-    api_keys,
     cdna,
     cdna_measurements,
     cdna_preparers,
@@ -460,6 +458,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     people,
     sequencing_runs,
     sequencing_submissions,
+    service_accounts,
     single_index_sets,
     specimen_measurements,
     specimens,

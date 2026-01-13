@@ -1,4 +1,4 @@
 [print_schema]
 custom_type_derives = ["std::fmt::Debug"]
 file = "src/schema.rs"
-patch_file = "src/schema.patch"
+# patch_file = "src/schema.patch"
