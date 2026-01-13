@@ -9,7 +9,7 @@ use diesel::prelude::*;
 use crate::{
     api::{
         extract::auth::AuthenticatedUser,
-        routes::{ApiResponse, inner_handler},
+        routes::{ApiResponse, handle_request},
     },
     db,
     state::AppState,
@@ -20,7 +20,7 @@ pub(super) async fn fetch_chromium_dataset(
     state: State<AppState>,
     user: AuthenticatedUser,
 ) -> ApiResponse<ChromiumDataset> {
-    let item = inner_handler(state, user, request).await?;
+    let item = handle_request(state, user, request).await?;
     Ok((StatusCode::OK, item))
 }
 

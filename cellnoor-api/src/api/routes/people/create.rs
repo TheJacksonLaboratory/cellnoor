@@ -8,7 +8,7 @@ use diesel::{
 };
 use uuid::Uuid;
 
-use super::{ApiResponse, Root, inner_handler};
+use super::{ApiResponse, Root, handle_request};
 use crate::{
     api::extract::{ValidJson, auth::AuthenticatedUser},
     db,
@@ -21,7 +21,7 @@ pub(super) async fn create_person(
     user: AuthenticatedUser,
     ValidJson(request): ValidJson<PersonCreation>,
 ) -> ApiResponse<Person> {
-    let item = inner_handler(state, user, request).await?;
+    let item = handle_request(state, user, request).await?;
     Ok((StatusCode::CREATED, item))
 }
 

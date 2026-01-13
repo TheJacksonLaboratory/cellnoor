@@ -6,7 +6,7 @@ use diesel::{PgConnection, prelude::*};
 use crate::{
     api::{
         extract::auth::AuthenticatedUser,
-        routes::{ApiResponse, inner_handler},
+        routes::{ApiResponse, handle_request},
     },
     db::{self},
     state::AppState,
@@ -17,7 +17,7 @@ pub(super) async fn fetch_institution(
     state: State<AppState>,
     user: AuthenticatedUser,
 ) -> ApiResponse<Institution> {
-    let item = inner_handler(state, user, request).await?;
+    let item = handle_request(state, user, request).await?;
     Ok((StatusCode::OK, item))
 }
 

@@ -19,10 +19,8 @@ create table people (
     microsoft_entra_oid uuid unique
 );
 
-create table api_keys (
-    prefix bytea unique not null,
-    created_at timestamptz not null default current_timestamp,
-    hash text unique not null,
-    user_id uuid references people on delete cascade on update cascade not null,
-    primary key (prefix, hash)
+create table service_accounts(
+    id uuid primary key default uuidv7(),
+    created_by uuid references people on delete cascade on update cascade not null,
+    created_at timestamptz not null default current_timestamp
 );

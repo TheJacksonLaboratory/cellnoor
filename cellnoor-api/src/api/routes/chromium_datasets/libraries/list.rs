@@ -6,7 +6,7 @@ use diesel::prelude::*;
 use crate::{
     api::{
         extract::auth::AuthenticatedUser,
-        routes::{ApiResponse, inner_handler},
+        routes::{ApiResponse, handle_request},
     },
     db,
     state::AppState,
@@ -19,7 +19,7 @@ pub async fn list_libraries(
 ) -> ApiResponse<Vec<LibrarySummary>> {
     Ok((
         StatusCode::OK,
-        inner_handler(state, user, dataset_id).await?,
+        handle_request(state, user, dataset_id).await?,
     ))
 }
 

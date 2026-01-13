@@ -6,7 +6,7 @@ use diesel::prelude::*;
 use crate::{
     api::{
         extract::auth::AuthenticatedUser,
-        routes::{ApiResponse, Root, inner_handler},
+        routes::{ApiResponse, Root, handle_request},
     },
     db,
     state::AppState,
@@ -17,7 +17,7 @@ pub(super) async fn list_multiplexing_tags(
     state: State<AppState>,
     user: AuthenticatedUser,
 ) -> ApiResponse<Vec<MultiplexingTag>> {
-    let items = inner_handler(state, user, ()).await?;
+    let items = handle_request(state, user, ()).await?;
     Ok((StatusCode::OK, items))
 }
 

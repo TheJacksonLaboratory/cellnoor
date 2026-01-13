@@ -6,7 +6,7 @@ use diesel::{dsl::AssumeNotNull, prelude::*};
 use crate::{
     api::{
         extract::{auth::AuthenticatedUser, query::QsQuery},
-        routes::{ApiResponse, Root, inner_handler},
+        routes::{ApiResponse, Root, handle_request},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, utils::like_any},
     state::AppState,
@@ -18,7 +18,7 @@ pub async fn list_tenx_assays(
     user: AuthenticatedUser,
     QsQuery(request): QsQuery<TenxAssayQuery>,
 ) -> ApiResponse<Vec<TenxAssay>> {
-    Ok((StatusCode::OK, inner_handler(state, user, request).await?))
+    Ok((StatusCode::OK, handle_request(state, user, request).await?))
 }
 
 impl db::Operation<Vec<TenxAssay>> for TenxAssayQuery {

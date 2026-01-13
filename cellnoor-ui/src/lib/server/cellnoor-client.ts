@@ -50,10 +50,7 @@ export class ApiClient {
 
   async get(
     event: ServerLoadEvent | RequestEvent,
-    requestData: RequestInit = {
-      method: "GET",
-      headers: { "X-API-Key": event.locals.apiKey },
-    },
+    requestData: RequestInit = {method: "GET"},
     { endpoint, queryString }: {
       endpoint: string;
       queryString: string;
@@ -73,7 +70,7 @@ export class ApiClient {
     event: ServerLoadEvent | RequestEvent,
     requestData: RequestInit = {
       method: "GET",
-      headers: { accept: "application/json", "X-API-Key": event.locals.apiKey },
+      headers: { accept: "application/json" },
     },
     { endpoint, queryString }: {
       endpoint: string;

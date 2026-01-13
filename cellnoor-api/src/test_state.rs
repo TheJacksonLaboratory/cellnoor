@@ -79,12 +79,13 @@ impl TestState {
     async fn new() -> Self {
         let config = Config::read()
             .expect("test configuration should be readable from environment variables");
+        let db_root_url = config.db_root_url();
 
         Self {
-            _inner: AppState::initialize(&config)
+            _inner: AppState::initialize(config)
                 .await
                 .expect("should be able to initialize app state"),
-            root_db_pool: create_test_db_pool(&config.db_root_url()).unwrap(),
+            root_db_pool: create_test_db_pool(&db_root_url).unwrap(),
         }
     }
 

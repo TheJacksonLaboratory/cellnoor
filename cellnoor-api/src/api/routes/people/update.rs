@@ -9,7 +9,7 @@ use diesel::{
 use crate::{
     api::{
         extract::{ValidJson, auth::AuthenticatedUser},
-        routes::{ApiResponse, inner_handler},
+        routes::{ApiResponse, handle_request},
     },
     db,
     state::AppState,
@@ -21,7 +21,7 @@ pub(super) async fn update_person(
     user: AuthenticatedUser,
     ValidJson(request): ValidJson<PersonUpdate>,
 ) -> ApiResponse<Person> {
-    let item = inner_handler(state, user, (id, request)).await?;
+    let item = handle_request(state, user, (id, request)).await?;
     Ok((StatusCode::OK, item))
 }
 

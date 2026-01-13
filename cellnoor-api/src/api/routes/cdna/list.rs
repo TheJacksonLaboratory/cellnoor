@@ -6,7 +6,7 @@ use diesel::{SelectableExpression, prelude::*};
 use crate::{
     api::{
         extract::{auth::AuthenticatedUser, query::QsQuery},
-        routes::{ApiResponse, Root, inner_handler},
+        routes::{ApiResponse, Root, handle_request},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter},
     state::AppState,
@@ -19,7 +19,7 @@ pub(super) async fn list_cdna(
     user: AuthenticatedUser,
     QsQuery(request): QsQuery<CdnaQuery>,
 ) -> ApiResponse<Vec<CdnaSummary>> {
-    let items = inner_handler(state, user, request).await?;
+    let items = handle_request(state, user, request).await?;
     Ok((StatusCode::OK, items))
 }
 

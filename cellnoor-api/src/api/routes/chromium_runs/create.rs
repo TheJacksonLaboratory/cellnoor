@@ -10,7 +10,7 @@ use uuid::Uuid;
 use crate::{
     api::{
         extract::{ValidJson, auth::AuthenticatedUser},
-        routes::{ApiResponse, Root, inner_handler},
+        routes::{ApiResponse, Root, handle_request},
     },
     db::{self, Operation},
     state::AppState,
@@ -22,7 +22,7 @@ pub(super) async fn create_chromium_run(
     user: AuthenticatedUser,
     ValidJson(request): ValidJson<ChromiumRunCreation>,
 ) -> ApiResponse<ChromiumRun> {
-    let item = inner_handler(state, user, request).await?;
+    let item = handle_request(state, user, request).await?;
     Ok((StatusCode::CREATED, item))
 }
 

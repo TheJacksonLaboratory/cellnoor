@@ -3,7 +3,7 @@ use cellnoor_models::person::{Person, PersonId, PersonSummaryWithParents};
 use cellnoor_schema::people::dsl::id;
 use diesel::{PgConnection, prelude::*, sql_types::Text};
 
-use super::{ApiResponse, inner_handler};
+use super::{ApiResponse, handle_request};
 use crate::{api::extract::auth::AuthenticatedUser, db, state::AppState};
 
 pub(super) async fn fetch_person(
@@ -11,7 +11,7 @@ pub(super) async fn fetch_person(
     state: State<AppState>,
     user: AuthenticatedUser,
 ) -> ApiResponse<Person> {
-    let item = inner_handler(state, user, request).await?;
+    let item = handle_request(state, user, request).await?;
     Ok((StatusCode::OK, item))
 }
 

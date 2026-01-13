@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::{
     api::{
         extract::{ValidPathJson, auth::AuthenticatedUser},
-        routes::{ApiResponse, inner_handler},
+        routes::{ApiResponse, handle_request},
     },
     db,
     state::AppState,
@@ -23,7 +23,7 @@ pub async fn add_libraries_to_sequencing_run(
 ) -> ApiResponse<()> {
     Ok((
         StatusCode::OK,
-        inner_handler(state, user, (sequencing_run_id, library_ids)).await?,
+        handle_request(state, user, (sequencing_run_id, library_ids)).await?,
     ))
 }
 

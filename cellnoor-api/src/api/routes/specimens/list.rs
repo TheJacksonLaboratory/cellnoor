@@ -7,7 +7,7 @@ use jiff_diesel::ToDiesel;
 use crate::{
     api::{
         extract::{auth::AuthenticatedUser, query::QsQuery},
-        routes::{ApiResponse, Root, inner_handler},
+        routes::{ApiResponse, Root, handle_request},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, utils::like_any},
     state::AppState,
@@ -19,7 +19,7 @@ pub(super) async fn list_specimens(
     user: AuthenticatedUser,
     QsQuery(request): QsQuery<SpecimenQuery>,
 ) -> ApiResponse<Vec<SpecimenSummary>> {
-    let item = inner_handler(state, user, request).await?;
+    let item = handle_request(state, user, request).await?;
     Ok((StatusCode::OK, item))
 }
 

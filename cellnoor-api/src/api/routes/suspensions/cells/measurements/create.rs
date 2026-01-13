@@ -8,7 +8,7 @@ use diesel::prelude::*;
 use crate::{
     api::{
         extract::{ValidPathJson, auth::AuthenticatedUser},
-        routes::{ApiResponse, inner_handler},
+        routes::{ApiResponse, handle_request},
     },
     db,
     state::AppState,
@@ -22,7 +22,7 @@ pub async fn create_cell_suspension_measurement(
         CellSuspensionMeasurementCreation,
     >,
 ) -> ApiResponse<SuspensionMeasurement> {
-    let item = inner_handler(state, user, (suspension_id, measurement)).await?;
+    let item = handle_request(state, user, (suspension_id, measurement)).await?;
     Ok((StatusCode::CREATED, item))
 }
 

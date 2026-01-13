@@ -46,7 +46,7 @@ type ApiResponse<T> = Result<(StatusCode, Json<T>), super::error::ErrorResponse>
 #[typed_path("/")]
 struct Root;
 
-async fn inner_handler<Request, Response>(
+async fn handle_request<Request, Response>(
     State(state): State<AppState>,
     user: AuthenticatedUser,
     request: Request,

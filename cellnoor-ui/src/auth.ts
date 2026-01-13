@@ -4,37 +4,17 @@ import { getRequestEvent } from "$app/server";
 import { createAuthMiddleware } from "better-auth/api";
 import { readConfig, readSecrets } from "$lib/server/config";
 import { getDbClient } from "$lib/server/db-client";
-import {
-  API_KEY_ENCRYPTION_SECRET,
-  AUTH_SECRET,
-} from "$lib/server/auth/crypto";
 import type { MicrosoftEntraIDProfile } from "better-auth/social-providers";
-import { CookieNames } from "$lib/server/auth/cookies";
 import {
-  deleteApiKeyFromDb as deleteApiKeyfromDb,
-  insertApiKeyIntoDb as insertApiKeyIntoDb,
+
   upsertPersonIntoDb as upsertPersonIntoDb,
 } from "$lib/server/auth/db";
-import { EncryptedApiKey } from "$lib/server/auth/api-key";
-
-const ONE_YEAR = 60 * 60 * 24 * 365;
-
-const COOKIE_NAMES = [
-  CookieNames.encryptedApiKey,
-  CookieNames.apiKeyInitializationVector,
-];
-
-const COOKIE_OPTIONS = {
-  secure: true,
-  httpOnly: true,
-  path: "/",
-};
 
 let microsoftEntraProfiles: Record<string, MicrosoftEntraIDProfile> = {};
 
 export const auth = betterAuth({
   baseURL: (await readConfig()).publicUrl,
-  secret: AUTH_SECRET,
+  secret: (await readSecrets()).authSecret,
   socialProviders: {
     microsoft: {
       clientId: (await readSecrets()).microsoft_entra_client_id,
@@ -52,44 +32,13 @@ export const auth = betterAuth({
   },
   session: {
     cookieCache: {
-      enabled: true,
-      strategy: "jwe",
-      refreshCache: true,
-      maxAge: ONE_YEAR,
+      strategy: "jwt",
     },
   },
   plugins: [sveltekitCookies(getRequestEvent)],
   hooks: {
     after: createAuthMiddleware(async (ctx) => {
-      // Small helper function that returns the deleted cookie
-      const deleteCookie = (cookieName: string) => {
-        const cookie = ctx.getCookie(cookieName);
-        ctx.setCookie(cookieName, "", { maxAge: 0 });
-
-        return cookie;
-      };
-
-      const appConfig = await readConfig();
       const dbClient = await getDbClient();
-
-      const user_is_signing_out = ctx.path.includes("sign-out");
-
-      // If the user is signing out, erase cookies and delete the API key from the database. Note this check is necessarily performed before checking `newSession`
-      if (user_is_signing_out) {
-        const [encryptedApiKey, initializationVector] = COOKIE_NAMES.map(
-          deleteCookie,
-        );
-
-        await deleteApiKeyfromDb(
-          {
-            hexEncodedEncryptedApiKey: encryptedApiKey!,
-            initializationVector: initializationVector!,
-            encryptionSecret: API_KEY_ENCRYPTION_SECRET,
-            apiKeyPrefixLength: appConfig.apiKeyPrefixLength,
-          },
-          dbClient,
-        );
-      }
 
       const { newSession } = ctx.context;
       if (!newSession) {
@@ -103,34 +52,13 @@ export const auth = betterAuth({
       }
       delete microsoftEntraProfiles[email];
 
-      const personId = await upsertPersonIntoDb(
+      await upsertPersonIntoDb(
         {
           emailVerified,
           ...microsoftEntraProfile,
         },
         dbClient,
       );
-
-      const encryptedApiKey = await EncryptedApiKey.new(
-        API_KEY_ENCRYPTION_SECRET,
-        appConfig.apiKeyPrefixLength,
-      );
-
-      await insertApiKeyIntoDb(encryptedApiKey, personId, dbClient);
-
-      const cookies = [[
-        CookieNames.encryptedApiKey,
-        encryptedApiKey.hexEncode(),
-      ], [
-        CookieNames.apiKeyInitializationVector,
-        encryptedApiKey.hexEncodedInitializationVector(),
-      ]];
-      for (const [cookieName, cookieValue] of cookies) {
-        ctx.setCookie(cookieName!, cookieValue!, {
-          maxAge: ONE_YEAR,
-          ...COOKIE_OPTIONS,
-        });
-      }
     }),
   },
 });

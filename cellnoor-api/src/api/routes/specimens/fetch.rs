@@ -6,7 +6,7 @@ use diesel::prelude::*;
 use crate::{
     api::{
         extract::auth::AuthenticatedUser,
-        routes::{ApiResponse, inner_handler},
+        routes::{ApiResponse, handle_request},
     },
     db,
     state::AppState,
@@ -17,7 +17,7 @@ pub(super) async fn fetch_specimen(
     state: State<AppState>,
     user: AuthenticatedUser,
 ) -> ApiResponse<Specimen> {
-    let item = inner_handler(state, user, specimen_id).await?;
+    let item = handle_request(state, user, specimen_id).await?;
     Ok((StatusCode::OK, item))
 }
 

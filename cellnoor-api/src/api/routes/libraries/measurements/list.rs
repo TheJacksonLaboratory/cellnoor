@@ -6,7 +6,7 @@ use diesel::prelude::*;
 use crate::{
     api::{
         extract::auth::AuthenticatedUser,
-        routes::{ApiResponse, inner_handler},
+        routes::{ApiResponse, handle_request},
     },
     db::{self},
     state::AppState,
@@ -17,7 +17,7 @@ pub async fn list_measurements(
     state: State<AppState>,
     user: AuthenticatedUser,
 ) -> ApiResponse<Vec<LibraryMeasurement>> {
-    let item = inner_handler(state, user, library_id).await?;
+    let item = handle_request(state, user, library_id).await?;
     Ok((StatusCode::OK, item))
 }
 

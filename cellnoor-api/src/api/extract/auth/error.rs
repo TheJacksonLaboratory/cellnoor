@@ -14,9 +14,9 @@ pub enum Error {
 }
 
 impl Error {
-    pub fn no_api_key() -> Self {
+    pub fn no_auth_token() -> Self {
         Self::Unauthorized {
-            message: "no API key".to_owned(),
+            message: "no token in 'Authorization: Bearer' header".to_owned(),
         }
     }
 

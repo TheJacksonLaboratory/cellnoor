@@ -9,7 +9,7 @@ use diesel::prelude::*;
 use crate::{
     api::{
         extract::{auth::AuthenticatedUser, query::QsQuery},
-        routes::{ApiResponse, inner_handler},
+        routes::{ApiResponse, handle_request},
     },
     db::{self, ToBoxedFilter},
     state::AppState,
@@ -21,7 +21,7 @@ pub async fn list_suspensions(
     user: AuthenticatedUser,
     QsQuery(request): QsQuery<SuspensionQuery>,
 ) -> ApiResponse<Vec<SuspensionSummary>> {
-    let items = inner_handler(state, user, (pool_id, request)).await?;
+    let items = handle_request(state, user, (pool_id, request)).await?;
     Ok((StatusCode::OK, items))
 }
 

@@ -5,7 +5,7 @@ use diesel::prelude::*;
 use crate::{
     api::{
         extract::{ValidJson, auth::AuthenticatedUser},
-        routes::{ApiResponse, Root, inner_handler},
+        routes::{ApiResponse, Root, handle_request},
     },
     db,
     state::AppState,
@@ -17,7 +17,7 @@ pub(super) async fn create_sequencing_run(
     user: AuthenticatedUser,
     ValidJson(request): ValidJson<SequencingRunCreation>,
 ) -> ApiResponse<SequencingRun> {
-    let item = inner_handler(state, user, request).await?;
+    let item = handle_request(state, user, request).await?;
     Ok((StatusCode::CREATED, item))
 }
 

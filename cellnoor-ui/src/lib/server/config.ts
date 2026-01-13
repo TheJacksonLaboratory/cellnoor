@@ -29,6 +29,7 @@ interface Secrets {
   dbPort: number;
   cellnoorUiDbPassword: string;
   dbName: string;
+  authSecret: string;
   microsoft_entra_client_id: string;
   microsoft_entra_client_secret: string;
   microsoft_entra_tenant: string;
@@ -46,6 +47,7 @@ export async function readSecrets() {
     dbPort: parseInt(await readRequiredEnvVar("db_port")),
     cellnoorUiDbPassword: await readSecret("cellnoor_ui_db_password"),
     dbName: await readSecret("db_name"),
+    authSecret: await readSecret("auth_secret"),
     microsoft_entra_client_id: await readSecret("microsoft_entra_client_id"),
     microsoft_entra_client_secret: await readSecret(
       "microsoft_entra_client_secret",

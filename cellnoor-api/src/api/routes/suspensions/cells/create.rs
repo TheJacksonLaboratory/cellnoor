@@ -9,7 +9,7 @@ use crate::{
     api::{
         extract::{ValidJson, auth::AuthenticatedUser},
         routes::{
-            ApiResponse, Root, inner_handler, suspensions::create::insert_suspension_preparers,
+            ApiResponse, Root, handle_request, suspensions::create::insert_suspension_preparers,
         },
     },
     db,
@@ -22,7 +22,7 @@ pub(super) async fn create_cell_suspension(
     user: AuthenticatedUser,
     ValidJson(request): ValidJson<CellSuspensionCreation>,
 ) -> ApiResponse<Suspension> {
-    let item = inner_handler(state, user, request).await?;
+    let item = handle_request(state, user, request).await?;
     Ok((StatusCode::CREATED, item))
 }
 

@@ -1,10 +1,6 @@
 import type { RequestHandler } from "./$types";
-import { apiKeyFromCookies } from "$lib/server/auth/cookies";
-import { API_KEY_ENCRYPTION_SECRET } from "$lib/server/auth/crypto";
 import { readConfig } from "$lib/server/config";
 import { getDbClient } from "$lib/server/db-client";
-import { EncryptedApiKey } from "$lib/server/auth/api-key";
-import { getUserByApiKeyFromDb, insertApiKeyIntoDb } from "$lib/server/auth/db";
 
 function permissionDenied(): Response {
   return new Response(JSON.stringify({ error: "permission denied" }), {

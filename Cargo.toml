@@ -17,7 +17,6 @@ edition = "2024"
 
 [workspace.dependencies]
 anyhow = "1.0.100"
-argon2 = "0.5.3"
 axum = { version = "0.8.8", default-features = false, features = [
   "http2",
   "json",
@@ -29,7 +28,6 @@ axum-extra = { version = "0.12.5", features = [
   "typed-header",
   "typed-routing",
 ] }
-base16ct = { version = "1.0.0" }
 bon = { version = "3.8.1" }
 camino = { version = "1.2.2", features = ["serde1"] }
 clap = { version = "4.5.54", features = ["derive", "env"] }
@@ -50,9 +48,11 @@ rand = { version = "0.10.0-rc.6" }
 regex = "1.12.2"
 reqwest = { version = "0.13.1", features = ["json"] }
 rstest = { version = "0.26.1", default-features = false }
+secrecy = { version = "0.10.3", features = ["serde"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = { version = "1.0.148" }
 serde_qs = { version = "1.0.0-rc.4", features = ["axum"] }
+jsonwebtoken = {version = "10.2.0", features = ["rust_crypto"]}
 strum = { version = "0.27.2", features = ["derive"] }
 syn = { version = "2.0.113", default-features = false, features = [
   "full",
@@ -70,7 +70,6 @@ ts-rs = { version = "11.1.0", features = [
 ] }
 url = { version = "2.5.8", features = ["serde"] }
 uuid = { version = "1.19.0", features = ["serde", "v7"] }
-zeroize = { version = "1.8.2", features = ["zeroize_derive"] }
 
 [workspace.lints.clippy]
 cast_precision_loss = "allow"

@@ -9,7 +9,7 @@ use uuid::Uuid;
 use crate::{
     api::{
         extract::{ValidJson, auth::AuthenticatedUser},
-        routes::{ApiResponse, Root, inner_handler},
+        routes::{ApiResponse, Root, handle_request},
     },
     db,
     state::AppState,
@@ -21,7 +21,7 @@ pub(super) async fn create_chromium_dataset(
     user: AuthenticatedUser,
     ValidJson(request): ValidJson<ChromiumDatasetCreation>,
 ) -> ApiResponse<ChromiumDataset> {
-    let item = inner_handler(state, user, request).await?;
+    let item = handle_request(state, user, request).await?;
     Ok((StatusCode::CREATED, item))
 }
 

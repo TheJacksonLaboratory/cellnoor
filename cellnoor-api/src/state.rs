@@ -1,3 +1,5 @@
+use std::sync::{Arc, LazyLock};
+
 use anyhow::{Context, anyhow};
 use deadpool_diesel::{
     Runtime,
@@ -5,6 +7,8 @@ use deadpool_diesel::{
 };
 use diesel::{PgConnection, prelude::*};
 use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
+use jsonwebtoken::DecodingKey;
+use secrecy::{ExposeSecret, SecretString};
 use uuid::Uuid;
 
 use crate::{
@@ -14,24 +18,42 @@ use crate::{
 };
 
 #[derive(Clone)]
+pub struct DevelopmentState {
+    db_pool: Pool,
+    user_id: Uuid,
+}
+
+impl DevelopmentState {
+    pub fn user_id(&self) -> Uuid {
+        self.user_id
+    }
+}
+
+#[derive(Clone)]
+pub struct ProductionState {
+    db_pool: Pool,
+    jwt_decoding_key: Arc<DecodingKey>,
+}
+
+impl ProductionState {
+    pub fn jwt_decoding_key(&self) -> &DecodingKey {
+        &self.jwt_decoding_key
+    }
+}
+
+#[derive(Clone)]
 pub enum AppState {
-    Development {
-        db_pool: Pool,
-        user_id: Uuid,
-    },
-    Production {
-        db_pool: Pool,
-        api_key_prefix_length: usize,
-    },
+    Development(DevelopmentState),
+    Production(ProductionState),
 }
 
 #[cfg(any(feature = "dummy-data", test))]
-pub fn create_test_db_pool(db_url: &str) -> anyhow::Result<Pool> {
+pub fn create_test_db_pool(db_url: &SecretString) -> anyhow::Result<Pool> {
     create_db_pool(db_url, None)
 }
 
-fn create_db_pool(db_url: &str, max_size: Option<usize>) -> anyhow::Result<Pool> {
-    let manager = PoolManager::new(db_url, Runtime::Tokio1);
+fn create_db_pool(db_url: &SecretString, max_size: Option<usize>) -> anyhow::Result<Pool> {
+    let manager = PoolManager::new(db_url.expose_secret(), Runtime::Tokio1);
     let mut builder = Pool::builder(manager);
 
     if let Some(max_size) = max_size {
@@ -64,11 +86,12 @@ fn run_migrations(db_conn: &mut PgConnection) -> anyhow::Result<()> {
 
 fn set_db_user_password(
     username: &str,
-    password: &str,
+    password: &SecretString,
     db_conn: &mut PgConnection,
 ) -> anyhow::Result<()> {
     diesel::sql_query(format!(
-        r#"alter user "{username}" with password '{password}'"#
+        r#"alter user "{username}" with password '{}'"#,
+        password.expose_secret()
     ))
     .execute(db_conn)?;
 
@@ -76,8 +99,8 @@ fn set_db_user_password(
 }
 
 impl AppState {
-    pub async fn initialize(config: &Config) -> anyhow::Result<Self> {
-        let mut root_db_conn = PgConnection::establish(&config.db_root_url())
+    pub async fn initialize(config: Config) -> anyhow::Result<Self> {
+        let mut root_db_conn = PgConnection::establish(config.db_root_url().expose_secret())
             .context("failed to connect to db as root to run migrations")?;
 
         run_migrations(&mut root_db_conn)?;
@@ -110,14 +133,18 @@ impl AppState {
 
         let state = match config.mode() {
             AppMode::Development => {
-                let mut db_conn = PgConnection::establish(&config.db_root_url())?;
+                let mut db_conn = PgConnection::establish(config.db_root_url().expose_secret())?;
                 let user_id = create_dev_superuser(&mut db_conn)?;
-                Self::Development { db_pool, user_id }
+                Self::Development(DevelopmentState { db_pool, user_id })
             }
-            AppMode::Production => Self::Production {
+            AppMode::Production => Self::Production(ProductionState {
                 db_pool,
-                api_key_prefix_length: config.api_key_prefix_length(),
-            },
+                jwt_decoding_key: DecodingKey::from_base64_secret(
+                    config.auth_secret().expose_secret(),
+                )
+                .context("failed to create decoding key from provided `auth_secret`")
+                .map(Arc::new)?,
+            }),
         };
 
         Ok(state)
@@ -125,14 +152,8 @@ impl AppState {
 
     pub async fn db_conn(&self) -> Result<deadpool_diesel::postgres::Connection, db::Error> {
         match self {
-            Self::Development {
-                db_pool,
-                user_id: _,
-            }
-            | Self::Production {
-                db_pool,
-                api_key_prefix_length: _,
-            } => Ok(db_pool.get().await?),
+            Self::Development(DevelopmentState { db_pool, .. })
+            | Self::Production(ProductionState { db_pool, .. }) => Ok(db_pool.get().await?),
         }
     }
 }

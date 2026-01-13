@@ -3,7 +3,6 @@ use axum::{Extension, Router, routing::get};
 use camino::Utf8Path;
 use serde_qs::axum::QsQueryConfig;
 use tokio::net::TcpListener;
-use zeroize::Zeroize;
 
 use crate::{config::Config, state::AppState};
 
@@ -31,21 +30,20 @@ pub async fn serve(config: Config) -> anyhow::Result<()> {
     serve_inner(config).await
 }
 
-async fn serve_inner(mut config: Config) -> anyhow::Result<()> {
-    let app_state = AppState::initialize(&config)
+async fn serve_inner(config: Config) -> anyhow::Result<()> {
+    let app_addr = config.address();
+
+    let app_state = AppState::initialize(config)
         .await
         .context("failed to initialize app state")?;
     tracing::info!("initialized app state");
 
     let app = app(app_state.clone());
 
-    let app_addr = config.address();
     let listener = TcpListener::bind(&app_addr)
         .await
         .context(format!("failed to listen on {app_addr}"))?;
     tracing::info!("cellnoor listening on {}", listener.local_addr()?);
-
-    config.zeroize();
 
     axum::serve(listener, app)
         .await

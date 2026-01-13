@@ -5,10 +5,8 @@ version = "0.1.0"
 
 [dependencies]
 anyhow.workspace = true
-argon2.workspace = true
 axum.workspace = true
 axum-extra.workspace = true
-base16ct.workspace = true
 camino.workspace = true
 cellnoor-models = { version = "0.1.0", path = "../crates/cellnoor-models", features = [
   "app",
@@ -24,6 +22,8 @@ headers.workspace = true
 heck.workspace = true
 jiff.workspace = true
 jiff-diesel.workspace = true
+jsonwebtoken.workspace = true
+
 non-empty = { path = "../crates/non-empty" }
 pretty_assertions = { workspace = true, optional = true }
 rand = { workspace = true, optional = true }
@@ -31,6 +31,7 @@ ranged = { version = "0.1.0", path = "../crates/ranged", features = ["serde"] }
 regex.workspace = true
 reqwest.workspace = true
 rstest.workspace = true
+secrecy.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 serde_qs.workspace = true
@@ -43,7 +44,6 @@ tracing-subscriber.workspace = true
 ts-rs = { workspace = true, optional = true }
 url.workspace = true
 uuid.workspace = true
-zeroize.workspace = true
 
 [lints]
 workspace = true

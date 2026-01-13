@@ -9,7 +9,7 @@ use diesel::{RunQueryDsl, prelude::*};
 use crate::{
     api::{
         extract::{ValidPathJson, auth::AuthenticatedUser},
-        routes::{ApiResponse, inner_handler},
+        routes::{ApiResponse, handle_request},
     },
     db,
     state::AppState,
@@ -20,7 +20,7 @@ pub async fn create_measurement(
     user: AuthenticatedUser,
     ValidPathJson(cdna_id, measurement): ValidPathJson<CdnaIdMeasurements, CdnaMeasurementCreation>,
 ) -> ApiResponse<CdnaMeasurement> {
-    let item = inner_handler(state, user, (cdna_id, measurement)).await?;
+    let item = handle_request(state, user, (cdna_id, measurement)).await?;
     Ok((StatusCode::CREATED, item))
 }
 

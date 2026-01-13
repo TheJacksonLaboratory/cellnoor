@@ -12,7 +12,7 @@ use crate::{
         routes::{
             ApiResponse,
             chromium_datasets::files::common::{FieldExt, ParsedMultipartFormField},
-            inner_handler,
+            handle_request,
         },
     },
     db,
@@ -32,7 +32,7 @@ pub async fn upload_web_summary(
         extracted_web_summaries.push(field.parse(ALLOWED_CONTENT_TYPES).await?);
     }
 
-    let _ = inner_handler(state, user, (chromium_dataset_id, extracted_web_summaries)).await?;
+    let _ = handle_request(state, user, (chromium_dataset_id, extracted_web_summaries)).await?;
     Ok((StatusCode::CREATED, Json(())))
 }
 
