@@ -2,4 +2,4 @@ mod error;
 mod user;
 
 pub use error::Error;
-pub use user::{AuthenticatedUser, UiUser};
+pub use user::AuthenticatedUser;

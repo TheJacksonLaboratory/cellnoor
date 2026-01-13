@@ -18,7 +18,5 @@ export async function handle({ event, resolve }) {
     return redirect(307, "/auth/sign-in");
   }
 
-  event.locals.user = session.user;
-
   return svelteKitHandler({ event, resolve, auth, building });
 }

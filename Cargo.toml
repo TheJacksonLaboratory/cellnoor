@@ -25,6 +25,7 @@ axum = { version = "0.8.8", default-features = false, features = [
   "tokio",
 ] }
 axum-extra = { version = "0.12.5", features = [
+  "cookie",
   "typed-header",
   "typed-routing",
 ] }

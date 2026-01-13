@@ -139,11 +139,9 @@ impl AppState {
             }
             AppMode::Production => Self::Production(ProductionState {
                 db_pool,
-                jwt_decoding_key: DecodingKey::from_base64_secret(
-                    config.auth_secret().expose_secret(),
-                )
-                .context("failed to create decoding key from provided `auth_secret`")
-                .map(Arc::new)?,
+                jwt_decoding_key: Arc::new(DecodingKey::from_secret(
+                    config.auth_secret().expose_secret().as_bytes(),
+                )),
             }),
         };
 

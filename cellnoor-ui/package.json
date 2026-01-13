@@ -20,6 +20,7 @@
     "@sveltejs/kit": "^2.49.2",
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
     "@types/bun": "latest",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/qs": "^6.14.0",
     "cellnoor-types": "workspace:*",
     "svelte": "^5.46.1",
@@ -29,10 +30,11 @@
   },
   "dependencies": {
     "@fontsource-variable/comfortaa": "^5.2.8",
-    "better-auth": "1.4.10",
-    "qs": "^6.14.1",
     "@tailwindcss/vite": "^4.1.18",
+    "better-auth": "1.4.10",
     "daisyui": "^5.5.14",
+    "jsonwebtoken": "^9.0.3",
+    "qs": "^6.14.1",
     "tailwindcss": "^4.1.18"
   }
 }

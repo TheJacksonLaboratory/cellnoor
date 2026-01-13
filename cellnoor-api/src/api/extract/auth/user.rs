@@ -1,13 +1,62 @@
-mod api;
-mod ui;
-
-use std::sync::LazyLock;
-
-pub use api::AuthenticatedUser;
+use axum::{RequestPartsExt, extract::FromRequestParts};
+use axum_extra::{
+    TypedHeader,
+    extract::{CookieJar, cookie::Cookie},
+};
+use headers::{Authorization, authorization::Bearer};
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
 use serde::Deserialize;
-pub use ui::UiUser;
+use std::sync::LazyLock;
 use uuid::Uuid;
+
+use crate::{
+    api::{self, extract::auth},
+    state::AppState,
+};
+
+#[derive(Clone, Copy, serde::Deserialize, serde::Serialize)]
+#[serde(transparent)]
+pub struct AuthenticatedUser(Uuid);
+
+impl AuthenticatedUser {
+    pub fn id(&self) -> Uuid {
+        self.0
+    }
+}
+
+impl FromRequestParts<AppState> for AuthenticatedUser {
+    type Rejection = api::ErrorResponse;
+
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        app_state: &AppState,
+    ) -> Result<Self, api::ErrorResponse> {
+        let decoding_key = match app_state {
+            AppState::Development(state) => {
+                return Ok(Self(state.user_id()));
+            }
+            AppState::Production(state) => state.jwt_decoding_key(),
+        };
+
+        let auth_header = parts.extract::<TypedHeader<Authorization<Bearer>>>().await;
+        let cookies = parts.extract::<CookieJar>().await;
+        let token_locations = (auth_header, cookies);
+
+        let token = match &token_locations {
+            (Ok(TypedHeader(Authorization(token))), _) => token.token().as_bytes(),
+            (Err(_), Ok(cookies)) => cookies
+                .get("cellnoor-ui.api_token")
+                .map(Cookie::value)
+                .map(str::as_bytes)
+                .unwrap_or_default(),
+            (Err(_), Err(_)) => return Err(auth::Error::no_auth_token())?,
+        };
+
+        let claims = UserClaims::from_jwt(token, decoding_key)?;
+
+        Ok(Self(claims.sub))
+    }
+}
 
 #[allow(dead_code)]
 #[derive(Deserialize)]

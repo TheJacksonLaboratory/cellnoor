@@ -165,6 +165,7 @@ struct Cli {
     db_port: Option<u16>,
     #[arg(long, env = "CELLNOOR_DB_NAME")]
     db_name: Option<String>,
+    #[arg(long, env = "CELLNOOR_AUTH_SECRET")]
     auth_secret: Option<SecretString>,
     #[arg(long, env = "CELLNOOR_API_HOST")]
     host: Option<String>,

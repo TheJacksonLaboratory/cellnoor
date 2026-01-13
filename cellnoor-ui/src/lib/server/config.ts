@@ -59,7 +59,6 @@ export async function readSecrets() {
 }
 
 interface Config {
-  apiKeyPrefixLength: number;
   publicUrl?: string;
   apiUrl: string;
 }
@@ -83,9 +82,6 @@ export async function readConfig() {
   }
 
   appConfig = {
-    apiKeyPrefixLength: parseInt(
-      await readRequiredEnvVar("api_key_prefix_length"),
-    ),
     publicUrl,
     apiUrl,
   };

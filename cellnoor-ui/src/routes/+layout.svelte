@@ -3,14 +3,14 @@
   import { authClient } from "$lib/auth-client";
   import Navbar from "./Navbar.svelte";
 
-  let { children, data } = $props();
-  let user = $derived(data);
+  let { children } = $props();
+  const session = authClient.useSession();
 </script>
 
 <svelte:head></svelte:head>
 
-{#if user}
-  <Navbar userName={user.name} />
+{#if $session.data}
+  <Navbar userName={$session.data.user.name} />
 {/if}
 
 {@render children?.()}
