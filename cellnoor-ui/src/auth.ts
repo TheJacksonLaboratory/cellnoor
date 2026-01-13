@@ -18,9 +18,9 @@ export const auth = betterAuth({
   secret: (await readSecrets()).authSecret,
   socialProviders: {
     microsoft: {
-      clientId: (await readSecrets()).microsoft_entra_client_id,
-      clientSecret: (await readSecrets()).microsoft_entra_client_secret,
-      tenantId: (await readSecrets()).microsoft_entra_tenant,
+      clientId: (await readSecrets()).microsoftEntraClientId,
+      clientSecret: (await readSecrets()).microsoftEntraClientSecret,
+      tenantId: (await readSecrets()).microsoftEntraTenant,
       // This is a bit of a hack. We need the user's Microsoft Entra OID and tenant ID, which is only available in this function.
       mapProfileToUser: async (profile) => {
         // Using a user's email address as a unique key is typically poor practice because of one of the following (https://learn.microsoft.com/en-us/entra/identity-platform/id-token-claims-reference#payload-claims):

@@ -30,9 +30,9 @@ interface Secrets {
   cellnoorUiDbPassword: string;
   dbName: string;
   authSecret: string;
-  microsoft_entra_client_id: string;
-  microsoft_entra_client_secret: string;
-  microsoft_entra_tenant: string;
+  microsoftEntraClientId: string;
+  microsoftEntraClientSecret: string;
+  microsoftEntraTenant: string;
 }
 
 let secrets: Secrets | null = null;
@@ -48,11 +48,11 @@ export async function readSecrets() {
     cellnoorUiDbPassword: await readSecret("cellnoor_ui_db_password"),
     dbName: await readSecret("db_name"),
     authSecret: await readSecret("auth_secret"),
-    microsoft_entra_client_id: await readSecret("microsoft_entra_client_id"),
-    microsoft_entra_client_secret: await readSecret(
+    microsoftEntraClientId: await readSecret("microsoft_entra_client_id"),
+    microsoftEntraClientSecret: await readSecret(
       "microsoft_entra_client_secret",
     ),
-    microsoft_entra_tenant: await readSecret("microsoft_entra_tenant"),
+    microsoftEntraTenant: await readSecret("microsoft_entra_tenant"),
   };
 
   return secrets;
