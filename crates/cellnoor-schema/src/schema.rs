@@ -7,6 +7,17 @@ pub mod sql_types {
 }
 
 diesel::table! {
+    api_tokens (jti) {
+        jti -> Uuid,
+        sub -> Nullable<Uuid>,
+        name -> Text,
+        description -> Nullable<Text>,
+        created_at -> Timestamptz,
+        exp -> Timestamptz,
+    }
+}
+
+diesel::table! {
     cdna (id) {
         id -> Uuid,
         readable_id -> Text,
@@ -262,7 +273,7 @@ diesel::table! {
         name -> Text,
         kit -> Text,
         well -> Text,
-        sequences -> Array<CaseInsensitiveText>,
+        sequences -> Array<Nullable<CaseInsensitiveText>>,
     }
 }
 
@@ -374,15 +385,16 @@ diesel::table! {
         id -> Uuid,
         links -> Jsonb,
         name -> Text,
-        library_types -> Nullable<Array<CaseInsensitiveText>>,
+        library_types -> Nullable<Array<Nullable<CaseInsensitiveText>>>,
         sample_multiplexing -> Nullable<Text>,
         chemistry_version -> Text,
         protocol_url -> Text,
         chromium_chip -> Nullable<Text>,
-        cmdlines -> Nullable<Array<CaseInsensitiveText>>,
+        cmdlines -> Nullable<Array<Nullable<CaseInsensitiveText>>>,
     }
 }
 
+diesel::joinable!(api_tokens -> people (sub));
 diesel::joinable!(cdna -> gem_pools (gem_pool_id));
 diesel::joinable!(cdna_measurements -> cdna (cdna_id));
 diesel::joinable!(cdna_measurements -> people (measured_by));
@@ -435,6 +447,7 @@ diesel::joinable!(suspension_tagging -> suspensions (suspension_id));
 diesel::joinable!(suspensions -> specimens (parent_specimen_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
+    api_tokens,
     cdna,
     cdna_measurements,
     cdna_preparers,
