@@ -2,12 +2,14 @@ import { betterAuth } from "better-auth";
 import { jwt } from "better-auth/plugins";
 import { auth } from "../../auth.js";
 import * as jose from "jose";
+import { getDbClient } from "$lib/server/db-client.js";
+import { getUserApiTokens } from "$lib/server/auth/db.js";
 
-async function createNewApiToken({ user }: typeof auth.$Infer.Session) {
+async function createNewApiToken(userId: string, expiresOn: Date) {
   const payload: jose.JWTPayload = {
-    sub: user.userId,
+    sub: userId,
     jti: Bun.randomUUIDv7(),
-    exp: Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60), // 1 year in seconds
+    exp: expiresOn.getTime() * 1000
   };
 
   const { token } = await auth.api.signJWT({ body: { payload } });
@@ -15,14 +17,27 @@ async function createNewApiToken({ user }: typeof auth.$Infer.Session) {
   return token;
 }
 
-// TODO: move the logic into actions
-// https://svelte.dev/docs/kit/form-actions
-export const actions = {};
+export const actions = {
+  createApiToken: async ({ request: { formData }, locals: { user: { userId } } }) => {
+    const data = await formData();
+    const expiresOn = data.get("expiresOn");
+    console.log(expiresOn);
 
-export async function load(event) {
-  const { headers } = event.request;
-  const session = await auth.api.getSession({ headers });
-  const token = await createNewApiToken(session!);
+    return { apiToken: "foo" };
 
-  return { token };
+    const token = await createNewApiToken(userId, expiresOn!)
+  },
+  deleteApiToken: async ({ request: { formData } }) => {
+    // Delete from api_tokens
+    // Add token to revoked_tokens
+    const data = await formData();
+    console.log(data);
+  }
+};
+
+export async function load({ locals: { user: {userId} } }) {
+  const dbClient = await getDbClient();
+  const apiTokens = await getUserApiTokens(userId, dbClient);
+
+  return { apiTokens };
 }

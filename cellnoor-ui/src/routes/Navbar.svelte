@@ -5,6 +5,7 @@
   import { afterNavigate, goto } from "$app/navigation";
   import type { ChromiumDatasetQuery } from "cellnoor-types/ChromiumDatasetQuery";
   import qs from "qs";
+    import { redirect } from "@sveltejs/kit";
 
   let { userName }: { userName: string } = $props();
   const links = [[resolve("/chromium-datasets"), "Chromium Datasets"]];
@@ -93,7 +94,11 @@
       <li>
         <button
           onclick={async () => {
-            await authClient.signOut();
+            await authClient.signOut({
+              fetchOptions: {
+                onSuccess: async() => await goto(resolve("/auth/sign-in"), {invalidateAll: true})
+              },
+            });
           }}
         >
           Sign Out

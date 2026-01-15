@@ -6,8 +6,9 @@ import type { auth } from "./auth";
 declare global {
   namespace App {
     // interface Error {}
+    // Technically, there are a couple routes where we don't have a session, but TypeScript is annoying
     interface Locals {
-      session: typeof auth.$Infer.Session;
+      user: typeof auth.$Infer.Session.user;
     }
     // interface PageData {}
     // interface PageState {}

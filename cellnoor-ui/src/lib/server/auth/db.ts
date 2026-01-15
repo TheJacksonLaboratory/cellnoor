@@ -44,3 +44,7 @@ export async function upsertPersonIntoDb(
 
   return createdPerson;
 }
+
+export async function getUserApiTokens(userId: string, dbClient: Bun.SQL): Promise<{sub: string, name: string, description: string, created_at: Date, exp: Date}[]> {
+  return await dbClient`select * from api_tokens where sub = ${userId} order by created_at`;
+}

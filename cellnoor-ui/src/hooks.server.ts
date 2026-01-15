@@ -3,18 +3,18 @@ import { svelteKitHandler } from "better-auth/svelte-kit";
 import { building } from "$app/environment";
 import { redirect } from "@sveltejs/kit";
 
-const NON_AUTH_ROUTES = ["/auth/sign-in", "/health", "/api/auth"];
+const NON_AUTH_ROUTES = ["/api/auth/sign-in/social", "/api/auth/callback/microsoft", "/auth/sign-in", "/health"];
 
-function needsAuth(path: string) {
+function requiresAuth(path: string) {
   return !NON_AUTH_ROUTES.some((s) => path.includes(s));
 }
 
 export async function handle({ event, resolve }) {
-  if (!needsAuth(event.url.pathname)) {
+  const { url: { pathname }, request: {headers} } = event;
+  console.log(pathname);
+  if (!requiresAuth(pathname)) {
     return svelteKitHandler({ event, resolve, auth, building });
   }
-
-  const headers = event.request.headers;
 
   const session = await auth.api.getSession({
     headers,
@@ -24,7 +24,9 @@ export async function handle({ event, resolve }) {
     return redirect(307, "/auth/sign-in");
   }
 
-  event.locals.session = session;
+  // We could destructure this (the way we do with other things above), but I'm not sure if `session` is a reference or
+  // a deep clone
+  event.locals.user = session.user;
 
   return svelteKitHandler({ event, resolve, auth, building });
 }

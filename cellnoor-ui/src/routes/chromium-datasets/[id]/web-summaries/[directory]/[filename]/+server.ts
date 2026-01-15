@@ -2,12 +2,9 @@ import { ApiClient } from "$lib/server/cellnoor-client";
 import type { RequestHandler } from "./$types";
 
 // It would be faster to just grab the web summary from the database and send
-// it directly. However, that requires us to do `set local role = ${userID}`
-// to take advantage of Postgres's row-level security. Unfortunately, that
-// requires the `cellnoor-ui` database user to be granted all user roles.
-// That might be a vulenerability because I don't trust myself in JavaScript.
-export const GET: RequestHandler = async (event) => {
-  const apiClient = await ApiClient.new();
+// it directly. However, that requires us to implement an authorization check here and grant cellnoor-ui permission to
+// read at least one table. I don't want to do that because the logic is implemented in Rust (bulletproof) already and
+// I don't trust myself in this infernal language.
 
-  return await apiClient.get(event);
-};
+const apiClient = await ApiClient.new();
+export const GET = apiClient.get;

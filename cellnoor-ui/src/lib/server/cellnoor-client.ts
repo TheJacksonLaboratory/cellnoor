@@ -3,6 +3,7 @@ import { readConfig } from "$lib/server/config";
 import type { ApiErrorResponse } from "cellnoor-types/ApiErrorResponse";
 import { auth } from "../../auth";
 import * as jose from "jose";
+import { getRequestEvent } from "$app/server";
 
 let apiClient: ApiClient | null = null;
 
@@ -28,25 +29,28 @@ export class ApiClient {
     this.apiBaseUrl = apiBaseUrl;
   }
 
-  private getApiTokenFromCookies(event: ServerLoadEvent | RequestEvent) {
-    return event.cookies.get(API_TOKEN_COOKIE_NAME);
+  private getApiTokenFromCookies() {
+    const {cookies} = getRequestEvent();
+    return cookies.get(API_TOKEN_COOKIE_NAME);
   }
 
-  private async setNewApiToken(event: ServerLoadEvent | RequestEvent) {
-    const { headers } = event.request;
+  private async setNewApiToken() {
+    const {request: {headers}, cookies} = getRequestEvent();
 
     const { token: newToken } = await auth.api.getToken({ headers });
     auth.api.getToken({ headers });
     const { exp } = jose.decodeJwt(newToken);
 
-    event.cookies.set(API_TOKEN_COOKIE_NAME, newToken, {
+    cookies.set(API_TOKEN_COOKIE_NAME, newToken, {
       path: "/",
       expires: new Date(exp! * 1000),
+      secure: true,
+      sameSite: "strict",
+      httpOnly: true
     });
   }
 
   private async refreshApiToken(
-    event: ServerLoadEvent | RequestEvent,
     apiToken: string,
   ) {
     try {
@@ -56,17 +60,17 @@ export class ApiClient {
         throw error;
       }
 
-      await this.setNewApiToken(event);
+      await this.setNewApiToken();
     }
   }
 
-  private async authenticate(event: ServerLoadEvent | RequestEvent) {
-    let apiToken = this.getApiTokenFromCookies(event);
+  private async reauthenticate() {
+    let apiToken = this.getApiTokenFromCookies();
 
-    if (apiToken === undefined) {
-      await this.setNewApiToken(event);
+    if (!apiToken) {
+      await this.setNewApiToken();
     } else {
-      await this.refreshApiToken(event, apiToken);
+      await this.refreshApiToken(apiToken);
     }
   }
 
@@ -85,55 +89,43 @@ export class ApiClient {
   }
 
   private async sendRequest(
-    event: ServerLoadEvent | RequestEvent,
+    {endpoint, queryString}: {endpoint: string, queryString: string},
     requestData: RequestInit,
-    { endpoint, queryString }: {
-      endpoint: string;
-      queryString: string;
-    },
   ): Promise<Response> {
+    await this.reauthenticate();
     const apiUrl = this.constructUrl({ endpoint, queryString });
-    await this.authenticate(event);
+
+    const event = getRequestEvent();
 
     return await event.fetch(apiUrl, requestData);
   }
 
   async get(
-    event: ServerLoadEvent | RequestEvent,
+    url?: {endpoint: string, queryString: string},
     requestData: RequestInit = { method: "GET" },
-    { endpoint, queryString }: {
-      endpoint: string;
-      queryString: string;
-    } = { endpoint: event.url.pathname, queryString: event.url.search },
   ): Promise<Response> {
+    if (!url) {
+      const {url: {pathname, search}} = getRequestEvent();
+      url = { endpoint: pathname, queryString: search };
+    }
+
     return await this.sendRequest(
-      event,
+      url,
       requestData,
-      {
-        endpoint,
-        queryString,
-      },
     );
   }
 
   async getJson<T>(
-    event: ServerLoadEvent | RequestEvent,
+    url?: {endpoint: string, queryString: string},
     requestData: RequestInit = {
       method: "GET",
       headers: { accept: "application/json" },
     },
-    { endpoint, queryString }: {
-      endpoint: string;
-      queryString: string;
-    } = { endpoint: event.url.pathname, queryString: event.url.search },
   ): Promise<T | ApiErrorResponse> {
+
     const response = await this.get(
-      event,
+      url,
       requestData,
-      {
-        endpoint,
-        queryString,
-      },
     );
     const asJson = await response.json();
 
