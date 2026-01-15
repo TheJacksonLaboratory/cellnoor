@@ -5,6 +5,8 @@ grant all on all tables in schema public to cellnoor_api;
 -- also gated behind authentication
 grant select, insert, update on people to cellnoor_ui;
 
+grant insert, select, delete on api_tokens to cellnoor_ui;
+
 -- Users should be able to revoke tokens from the UI too, and it will be quicker if the UI does it instead of sending
 -- a request to the API. This is fine because the API route that revokes tokens is unauthenticated anyways (so that
 -- users can help one another in case of a leaked token. Inspired by GitHub's system)

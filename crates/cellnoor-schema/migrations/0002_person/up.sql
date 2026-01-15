@@ -29,7 +29,7 @@ create table api_tokens (
     sub uuid references people on delete cascade on update cascade,
     name case_insensitive_text not null,
     description case_insensitive_text,
-    created_at timestamptz not null,
+    iat timestamptz not null,
     exp timestamptz not null
 );
 

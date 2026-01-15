@@ -1,3 +1,3 @@
-export async function load({locals: {user}}) {
+export async function load({ locals: { user } }) {
   return { user };
 }

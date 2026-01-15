@@ -9,21 +9,18 @@ export async function load(
 ) {
   const apiClient = await ApiClient.new();
 
-  const dataset = await apiClient.getJson<ChromiumDataset>(event);
+  const dataset = await apiClient.getJson<ChromiumDataset>();
 
   const [specimens, libraries] = isSuccess(dataset)
     ? await Promise.all([
-      apiClient.getJson<SpecimenSummary>(
-        event,
-        undefined,
-        { endpoint: dataset.links.specimens as string, queryString: "" },
-      ),
-      apiClient.getJson<LibrarySummary>(
-        event,
-        undefined,
-        { endpoint: dataset.links.libraries as string, queryString: "" },
-      ),
-      ,
+      apiClient.getJson<SpecimenSummary>({
+        endpoint: dataset.links.specimens as string,
+        queryString: "",
+      }),
+      apiClient.getJson<LibrarySummary>({
+        endpoint: dataset.links.libraries as string,
+        queryString: "",
+      }),
     ])
     : [undefined, undefined];
 

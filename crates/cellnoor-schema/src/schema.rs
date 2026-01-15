@@ -12,7 +12,7 @@ diesel::table! {
         sub -> Nullable<Uuid>,
         name -> Text,
         description -> Nullable<Text>,
-        created_at -> Timestamptz,
+        iat -> Timestamptz,
         exp -> Timestamptz,
     }
 }

@@ -3,15 +3,19 @@ import { svelteKitHandler } from "better-auth/svelte-kit";
 import { building } from "$app/environment";
 import { redirect } from "@sveltejs/kit";
 
-const NON_AUTH_ROUTES = ["/api/auth/sign-in/social", "/api/auth/callback/microsoft", "/auth/sign-in", "/health"];
+const NON_AUTH_ROUTES = [
+  "/api/auth/sign-in/social",
+  "/api/auth/callback/microsoft",
+  "/auth/sign-in",
+  "/health",
+];
 
 function requiresAuth(path: string) {
   return !NON_AUTH_ROUTES.some((s) => path.includes(s));
 }
 
 export async function handle({ event, resolve }) {
-  const { url: { pathname }, request: {headers} } = event;
-  console.log(pathname);
+  const { url: { pathname }, request: { headers } } = event;
   if (!requiresAuth(pathname)) {
     return svelteKitHandler({ event, resolve, auth, building });
   }

@@ -45,6 +45,31 @@ export async function upsertPersonIntoDb(
   return createdPerson;
 }
 
-export async function getUserApiTokens(userId: string, dbClient: Bun.SQL): Promise<{sub: string, name: string, description: string, created_at: Date, exp: Date}[]> {
-  return await dbClient`select * from api_tokens where sub = ${userId} order by created_at`;
+export async function getUserApiTokens(
+  userId: string,
+  dbClient: Bun.SQL,
+): Promise<
+  {
+    jti: string;
+    name: string;
+    description: string;
+    iat: Date;
+    exp: Date;
+  }[]
+> {
+  return await dbClient`select jti, name, description, iat, exp from api_tokens where sub = ${userId} order by iat`;
+}
+
+export async function insertApiToken(
+  data: {
+    jti: string;
+    sub: string;
+    name: string;
+    description?: string | null;
+    iat: Date;
+    exp: Date;
+  },
+  dbClient: Bun.SQL,
+) {
+  await dbClient`insert into api_tokens ${dbClient(data)}`;
 }

@@ -8,9 +8,6 @@ import { getRequestEvent } from "$app/server";
 let apiClient: ApiClient | null = null;
 
 const API_TOKEN_COOKIE_NAME = "cellnoor-ui.api_token";
-export const jwks = await auth.api.getJwks().then((keys) =>
-  jose.createLocalJWKSet(keys)
-);
 
 export class ApiClient {
   readonly apiBaseUrl: string;
@@ -30,12 +27,12 @@ export class ApiClient {
   }
 
   private getApiTokenFromCookies() {
-    const {cookies} = getRequestEvent();
+    const { cookies } = getRequestEvent();
     return cookies.get(API_TOKEN_COOKIE_NAME);
   }
 
   private async setNewApiToken() {
-    const {request: {headers}, cookies} = getRequestEvent();
+    const { request: { headers }, cookies } = getRequestEvent();
 
     const { token: newToken } = await auth.api.getToken({ headers });
     auth.api.getToken({ headers });
@@ -46,7 +43,7 @@ export class ApiClient {
       expires: new Date(exp! * 1000),
       secure: true,
       sameSite: "strict",
-      httpOnly: true
+      httpOnly: true,
     });
   }
 
@@ -54,7 +51,7 @@ export class ApiClient {
     apiToken: string,
   ) {
     try {
-      await jose.jwtVerify(apiToken, jwks);
+      await auth.api.verifyJWT({ body: { token: apiToken } });
     } catch (error) {
       if (!(error instanceof jose.errors.JWTExpired)) {
         throw error;
@@ -89,7 +86,7 @@ export class ApiClient {
   }
 
   private async sendRequest(
-    {endpoint, queryString}: {endpoint: string, queryString: string},
+    { endpoint, queryString }: { endpoint: string; queryString: string },
     requestData: RequestInit,
   ): Promise<Response> {
     await this.reauthenticate();
@@ -101,11 +98,11 @@ export class ApiClient {
   }
 
   async get(
-    url?: {endpoint: string, queryString: string},
+    url?: { endpoint: string; queryString: string },
     requestData: RequestInit = { method: "GET" },
   ): Promise<Response> {
     if (!url) {
-      const {url: {pathname, search}} = getRequestEvent();
+      const { url: { pathname, search } } = getRequestEvent();
       url = { endpoint: pathname, queryString: search };
     }
 
@@ -116,13 +113,12 @@ export class ApiClient {
   }
 
   async getJson<T>(
-    url?: {endpoint: string, queryString: string},
+    url?: { endpoint: string; queryString: string },
     requestData: RequestInit = {
       method: "GET",
       headers: { accept: "application/json" },
     },
   ): Promise<T | ApiErrorResponse> {
-
     const response = await this.get(
       url,
       requestData,
