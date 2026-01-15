@@ -32,46 +32,78 @@
     API Tokens
   </button>
   <dialog bind:this={apiKeysDialogBox} class="modal">
-    <div class="modal-box max-w-full xl:max-w-1/2 lg:max-w-3/4">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>API token name</th>
-            <th>Description</th>
-            <th>Created at</th>
-            <th>Expires on</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each apiTokens as { jti, name, description, iat, exp }}
+    <div class="modal-box max-w-full xl:max-w-1/2 lg:max-w-3/4 flex flex-col">
+      <div class="flex flex-row justify-between gap-2 place-items-start">
+        <table class="table max-w-3/4">
+          <thead>
             <tr>
-              <td>
-                {name}
-              </td>
-              <td>
-                {description}
-              </td>
-              <td>
-                {
-                  DATETIME_FORMATTER.format(
-                    iat,
-                  )
-                }
-              </td>
-              <td>
-                {DATETIME_FORMATTER.format(exp)}
-              </td>
-              <td>
-                <form method="post" use:enhance action="?/deleteApiToken">
-                  <input name="jti" value={jti} type="hidden" />
-                  <button class="btn btn-error">Delete</button>
-                </form>
-              </td>
+              <th>API token name</th>
+              <th>Description</th>
+              <th>Created at</th>
+              <th>Expires on</th>
+              <th></th>
             </tr>
-          {/each}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {#each apiTokens as { jti, name, description, iat, exp }}
+              <tr>
+                <td>
+                  {name}
+                </td>
+                <td>
+                  {description}
+                </td>
+                <td>
+                  {
+                    DATETIME_FORMATTER.format(
+                      iat,
+                    )
+                  }
+                </td>
+                <td>
+                  {DATETIME_FORMATTER.format(exp)}
+                </td>
+                <td>
+                  <form method="post" use:enhance action="?/deleteApiToken">
+                    <input name="jti" value={jti} type="hidden" />
+                    <button class="btn btn-error">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+        <form
+          class="flex flex-col grow gap-2"
+          method="post"
+          use:enhance
+          action="?/createApiToken"
+        >
+          <!-- TODO: use svelte's snippet's and rendering -->
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend">API token name</legend>
+            <input name="name" type="text" class="input" />
+          </fieldset>
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend">Description</legend>
+            <textarea name="description" class="textarea"></textarea>
+          </fieldset>
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend">Expires on</legend>
+            <input
+              class="input"
+              name="expiresOn"
+              type="date"
+              min={today}
+              max={oneYearFromNow}
+              required
+            />
+          </fieldset>
+          <button class="btn btn-success max-w-3/4">
+            Create new API token
+          </button>
+        </form>
+      </div>
       {#if form}
         <div class="wrap-anywhere py-1 text-left">
           {#if form?.apiToken}
@@ -84,29 +116,9 @@
           {/if}
         </div>
       {/if}
-
-      <div class="modal-action flex flex-row justify-evenly">
-        <form method="post" use:enhance action="?/createApiToken">
-          <label class="input">
-            <span class="label">API token name</span>
-            <input name="name" type="text" />
-          </label>
-          <label class="input">
-            <span class="label">Expires on</span>
-            <input
-              name="expiresOn"
-              type="date"
-              min={today}
-              max={oneYearFromNow}
-              required
-            />
-          </label>
-          <button class="btn btn-success">Create new API token</button>
-        </form>
-        <form method="dialog">
-          <button class="btn btn-secondary btn-outline">Close</button>
-        </form>
-      </div>
+      <form class="modal-action" method="dialog">
+        <button class="btn btn-secondary btn-outline">Close</button>
+      </form>
     </div>
     <form method="dialog" class="modal-backdrop">
       <button>close</button>

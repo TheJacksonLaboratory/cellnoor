@@ -73,3 +73,16 @@ export async function insertApiToken(
 ) {
   await dbClient`insert into api_tokens ${dbClient(data)}`;
 }
+
+export async function deleteApiTokenFromDb(
+  { userId, jti }: { userId: string; jti: string },
+  dbClient: Bun.SQL,
+) {
+  await dbClient.begin(async (client) => {
+    const result =
+      await client`delete from api_tokens where sub = ${userId} and jti = ${jti} returning exp`;
+
+    const revoke = { jti, exp: result[0].exp };
+    await client`insert into revoked_tokens ${client(revoke)}`;
+  });
+}

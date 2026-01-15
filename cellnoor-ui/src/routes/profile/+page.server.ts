@@ -1,7 +1,11 @@
 import { auth } from "../../auth.js";
 import * as jose from "jose";
 import { getDbClient } from "$lib/server/db-client.js";
-import { getUserApiTokens, insertApiToken } from "$lib/server/auth/db.js";
+import {
+  deleteApiTokenFromDb,
+  getUserApiTokens,
+  insertApiToken,
+} from "$lib/server/auth/db.js";
 
 async function createNewApiToken(userId: string, expiresOn: Date) {
   const payload: jose.JWTPayload = {
@@ -76,10 +80,18 @@ export const actions = {
 
     return { apiToken };
   },
-  deleteApiToken: async ({ request: { formData } }) => {
-    // TODO:
-    // 1. delete the API token from the table api_tokens so that it's no longer displayed for the user
-    // 2. add the API token to the `revoked_tokens` table so that the backend knows not to accept it
+  deleteApiToken: async ({ request, locals: { user: { userId } } }) => {
+    const data = await request.formData();
+    const jti = data.get("jti");
+
+    if (!jti) {
+      return;
+    }
+
+    await deleteApiTokenFromDb(
+      { userId, jti: jti.toString() },
+      await getDbClient(),
+    );
   },
 };
 
