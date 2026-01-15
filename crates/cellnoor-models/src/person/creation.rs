@@ -4,7 +4,7 @@ use macro_attributes::insert;
 use non_empty::NonEmptyString;
 use uuid::Uuid;
 
-use crate::person::common::{PersonFields, UserRole};
+use crate::person::common::PersonFields;
 
 #[insert]
 #[cfg_attr(feature = "app", derive(diesel::AsChangeset))]
@@ -14,9 +14,6 @@ pub struct PersonCreation {
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: PersonFields,
     email: NonEmptyString,
-    #[serde(default)]
-    #[cfg_attr(feature = "app", diesel(skip_insertion, skip_update))]
-    roles: Vec<UserRole>,
 }
 
 impl PersonCreation {
@@ -42,14 +39,5 @@ impl PersonCreation {
     #[must_use]
     pub fn email(&self) -> &str {
         self.email.as_ref()
-    }
-
-    #[must_use]
-    pub fn roles(&self) -> &[UserRole] {
-        &self.roles
-    }
-
-    pub fn roles_mut(&mut self) -> &mut Vec<UserRole> {
-        &mut self.roles
     }
 }

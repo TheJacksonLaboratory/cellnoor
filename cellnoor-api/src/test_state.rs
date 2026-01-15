@@ -165,7 +165,6 @@ impl TestState {
                             .build(),
                     )
                     .email(NonEmptyString::new(email).unwrap())
-                    .roles([])
                     .build()
                     .execute(db_conn)
                     .unwrap();

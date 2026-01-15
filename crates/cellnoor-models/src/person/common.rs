@@ -1,12 +1,32 @@
+use std::collections::HashSet;
+
 #[cfg(feature = "app")]
 use cellnoor_schema::people;
-use macro_attributes::{insert_select, simple_enum};
+use macro_attributes::{insert_select, json, simple_enum};
 use macros::{impl_enum_from_sql, impl_enum_to_sql};
 use non_empty::NonEmptyString;
 use uuid::Uuid;
 
 #[cfg(feature = "app")]
 use crate::utils::{EnumFromSql, EnumToSql};
+
+#[simple_enum]
+pub enum Action {
+    Create,
+    Read,
+    Update,
+    Delete,
+}
+
+#[json]
+pub struct Permissions {
+    institutions: HashSet<Action>,
+    people: HashSet<Action>,
+    labs: HashSet<Action>,
+    specimens: HashSet<Action>,
+    chromium_experiments: HashSet<Action>,
+    chromium_datasets: HashSet<Action>,
+}
 
 #[simple_enum]
 pub enum UserRole {

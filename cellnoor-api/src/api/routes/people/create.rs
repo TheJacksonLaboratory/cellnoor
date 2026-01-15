@@ -6,7 +6,6 @@ use diesel::{
     prelude::*,
     sql_types::{Array, Text},
 };
-use uuid::Uuid;
 
 use super::{ApiResponse, Root, handle_request};
 use crate::{
@@ -34,16 +33,6 @@ impl db::Operation<Person> for PersonCreation {
             .values(&self)
             .returning(id)
             .get_result(db_conn)?;
-
-        // Create a db user corresponding to this person so we can assign them a role.
-        // Note that we set a random password so that nobody can log into the database
-        // as that user.
-        diesel::select(create_user_if_not_exists(
-            created_id.to_id_string(),
-            Uuid::now_v7().to_string(),
-            self.roles(),
-        ))
-        .execute(db_conn)?;
 
         created_id.execute(db_conn)
     }

@@ -16,11 +16,13 @@ create table people (
     email_verified boolean not null default false,
     institution_id uuid references institutions on delete restrict on update restrict not null,
     orcid case_insensitive_text unique,
-    microsoft_entra_oid uuid unique
+    microsoft_entra_oid uuid unique,
+    is_admin boolean not null default false,
+    is_biology_staff boolean not null default false,
+    is_computational_staff boolean not null default false
 );
 
-create table service_accounts(
-    id uuid primary key default uuidv7(),
-    created_by uuid references people on delete cascade on update cascade not null,
-    created_at timestamptz not null default current_timestamp
+create table revoked_tokens (
+    jti uuid primary key,
+    exp timestamptz not null
 );

@@ -222,6 +222,16 @@ diesel::table! {
         institution_id -> Uuid,
         orcid -> Nullable<Text>,
         microsoft_entra_oid -> Nullable<Uuid>,
+        is_admin -> Bool,
+        is_biology_staff -> Bool,
+        is_computational_staff -> Bool,
+    }
+}
+
+diesel::table! {
+    revoked_tokens (jti) {
+        jti -> Uuid,
+        exp -> Timestamptz,
     }
 }
 
@@ -241,14 +251,6 @@ diesel::table! {
         library_id -> Uuid,
         sequencing_run_id -> Uuid,
         submitted_at -> Timestamptz,
-    }
-}
-
-diesel::table! {
-    service_accounts (id) {
-        id -> Uuid,
-        created_by -> Uuid,
-        created_at -> Timestamptz,
     }
 }
 
@@ -415,7 +417,6 @@ diesel::joinable!(library_type_specifications -> tenx_assays (assay_id));
 diesel::joinable!(people -> institutions (institution_id));
 diesel::joinable!(sequencing_submissions -> libraries (library_id));
 diesel::joinable!(sequencing_submissions -> sequencing_runs (sequencing_run_id));
-diesel::joinable!(service_accounts -> people (created_by));
 diesel::joinable!(single_index_sets -> index_kits (kit));
 diesel::joinable!(specimen_measurements -> people (measured_by));
 diesel::joinable!(specimen_measurements -> specimens (specimen_id));
@@ -456,9 +457,9 @@ diesel::allow_tables_to_appear_in_same_query!(
     library_type_specifications,
     multiplexing_tags,
     people,
+    revoked_tokens,
     sequencing_runs,
     sequencing_submissions,
-    service_accounts,
     single_index_sets,
     specimen_measurements,
     specimens,

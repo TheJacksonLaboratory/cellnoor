@@ -1,7 +1,7 @@
 use axum::{extract::State, http::status::StatusCode};
-use cellnoor_models::person::{Person, PersonId, PersonSummaryWithParents};
+use cellnoor_models::person::{Person, PersonId};
 use cellnoor_schema::people::dsl::id;
-use diesel::{PgConnection, prelude::*, sql_types::Text};
+use diesel::{PgConnection, prelude::*};
 
 use super::{ApiResponse, handle_request};
 use crate::{api::extract::auth::AuthenticatedUser, db, state::AppState};
@@ -17,14 +17,6 @@ pub(super) async fn fetch_person(
 
 impl db::Operation<Person> for PersonId {
     fn execute(self, db_conn: &mut PgConnection) -> Result<Person, db::Error> {
-        diesel::define_sql_function! {fn get_user_roles(user_id: Text) -> Array<Text>}
-
-        let info = PersonSummaryWithParents::query()
-            .filter(id.eq(&self))
-            .first(db_conn)?;
-
-        let roles = diesel::select(get_user_roles(self.to_id_string())).get_result(db_conn)?;
-
-        Ok(Person::new(info, roles))
+        Ok(Person::query().filter(id.eq(&self)).first(db_conn)?)
     }
 }

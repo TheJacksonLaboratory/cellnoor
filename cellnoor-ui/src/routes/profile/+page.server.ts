@@ -1,27 +1,28 @@
-import { EncryptedApiKey } from "$lib/server/auth/api-key";
-import { apiKeyFromCookies } from "$lib/server/auth/cookies";
-import { API_KEY_ENCRYPTION_SECRET } from "$lib/server/auth/crypto";
-import { getUserByApiKeyFromDb, insertApiKeyIntoDb } from "$lib/server/auth/db";
-import { readConfig } from "$lib/server/config";
-import { getDbClient } from "$lib/server/db-client";
-import type { PageServerLoad } from "./$types.js";
+import { betterAuth } from "better-auth";
+import { jwt } from "better-auth/plugins";
+import { auth } from "../../auth.js";
+import * as jose from "jose";
 
-export const load: PageServerLoad = async ({ cookies }) => {
-  const apiKey = await apiKeyFromCookies(
-    cookies,
-    API_KEY_ENCRYPTION_SECRET,
-  );
-
-  const dbClient = await getDbClient();
-  const userId = await getUserByApiKeyFromDb(apiKey!, dbClient);
-
-  const config = await readConfig();
-  const thisSessionApiKeyPrefix = apiKey?.slice(0, config.apiKeyPrefixLength);
-  const apiKeyPrefixes: { prefix: string; created_at: Date }[] =
-    await dbClient`select encode(prefix, 'hex') as prefix, created_at from api_keys where user_id = ${userId} and prefix != ${thisSessionApiKeyPrefix} order by created_at`;
-
-  return {
-    apiKeyPrefixes,
-    apiKeyPrefixLength: config.apiKeyPrefixLength,
+async function createNewApiToken({ user }: typeof auth.$Infer.Session) {
+  const payload: jose.JWTPayload = {
+    sub: user.userId,
+    jti: Bun.randomUUIDv7(),
+    exp: Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60), // 1 year in seconds
   };
-};
+
+  const { token } = await auth.api.signJWT({ body: { payload } });
+
+  return token;
+}
+
+// TODO: move the logic into actions
+// https://svelte.dev/docs/kit/form-actions
+export const actions = {};
+
+export async function load(event) {
+  const { headers } = event.request;
+  const session = await auth.api.getSession({ headers });
+  const token = await createNewApiToken(session!);
+
+  return { token };
+}

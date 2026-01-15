@@ -1,3 +1,5 @@
+use std::sync::LazyLock;
+
 use axum::{RequestPartsExt, extract::FromRequestParts};
 use axum_extra::{
     TypedHeader,
@@ -6,7 +8,6 @@ use axum_extra::{
 use headers::{Authorization, authorization::Bearer};
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
 use serde::Deserialize;
-use std::sync::LazyLock;
 use uuid::Uuid;
 
 use crate::{

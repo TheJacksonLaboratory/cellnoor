@@ -2,6 +2,5 @@
 import type { Institution } from "./Institution";
 import type { Links } from "./Links";
 import type { NonEmptyString } from "./NonEmptyString";
-import type { UserRole } from "./UserRole";
 
-export type Person = { roles: Array<UserRole>, institution: Institution, id: string, email?: string, email_verified: boolean, links: Links, name: NonEmptyString, orcid?: NonEmptyString, institution_id: string, microsoft_entra_oid?: string, };
+export type Person = { institution: Institution, id: string, email?: string, email_verified: boolean, links: Links, name: NonEmptyString, orcid?: NonEmptyString, institution_id: string, microsoft_entra_oid?: string, };
