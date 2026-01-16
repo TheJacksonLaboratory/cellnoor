@@ -13,9 +13,9 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       userId: { type: "string" },
-      is_admin: { type: "string" },
-      is_biology_staff: { type: "string" },
-      is_computational_staff: { type: "string" },
+      is_admin: { type: "boolean" },
+      is_biology_staff: { type: "boolean" },
+      is_computational_staff: { type: "boolean" },
     },
   },
   session: {
@@ -45,10 +45,33 @@ export const auth = betterAuth({
   },
   plugins: [
     jwt({
+      adapter: {
+        createJwk: async (webKey) => {
+          const dbClient = await getDbClient();
+
+          const data = { created_at: webKey.createdAt, expires_at: webKey.expiresAt, public_key: webKey.publicKey, private_key: webKey.privateKey };
+          const result = await dbClient`insert into json_web_keys ${dbClient(data)} returning id`;
+          const id = result[0].id;
+
+          return {id, ...webKey};
+        },
+        getJwks: async () => {
+          const dbClient = await getDbClient();
+          const results = await dbClient`select id, public_key as publicKey, private_key as privateKey, created_at as createdAt, expires_at as expiresAt from json_web_keys`;
+
+          return results;
+        }
+      },
+      jwks: {
+        // A signed JWT is valid for 180 days
+        rotationInterval: 60 * 60 * 24 * 90, // 90 days
+        gracePeriod: 60 * 60 * 24 * 90, // 90 days
+      },
       jwt: {
         getSubject: (session) => {
           return session.user.userId;
         },
+        audience: await readConfig().then((c) => c.apiUrl),
         expirationTime: "30 minutes",
         definePayload(
           { user: { is_admin, is_biology_staff, is_computational_staff } },

@@ -1,4 +1,4 @@
-use std::sync::LazyLock;
+use std::{collections::HashMap, sync::LazyLock};
 
 use axum::{RequestPartsExt, extract::FromRequestParts};
 use axum_extra::{
@@ -6,14 +6,17 @@ use axum_extra::{
     extract::{CookieJar, cookie::Cookie},
 };
 use headers::{Authorization, authorization::Bearer};
-use jsonwebtoken::{Algorithm, DecodingKey, Validation};
-use serde::Deserialize;
+use jsonwebtoken::{Algorithm, DecodingKey, Validation, jwk::JwkSet};
+use serde::{Deserialize, de::DeserializeOwned};
 use uuid::Uuid;
 
 use crate::{
-    api::{self, extract::auth},
+    api::{ErrorResponse, extract::auth},
     state::AppState,
 };
+
+mod api;
+mod ui;
 
 #[derive(Clone, Copy, serde::Deserialize, serde::Serialize)]
 #[serde(transparent)]
@@ -26,12 +29,12 @@ impl AuthenticatedUser {
 }
 
 impl FromRequestParts<AppState> for AuthenticatedUser {
-    type Rejection = api::ErrorResponse;
+    type Rejection = ErrorResponse;
 
     async fn from_request_parts(
         parts: &mut axum::http::request::Parts,
         app_state: &AppState,
-    ) -> Result<Self, api::ErrorResponse> {
+    ) -> Result<Self, ErrorResponse> {
         let decoding_key = match app_state {
             AppState::Development(state) => {
                 return Ok(Self(state.user_id()));
@@ -72,12 +75,17 @@ impl UserClaims {
         static VALIDATION: LazyLock<Validation> =
             LazyLock::new(|| Validation::new(Algorithm::HS512));
 
-        let token = jsonwebtoken::decode(encoded_jwt, decoding_key, &VALIDATION).map_err(|e| {
-            super::Error::Unauthorized {
-                message: e.to_string(),
-            }
-        })?;
+        let token = jsonwebtoken::decode(encoded_jwt, decoding_key, &VALIDATION)?;
 
         Ok(token.claims)
+    }
+}
+
+trait FromJwt: DeserializeOwned {
+    fn from_jwt(
+        encoded_jwt: &[u8],
+        decoding_keys: &HashMap<DecodingKey>,
+        validation: &Validation,
+    ) -> Result<Self, super::Error> {
     }
 }

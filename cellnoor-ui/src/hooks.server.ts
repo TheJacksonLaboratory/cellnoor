@@ -1,11 +1,13 @@
-import { auth } from "./auth";
+import { auth } from "$lib/auth";
 import { svelteKitHandler } from "better-auth/svelte-kit";
 import { building } from "$app/environment";
 import { redirect } from "@sveltejs/kit";
+import { API_TOKEN_COOKIE_NAME } from "$lib/server/cellnoor-client";
 
 const NON_AUTH_ROUTES = [
   "/api/auth/sign-in/social",
   "/api/auth/callback/microsoft",
+  "/api/auth/jwks",
   "/auth/sign-in",
   "/health",
 ];
@@ -26,6 +28,11 @@ export async function handle({ event, resolve }) {
 
   if (!session) {
     return redirect(307, "/auth/sign-in");
+  }
+
+  const userIsSingingOut = pathname.includes("sign-out");
+  if (userIsSingingOut) {
+    event.cookies.delete(API_TOKEN_COOKIE_NAME, { path: "/" });
   }
 
   // We could destructure this (the way we do with other things above), but I'm not sure if `session` is a reference or

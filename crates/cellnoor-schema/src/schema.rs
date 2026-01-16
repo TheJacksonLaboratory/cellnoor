@@ -7,17 +7,6 @@ pub mod sql_types {
 }
 
 diesel::table! {
-    api_tokens (jti) {
-        jti -> Uuid,
-        sub -> Nullable<Uuid>,
-        name -> Text,
-        description -> Nullable<Text>,
-        iat -> Timestamptz,
-        exp -> Timestamptz,
-    }
-}
-
-diesel::table! {
     cdna (id) {
         id -> Uuid,
         readable_id -> Text,
@@ -154,6 +143,27 @@ diesel::table! {
 }
 
 diesel::table! {
+    json_web_keys (id) {
+        id -> Uuid,
+        public_key -> Text,
+        private_key -> Text,
+        created_at -> Timestamptz,
+        expires_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
+    json_web_tokens (jti) {
+        jti -> Uuid,
+        sub -> Nullable<Uuid>,
+        name -> Text,
+        description -> Nullable<Text>,
+        iat -> Timestamptz,
+        exp -> Timestamptz,
+    }
+}
+
+diesel::table! {
     lab_membership (lab_id, member_id) {
         lab_id -> Uuid,
         member_id -> Uuid,
@@ -240,7 +250,7 @@ diesel::table! {
 }
 
 diesel::table! {
-    revoked_tokens (jti) {
+    revoked_json_web_tokens (jti) {
         jti -> Uuid,
         exp -> Timestamptz,
     }
@@ -273,7 +283,7 @@ diesel::table! {
         name -> Text,
         kit -> Text,
         well -> Text,
-        sequences -> Array<CaseInsensitiveText>,
+        sequences -> Array<Nullable<CaseInsensitiveText>>,
     }
 }
 
@@ -385,16 +395,15 @@ diesel::table! {
         id -> Uuid,
         links -> Jsonb,
         name -> Text,
-        library_types -> Nullable<Array<CaseInsensitiveText>>,
+        library_types -> Nullable<Array<Nullable<CaseInsensitiveText>>>,
         sample_multiplexing -> Nullable<Text>,
         chemistry_version -> Text,
         protocol_url -> Text,
         chromium_chip -> Nullable<Text>,
-        cmdlines -> Nullable<Array<CaseInsensitiveText>>,
+        cmdlines -> Nullable<Array<Nullable<CaseInsensitiveText>>>,
     }
 }
 
-diesel::joinable!(api_tokens -> people (sub));
 diesel::joinable!(cdna -> gem_pools (gem_pool_id));
 diesel::joinable!(cdna_measurements -> cdna (cdna_id));
 diesel::joinable!(cdna_measurements -> people (measured_by));
@@ -414,6 +423,7 @@ diesel::joinable!(committee_approval -> institutions (institution_id));
 diesel::joinable!(committee_approval -> specimens (specimen_id));
 diesel::joinable!(dual_index_sets -> index_kits (kit));
 diesel::joinable!(gem_pools -> chromium_runs (chromium_run_id));
+diesel::joinable!(json_web_tokens -> people (sub));
 diesel::joinable!(lab_membership -> labs (lab_id));
 diesel::joinable!(lab_membership -> people (member_id));
 diesel::joinable!(labs -> people (pi_id));
@@ -447,7 +457,6 @@ diesel::joinable!(suspension_tagging -> suspensions (suspension_id));
 diesel::joinable!(suspensions -> specimens (parent_specimen_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
-    api_tokens,
     cdna,
     cdna_measurements,
     cdna_preparers,
@@ -462,6 +471,8 @@ diesel::allow_tables_to_appear_in_same_query!(
     gem_pools,
     index_kits,
     institutions,
+    json_web_keys,
+    json_web_tokens,
     lab_membership,
     labs,
     libraries,
@@ -470,7 +481,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     library_type_specifications,
     multiplexing_tags,
     people,
-    revoked_tokens,
+    revoked_json_web_tokens,
     sequencing_runs,
     sequencing_submissions,
     single_index_sets,

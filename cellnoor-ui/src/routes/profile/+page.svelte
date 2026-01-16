@@ -7,7 +7,7 @@
     apiTokens,
     user: { name: userName, email, image, userId },
     today,
-    oneYearFromNow,
+    sixMonthsFromNow,
   } = $derived(data);
   let apiKeysDialogBox: HTMLDialogElement;
 </script>
@@ -95,7 +95,7 @@
               name="expiresOn"
               type="date"
               min={today}
-              max={oneYearFromNow}
+              max={sixMonthsFromNow}
               required
             />
           </fieldset>

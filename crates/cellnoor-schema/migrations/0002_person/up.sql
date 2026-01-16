@@ -22,9 +22,17 @@ create table people (
     is_computational_staff boolean not null default false
 );
 
+create table json_web_keys (
+    id uuid primary key default uuidv7(),
+    public_key text not null,
+    private_key text not null,
+    created_at timestamptz not null,
+    expires_at timestamptz not null
+);
+
 -- This table is just for displaying the JWTs a user has created in the UI. It's not used for auth checks in
 -- cellnoor-api
-create table api_tokens (
+create table json_web_tokens (
     jti uuid primary key,
     sub uuid references people on delete cascade on update cascade,
     name case_insensitive_text not null,
@@ -33,7 +41,7 @@ create table api_tokens (
     exp timestamptz not null
 );
 
-create table revoked_tokens (
+create table revoked_json_web_tokens (
     jti uuid primary key,
     exp timestamptz not null
 );

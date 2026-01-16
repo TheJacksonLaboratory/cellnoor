@@ -1,13 +1,13 @@
 import type { RequestEvent, ServerLoadEvent } from "@sveltejs/kit";
 import { readConfig } from "$lib/server/config";
 import type { ApiErrorResponse } from "cellnoor-types/ApiErrorResponse";
-import { auth } from "../../auth";
+import { auth } from "../auth";
 import * as jose from "jose";
 import { getRequestEvent } from "$app/server";
 
 let apiClient: ApiClient | null = null;
 
-const API_TOKEN_COOKIE_NAME = "cellnoor-ui.api_token";
+export const API_TOKEN_COOKIE_NAME = "cellnoor-ui.api_token";
 
 export class ApiClient {
   readonly apiBaseUrl: string;

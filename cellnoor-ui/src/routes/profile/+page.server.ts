@@ -1,4 +1,4 @@
-import { auth } from "../../auth.js";
+import { auth } from "$lib/auth";
 import * as jose from "jose";
 import { getDbClient } from "$lib/server/db-client.js";
 import {
@@ -20,14 +20,14 @@ async function createNewApiToken(userId: string, expiresOn: Date) {
   return token;
 }
 
-function oneYearFromNow() {
+function sixMonthsFromNow() {
   const now = new Date();
-  now.setFullYear(now.getFullYear() + 1);
+  now.setMonth(now.getMonth() + 6);
 
   return now;
 }
 
-function justGetTheDamnDate(date: Date) {
+function justGetTheDamnDateAsAStringIHateThisLanguage(date: Date) {
   return date.toISOString().split("T")[0]!;
 }
 
@@ -41,7 +41,7 @@ function validateFormData(data: FormData) {
   }
 
   const expiresOn = new Date(expiresOnStr.toString());
-  if (expiresOn > oneYearFromNow()) {
+  if (expiresOn > sixMonthsFromNow()) {
     return {
       error: "Expiration date cannot be more than one year into the future",
     };
@@ -101,7 +101,7 @@ export async function load({ locals: { user: { userId } } }) {
 
   return {
     apiTokens,
-    today: justGetTheDamnDate(new Date()),
-    oneYearFromNow: justGetTheDamnDate(oneYearFromNow()),
+    today: justGetTheDamnDateAsAStringIHateThisLanguage(new Date()),
+    sixMonthsFromNow: justGetTheDamnDateAsAStringIHateThisLanguage(sixMonthsFromNow()),
   };
 }

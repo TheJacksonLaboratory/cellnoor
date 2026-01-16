@@ -1,40 +1,38 @@
 use crate::db;
 
+static NO_AUTH_TOKEN_FOUND: &'static str = "no auth token found";
+
+static INVALID_AUTH_TOKEN: &'static str = "invalid auth token";
+
 #[derive(Debug, thiserror::Error, serde::Serialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(rename = "AuthError"))]
 #[serde(rename_all = "snake_case", tag = "type", content = "info")]
 #[error(transparent)]
 pub enum Error {
-    #[error("{message}")]
-    Unauthorized {
+    #[error("no auth token found")]
+    NoAuthTokenFound {
+        message: &'static str,
+    },
+    #[error("invalid auth token")]
+    InvalidAuthToken {
         message: String,
     },
     Database(#[from] db::Error),
 }
 
+impl From<jsonwebtoken::errors::Error> for Error {
+    fn from(err: jsonwebtoken::errors::Error) -> Self {
+        Self::InvalidAuthToken {
+            message: err.to_string(),
+        }
+    }
+}
+
 impl Error {
     pub fn no_auth_token() -> Self {
-        Self::Unauthorized {
-            message: "no token in 'Authorization: Bearer' header".to_owned(),
-        }
-    }
-
-    pub fn invalid_api_key() -> Self {
-        Self::Unauthorized {
-            message: "invalid API key".to_owned(),
-        }
-    }
-
-    pub fn no_ui_auth_token() -> Self {
-        Self::Unauthorized {
-            message: "no UI authentication token".to_owned(),
-        }
-    }
-
-    pub fn invalid_ui_auth_token() -> Self {
-        Self::Unauthorized {
-            message: "invalid UI authentication token".to_owned(),
+        Self::NoAuthTokenFound {
+            message: "no authorization token found in cookies nor in 'Authorization: Bearer' header",
         }
     }
 }
