@@ -114,13 +114,7 @@ impl From<deadpool_diesel::InteractError> for ErrorResponse {
 impl From<auth::Error> for ErrorResponse {
     fn from(err: auth::Error) -> Self {
         match err {
-            auth::Error::NoAuthTokenFound { .. } => Self {
-                status: StatusCode::UNAUTHORIZED.as_u16(),
-                public_error: err.into(),
-                internal_error: None,
-            },
-
-            auth::Error::InvalidAuthToken { .. } => Self {
+            auth::Error::NoAuthTokenFound { .. } | auth::Error::InvalidAuthToken { .. } => Self {
                 status: StatusCode::UNAUTHORIZED.as_u16(),
                 public_error: err.into(),
                 internal_error: None,

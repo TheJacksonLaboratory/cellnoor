@@ -1,15 +1,17 @@
 use std::sync::Arc;
 
 use anyhow::{Context, anyhow};
+use cellnoor_schema::json_web_keys;
 use deadpool_diesel::{
     Runtime,
     postgres::{Manager as PoolManager, Pool},
 };
 use diesel::{PgConnection, prelude::*};
 use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
-use jsonwebtoken::DecodingKey;
+use jiff_diesel::ToDiesel;
+use jsonwebtoken::{Algorithm, DecodingKey, Validation};
 use secrecy::{ExposeSecret, SecretString};
-use uuid::Uuid;
+use tokio::sync::{RwLock, RwLockReadGuard};
 
 use crate::{
     config::{AppMode, Config},
@@ -20,25 +22,71 @@ use crate::{
 #[derive(Clone)]
 pub struct DevelopmentState {
     db_pool: Pool,
-    user_id: Uuid,
 }
 
-impl DevelopmentState {
-    pub fn user_id(&self) -> Uuid {
-        self.user_id
+pub struct JwtDecodingKey {
+    expires_at: jiff::Timestamp,
+    public_key: DecodingKey,
+}
+impl JwtDecodingKey {
+    fn is_expired(&self) -> bool {
+        self.expires_at < jiff::Timestamp::now()
+    }
+
+    pub fn public_key(&self) -> &DecodingKey {
+        &self.public_key
     }
 }
 
-// TODO: change this to a key-set!
 #[derive(Clone)]
 pub struct ProductionState {
     db_pool: Pool,
-    jwt_decoding_key: Arc<DecodingKey>,
+    jwt_decoding_key: Arc<RwLock<Option<JwtDecodingKey>>>,
+    jwt_validation: Arc<Validation>,
 }
 
 impl ProductionState {
-    pub fn jwt_decoding_key(&self) -> &DecodingKey {
-        &self.jwt_decoding_key
+    async fn new_jwk(&self) -> Result<JwtDecodingKey, db::Error> {
+        let db_conn = self.db_pool.get().await?;
+
+        let (expires_at, public_key): (jiff_diesel::Timestamp, String) = db_conn
+            .interact(|db_conn| {
+                json_web_keys::table
+                    .select((json_web_keys::expires_at, json_web_keys::public_key))
+                    .filter(json_web_keys::expires_at.gt(jiff::Timestamp::now().to_diesel()))
+                    .first(db_conn)
+            })
+            .await??;
+
+        Ok(JwtDecodingKey {
+            expires_at: expires_at.to_jiff(),
+            public_key: DecodingKey::from_jwk(&serde_json::from_str(&public_key).unwrap()).unwrap(),
+        })
+    }
+
+    pub async fn jwt_decoding_key(
+        &self,
+    ) -> Result<RwLockReadGuard<'_, Option<JwtDecodingKey>>, db::Error> {
+        let Self {
+            jwt_decoding_key, ..
+        } = self;
+
+        let need_new_jwk = {
+            let maybe_jwk = jwt_decoding_key.read().await;
+
+            maybe_jwk.as_ref().is_none_or(JwtDecodingKey::is_expired)
+        };
+
+        if need_new_jwk {
+            let mut writelock = jwt_decoding_key.write().await;
+            *writelock = Some(self.new_jwk().await?);
+        }
+
+        Ok(self.jwt_decoding_key.read().await)
+    }
+
+    pub fn jwt_validation(&self) -> &Validation {
+        &self.jwt_validation
     }
 }
 
@@ -62,16 +110,6 @@ fn create_db_pool(db_url: &SecretString, max_size: Option<usize>) -> anyhow::Res
     }
 
     Ok(builder.build()?)
-}
-
-fn create_dev_superuser(db_conn: &mut PgConnection) -> anyhow::Result<Uuid> {
-    let user_id = Uuid::now_v7();
-
-    diesel::sql_query(format!(r#"create user "{user_id}" with superuser"#))
-        .execute(db_conn)
-        .context("failed to create dev superuser")?;
-
-    Ok(user_id)
 }
 
 fn run_migrations(db_conn: &mut PgConnection) -> anyhow::Result<()> {
@@ -133,17 +171,24 @@ impl AppState {
         let db_pool = create_db_pool(&db_url, None)?;
 
         let state = match config.mode() {
-            AppMode::Development => {
-                let mut db_conn = PgConnection::establish(config.db_root_url().expose_secret())?;
-                let user_id = create_dev_superuser(&mut db_conn)?;
-                Self::Development(DevelopmentState { db_pool, user_id })
+            AppMode::Development => Self::Development(DevelopmentState { db_pool }),
+            AppMode::Production => {
+                let mut jwt_validation = Validation::new(Algorithm::EdDSA);
+
+                if let Some(api_url) = config.public_api_url() {
+                    jwt_validation.set_audience(&[api_url]);
+                }
+
+                if let Some(ui_url) = config.public_ui_url() {
+                    jwt_validation.set_issuer(&[ui_url]);
+                }
+
+                Self::Production(ProductionState {
+                    db_pool,
+                    jwt_decoding_key: Arc::new(RwLock::new(None)),
+                    jwt_validation: Arc::new(jwt_validation),
+                })
             }
-            AppMode::Production => Self::Production(ProductionState {
-                db_pool,
-                jwt_decoding_key: Arc::new(DecodingKey::from_secret(
-                    config.auth_secret().expose_secret().as_bytes(),
-                )),
-            }),
         };
 
         Ok(state)

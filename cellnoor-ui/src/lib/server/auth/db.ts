@@ -45,7 +45,7 @@ export async function upsertPersonIntoDb(
   return createdPerson;
 }
 
-export async function getUserApiTokens(
+export async function getUserJsonWebTokens(
   userId: string,
   dbClient: Bun.SQL,
 ): Promise<
@@ -57,10 +57,10 @@ export async function getUserApiTokens(
     exp: Date;
   }[]
 > {
-  return await dbClient`select jti, name, description, iat, exp from api_tokens where sub = ${userId} order by iat`;
+  return await dbClient`select jti, name, description, iat, exp from json_web_tokens where sub = ${userId} order by iat`;
 }
 
-export async function insertApiToken(
+export async function insertJsonWebToken(
   data: {
     jti: string;
     sub: string;
@@ -71,7 +71,7 @@ export async function insertApiToken(
   },
   dbClient: Bun.SQL,
 ) {
-  await dbClient`insert into api_tokens ${dbClient(data)}`;
+  await dbClient`insert into json_web_tokens ${dbClient(data)}`;
 }
 
 export async function deleteApiTokenFromDb(
@@ -80,9 +80,9 @@ export async function deleteApiTokenFromDb(
 ) {
   await dbClient.begin(async (client) => {
     const result =
-      await client`delete from api_tokens where sub = ${userId} and jti = ${jti} returning exp`;
+      await client`delete from json_web_tokens where sub = ${userId} and jti = ${jti} returning exp`;
 
     const revoke = { jti, exp: result[0].exp };
-    await client`insert into revoked_tokens ${client(revoke)}`;
+    await client`insert into revoked_json_web_tokens ${client(revoke)}`;
   });
 }

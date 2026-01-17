@@ -23,9 +23,9 @@ use jiff_diesel::ToDiesel;
 use crate::{
     api::{
         extract::{auth::AuthenticatedUser, query::QsQuery},
-        routes::{ApiResponse, Root, handle_request},
+        routes::{ApiResponse, Root, handle_api_request},
     },
-    db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, utils::like_any},
+    db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, like_any},
     state::AppState,
 };
 
@@ -35,7 +35,10 @@ pub async fn list_chromium_datasets(
     user: AuthenticatedUser,
     QsQuery(query): QsQuery<ChromiumDatasetQuery>,
 ) -> ApiResponse<Vec<ChromiumDatasetSummary>> {
-    Ok((StatusCode::OK, handle_request(state, user, query).await?))
+    Ok((
+        StatusCode::OK,
+        handle_api_request(state, user, query).await?,
+    ))
 }
 
 impl db::Operation<Vec<ChromiumDatasetSummary>> for ChromiumDatasetQuery {

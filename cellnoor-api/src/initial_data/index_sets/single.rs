@@ -44,7 +44,7 @@ struct SingleIndexSetInsertion<'a> {
     name: &'a str,
     kit: &'a str,
     well: &'a str,
-    sequences: &'a [StringWrapper],
+    sequences: Vec<Option<&'a StringWrapper>>,
 }
 
 impl Upsert for Vec<SingleIndexSet> {
@@ -67,7 +67,7 @@ impl Upsert for Vec<SingleIndexSet> {
                 name: index_set_name,
                 kit: kit_name,
                 well: well_name,
-                sequences,
+                sequences: sequences.iter().map(Some).collect(),
             });
         }
 

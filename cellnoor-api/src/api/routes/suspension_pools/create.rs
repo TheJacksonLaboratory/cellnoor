@@ -9,7 +9,7 @@ use uuid::Uuid;
 use crate::{
     api::{
         extract::{ValidJson, auth::AuthenticatedUser},
-        routes::{ApiResponse, Root, handle_request},
+        routes::{ApiResponse, Root, handle_api_request},
     },
     db,
     state::AppState,
@@ -21,7 +21,7 @@ pub(super) async fn create_suspension_pool(
     user: AuthenticatedUser,
     ValidJson(request): ValidJson<SuspensionPoolCreation>,
 ) -> ApiResponse<SuspensionPool> {
-    let item = handle_request(state, user, request).await?;
+    let item = handle_api_request(state, user, request).await?;
     Ok((StatusCode::CREATED, item))
 }
 

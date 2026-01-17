@@ -7,7 +7,7 @@ use cellnoor_models::{
 use crate::{
     api::{
         extract::{auth::AuthenticatedUser, query::QsQuery},
-        routes::{ApiResponse, handle_request},
+        routes::{ApiResponse, handle_api_request},
     },
     db::{self},
     state::AppState,
@@ -19,7 +19,7 @@ pub async fn list_members(
     user: AuthenticatedUser,
     QsQuery(request): QsQuery<person::PersonQuery>,
 ) -> ApiResponse<Vec<person::PersonSummary>> {
-    let items = handle_request(state, user, (institution_id, request)).await?;
+    let items = handle_api_request(state, user, (institution_id, request)).await?;
     Ok((StatusCode::OK, items))
 }
 

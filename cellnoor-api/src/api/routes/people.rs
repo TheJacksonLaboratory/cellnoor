@@ -1,7 +1,7 @@
 use axum::Router;
 use axum_extra::routing::RouterExt;
 
-use super::{ApiResponse, Root, handle_request};
+use super::{ApiResponse, Root, handle_api_request};
 use crate::state::AppState;
 
 mod create;

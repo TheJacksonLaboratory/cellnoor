@@ -6,7 +6,7 @@ use diesel::{PgConnection, prelude::*};
 use crate::{
     api::{
         extract::auth::AuthenticatedUser,
-        routes::{ApiResponse, handle_request},
+        routes::{ApiResponse, handle_api_request},
     },
     db,
     state::AppState,
@@ -17,7 +17,7 @@ pub(super) async fn fetch_library(
     state: State<AppState>,
     user: AuthenticatedUser,
 ) -> ApiResponse<Library> {
-    let item = handle_request(state, user, request).await?;
+    let item = handle_api_request(state, user, request).await?;
     Ok((StatusCode::OK, item))
 }
 

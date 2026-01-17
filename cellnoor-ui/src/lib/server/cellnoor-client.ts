@@ -50,13 +50,9 @@ export class ApiClient {
   private async refreshApiToken(
     apiToken: string,
   ) {
-    try {
-      await auth.api.verifyJWT({ body: { token: apiToken } });
-    } catch (error) {
-      if (!(error instanceof jose.errors.JWTExpired)) {
-        throw error;
-      }
-
+    // We don't actually need to verify the JWT because the REST API will do that for us
+    const { exp } = jose.decodeJwt(apiToken);
+    if ((exp! * 1000) < Date.now()) {
       await this.setNewApiToken();
     }
   }

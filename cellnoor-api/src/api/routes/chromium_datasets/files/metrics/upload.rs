@@ -23,7 +23,7 @@ use crate::{
         routes::{
             ApiResponse,
             chromium_datasets::files::common::{FieldExt, ParsedMultipartFormField},
-            handle_request,
+            handle_api_request,
         },
     },
     db,
@@ -64,7 +64,7 @@ pub async fn upload_metrics_file(
         extracted_metrics_files.push((extracted, parsed_content));
     }
 
-    let _ = handle_request(state, user, (chromium_dataset_id, extracted_metrics_files)).await?;
+    let _ = handle_api_request(state, user, (chromium_dataset_id, extracted_metrics_files)).await?;
     Ok((StatusCode::CREATED, Json(())))
 }
 

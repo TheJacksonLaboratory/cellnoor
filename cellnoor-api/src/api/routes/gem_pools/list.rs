@@ -6,7 +6,7 @@ use diesel::prelude::*;
 use crate::{
     api::{
         extract::{auth::AuthenticatedUser, query::QsQuery},
-        routes::{ApiResponse, Root, handle_request},
+        routes::{ApiResponse, Root, handle_api_request},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter},
     state::AppState,
@@ -18,7 +18,7 @@ pub(super) async fn list_gems(
     user: AuthenticatedUser,
     QsQuery(request): QsQuery<GemPoolQuery>,
 ) -> ApiResponse<Vec<GemPoolSummary>> {
-    let items = handle_request(state, user, request).await?;
+    let items = handle_api_request(state, user, request).await?;
     Ok((StatusCode::OK, items))
 }
 

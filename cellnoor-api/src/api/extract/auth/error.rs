@@ -1,8 +1,8 @@
 use crate::db;
 
-static NO_AUTH_TOKEN_FOUND: &'static str = "no auth token found";
+static NO_AUTH_TOKEN_FOUND: &str = "no auth token found";
 
-static INVALID_AUTH_TOKEN: &'static str = "invalid auth token";
+static INVALID_AUTH_TOKEN: &str = "invalid auth token";
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
@@ -32,7 +32,8 @@ impl From<jsonwebtoken::errors::Error> for Error {
 impl Error {
     pub fn no_auth_token() -> Self {
         Self::NoAuthTokenFound {
-            message: "no authorization token found in cookies nor in 'Authorization: Bearer' header",
+            message: "no authorization token found in cookies nor in 'Authorization: Bearer' \
+                      header",
         }
     }
 }

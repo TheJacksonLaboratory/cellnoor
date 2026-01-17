@@ -46,7 +46,7 @@ type ApiResponse<T> = Result<(StatusCode, Json<T>), super::error::ErrorResponse>
 #[typed_path("/")]
 struct Root;
 
-async fn handle_request<Request, Response>(
+async fn handle_api_request<Request, Response>(
     State(state): State<AppState>,
     user: AuthenticatedUser,
     request: Request,
@@ -57,10 +57,20 @@ where
 {
     tracing::info!("{request:?}");
 
-    let db_conn = state.db_conn().await?;
+    let db_conn1 = state.db_conn().await?;
+    let db_conn2 = state.db_conn().await?;
 
+    let (_authorization_data, _validation_data) = tokio::try_join!(
+        request.fetch_authorization_data(&user, db_conn1),
+        request.fetch_validation_data(db_conn2)
+    )?;
+
+    let request = request.authorize(&user);
+    request.validate();
+
+    let db_conn = state.db_conn().await?;
     db_conn
-        .interact(move |db_conn| request.execute_as_user(user.id(), db_conn))
+        .interact(move |db_conn| request.execute(db_conn))
         .await?
         .map(Json)
         .map_err(ErrorResponse::from)

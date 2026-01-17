@@ -1,4 +1,4 @@
-import { betterAuth } from "better-auth";
+import { betterAuth, hostname } from "better-auth";
 import { sveltekitCookies } from "better-auth/svelte-kit";
 import { getRequestEvent } from "$app/server";
 import { readConfig, readSecrets } from "$lib/server/config";
@@ -49,28 +49,52 @@ export const auth = betterAuth({
         createJwk: async (webKey) => {
           const dbClient = await getDbClient();
 
-          const data = { created_at: webKey.createdAt, expires_at: webKey.expiresAt, public_key: webKey.publicKey, private_key: webKey.privateKey };
-          const result = await dbClient`insert into json_web_keys ${dbClient(data)} returning id`;
-          const id = result[0].id;
+          const data = {
+            created_at: webKey.createdAt,
+            expires_at: webKey.expiresAt,
+            public_key: webKey.publicKey,
+            private_key: webKey.privateKey,
+          };
+          const result = await dbClient`insert into json_web_keys ${
+            dbClient(data)
+          } returning id`;
+          const id: string = result[0].id;
 
-          return {id, ...webKey};
+          return { id, ...webKey };
         },
         getJwks: async () => {
           const dbClient = await getDbClient();
-          const results = await dbClient`select id, public_key as publicKey, private_key as privateKey, created_at as createdAt, expires_at as expiresAt from json_web_keys`;
+          const results: {
+            id: string;
+            created_at: Date;
+            expires_at: Date;
+            public_key: string;
+            private_key: string;
+          }[] = await dbClient`select * from json_web_keys`;
 
-          return results;
-        }
+          return results.map(
+            ({ id, created_at, expires_at, public_key, private_key }) => {
+              return {
+                id,
+                createdAt: created_at,
+                expiresAt: expires_at,
+                publicKey: public_key,
+                privateKey: private_key,
+              };
+            },
+          );
+        },
       },
       jwks: {
-        // A signed JWT is valid for 180 days
-        rotationInterval: 60 * 60 * 24 * 90, // 90 days
-        gracePeriod: 60 * 60 * 24 * 90, // 90 days
+        rotationInterval: 60 * 60 * 24 * 90, // 180 days
+        gracePeriod: 0,
       },
       jwt: {
         getSubject: (session) => {
           return session.user.userId;
         },
+        issuer: await readConfig().then((c) => c.publicUrl) ??
+          "http://localhost:5173", // Just assume that if `publicUrl` isn't set, we're serving on dev
         audience: await readConfig().then((c) => c.apiUrl),
         expirationTime: "30 minutes",
         definePayload(

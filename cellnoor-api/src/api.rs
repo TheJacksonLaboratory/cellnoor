@@ -1,6 +1,8 @@
 use anyhow::Context;
 use axum::{Extension, Router, routing::get};
 use camino::Utf8Path;
+pub use error::{Error, ErrorResponse};
+pub use extract::auth::AuthenticatedUser;
 use serde_qs::axum::QsQueryConfig;
 use tokio::net::TcpListener;
 
@@ -9,8 +11,6 @@ use crate::{config::Config, state::AppState};
 mod error;
 mod extract;
 mod routes;
-
-pub use error::{Error, ErrorResponse};
 
 #[cfg(test)]
 pub async fn serve_integration_test(config: Config) -> anyhow::Result<()> {

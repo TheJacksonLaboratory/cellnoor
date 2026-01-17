@@ -9,7 +9,7 @@ use crate::{
     api::{
         extract::auth::AuthenticatedUser,
         routes::{
-            ApiResponse, chromium_datasets::chromium_datasets_to_all_specimens, handle_request,
+            ApiResponse, chromium_datasets::chromium_datasets_to_all_specimens, handle_api_request,
         },
     },
     db,
@@ -23,7 +23,7 @@ pub async fn list_chromium_datasets(
 ) -> ApiResponse<Vec<ChromiumDatasetSummary>> {
     Ok((
         StatusCode::OK,
-        handle_request(state, user, specimen_id).await?,
+        handle_api_request(state, user, specimen_id).await?,
     ))
 }
 

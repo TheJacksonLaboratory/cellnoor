@@ -8,7 +8,7 @@ use crate::{
     db::{self, Operation},
     state::AppState,
 };
-#[axum::debug_handler]
+
 pub async fn fetch_web_summary(
     web_summary_path: ChromiumDatasetWebSummaryFilename,
     state: State<AppState>,

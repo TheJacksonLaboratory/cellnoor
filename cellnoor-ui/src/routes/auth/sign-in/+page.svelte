@@ -4,7 +4,7 @@
 
 <div class="flex flex-col place-items-center place-content-center h-screen">
   <div
-    class="flex flex-col place-items-center place-content-between border rounded-box h-1/8 p-4"
+    class="flex flex-col place-items-center place-content-between border rounded-box h-1/6 p-4"
   >
     <div class="flex flex-row items-center">
       <img

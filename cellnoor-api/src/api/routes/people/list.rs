@@ -6,9 +6,9 @@ use diesel::{dsl::AssumeNotNull, prelude::*};
 use crate::{
     api::{
         extract::{auth::AuthenticatedUser, query::QsQuery},
-        routes::{ApiResponse, Root, handle_request},
+        routes::{ApiResponse, Root, handle_api_request},
     },
-    db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, utils::like_any},
+    db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, like_any},
     state::AppState,
 };
 
@@ -18,7 +18,7 @@ pub(super) async fn list_people(
     user: AuthenticatedUser,
     QsQuery(request): QsQuery<PersonQuery>,
 ) -> ApiResponse<Vec<PersonSummary>> {
-    let items = handle_request(state, user, request).await?;
+    let items = handle_api_request(state, user, request).await?;
     Ok((StatusCode::OK, items))
 }
 

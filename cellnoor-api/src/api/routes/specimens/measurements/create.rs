@@ -9,7 +9,7 @@ use diesel::{RunQueryDsl, prelude::*};
 use crate::{
     api::{
         extract::{ValidPathJson, auth::AuthenticatedUser},
-        routes::{ApiResponse, handle_request},
+        routes::{ApiResponse, handle_api_request},
     },
     db,
     state::AppState,
@@ -23,7 +23,7 @@ pub async fn create_measurement(
         SpecimenMeasurementCreation,
     >,
 ) -> ApiResponse<SpecimenMeasurement> {
-    let item = handle_request(state, user, (specimen_id, measurement)).await?;
+    let item = handle_api_request(state, user, (specimen_id, measurement)).await?;
     Ok((StatusCode::CREATED, item))
 }
 

@@ -1,22 +1,30 @@
-use std::fmt::Display;
+use diesel::PgConnection;
 
-use diesel::{Connection, PgConnection, RunQueryDsl};
+use crate::{
+    api::AuthenticatedUser,
+    db::{self, DbConnection},
+};
 
 pub trait Operation<Output>: Sized {
-    fn execute(self, db_conn: &mut PgConnection) -> Result<Output, super::Error>;
-
-    fn execute_as_user<UserId>(
-        self,
-        user_id: UserId,
-        db_conn: &mut PgConnection,
-    ) -> Result<Output, super::Error>
-    where
-        UserId: Display,
-    {
-        db_conn.transaction(|tx| {
-            diesel::sql_query(format!(r#"set local role "{user_id}""#)).execute(tx)?;
-
-            self.execute(tx)
-        })
+    async fn fetch_authorization_data(
+        &self,
+        _user: &AuthenticatedUser,
+        _db_conn: DbConnection,
+    ) -> Result<(), db::Error> {
+        tracing::info!("user is successfuly authenticated");
+        Ok(())
     }
+
+    async fn fetch_validation_data(&self, _db_conn: DbConnection) -> Result<(), db::Error> {
+        tracing::info!("user is authenticated");
+        Ok(())
+    }
+
+    fn authorize(self, _user: &AuthenticatedUser) -> Self {
+        self
+    }
+
+    fn validate(&self) {}
+
+    fn execute(self, db_conn: &mut PgConnection) -> Result<Output, super::Error>;
 }

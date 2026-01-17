@@ -30,8 +30,6 @@ interface Secrets {
   cellnoorUiDbPassword: string;
   dbName: string;
   authSecret: string;
-  jwtRs256PrivateKey: string;
-  jwtRs256PublicKey: string;
   microsoftEntraClientId: string;
   microsoftEntraClientSecret: string;
   microsoftEntraTenant: string;
@@ -50,8 +48,6 @@ export async function readSecrets() {
     cellnoorUiDbPassword: await readSecret("cellnoor_ui_db_password"),
     dbName: await readSecret("db_name"),
     authSecret: await readSecret("auth_secret"),
-    jwtRs256PrivateKey: await readSecret("jwt_rs256_private_key"),
-    jwtRs256PublicKey: await readSecret("jwt_rs256_public_key"),
     microsoftEntraClientId: await readSecret("microsoft_entra_client_id"),
     microsoftEntraClientSecret: await readSecret(
       "microsoft_entra_client_secret",

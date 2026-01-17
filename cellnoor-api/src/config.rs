@@ -19,7 +19,8 @@ pub struct Config {
     db_host: String,
     db_port: u16,
     db_name: String,
-    auth_secret: SecretString,
+    public_api_url: Option<String>,
+    public_ui_url: Option<String>,
     host: String,
     port: u16,
     initial_data: InitialData,
@@ -38,7 +39,8 @@ impl Config {
             db_host,
             db_port,
             db_name,
-            auth_secret,
+            public_api_url,
+            public_ui_url,
             host,
             port,
             log_dir,
@@ -55,7 +57,10 @@ impl Config {
             db_host: db_host.or_load(config_dir.join("db_host"))?,
             db_port: db_port.or_load(config_dir.join("db_port"))?,
             db_name: db_name.or_load(config_dir.join("db_name"))?,
-            auth_secret: auth_secret.or_load(config_dir.join("auth_secret"))?,
+            public_api_url: public_api_url
+                .or_load(config_dir.join("public_api_url"))
+                .ok(),
+            public_ui_url: public_ui_url.or_load(config_dir.join("public_ui_url")).ok(),
             host: host.or_load(config_dir.join("host"))?,
             port: port.or_load(config_dir.join("port"))?,
             initial_data: None::<InitialData>.or_load(config_dir.join("initial_data"))?,
@@ -112,8 +117,13 @@ impl Config {
     }
 
     #[must_use]
-    pub fn auth_secret(&self) -> &SecretString {
-        &self.auth_secret
+    pub fn public_api_url(&self) -> Option<&str> {
+        self.public_api_url.as_deref()
+    }
+
+    #[must_use]
+    pub fn public_ui_url(&self) -> Option<&str> {
+        self.public_ui_url.as_deref()
     }
 
     #[must_use]
@@ -165,8 +175,10 @@ struct Cli {
     db_port: Option<u16>,
     #[arg(long, env = "CELLNOOR_DB_NAME")]
     db_name: Option<String>,
-    #[arg(long, env = "CELLNOOR_AUTH_SECRET")]
-    auth_secret: Option<SecretString>,
+    #[arg(long, env = "CELLNOOR_PUBLIC_API_URL")]
+    public_api_url: Option<String>,
+    #[arg(long, env = "CELLNOOR_PUBLIC_UI_URL")]
+    public_ui_url: Option<String>,
     #[arg(long, env = "CELLNOOR_API_HOST")]
     host: Option<String>,
     #[arg(long, env = "CELLNOOR_API_PORT")]

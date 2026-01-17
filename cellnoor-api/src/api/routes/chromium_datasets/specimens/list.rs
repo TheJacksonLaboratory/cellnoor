@@ -9,7 +9,7 @@ use diesel::prelude::*;
 use crate::{
     api::{
         extract::auth::AuthenticatedUser,
-        routes::{ApiResponse, handle_request},
+        routes::{ApiResponse, handle_api_request},
     },
     db,
     state::AppState,
@@ -22,7 +22,7 @@ pub async fn list_specimens(
 ) -> ApiResponse<Vec<SpecimenSummary>> {
     Ok((
         StatusCode::OK,
-        handle_request(state, user, dataset_id).await?,
+        handle_api_request(state, user, dataset_id).await?,
     ))
 }
 

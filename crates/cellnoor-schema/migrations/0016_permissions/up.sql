@@ -1,6 +1,10 @@
 -- cellnoor-api is the main app user. It can do anything, but it's gated behind authentication
 grant all on all tables in schema public to cellnoor_api;
 
+-- cellnoor-api shouldn't be able to read anything besides the public key though (anyways the private key is encrypted)
+revoke all on json_web_keys from cellnoor_api;
+grant select (id, public_key, expires_at) on json_web_keys to cellnoor_api;
+
 -- cellnoor_ui creates and updates people, but it can't do anything else (I don't trust my JavaScript skills). It's
 -- also gated behind authentication
 grant select, insert, update on people to cellnoor_ui;

@@ -3,8 +3,8 @@ import * as jose from "jose";
 import { getDbClient } from "$lib/server/db-client.js";
 import {
   deleteApiTokenFromDb,
-  getUserApiTokens,
-  insertApiToken,
+  getUserJsonWebTokens,
+  insertJsonWebToken,
 } from "$lib/server/auth/db.js";
 
 async function createNewApiToken(userId: string, expiresOn: Date) {
@@ -76,7 +76,7 @@ export const actions = {
     };
 
     const dbClient = await getDbClient();
-    await insertApiToken(apiTokenForDb, dbClient);
+    await insertJsonWebToken(apiTokenForDb, dbClient);
 
     return { apiToken };
   },
@@ -97,11 +97,13 @@ export const actions = {
 
 export async function load({ locals: { user: { userId } } }) {
   const dbClient = await getDbClient();
-  const apiTokens = await getUserApiTokens(userId, dbClient);
+  const apiTokens = await getUserJsonWebTokens(userId, dbClient);
 
   return {
     apiTokens,
     today: justGetTheDamnDateAsAStringIHateThisLanguage(new Date()),
-    sixMonthsFromNow: justGetTheDamnDateAsAStringIHateThisLanguage(sixMonthsFromNow()),
+    sixMonthsFromNow: justGetTheDamnDateAsAStringIHateThisLanguage(
+      sixMonthsFromNow(),
+    ),
   };
 }

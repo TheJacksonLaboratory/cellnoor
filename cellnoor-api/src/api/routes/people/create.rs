@@ -7,7 +7,7 @@ use diesel::{
     sql_types::{Array, Text},
 };
 
-use super::{ApiResponse, Root, handle_request};
+use super::{ApiResponse, Root, handle_api_request};
 use crate::{
     api::extract::{ValidJson, auth::AuthenticatedUser},
     db,
@@ -20,7 +20,7 @@ pub(super) async fn create_person(
     user: AuthenticatedUser,
     ValidJson(request): ValidJson<PersonCreation>,
 ) -> ApiResponse<Person> {
-    let item = handle_request(state, user, request).await?;
+    let item = handle_api_request(state, user, request).await?;
     Ok((StatusCode::CREATED, item))
 }
 
