@@ -35,7 +35,6 @@ export class ApiClient {
     const { request: { headers }, cookies } = getRequestEvent();
 
     const { token: newToken } = await auth.api.getToken({ headers });
-    auth.api.getToken({ headers });
     const { exp } = jose.decodeJwt(newToken);
 
     cookies.set(API_TOKEN_COOKIE_NAME, newToken, {

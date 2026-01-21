@@ -14,12 +14,13 @@ use crate::{
 };
 
 mod api;
+mod common;
 mod ui;
 
 // We don't implement any function to get the user ID so as to statically ensure
 // that the authorization function checks whether this is an API user or a UI
 // user
-#[derive(Clone, Debug, serde::Deserialize)]
+#[derive(Clone, Debug)]
 pub enum AuthenticatedUser {
     Api(api::User),
     Ui(ui::User),
@@ -45,7 +46,12 @@ impl FromRequestParts<AppState> for AuthenticatedUser {
 
         let user = match encoded_jwt {
             EncodedJwt::FromAuthorizationHeader(t) => {
-                api::User::from_encoded_jwt(t, &decoding_key, validation).map(Self::Api)?
+                let standard_claims =
+                    common::StandardClaims::from_encoded_jwt(t, &decoding_key, validation)?;
+
+                api::User::from_standard_claims(standard_claims, app_state.db_conn().await?)
+                    .await
+                    .map(Self::Api)?
             }
             EncodedJwt::FromCookie(t) => {
                 ui::User::from_encoded_jwt(t, &decoding_key, validation).map(Self::Ui)?

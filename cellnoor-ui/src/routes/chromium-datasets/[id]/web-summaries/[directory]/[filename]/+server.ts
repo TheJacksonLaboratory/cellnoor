@@ -6,5 +6,7 @@ import type { RequestHandler } from "./$types";
 // read at least one table. I don't want to do that because the logic is implemented in Rust (bulletproof) already and
 // I don't trust myself in this infernal language.
 
-const apiClient = await ApiClient.new();
-export const GET = apiClient.get;
+export async function GET() {
+  const apiClient = await ApiClient.new();
+  return await apiClient.get();
+}

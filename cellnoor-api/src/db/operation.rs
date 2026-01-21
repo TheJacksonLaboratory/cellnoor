@@ -11,12 +11,10 @@ pub trait Operation<Output>: Sized {
         _user: &AuthenticatedUser,
         _db_conn: DbConnection,
     ) -> Result<(), db::Error> {
-        tracing::info!("user is successfuly authenticated");
         Ok(())
     }
 
     async fn fetch_validation_data(&self, _db_conn: DbConnection) -> Result<(), db::Error> {
-        tracing::info!("user is authenticated");
         Ok(())
     }
 

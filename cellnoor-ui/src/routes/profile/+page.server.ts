@@ -55,7 +55,7 @@ function validateFormData(data: FormData) {
 }
 
 export const actions = {
-  createApiToken: async ({ request, locals: { user: { userId } } }) => {
+  createApiToken: async ({ request, locals: { user: { user_id } } }) => {
     const { name, description, expiresOn, error } = validateFormData(
       await request.formData(),
     );
@@ -64,7 +64,7 @@ export const actions = {
       return { error };
     }
 
-    const apiToken = await createNewApiToken(userId, expiresOn!);
+    const apiToken = await createNewApiToken(user_id, expiresOn!);
     const { jti, sub, iat } = jose.decodeJwt(apiToken);
     const apiTokenForDb = {
       jti: jti!,
@@ -80,7 +80,7 @@ export const actions = {
 
     return { apiToken };
   },
-  deleteApiToken: async ({ request, locals: { user: { userId } } }) => {
+  deleteApiToken: async ({ request, locals: { user: { user_id } } }) => {
     const data = await request.formData();
     const jti = data.get("jti");
 
@@ -89,15 +89,15 @@ export const actions = {
     }
 
     await deleteApiTokenFromDb(
-      { userId, jti: jti.toString() },
+      { user_id, jti: jti.toString() },
       await getDbClient(),
     );
   },
 };
 
-export async function load({ locals: { user: { userId } } }) {
+export async function load({ locals: { user: { user_id } } }) {
   const dbClient = await getDbClient();
-  const apiTokens = await getUserJsonWebTokens(userId, dbClient);
+  const apiTokens = await getUserJsonWebTokens(user_id, dbClient);
 
   return {
     apiTokens,

@@ -36,7 +36,7 @@ export async function handle({ event, resolve }) {
   }
 
   // We could destructure this (the way we do with other things above), but I'm not sure if `session` is a reference or
-  // a deep clone
+  // a deep clone because JavaScript <3
   event.locals.user = session.user;
 
   return svelteKitHandler({ event, resolve, auth, building });

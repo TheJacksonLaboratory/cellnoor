@@ -176,7 +176,6 @@ diesel::table! {
         links -> Jsonb,
         name -> Text,
         pi_id -> Uuid,
-        delivery_dir -> Text,
     }
 }
 

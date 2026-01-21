@@ -1,5 +1,6 @@
 import { ApiClient } from "$lib/server/cellnoor-client";
-import type { RequestHandler } from "./$types";
 
-const apiClient = await ApiClient.new();
-export const GET = apiClient.get;
+export async function GET() {
+  const apiClient = await ApiClient.new();
+  return apiClient.get();
+}

@@ -5,7 +5,7 @@
   const { data, form } = $props();
   const {
     apiTokens,
-    user: { name: userName, email, image, userId },
+    user: { name: userName, email, image },
     today,
     sixMonthsFromNow,
   } = $derived(data);

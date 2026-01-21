@@ -45,18 +45,9 @@
           clip-rule="evenodd"
         />
       </svg>
-      <form
-        class="grow"
-        onsubmit={(event) => {
-          event.preventDefault();
-          goto(
-            `/chromium-datasets?${
-              qs.stringify(query, { encodeValuesOnly: true })
-            }`,
-          );
-        }}
-      >
+      <form action ="/chromium-datasets?/search" class="grow">
         <input
+          name="specimenName"
           bind:value={searchBarValue}
           aria-label="search for Chromium datasets by specimen name"
           type="search"

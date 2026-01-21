@@ -4,7 +4,7 @@ import { getRequestEvent } from "$app/server";
 import { readConfig, readSecrets } from "$lib/server/config";
 import { getDbClient } from "$lib/server/db-client";
 import type { MicrosoftEntraIDProfile } from "better-auth/social-providers";
-import { upsertPersonIntoDb } from "$lib/server/auth/db";
+import { getUserLabs, upsertPersonIntoDb } from "$lib/server/auth/db";
 import { createAuthMiddleware, jwt } from "better-auth/plugins";
 
 export const auth = betterAuth({
@@ -12,7 +12,7 @@ export const auth = betterAuth({
   secret: (await readSecrets()).authSecret,
   user: {
     additionalFields: {
-      userId: { type: "string" },
+      user_id: { type: "string" },
       is_admin: { type: "boolean" },
       is_biology_staff: { type: "boolean" },
       is_computational_staff: { type: "boolean" },
@@ -26,16 +26,24 @@ export const auth = betterAuth({
   },
   socialProviders: {
     microsoft: {
-      clientId: (await readSecrets()).microsoftEntraClientId,
-      clientSecret: (await readSecrets()).microsoftEntraClientSecret,
-      tenantId: (await readSecrets()).microsoftEntraTenant,
+      clientId: await readSecrets().then((c) => c.microsoftEntraClientId),
+      clientSecret: await readSecrets().then((c) =>
+        c.microsoftEntraClientSecret
+      ),
+      tenantId: await readSecrets().then((c) => c.microsoftEntraTenant),
       mapProfileToUser: async (profile) => {
+        // It's useful to have the user's roles in the JWT assigned by better-auth in order to display certain UI
+        // elements according to the user's roles. However, it's not great that this function only runs on a fresh
+        // sign-in (the user authenticates with Microsoft) because that means they have to sign out and sign in again
+        // to see changes reflected in the UI. However, in practice, I don't think this will happen often enough that
+        // it's a problem.
         const dbClient = await getDbClient();
         const { id, is_admin, is_biology_staff, is_computational_staff } =
           await upsertPersonIntoDb(profile, dbClient);
 
         return {
-          userId: id,
+          id,
+          user_id: id,
           is_admin,
           is_biology_staff,
           is_computational_staff,
@@ -91,19 +99,35 @@ export const auth = betterAuth({
       },
       jwt: {
         getSubject: (session) => {
-          return session.user.userId;
+          return session.user.user_id;
         },
         issuer: await readConfig().then((c) => c.publicUrl) ??
           "http://localhost:5173", // Just assume that if `publicUrl` isn't set, we're serving on dev
         audience: await readConfig().then((c) => c.apiUrl),
         expirationTime: "30 minutes",
-        definePayload(
-          { user: { is_admin, is_biology_staff, is_computational_staff } },
+        async definePayload(
+          {
+            user: {
+              id,
+              user_id,
+              is_admin,
+              is_biology_staff,
+              is_computational_staff,
+            },
+          },
         ) {
+          const dbClient = await getDbClient();
+          const { labs } = await getUserLabs(user_id, dbClient);
+
           return {
-            is_admin,
-            is_biology_staff,
-            is_computational_staff,
+            user: {
+              id,
+              user_id,
+              is_admin,
+              is_biology_staff,
+              is_computational_staff,
+              labs
+            }
           };
         },
       },

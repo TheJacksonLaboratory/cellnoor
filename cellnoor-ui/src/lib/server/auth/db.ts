@@ -38,6 +38,7 @@ export async function upsertPersonIntoDb(
         newPerson,
       )
     } returning id, is_admin, is_biology_staff, is_computational_staff`;
+
     // Note that we don't need the user's name and email because better-auth already has that
     return result[0];
   });
@@ -75,14 +76,22 @@ export async function insertJsonWebToken(
 }
 
 export async function deleteApiTokenFromDb(
-  { userId, jti }: { userId: string; jti: string },
+  { user_id, jti }: { user_id: string; jti: string },
   dbClient: Bun.SQL,
 ) {
   await dbClient.begin(async (client) => {
     const result =
-      await client`delete from json_web_tokens where sub = ${userId} and jti = ${jti} returning exp`;
+      await client`delete from json_web_tokens where sub = ${user_id} and jti = ${jti} returning exp`;
 
     const revoke = { jti, exp: result[0].exp };
     await client`insert into revoked_json_web_tokens ${client(revoke)}`;
   });
+}
+
+export async function getUserLabs(userId: string, dbClient: Bun.SQL) {
+  const labs = await dbClient`select lab_id from lab_membership where member_id = ${userId}`.then((rows: { lab_id: string }[]) => rows.map((r) => r.lab_id));
+
+  return {
+    labs,
+  };
 }
