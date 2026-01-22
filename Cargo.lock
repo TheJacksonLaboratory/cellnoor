@@ -161,10 +161,8 @@ checksum = "fef252edff26ddba56bbcdf2ee3307b8129acb86f5749b68990c168a6fcc9c76"
 dependencies = [
  "axum",
  "axum-core",
- "axum-macros",
  "bytes",
  "cookie",
- "form_urlencoded",
  "futures-core",
  "futures-util",
  "headers",
@@ -172,11 +170,8 @@ dependencies = [
  "http-body",
  "http-body-util",
  "mime",
- "percent-encoding",
  "pin-project-lite",
  "rustversion",
- "serde_core",
- "serde_html_form",
  "tower-layer",
  "tower-service",
  "tracing",
@@ -338,13 +333,12 @@ dependencies = [
 name = "cellnoor-models"
 version = "0.1.0"
 dependencies = [
- "axum",
- "axum-extra",
  "bon",
  "cellnoor-schema",
  "csv",
  "default-vec",
  "diesel",
+ "diesel-derive-newtype",
  "heck",
  "jiff",
  "jiff-diesel",
@@ -732,6 +726,17 @@ dependencies = [
  "sqlite-wasm-rs",
  "time",
  "uuid",
+]
+
+[[package]]
+name = "diesel-derive-newtype"
+version = "2.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d5adf688c584fe33726ce0e2898f608a2a92578ac94a4a92fcecf73214fe0716"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -2485,19 +2490,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "serde_html_form"
-version = "0.2.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2f2d7ff8a2140333718bb329f5c40fc5f0865b84c426183ce14c97d2ab8154f"
-dependencies = [
- "form_urlencoded",
- "indexmap",
- "itoa",
- "ryu",
- "serde_core",
 ]
 
 [[package]]

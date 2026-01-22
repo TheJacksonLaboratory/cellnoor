@@ -36,6 +36,4 @@ pub struct ProjectFilter {
 #[cfg(feature = "app")]
 pub type ProjectQuery = crate::generic_query::Query<ProjectFilter, ProjectOrderBy>;
 
-uuid_newtype!(ProjectId, "/{id}");
-
-uuid_newtype!(ProjectPeople, "/{id}/people");
+uuid_newtype!(ProjectId);

@@ -73,10 +73,4 @@ impl Default for SpecimenOrderBy {
 #[cfg(feature = "app")]
 pub type SpecimenQuery = generic_query::Query<SpecimenFilter, SpecimenOrderBy>;
 
-uuid_newtype!(SpecimenId, "/{id}");
-
-uuid_newtype!(SpecimenIdMeasurements, "/{id}/measurements");
-
-uuid_newtype!(SpecimenIdSuspensions, "/{id}/suspensions");
-
-uuid_newtype!(SpecimenIdChromiumDatasets, "/{id}/chromium-datasets");
+uuid_newtype!(SpecimenId);

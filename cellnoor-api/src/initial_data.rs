@@ -1,6 +1,6 @@
 use std::{fmt::Display, str::FromStr, sync::Arc};
 
-use anyhow::{bail, ensure};
+use anyhow::{Context, bail, ensure};
 use cellnoor_models::{
     institution::{Institution, InstitutionCreation},
     multiplexing_tag::MultiplexingTagCreation,
@@ -12,7 +12,8 @@ pub(crate) use index_sets::IndexSetName;
 use url::Url;
 
 use crate::{
-    db::{DbConnection, Operation},
+    api::{AuthorizedRequest, Request, auth::AuthorizationData},
+    db::DbConnection,
     initial_data::index_sets::{
         download_and_insert_dual_index_sets, download_and_insert_single_index_sets,
     },
@@ -69,12 +70,16 @@ impl InitialData {
         let validation_data = institution
             .fetch_validation_data(db_pool.get().await?)
             .await?;
-        InstitutionCreation::validate(&institution, validation_data)?;
+        institution
+            .validate(validation_data)
+            .context("failed to validate institution in initial data")?;
 
-        let validation_data = app_admin
-            .fetch_validation_data(db_pool.get().await?)
-            .await?;
-        PersonCreation::validate(&app_admin, validation_data)?;
+        // let validation_data = app_admin
+        //     .fetch_validation_data(db_pool.get().await?)
+        //     .await?;
+        // app_admin
+        //     .validate(validation_data)
+        //     .context("failed to validate app admin in initial data")?;
 
         single_index_set_urls
             .iter()

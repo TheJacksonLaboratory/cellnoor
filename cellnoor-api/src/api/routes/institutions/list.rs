@@ -6,53 +6,28 @@ use diesel::{SelectableExpression, prelude::*};
 use crate::{
     api::{
         self,
-        auth::AuthorizationData,
+        auth::{self, AuthorizationData},
         extract::{QsQuery, auth::AuthenticatedUser},
-        routes::{ApiResponse, Root, handle_api_request},
+        request::{AuthorizedRequest, Request},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, like_any},
     state::AppState,
 };
 
-pub(super) async fn list_institutions(
-    _: Root,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    QsQuery(request): QsQuery<InstitutionQuery>,
-) -> ApiResponse<Vec<Institution>> {
-    let items = handle_api_request(state, user, request).await?;
-    Ok((StatusCode::OK, items))
-}
-
-impl db::Operation<Vec<Institution>> for InstitutionQuery {
-    type Authorized = Self;
+impl AuthorizedRequest<Vec<Institution>> for InstitutionQuery {
     type ValidationData = ();
 
-    async fn fetch_validation_data(&self, _db_conn: db::DbConnection) -> Result<(), db::Error> {
+    fn validate(&self, validation_data: Self::ValidationData) -> Result<(), api::DataError> {
         Ok(())
     }
 
-    fn authorize(
-        self,
-        _authorization_data: AuthorizationData,
-    ) -> Result<Self::Authorized, crate::api::auth::Error> {
-        Ok(self)
-    }
-
-    fn validate(_authorized_request: &Self, _validation_data: ()) -> Result<(), api::DataError> {
-        Ok(())
-    }
-
-    fn execute(
-        query: Self,
-        db_conn: &mut diesel::PgConnection,
-    ) -> Result<Vec<Institution>, api::Error> {
+    fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Vec<Institution>, api::Error> {
         let Self {
             filter,
             limit,
             offset,
             order_by,
-        } = query;
+        } = self;
 
         let mut stmt = Institution::query()
             .limit(limit)
@@ -65,6 +40,22 @@ impl db::Operation<Vec<Institution>> for InstitutionQuery {
         }
 
         Ok(stmt.load(db_conn)?)
+    }
+}
+
+impl Request<Vec<Institution>> for InstitutionQuery {
+    type Authorized = Self;
+    type ValidationData = ();
+
+    async fn fetch_validation_data(&self, _db_conn: db::DbConnection) -> Result<(), db::Error> {
+        Ok(())
+    }
+
+    fn authorize(
+        self,
+        authorization_data: AuthorizationData,
+    ) -> Result<InstitutionQuery, auth::Error> {
+        Ok(self)
     }
 }
 

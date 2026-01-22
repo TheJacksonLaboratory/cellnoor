@@ -36,6 +36,4 @@ impl Default for LibraryOrderBy {
 #[cfg(feature = "app")]
 pub type LibraryQuery = generic_query::Query<LibraryFilter, LibraryOrderBy>;
 
-uuid_newtype!(LibraryId, "/{id}");
-
-uuid_newtype!(LibraryIdMeasurements, "/{id}/measurements");
+uuid_newtype!(LibraryId);

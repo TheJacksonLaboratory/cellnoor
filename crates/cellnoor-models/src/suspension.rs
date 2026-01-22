@@ -11,5 +11,5 @@ pub use creation::{
 };
 #[cfg(feature = "app")]
 pub use query::SuspensionQuery;
-pub use query::{SuspensionFilter, SuspensionId, SuspensionIdMeasurements, SuspensionOrderBy};
+pub use query::{SuspensionFilter, SuspensionId, SuspensionOrderBy};
 pub use read::{Suspension, SuspensionSummary};

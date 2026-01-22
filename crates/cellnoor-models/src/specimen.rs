@@ -17,10 +17,7 @@ pub use creation::{
 };
 #[cfg(feature = "app")]
 pub use query::SpecimenQuery;
-pub use query::{
-    SpecimenFilter, SpecimenId, SpecimenIdChromiumDatasets, SpecimenIdMeasurements,
-    SpecimenIdSuspensions, SpecimenOrderBy,
-};
+pub use query::{SpecimenFilter, SpecimenId, SpecimenOrderBy};
 pub use read::{Specimen, SpecimenSummary};
 #[cfg(feature = "builder")]
 pub use variable::{Fixative, ThermalPreservationMethod};

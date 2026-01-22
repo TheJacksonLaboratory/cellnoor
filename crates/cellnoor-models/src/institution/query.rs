@@ -38,6 +38,4 @@ pub struct InstitutionFilter {
 #[cfg(feature = "app")]
 pub type InstitutionQuery = crate::generic_query::Query<InstitutionFilter, InstitutionOrderBy>;
 
-uuid_newtype!(InstitutionId, "/{id}");
-
-uuid_newtype!(InstitutionIdMembers, "/{id}/members");
+uuid_newtype!(InstitutionId);

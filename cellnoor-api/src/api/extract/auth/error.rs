@@ -1,9 +1,5 @@
 use crate::db;
 
-static NO_AUTH_TOKEN_FOUND: &str = "no auth token found";
-
-static INVALID_AUTH_TOKEN: &str = "invalid auth token";
-
 #[derive(Debug, thiserror::Error, serde::Serialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(rename = "AuthError"))]

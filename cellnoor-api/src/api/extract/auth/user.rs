@@ -9,7 +9,7 @@ use serde::de::DeserializeOwned;
 use tokio::sync::RwLockReadGuard;
 
 use crate::{
-    api::{ErrorResponse, extract::auth},
+    api::extract::auth,
     db::{self, DbConnection},
     state::{AppState, JwtDecodingKey},
 };
@@ -41,12 +41,12 @@ impl AuthenticatedUser {
 }
 
 impl FromRequestParts<AppState> for AuthenticatedUser {
-    type Rejection = ErrorResponse;
+    type Rejection = crate::api::Error;
 
     async fn from_request_parts(
         parts: &mut axum::http::request::Parts,
         app_state: &AppState,
-    ) -> Result<Self, ErrorResponse> {
+    ) -> Result<Self, crate::api::Error> {
         let (decoding_key, validation) = match app_state {
             AppState::Development(_) => return Ok(Self::Ui(ui::User::admin())),
             AppState::Production(state) => {
@@ -66,8 +66,6 @@ impl FromRequestParts<AppState> for AuthenticatedUser {
                 ui::User::from_encoded_jwt(t, &decoding_key, validation).map(Self::Ui)?
             }
         };
-
-        tracing::info!("authenticated: {user:?}");
 
         Ok(user)
     }

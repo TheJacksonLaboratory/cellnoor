@@ -4,8 +4,6 @@ name = "cellnoor-models"
 version = "0.1.0"
 
 [dependencies]
-axum = { workspace = true, optional = true }
-axum-extra = { workspace = true, optional = true }
 bon = { workspace = true, optional = true }
 cellnoor-schema = { path = "../cellnoor-schema", optional = true }
 csv.workspace = true
@@ -17,6 +15,7 @@ diesel = { workspace = true, optional = true, features = [
   "uuid",
   "without-deprecated",
 ] }
+diesel-derive-newtype.workspace = true
 heck.workspace = true
 jiff.workspace = true
 jiff-diesel = { workspace = true, optional = true }
@@ -39,8 +38,6 @@ workspace = true
 
 [features]
 app = [
-  "dep:axum",
-  "dep:axum-extra",
   "dep:cellnoor-schema",
   "dep:diesel",
   "dep:jiff-diesel",

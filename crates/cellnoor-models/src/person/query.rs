@@ -35,4 +35,4 @@ pub struct PersonFilter {
 #[cfg(feature = "app")]
 pub type PersonQuery = crate::generic_query::Query<PersonFilter, PersonOrderBy>;
 
-uuid_newtype!(PersonId, "/{id}");
+uuid_newtype!(PersonId);

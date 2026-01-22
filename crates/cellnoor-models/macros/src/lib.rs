@@ -81,13 +81,18 @@ macro_rules! impl_json_to_sql {
     };
 }
 
-#[allow(clippy::crate_in_macro_def)]
 #[macro_export]
 macro_rules! uuid_newtype {
-    ($name:ident, $endpoint:literal) => {
-        #[derive(Debug, Clone, Copy, ::serde::Deserialize, ::serde::Serialize)]
-        #[cfg_attr(feature = "app", derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression, ::axum_extra::routing::TypedPath))]
-        #[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Uuid), typed_path($endpoint))]
+    ($name:ident) => {
+        #[derive(
+            Debug,
+            Clone,
+            Copy,
+            ::serde::Deserialize,
+            ::serde::Serialize,
+            ::diesel_derive_newtype::DieselNewType,
+        )]
+        #[serde(transparent)]
         pub struct $name(pub ::uuid::Uuid);
 
         impl PartialEq<::uuid::Uuid> for $name {
@@ -120,30 +125,10 @@ macro_rules! uuid_newtype {
             }
         }
 
-        #[cfg(feature = "app")]
-        impl crate::utils::UuidNewtypeFromSql for $name {}
-
-        #[cfg(feature = "app")]
-        impl crate::utils::UuidNewtypeToSql for $name {}
-
-        #[cfg(feature = "app")]
-        impl ::diesel::deserialize::FromSql<::diesel::sql_types::Uuid, ::diesel::pg::Pg> for $name {
-            fn from_sql(bytes: ::diesel::pg::PgValue<'_>) -> ::diesel::deserialize::Result<Self> {
-                use crate::utils::UuidNewtypeFromSql;
-                Self::from_sql_inner(bytes)
+        impl From<$name> for Option<Vec<::uuid::Uuid>> {
+            fn from(val: $name) -> Option<Vec<::uuid::Uuid>> {
+                Some(vec![val.0])
             }
         }
-
-        #[cfg(feature = "app")]
-        impl ::diesel::serialize::ToSql<::diesel::sql_types::Uuid, ::diesel::pg::Pg> for $name {
-            fn to_sql<'b>(
-                &'b self,
-                out: &mut diesel::serialize::Output<'b, '_, ::diesel::pg::Pg>,
-            ) -> ::diesel::serialize::Result {
-                use crate::utils::UuidNewtypeToSql;
-                self.to_sql_inner(out)
-            }
-        }
-
     };
 }

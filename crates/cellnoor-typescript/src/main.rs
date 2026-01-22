@@ -1,6 +1,4 @@
 #![allow(dead_code)]
-
-use cellnoor_api::api::ErrorResponse;
 use cellnoor_models::{
     cdna::{Cdna, CdnaCreation, CdnaFilter, CdnaOrderBy, CdnaSummary},
     chromium_dataset::{
@@ -9,9 +7,9 @@ use cellnoor_models::{
     },
     chromium_run::{ChromiumRunFilter, ChromiumRunOrderBy, GemPoolFilter, GemPoolOrderBy},
     institution::{Institution, InstitutionCreation, InstitutionFilter, InstitutionOrderBy},
-    lab::{Lab, LabCreation, LabFilter, LabOrderBy},
     library::{Library, LibraryCreation, LibraryFilter, LibraryOrderBy, LibrarySummary},
     person::{Person, PersonCreation, PersonFilter, PersonOrderBy},
+    project::{Project, ProjectCreation, ProjectFilter, ProjectOrderBy},
     sequencing_run::{SequencingRun, SequencingRunCreation},
     specimen::{
         Specimen, SpecimenCreation, SpecimenFilter, SpecimenOrderBy,
@@ -66,7 +64,7 @@ struct InstitutionQuery(#[ts(inline)] Query<InstitutionFilter, InstitutionOrderB
 struct PersonQuery(#[ts(inline)] Query<PersonFilter, PersonOrderBy>);
 
 #[derive(TS)]
-struct LabQuery(#[ts(inline)] Query<LabFilter, LabOrderBy>);
+struct ProjectQuery(#[ts(inline)] Query<ProjectFilter, ProjectOrderBy>);
 
 #[derive(TS)]
 struct SpecimenQuery(#[ts(inline)] Query<SpecimenFilter, SpecimenOrderBy>);
@@ -92,6 +90,11 @@ struct LibraryQuery(#[ts(inline)] Query<LibraryFilter, LibraryOrderBy>);
 #[derive(TS)]
 struct ChromiumDatasetQuery(#[ts(inline)] Query<ChromiumDatasetFilter, ChromiumDatasetOrderBy>);
 
+#[derive(TS)]
+struct Error {
+    error: cellnoor_api::api::Error,
+}
+
 fn main() {
     let Cli { output_dir } = Cli::parse();
 
@@ -103,9 +106,9 @@ fn main() {
     PersonQuery::export_all_to(&output_dir).unwrap();
     Person::export_all_to(&output_dir).unwrap();
 
-    LabCreation::export_all_to(&output_dir).unwrap();
-    LabQuery::export_all_to(&output_dir).unwrap();
-    Lab::export_all_to(&output_dir).unwrap();
+    ProjectCreation::export_all_to(&output_dir).unwrap();
+    ProjectQuery::export_all_to(&output_dir).unwrap();
+    Project::export_all_to(&output_dir).unwrap();
 
     SpecimenCreation::export_all_to(&output_dir).unwrap();
     SpecimenQuery::export_all_to(&output_dir).unwrap();
@@ -147,5 +150,5 @@ fn main() {
     ChromiumDatasetSummary::export_all_to(&output_dir).unwrap();
     ChromiumDataset::export_all_to(&output_dir).unwrap();
 
-    ErrorResponse::export_all_to(&output_dir).unwrap();
+    Error::export_all_to(&output_dir).unwrap();
 }

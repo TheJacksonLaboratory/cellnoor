@@ -2,14 +2,16 @@ use crate::{config::Config, state::AppState};
 use anyhow::Context;
 use axum::{Extension, Router, routing::get};
 use camino::Utf8Path;
-pub use error::{DataError, Error, ErrorResponse};
+pub use error::{DataError, Error};
 pub use extract::auth;
 pub use extract::auth::AuthenticatedUser;
+pub use request::{AuthorizedRequest, Request};
 use serde_qs::axum::QsQueryConfig;
 use tokio::net::TcpListener;
 
 mod error;
 mod extract;
+mod request;
 mod routes;
 
 #[cfg(test)]

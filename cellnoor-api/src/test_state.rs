@@ -51,8 +51,6 @@ use uuid::Uuid;
 use crate::{
     config::Config,
     db,
-    db::Operation,
-    state::{AppState, create_test_db_pool},
 };
 
 static TEST_STATE: OnceCell<TestState> = OnceCell::const_new();

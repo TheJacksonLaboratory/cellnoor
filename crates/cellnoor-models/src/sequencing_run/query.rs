@@ -27,6 +27,6 @@ pub struct SequencingRunFilter {}
 pub type SequencingRunQuery =
     crate::generic_query::Query<SequencingRunFilter, SequencingRunOrderBy>;
 
-uuid_newtype!(SequencingRunId, "/{id}");
+uuid_newtype!(SequencingRunId);
 
-uuid_newtype!(SequencingRunIdLibraries, "/{id}/libraries");
+uuid_newtype!(SequencingRunIdLibraries);

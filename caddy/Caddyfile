@@ -1,3 +1,4 @@
+# TODO: h2c instead of http1 because http2 is faster
 {$PUBLIC_URL} {
     {$TLS_SETTINGS}
     reverse_proxy /api/auth/* {$UI_HOST}:{$UI_PORT}

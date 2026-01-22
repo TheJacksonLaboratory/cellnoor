@@ -9,14 +9,15 @@ use axum::{
 };
 use deadpool_diesel::Status;
 
-use crate::{api::auth, db};
+use super::{auth, routes};
+use crate::db;
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[serde(rename_all = "snake_case", tag = "type", content = "info")]
 #[error(transparent)]
 pub enum DataError {
-    CreatePerson(#[from] super::routes::people::create::Error),
+    // CreatePerson(#[from] super::routes::people::create::Error),
 }
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
@@ -56,157 +57,65 @@ impl From<diesel::result::Error> for Error {
     }
 }
 
-#[derive(Debug, thiserror::Error, serde::Serialize)]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(rename = "ApiErrorResponse"))]
-#[error("{self:?}")]
-pub struct ErrorResponse {
-    pub status: u16,
-    #[serde(flatten)]
-    pub public_error: Error,
-    #[serde(skip)]
-    pub internal_error: Option<Error>,
-}
-
-impl From<JsonRejection> for ErrorResponse {
+impl From<JsonRejection> for Error {
     fn from(err: JsonRejection) -> Self {
-        Self {
-            status: err.status().as_u16(),
-            public_error: Error::MalformedRequest {
-                message: err.body_text(),
-            },
-            internal_error: None,
+        Self::MalformedRequest {
+            message: err.body_text(),
         }
     }
 }
 
-impl From<PathRejection> for ErrorResponse {
+impl From<PathRejection> for Error {
     fn from(err: PathRejection) -> Self {
-        Self {
-            status: err.status().as_u16(),
-            public_error: Error::MalformedRequest {
-                message: err.body_text(),
-            },
-            internal_error: None,
+        Self::MalformedRequest {
+            message: err.body_text(),
         }
     }
 }
 
-impl From<MultipartError> for ErrorResponse {
+impl From<MultipartError> for Error {
     fn from(err: MultipartError) -> Self {
-        Self {
-            status: err.status().as_u16(),
-            public_error: Error::MalformedRequest {
-                message: err.body_text(),
-            },
-            internal_error: None,
+        Self::MalformedRequest {
+            message: err.body_text(),
         }
     }
 }
 
-impl From<serde_qs::axum::QsQueryRejection> for ErrorResponse {
+impl From<serde_qs::axum::QsQueryRejection> for Error {
     fn from(err: serde_qs::axum::QsQueryRejection) -> Self {
-        Self {
-            status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
-            public_error: Error::MalformedRequest {
-                message: err.to_string(),
-            },
-            internal_error: None,
+        Self::MalformedRequest {
+            message: err.to_string(),
         }
     }
 }
 
-impl From<deadpool_diesel::InteractError> for ErrorResponse {
-    fn from(err: deadpool_diesel::InteractError) -> Self {
-        Self {
-            status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
-            public_error: Error::from(err),
-            internal_error: None,
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        #[derive(serde::Serialize)]
+        struct ErrorResponse {
+            error: Error,
         }
-    }
-}
 
-impl From<auth::Error> for ErrorResponse {
-    fn from(err: auth::Error) -> Self {
-        match err {
-            auth::Error::NoAuthTokenFound { .. } | auth::Error::InvalidAuthToken { .. } => Self {
-                status: StatusCode::UNAUTHORIZED.as_u16(),
-                public_error: err.into(),
-                internal_error: None,
-            },
-            auth::Error::Database(e) => Self {
-                status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
-                public_error: Error::Other,
-                internal_error: Some(e.into()),
-            },
-            auth::Error::PermissionDenied => Self {
-                status: StatusCode::FORBIDDEN.as_u16(),
-                public_error: err.into(),
-                internal_error: None,
-            },
-        }
-    }
-}
+        tracing::error!(error = ?self);
 
-impl From<db::Error> for ErrorResponse {
-    fn from(err: db::Error) -> Self {
-        use db::Error::{Data, DuplicateResource, InvalidReference, Other, ResourceNotFound};
-        let status = match err {
-            DuplicateResource { .. } => StatusCode::CONFLICT,
-            Data { .. } | InvalidReference { .. } => StatusCode::UNPROCESSABLE_ENTITY,
-            ResourceNotFound { .. } => StatusCode::NOT_FOUND,
-            Other { .. } => {
-                return {
-                    Self {
-                        status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
-                        public_error: Error::Other,
-                        internal_error: Some(err.into()),
-                    }
-                };
+        let (status_code, error) = match self {
+            Self::Auth(auth::Error::Database(_))
+            | Self::Database(db::Error::Other { .. })
+            | Self::Other => (StatusCode::INTERNAL_SERVER_ERROR, Self::Other),
+            Self::Auth(
+                auth::Error::InvalidAuthToken { .. } | auth::Error::NoAuthTokenFound { .. },
+            ) => (StatusCode::INTERNAL_SERVER_ERROR, self),
+            Self::Auth(auth::Error::PermissionDenied) => (StatusCode::FORBIDDEN, self),
+            Self::Data(_)
+            | Self::MalformedRequest { .. }
+            | Self::Database(db::Error::Data { .. })
+            | Self::Database(db::Error::InvalidReference { .. }) => {
+                (StatusCode::UNPROCESSABLE_ENTITY, self)
             }
+            Self::Database(db::Error::DuplicateResource { .. }) => (StatusCode::CONFLICT, self),
+            Self::Database(db::Error::ResourceNotFound { .. }) => (StatusCode::NOT_FOUND, self),
         };
 
-        Self {
-            status: status.as_u16(),
-            public_error: Error::Database(err),
-            internal_error: None,
-        }
-    }
-}
-
-impl From<DataError> for ErrorResponse {
-    fn from(err: DataError) -> Self {
-        Self {
-            status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
-            public_error: err.into(),
-            internal_error: None,
-        }
-    }
-}
-
-impl From<Error> for ErrorResponse {
-    fn from(err: Error) -> Self {
-        match err {
-            Error::Auth(e) => e.into(),
-            Error::Data(e) => e.into(),
-            Error::Database(e) => e.into(),
-            Error::MalformedRequest { .. } => Self {
-                status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
-                public_error: err,
-                internal_error: None,
-            },
-            Error::Other => Self {
-                status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
-                public_error: err,
-                internal_error: None,
-            },
-        }
-    }
-}
-
-impl IntoResponse for ErrorResponse {
-    fn into_response(self) -> axum::response::Response {
-        tracing::error!("{self}");
-        (StatusCode::from_u16(self.status).unwrap(), Json(self)).into_response()
+        (status_code, Json(ErrorResponse { error })).into_response()
     }
 }

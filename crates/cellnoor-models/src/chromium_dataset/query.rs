@@ -44,28 +44,4 @@ impl Default for ChromiumDatasetOrderBy {
 #[cfg(feature = "app")]
 pub type ChromiumDatasetQuery = generic_query::Query<ChromiumDatasetFilter, ChromiumDatasetOrderBy>;
 
-uuid_newtype!(ChromiumDatasetId, "/{id}");
-
-uuid_newtype!(ChromiumDatasetIdSpecimens, "/{id}/specimens");
-
-uuid_newtype!(ChromiumDatasetIdLibraries, "/{id}/libraries");
-
-uuid_newtype!(ChromiumDatasetIdWebSummaries, "/{id}/web-summaries");
-
-uuid_newtype!(ChromiumDatasetIdMetrics, "/{id}/metrics-files");
-
-#[derive(Debug, Clone, ::serde::Deserialize, ::serde::Serialize)]
-#[cfg_attr(feature = "app", derive(axum_extra::routing::TypedPath))]
-#[cfg_attr(
-    feature = "app",
-    typed_path("/{dataset_id}/web-summaries/{directory}/{filename}")
-)]
-pub struct ChromiumDatasetWebSummaryFilename(pub ChromiumDatasetId, pub String, pub String);
-
-#[derive(Debug, Clone, ::serde::Deserialize, ::serde::Serialize)]
-#[cfg_attr(feature = "app", derive(axum_extra::routing::TypedPath))]
-#[cfg_attr(
-    feature = "app",
-    typed_path("/{dataset_id}/metrics-files/{directory}/{filename}")
-)]
-pub struct ChromiumDatasetMetricsFilename(pub ChromiumDatasetId, pub String, pub String);
+uuid_newtype!(ChromiumDatasetId);

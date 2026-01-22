@@ -34,7 +34,7 @@ impl Default for ChromiumRunOrderBy {
 #[cfg(feature = "app")]
 pub type ChromiumRunQuery = generic_query::Query<ChromiumRunFilter, ChromiumRunOrderBy>;
 
-uuid_newtype!(ChromiumRunId, "/{id}");
+uuid_newtype!(ChromiumRunId);
 
 #[filter]
 pub struct GemPoolFilter {
@@ -57,4 +57,4 @@ impl Default for GemPoolOrderBy {
 #[cfg(feature = "app")]
 pub type GemPoolQuery = generic_query::Query<GemPoolFilter, GemPoolOrderBy>;
 
-uuid_newtype!(GemPoolId, "/{id}");
+uuid_newtype!(GemPoolId);

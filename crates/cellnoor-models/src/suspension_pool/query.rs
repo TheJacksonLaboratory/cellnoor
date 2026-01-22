@@ -32,8 +32,4 @@ impl Default for SuspensionPoolOrderBy {
 #[cfg(feature = "app")]
 pub type SuspensionPoolQuery = generic_query::Query<SuspensionPoolFilter, SuspensionPoolOrderBy>;
 
-uuid_newtype!(SuspensionPoolId, "/{id}");
-
-uuid_newtype!(SuspensionPoolIdMeasurements, "/{id}/measurements");
-
-uuid_newtype!(SuspensionPoolIdSuspensions, "/{id}/suspensions");
+uuid_newtype!(SuspensionPoolId);
