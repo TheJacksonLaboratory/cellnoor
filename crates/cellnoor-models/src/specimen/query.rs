@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 #[cfg(feature = "app")]
 use cellnoor_schema::specimens;
 use jiff::Timestamp;
@@ -19,7 +21,7 @@ pub struct SpecimenFilter {
     pub ids: Option<Vec<Uuid>>,
     pub names: Option<Vec<String>>,
     pub submitted_by: Option<Vec<Uuid>>,
-    pub labs: Option<Vec<Uuid>>,
+    pub projects: Option<HashSet<Uuid>>,
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     pub received_before: Option<Timestamp>,
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
@@ -47,7 +49,7 @@ pub enum SpecimenOrderBy {
     readable_id { descending: Option<bool> },
     name { descending: Option<bool> },
     submitted_by { descending: Option<bool> },
-    lab_id { descending: Option<bool> },
+    project_id { descending: Option<bool> },
     received_at { descending: Option<bool> },
     species { descending: Option<bool> },
     host_species { descending: Option<bool> },

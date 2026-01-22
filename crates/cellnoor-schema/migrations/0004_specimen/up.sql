@@ -6,7 +6,7 @@ create table specimens (
     ) stored not null,
     name case_insensitive_text not null,
     submitted_by uuid references people on delete restrict on update restrict not null,
-    lab_id uuid references labs on delete restrict on update restrict not null,
+    project_id uuid references projects on delete restrict on update restrict not null,
     received_at timestamptz not null,
     species case_insensitive_text not null,
     host_species case_insensitive_text,
@@ -17,7 +17,10 @@ create table specimens (
     fixative case_insensitive_text,
     thermal_preservation_method case_insensitive_text,
     tissue case_insensitive_text not null,
-    additional_data jsonb
+    additional_data jsonb,
+
+    constraint received_before_returned check (received_at < returned_at),
+    constraint host_species_different_from_donor_species check (species != host_species)
 );
 
 create table committee_approval (

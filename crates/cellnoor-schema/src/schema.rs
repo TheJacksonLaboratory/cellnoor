@@ -14,6 +14,7 @@ diesel::table! {
         library_type -> Text,
         prepared_at -> Timestamptz,
         gem_pool_id -> Nullable<Uuid>,
+        project_id -> Uuid,
         n_amplification_cycles -> Int4,
         additional_data -> Nullable<Jsonb>,
     }
@@ -81,7 +82,7 @@ diesel::table! {
         id -> Uuid,
         links -> Jsonb,
         name -> Text,
-        lab_id -> Uuid,
+        project_id -> Uuid,
         delivered_at -> Timestamptz,
     }
 }
@@ -92,6 +93,7 @@ diesel::table! {
         readable_id -> Text,
         links -> Jsonb,
         assay_id -> Uuid,
+        project_id -> Uuid,
         run_at -> Timestamptz,
         run_by -> Uuid,
         succeeded -> Bool,
@@ -125,6 +127,7 @@ diesel::table! {
         links -> Jsonb,
         readable_id -> Text,
         chromium_run_id -> Uuid,
+        project_id -> Uuid,
     }
 }
 
@@ -164,27 +167,12 @@ diesel::table! {
 }
 
 diesel::table! {
-    lab_membership (lab_id, member_id) {
-        lab_id -> Uuid,
-        member_id -> Uuid,
-    }
-}
-
-diesel::table! {
-    labs (id) {
-        id -> Uuid,
-        links -> Jsonb,
-        name -> Text,
-        pi_id -> Uuid,
-    }
-}
-
-diesel::table! {
     libraries (id) {
         id -> Uuid,
         links -> Jsonb,
         readable_id -> Text,
         cdna_id -> Uuid,
+        project_id -> Uuid,
         single_index_set_name -> Nullable<Text>,
         dual_index_set_name -> Nullable<Text>,
         number_of_sample_index_pcr_cycles -> Int4,
@@ -249,6 +237,23 @@ diesel::table! {
 }
 
 diesel::table! {
+    project_people (project_id, person_id) {
+        project_id -> Uuid,
+        person_id -> Uuid,
+    }
+}
+
+diesel::table! {
+    projects (id) {
+        id -> Uuid,
+        links -> Jsonb,
+        name -> Text,
+        started_at -> Timestamptz,
+        ended_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
     revoked_json_web_tokens (jti) {
         jti -> Uuid,
         exp -> Timestamptz,
@@ -303,7 +308,7 @@ diesel::table! {
         links -> Jsonb,
         name -> Text,
         submitted_by -> Uuid,
-        lab_id -> Uuid,
+        project_id -> Uuid,
         received_at -> Timestamptz,
         species -> Text,
         host_species -> Nullable<Text>,
@@ -351,6 +356,7 @@ diesel::table! {
         id -> Uuid,
         links -> Jsonb,
         readable_id -> Text,
+        project_id -> Uuid,
         name -> Text,
         pooled_at -> Timestamptz,
         additional_data -> Nullable<Jsonb>,
@@ -378,6 +384,7 @@ diesel::table! {
         links -> Jsonb,
         readable_id -> Text,
         parent_specimen_id -> Uuid,
+        project_id -> Uuid,
         content -> Text,
         created_at -> Nullable<Timestamptz>,
         lysis_duration_minutes -> Nullable<Float4>,
@@ -404,6 +411,7 @@ diesel::table! {
 }
 
 diesel::joinable!(cdna -> gem_pools (gem_pool_id));
+diesel::joinable!(cdna -> projects (project_id));
 diesel::joinable!(cdna_measurements -> cdna (cdna_id));
 diesel::joinable!(cdna_measurements -> people (measured_by));
 diesel::joinable!(cdna_preparers -> cdna (cdna_id));
@@ -415,19 +423,19 @@ diesel::joinable!(chromium_dataset_libraries -> chromium_datasets (dataset_id));
 diesel::joinable!(chromium_dataset_libraries -> libraries (library_id));
 diesel::joinable!(chromium_dataset_metrics_files -> chromium_datasets (dataset_id));
 diesel::joinable!(chromium_dataset_web_summaries -> chromium_datasets (dataset_id));
-diesel::joinable!(chromium_datasets -> labs (lab_id));
+diesel::joinable!(chromium_datasets -> projects (project_id));
 diesel::joinable!(chromium_runs -> people (run_by));
+diesel::joinable!(chromium_runs -> projects (project_id));
 diesel::joinable!(chromium_runs -> tenx_assays (assay_id));
 diesel::joinable!(committee_approval -> institutions (institution_id));
 diesel::joinable!(committee_approval -> specimens (specimen_id));
 diesel::joinable!(dual_index_sets -> index_kits (kit));
 diesel::joinable!(gem_pools -> chromium_runs (chromium_run_id));
+diesel::joinable!(gem_pools -> projects (project_id));
 diesel::joinable!(json_web_tokens -> people (sub));
-diesel::joinable!(lab_membership -> labs (lab_id));
-diesel::joinable!(lab_membership -> people (member_id));
-diesel::joinable!(labs -> people (pi_id));
 diesel::joinable!(libraries -> cdna (cdna_id));
 diesel::joinable!(libraries -> dual_index_sets (dual_index_set_name));
+diesel::joinable!(libraries -> projects (project_id));
 diesel::joinable!(libraries -> single_index_sets (single_index_set_name));
 diesel::joinable!(library_measurements -> libraries (library_id));
 diesel::joinable!(library_measurements -> people (measured_by));
@@ -436,23 +444,27 @@ diesel::joinable!(library_preparers -> people (prepared_by));
 diesel::joinable!(library_type_specifications -> index_kits (index_kit));
 diesel::joinable!(library_type_specifications -> tenx_assays (assay_id));
 diesel::joinable!(people -> institutions (institution_id));
+diesel::joinable!(project_people -> people (person_id));
+diesel::joinable!(project_people -> projects (project_id));
 diesel::joinable!(sequencing_submissions -> libraries (library_id));
 diesel::joinable!(sequencing_submissions -> sequencing_runs (sequencing_run_id));
 diesel::joinable!(single_index_sets -> index_kits (kit));
 diesel::joinable!(specimen_measurements -> people (measured_by));
 diesel::joinable!(specimen_measurements -> specimens (specimen_id));
-diesel::joinable!(specimens -> labs (lab_id));
+diesel::joinable!(specimens -> projects (project_id));
 diesel::joinable!(suspension_measurements -> people (measured_by));
 diesel::joinable!(suspension_measurements -> suspensions (suspension_id));
 diesel::joinable!(suspension_pool_measurements -> people (measured_by));
 diesel::joinable!(suspension_pool_measurements -> suspension_pools (pool_id));
 diesel::joinable!(suspension_pool_preparers -> people (prepared_by));
 diesel::joinable!(suspension_pool_preparers -> suspension_pools (pool_id));
+diesel::joinable!(suspension_pools -> projects (project_id));
 diesel::joinable!(suspension_preparers -> people (prepared_by));
 diesel::joinable!(suspension_preparers -> suspensions (suspension_id));
 diesel::joinable!(suspension_tagging -> multiplexing_tags (tag_id));
 diesel::joinable!(suspension_tagging -> suspension_pools (pool_id));
 diesel::joinable!(suspension_tagging -> suspensions (suspension_id));
+diesel::joinable!(suspensions -> projects (project_id));
 diesel::joinable!(suspensions -> specimens (parent_specimen_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
@@ -472,14 +484,14 @@ diesel::allow_tables_to_appear_in_same_query!(
     institutions,
     json_web_keys,
     json_web_tokens,
-    lab_membership,
-    labs,
     libraries,
     library_measurements,
     library_preparers,
     library_type_specifications,
     multiplexing_tags,
     people,
+    project_people,
+    projects,
     revoked_json_web_tokens,
     sequencing_runs,
     sequencing_submissions,

@@ -12,6 +12,7 @@ use crate::{chromium_run::GemPoolSummary, nucleic_acid::cdna::common::CdnaFields
 #[cfg_attr(feature = "app", diesel(table_name = cdna))]
 pub struct CdnaSummary {
     id: Uuid,
+    project_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: CdnaFields,

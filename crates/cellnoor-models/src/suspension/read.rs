@@ -16,6 +16,7 @@ use crate::{
 #[cfg_attr(feature = "app", diesel(table_name = suspensions))]
 pub struct SuspensionSummary {
     id: Uuid,
+    project_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: SuspensionFields,

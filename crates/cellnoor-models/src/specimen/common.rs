@@ -44,7 +44,7 @@ pub struct SpecimenCommonFields {
     ))]
     #[cfg_attr(feature = "typescript", ts(as = "String"))]
     pub(super) received_at: Timestamp,
-    pub(super) lab_id: Uuid,
+    pub(super) project_id: Uuid,
     pub(super) species: Species,
     pub(super) host_species: Option<Species>,
     pub(super) returned_by: Option<Uuid>,

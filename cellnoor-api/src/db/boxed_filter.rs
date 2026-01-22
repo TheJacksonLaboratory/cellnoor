@@ -44,16 +44,3 @@ impl<'a, QS: 'a> BoxedFilterExt<'a, QS> for BoxedFilter<'a, QS> {
 pub trait ToBoxedFilter<'a, QS> {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS>;
 }
-
-impl<'a, QS: 'a, T> ToBoxedFilter<'a, QS> for Option<T>
-where
-    T: ToBoxedFilter<'a, QS>,
-{
-    fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
-        let Some(filter) = self else {
-            return BoxedFilter::new_true();
-        };
-
-        filter.to_boxed_filter()
-    }
-}

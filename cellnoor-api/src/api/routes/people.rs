@@ -4,10 +4,10 @@ use axum_extra::routing::RouterExt;
 use super::{ApiResponse, Root, handle_api_request};
 use crate::state::AppState;
 
-mod create;
-mod fetch;
-mod list;
-mod update;
+pub mod create;
+pub mod fetch;
+pub mod list;
+pub mod update;
 
 pub(super) fn router() -> Router<AppState> {
     Router::new()

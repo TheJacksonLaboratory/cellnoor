@@ -2,7 +2,7 @@ create table chromium_datasets (
     id uuid primary key default uuidv7(),
     links jsonb default '{}' not null,
     name case_insensitive_text not null,
-    lab_id uuid references labs on delete restrict on update restrict not null,
+    project_id uuid references projects on delete restrict on update restrict not null,
     delivered_at timestamptz not null
 );
 

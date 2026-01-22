@@ -4,6 +4,7 @@ create table suspension_pools (
         construct_links('suspension-pools', id, '{"measurements", "suspensions"}')
     ) stored not null,
     readable_id case_insensitive_text unique not null,
+    project_id uuid references projects on delete restrict on update restrict not null,
     name case_insensitive_text not null,
     pooled_at timestamptz not null,
     additional_data jsonb

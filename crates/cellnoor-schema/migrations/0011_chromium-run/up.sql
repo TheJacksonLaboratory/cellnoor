@@ -3,6 +3,7 @@ create table chromium_runs (
     readable_id case_insensitive_text unique not null,
     links jsonb generated always as (construct_links('chromium-runs', id)) stored not null,
     assay_id uuid references tenx_assays on delete restrict on update restrict not null,
+    project_id uuid references projects on delete restrict on update restrict not null,
     run_at timestamptz not null,
     run_by uuid references people on delete restrict on update restrict not null,
     succeeded boolean not null,
@@ -13,7 +14,8 @@ create table gem_pools (
     id uuid primary key default uuidv7(),
     links jsonb generated always as (construct_links('gem-pools', id)) stored not null,
     readable_id case_insensitive_text unique not null,
-    chromium_run_id uuid not null references chromium_runs on delete restrict on update restrict
+    chromium_run_id uuid not null references chromium_runs on delete restrict on update restrict,
+    project_id uuid references projects on delete restrict on update restrict not null
 );
 
 create table chip_loadings (

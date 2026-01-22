@@ -1,18 +1,22 @@
-use std::str::FromStr;
+use std::{fmt::Display, str::FromStr, sync::Arc};
 
+use anyhow::{bail, ensure};
 use cellnoor_models::{
-    institution::InstitutionCreation, multiplexing_tag::MultiplexingTagCreation,
-    person::PersonCreation, tenx_assay::TenxAssayCreation,
+    institution::{Institution, InstitutionCreation},
+    multiplexing_tag::MultiplexingTagCreation,
+    person::PersonCreation,
+    tenx_assay::TenxAssayCreation,
 };
 use diesel::PgConnection;
 pub(crate) use index_sets::IndexSetName;
 use url::Url;
 
 use crate::{
+    db::{DbConnection, Operation},
     initial_data::index_sets::{
         download_and_insert_dual_index_sets, download_and_insert_single_index_sets,
     },
-    validate::Validate,
+    state::AppState,
 };
 
 mod app_admin;
@@ -51,6 +55,44 @@ impl InitialData {
     pub fn tenx_assays(&self) -> &[TenxAssayCreation] {
         &self.tenx_assays
     }
+
+    async fn validate(self, db_pool: deadpool_diesel::postgres::Pool) -> anyhow::Result<Self> {
+        let Self {
+            institution,
+            app_admin,
+            single_index_set_urls,
+            dual_index_set_urls,
+            tenx_assays,
+            multiplexing_tags,
+        } = self;
+
+        let validation_data = institution
+            .fetch_validation_data(db_pool.get().await?)
+            .await?;
+        InstitutionCreation::validate(&institution, validation_data)?;
+
+        let validation_data = app_admin
+            .fetch_validation_data(db_pool.get().await?)
+            .await?;
+        PersonCreation::validate(&app_admin, validation_data)?;
+
+        single_index_set_urls
+            .iter()
+            .try_for_each(validate_10x_genomics_url)?;
+        dual_index_set_urls
+            .iter()
+            .try_for_each(validate_10x_genomics_url)?;
+        // tenx_assays.iter().try_for_each(|a| a.validate(db_conn))?;
+
+        Ok(Self {
+            institution,
+            app_admin,
+            single_index_set_urls,
+            dual_index_set_urls,
+            tenx_assays,
+            multiplexing_tags,
+        })
+    }
 }
 
 pub async fn insert_initial_data(
@@ -58,12 +100,7 @@ pub async fn insert_initial_data(
     http_client: reqwest::Client,
     db_pool: deadpool_diesel::postgres::Pool,
 ) -> anyhow::Result<()> {
-    let db_conn = db_pool.get().await?;
-
-    let initial_data = db_conn
-        .interact(move |db_conn| initial_data.validate(db_conn).map(|()| initial_data))
-        .await
-        .unwrap()?;
+    let initial_data = initial_data.validate(db_pool.clone()).await?;
 
     let InitialData {
         institution,
@@ -73,6 +110,8 @@ pub async fn insert_initial_data(
         tenx_assays,
         multiplexing_tags,
     } = initial_data;
+
+    let db_conn = db_pool.get().await?;
 
     let simple_operations = |db_conn: &mut PgConnection| -> Result<(), anyhow::Error> {
         institution.upsert(db_conn)?;
@@ -106,4 +145,19 @@ impl FromStr for InitialData {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         serde_json::from_str(s)
     }
+}
+
+pub(super) fn validate_10x_genomics_url<S: AsRef<str> + Display>(url: &S) -> anyhow::Result<()> {
+    let url = Url::from_str(url.as_ref())?;
+
+    let Some(domain) = url.domain() else {
+        bail!("URL must have domain");
+    };
+
+    ensure!(
+        domain == "www.10xgenomics.com" || domain == "cdn.10xgenomics.com",
+        "index sets must be downloaded from 10X Genomics URL"
+    );
+
+    Ok(())
 }

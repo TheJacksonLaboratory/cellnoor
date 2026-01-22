@@ -6,7 +6,7 @@ use jiff::Timestamp;
 use uuid::Uuid;
 
 use crate::{
-    chromium_dataset::common::ChromiumDatasetFields, lab::LabSummary, links::Links,
+    chromium_dataset::common::ChromiumDatasetFields, links::Links, project::Project,
     tenx_assay::TenxAssay,
 };
 
@@ -21,6 +21,7 @@ pub struct ChromiumDatasetSummary {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: ChromiumDatasetFields,
+    project_id: Uuid,
     links: Links,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
     #[cfg_attr(feature = "typescript", ts(as = "String"))]
@@ -47,7 +48,7 @@ pub struct ChromiumDataset {
     #[cfg_attr(feature = "app", diesel(embed))]
     summary: ChromiumDatasetSummary,
     #[cfg_attr(feature = "app", diesel(embed))]
-    lab: LabSummary,
+    project: Project,
 }
 
 impl ChromiumDataset {

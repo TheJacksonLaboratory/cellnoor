@@ -12,10 +12,10 @@ use cellnoor_models::{
     },
     generic_query,
     institution::{Institution, InstitutionCreation, InstitutionQuery},
-    lab::{LabCreation, LabFields, LabQuery, LabSummary},
     library::{LibraryCreation, LibraryFields, LibraryQuery, LibrarySummary},
     multiplexing_tag::MultiplexingTag,
     person::{PersonCreation, PersonFields, PersonQuery, PersonSummary},
+    project::{Project, ProjectCreation, ProjectFields, ProjectQuery},
     specimen::{
         BlockCreation, BlockFixative, Fixative, Species, SpecimenCommonFields, SpecimenCreation,
         SpecimenQuery, SpecimenSummary, SuspensionSpecimenCreation, SuspensionThermalPreservation,
@@ -126,8 +126,7 @@ impl TestState {
         db_conn
             .interact(|db_conn| {
                 InstitutionCreation::new(Uuid::now_v7(), random_non_empty_string())
-                    .execute(db_conn)
-                    .unwrap()
+                    .execute_without_authorization(db_conn)
             })
             .await
             .unwrap();
@@ -166,8 +165,7 @@ impl TestState {
                     )
                     .email(NonEmptyString::new(email).unwrap())
                     .build()
-                    .execute(db_conn)
-                    .unwrap();
+                    .execute_without_authorization(db_conn)
             })
             .await
             .unwrap();
@@ -188,17 +186,16 @@ impl TestState {
 
         db_conn
             .interact(move |db_conn| {
-                LabCreation::builder()
+                ProjectCreation::builder()
                     .inner(
-                        LabFields::builder()
+                        ProjectFields::builder()
                             .name(random_non_empty_string())
-                            .delivery_dir(random_non_empty_string())
-                            .pi_id(pi_id)
                             .build(),
                     )
+                    .started_at(random_time())
+                    .ended_at(random_time())
                     .build()
-                    .execute(db_conn)
-                    .unwrap();
+                    .execute_without_authorization(db_conn);
             })
             .await
             .unwrap();
@@ -206,29 +203,29 @@ impl TestState {
 
     async fn insert_specimens(&'static self) {
         let people_ids = self.all_people_ids().await;
-        let lab_ids = self.all_extract::<LabQuery, _, _, _>(LabSummary::id).await;
+        let project_ids = self.all_extract::<ProjectQuery, _, _, _>(Project::id).await;
 
         let mut join_set = JoinSet::new();
         let mut counter = 0;
         // Skip the first person
         for person_id in &people_ids[1..] {
-            for lab_id in lab_ids.iter().copied().take(N_SPECIMENS_PER_PERSON) {
+            for project_id in project_ids.iter().copied().take(N_SPECIMENS_PER_PERSON) {
                 counter += 1;
-                join_set.spawn(self.insert_random_specimen(counter, *person_id, lab_id));
+                join_set.spawn(self.insert_random_specimen(counter, *person_id, project_id));
             }
         }
 
         join_set.join_all().await;
     }
 
-    async fn insert_random_specimen(&self, i: usize, submitted_by: Uuid, lab_id: Uuid) {
+    async fn insert_random_specimen(&self, i: usize, submitted_by: Uuid, project_id: Uuid) {
         let db_conn = self.root_db_conn().await;
 
         let inner = SpecimenCommonFields::builder()
             .readable_id(random_non_empty_string())
             .name(random_non_empty_string())
             .submitted_by(submitted_by)
-            .lab_id(lab_id)
+            .project_id(project_id)
             .received_at(random_time())
             .species(Species::VARIANTS.choose_unwrap())
             .tissue(random_non_empty_string())
@@ -279,7 +276,7 @@ impl TestState {
 
         db_conn
             .interact(|db_conn| {
-                new_specimen.execute(db_conn).unwrap();
+                new_specimen.execute_without_authorization(db_conn);
             })
             .await
             .unwrap();
@@ -317,7 +314,7 @@ impl TestState {
         let db_conn = self.root_db_conn().await;
 
         db_conn
-            .interact(|db_conn| new_suspension.execute(db_conn).unwrap())
+            .interact(|db_conn| new_suspension.execute_without_authorization(db_conn))
             .await
             .unwrap();
     }
@@ -365,7 +362,7 @@ impl TestState {
 
         let db_conn = self.root_db_conn().await;
         db_conn
-            .interact(|db_conn| suspension_pool.execute(db_conn).unwrap())
+            .interact(|db_conn| suspension_pool.execute_without_authorization(db_conn))
             .await
             .unwrap();
     }
@@ -389,7 +386,7 @@ impl TestState {
         let db_conn = self.root_db_conn().await;
 
         let three_prime_gex_assay_id = db_conn
-            .interact(|db_conn| three_prime_gex_query.execute(db_conn).unwrap())
+            .interact(|db_conn| three_prime_gex_query.execute_without_authorization(db_conn))
             .await
             .unwrap();
         assert_eq!(three_prime_gex_assay_id.len(), 1);
@@ -436,7 +433,7 @@ impl TestState {
 
         let db_conn = self.root_db_conn().await;
         db_conn
-            .interact(|db_conn| chromium_run.execute(db_conn).unwrap())
+            .interact(|db_conn| chromium_run.execute_without_authorization(db_conn))
             .await
             .unwrap();
     }
@@ -460,7 +457,7 @@ impl TestState {
         let db_conn = self.root_db_conn().await;
 
         let ocm_assay_id = db_conn
-            .interact(|db_conn| ocm_gex_query.execute(db_conn).unwrap())
+            .interact(|db_conn| ocm_gex_query.execute_without_authorization(db_conn))
             .await
             .unwrap();
         assert_eq!(ocm_assay_id.len(), 1);
@@ -522,7 +519,7 @@ impl TestState {
 
         let db_conn = self.root_db_conn().await;
         db_conn
-            .interact(|db_conn| chromium_run.execute(db_conn).unwrap())
+            .interact(|db_conn| chromium_run.execute_without_authorization(db_conn))
             .await
             .unwrap();
     }
@@ -546,7 +543,7 @@ impl TestState {
         let db_conn = self.root_db_conn().await;
 
         let flex_assay_id = db_conn
-            .interact(|db_conn| flex_query.execute(db_conn).unwrap())
+            .interact(|db_conn| flex_query.execute_without_authorization(db_conn))
             .await
             .unwrap();
         assert_eq!(flex_assay_id.len(), 1);
@@ -593,7 +590,7 @@ impl TestState {
 
         let db_conn = self.root_db_conn().await;
         db_conn
-            .interact(|db_conn| chromium_run.execute(db_conn).unwrap())
+            .interact(|db_conn| chromium_run.execute_without_authorization(db_conn))
             .await
             .unwrap();
     }
@@ -630,7 +627,7 @@ impl TestState {
         let db_conn = self.root_db_conn().await;
 
         db_conn
-            .interact(|db_conn| cdna.execute(db_conn).unwrap())
+            .interact(|db_conn| cdna.execute_without_authorization(db_conn))
             .await
             .unwrap();
     }
@@ -669,7 +666,7 @@ impl TestState {
 
         let db_conn = self.root_db_conn().await;
         db_conn
-            .interact(|db_conn| library.execute(db_conn).unwrap())
+            .interact(|db_conn| library.execute_without_authorization(db_conn))
             .await
             .unwrap();
     }
@@ -678,22 +675,20 @@ impl TestState {
         let library_ids = self
             .all_extract::<LibraryQuery, _, _, _>(LibrarySummary::id)
             .await;
-        let lab_ids = self.all_extract::<LabQuery, _, _, _>(LabSummary::id).await;
 
         let join_set: JoinSet<_> = library_ids
             .into_iter()
-            .map(|id| self.insert_random_chromium_dataset(id, lab_ids.choose_unwrap()))
+            .map(|id| self.insert_random_chromium_dataset(id))
             .collect();
 
         join_set.join_all().await;
     }
 
-    async fn insert_random_chromium_dataset(&self, library_id: Uuid, lab_id: Uuid) {
+    async fn insert_random_chromium_dataset(&self, library_id: Uuid) {
         // It's easier to construct this as JSON
         let dataset = json!(
             {
                 "name": random_non_empty_string(),
-                "lab_id": lab_id,
                 "data_path": random_non_empty_string(),
                 "delivered_at": random_time(),
                 "library_ids": vec![library_id],
@@ -706,20 +701,20 @@ impl TestState {
         db_conn
             .interact(|db_conn| {
                 use cellnoor_schema::{chromium_dataset_web_summaries as ws, chromium_dataset_metrics_files as mf};
-                let created_ds_id = dataset.execute(db_conn).unwrap().id();
+                let created_ds_id = dataset.execute_without_authorization(db_conn).id();
 
                 let values = |i| {
                     let content = format!("<!DOCTYPE html><html><head><title>Web summary</title></head><body>web summary{i} - {created_ds_id}</body></html>");
                     (ws::dataset_id.eq(created_ds_id), ws::directory.eq(format!("specimen{i}")), ws::filename.eq("web_summary.html"), ws::content.eq(content.into_bytes()))
                 };
-                diesel::insert_into(ws::table).values([values(0), values(1)]).execute(db_conn).unwrap();
+                diesel::insert_into(ws::table).values([values(0), values(1)]).execute_without_authorization(db_conn);
 
                 let values = |i| {
                     let raw_content = format!("ds_id, some_metric,another_metric,n\n{created_ds_id}100,42,{i}");
                     let parsed_data = serde_json::json!({"ds_id": created_ds_id, "some_metric": 100, "another_metric": 42, "n": i});
                     (mf::dataset_id.eq(created_ds_id), mf::directory.eq(format!("specimen{i}")), mf::filename.eq("metrics_summary.csv"), mf::raw_content.eq(raw_content.into_bytes()), mf::content_type.eq("text/csv"), mf::parsed_data.eq(parsed_data))
                 };
-                diesel::insert_into(mf::table).values([values(0), values(1)]).execute(db_conn).unwrap();
+                diesel::insert_into(mf::table).values([values(0), values(1)]).execute_without_authorization(db_conn);
             })
             .await
             .unwrap();
@@ -737,7 +732,7 @@ impl TestState {
         let db_conn = self.root_db_conn().await;
 
         db_conn
-            .interact(|db_conn| Q::default_with_no_limit().execute(db_conn).unwrap())
+            .interact(|db_conn| Q::default_with_no_limit().execute_without_authorization(db_conn))
             .await
             .unwrap()
     }
@@ -764,10 +759,16 @@ pub trait DefaultWithNoLimit {
 
 impl<F, O> DefaultWithNoLimit for generic_query::Query<F, O>
 where
+    F: Default,
     O: Default,
 {
     fn default_with_no_limit() -> Self {
-        Self::default_with_no_limit()
+        Self {
+            filter: F::default(),
+            limit: i64::MAX,
+            offset: 0,
+            order_by: Default::default(),
+        }
     }
 }
 
@@ -778,6 +779,7 @@ impl DefaultWithNoLimit for () {
 impl<U, F, O> DefaultWithNoLimit for (U, generic_query::Query<F, O>)
 where
     U: From<Uuid>,
+    F: Default,
     O: Default,
 {
     fn default_with_no_limit() -> Self {
@@ -793,7 +795,7 @@ where
 pub struct Database {
     pub institutions: Vec<Institution>,
     pub people: Vec<PersonSummary>,
-    pub labs: Vec<LabSummary>,
+    pub projects: Vec<Project>,
     pub specimens: Vec<SpecimenSummary>,
     pub _suspensions: Vec<SuspensionSummary>,
     pub suspension_pools: Vec<SuspensionPool>,
@@ -810,7 +812,7 @@ impl Database {
         let (
             institutions,
             people,
-            labs,
+            projects,
             specimens,
             suspensions,
             suspension_pools,
@@ -821,7 +823,7 @@ impl Database {
         ) = tokio::join!(
             test_state.all::<InstitutionQuery, _>(),
             test_state.all::<PersonQuery, _>(),
-            test_state.all::<LabQuery, _>(),
+            test_state.all::<ProjectQuery, _>(),
             test_state.all::<SpecimenQuery, _>(),
             test_state.all::<SuspensionQuery, _>(),
             test_state.all::<SuspensionPoolQuery, _>(),
@@ -834,7 +836,7 @@ impl Database {
         Self {
             institutions,
             people,
-            labs,
+            projects,
             specimens,
             _suspensions: suspensions,
             suspension_pools,

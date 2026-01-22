@@ -18,6 +18,8 @@ pub enum Error {
     InvalidAuthToken {
         message: String,
     },
+    #[error("permission denied")]
+    PermissionDenied,
     Database(#[from] db::Error),
 }
 

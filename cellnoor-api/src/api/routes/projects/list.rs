@@ -1,5 +1,5 @@
 use axum::{extract::State, http::status::StatusCode};
-use cellnoor_models::lab::{LabFilter, LabQuery, LabSummary};
+use cellnoor_models::lab::{LabFilter, LabQuery, ProjectSummary};
 use cellnoor_schema::labs::dsl::{id, name};
 use diesel::{SelectableExpression, prelude::*};
 
@@ -17,13 +17,13 @@ pub(super) async fn list_labs(
     state: State<AppState>,
     user: AuthenticatedUser,
     QsQuery(request): QsQuery<LabQuery>,
-) -> ApiResponse<Vec<LabSummary>> {
+) -> ApiResponse<Vec<ProjectSummary>> {
     let items = handle_api_request(state, user, request).await?;
     Ok((StatusCode::OK, items))
 }
 
-impl db::Operation<Vec<LabSummary>> for LabQuery {
-    fn execute(self, db_conn: &mut PgConnection) -> Result<Vec<LabSummary>, db::Error> {
+impl db::Operation<Vec<ProjectSummary>> for LabQuery {
+    fn execute(self, db_conn: &mut PgConnection) -> Result<Vec<ProjectSummary>, db::Error> {
         let Self {
             filter,
             limit,
@@ -31,7 +31,7 @@ impl db::Operation<Vec<LabSummary>> for LabQuery {
             order_by,
         } = self;
 
-        let mut stmt = LabSummary::query()
+        let mut stmt = ProjectSummary::query()
             .limit(limit)
             .offset(offset)
             .filter(filter.to_boxed_filter())
@@ -79,7 +79,7 @@ mod tests {
         test_util::test_query,
     };
 
-    fn sort_by_name(i1: &&LabSummary, i2: &&LabSummary) -> Ordering {
+    fn sort_by_name(i1: &&ProjectSummary, i2: &&ProjectSummary) -> Ordering {
         i1.name().to_lowercase().cmp(&i2.name().to_lowercase())
     }
 

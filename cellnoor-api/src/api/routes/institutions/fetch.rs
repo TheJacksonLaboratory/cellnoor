@@ -5,6 +5,8 @@ use diesel::{PgConnection, prelude::*};
 
 use crate::{
     api::{
+        self,
+        auth::{self, AuthorizationData},
         extract::auth::AuthenticatedUser,
         routes::{ApiResponse, handle_api_request},
     },
@@ -22,7 +24,30 @@ pub(super) async fn fetch_institution(
 }
 
 impl db::Operation<Institution> for InstitutionId {
-    fn execute(self, db_conn: &mut PgConnection) -> Result<Institution, db::Error> {
-        Ok(Institution::query().filter(id.eq(&self)).first(db_conn)?)
+    type Authorized = Self;
+    type ValidationData = ();
+
+    async fn fetch_validation_data(
+        &self,
+        _db_conn: db::DbConnection,
+    ) -> Result<Self::ValidationData, db::Error> {
+        Ok(())
+    }
+
+    fn authorize(self, _authorization_data: AuthorizationData) -> Result<Self, auth::Error> {
+        Ok(self)
+    }
+
+    fn validate(_authorized_request: &Self, _validation_data: ()) -> Result<(), api::DataError> {
+        Ok(())
+    }
+
+    fn execute(
+        institution_id: Self,
+        db_conn: &mut PgConnection,
+    ) -> Result<Institution, api::Error> {
+        Ok(Institution::query()
+            .filter(id.eq(institution_id))
+            .first(db_conn)?)
     }
 }

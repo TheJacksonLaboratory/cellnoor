@@ -1,5 +1,5 @@
 use axum::Router;
-use axum_extra::routing::RouterExt;
+use axum_extra::routing::{Resource, RouterExt};
 
 use crate::state::AppState;
 

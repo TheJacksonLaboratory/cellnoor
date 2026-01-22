@@ -12,6 +12,7 @@ use crate::{cdna::CdnaSummary, library::common::LibraryFields, links::Links};
 #[cfg_attr(feature = "app", diesel(table_name = libraries))]
 pub struct LibrarySummary {
     id: Uuid,
+    project_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: LibraryFields,

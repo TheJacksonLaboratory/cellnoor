@@ -7,7 +7,7 @@ use diesel::{PgConnection, prelude::*};
 
 use crate::{
     api::{
-        extract::{ValidJson, auth::AuthenticatedUser},
+        extract::{Json, auth::AuthenticatedUser},
         routes::{
             ApiResponse, Root, handle_api_request, suspensions::create::insert_suspension_preparers,
         },
@@ -20,7 +20,7 @@ pub(super) async fn create_nucleus_suspension(
     _: Root,
     state: State<AppState>,
     user: AuthenticatedUser,
-    ValidJson(request): ValidJson<NucleusSuspensionCreation>,
+    Json(request): Json<NucleusSuspensionCreation>,
 ) -> ApiResponse<Suspension> {
     let item = handle_api_request(state, user, request).await?;
     Ok((StatusCode::CREATED, item))

@@ -1,8 +1,8 @@
 use axum::{extract::State, http::StatusCode};
 use cellnoor_models::chromium_dataset::{ChromiumDataset, ChromiumDatasetId};
 use cellnoor_schema::{
-    cdna, chromium_dataset_libraries, chromium_datasets, chromium_runs, gem_pools, labs, libraries,
-    tenx_assays,
+    cdna, chromium_dataset_libraries, chromium_datasets, chromium_runs, gem_pools, libraries,
+    projects, tenx_assays,
 };
 use diesel::prelude::*;
 

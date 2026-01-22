@@ -29,7 +29,7 @@ pub struct ChromiumDatasetFilter {
 pub enum ChromiumDatasetOrderBy {
     id { descending: Option<bool> },
     name { descending: Option<bool> },
-    lab_id { descending: Option<bool> },
+    project_id { descending: Option<bool> },
     delivered_at { descending: Option<bool> },
 }
 

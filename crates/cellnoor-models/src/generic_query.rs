@@ -7,7 +7,7 @@ pub struct Query<F, O>
 where
     O: Default,
 {
-    pub filter: Option<F>,
+    pub filter: F,
     pub limit: i64,
     pub offset: i64,
     pub order_by: DefaultVec<O>,
@@ -15,11 +15,12 @@ where
 
 impl<F, O> Default for Query<F, O>
 where
+    F: Default,
     O: Default,
 {
     fn default() -> Self {
         Query {
-            filter: None,
+            filter: F::default(),
             limit: 500,
             offset: 0,
             order_by: DefaultVec::default(),
@@ -30,13 +31,14 @@ where
 #[cfg_attr(feature = "builder", bon::bon)]
 impl<F, O> Query<F, O>
 where
+    F: Default,
     O: Default,
 {
     #[cfg(feature = "builder")]
     #[builder(on(_, into))]
     pub fn new(
         #[builder(field = DefaultVec::new())] order_by: DefaultVec<O>,
-        filter: Option<F>,
+        #[builder(default)] filter: F,
         limit: Option<i64>,
         offset: Option<i64>,
     ) -> Self {
@@ -52,7 +54,7 @@ where
 
     pub fn from_filter(filter: F) -> Self {
         Self {
-            filter: Some(filter),
+            filter,
             ..Default::default()
         }
     }
@@ -75,40 +77,6 @@ where
     fn set_parent_id(&mut self, id: T) {
         let parent_ids = self.parent_ids_mut();
         *parent_ids = Some(vec![id.into()]);
-    }
-}
-
-pub trait WithParentId<T> {
-    fn with_parent_id(id: T) -> Self;
-}
-
-impl<T, U> WithParentId<U> for T
-where
-    T: Default + SetParentId<U>,
-    Uuid: From<U>,
-{
-    fn with_parent_id(id: U) -> Self {
-        let mut filter = Self::default();
-        filter.set_parent_id(id);
-
-        filter
-    }
-}
-
-impl<F, O> Query<F, O>
-where
-    O: Default,
-{
-    pub fn set_parent_id<T>(&mut self, id: T)
-    where
-        F: SetParentId<T> + WithParentId<T>,
-        Uuid: From<T>,
-    {
-        if let Some(filter) = &mut self.filter {
-            filter.set_parent_id(id);
-        } else {
-            self.filter = Some(F::with_parent_id(id));
-        }
     }
 }
 
@@ -157,7 +125,7 @@ mod tests {
         assert_eq!(
             q,
             Query {
-                filter: None,
+                filter: Filter,
                 limit: 500,
                 offset: 0,
                 order_by: [

@@ -1,12 +1,12 @@
+use crate::{config::Config, state::AppState};
 use anyhow::Context;
 use axum::{Extension, Router, routing::get};
 use camino::Utf8Path;
-pub use error::{Error, ErrorResponse};
+pub use error::{DataError, Error, ErrorResponse};
+pub use extract::auth;
 pub use extract::auth::AuthenticatedUser;
 use serde_qs::axum::QsQueryConfig;
 use tokio::net::TcpListener;
-
-use crate::{config::Config, state::AppState};
 
 mod error;
 mod extract;

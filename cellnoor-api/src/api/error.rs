@@ -7,8 +7,17 @@ use axum::{
     http::StatusCode,
     response::IntoResponse,
 };
+use deadpool_diesel::Status;
 
-use crate::{api::extract::auth, db, validate};
+use crate::{api::auth, db};
+
+#[derive(Debug, thiserror::Error, serde::Serialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[serde(rename_all = "snake_case", tag = "type", content = "info")]
+#[error(transparent)]
+pub enum DataError {
+    CreatePerson(#[from] super::routes::people::create::Error),
+}
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
@@ -17,7 +26,7 @@ use crate::{api::extract::auth, db, validate};
 #[error(transparent)]
 pub enum Error {
     Auth(#[from] auth::Error),
-    Data(#[from] validate::Error),
+    Data(#[from] DataError),
     Database(#[from] db::Error),
     #[error("{message}")]
     MalformedRequest {
@@ -38,6 +47,12 @@ impl From<csv::Error> for Error {
         Self::MalformedRequest {
             message: format!("failed to parse CSV: {err}"),
         }
+    }
+}
+
+impl From<diesel::result::Error> for Error {
+    fn from(err: diesel::result::Error) -> Self {
+        Self::Database(err.into())
     }
 }
 
@@ -124,6 +139,11 @@ impl From<auth::Error> for ErrorResponse {
                 public_error: Error::Other,
                 internal_error: Some(e.into()),
             },
+            auth::Error::PermissionDenied => Self {
+                status: StatusCode::FORBIDDEN.as_u16(),
+                public_error: err.into(),
+                internal_error: None,
+            },
         }
     }
 }
@@ -154,13 +174,30 @@ impl From<db::Error> for ErrorResponse {
     }
 }
 
-impl From<validate::Error> for ErrorResponse {
-    fn from(err: validate::Error) -> Self {
+impl From<DataError> for ErrorResponse {
+    fn from(err: DataError) -> Self {
+        Self {
+            status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
+            public_error: err.into(),
+            internal_error: None,
+        }
+    }
+}
+
+impl From<Error> for ErrorResponse {
+    fn from(err: Error) -> Self {
         match err {
-            validate::Error::Database(e) => Self::from(e),
-            err => Self {
+            Error::Auth(e) => e.into(),
+            Error::Data(e) => e.into(),
+            Error::Database(e) => e.into(),
+            Error::MalformedRequest { .. } => Self {
                 status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
-                public_error: err.into(),
+                public_error: err,
+                internal_error: None,
+            },
+            Error::Other => Self {
+                status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
+                public_error: err,
                 internal_error: None,
             },
         }

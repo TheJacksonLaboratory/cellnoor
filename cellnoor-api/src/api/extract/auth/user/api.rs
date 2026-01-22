@@ -1,30 +1,21 @@
-use cellnoor_schema::{lab_membership, labs, people};
+use cellnoor_schema::{people, project_people};
 use deadpool_diesel::postgres::Pool;
-use diesel::{HasQuery, PgConnection, prelude::*};
+use diesel::{HasQuery, PgConnection, connection::DefaultLoadingMode, prelude::*};
 use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::db::{self, DbConnection};
 
-use super::{FromEncodedJwt, common::*};
+use super::common::*;
 
-#[allow(dead_code)]
-#[derive(Clone, Debug)]
-pub struct User {
-    standard_claims: StandardClaims,
-    user: PrivateClaims,
-}
+pub type User = StandardClaims;
 
 impl User {
-    pub fn id(&self) -> Uuid {
-        self.standard_claims.sub
-    }
-
-    pub(super) async fn from_standard_claims(
-        standard_claims: StandardClaims,
+    pub(super) async fn fetch_authorization_data(
+        &self,
         db_conn: DbConnection,
-    ) -> Result<Self, db::Error> {
-        let user_id = standard_claims.sub;
+    ) -> Result<AuthorizationData, db::Error> {
+        let user_id = self.id();
 
         let user_fields = db_conn.interact(move |db_conn| {
             UserFields::query()
@@ -32,21 +23,22 @@ impl User {
                 .first(db_conn)
         });
 
-        let user_labs = db_conn.interact(move |db_conn| {
-            lab_membership::table
-                .select(lab_membership::lab_id)
-                .filter(lab_membership::member_id.eq(user_id))
+        let user_projects = db_conn.interact(move |db_conn| {
+            project_people::table
+                .select(project_people::project_id)
+                .filter(project_people::person_id.eq(user_id))
                 .load(db_conn)
         });
 
-        let (user_fields, user_labs) = tokio::try_join!(user_fields, user_labs)?;
+        let (user_fields, user_projects) = tokio::try_join!(user_fields, user_projects)?;
 
-        Ok(Self {
-            standard_claims,
-            user: PrivateClaims {
-                user_fields: user_fields?,
-                labs: user_labs?,
-            },
+        Ok(AuthorizationData {
+            user_fields: user_fields?,
+            projects: user_projects?.into_iter().collect(),
         })
+    }
+
+    pub fn id(&self) -> Uuid {
+        self.sub
     }
 }

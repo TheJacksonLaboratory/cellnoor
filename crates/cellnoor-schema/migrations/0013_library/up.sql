@@ -5,6 +5,7 @@ create table libraries (
     ) stored not null,
     readable_id case_insensitive_text unique not null,
     cdna_id uuid references cdna on delete restrict on update restrict not null,
+    project_id uuid references projects on delete restrict on update restrict not null,
     single_index_set_name case_insensitive_text references single_index_sets on delete restrict on update restrict,
     dual_index_set_name case_insensitive_text references dual_index_sets on delete restrict on update restrict,
     number_of_sample_index_pcr_cycles integer not null,

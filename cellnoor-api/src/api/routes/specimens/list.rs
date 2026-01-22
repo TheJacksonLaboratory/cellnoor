@@ -1,15 +1,19 @@
+use std::collections::HashSet;
+
 use axum::{extract::State, http::StatusCode};
 use cellnoor_models::specimen::{SpecimenFilter, SpecimenQuery, SpecimenSummary};
 use cellnoor_schema::specimens as t;
 use diesel::{dsl::AssumeNotNull, prelude::*};
 use jiff_diesel::ToDiesel;
+use uuid::Uuid;
 
 use crate::{
     api::{
+        auth::{self, AuthorizationData},
         extract::{auth::AuthenticatedUser, query::QsQuery},
         routes::{ApiResponse, Root, handle_api_request},
     },
-    db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, like_any},
+    db::{self, BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter, like_any},
     state::AppState,
 };
 
@@ -24,10 +28,24 @@ pub(super) async fn list_specimens(
 }
 
 impl db::Operation<Vec<SpecimenSummary>> for SpecimenQuery {
+    type ValidationData = ();
+
+    async fn fetch_validation_data(
+        &self,
+        _state: &DbConnection,
+    ) -> Result<Self::ValidationData, db::Error> {
+        Ok(())
+    }
+
     fn execute(
         self,
+        user: AuthorizationData,
+        _validation_data: (),
         db_conn: &mut diesel::PgConnection,
     ) -> Result<Vec<SpecimenSummary>, db::Error> {
+        let requested_projects = self.filter.projects.take();
+        self.filter.projects = user.authorized_projects(requested_projects);
+
         let Self {
             filter,
             limit,
@@ -56,7 +74,7 @@ where
     AssumeNotNull<t::id>: SelectableExpression<QS>,
     AssumeNotNull<t::name>: SelectableExpression<QS>,
     AssumeNotNull<t::submitted_by>: SelectableExpression<QS>,
-    AssumeNotNull<t::lab_id>: SelectableExpression<QS>,
+    AssumeNotNull<t::project_id>: SelectableExpression<QS>,
     AssumeNotNull<t::received_at>: SelectableExpression<QS>,
     AssumeNotNull<t::species>: SelectableExpression<QS>,
     AssumeNotNull<t::host_species>: SelectableExpression<QS>,
@@ -76,7 +94,7 @@ where
             ids,
             names,
             submitted_by,
-            labs,
+            projects,
             received_before,
             received_after,
             species,
@@ -105,8 +123,8 @@ where
             filter = filter.and_condition(t::submitted_by.assume_not_null().eq_any(submitter_list));
         }
 
-        if let Some(labs) = labs {
-            filter = filter.and_condition(t::lab_id.assume_not_null().eq_any(labs));
+        if let Some(projects) = projects {
+            filter = filter.and_condition(t::project_id.assume_not_null().eq_any(projects));
         }
 
         if let Some(received_before) = received_before.map(ToDiesel::to_diesel) {

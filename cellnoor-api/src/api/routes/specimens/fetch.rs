@@ -1,14 +1,15 @@
 use axum::{extract::State, http::StatusCode};
 use cellnoor_models::specimen::{Specimen, SpecimenId};
-use cellnoor_schema::specimens::dsl::id;
+use cellnoor_schema::specimens::dsl::{id, project_id};
 use diesel::prelude::*;
 
 use crate::{
     api::{
+        auth::{self, AuthorizationData},
         extract::auth::AuthenticatedUser,
         routes::{ApiResponse, handle_api_request},
     },
-    db,
+    db::{self, DbConnection},
     state::AppState,
 };
 
@@ -22,7 +23,28 @@ pub(super) async fn fetch_specimen(
 }
 
 impl db::Operation<Specimen> for SpecimenId {
-    fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Specimen, db::Error> {
-        Ok(Specimen::query().filter(id.eq(self)).first(db_conn)?)
+    type ValidationData = ();
+
+    async fn fetch_validation_data(
+        &self,
+        _state: &DbConnection,
+    ) -> Result<Self::ValidationData, db::Error> {
+        Ok(())
+    }
+
+    fn execute(
+        self,
+        authorization_data: AuthorizationData,
+        _validation_data: &(),
+        db_conn: &mut diesel::PgConnection,
+    ) -> Result<Specimen, db::Error> {
+        let q = Specimen::query().filter(id.eq(self));
+
+        let specimen = match authorization_data.authorized_projects(None) {
+            Some(projects) => q.filter(project_id.eq_any(projects)).first(db_conn)?,
+            None => q.first(db_conn)?,
+        };
+
+        Ok(specimen)
     }
 }

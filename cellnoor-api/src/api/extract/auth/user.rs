@@ -10,8 +10,10 @@ use tokio::sync::RwLockReadGuard;
 
 use crate::{
     api::{ErrorResponse, extract::auth},
+    db::{self, DbConnection},
     state::{AppState, JwtDecodingKey},
 };
+pub use common::AuthorizationData;
 
 mod api;
 mod common;
@@ -24,6 +26,18 @@ mod ui;
 pub enum AuthenticatedUser {
     Api(api::User),
     Ui(ui::User),
+}
+
+impl AuthenticatedUser {
+    pub async fn authorization_data(
+        self,
+        db_conn: DbConnection,
+    ) -> Result<AuthorizationData, db::Error> {
+        match self {
+            Self::Api(u) => u.fetch_authorization_data(db_conn).await,
+            Self::Ui(u) => Ok(u.into_authorization_data()),
+        }
+    }
 }
 
 impl FromRequestParts<AppState> for AuthenticatedUser {
@@ -46,12 +60,7 @@ impl FromRequestParts<AppState> for AuthenticatedUser {
 
         let user = match encoded_jwt {
             EncodedJwt::FromAuthorizationHeader(t) => {
-                let standard_claims =
-                    common::StandardClaims::from_encoded_jwt(t, &decoding_key, validation)?;
-
-                api::User::from_standard_claims(standard_claims, app_state.db_conn().await?)
-                    .await
-                    .map(Self::Api)?
+                api::User::from_encoded_jwt(t, &decoding_key, validation).map(Self::Api)?
             }
             EncodedJwt::FromCookie(t) => {
                 ui::User::from_encoded_jwt(t, &decoding_key, validation).map(Self::Ui)?

@@ -5,7 +5,9 @@ use diesel::prelude::*;
 
 use crate::{
     api::{
-        extract::{ValidJson, auth::AuthenticatedUser},
+        self,
+        auth::{self, AuthorizationData},
+        extract::{Json, auth::AuthenticatedUser},
         routes::{ApiResponse, Root, handle_api_request},
     },
     db,
@@ -16,14 +18,32 @@ pub(super) async fn create_specimen(
     _: Root,
     state: State<AppState>,
     user: AuthenticatedUser,
-    ValidJson(request): ValidJson<SpecimenCreation>,
+    Json(request): Json<SpecimenCreation>,
 ) -> ApiResponse<Specimen> {
     let item = handle_api_request(state, user, request).await?;
     Ok((StatusCode::CREATED, item))
 }
 
 impl db::Operation<Specimen> for SpecimenCreation {
-    fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Specimen, db::Error> {
+    type ValidationData = ();
+
+    async fn fetch_validation_data(
+        &self,
+        _db_conn: &db::DbConnection,
+    ) -> Result<Self::ValidationData, db::Error> {
+        Ok(())
+    }
+
+    fn execute(
+        self,
+        authorization_data: AuthorizationData,
+        _validation_data: (),
+        db_conn: &mut diesel::PgConnection,
+    ) -> Result<Specimen, api::Error> {
+        if !authorization_data.is_admin() {
+            return Err(auth::Error::PermissionDenied)?;
+        }
+
         let split = match self {
             Self::Block(s) => s.split_for_insertion(),
             Self::Suspension(s) => s.split_for_insertion(),

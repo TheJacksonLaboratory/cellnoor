@@ -5,6 +5,7 @@ create table cdna (
     library_type case_insensitive_text not null,
     prepared_at timestamptz not null,
     gem_pool_id uuid references gem_pools on delete restrict on update restrict,
+    project_id uuid references projects on delete restrict on update restrict not null,
     n_amplification_cycles integer not null,
     additional_data jsonb,
 

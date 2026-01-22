@@ -1,5 +1,8 @@
-pub mod auth;
-pub mod query;
-mod valid_json;
+pub use json::Json;
+pub use path::Path;
+pub use query::QsQuery;
 
-pub use valid_json::{ValidJson, ValidPathJson};
+pub mod auth;
+mod json;
+mod path;
+mod query;

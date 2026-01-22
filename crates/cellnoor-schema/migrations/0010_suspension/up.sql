@@ -11,6 +11,7 @@ create table suspensions (
     links jsonb generated always as (construct_links('suspensions', id, '{"measurements"}')) stored not null,
     readable_id case_insensitive_text unique not null,
     parent_specimen_id uuid references specimens on delete restrict on update restrict not null,
+    project_id uuid references projects on delete restrict on update restrict not null,
     content case_insensitive_text not null,
     created_at timestamptz,
     lysis_duration_minutes real,

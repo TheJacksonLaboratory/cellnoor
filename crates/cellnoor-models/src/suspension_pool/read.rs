@@ -10,6 +10,7 @@ use crate::{links::Links, suspension_pool::SuspensionPoolFields};
 #[cfg_attr(feature = "app", diesel(table_name = suspension_pools))]
 pub struct SuspensionPool {
     id: Uuid,
+    project_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: SuspensionPoolFields,

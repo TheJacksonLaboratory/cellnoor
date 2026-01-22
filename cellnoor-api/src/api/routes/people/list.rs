@@ -5,7 +5,9 @@ use diesel::{dsl::AssumeNotNull, prelude::*};
 
 use crate::{
     api::{
-        extract::{auth::AuthenticatedUser, query::QsQuery},
+        self,
+        auth::{self, AuthorizationData},
+        extract::{QsQuery, auth::AuthenticatedUser},
         routes::{ApiResponse, Root, handle_api_request},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, like_any},
@@ -76,13 +78,34 @@ where
 }
 
 impl db::Operation<Vec<PersonSummary>> for PersonQuery {
-    fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Vec<PersonSummary>, db::Error> {
+    type Authorized = Self;
+    type ValidationData = ();
+
+    async fn fetch_validation_data(&self, _db_conn: db::DbConnection) -> Result<(), db::Error> {
+        Ok(())
+    }
+
+    fn authorize(
+        self,
+        _authorization_data: AuthorizationData,
+    ) -> Result<Self::Authorized, auth::Error> {
+        Ok(self)
+    }
+
+    fn validate(_authorized_request: &Self, _validation_data: ()) -> Result<(), api::DataError> {
+        Ok(())
+    }
+
+    fn execute(
+        query: Self,
+        db_conn: &mut diesel::PgConnection,
+    ) -> Result<Vec<PersonSummary>, api::Error> {
         let Self {
             filter,
             limit,
             offset,
             order_by,
-        } = self;
+        } = query;
 
         let mut stmt = PersonSummary::query()
             .limit(limit)

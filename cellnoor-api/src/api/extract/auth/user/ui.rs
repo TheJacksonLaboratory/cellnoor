@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use serde::Deserialize;
 use uuid::Uuid;
 
@@ -8,12 +10,12 @@ use super::common::*;
 pub struct User {
     #[serde(flatten)]
     standard_claims: StandardClaims,
-    user: PrivateClaims,
+    user: AuthorizationData,
 }
 
 impl User {
-    pub fn id(&self) -> Uuid {
-        self.standard_claims.sub
+    pub fn into_authorization_data(self) -> AuthorizationData {
+        self.user
     }
 
     pub(super) fn admin() -> Self {
@@ -25,32 +27,16 @@ impl User {
                 iss: String::default(),
                 aud: String::default(),
             },
-            user: PrivateClaims {
+            user: AuthorizationData {
                 user_fields: UserFields {
                     user_id: Uuid::nil(),
                     is_admin: true,
                     is_biology_staff: true,
                     is_computational_staff: true,
                 },
-                labs: Vec::new(),
+                projects: HashSet::new(),
             },
         }
-    }
-
-    fn user_fields(&self) -> &UserFields {
-        &self.user.user_fields
-    }
-
-    pub fn is_admin(&self) -> bool {
-        self.user_fields().is_admin
-    }
-
-    pub fn is_biology_staff(&self) -> bool {
-        self.user_fields().is_biology_staff
-    }
-
-    pub fn is_computational_staff(&self) -> bool {
-        self.user_fields().is_computational_staff
     }
 }
 

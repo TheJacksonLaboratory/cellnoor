@@ -6,7 +6,9 @@ use cellnoor_models::{
 
 use crate::{
     api::{
-        extract::{auth::AuthenticatedUser, query::QsQuery},
+        self,
+        auth::{self, AuthorizationData},
+        extract::{QsQuery, auth::AuthenticatedUser},
         routes::{ApiResponse, handle_api_request},
     },
     db::{self},
@@ -24,22 +26,28 @@ pub async fn list_members(
 }
 
 impl db::Operation<Vec<person::PersonSummary>> for (InstitutionIdMembers, PersonQuery) {
+    type Authorized = Self;
+    type ValidationData = ();
+
+    async fn fetch_validation_data(&self, _db_conn: db::DbConnection) -> Result<(), db::Error> {
+        Ok(())
+    }
+
+    fn authorize(self, _authorization_data: AuthorizationData) -> Result<Self, auth::Error> {
+        Ok(self)
+    }
+
+    fn validate(_authorized_request: &Self, _validation_data: ()) -> Result<(), api::DataError> {
+        Ok(())
+    }
+
     fn execute(
-        self,
+        (InstitutionIdMembers(institution_id), mut person_query): Self,
         db_conn: &mut diesel::PgConnection,
-    ) -> Result<Vec<person::PersonSummary>, db::Error> {
-        let (InstitutionIdMembers(institution_id), mut person_query) = self;
-
+    ) -> Result<Vec<person::PersonSummary>, api::Error> {
         let institution_ids = Some(vec![institution_id]);
-        if let Some(q) = &mut person_query.filter {
-            q.institution_ids = institution_ids;
-        } else {
-            person_query.filter = Some(PersonFilter {
-                institution_ids,
-                ..Default::default()
-            });
-        }
+        person_query.filter.institution_ids = institution_ids;
 
-        person_query.execute(db_conn)
+        PersonQuery::execute(person_query, db_conn)
     }
 }
