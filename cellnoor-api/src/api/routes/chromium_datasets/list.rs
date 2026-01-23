@@ -17,56 +17,45 @@ use cellnoor_schema::{
     tenx_assays::{self, table as tenx_assays_table},
 };
 use diesel::{dsl::AssumeNotNull, prelude::*};
+use diesel_async::{AsyncPgConnection, methods::LoadQuery};
 use jiff::Timestamp;
 use jiff_diesel::ToDiesel;
 
 use crate::{
     api::{
-        extract::{auth::AuthenticatedUser, query::QsQuery},
-        routes::{ApiResponse, Root, handle_api_request},
+        extract::{QsQuery, auth::AuthenticatedUser},
+        routes::handle_api_request,
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, like_any},
     state::AppState,
 };
 
-pub async fn list_chromium_datasets(
-    _: Root,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    QsQuery(query): QsQuery<ChromiumDatasetQuery>,
-) -> ApiResponse<Vec<ChromiumDatasetSummary>> {
-    Ok((
-        StatusCode::OK,
-        handle_api_request(state, user, query).await?,
-    ))
-}
+// impl db::Operation<Vec<ChromiumDatasetSummary>> for ChromiumDatasetQuery {
+//     fn execute(
+//         self,
+//         db_conn: &mut diesel::PgConnection,
+//     ) -> Result<Vec<ChromiumDatasetSummary>, db::Error> {
+//         let Self {
+//             filter,
+//             limit,
+//             offset,
+//             order_by,
+//         } = self;
 
-impl db::Operation<Vec<ChromiumDatasetSummary>> for ChromiumDatasetQuery {
-    fn execute(
-        self,
-        db_conn: &mut diesel::PgConnection,
-    ) -> Result<Vec<ChromiumDatasetSummary>, db::Error> {
-        let Self {
-            filter,
-            limit,
-            offset,
-            order_by,
-        } = self;
+//         let mut stmt = chromium_datasets_to_all_specimens()
+//             .select(ChromiumDatasetSummary::as_select())
+//             .limit(limit)
+//             .offset(offset)
+//             .filter(filter.to_boxed_filter())
+//             .into_boxed();
 
-        let mut stmt = chromium_datasets_to_all_specimens()
-            .select(ChromiumDatasetSummary::as_select())
-            .limit(limit)
-            .offset(offset)
-            .filter(filter.to_boxed_filter())
-            .into_boxed();
+//         for ordering in order_by.as_ref() {
+//             stmt = stmt.then_order_by(ordering);
+//         }
 
-        for ordering in order_by.as_ref() {
-            stmt = stmt.then_order_by(ordering);
-        }
-
-        Ok(stmt.load(db_conn)?)
-    }
-}
+//         Ok(stmt.load(db_conn)?)
+//     }
+// }
 
 diesel::alias!(specimens as pooled_specimens: PooledSpecimens);
 diesel::alias!(suspensions as pooled_suspensions: PooledSuspensions);
@@ -103,7 +92,7 @@ where
     AssumeNotNull<specimens::id>: SelectableExpression<QS>,
     AssumeNotNull<specimens::name>: SelectableExpression<QS>,
     AssumeNotNull<specimens::submitted_by>: SelectableExpression<QS>,
-    AssumeNotNull<specimens::lab_id>: SelectableExpression<QS>,
+    AssumeNotNull<specimens::project_id>: SelectableExpression<QS>,
     AssumeNotNull<specimens::received_at>: SelectableExpression<QS>,
     AssumeNotNull<specimens::species>: SelectableExpression<QS>,
     AssumeNotNull<specimens::host_species>: SelectableExpression<QS>,
@@ -121,7 +110,7 @@ where
     AssumeNotNull<tenx_assays::sample_multiplexing>: SelectableExpression<QS>,
     tenx_assays::chemistry_version: SelectableExpression<QS>,
     AssumeNotNull<tenx_assays::chromium_chip>: SelectableExpression<QS>,
-    lab_id: SelectableExpression<QS>,
+    project_id: SelectableExpression<QS>,
     delivered_at: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> db::BoxedFilter<'a, QS> {
@@ -130,7 +119,7 @@ where
             names,
             specimen,
             assay,
-            lab_ids,
+            project_ids,
             delivered_before,
             delivered_after,
         } = self;
@@ -149,11 +138,12 @@ where
         }
 
         if let Some(assay_filter) = assay {
-            filter = filter.and_condition(assay_filter.to_boxed_filter());
+            todo!()
+            // filter = filter.and_condition(assay_filter.to_boxed_filter());
         }
 
-        if let Some(lab_ids) = lab_ids {
-            filter = filter.and_condition(lab_id.eq_any(lab_ids));
+        if let Some(project_ids) = project_ids {
+            filter = filter.and_condition(project_id.eq_any(project_ids));
         }
 
         if let Some(delivered_before) = delivered_before.map(Timestamp::to_diesel) {

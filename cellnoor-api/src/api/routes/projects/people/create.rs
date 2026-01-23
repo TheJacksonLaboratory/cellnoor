@@ -1,11 +1,14 @@
-use cellnoor_models::project::{Project, ProjectCreation};
-use cellnoor_schema::projects;
-use diesel::SelectableHelper;
+use cellnoor_models::{
+    person::PersonId,
+    project::{Project, ProjectCreation, ProjectId},
+};
+use cellnoor_schema::{project_people, projects};
+use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 
 use crate::api;
 
-impl api::AuthorizedRequest<Project> for ProjectCreation {
+impl api::AuthorizedRequest<()> for (ProjectId, PersonId) {
     type ValidationData = ();
 
     fn validate(&self, validation_data: Self::ValidationData) -> Result<(), api::DataError> {
@@ -13,15 +16,18 @@ impl api::AuthorizedRequest<Project> for ProjectCreation {
         Ok(())
     }
 
-    async fn handle(
-        self,
-        mut db_conn: &diesel_async::AsyncPgConnection,
-    ) -> Result<Project, api::Error> {
-        Ok(diesel::insert_into(projects::table)
-            .values(self)
-            .returning(Project::as_returning())
-            .get_result(&mut db_conn)
-            .await?)
+    async fn handle(self, mut db_conn: &diesel_async::AsyncPgConnection) -> Result<(), api::Error> {
+        let (project_id, person_id) = self;
+
+        diesel::insert_into(project_people::table)
+            .values((
+                project_people::project_id.eq(project_id),
+                project_people::person_id.eq(person_id),
+            ))
+            .execute(&mut db_conn)
+            .await?;
+
+        Ok(())
     }
 }
 

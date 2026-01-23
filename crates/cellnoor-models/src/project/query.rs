@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 #[cfg(feature = "app")]
 use cellnoor_schema::projects;
 use macro_attributes::{filter, order_by};
@@ -21,7 +23,7 @@ impl Default for ProjectOrderBy {
 
 #[filter]
 pub struct ProjectFilter {
-    pub ids: Option<Vec<Uuid>>,
+    pub ids: Option<HashSet<Uuid>>,
     pub names: Option<Vec<String>>,
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     pub started_before: Option<jiff::Timestamp>,

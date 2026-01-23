@@ -130,5 +130,11 @@ macro_rules! uuid_newtype {
                 Some(vec![val.0])
             }
         }
+
+        impl From<$name> for Option<::std::collections::HashSet<::uuid::Uuid>> {
+            fn from(val: $name) -> Option<::std::collections::HashSet<::uuid::Uuid>> {
+                Some(::std::collections::HashSet::from([val.0]))
+            }
+        }
     };
 }

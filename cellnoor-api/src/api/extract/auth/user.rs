@@ -4,7 +4,7 @@ use axum_extra::{
     extract::{CookieJar, cookie::Cookie},
 };
 use diesel_async::AsyncPgConnection;
-use headers::{Authorization, authorization::Bearer};
+use headers::{Authorization as AuthorizationHeader, authorization::Bearer};
 use jsonwebtoken::{TokenData, Validation};
 use serde::de::DeserializeOwned;
 use tokio::sync::RwLockReadGuard;
@@ -14,7 +14,7 @@ use crate::{
     db::{self, DbConnection},
     state::{AppState, JwtDecodingKey},
 };
-pub use common::AuthorizationData;
+pub use common::Authorization;
 
 mod api;
 mod common;
@@ -30,13 +30,13 @@ pub enum AuthenticatedUser {
 }
 
 impl AuthenticatedUser {
-    pub async fn authorization_data(
+    pub async fn authorization(
         self,
         db_conn: &AsyncPgConnection,
-    ) -> Result<AuthorizationData, db::Error> {
+    ) -> Result<Authorization, db::Error> {
         match self {
-            Self::Api(u) => u.fetch_authorization_data(db_conn).await,
-            Self::Ui(u) => Ok(u.into_authorization_data()),
+            Self::Api(u) => u.authorization(db_conn).await,
+            Self::Ui(u) => Ok(u.into_authorization()),
         }
     }
 }
@@ -74,9 +74,9 @@ impl FromRequestParts<AppState> for AuthenticatedUser {
 
 async fn extract_auth_header(
     request_parts: &mut axum::http::request::Parts,
-) -> Option<TypedHeader<Authorization<Bearer>>> {
+) -> Option<TypedHeader<AuthorizationHeader<Bearer>>> {
     request_parts
-        .extract::<TypedHeader<Authorization<Bearer>>>()
+        .extract::<TypedHeader<AuthorizationHeader<Bearer>>>()
         .await
         .ok()
 }
@@ -94,13 +94,13 @@ enum EncodedJwt<'a> {
 }
 
 fn extract_jwt_from_header_or_cookies<'a>(
-    auth_header: Option<&'a TypedHeader<Authorization<Bearer>>>,
+    auth_header: Option<&'a TypedHeader<AuthorizationHeader<Bearer>>>,
     cookies: &'a CookieJar,
 ) -> Result<EncodedJwt<'a>, auth::Error> {
     match (auth_header, cookies) {
-        (Some(TypedHeader(Authorization(token))), _) => Ok(EncodedJwt::FromAuthorizationHeader(
-            token.token().as_bytes(),
-        )),
+        (Some(TypedHeader(AuthorizationHeader(token))), _) => Ok(
+            EncodedJwt::FromAuthorizationHeader(token.token().as_bytes()),
+        ),
         (None, cookies) => cookies
             .get("cellnoor-ui.api_token")
             .map(Cookie::value)

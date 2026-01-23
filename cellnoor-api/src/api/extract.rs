@@ -30,8 +30,8 @@ mod query;
 
 //     fn authorize(
 //         self,
-//         authorization_data: auth::AuthorizationData,
+//         authorization: auth::AuthorizationData,
 //     ) -> Result<Self::Authorized, auth::Error> {
-//         self.0.authorize(authorization_data)
+//         self.0.authorize(authorization)
 //     }
 // }

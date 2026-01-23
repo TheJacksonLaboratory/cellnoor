@@ -1,36 +1,35 @@
-use axum::{extract::State, http::StatusCode};
-use cellnoor_models::institution::{Institution, InstitutionId};
-use cellnoor_schema::institutions::dsl::id;
+use axum::{extract::State, http::status::StatusCode};
+use cellnoor_models::person::{Person, PersonId};
+use cellnoor_schema::people::dsl::id;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 use crate::{
     api::{
         self,
-        auth::{self, AuthorizationData},
+        auth::{self, Authorization},
         extract::auth::AuthenticatedUser,
-        request::{AuthorizedRequest, Request},
     },
-    db::{self},
+    db,
     state::AppState,
 };
 
-impl AuthorizedRequest<Institution> for InstitutionId {
+impl api::AuthorizedRequest<Person> for PersonId {
     type ValidationData = ();
 
     fn validate(&self, _validation_data: ()) -> Result<(), api::DataError> {
         Ok(())
     }
 
-    async fn handle(self, mut db_conn: &AsyncPgConnection) -> Result<Institution, api::Error> {
-        Ok(Institution::query()
+    async fn handle(self, mut db_conn: &AsyncPgConnection) -> Result<Person, api::Error> {
+        Ok(Person::query()
             .filter(id.eq(self))
             .first(&mut db_conn)
             .await?)
     }
 }
 
-impl Request<Institution> for InstitutionId {
+impl api::Request<Person> for PersonId {
     type Authorized = Self;
     type ValidationData = ();
 
@@ -41,7 +40,7 @@ impl Request<Institution> for InstitutionId {
         Ok(())
     }
 
-    fn authorize(self, _authorization_data: AuthorizationData) -> Result<Self, auth::Error> {
+    fn authorize(self, _authorization: Authorization) -> Result<Self::Authorized, auth::Error> {
         Ok(self)
     }
 }

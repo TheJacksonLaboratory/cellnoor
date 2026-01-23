@@ -9,63 +9,63 @@ use uuid::Uuid;
 
 use crate::{
     api::{
-        auth::{self, AuthorizationData},
-        extract::{auth::AuthenticatedUser, query::QsQuery},
-        routes::{ApiResponse, Root, handle_api_request},
+        auth::{self, Authorization},
+        extract::{QsQuery, auth::AuthenticatedUser},
+        routes::handle_api_request,
     },
     db::{self, BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter, like_any},
     state::AppState,
 };
 
-pub(super) async fn list_specimens(
-    _: Root,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    QsQuery(request): QsQuery<SpecimenQuery>,
-) -> ApiResponse<Vec<SpecimenSummary>> {
-    let item = handle_api_request(state, user, request).await?;
-    Ok((StatusCode::OK, item))
-}
+// pub(super) async fn list_specimens(
+//     _: Root,
+//     state: State<AppState>,
+//     user: AuthenticatedUser,
+//     QsQuery(request): QsQuery<SpecimenQuery>,
+// ) -> ApiResponse<Vec<SpecimenSummary>> {
+//     let item = handle_api_request(state, user, request).await?;
+//     Ok((StatusCode::OK, item))
+// }
 
-impl db::Operation<Vec<SpecimenSummary>> for SpecimenQuery {
-    type ValidationData = ();
+// impl db::Operation<Vec<SpecimenSummary>> for SpecimenQuery {
+//     type ValidationData = ();
 
-    async fn fetch_validation_data(
-        &self,
-        _state: &DbConnection,
-    ) -> Result<Self::ValidationData, db::Error> {
-        Ok(())
-    }
+//     async fn fetch_validation_data(
+//         &self,
+//         _state: &DbConnection,
+//     ) -> Result<Self::ValidationData, db::Error> {
+//         Ok(())
+//     }
 
-    fn execute(
-        self,
-        user: AuthorizationData,
-        _validation_data: (),
-        db_conn: &mut diesel::PgConnection,
-    ) -> Result<Vec<SpecimenSummary>, db::Error> {
-        let requested_projects = self.filter.projects.take();
-        self.filter.projects = user.authorized_projects(requested_projects);
+//     fn execute(
+//         self,
+//         user: AuthorizationData,
+//         _validation_data: (),
+//         db_conn: &mut diesel::PgConnection,
+//     ) -> Result<Vec<SpecimenSummary>, db::Error> {
+//         let requested_projects = self.filter.projects.take();
+//         self.filter.projects = user.authorized_projects(requested_projects);
 
-        let Self {
-            filter,
-            limit,
-            offset,
-            order_by,
-        } = self;
+//         let Self {
+//             filter,
+//             limit,
+//             offset,
+//             order_by,
+//         } = self;
 
-        let mut stmt = SpecimenSummary::query()
-            .limit(limit)
-            .offset(offset)
-            .filter(filter.to_boxed_filter())
-            .into_boxed();
+//         let mut stmt = SpecimenSummary::query()
+//             .limit(limit)
+//             .offset(offset)
+//             .filter(filter.to_boxed_filter())
+//             .into_boxed();
 
-        for ordering in order_by.as_ref() {
-            stmt = stmt.then_order_by(ordering);
-        }
+//         for ordering in order_by.as_ref() {
+//             stmt = stmt.then_order_by(ordering);
+//         }
 
-        Ok(stmt.load(db_conn)?)
-    }
-}
+//         Ok(stmt.load(db_conn)?)
+//     }
+// }
 
 // In order to be composed into a `ChromiumDatasetFilter`, we need calls to
 // `assume_not_null`, which has no essentially no runtime impact
@@ -213,10 +213,10 @@ mod tests {
     use std::cmp::Ordering;
 
     use cellnoor_models::specimen::*;
-    use deadpool_diesel::postgres::Connection;
     use rstest::rstest;
 
     use crate::{
+        db::DbConnection,
         test_state::{Database, database, root_db_conn},
         test_util::test_query,
     };
@@ -233,7 +233,7 @@ mod tests {
     #[awt]
     #[tokio::test(flavor = "multi_thread")]
     async fn default_specimen_query(
-        #[future] root_db_conn: Connection,
+        #[future] root_db_conn: DbConnection,
         #[future] database: &'static Database,
     ) {
         test_query::<SpecimenQuery, _>()
@@ -247,7 +247,7 @@ mod tests {
     #[awt]
     #[tokio::test(flavor = "multi_thread")]
     async fn specific_specimen_query(
-        #[future] root_db_conn: Connection,
+        #[future] root_db_conn: DbConnection,
         #[future] database: &'static Database,
     ) {
         let query = SpecimenQuery::builder()

@@ -13,7 +13,7 @@ use tracing_subscriber::filter::FilterExt;
 use url::Url;
 
 use crate::{
-    api::{AuthorizedRequest, Request, auth::AuthorizationData},
+    api::{AuthorizedRequest, Request, auth::Authorization},
     initial_data::index_sets::{
         download_and_insert_dual_index_sets, download_and_insert_single_index_sets,
     },

@@ -1,18 +1,17 @@
-use axum::{extract::State, http::status::StatusCode};
-use cellnoor_models::person::{PersonFilter, PersonQuery, PersonSummary};
-use cellnoor_schema::people::dsl::{email, id, institution_id, microsoft_entra_oid, name, orcid};
-use diesel::{dsl::AssumeNotNull, prelude::*};
-use diesel_async::{AsyncPgConnection, RunQueryDsl};
-
 use crate::{
     api::{
         self,
-        auth::{self, AuthorizationData},
+        auth::{self, Authorization},
         extract::{QsQuery, auth::AuthenticatedUser},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, like_any},
     state::AppState,
 };
+use axum::{extract::State, http::status::StatusCode};
+use cellnoor_models::person::{PersonFilter, PersonQuery, PersonSummary};
+use cellnoor_schema::people::dsl::{email, id, institution_id, microsoft_entra_oid, name, orcid};
+use diesel::{dsl::AssumeNotNull, prelude::*};
+use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 impl api::AuthorizedRequest<Vec<PersonSummary>> for PersonQuery {
     type ValidationData = ();
@@ -54,10 +53,7 @@ impl api::Request<Vec<PersonSummary>> for PersonQuery {
         Ok(())
     }
 
-    fn authorize(
-        self,
-        _authorization_data: AuthorizationData,
-    ) -> Result<Self::Authorized, auth::Error> {
+    fn authorize(self, _authorization: Authorization) -> Result<Self::Authorized, auth::Error> {
         Ok(self)
     }
 }

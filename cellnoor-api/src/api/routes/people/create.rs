@@ -1,6 +1,6 @@
-use crate::api;
-use crate::api::auth::{self, AuthorizationData};
+use crate::api::auth::{self, Authorization};
 use crate::api::extract::Json;
+use crate::api::{self};
 use crate::{api::extract::auth::AuthenticatedUser, db, state::AppState};
 use axum::{extract::State, http::status::StatusCode};
 use cellnoor_models::person::PersonUpdate;
@@ -45,10 +45,8 @@ impl api::Request<Person> for PersonCreation {
         Ok(self.email().to_owned())
     }
 
-    fn authorize(self, authorization_data: AuthorizationData) -> Result<Self, auth::Error> {
-        if !authorization_data.is_admin() {
-            return Err(auth::Error::PermissionDenied);
-        }
+    fn authorize(self, authorization: Authorization) -> Result<Self, auth::Error> {
+        authorization.authorize_admin()?;
 
         Ok(self)
     }

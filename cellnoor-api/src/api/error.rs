@@ -16,7 +16,7 @@ use crate::db;
 #[serde(rename_all = "snake_case", tag = "type", content = "info")]
 #[error(transparent)]
 pub enum DataError {
-    CreatePerson(#[from] super::routes::people::create::Error),
+    CreatePerson(#[from] super::routes::people::CreatePersonError),
 }
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]

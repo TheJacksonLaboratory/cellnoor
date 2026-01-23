@@ -10,7 +10,7 @@ use super::create::validate_email;
 use crate::{
     api::{
         self,
-        auth::{self, AuthorizationData},
+        auth::{self, Authorization},
         extract::{Json, auth::AuthenticatedUser},
     },
     db,
@@ -54,10 +54,8 @@ impl api::Request<Person> for (PersonId, PersonUpdate) {
         Ok(update_data.email().map(str::to_owned))
     }
 
-    fn authorize(self, authorization_data: AuthorizationData) -> Result<Self, auth::Error> {
-        if !authorization_data.is_admin() {
-            return Err(auth::Error::PermissionDenied);
-        }
+    fn authorize(self, authorization: Authorization) -> Result<Self, auth::Error> {
+        authorization.authorize_admin()?;
 
         Ok(self)
     }

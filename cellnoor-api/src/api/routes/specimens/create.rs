@@ -36,11 +36,11 @@ impl db::Operation<Specimen> for SpecimenCreation {
 
     fn execute(
         self,
-        authorization_data: AuthorizationData,
+        authorization: AuthorizationData,
         _validation_data: (),
         db_conn: &mut diesel::PgConnection,
     ) -> Result<Specimen, api::Error> {
-        if !authorization_data.is_admin() {
+        if !authorization.is_admin() {
             return Err(auth::Error::PermissionDenied)?;
         }
 

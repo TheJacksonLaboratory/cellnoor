@@ -1,4 +1,4 @@
-use axum::{Router, http::StatusCode};
+use axum::{Router, extract::State, http::StatusCode};
 use axum_extra::routing::{Resource, RouterExt};
 use cellnoor_models::{
     institution::{Institution, InstitutionCreation, InstitutionId, InstitutionQuery},
@@ -7,28 +7,26 @@ use cellnoor_models::{
 
 use crate::{
     api::{
-        extract::{Json, Path, PathAndQuery, QsQuery},
-        request::{CREATED, OK, handle_api_request},
+        AuthenticatedUser,
+        extract::{Json, Path, PathAndJson, PathAndQuery, QsQuery},
+        request::{create, index, nested_index, show},
     },
     state::AppState,
 };
 
 mod create;
-mod fetch;
-mod list;
+mod index;
 mod members;
+mod show;
+
+const RESOURCE_NAME: &str = "institutions";
 
 pub(super) fn router() -> Router<AppState> {
-    let resource = "institutions";
-    let router: Router<AppState> = Resource::named(resource)
-        .create(handle_api_request::<Json<InstitutionCreation>, Institution, CREATED>)
-        .show(handle_api_request::<Path<InstitutionId>, Institution, OK>)
-        .index(handle_api_request::<QsQuery<InstitutionQuery>, Vec<Institution>, OK>)
+    let router: Router<AppState> = Resource::named(RESOURCE_NAME)
+        .create(create::<InstitutionCreation, Institution>)
+        .show(show::<InstitutionId, Institution>)
+        .index(index::<InstitutionQuery, Vec<Institution>>)
         .into();
 
-    router.merge(
-        Resource::named(&format!("{resource}/{{id}}/members")).index(
-            handle_api_request::<PathAndQuery<InstitutionId, PersonQuery>, Vec<PersonSummary>, OK>,
-        ),
-    )
+    router.merge(members::router())
 }

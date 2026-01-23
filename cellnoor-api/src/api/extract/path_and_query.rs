@@ -46,8 +46,8 @@ where
 
     fn authorize(
         self,
-        authorization_data: api::auth::AuthorizationData,
+        authorization: api::auth::Authorization,
     ) -> Result<Self::Authorized, api::auth::Error> {
-        self.0.authorize(authorization_data)
+        self.0.authorize(authorization)
     }
 }

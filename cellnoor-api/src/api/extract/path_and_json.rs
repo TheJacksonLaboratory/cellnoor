@@ -9,7 +9,7 @@ use super::json::Json;
 use super::path::Path;
 
 #[derive(Debug)]
-pub struct PathAndJson<P, J>((P, J));
+pub struct PathAndJson<P, J>(pub (P, J));
 
 impl<S, P, J> FromRequest<S> for PathAndJson<P, J>
 where
@@ -46,8 +46,8 @@ where
 
     fn authorize(
         self,
-        authorization_data: api::auth::AuthorizationData,
+        authorization: api::auth::Authorization,
     ) -> Result<Self::Authorized, api::auth::Error> {
-        self.0.authorize(authorization_data)
+        self.0.authorize(authorization)
     }
 }

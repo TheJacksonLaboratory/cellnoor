@@ -16,10 +16,10 @@ use super::common::*;
 pub type User = StandardClaims;
 
 impl User {
-    pub(super) async fn fetch_authorization_data(
+    pub(super) async fn authorization(
         &self,
         mut db_conn: &AsyncPgConnection,
-    ) -> Result<AuthorizationData, db::Error> {
+    ) -> Result<Authorization, db::Error> {
         let user_id = self.id();
 
         let user_fields = UserFields::query()
@@ -38,7 +38,7 @@ impl User {
             projects.insert(project_id?);
         }
 
-        Ok(AuthorizationData {
+        Ok(Authorization {
             user_fields,
             projects,
         })

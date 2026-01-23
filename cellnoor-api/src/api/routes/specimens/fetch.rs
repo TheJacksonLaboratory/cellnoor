@@ -34,13 +34,13 @@ impl db::Operation<Specimen> for SpecimenId {
 
     fn execute(
         self,
-        authorization_data: AuthorizationData,
+        authorization: AuthorizationData,
         _validation_data: &(),
         db_conn: &mut diesel::PgConnection,
     ) -> Result<Specimen, db::Error> {
         let q = Specimen::query().filter(id.eq(self));
 
-        let specimen = match authorization_data.authorized_projects(None) {
+        let specimen = match authorization.authorized_projects(None) {
             Some(projects) => q.filter(project_id.eq_any(projects)).first(db_conn)?,
             None => q.first(db_conn)?,
         };

@@ -5,6 +5,8 @@ use diesel::{pg::Pg, prelude::*};
 use serde::Deserialize;
 use uuid::Uuid;
 
+use crate::api::auth;
+
 use super::FromEncodedJwt;
 
 #[allow(dead_code)]
@@ -34,13 +36,13 @@ pub(super) struct UserFields {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct AuthorizationData {
+pub struct Authorization {
     #[serde(flatten)]
     pub(super) user_fields: UserFields,
     pub(super) projects: HashSet<Uuid>,
 }
 
-impl AuthorizationData {
+impl Authorization {
     #[cfg(any(feature = "dummy-data", test))]
     pub fn new_admin() -> Self {
         Self {
@@ -58,15 +60,15 @@ impl AuthorizationData {
         &self.user_fields
     }
 
-    pub fn is_admin(&self) -> bool {
+    fn is_admin(&self) -> bool {
         self.user_fields().is_admin
     }
 
-    pub fn is_biology_staff(&self) -> bool {
+    fn is_biology_staff(&self) -> bool {
         self.user_fields().is_biology_staff
     }
 
-    pub fn is_computational_staff(&self) -> bool {
+    fn is_computational_staff(&self) -> bool {
         self.user_fields().is_computational_staff
     }
 
@@ -74,22 +76,32 @@ impl AuthorizationData {
         self.is_admin() || self.is_biology_staff() || self.is_computational_staff()
     }
 
+    pub fn authorize_admin(&self) -> Result<(), auth::Error> {
+        if !self.is_admin() {
+            return Err(auth::Error::PermissionDenied);
+        }
+
+        Ok(())
+    }
+
     pub fn authorized_projects(
         self,
         requested_projects: Option<HashSet<Uuid>>,
     ) -> Option<HashSet<Uuid>> {
+        let authorized_projects = self.projects;
+
         if self.is_staff() {
             return requested_projects;
         }
 
         let Some(projects) = requested_projects else {
-            return Some(self.projects);
+            return Some(authorized_projects);
         };
 
         return Some(
             projects
                 .into_iter()
-                .filter(|p| self.projects.contains(p))
+                .filter(|p| authorized_projects.contains(p))
                 .collect(),
         );
     }

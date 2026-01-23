@@ -1,5 +1,7 @@
 #![allow(clippy::implicit_clone)]
 
+use std::collections::HashSet;
+
 #[cfg(feature = "app")]
 use cellnoor_schema::chromium_datasets;
 use jiff::Timestamp;
@@ -17,7 +19,7 @@ pub struct ChromiumDatasetFilter {
     pub names: Option<Vec<String>>,
     pub specimen: Option<SpecimenFilter>,
     pub assay: Option<TenxAssayFilter>,
-    pub lab_ids: Option<Vec<Uuid>>,
+    pub project_ids: Option<HashSet<Uuid>>,
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     pub delivered_before: Option<Timestamp>,
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]

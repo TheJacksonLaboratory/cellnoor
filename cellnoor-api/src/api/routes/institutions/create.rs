@@ -6,7 +6,7 @@ use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use crate::{
     api::{
         self,
-        auth::{self, AuthorizationData},
+        auth::{self, Authorization},
         request::{AuthorizedRequest, Request},
     },
     db,
@@ -20,13 +20,8 @@ impl Request<Institution> for InstitutionCreation {
         Ok(())
     }
 
-    fn authorize(
-        self,
-        authorization_data: AuthorizationData,
-    ) -> Result<InstitutionCreation, auth::Error> {
-        if !authorization_data.is_admin() {
-            return Err(auth::Error::PermissionDenied);
-        }
+    fn authorize(self, authorization: Authorization) -> Result<InstitutionCreation, auth::Error> {
+        authorization.authorize_admin()?;
 
         Ok(self)
     }

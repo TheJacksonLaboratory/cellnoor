@@ -1,4 +1,4 @@
-use axum::extract::FromRequestParts;
+use axum::extract::{FromRequest, FromRequestParts};
 use diesel_async::AsyncPgConnection;
 
 use crate::{
@@ -26,8 +26,8 @@ where
 
     fn authorize(
         self,
-        authorization_data: auth::AuthorizationData,
+        authorization: auth::Authorization,
     ) -> Result<Self::Authorized, auth::Error> {
-        self.0.authorize(authorization_data)
+        self.0.authorize(authorization)
     }
 }
