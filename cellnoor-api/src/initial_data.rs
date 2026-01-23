@@ -7,13 +7,13 @@ use cellnoor_models::{
     person::PersonCreation,
     tenx_assay::TenxAssayCreation,
 };
-use diesel::PgConnection;
+use diesel_async::AsyncPgConnection;
 pub(crate) use index_sets::IndexSetName;
+use tracing_subscriber::filter::FilterExt;
 use url::Url;
 
 use crate::{
     api::{AuthorizedRequest, Request, auth::AuthorizationData},
-    db::DbConnection,
     initial_data::index_sets::{
         download_and_insert_dual_index_sets, download_and_insert_single_index_sets,
     },
@@ -57,7 +57,7 @@ impl InitialData {
         &self.tenx_assays
     }
 
-    async fn validate(self, db_pool: deadpool_diesel::postgres::Pool) -> anyhow::Result<Self> {
+    async fn validate(self, db_conn: &AsyncPgConnection) -> anyhow::Result<Self> {
         let Self {
             institution,
             app_admin,
@@ -67,9 +67,7 @@ impl InitialData {
             multiplexing_tags,
         } = self;
 
-        let validation_data = institution
-            .fetch_validation_data(db_pool.get().await?)
-            .await?;
+        let validation_data = institution.fetch_validation_data(db_conn).await?;
         institution
             .validate(validation_data)
             .context("failed to validate institution in initial data")?;
@@ -103,9 +101,9 @@ impl InitialData {
 pub async fn insert_initial_data(
     initial_data: InitialData,
     http_client: reqwest::Client,
-    db_pool: deadpool_diesel::postgres::Pool,
+    mut db_conn: &AsyncPgConnection,
 ) -> anyhow::Result<()> {
-    let initial_data = initial_data.validate(db_pool.clone()).await?;
+    let initial_data = initial_data.validate(db_conn).await?;
 
     let InitialData {
         institution,
@@ -116,32 +114,25 @@ pub async fn insert_initial_data(
         multiplexing_tags,
     } = initial_data;
 
-    let db_conn = db_pool.get().await?;
+    let upsert_assays = tenx_assays.into_iter().map(|a| a.upsert(db_conn));
+    let upsert_multiplexing_tags = multiplexing_tags.into_iter().map(|t| t.upsert(db_conn));
 
-    let simple_operations = |db_conn: &mut PgConnection| -> Result<(), anyhow::Error> {
-        institution.upsert(db_conn)?;
-        app_admin.upsert(db_conn)?;
-        for assay in tenx_assays {
-            assay.upsert(db_conn)?;
-        }
-        for tag in multiplexing_tags {
-            tag.upsert(db_conn)?;
-        }
-
-        Ok(())
-    };
-
-    download_and_insert_single_index_sets(single_index_set_urls, http_client.clone(), &db_conn)
+    download_and_insert_single_index_sets(single_index_set_urls, http_client.clone(), db_conn)
         .await?;
-    download_and_insert_dual_index_sets(dual_index_set_urls, http_client, &db_conn).await?;
+    download_and_insert_dual_index_sets(dual_index_set_urls, http_client, db_conn).await?;
 
-    db_conn.interact(simple_operations).await.unwrap()?;
+    tokio::try_join!(
+        institution.upsert(db_conn),
+        app_admin.upsert(db_conn),
+        futures::future::try_join_all(upsert_assays),
+        futures::future::try_join_all(upsert_multiplexing_tags)
+    )?;
 
     Ok(())
 }
 
 trait Upsert {
-    fn upsert(self, db_conn: &mut PgConnection) -> anyhow::Result<()>;
+    async fn upsert(self, db_conn: &AsyncPgConnection) -> anyhow::Result<()>;
 }
 
 impl FromStr for InitialData {

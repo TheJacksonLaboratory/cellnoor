@@ -1,17 +1,19 @@
 use cellnoor_models::institution::InstitutionCreation;
 use cellnoor_schema::institutions::dsl::{id, institutions};
-use diesel::{PgConnection, prelude::*};
+use diesel::prelude::*;
+use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 use crate::initial_data::Upsert;
 
 impl Upsert for InstitutionCreation {
-    fn upsert(self, db_conn: &mut PgConnection) -> anyhow::Result<()> {
+    async fn upsert(self, mut db_conn: &AsyncPgConnection) -> anyhow::Result<()> {
         diesel::insert_into(institutions)
             .values(&self)
             .on_conflict(id)
             .do_update()
             .set(&self)
-            .execute(db_conn)?;
+            .execute(&mut db_conn)
+            .await?;
 
         Ok(())
     }

@@ -1,9 +1,13 @@
 use std::{cmp::Ordering, fmt::Debug};
 
-use diesel::{Connection, PgConnection};
+use diesel_async::{AsyncConnection, AsyncPgConnection, scoped_futures::ScopedFutureExt};
 use pretty_assertions::assert_eq;
 
-use crate::{db, test_state::DefaultWithNoLimit};
+use crate::{
+    api,
+    db::{self, DbConnection},
+    test_state::DefaultWithNoLimit,
+};
 
 #[bon::builder]
 fn filter_and_sort<Record>(
@@ -32,13 +36,13 @@ where
 #[bon::builder]
 #[builder(finish_fn = run)]
 pub async fn test_query<Query, Record>(
-    #[builder(finish_fn)] pooled_db_conn: deadpool_diesel::postgres::Connection,
+    #[builder(finish_fn)] mut db_conn: DbConnection,
     #[builder(default = Query::default_with_no_limit())] db_query: Query,
     all_records: &'static [Record],
     filter: Option<fn(&&Record) -> bool>,
     sort_by: Option<fn(&&Record, &&Record) -> Ordering>,
 ) where
-    Query: 'static + db::Operation<Vec<Record>> + DefaultWithNoLimit + Send,
+    Query: 'static + api::Request<Vec<Record>> + DefaultWithNoLimit + Send,
     Record: 'static + Debug + PartialEq + Send + Sync,
 {
     let expected_records = filter_and_sort()
@@ -52,9 +56,10 @@ pub async fn test_query<Query, Record>(
         "no records found after data was filtered"
     );
 
-    let perform_test = move |db_conn: &mut PgConnection| {
-        db_conn.test_transaction::<_, db::Error, _>(|tx| {
-            let loaded_records = db_query.execute(tx).unwrap();
+    db_conn
+        .test_transaction::<_, db::Error, _>(|tx| {
+            async {
+            let loaded_records = db_query.handle_without_authorization(tx).await;
 
             assert!(
                 !loaded_records.is_empty(),
@@ -67,7 +72,7 @@ pub async fn test_query<Query, Record>(
             assert_eq!(
                 loaded_len, expected_len,
                 "database query returned {loaded_len} records, but Rust function returned \
-                 {expected_len}"
+             {expected_len}"
             );
 
             for loaded in &loaded_records {
@@ -83,13 +88,13 @@ pub async fn test_query<Query, Record>(
                 assert_eq!(
                     loaded, *expected,
                     "loaded data and expected data are sorted differently (comparison failed at \
-                     record {i})"
+                 record {i})"
                 );
             }
 
             Ok(())
-        });
-    };
-
-    pooled_db_conn.interact(perform_test).await.unwrap();
+        }
+        .scope_boxed()
+        })
+        .await;
 }

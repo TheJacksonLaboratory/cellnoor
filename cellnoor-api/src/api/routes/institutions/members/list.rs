@@ -3,6 +3,7 @@ use cellnoor_models::{
     institution::{self, InstitutionId},
     person::{self, PersonFilter, PersonQuery, PersonSummary},
 };
+use diesel_async::AsyncPgConnection;
 
 use crate::{
     api::{
@@ -22,9 +23,9 @@ impl AuthorizedRequest<Vec<PersonSummary>> for (InstitutionId, PersonQuery) {
         Ok(())
     }
 
-    fn execute(
+    async fn handle(
         self,
-        _db_conn: &mut diesel::PgConnection,
+        _db_conn: &AsyncPgConnection,
     ) -> Result<Vec<person::PersonSummary>, api::Error> {
         let (institution_id, mut person_query) = self;
         person_query.filter.institution_ids = institution_id.into();
@@ -37,7 +38,7 @@ impl Request<Vec<PersonSummary>> for (InstitutionId, PersonQuery) {
     type Authorized = Self;
     type ValidationData = ();
 
-    async fn fetch_validation_data(&self, _db_conn: db::DbConnection) -> Result<(), db::Error> {
+    async fn fetch_validation_data(&self, _db_conn: &AsyncPgConnection) -> Result<(), db::Error> {
         Ok(())
     }
 

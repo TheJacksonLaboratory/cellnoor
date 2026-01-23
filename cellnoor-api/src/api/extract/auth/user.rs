@@ -3,6 +3,7 @@ use axum_extra::{
     TypedHeader,
     extract::{CookieJar, cookie::Cookie},
 };
+use diesel_async::AsyncPgConnection;
 use headers::{Authorization, authorization::Bearer};
 use jsonwebtoken::{TokenData, Validation};
 use serde::de::DeserializeOwned;
@@ -31,7 +32,7 @@ pub enum AuthenticatedUser {
 impl AuthenticatedUser {
     pub async fn authorization_data(
         self,
-        db_conn: DbConnection,
+        db_conn: &AsyncPgConnection,
     ) -> Result<AuthorizationData, db::Error> {
         match self {
             Self::Api(u) => u.fetch_authorization_data(db_conn).await,

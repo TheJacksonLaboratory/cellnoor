@@ -1,8 +1,10 @@
 use axum::{extract::State, http::StatusCode};
-use diesel::{PgConnection, prelude::*};
+use diesel::prelude::*;
+use diesel_async::scoped_futures::ScopedFutureExt;
+use diesel_async::{AsyncConnection, AsyncPgConnection};
 
 use super::auth::{self, AuthenticatedUser, AuthorizationData};
-use crate::db::{self, DbConnection};
+use crate::db;
 use crate::state::AppState;
 
 pub(super) const OK: u16 = StatusCode::OK.as_u16();
@@ -13,16 +15,19 @@ pub trait AuthorizedRequest<Resp> {
 
     fn validate(&self, validation_data: Self::ValidationData) -> Result<(), super::DataError>;
 
-    fn execute(self, db_conn: &mut PgConnection) -> Result<Resp, super::Error>;
+    fn handle(
+        self,
+        db_conn: &AsyncPgConnection,
+    ) -> impl Future<Output = Result<Resp, super::Error>> + Send;
 }
 
 pub trait Request<Resp>: Sized {
-    type Authorized: AuthorizedRequest<Resp>;
+    type Authorized: AuthorizedRequest<Resp> + Send;
     type ValidationData: Into<<Self::Authorized as AuthorizedRequest<Resp>>::ValidationData>;
 
     async fn fetch_validation_data(
         &self,
-        db_conn: DbConnection,
+        db_conn: &AsyncPgConnection,
     ) -> Result<Self::ValidationData, db::Error>;
 
     fn authorize(
@@ -31,10 +36,13 @@ pub trait Request<Resp>: Sized {
     ) -> Result<Self::Authorized, auth::Error>;
 
     #[cfg(any(feature = "dummy-data", test))]
-    fn execute_without_authorization(self, db_conn: &mut PgConnection) -> Resp {
+    fn handle_without_authorization(
+        self,
+        db_conn: &AsyncPgConnection,
+    ) -> impl Future<Output = Resp> + Send {
         let authorized_request = self.authorize(AuthorizationData::new_admin()).unwrap();
 
-        authorized_request.execute(db_conn).unwrap()
+        async { authorized_request.handle(db_conn).await.unwrap() }
     }
 }
 
@@ -52,22 +60,20 @@ where
 {
     tracing::info!(request = ?request);
 
-    let (db_conn1, db_conn2) = tokio::try_join!(state.db_conn(), state.db_conn())?;
+    let mut db_conn = state.db_conn().await?;
 
     // Fetch the authorization data and validation data concurrently because speed™
     let (authorization_data, validation_data) = tokio::try_join!(
-        user.authorization_data(db_conn1),
-        request.fetch_validation_data(db_conn2)
+        user.authorization_data(&db_conn),
+        request.fetch_validation_data(&db_conn)
     )?;
 
     let authorized_request = request.authorize(authorization_data)?;
     authorized_request.validate(validation_data.into())?;
 
-    let db_conn = state.db_conn().await?;
-
     let response = db_conn
-        .interact(|db_conn| db_conn.transaction(|tx| authorized_request.execute(tx)))
-        .await?
+        .transaction(|tx| authorized_request.handle(tx).scope_boxed())
+        .await
         .map(axum::Json)?;
 
     Ok((StatusCode::from_u16(SUCCESS_CODE).unwrap(), response))

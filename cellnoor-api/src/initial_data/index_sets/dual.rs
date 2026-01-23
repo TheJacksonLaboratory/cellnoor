@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use anyhow::ensure;
 use cellnoor_schema::dual_index_sets;
-use diesel::{RunQueryDsl, prelude::*};
+use diesel::prelude::*;
+use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 use crate::initial_data::{
     Upsert,
@@ -51,7 +52,7 @@ struct DualIndexSetInsertion<'a> {
 
 #[allow(clippy::implicit_hasher)]
 impl Upsert for HashMap<String, DualIndexSet> {
-    fn upsert(self, db_conn: &mut PgConnection) -> anyhow::Result<()> {
+    async fn upsert(self, mut db_conn: &AsyncPgConnection) -> anyhow::Result<()> {
         self.values().try_for_each(DualIndexSet::validate)?;
 
         let Some(index_set_name) = self.keys().next().cloned() else {
@@ -64,7 +65,7 @@ impl Upsert for HashMap<String, DualIndexSet> {
         );
 
         let kit_name = index_set_name.kit_name()?;
-        insert_kit_name(kit_name, db_conn)?;
+        insert_kit_name(kit_name, db_conn).await?;
 
         let mut insertables = Vec::with_capacity(self.len());
         for (
@@ -91,7 +92,8 @@ impl Upsert for HashMap<String, DualIndexSet> {
         diesel::insert_into(dual_index_sets::table)
             .values(insertables)
             .on_conflict_do_nothing()
-            .execute(db_conn)?;
+            .execute(&mut db_conn)
+            .await?;
 
         Ok(())
     }

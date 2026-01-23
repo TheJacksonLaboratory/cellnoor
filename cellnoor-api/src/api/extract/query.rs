@@ -1,4 +1,5 @@
 use axum::extract::FromRequestParts;
+use diesel_async::AsyncPgConnection;
 
 use crate::{
     api::{auth, request::Request},
@@ -18,7 +19,7 @@ where
 
     async fn fetch_validation_data(
         &self,
-        db_conn: db::DbConnection,
+        db_conn: &AsyncPgConnection,
     ) -> Result<Self::ValidationData, db::Error> {
         self.0.fetch_validation_data(db_conn).await
     }

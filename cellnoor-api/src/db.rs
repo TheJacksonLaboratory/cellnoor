@@ -4,4 +4,4 @@ mod utils;
 
 pub use boxed_filter::{BoxedFilter, BoxedFilterExt, ToBoxedFilter};
 pub use error::Error;
-pub use utils::{DbConnection, like_any};
+pub use utils::{DbConnection, DbConnectionPool, like_any};

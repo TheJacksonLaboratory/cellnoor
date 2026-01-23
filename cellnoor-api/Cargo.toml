@@ -14,8 +14,8 @@ cellnoor-models = { version = "0.1.0", path = "../crates/cellnoor-models", featu
 cellnoor-schema = { version = "0.1.0", path = "../crates/cellnoor-schema" }
 clap.workspace = true
 csv.workspace = true
-deadpool-diesel.workspace = true
-diesel = { workspace = true, features = ["postgres", "serde_json", "uuid"] }
+diesel = { workspace = true, features = ["serde_json", "uuid"] }
+diesel-async.workspace = true
 diesel_migrations.workspace = true
 dotenvy.workspace = true
 headers.workspace = true
@@ -38,6 +38,8 @@ serde_qs.workspace = true
 strum.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
+tokio-stream.workspace = true
+futures.workspace = true
 tracing.workspace = true
 tracing-appender.workspace = true
 tracing-subscriber.workspace = true

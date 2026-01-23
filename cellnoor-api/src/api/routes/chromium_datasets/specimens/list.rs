@@ -130,7 +130,7 @@ mod tests {
 
     #[rstest]
     #[awt]
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn chromium_datasets_have_correct_n_specimens(
         #[future] root_db_conn: Connection,
         #[future] _database: &'static Database,

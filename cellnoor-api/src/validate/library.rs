@@ -129,7 +129,7 @@ mod tests {
 
     #[rstest]
     #[awt]
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn correct_library_spec(
         #[future] root_db_conn: Connection,
         // This argument is required so that the test waits until the database is populated

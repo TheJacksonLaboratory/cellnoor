@@ -36,8 +36,8 @@ impl Error {
     }
 }
 
-impl From<deadpool_diesel::InteractError> for Error {
-    fn from(err: deadpool_diesel::InteractError) -> Self {
+impl From<diesel_async::pooled_connection::deadpool::PoolError> for Error {
+    fn from(err: diesel_async::pooled_connection::deadpool::PoolError) -> Self {
         Self::Database(err.into())
     }
 }

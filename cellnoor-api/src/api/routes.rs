@@ -10,7 +10,7 @@ use crate::{api::extract::auth::AuthenticatedUser, db, state::AppState};
 pub(super) mod institutions;
 // pub(super) mod libraries;
 // pub(super) mod multiplexing_tags;
-// pub(super) mod people;
+pub(super) mod people;
 // pub(super) mod projects;
 // pub(super) mod sequencing_runs;
 // pub(super) mod specimens;
@@ -19,8 +19,9 @@ pub(super) mod institutions;
 // pub(super) mod tenx_assays;
 
 pub(super) fn router() -> Router<AppState> {
-    Router::new().merge(institutions::router())
-    // .merge(people::router())
+    Router::new()
+        .merge(institutions::router())
+        .merge(people::router())
     // .nest("/projects", projects::router())
     // .nest("/specimens", specimens::router())
     // .nest("/10x-assays", tenx_assays::router())

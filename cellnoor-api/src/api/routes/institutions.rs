@@ -4,7 +4,6 @@ use cellnoor_models::{
     institution::{Institution, InstitutionCreation, InstitutionId, InstitutionQuery},
     person::{PersonQuery, PersonSummary},
 };
-use deadpool_diesel::Status;
 
 use crate::{
     api::{

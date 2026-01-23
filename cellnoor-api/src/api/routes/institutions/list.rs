@@ -2,6 +2,7 @@ use axum::{extract::State, http::StatusCode};
 use cellnoor_models::institution::{Institution, InstitutionFilter, InstitutionQuery};
 use cellnoor_schema::institutions::dsl::{id, name};
 use diesel::{SelectableExpression, prelude::*};
+use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 use crate::{
     api::{
@@ -17,11 +18,11 @@ use crate::{
 impl AuthorizedRequest<Vec<Institution>> for InstitutionQuery {
     type ValidationData = ();
 
-    fn validate(&self, validation_data: Self::ValidationData) -> Result<(), api::DataError> {
+    fn validate(&self, _validation_data: Self::ValidationData) -> Result<(), api::DataError> {
         Ok(())
     }
 
-    fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Vec<Institution>, api::Error> {
+    async fn handle(self, mut db_conn: &AsyncPgConnection) -> Result<Vec<Institution>, api::Error> {
         let Self {
             filter,
             limit,
@@ -39,7 +40,7 @@ impl AuthorizedRequest<Vec<Institution>> for InstitutionQuery {
             stmt = stmt.then_order_by(ordering);
         }
 
-        Ok(stmt.load(db_conn)?)
+        Ok(stmt.load(&mut db_conn).await?)
     }
 }
 
@@ -47,13 +48,13 @@ impl Request<Vec<Institution>> for InstitutionQuery {
     type Authorized = Self;
     type ValidationData = ();
 
-    async fn fetch_validation_data(&self, _db_conn: db::DbConnection) -> Result<(), db::Error> {
+    async fn fetch_validation_data(&self, _db_conn: &AsyncPgConnection) -> Result<(), db::Error> {
         Ok(())
     }
 
     fn authorize(
         self,
-        authorization_data: AuthorizationData,
+        _authorization_data: AuthorizationData,
     ) -> Result<InstitutionQuery, auth::Error> {
         Ok(self)
     }
@@ -86,10 +87,10 @@ mod tests {
     use std::cmp::Ordering;
 
     use cellnoor_models::institution::*;
-    use deadpool_diesel::postgres::Connection;
     use rstest::rstest;
 
     use crate::{
+        db::DbConnection,
         test_state::{Database, database, root_db_conn},
         test_util::test_query,
     };
@@ -104,9 +105,9 @@ mod tests {
 
     #[rstest]
     #[awt]
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn default_institution_query(
-        #[future] root_db_conn: Connection,
+        #[future] root_db_conn: DbConnection,
         #[future] database: &'static Database,
     ) {
         test_query::<InstitutionQuery, _>()
@@ -118,9 +119,9 @@ mod tests {
 
     #[rstest]
     #[awt]
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn specific_institution_query(
-        #[future] root_db_conn: Connection,
+        #[future] root_db_conn: DbConnection,
         #[future] database: &'static Database,
     ) {
         let query = InstitutionQuery::builder()

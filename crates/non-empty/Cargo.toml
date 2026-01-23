@@ -15,7 +15,7 @@ ts-rs = { workspace = true, optional = true }
 workspace = true
 
 [features]
-diesel = ["cellnoor-schema", "diesel/postgres"]
+diesel = ["dep:cellnoor-schema", "dep:diesel"]
 serde = ["dep:serde"]
 typescript = ["dep:ts-rs"]
 

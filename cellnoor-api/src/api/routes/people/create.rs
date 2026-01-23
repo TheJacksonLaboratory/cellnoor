@@ -1,36 +1,46 @@
-use super::{ApiResponse, Root, handle_api_request};
 use crate::api;
 use crate::api::auth::{self, AuthorizationData};
 use crate::api::extract::Json;
-use crate::db::Operation;
 use crate::{api::extract::auth::AuthenticatedUser, db, state::AppState};
 use axum::{extract::State, http::status::StatusCode};
 use cellnoor_models::person::PersonUpdate;
 use cellnoor_models::person::{Person, PersonCreation, PersonId};
 use cellnoor_schema::people::dsl::{id, people};
 use diesel::{
-    RunQueryDsl,
     prelude::*,
     sql_types::{Array, Text},
 };
+use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use regex::Regex;
 use std::sync::LazyLock;
 
-pub(super) async fn create_person(
-    _: Root,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    Json(request): Json<PersonCreation>,
-) -> ApiResponse<Person> {
-    let item = handle_api_request(state, user, request).await?;
-    Ok((StatusCode::CREATED, item))
+impl api::AuthorizedRequest<Person> for PersonCreation {
+    type ValidationData = String;
+
+    fn validate(&self, email: String) -> Result<(), api::DataError> {
+        Ok(validate_email(&email)?)
+    }
+
+    async fn handle(self, mut db_conn: &AsyncPgConnection) -> Result<Person, api::Error> {
+        // Get the ID of the inserted person first, then return the full `Person` struct
+        let created_id: PersonId = diesel::insert_into(people)
+            .values(self)
+            .returning(id)
+            .get_result(&mut db_conn)
+            .await?;
+
+        created_id.handle(&mut db_conn).await
+    }
 }
 
-impl db::Operation<Person> for PersonCreation {
+impl api::Request<Person> for PersonCreation {
     type Authorized = Self;
     type ValidationData = String;
 
-    async fn fetch_validation_data(&self, _db_conn: db::DbConnection) -> Result<String, db::Error> {
+    async fn fetch_validation_data(
+        &self,
+        _db_conn: &AsyncPgConnection,
+    ) -> Result<String, db::Error> {
         // Ideally we could return a reference but that doesn't work (unless I don't know what I'm doing)
         Ok(self.email().to_owned())
     }
@@ -41,23 +51,6 @@ impl db::Operation<Person> for PersonCreation {
         }
 
         Ok(self)
-    }
-
-    fn validate(_authorized_request: &Self, email: String) -> Result<(), api::DataError> {
-        Ok(validate_email(&email)?)
-    }
-
-    fn execute(
-        data: PersonCreation,
-        db_conn: &mut diesel::PgConnection,
-    ) -> Result<Person, api::Error> {
-        // Get the ID of the inserted person first, then return the full `Person` struct
-        let created_id: PersonId = diesel::insert_into(people)
-            .values(data)
-            .returning(id)
-            .get_result(db_conn)?;
-
-        PersonId::execute(created_id, db_conn)
     }
 }
 

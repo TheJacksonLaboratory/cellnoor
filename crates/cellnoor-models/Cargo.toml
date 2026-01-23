@@ -10,7 +10,6 @@ csv.workspace = true
 default-vec = { path = "../default-vec", features = ["serde"] }
 diesel = { workspace = true, optional = true, features = [
   "32-column-tables",
-  "postgres",
   "serde_json",
   "uuid",
   "without-deprecated",

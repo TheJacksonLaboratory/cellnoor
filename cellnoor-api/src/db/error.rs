@@ -117,18 +117,10 @@ impl
     }
 }
 
-impl From<deadpool_diesel::PoolError> for Error {
-    fn from(value: deadpool_diesel::PoolError) -> Self {
+impl From<diesel_async::pooled_connection::deadpool::PoolError> for Error {
+    fn from(err: diesel_async::pooled_connection::deadpool::PoolError) -> Self {
         Self::Other {
-            message: value.to_string(),
-        }
-    }
-}
-
-impl From<deadpool_diesel::InteractError> for Error {
-    fn from(value: deadpool_diesel::InteractError) -> Self {
-        Self::Other {
-            message: value.to_string(),
+            message: err.to_string(),
         }
     }
 }

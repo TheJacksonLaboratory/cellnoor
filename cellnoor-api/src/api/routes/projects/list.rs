@@ -85,7 +85,7 @@ mod tests {
 
     #[rstest]
     #[awt]
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn default_lab_query(
         #[future] root_db_conn: Connection,
         #[future] database: &'static Database,
@@ -99,7 +99,7 @@ mod tests {
 
     #[rstest]
     #[awt]
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn specific_lab_query(
         #[future] root_db_conn: Connection,
         #[future] database: &'static Database,
