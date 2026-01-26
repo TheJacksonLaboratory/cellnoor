@@ -1,47 +1,35 @@
-use axum::{extract::State, http::StatusCode};
+use axum::{
+    Json,
+    extract::{Path, State},
+    http::StatusCode,
+};
 use cellnoor_models::institution::{Institution, InstitutionId};
 use cellnoor_schema::institutions::dsl::id;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 use crate::{
-    api::{
-        self,
-        auth::{self},
-        extract::auth::AuthenticatedUser,
-        request::{AuthorizedRequest, Request},
-    },
-    db::{self},
+    api::{self, auth, routes::ApiResponse},
+    db::{self, DbConnection},
     state::AppState,
 };
 
-impl AuthorizedRequest<Institution> for InstitutionId {
-    type ValidationData = ();
-
-    fn validate(&self, _validation_data: ()) -> Result<(), api::DataError> {
-        Ok(())
-    }
-
-    async fn handle(self, mut db_conn: &AsyncPgConnection) -> Result<Institution, api::Error> {
-        Ok(Institution::query()
-            .filter(id.eq(self))
-            .first(&mut db_conn)
-            .await?)
-    }
+pub async fn show_institution(
+    _: State<AppState>,
+    db_conn: DbConnection,
+    Path(institution_id): Path<InstitutionId>,
+) -> ApiResponse<Institution> {
+    fetch_institution(institution_id, db_conn)
+        .await
+        .map(|i| (StatusCode::OK, Json(i)))
 }
 
-impl Request<Institution> for InstitutionId {
-    type Authorized = Self;
-    type ValidationData = ();
-
-    async fn fetch_validation_data(
-        &self,
-        _db_conn: &AsyncPgConnection,
-    ) -> Result<Self::ValidationData, db::Error> {
-        Ok(())
-    }
-
-    fn authorize(self, _user: AuthenticatedUser) -> Result<Self, auth::Error> {
-        Ok(self)
-    }
+pub async fn fetch_institution(
+    institution_id: InstitutionId,
+    mut db_conn: DbConnection,
+) -> Result<Institution, api::Error> {
+    Ok(Institution::query()
+        .filter(id.eq(institution_id))
+        .first(&mut db_conn)
+        .await?)
 }

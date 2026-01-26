@@ -2,25 +2,18 @@ use aide::axum::{
     ApiRouter,
     routing::{get, post},
 };
-use axum::{Router, extract::State, http::StatusCode};
+use axum::{Router, extract::State, handler::Handler, http::StatusCode};
 use cellnoor_models::{
-    institution::{Institution, InstitutionCreation, InstitutionId, InstitutionQuery},
+    institution::{Institution, InstitutionId, InstitutionQuery, NewInstitution},
     person::{PersonQuery, PersonSummary},
 };
 
-use crate::{
-    api::{
-        AuthenticatedUser,
-        extract::{Json, Path, PathAndJson, PathAndQuery, QsQuery},
-        request::{create, index, nested_index, show},
-    },
-    state::AppState,
-};
+use crate::{api::auth::admin_required, state::AppState};
 
-mod create;
-mod index;
-mod members;
-mod show;
+pub mod create;
+pub mod index;
+// pub mod members;
+pub mod show;
 
 const RESOURCE_NAME: &str = "institutions";
 
@@ -28,10 +21,12 @@ pub(super) fn router() -> ApiRouter<AppState> {
     let router = ApiRouter::new()
         .api_route(
             "/",
-            post(create::<InstitutionCreation, Institution>)
-                .get(index::<InstitutionQuery, Vec<Institution>>),
+            post(create::create_institution.layer(axum::middleware::from_fn(admin_required)))
+                .get(index::index_institutions),
         )
-        .api_route("/{id}", get(show::<InstitutionId, Institution>));
+        .api_route("/{id}", get(show::show_institution));
 
-    router.merge(members::router())
+    router
+
+    // router.merge(members::router())
 }

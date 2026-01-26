@@ -1,60 +1,46 @@
-use axum::{extract::State, http::StatusCode};
+use axum::{Json, extract::State, http::StatusCode};
 use cellnoor_models::institution::{Institution, InstitutionFilter, InstitutionQuery};
 use cellnoor_schema::institutions::dsl::{id, name};
 use diesel::{SelectableExpression, prelude::*};
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 use crate::{
-    api::{
-        self,
-        auth::{self},
-        extract::{QsQuery, auth::AuthenticatedUser},
-        request::{AuthorizedRequest, Request},
-    },
-    db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, like_any},
+    api::{self, auth, extract::JsonQuery, routes::ApiResponse},
+    db::{self, BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter, like_any},
     state::AppState,
 };
 
-impl AuthorizedRequest<Vec<Institution>> for InstitutionQuery {
-    type ValidationData = ();
-
-    fn validate(&self, _validation_data: Self::ValidationData) -> Result<(), api::DataError> {
-        Ok(())
-    }
-
-    async fn handle(self, mut db_conn: &AsyncPgConnection) -> Result<Vec<Institution>, api::Error> {
-        let Self {
-            filter,
-            limit,
-            offset,
-            order_by,
-        } = self;
-
-        let mut stmt = Institution::query()
-            .limit(limit)
-            .offset(offset)
-            .filter(filter.to_boxed_filter())
-            .into_boxed();
-
-        for ordering in order_by.as_ref() {
-            stmt = stmt.then_order_by(ordering);
-        }
-
-        Ok(stmt.load(&mut db_conn).await?)
-    }
+#[axum::debug_handler]
+pub async fn index_institutions(
+    _: State<AppState>,
+    db_conn: DbConnection,
+    JsonQuery { query }: JsonQuery<InstitutionQuery>,
+) -> ApiResponse<Vec<Institution>> {
+    select_institutions(query, db_conn)
+        .await
+        .map(|i| (StatusCode::OK, Json(i)))
 }
 
-impl Request<Vec<Institution>> for InstitutionQuery {
-    type Authorized = Self;
-    type ValidationData = ();
+pub async fn select_institutions(
+    InstitutionQuery {
+        filter,
+        limit,
+        offset,
+        order_by,
+    }: InstitutionQuery,
+    mut db_conn: DbConnection,
+) -> Result<Vec<Institution>, api::Error> {
+    let mut stmt = Institution::query()
+        .limit(limit)
+        .offset(offset)
+        .filter(filter.to_boxed_filter())
+        .into_boxed();
 
-    async fn fetch_validation_data(&self, _db_conn: &AsyncPgConnection) -> Result<(), db::Error> {
-        Ok(())
+    for ordering in order_by.as_ref() {
+        stmt = stmt.then_order_by(ordering);
     }
 
-    fn authorize(self, _user: AuthenticatedUser) -> Result<InstitutionQuery, auth::Error> {
-        Ok(self)
-    }
+    Ok(stmt.load(&mut db_conn).await?)
 }
 
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for InstitutionFilter

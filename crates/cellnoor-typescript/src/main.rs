@@ -6,7 +6,7 @@ use cellnoor_models::{
         ChromiumDatasetSummary,
     },
     chromium_run::{ChromiumRunFilter, ChromiumRunOrderBy, GemPoolFilter, GemPoolOrderBy},
-    institution::{Institution, InstitutionCreation, InstitutionFilter, InstitutionOrderBy},
+    institution::{Institution, NewInstitution, InstitutionFilter, InstitutionOrderBy},
     library::{Library, LibraryCreation, LibraryFilter, LibraryOrderBy, LibrarySummary},
     person::{Person, PersonCreation, PersonFilter, PersonOrderBy},
     project::{Project, ProjectCreation, ProjectFilter, ProjectOrderBy},
@@ -98,7 +98,7 @@ struct Error {
 fn main() {
     let Cli { output_dir } = Cli::parse();
 
-    InstitutionCreation::export_all_to(&output_dir).unwrap();
+    NewInstitution::export_all_to(&output_dir).unwrap();
     InstitutionQuery::export_all_to(&output_dir).unwrap();
     Institution::export_all_to(&output_dir).unwrap();
 

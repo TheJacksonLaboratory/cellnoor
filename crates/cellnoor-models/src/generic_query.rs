@@ -1,10 +1,11 @@
 use default_vec::DefaultVec;
-use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq, ::serde::Deserialize, ::serde::Serialize)]
+#[cfg_attr(feature = "app", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
 pub struct Query<F, O>
 where
+    F: Default,
     O: Default,
 {
     pub filter: F,
@@ -65,18 +66,6 @@ where
             limit: i64::MAX,
             ..Default::default()
         }
-    }
-}
-
-pub trait SetParentId<T>
-where
-    Uuid: From<T>,
-{
-    fn parent_ids_mut(&mut self) -> &mut Option<Vec<Uuid>>;
-
-    fn set_parent_id(&mut self, id: T) {
-        let parent_ids = self.parent_ids_mut();
-        *parent_ids = Some(vec![id.into()]);
     }
 }
 

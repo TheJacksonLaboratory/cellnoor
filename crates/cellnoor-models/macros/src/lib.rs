@@ -84,15 +84,24 @@ macro_rules! impl_json_to_sql {
 #[macro_export]
 macro_rules! uuid_newtype {
     ($name:ident) => {
-        #[derive(
-            Debug,
-            Clone,
-            Copy,
-            ::serde::Deserialize,
-            ::serde::Serialize,
-            ::diesel_derive_newtype::DieselNewType,
+        #[cfg(feature = "app")]
+        mod uuid_newtype_json_schema_definition {
+            #[derive(::schemars::JsonSchema)]
+            pub struct Id {
+                pub id: ::uuid::Uuid,
+            }
+        }
+
+        #[derive(Debug, Clone, Copy, ::serde::Deserialize, ::serde::Serialize)]
+        #[cfg_attr(
+            feature = "app",
+            derive(::diesel_derive_newtype::DieselNewType, ::schemars::JsonSchema)
         )]
         #[serde(transparent)]
+        #[cfg_attr(
+            feature = "app",
+            schemars(with = "uuid_newtype_json_schema_definition::Id")
+        )]
         pub struct $name(pub ::uuid::Uuid);
 
         impl PartialEq<::uuid::Uuid> for $name {

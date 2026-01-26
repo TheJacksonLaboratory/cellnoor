@@ -1,18 +1,20 @@
+use std::sync::Arc;
+
 use crate::{config::Config, state::AppState};
+use aide::{
+    axum::ApiRouter,
+    openapi::{Info, OpenApi, SecurityRequirement, SecurityScheme},
+};
 use anyhow::Context;
 use axum::{Extension, Router, routing::get};
 use camino::Utf8Path;
 pub use error::{DataError, Error};
-pub use extract::auth;
-pub use extract::auth::AuthenticatedUser;
-pub use request::{AuthorizedRequest, Request};
-use serde_qs::axum::QsQueryConfig;
 use tokio::net::TcpListener;
 
+mod auth;
 mod error;
 mod extract;
-mod request;
-mod routes;
+pub mod routes;
 
 #[cfg(test)]
 pub async fn serve_integration_test(config: Config) -> anyhow::Result<()> {
@@ -81,14 +83,7 @@ fn initialize_logging(log_dir: Option<&Utf8Path>) {
 }
 
 fn app(app_state: AppState) -> Router {
-    // The browser form-encodes everything so we have to enable the less-readable
-    // form-encoding
-    let query_string_config =
-        QsQueryConfig::new().config(serde_qs::Config::new().use_form_encoding(true));
-    let api_router = routes::router()
-        .route("/health", get(async || "OK"))
-        .layer(Extension(query_string_config))
-        .with_state(app_state);
+    let api_router = routes::router(app_state.clone()).with_state(app_state);
 
     Router::new().nest("/api", api_router)
 }

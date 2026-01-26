@@ -20,6 +20,7 @@ jiff.workspace = true
 jiff-diesel = { workspace = true, optional = true }
 macro-attributes = { path = "macro-attributes" }
 macros = { path = "macros" }
+schemars = {workspace = true, optional = true}
 non-empty = { path = "../non-empty", features = ["serde"] }
 ranged = { version = "0.1.0", path = "../ranged", features = ["serde"] }
 serde.workspace = true
@@ -39,9 +40,13 @@ workspace = true
 app = [
   "dep:cellnoor-schema",
   "dep:diesel",
+  "dep:schemars",
   "dep:jiff-diesel",
   "non-empty/diesel",
+  "non-empty/schemars",
   "ranged/diesel",
+  "ranged/schemars",
+  "default-vec/schemars"
 ]
 builder = ["dep:bon"]
 typescript = ["dep:ts-rs", "non-empty/typescript", "ranged/typescript"]

@@ -2,7 +2,7 @@ use std::{fmt::Display, str::FromStr, sync::Arc};
 
 use anyhow::{Context, bail, ensure};
 use cellnoor_models::{
-    institution::{Institution, InstitutionCreation},
+    institution::{Institution, NewInstitution},
     multiplexing_tag::MultiplexingTagCreation,
     person::PersonCreation,
     tenx_assay::TenxAssayCreation,
@@ -13,7 +13,6 @@ use tracing_subscriber::filter::FilterExt;
 use url::Url;
 
 use crate::{
-    api::{AuthorizedRequest, Request, auth::Authorization},
     initial_data::index_sets::{
         download_and_insert_dual_index_sets, download_and_insert_single_index_sets,
     },
@@ -28,7 +27,7 @@ mod tenx_assays;
 
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct InitialData {
-    institution: InstitutionCreation,
+    institution: NewInstitution,
     app_admin: PersonCreation,
     single_index_set_urls: Vec<Url>,
     dual_index_set_urls: Vec<Url>,
@@ -37,7 +36,7 @@ pub struct InitialData {
 }
 
 impl InitialData {
-    pub fn institution(&self) -> &InstitutionCreation {
+    pub fn institution(&self) -> &NewInstitution {
         &self.institution
     }
 
@@ -58,50 +57,51 @@ impl InitialData {
     }
 
     async fn validate(self, db_conn: &AsyncPgConnection) -> anyhow::Result<Self> {
-        let Self {
-            institution,
-            app_admin,
-            single_index_set_urls,
-            dual_index_set_urls,
-            tenx_assays,
-            multiplexing_tags,
-        } = self;
+        Ok(self)
+        // let Self {
+        //     institution,
+        //     app_admin,
+        //     single_index_set_urls,
+        //     dual_index_set_urls,
+        //     tenx_assays,
+        //     multiplexing_tags,
+        // } = self;
 
-        let validation_data = institution.fetch_validation_data(db_conn).await?;
-        institution
-            .validate(validation_data)
-            .context("failed to validate institution in initial data")?;
-
-        // let validation_data = app_admin
-        //     .fetch_validation_data(db_pool.get().await?)
-        //     .await?;
-        // app_admin
+        // let validation_data = institution.fetch_validation_data(db_conn).await?;
+        // institution
         //     .validate(validation_data)
-        //     .context("failed to validate app admin in initial data")?;
+        //     .context("failed to validate institution in initial data")?;
 
-        single_index_set_urls
-            .iter()
-            .try_for_each(validate_10x_genomics_url)?;
-        dual_index_set_urls
-            .iter()
-            .try_for_each(validate_10x_genomics_url)?;
-        // tenx_assays.iter().try_for_each(|a| a.validate(db_conn))?;
+        // // let validation_data = app_admin
+        // //     .fetch_validation_data(db_pool.get().await?)
+        // //     .await?;
+        // // app_admin
+        // //     .validate(validation_data)
+        // //     .context("failed to validate app admin in initial data")?;
 
-        Ok(Self {
-            institution,
-            app_admin,
-            single_index_set_urls,
-            dual_index_set_urls,
-            tenx_assays,
-            multiplexing_tags,
-        })
+        // single_index_set_urls
+        //     .iter()
+        //     .try_for_each(validate_10x_genomics_url)?;
+        // dual_index_set_urls
+        //     .iter()
+        //     .try_for_each(validate_10x_genomics_url)?;
+        // // tenx_assays.iter().try_for_each(|a| a.validate(db_conn))?;
+
+        // Ok(Self {
+        //     institution,
+        //     app_admin,
+        //     single_index_set_urls,
+        //     dual_index_set_urls,
+        //     tenx_assays,
+        //     multiplexing_tags,
+        // })
     }
 }
 
 pub async fn insert_initial_data(
     initial_data: InitialData,
     http_client: reqwest::Client,
-    mut db_conn: &AsyncPgConnection,
+    db_conn: &AsyncPgConnection,
 ) -> anyhow::Result<()> {
     let initial_data = initial_data.validate(db_conn).await?;
 

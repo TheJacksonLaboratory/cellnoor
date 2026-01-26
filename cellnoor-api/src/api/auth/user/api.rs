@@ -16,12 +16,12 @@ use super::{FromEncodedJwt, common::*};
 
 #[derive(Debug, Deserialize)]
 #[serde(transparent)]
-pub(super) struct User(StandardClaims);
+pub struct User(StandardClaims);
 
 impl FromEncodedJwt for User {}
 
 impl User {
-    pub(super) async fn with_authorized_projects(
+    pub async fn with_authorized_projects(
         &self,
         mut db_conn: &AsyncPgConnection,
     ) -> Result<super::AuthenticatedUser, db::Error> {

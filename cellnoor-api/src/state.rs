@@ -1,4 +1,8 @@
-use std::{sync::Arc, thread::sleep, time::Duration};
+use std::{
+    sync::{Arc, RwLock, RwLockReadGuard},
+    thread::sleep,
+    time::Duration,
+};
 
 use anyhow::{Context, anyhow};
 use cellnoor_schema::json_web_keys;
@@ -11,7 +15,6 @@ use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
 use jiff_diesel::ToDiesel;
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
 use secrecy::{ExposeSecret, SecretString};
-use tokio::sync::{RwLock, RwLockReadGuard};
 
 use crate::{
     config::{AppMode, Config},
@@ -69,17 +72,26 @@ impl ProductionState {
         } = self;
 
         let need_new_jwk = {
-            let maybe_jwk = jwt_decoding_key.read().await;
+            let maybe_jwk = jwt_decoding_key
+                .read()
+                .expect("should be able to acquire read-lock on JWK");
 
             maybe_jwk.as_ref().is_none_or(JwtDecodingKey::is_expired)
         };
 
         if need_new_jwk {
-            let mut writelock = jwt_decoding_key.write().await;
-            *writelock = Some(self.new_jwk().await?);
+            let new_jwk = self.new_jwk().await?;
+            let mut writelock = jwt_decoding_key
+                .write()
+                .expect("should be able to acquire write-lock on JWK");
+
+            *writelock = Some(new_jwk);
         }
 
-        Ok(self.jwt_decoding_key.read().await)
+        Ok(self
+            .jwt_decoding_key
+            .read()
+            .expect("should be able to acquire read-lock on JWK"))
     }
 
     pub fn jwt_validation(&self) -> &Validation {
@@ -202,7 +214,9 @@ impl AppState {
     pub async fn db_conn(&self) -> Result<DbConnection, db::Error> {
         match self {
             Self::Development(DevelopmentState { db_pool, .. })
-            | Self::Production(ProductionState { db_pool, .. }) => Ok(db_pool.get().await?),
+            | Self::Production(ProductionState { db_pool, .. }) => {
+                Ok(db_pool.get().await.map(DbConnection::new)?)
+            }
         }
     }
 }

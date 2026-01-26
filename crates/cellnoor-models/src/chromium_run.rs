@@ -10,7 +10,8 @@ pub use creation::{
     PoolMultiplexChipLoading, PoolMultiplexGemPool, SingleplexChipLoading, SingleplexGemPool,
 };
 pub use query::{
-    ChromiumRunFilter, ChromiumRunId, ChromiumRunOrderBy, GemPoolFilter, GemPoolId, GemPoolOrderBy,
+    ChromiumRunFilter, ChromiumRunOrderBy, GemPoolFilter, GemPoolOrderBy,
+    chromium_run_id::ChromiumRunId, gem_pool_id::GemPoolId,
 };
 #[cfg(feature = "app")]
 pub use query::{ChromiumRunQuery, GemPoolQuery};

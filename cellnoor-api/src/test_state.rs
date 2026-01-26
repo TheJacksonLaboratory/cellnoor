@@ -11,7 +11,7 @@ use cellnoor_models::{
         Volume,
     },
     generic_query,
-    institution::{Institution, InstitutionCreation, InstitutionQuery},
+    institution::{Institution, InstitutionQuery, NewInstitution},
     library::{LibraryCreation, LibraryFields, LibraryQuery, LibrarySummary},
     multiplexing_tag::MultiplexingTag,
     person::{PersonCreation, PersonFields, PersonQuery, PersonSummary},
@@ -49,9 +49,9 @@ use tokio::{sync::OnceCell, task::JoinSet};
 use uuid::Uuid;
 
 use crate::{
-    api::{self, Request},
+    api,
     config::Config,
-    db::{self, DbConnection, DbConnectionPool},
+    db::{DbConnection, DbConnectionPool},
     state::{AppState, create_test_db_pool},
 };
 
@@ -117,7 +117,7 @@ impl TestState {
 
     async fn insert_institutions(&'static self, db_conn: &AsyncPgConnection) {
         futures::future::join_all((0..N_INSTITUTIONS).map(|_| {
-            InstitutionCreation::new(Uuid::now_v7(), random_non_empty_string())
+            NewInstitution::new(Uuid::now_v7(), random_non_empty_string())
                 .handle_without_authorization(db_conn)
         }))
         .await;

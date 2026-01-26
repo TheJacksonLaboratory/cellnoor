@@ -33,3 +33,20 @@ mod diesel_impls {
         }
     }
 }
+
+#[cfg(feature = "schemars")]
+mod schemars_impls {
+    use schemars::JsonSchema;
+
+    use super::RangedU32;
+
+    impl<const MIN: u32, const MAX: u32> JsonSchema for RangedU32<MIN, MAX> {
+        fn schema_name() -> std::borrow::Cow<'static, str> {
+            u32::schema_name()
+        }
+
+        fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+            u32::json_schema(generator)
+        }
+    }
+}

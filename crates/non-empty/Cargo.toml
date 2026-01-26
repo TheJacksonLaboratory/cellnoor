@@ -4,6 +4,7 @@ name = "non-empty"
 version = "0.1.0"
 
 [dependencies]
+schemars = {workspace = true, optional = true}
 cellnoor-schema = { version = "0.1.0", path = "../cellnoor-schema", optional = true }
 diesel = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
@@ -16,6 +17,7 @@ workspace = true
 
 [features]
 diesel = ["dep:cellnoor-schema", "dep:diesel"]
+schemars = ["dep:schemars"]
 serde = ["dep:serde"]
 typescript = ["dep:ts-rs"]
 

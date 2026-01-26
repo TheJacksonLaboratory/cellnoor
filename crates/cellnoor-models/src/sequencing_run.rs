@@ -8,7 +8,5 @@ pub use common::SequencingRunFields;
 pub use creation::SequencingRunCreation;
 #[cfg(feature = "app")]
 pub use query::SequencingRunQuery;
-pub use query::{
-    SequencingRunFilter, SequencingRunId, SequencingRunIdLibraries, SequencingRunOrderBy,
-};
+pub use query::{SequencingRunFilter, SequencingRunId, SequencingRunOrderBy};
 pub use read::SequencingRun;

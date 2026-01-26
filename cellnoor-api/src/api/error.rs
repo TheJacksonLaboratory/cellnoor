@@ -16,10 +16,10 @@ use crate::db;
 #[serde(rename_all = "snake_case", tag = "type", content = "info")]
 #[error(transparent)]
 pub enum DataError {
-    CreatePerson(#[from] super::routes::people::CreatePersonError),
+    // CreatePerson(#[from] super::routes::people::CreatePersonError),
 }
 
-#[derive(Debug, thiserror::Error, serde::Serialize)]
+#[derive(Debug, thiserror::Error, serde::Serialize, aide::OperationIo)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(rename = "ApiError"))]
 #[serde(rename_all = "snake_case", tag = "type", content = "info")]
@@ -76,14 +76,6 @@ impl From<MultipartError> for Error {
     fn from(err: MultipartError) -> Self {
         Self::MalformedRequest {
             message: err.body_text(),
-        }
-    }
-}
-
-impl From<serde_qs::axum::QsQueryRejection> for Error {
-    fn from(err: serde_qs::axum::QsQueryRejection) -> Self {
-        Self::MalformedRequest {
-            message: err.to_string(),
         }
     }
 }

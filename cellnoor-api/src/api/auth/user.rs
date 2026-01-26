@@ -6,19 +6,19 @@ use axum_extra::{
     extract::{CookieJar, cookie::Cookie},
 };
 use diesel_async::AsyncPgConnection;
-use headers::{Authorization as AuthorizationHeader, authorization::Bearer};
+use headers::{Authorization, authorization::Bearer};
 use jsonwebtoken::{TokenData, Validation};
 use serde::{Deserialize, de::DeserializeOwned};
-use tokio::sync::RwLockReadGuard;
+use std::sync::RwLockReadGuard;
 use uuid::Uuid;
 
 use crate::{
-    api::{auth::user::common::PrivateClaims, extract::auth},
-    db::{self, DbConnection},
+    api::auth::user::common::PrivateClaims,
+    db,
     state::{AppState, JwtDecodingKey},
 };
 
-mod api;
+pub(super) mod api;
 mod common;
 mod ui;
 
@@ -29,6 +29,39 @@ pub struct AuthenticatedUser {
 }
 
 impl AuthenticatedUser {
+    pub(super) async fn from_request(
+        app_state: &AppState,
+        auth_header: Option<&TypedHeader<Authorization<Bearer>>>,
+        cookies: &CookieJar,
+    ) -> Result<Self, super::Error> {
+        let (decoding_key, validation) = match &app_state {
+            AppState::Development(_) => {
+                return Ok(Self::new_admin());
+            }
+            AppState::Production(state) => (
+                state.jwt_decoding_key().await.map_err(|e| {
+                    super::Error::Database(db::Error::Other {
+                        message: format!("failed to fetch JWK from database: {e}"),
+                    })
+                })?,
+                state.jwt_validation(),
+            ),
+        };
+
+        let encoded_jwt = extract_jwt_from_header_or_cookies(auth_header, cookies)?;
+
+        let user = match encoded_jwt {
+            EncodedJwt::FromAuthorizationHeader(t) => {
+                let api_user = api::User::from_encoded_jwt(t, decoding_key, validation)?;
+                let db_conn = app_state.db_conn().await?;
+                api_user.with_authorized_projects(&db_conn).await?
+            }
+            EncodedJwt::FromCookie(t) => Self::from_encoded_jwt(t, decoding_key, validation)?,
+        };
+
+        Ok(user)
+    }
+
     pub fn new_admin() -> Self {
         Self {
             user: PrivateClaims {
@@ -61,14 +94,6 @@ impl AuthenticatedUser {
         self.is_admin() || self.is_biology_staff() || self.is_computational_staff()
     }
 
-    pub fn authorize_admin_only(&self) -> Result<(), auth::Error> {
-        if !self.is_admin() {
-            return Err(auth::Error::PermissionDenied);
-        }
-
-        Ok(())
-    }
-
     pub fn authorized_projects(
         self,
         requested_projects: Option<HashSet<Uuid>>,
@@ -91,64 +116,17 @@ impl AuthenticatedUser {
         )
     }
 
-    pub fn authorize_project_access(self, requested_project: &Uuid) -> Result<(), auth::Error> {
+    pub fn authorize_project_access(self, requested_project: &Uuid) -> Result<(), super::Error> {
         let authorized_projects = self
             .authorized_projects(Some(HashSet::from([*requested_project])))
-            .expect("we pased in a project, so we should get one out");
+            .expect("we passed in a project, so we should get one out");
 
         if !authorized_projects.contains(requested_project) {
-            return Err(auth::Error::PermissionDenied);
+            return Err(super::Error::PermissionDenied);
         }
 
         Ok(())
     }
-}
-
-impl FromRequestParts<AppState> for AuthenticatedUser {
-    type Rejection = crate::api::Error;
-
-    async fn from_request_parts(
-        parts: &mut axum::http::request::Parts,
-        app_state: &AppState,
-    ) -> Result<Self, crate::api::Error> {
-        let (decoding_key, validation) = match app_state {
-            AppState::Development(_) => return Ok(Self::new_admin()),
-            AppState::Production(state) => {
-                (state.jwt_decoding_key().await?, state.jwt_validation())
-            }
-        };
-
-        let auth_header = extract_auth_header(parts).await;
-        let cookies = extract_cookies(parts).await;
-        let encoded_jwt = extract_jwt_from_header_or_cookies(auth_header.as_ref(), &cookies)?;
-
-        let user = match encoded_jwt {
-            EncodedJwt::FromAuthorizationHeader(t) => {
-                let api_user = api::User::from_encoded_jwt(t, &decoding_key, validation)?;
-                let db_conn = app_state.db_conn().await?;
-                api_user.with_authorized_projects(&db_conn).await?
-            }
-            EncodedJwt::FromCookie(t) => Self::from_encoded_jwt(t, &decoding_key, validation)?,
-        };
-
-        Ok(user)
-    }
-}
-
-async fn extract_auth_header(
-    request_parts: &mut axum::http::request::Parts,
-) -> Option<TypedHeader<AuthorizationHeader<Bearer>>> {
-    request_parts
-        .extract::<TypedHeader<AuthorizationHeader<Bearer>>>()
-        .await
-        .ok()
-}
-
-async fn extract_cookies(request_parts: &mut axum::http::request::Parts) -> CookieJar {
-    request_parts
-        .extract()
-        .await
-        .expect("should be able to extract cookies")
 }
 
 enum EncodedJwt<'a> {
@@ -157,26 +135,26 @@ enum EncodedJwt<'a> {
 }
 
 fn extract_jwt_from_header_or_cookies<'a>(
-    auth_header: Option<&'a TypedHeader<AuthorizationHeader<Bearer>>>,
+    auth_header: Option<&'a TypedHeader<Authorization<Bearer>>>,
     cookies: &'a CookieJar,
-) -> Result<EncodedJwt<'a>, auth::Error> {
+) -> Result<EncodedJwt<'a>, super::Error> {
     match (auth_header, cookies) {
-        (Some(TypedHeader(AuthorizationHeader(token))), _) => Ok(
-            EncodedJwt::FromAuthorizationHeader(token.token().as_bytes()),
-        ),
+        (Some(TypedHeader(Authorization(token))), _) => Ok(EncodedJwt::FromAuthorizationHeader(
+            token.token().as_bytes(),
+        )),
         (None, cookies) => cookies
             .get("cellnoor-ui.api_token")
             .map(Cookie::value)
             .map(str::as_bytes)
             .map(EncodedJwt::FromCookie)
-            .ok_or(auth::Error::no_auth_token()),
+            .ok_or(super::Error::no_auth_token()),
     }
 }
 
 trait FromEncodedJwt: DeserializeOwned {
     fn from_encoded_jwt(
         encoded_jwt: &[u8],
-        decoding_key: &RwLockReadGuard<Option<JwtDecodingKey>>,
+        decoding_key: RwLockReadGuard<Option<JwtDecodingKey>>,
         validation: &Validation,
     ) -> Result<Self, super::Error> {
         let TokenData { header: _, claims } = jsonwebtoken::decode(

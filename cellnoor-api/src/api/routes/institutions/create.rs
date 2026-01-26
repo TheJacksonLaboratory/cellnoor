@@ -1,44 +1,32 @@
-use cellnoor_models::institution::{Institution, InstitutionCreation};
+use axum::{Json, extract::State, http::StatusCode};
+use cellnoor_models::institution::{Institution, NewInstitution};
 use cellnoor_schema::institutions::dsl::institutions;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 use crate::{
-    api::{
-        self, AuthenticatedUser,
-        auth::{self},
-        request::{AuthorizedRequest, Request},
-    },
-    db,
+    api::{self, auth, routes::ApiResponse},
+    db::{self, DbConnection},
+    state::AppState,
 };
 
-impl Request<Institution> for InstitutionCreation {
-    type Authorized = Self;
-    type ValidationData = ();
-
-    async fn fetch_validation_data(&self, _db_conn: &AsyncPgConnection) -> Result<(), db::Error> {
-        Ok(())
-    }
-
-    fn authorize(self, user: AuthenticatedUser) -> Result<InstitutionCreation, auth::Error> {
-        user.authorize_admin_only()?;
-
-        Ok(self)
-    }
+pub async fn create_institution(
+    _: State<AppState>,
+    db_conn: DbConnection,
+    Json(institution): Json<NewInstitution>,
+) -> ApiResponse<Institution> {
+    insert_institution(institution, db_conn)
+        .await
+        .map(|i| (StatusCode::CREATED, Json(i)))
 }
 
-impl AuthorizedRequest<Institution> for InstitutionCreation {
-    type ValidationData = ();
-
-    fn validate(&self, _validation_data: ()) -> Result<(), api::DataError> {
-        Ok(())
-    }
-
-    async fn handle(self, mut db_conn: &AsyncPgConnection) -> Result<Institution, api::Error> {
-        Ok(diesel::insert_into(institutions)
-            .values(self)
-            .returning(Institution::as_returning())
-            .get_result(&mut db_conn)
-            .await?)
-    }
+pub async fn insert_institution(
+    institution: NewInstitution,
+    mut db_conn: DbConnection,
+) -> Result<Institution, api::Error> {
+    Ok(diesel::insert_into(institutions)
+        .values(institution)
+        .returning(Institution::as_returning())
+        .get_result(&mut db_conn)
+        .await?)
 }

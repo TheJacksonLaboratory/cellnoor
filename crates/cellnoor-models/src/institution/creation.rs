@@ -9,13 +9,13 @@ use crate::institution::common::InstitutionFields;
 #[insert]
 #[cfg_attr(feature = "app", derive(diesel::AsChangeset))]
 #[cfg_attr(feature = "app", diesel(table_name = institutions))]
-pub struct InstitutionCreation {
+pub struct NewInstitution {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: InstitutionFields,
 }
 
-impl InstitutionCreation {
+impl NewInstitution {
     #[must_use]
     pub fn new(id: Uuid, name: NonEmptyString) -> Self {
         Self {

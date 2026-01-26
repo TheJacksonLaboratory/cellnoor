@@ -28,5 +28,3 @@ pub type SequencingRunQuery =
     crate::generic_query::Query<SequencingRunFilter, SequencingRunOrderBy>;
 
 uuid_newtype!(SequencingRunId);
-
-uuid_newtype!(SequencingRunIdLibraries);
