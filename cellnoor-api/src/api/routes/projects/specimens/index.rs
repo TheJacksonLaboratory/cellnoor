@@ -3,7 +3,7 @@ use cellnoor_models::specimen::{SpecimenQuery, SpecimenSummary};
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 
-use crate::api::auth;
+use crate::api::{AuthenticatedUser, auth};
 use crate::{api, db::ToBoxedFilter};
 
 impl api::AuthorizedRequest<Vec<SpecimenSummary>> for (ProjectId, SpecimenQuery) {
@@ -54,17 +54,14 @@ impl api::Request<Vec<SpecimenSummary>> for (ProjectId, SpecimenQuery) {
         Ok(())
     }
 
-    fn authorize(
-        self,
-        authorization: api::auth::Authorization,
-    ) -> Result<Self::Authorized, api::auth::Error> {
+    fn authorize(self, user: AuthenticatedUser) -> Result<Self::Authorized, api::auth::Error> {
         let (project_id, specimen_query) = self;
 
-        let authorized_projects = authorization
+        let authorized_projects = user
             .authorized_projects(project_id.into())
             .expect("this should be `Some` because we are passing in a project");
 
-        if !authorized_projects.contains(&project_id.into()) {
+        if !authorized_projects.contains(project_id.as_ref()) {
             return Err(auth::Error::PermissionDenied);
         }
 

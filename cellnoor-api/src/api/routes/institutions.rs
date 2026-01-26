@@ -1,5 +1,8 @@
+use aide::axum::{
+    ApiRouter,
+    routing::{get, post},
+};
 use axum::{Router, extract::State, http::StatusCode};
-use axum_extra::routing::{Resource, RouterExt};
 use cellnoor_models::{
     institution::{Institution, InstitutionCreation, InstitutionId, InstitutionQuery},
     person::{PersonQuery, PersonSummary},
@@ -21,12 +24,14 @@ mod show;
 
 const RESOURCE_NAME: &str = "institutions";
 
-pub(super) fn router() -> Router<AppState> {
-    let router: Router<AppState> = Resource::named(RESOURCE_NAME)
-        .create(create::<InstitutionCreation, Institution>)
-        .show(show::<InstitutionId, Institution>)
-        .index(index::<InstitutionQuery, Vec<Institution>>)
-        .into();
+pub(super) fn router() -> ApiRouter<AppState> {
+    let router = ApiRouter::new()
+        .api_route(
+            "/",
+            post(create::<InstitutionCreation, Institution>)
+                .get(index::<InstitutionQuery, Vec<Institution>>),
+        )
+        .api_route("/{id}", get(show::<InstitutionId, Institution>));
 
     router.merge(members::router())
 }

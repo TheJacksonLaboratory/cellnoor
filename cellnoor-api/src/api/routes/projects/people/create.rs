@@ -6,7 +6,7 @@ use cellnoor_schema::{project_people, projects};
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 
-use crate::api;
+use crate::api::{self, AuthenticatedUser, auth};
 
 impl api::AuthorizedRequest<()> for (ProjectId, PersonId) {
     type ValidationData = ();
@@ -31,7 +31,7 @@ impl api::AuthorizedRequest<()> for (ProjectId, PersonId) {
     }
 }
 
-impl api::Request<Project> for ProjectCreation {
+impl api::Request<()> for (ProjectId, PersonId) {
     type Authorized = Self;
     type ValidationData = ();
 
@@ -42,12 +42,17 @@ impl api::Request<Project> for ProjectCreation {
         Ok(())
     }
 
-    fn authorize(
-        self,
-        authorization: api::auth::Authorization,
-    ) -> Result<Self::Authorized, api::auth::Error> {
-        authorization.authorize_admin()?;
+    fn authorize(self, user: AuthenticatedUser) -> Result<Self::Authorized, auth::Error> {
+        let (project_id, person_id) = self;
 
-        Ok(self)
+        let authorized_projects = user
+            .authorized_projects(project_id.into())
+            .expect("there should be a project because we passed one in");
+
+        if !authorized_projects.contains(project_id.as_ref()) {
+            return Err(auth::Error::PermissionDenied);
+        }
+
+        Ok((project_id, person_id))
     }
 }

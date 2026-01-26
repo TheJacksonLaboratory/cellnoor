@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use axum::{RequestPartsExt, extract::FromRequestParts};
 use axum_extra::{
     TypedHeader,
@@ -6,38 +8,99 @@ use axum_extra::{
 use diesel_async::AsyncPgConnection;
 use headers::{Authorization as AuthorizationHeader, authorization::Bearer};
 use jsonwebtoken::{TokenData, Validation};
-use serde::de::DeserializeOwned;
+use serde::{Deserialize, de::DeserializeOwned};
 use tokio::sync::RwLockReadGuard;
+use uuid::Uuid;
 
 use crate::{
-    api::extract::auth,
+    api::{auth::user::common::PrivateClaims, extract::auth},
     db::{self, DbConnection},
     state::{AppState, JwtDecodingKey},
 };
-pub use common::Authorization;
 
 mod api;
 mod common;
 mod ui;
 
-// We don't implement any function to get the user ID so as to statically ensure
-// that the authorization function checks whether this is an API user or a UI
-// user
-#[derive(Clone, Debug)]
-pub enum AuthenticatedUser {
-    Api(api::User),
-    Ui(ui::User),
+#[derive(Clone, Debug, Deserialize)]
+pub struct AuthenticatedUser {
+    user: PrivateClaims,
+    projects: HashSet<Uuid>,
 }
 
 impl AuthenticatedUser {
-    pub async fn authorization(
-        self,
-        db_conn: &AsyncPgConnection,
-    ) -> Result<Authorization, db::Error> {
-        match self {
-            Self::Api(u) => u.authorization(db_conn).await,
-            Self::Ui(u) => Ok(u.into_authorization()),
+    pub fn new_admin() -> Self {
+        Self {
+            user: PrivateClaims {
+                user_id: Uuid::nil(),
+                is_admin: true,
+                is_biology_staff: true,
+                is_computational_staff: true,
+            },
+            projects: HashSet::new(),
         }
+    }
+
+    fn data(&self) -> &PrivateClaims {
+        &self.user
+    }
+
+    pub fn is_admin(&self) -> bool {
+        self.data().is_admin
+    }
+
+    pub fn is_biology_staff(&self) -> bool {
+        self.data().is_biology_staff
+    }
+
+    pub fn is_computational_staff(&self) -> bool {
+        self.data().is_computational_staff
+    }
+
+    pub fn is_staff(&self) -> bool {
+        self.is_admin() || self.is_biology_staff() || self.is_computational_staff()
+    }
+
+    pub fn authorize_admin_only(&self) -> Result<(), auth::Error> {
+        if !self.is_admin() {
+            return Err(auth::Error::PermissionDenied);
+        }
+
+        Ok(())
+    }
+
+    pub fn authorized_projects(
+        self,
+        requested_projects: Option<HashSet<Uuid>>,
+    ) -> Option<HashSet<Uuid>> {
+        if self.is_staff() {
+            return requested_projects;
+        }
+
+        let authorized_projects = self.projects;
+
+        let Some(requested_projects) = requested_projects else {
+            return Some(authorized_projects);
+        };
+
+        Some(
+            requested_projects
+                .into_iter()
+                .filter(|p| authorized_projects.contains(p))
+                .collect(),
+        )
+    }
+
+    pub fn authorize_project_access(self, requested_project: &Uuid) -> Result<(), auth::Error> {
+        let authorized_projects = self
+            .authorized_projects(Some(HashSet::from([*requested_project])))
+            .expect("we pased in a project, so we should get one out");
+
+        if !authorized_projects.contains(requested_project) {
+            return Err(auth::Error::PermissionDenied);
+        }
+
+        Ok(())
     }
 }
 
@@ -49,7 +112,7 @@ impl FromRequestParts<AppState> for AuthenticatedUser {
         app_state: &AppState,
     ) -> Result<Self, crate::api::Error> {
         let (decoding_key, validation) = match app_state {
-            AppState::Development(_) => return Ok(Self::Ui(ui::User::admin())),
+            AppState::Development(_) => return Ok(Self::new_admin()),
             AppState::Production(state) => {
                 (state.jwt_decoding_key().await?, state.jwt_validation())
             }
@@ -61,11 +124,11 @@ impl FromRequestParts<AppState> for AuthenticatedUser {
 
         let user = match encoded_jwt {
             EncodedJwt::FromAuthorizationHeader(t) => {
-                api::User::from_encoded_jwt(t, &decoding_key, validation).map(Self::Api)?
+                let api_user = api::User::from_encoded_jwt(t, &decoding_key, validation)?;
+                let db_conn = app_state.db_conn().await?;
+                api_user.with_authorized_projects(&db_conn).await?
             }
-            EncodedJwt::FromCookie(t) => {
-                ui::User::from_encoded_jwt(t, &decoding_key, validation).map(Self::Ui)?
-            }
+            EncodedJwt::FromCookie(t) => Self::from_encoded_jwt(t, &decoding_key, validation)?,
         };
 
         Ok(user)
@@ -128,3 +191,5 @@ trait FromEncodedJwt: DeserializeOwned {
         Ok(claims)
     }
 }
+
+impl FromEncodedJwt for AuthenticatedUser {}

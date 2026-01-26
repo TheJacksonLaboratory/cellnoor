@@ -5,7 +5,7 @@ use cellnoor_schema::project_people;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 
-use crate::api::auth;
+use crate::api::{AuthenticatedUser, auth};
 use crate::{api, db::ToBoxedFilter};
 
 impl api::AuthorizedRequest<Vec<PersonSummary>> for (ProjectId, PersonQuery) {
@@ -56,17 +56,14 @@ impl api::Request<Vec<PersonSummary>> for (ProjectId, PersonQuery) {
         Ok(())
     }
 
-    fn authorize(
-        self,
-        authorization: api::auth::Authorization,
-    ) -> Result<Self::Authorized, api::auth::Error> {
+    fn authorize(self, user: AuthenticatedUser) -> Result<Self::Authorized, api::auth::Error> {
         let (project_id, person_query) = self;
 
-        let authorized_projects = authorization
+        let authorized_projects = user
             .authorized_projects(project_id.into())
-            .expect("this should be `Some` because we are passing in a project");
+            .expect("there should be a project because we passed one in");
 
-        if !authorized_projects.contains(&project_id.into()) {
+        if !authorized_projects.contains(&project_id.as_ref()) {
             return Err(auth::Error::PermissionDenied);
         }
 

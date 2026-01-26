@@ -5,8 +5,8 @@ use crate::{
     },
     state::AppState,
 };
+use aide::axum::ApiRouter;
 use axum::Router;
-use axum_extra::routing::Resource;
 use cellnoor_models::{
     person::{Person, PersonCreation, PersonId, PersonQuery, PersonSummary, PersonUpdate},
     specimen::{SpecimenQuery, SpecimenSummary},
@@ -24,8 +24,8 @@ mod update;
 
 const RESOURCE_NAME: &str = "people";
 
-pub(super) fn router() -> Router<AppState> {
-    let root_router: Router<AppState> = Resource::named(RESOURCE_NAME)
+pub(super) fn router() -> ApiRouter<AppState> {
+    let root_router: ApiRouter<AppState> = Resource::named(RESOURCE_NAME)
         .create(create::<PersonCreation, Person>)
         .show(show::<PersonId, Person>)
         .index(index::<PersonQuery, Vec<PersonSummary>>)

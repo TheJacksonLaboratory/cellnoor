@@ -2,17 +2,17 @@ use crate::{
     api::{extract::PathAndQuery, request::nested_index},
     state::AppState,
 };
-use axum_extra::routing::Resource;
+use aide::axum::{ApiRouter, routing::get};
 use cellnoor_models::{
     person::PersonId,
     specimen::{SpecimenQuery, SpecimenSummary},
 };
 
-use super::RESOURCE_NAME;
-
 mod index;
 
-pub(super) fn router() -> Resource<AppState> {
-    Resource::named(&format!("{RESOURCE_NAME}/{{id}}/specimens"))
-        .index(nested_index::<PersonId, SpecimenQuery, Vec<SpecimenSummary>>)
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new().route(
+        "/{id}/specimens",
+        get(nested_index::<PersonId, SpecimenQuery, Vec<SpecimenSummary>>),
+    )
 }

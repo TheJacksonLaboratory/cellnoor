@@ -1,7 +1,7 @@
 use crate::{
     api::{
         self,
-        auth::{self, Authorization},
+        auth::{self},
         extract::{QsQuery, auth::AuthenticatedUser},
     },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, like_any},
@@ -53,7 +53,7 @@ impl api::Request<Vec<PersonSummary>> for PersonQuery {
         Ok(())
     }
 
-    fn authorize(self, _authorization: Authorization) -> Result<Self::Authorized, auth::Error> {
+    fn authorize(self, _user: AuthenticatedUser) -> Result<Self::Authorized, auth::Error> {
         Ok(self)
     }
 }

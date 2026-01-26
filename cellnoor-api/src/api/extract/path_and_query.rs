@@ -1,5 +1,5 @@
-use crate::api;
 use crate::api::request::Request;
+use crate::api::{self, auth};
 use axum::extract::{FromRequest, FromRequestParts};
 use axum::{RequestExt, RequestPartsExt};
 use diesel_async::AsyncPgConnection;
@@ -46,8 +46,8 @@ where
 
     fn authorize(
         self,
-        authorization: api::auth::Authorization,
+        user: auth::AuthenticatedUser,
     ) -> Result<Self::Authorized, api::auth::Error> {
-        self.0.authorize(authorization)
+        self.0.authorize(user)
     }
 }

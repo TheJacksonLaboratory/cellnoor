@@ -34,7 +34,7 @@ impl db::Operation<Specimen> for SpecimenId {
 
     fn execute(
         self,
-        authorization: AuthorizationData,
+        user: AuthenticatedUserData,
         _validation_data: &(),
         db_conn: &mut diesel::PgConnection,
     ) -> Result<Specimen, db::Error> {

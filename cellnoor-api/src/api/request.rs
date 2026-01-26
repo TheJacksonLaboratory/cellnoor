@@ -1,14 +1,27 @@
+// Simple Axum middleware requires passing information from middleware to middleware (or middlware to handler) via the
+// `axum::extract::Extension` struct. This isn't bad, but it implicitly means that one function relies on another to
+// modify some kind of state. Instead, we use strongly-typed extractors, which are basically stateless. In theory, we
+// could achieve this behavior by using tower's `Service` trait, but at that point you're basically reinventing Axum.
+//
+// All that said, the system laid out below satisfies the following requirements:
+//  1. No extractor runs twice
+//
+//  2. Boilerplate is minimum - there's no reason to copy-paste getting a db connection, running the query in a
+//  transaction, etc
+//
+//  3. A non-staff user can only see their projects (and the entities derived from them). For example, a user querying
+//  for Chromium datasets should only see the Chromium datasets belonging to projects they also belong to. That means
+//  the query itself needs to be modified. This system allows us a simple way to modify the query. This authorization
+//  step transforms a type implementing `Request` into another type implementing `AuthorizedRequest`, so the developer
+//  has to implement both to use the easy functions below.
 use std::fmt::Debug;
 
-use axum::extract::{FromRequest, FromRequestParts};
-use axum::response::IntoResponse;
 use axum::{extract::State, http::StatusCode};
 use diesel::prelude::*;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::{AsyncConnection, AsyncPgConnection};
-use serde::Serialize;
 
-use super::auth::{self, AuthenticatedUser, Authorization};
+use super::auth::{self, AuthenticatedUser};
 use crate::api::extract::{Json, Path, PathAndJson, PathAndQuery, QsQuery};
 use crate::db;
 use crate::state::AppState;
@@ -33,14 +46,14 @@ pub trait Request<Resp>: Sized {
         db_conn: &AsyncPgConnection,
     ) -> Result<Self::ValidationData, db::Error>;
 
-    fn authorize(self, authorization: Authorization) -> Result<Self::Authorized, auth::Error>;
+    fn authorize(self, user: AuthenticatedUser) -> Result<Self::Authorized, auth::Error>;
 
     #[cfg(any(feature = "dummy-data", test))]
     fn handle_without_authorization(
         self,
         db_conn: &AsyncPgConnection,
     ) -> impl Future<Output = Resp> + Send {
-        let authorized_request = self.authorize(Authorization::new_admin()).unwrap();
+        let authorized_request = self.authorize(AuthenticatedUser::new_admin()).unwrap();
 
         async { authorized_request.handle(db_conn).await.unwrap() }
     }
@@ -61,14 +74,9 @@ where
     tracing::info!(request = ?request);
 
     let mut db_conn = state.db_conn().await?;
+    let validation_data = request.fetch_validation_data(&db_conn).await?;
 
-    // Fetch the authorization data and validation data concurrently because speed™
-    let (authorization, validation_data) = tokio::try_join!(
-        user.authorization(&db_conn),
-        request.fetch_validation_data(&db_conn)
-    )?;
-
-    let authorized_request = request.authorize(authorization)?;
+    let authorized_request = request.authorize(user)?;
     authorized_request.validate(validation_data.into())?;
 
     let response = db_conn

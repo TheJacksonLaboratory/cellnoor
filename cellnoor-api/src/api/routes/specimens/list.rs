@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 use crate::{
     api::{
-        auth::{self, Authorization},
+        auth::{self},
         extract::{QsQuery, auth::AuthenticatedUser},
         routes::handle_api_request,
     },

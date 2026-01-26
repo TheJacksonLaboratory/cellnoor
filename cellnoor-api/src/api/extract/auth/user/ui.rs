@@ -10,33 +10,12 @@ use super::common::*;
 pub struct User {
     #[serde(flatten)]
     standard_claims: StandardClaims,
-    user: Authorization,
+    user: PrivateClaims,
 }
 
 impl User {
-    pub fn into_authorization(self) -> Authorization {
+    pub fn into_authenticated_user(self) -> PrivateClaims {
         self.user
-    }
-
-    pub(super) fn admin() -> Self {
-        Self {
-            standard_claims: StandardClaims {
-                sub: Uuid::nil(),
-                iat: usize::default(),
-                exp: usize::default(),
-                iss: String::default(),
-                aud: String::default(),
-            },
-            user: Authorization {
-                user_fields: UserFields {
-                    user_id: Uuid::nil(),
-                    is_admin: true,
-                    is_biology_staff: true,
-                    is_computational_staff: true,
-                },
-                projects: HashSet::new(),
-            },
-        }
     }
 }
 

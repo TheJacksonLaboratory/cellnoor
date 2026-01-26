@@ -7,7 +7,7 @@ use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use crate::{
     api::{
         self,
-        auth::{self, Authorization},
+        auth::{self},
         extract::auth::AuthenticatedUser,
     },
     db,
@@ -40,7 +40,7 @@ impl api::Request<Person> for PersonId {
         Ok(())
     }
 
-    fn authorize(self, _authorization: Authorization) -> Result<Self::Authorized, auth::Error> {
+    fn authorize(self, _user: AuthenticatedUser) -> Result<Self::Authorized, auth::Error> {
         Ok(self)
     }
 }

@@ -5,6 +5,7 @@ use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use jiff_diesel::ToDiesel;
 
+use crate::api::AuthenticatedUser;
 use crate::{
     api,
     db::{BoxedFilter, BoxedFilterExt, ToBoxedFilter, like_any},
@@ -53,11 +54,12 @@ impl api::Request<Vec<Project>> for ProjectQuery {
         Ok(())
     }
 
-    fn authorize(
-        mut self,
-        authorization: api::auth::Authorization,
-    ) -> Result<Self::Authorized, api::auth::Error> {
-        self.filter.ids = authorization.authorized_projects(self.filter.ids);
+    fn authorize(mut self, user: AuthenticatedUser) -> Result<Self::Authorized, api::auth::Error> {
+        if user.is_admin() {
+            return Ok(self);
+        }
+
+        self.filter.ids = user.authorized_projects(self.filter.ids);
 
         Ok(self)
     }

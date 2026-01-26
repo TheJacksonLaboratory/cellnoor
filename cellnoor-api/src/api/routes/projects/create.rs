@@ -3,7 +3,7 @@ use cellnoor_schema::projects;
 use diesel::SelectableHelper;
 use diesel_async::RunQueryDsl;
 
-use crate::api;
+use crate::api::{self, AuthenticatedUser};
 
 impl api::AuthorizedRequest<Project> for ProjectCreation {
     type ValidationData = ();
@@ -36,11 +36,8 @@ impl api::Request<Project> for ProjectCreation {
         Ok(())
     }
 
-    fn authorize(
-        self,
-        authorization: api::auth::Authorization,
-    ) -> Result<Self::Authorized, api::auth::Error> {
-        authorization.authorize_admin()?;
+    fn authorize(self, user: AuthenticatedUser) -> Result<Self::Authorized, api::auth::Error> {
+        user.authorize_admin_only()?;
 
         Ok(self)
     }

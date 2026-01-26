@@ -1,4 +1,4 @@
-use axum_extra::routing::Resource;
+use aide::axum::{ApiRouter, routing::get};
 use cellnoor_models::{
     institution::InstitutionId,
     person::{PersonQuery, PersonSummary},
@@ -9,7 +9,9 @@ use crate::{api::request::nested_index, state::AppState};
 
 mod index;
 
-pub(super) fn router() -> Resource<AppState> {
-    Resource::named(&format!("{RESOURCE_NAME}/{{id}}/members"))
-        .index(nested_index::<InstitutionId, PersonQuery, Vec<PersonSummary>>)
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new().api_route(
+        "/{id}/members",
+        get(nested_index::<InstitutionId, PersonQuery, Vec<PersonSummary>>),
+    )
 }

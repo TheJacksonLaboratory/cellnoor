@@ -12,7 +12,7 @@ use cellnoor_models::{
 use uuid::Uuid;
 
 use crate::{
-    api::{self, routes::chromium_datasets::chromium_datasets_to_all_specimens},
+    api::{self, AuthenticatedUser, routes::chromium_datasets::chromium_datasets_to_all_specimens},
     db::{BoxedFilterExt, ToBoxedFilter},
 };
 
@@ -65,10 +65,7 @@ impl api::Request<Vec<SpecimenSummary>> for (PersonId, SpecimenQuery) {
         Ok(())
     }
 
-    fn authorize(
-        self,
-        authorization: api::auth::Authorization,
-    ) -> Result<Self::Authorized, api::auth::Error> {
+    fn authorize(self, user: AuthenticatedUser) -> Result<Self::Authorized, api::auth::Error> {
         todo!()
     }
 }

@@ -8,7 +8,7 @@ use diesel_async::AsyncPgConnection;
 use crate::{
     api::{
         self,
-        auth::{self, Authorization},
+        auth::{self},
         extract::{QsQuery, auth::AuthenticatedUser},
         request::{AuthorizedRequest, Request},
     },
@@ -42,7 +42,7 @@ impl Request<Vec<PersonSummary>> for (InstitutionId, PersonQuery) {
         Ok(())
     }
 
-    fn authorize(self, _authorization: Authorization) -> Result<Self, auth::Error> {
+    fn authorize(self, _user: AuthenticatedUser) -> Result<Self, auth::Error> {
         Ok(self)
     }
 }

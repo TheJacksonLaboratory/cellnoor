@@ -26,10 +26,7 @@ where
         self.0.fetch_validation_data(db_conn).await
     }
 
-    fn authorize(
-        self,
-        authorization: auth::Authorization,
-    ) -> Result<Self::Authorized, auth::Error> {
-        self.0.authorize(authorization)
+    fn authorize(self, user: auth::AuthenticatedUser) -> Result<Self::Authorized, auth::Error> {
+        self.0.authorize(user)
     }
 }

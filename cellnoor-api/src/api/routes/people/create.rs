@@ -1,4 +1,4 @@
-use crate::api::auth::{self, Authorization};
+use crate::api::auth::{self};
 use crate::api::extract::Json;
 use crate::api::{self};
 use crate::{api::extract::auth::AuthenticatedUser, db, state::AppState};
@@ -45,8 +45,8 @@ impl api::Request<Person> for PersonCreation {
         Ok(self.email().to_owned())
     }
 
-    fn authorize(self, authorization: Authorization) -> Result<Self, auth::Error> {
-        authorization.authorize_admin()?;
+    fn authorize(self, user: AuthenticatedUser) -> Result<Self, auth::Error> {
+        user.authorize_admin_only()?;
 
         Ok(self)
     }

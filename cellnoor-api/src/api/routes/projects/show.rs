@@ -10,7 +10,7 @@ use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use crate::{
     api::{
         self,
-        auth::{self, Authorization},
+        auth::{self},
         extract::auth::AuthenticatedUser,
         request::{AuthorizedRequest, Request},
     },
@@ -44,12 +44,10 @@ impl Request<Project> for ProjectId {
         Ok(())
     }
 
-    fn authorize(self, authorization: Authorization) -> Result<Self, auth::Error> {
-        let authorized_projects = authorization
-            .authorized_projects(self.into())
-            .expect("this should be `Some` because we are passing in a project");
+    fn authorize(self, user: AuthenticatedUser) -> Result<Self, auth::Error> {
+        let authorized_projects = user.authorized_projects(self.into());
 
-        if !authorized_projects.contains(&self.into()) {
+        if !authorized_projects.contains(self.as_ref()) {
             return Err(auth::Error::PermissionDenied);
         }
 
