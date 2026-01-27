@@ -2,6 +2,7 @@ use default_vec::DefaultVec;
 
 #[derive(Clone, Debug, PartialEq, ::serde::Deserialize, ::serde::Serialize)]
 #[cfg_attr(feature = "app", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "app", schemars(inline))]
 #[serde(default, deny_unknown_fields)]
 pub struct Query<F, O>
 where
