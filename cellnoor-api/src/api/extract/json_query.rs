@@ -12,6 +12,7 @@ use crate::api;
 
 #[derive(Default, JsonSchema)]
 #[serde(default)]
+#[schemars(inline)]
 pub struct JsonQuery<T>
 where
     T: Default,

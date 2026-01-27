@@ -29,7 +29,7 @@ pub struct AuthenticatedUser {
 }
 
 impl AuthenticatedUser {
-    pub(super) async fn from_request(
+    pub async fn from_request(
         app_state: &AppState,
         auth_header: Option<&TypedHeader<Authorization<Bearer>>>,
         cookies: &CookieJar,

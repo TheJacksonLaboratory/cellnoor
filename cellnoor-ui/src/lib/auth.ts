@@ -126,8 +126,8 @@ export const auth = betterAuth({
               is_admin,
               is_biology_staff,
               is_computational_staff,
-              labs
-            }
+              labs,
+            },
           };
         },
       },

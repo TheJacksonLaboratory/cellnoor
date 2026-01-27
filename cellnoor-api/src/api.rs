@@ -14,6 +14,7 @@ use tokio::net::TcpListener;
 mod auth;
 mod error;
 mod extract;
+pub mod middleware;
 pub mod routes;
 
 #[cfg(test)]

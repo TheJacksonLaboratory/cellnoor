@@ -14,10 +14,8 @@ pub async fn create_institution(
     _: State<AppState>,
     db_conn: DbConnection,
     Json(institution): Json<NewInstitution>,
-) -> ApiResponse<Institution> {
-    insert_institution(institution, db_conn)
-        .await
-        .map(|i| (StatusCode::CREATED, Json(i)))
+) -> Result<Json<Institution>, api::Error> {
+    insert_institution(institution, db_conn).await.map(Json)
 }
 
 pub async fn insert_institution(

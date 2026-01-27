@@ -32,10 +32,14 @@ export async function load() {
 }
 
 export const actions = {
-  search: async ({request}) => {
-    const specimenName = await request.formData().then((d) => d.get("specimenName"));
-    const query: ChromiumDatasetQuery = {filter: {specimen: {names: [`%${specimenName}%`]}}};
+  search: async ({ request }) => {
+    const specimenName = await request.formData().then((d) =>
+      d.get("specimenName")
+    );
+    const query: ChromiumDatasetQuery = {
+      filter: { specimen: { names: [`%${specimenName}%`] } },
+    };
 
     qs.stringify(query, { encodeValuesOnly: true });
-  }
-}
+  },
+};

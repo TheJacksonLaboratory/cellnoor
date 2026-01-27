@@ -1,10 +1,6 @@
 use std::{fmt::Debug, sync::Arc};
 
-use crate::{
-    api::{self, auth::authenticate_request},
-    db::DbConnection,
-    state::AppState,
-};
+use crate::{api::middleware::authenticate_request, db::DbConnection, state::AppState};
 use aide::{
     axum::{ApiRouter, AxumOperationHandler, IntoApiResponse, routing::get},
     openapi::{OpenApi, SecurityScheme},
@@ -39,9 +35,10 @@ pub mod institutions;
 // pub(super) mod tenx_assays;
 
 pub(super) fn router(state: AppState) -> Router<AppState> {
+    aide::generate::infer_responses(true);
+
     let router = ApiRouter::new()
         .api_route("/health", get(async || "ok"))
-        .api_route("/openapi.json", get(show_api_docs))
         .nest("/institutions", institutions::router());
     // .merge(people::router())
     // .merge(projects::router());
@@ -60,19 +57,20 @@ pub(super) fn router(state: AppState) -> Router<AppState> {
     let mut api_docs = OpenApi::default();
 
     let router = router.finish_api_with(&mut api_docs, |api_docs| {
-        api_docs.security_scheme(
-            "api_token",
-            SecurityScheme::Http {
-                scheme: "bearer".to_owned(),
-                bearer_format: Some("JWT".to_owned()),
-                description: None,
-                extensions: Default::default(),
-            },
-        )
+        api_docs
+            .security_scheme(
+                "api_token",
+                SecurityScheme::Http {
+                    scheme: "bearer".to_owned(),
+                    bearer_format: Some("JWT".to_owned()),
+                    description: None,
+                    extensions: Default::default(),
+                },
+            )
+            .security_requirement("api_token")
     });
 
     let layers = ServiceBuilder::new()
-        .layer(Extension(Arc::new(api_docs)))
         .layer(axum::middleware::from_fn_with_state(
             state,
             authenticate_request,
@@ -81,7 +79,11 @@ pub(super) fn router(state: AppState) -> Router<AppState> {
             |request: &Request| tracing::info_span!("http-request", uri = ?request.uri()),
         ));
 
-    router.layer(layers)
+    // By adding OpenAPI documentation route after the layers, it won't require authentication
+    router
+        .layer(layers)
+        .route("/openapi.json", axum::routing::get(show_api_docs))
+        .layer(Extension(Arc::new(api_docs)))
 }
 
 #[axum::debug_handler]

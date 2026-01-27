@@ -1,0 +1,54 @@
+use axum::{
+    Extension,
+    extract::{Request, State},
+    http::StatusCode,
+    middleware::Next,
+    response::Response,
+};
+use axum_extra::{TypedHeader, extract::CookieJar};
+use headers::{Authorization, authorization::Bearer};
+use tower::{Layer, Service, ServiceBuilder};
+
+use crate::{
+    api::{
+        self,
+        auth::{self, AuthenticatedUser},
+    },
+    state::AppState,
+};
+
+pub async fn authenticate_request(
+    State(app_state): State<AppState>,
+    cookies: CookieJar,
+    auth_header: Option<TypedHeader<Authorization<Bearer>>>,
+    mut request: Request,
+    next: Next,
+) -> Result<Response, api::Error> {
+    let user = AuthenticatedUser::from_request(&app_state, auth_header.as_ref(), &cookies).await?;
+
+    request.extensions_mut().insert(user);
+
+    Ok(next.run(request).await)
+}
+
+pub async fn admin_required(
+    Extension(user): Extension<AuthenticatedUser>,
+    request: Request,
+    next: Next,
+) -> Result<Response, api::Error> {
+    if !user.is_admin() {
+        Err(auth::Error::PermissionDenied)?
+    }
+
+    Ok(next.run(request).await)
+}
+
+pub async fn creation_status_code(mut response: Response) -> Response {
+    let status_code = response.status_mut();
+
+    if status_code.is_success() {
+        *status_code = StatusCode::CREATED;
+    }
+
+    response
+}

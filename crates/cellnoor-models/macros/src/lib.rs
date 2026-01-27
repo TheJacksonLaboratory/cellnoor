@@ -87,6 +87,7 @@ macro_rules! uuid_newtype {
         #[cfg(feature = "app")]
         mod uuid_newtype_json_schema_definition {
             #[derive(::schemars::JsonSchema)]
+            #[schemars(inline)]
             pub struct Id {
                 pub id: ::uuid::Uuid,
             }

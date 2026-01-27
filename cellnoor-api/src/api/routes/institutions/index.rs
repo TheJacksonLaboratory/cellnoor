@@ -15,10 +15,8 @@ pub async fn index_institutions(
     _: State<AppState>,
     db_conn: DbConnection,
     JsonQuery { query }: JsonQuery<InstitutionQuery>,
-) -> ApiResponse<Vec<Institution>> {
-    select_institutions(query, db_conn)
-        .await
-        .map(|i| (StatusCode::OK, Json(i)))
+) -> Result<Json<Vec<Institution>>, api::Error> {
+    select_institutions(query, db_conn).await.map(Json)
 }
 
 pub async fn select_institutions(

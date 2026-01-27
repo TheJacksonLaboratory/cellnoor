@@ -1,5 +1,8 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "serde", serde(transparent))]
+#[cfg_attr(feature = "schemars", schemars(with = "u32"))]
 #[cfg_attr(
     feature = "diesel",
     derive(diesel::deserialize::FromSqlRow, diesel::expression::AsExpression)
@@ -30,23 +33,6 @@ mod diesel_impls {
         fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Pg>) -> diesel::serialize::Result {
             let as_int = self.0.get().into();
             <i64 as ToSql<BigInt, Pg>>::to_sql(&as_int, &mut out.reborrow())
-        }
-    }
-}
-
-#[cfg(feature = "schemars")]
-mod schemars_impls {
-    use schemars::JsonSchema;
-
-    use super::RangedU32;
-
-    impl<const MIN: u32, const MAX: u32> JsonSchema for RangedU32<MIN, MAX> {
-        fn schema_name() -> std::borrow::Cow<'static, str> {
-            u32::schema_name()
-        }
-
-        fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
-            u32::json_schema(generator)
         }
     }
 }

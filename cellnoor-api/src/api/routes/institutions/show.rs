@@ -18,10 +18,8 @@ pub async fn show_institution(
     _: State<AppState>,
     db_conn: DbConnection,
     Path(institution_id): Path<InstitutionId>,
-) -> ApiResponse<Institution> {
-    fetch_institution(institution_id, db_conn)
-        .await
-        .map(|i| (StatusCode::OK, Json(i)))
+) -> Result<Json<Institution>, api::Error> {
+    fetch_institution(institution_id, db_conn).await.map(Json)
 }
 
 pub async fn fetch_institution(
