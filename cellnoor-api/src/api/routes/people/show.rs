@@ -1,46 +1,33 @@
-use axum::{extract::State, http::status::StatusCode};
-use cellnoor_models::person::{Person, PersonId};
-use cellnoor_schema::people::dsl::id;
+use axum::{
+    Json,
+    extract::{Path, State},
+    http::StatusCode,
+};
+use cellnoor_models::{IdParameter, institution::Institution, person::Person};
+use cellnoor_schema::{institutions, people};
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
+use uuid::Uuid;
 
 use crate::{
-    api::{
-        self,
-        auth::{self},
-        extract::auth::AuthenticatedUser,
-    },
-    db,
+    db::{self, DbConnection},
     state::AppState,
 };
 
-impl api::AuthorizedRequest<Person> for PersonId {
-    type ValidationData = ();
-
-    fn validate(&self, _validation_data: ()) -> Result<(), api::DataError> {
-        Ok(())
-    }
-
-    async fn handle(self, mut db_conn: &AsyncPgConnection) -> Result<Person, api::Error> {
-        Ok(Person::query()
-            .filter(id.eq(self))
-            .first(&mut db_conn)
-            .await?)
-    }
+pub async fn show_person(
+    _: State<AppState>,
+    mut db_conn: DbConnection,
+    Path(IdParameter { id }): Path<IdParameter>,
+) -> Result<Json<Person>, db::Error> {
+    select_person_by_id(id, &mut db_conn).await.map(Json)
 }
 
-impl api::Request<Person> for PersonId {
-    type Authorized = Self;
-    type ValidationData = ();
-
-    async fn fetch_validation_data(
-        &self,
-        _db_conn: &AsyncPgConnection,
-    ) -> Result<Self::ValidationData, db::Error> {
-        Ok(())
-    }
-
-    fn authorize(self, _user: AuthenticatedUser) -> Result<Self::Authorized, auth::Error> {
-        Ok(self)
-    }
+pub async fn select_person_by_id(
+    person_id: Uuid,
+    db_conn: &mut DbConnection,
+) -> Result<Person, db::Error> {
+    Ok(Person::query()
+        .filter(people::id.eq(person_id))
+        .first(db_conn)
+        .await?)
 }

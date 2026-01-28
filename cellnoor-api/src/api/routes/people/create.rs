@@ -1,64 +1,35 @@
-use crate::api::auth::{self};
-use crate::api::extract::Json;
-use crate::api::{self};
-use crate::{api::extract::auth::AuthenticatedUser, db, state::AppState};
+use crate::api::routes::people::show::select_person_by_id;
+use crate::db::DbConnection;
+use crate::{db, state::AppState};
+use aide::OperationIo;
+use axum::Json;
+use axum::response::IntoResponse;
 use axum::{extract::State, http::status::StatusCode};
-use cellnoor_models::person::PersonUpdate;
-use cellnoor_models::person::{Person, PersonCreation, PersonId};
-use cellnoor_schema::people::dsl::{id, people};
+use cellnoor_models::person::Person;
+use cellnoor_models::person::{NewPerson, PersonUpdate};
+use cellnoor_schema::people;
 use diesel::{
     prelude::*,
     sql_types::{Array, Text},
 };
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use regex::Regex;
+use schemars::JsonSchema;
+use serde::Serialize;
 use std::sync::LazyLock;
+use uuid::Uuid;
 
-impl api::AuthorizedRequest<Person> for PersonCreation {
-    type ValidationData = String;
+pub async fn create_person(
+    _: State<AppState>,
+    mut db_conn: DbConnection,
+    Json(person): Json<NewPerson>,
+) -> Result<Json<Person>, Error> {
+    validate_email(person.email())?;
+    let id = insert_person(person, &mut db_conn).await?;
 
-    fn validate(&self, email: String) -> Result<(), api::DataError> {
-        Ok(validate_email(&email)?)
-    }
-
-    async fn handle(self, mut db_conn: &AsyncPgConnection) -> Result<Person, api::Error> {
-        // Get the ID of the inserted person first, then return the full `Person` struct
-        let created_id: PersonId = diesel::insert_into(people)
-            .values(self)
-            .returning(id)
-            .get_result(&mut db_conn)
-            .await?;
-
-        created_id.handle(&mut db_conn).await
-    }
-}
-
-impl api::Request<Person> for PersonCreation {
-    type Authorized = Self;
-    type ValidationData = String;
-
-    async fn fetch_validation_data(
-        &self,
-        _db_conn: &AsyncPgConnection,
-    ) -> Result<String, db::Error> {
-        // Ideally we could return a reference but that doesn't work (unless I don't know what I'm doing)
-        Ok(self.email().to_owned())
-    }
-
-    fn authorize(self, user: AuthenticatedUser) -> Result<Self, auth::Error> {
-        user.authorize_admin_only()?;
-
-        Ok(self)
-    }
-}
-
-#[derive(Debug, thiserror::Error, serde::Serialize)]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(rename = "PersonValidationError"))]
-#[serde(rename_all = "snake_case", tag = "type", content = "info")]
-#[error("{email} invalid: {message}")]
-pub enum Error {
-    Email { email: String, message: String },
+    Ok(super::show::select_person_by_id(id, &mut db_conn)
+        .await
+        .map(Json)?)
 }
 
 // https://html.spec.whatwg.org/multipage/forms.html#valid-e-mail-address
@@ -68,13 +39,43 @@ static EMAIL_REGEX: LazyLock<Regex> = LazyLock::new(|| {
 
 pub(super) fn validate_email(email: &str) -> Result<(), Error> {
     if !EMAIL_REGEX.is_match(email) {
-        return Err(Error::Email {
-            email: email.to_owned(),
-            message: "invalid email".to_owned(),
-        });
+        return Err(Error::InvalidEmail);
     }
 
     Ok(())
+}
+
+async fn insert_person(person: NewPerson, db_conn: &mut DbConnection) -> Result<Uuid, Error> {
+    Ok(diesel::insert_into(people::table)
+        .values(person)
+        .returning(people::id)
+        .get_result(db_conn)
+        .await?)
+}
+
+#[derive(Debug, thiserror::Error, Serialize, JsonSchema, OperationIo)]
+#[serde(rename_all = "snake_case", tag = "type")]
+#[schemars(rename = "CreatePersonError")]
+#[error(transparent)]
+pub enum Error {
+    Database(#[from] db::Error),
+    #[error("invalid email")]
+    InvalidEmail,
+}
+
+impl From<diesel::result::Error> for Error {
+    fn from(err: diesel::result::Error) -> Self {
+        Self::Database(err.into())
+    }
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        match self {
+            Self::Database(e) => e.into_response(),
+            Self::InvalidEmail => (StatusCode::UNPROCESSABLE_ENTITY, Json(self)).into_response(),
+        }
+    }
 }
 
 #[cfg(test)]

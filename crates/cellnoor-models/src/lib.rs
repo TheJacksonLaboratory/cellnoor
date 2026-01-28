@@ -2,8 +2,8 @@
 
 pub mod chromium_dataset;
 pub mod chromium_run;
-#[cfg(feature = "app")]
-pub mod generic_query;
+mod generic_id;
+pub(crate) mod generic_query;
 pub mod institution;
 mod links;
 pub mod multiplexing_tag;
@@ -19,4 +19,5 @@ mod units;
 #[cfg(feature = "app")]
 mod utils;
 
+pub use generic_id::IdParameter;
 pub use nucleic_acid::{cdna, library, measurement as nucleic_acid_measurement};

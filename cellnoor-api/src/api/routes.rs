@@ -23,10 +23,10 @@ use tracing::info_span;
 // pub(super) mod chromium_datasets;
 // pub(super) mod chromium_runs;
 // pub(super) mod gem_pools;
-pub mod institutions;
+pub(super) mod institutions;
 // pub(super) mod libraries;
 // pub(super) mod multiplexing_tags;
-// pub(super) mod people;
+pub(super) mod people;
 // pub(super) mod projects;
 // pub(super) mod sequencing_runs;
 // pub(super) mod specimens;
@@ -39,8 +39,8 @@ pub(super) fn router(state: AppState) -> Router<AppState> {
 
     let router = ApiRouter::new()
         .api_route("/health", get(async || "ok"))
-        .nest("/institutions", institutions::router());
-    // .merge(people::router())
+        .nest("/institutions", institutions::router())
+        .nest("/people", people::router());
     // .merge(projects::router());
     // .merge(specimens::router())
     // .merge(tenx_assays::router())
@@ -92,5 +92,3 @@ pub(super) fn router(state: AppState) -> Router<AppState> {
 async fn show_api_docs(Extension(api_docs): Extension<Arc<OpenApi>>) -> Json<Arc<OpenApi>> {
     Json(api_docs)
 }
-
-type ApiResponse<T> = Result<(StatusCode, Json<T>), super::Error>;

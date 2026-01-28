@@ -1,7 +1,7 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::cdna;
 use macro_attributes::{filter, order_by};
-use macros::uuid_newtype;
+
 use uuid::Uuid;
 
 #[cfg(feature = "app")]
@@ -31,7 +31,4 @@ impl Default for CdnaOrderBy {
     }
 }
 
-#[cfg(feature = "app")]
 pub type CdnaQuery = generic_query::Query<CdnaFilter, CdnaOrderBy>;
-
-uuid_newtype!(CdnaId);

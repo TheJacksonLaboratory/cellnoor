@@ -8,7 +8,7 @@ pub(super) mod measurement;
 #[derive(Debug, thiserror::Error, serde::Serialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(rename = "SpecimenValidationError"))]
-#[serde(rename_all = "snake_case", tag = "type", content = "info")]
+#[serde(rename_all = "snake_case", tag = "type")]
 pub enum Error {
     #[error("donor and host species cannot be the same")]
     SameDonorAndHostSpecies { species: Species },

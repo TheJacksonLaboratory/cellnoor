@@ -8,5 +8,5 @@ pub use common::CdnaFields;
 pub use creation::CdnaCreation;
 #[cfg(feature = "app")]
 pub use query::CdnaQuery;
-pub use query::{CdnaFilter, CdnaId, CdnaOrderBy};
+pub use query::{CdnaFilter, CdnaOrderBy};
 pub use read::{Cdna, CdnaSummary};

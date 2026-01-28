@@ -9,14 +9,14 @@ use crate::person::common::PersonFields;
 #[insert]
 #[cfg_attr(feature = "app", derive(diesel::AsChangeset))]
 #[cfg_attr(feature = "app", diesel(table_name = people))]
-pub struct PersonCreation {
+pub struct NewPerson {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: PersonFields,
     email: NonEmptyString,
 }
 
-impl PersonCreation {
+impl NewPerson {
     #[must_use]
     pub fn name(&self) -> &str {
         self.inner.name.as_ref()

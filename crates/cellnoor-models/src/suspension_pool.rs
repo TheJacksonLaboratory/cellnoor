@@ -8,5 +8,5 @@ pub use common::SuspensionPoolFields;
 pub use creation::{SuspensionPoolCreation, SuspensionTagging};
 #[cfg(feature = "app")]
 pub use query::SuspensionPoolQuery;
-pub use query::{SuspensionPoolFilter, SuspensionPoolId, SuspensionPoolOrderBy};
+pub use query::{SuspensionPoolFilter,  SuspensionPoolOrderBy};
 pub use read::SuspensionPool;

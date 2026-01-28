@@ -3,13 +3,13 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
 };
-use cellnoor_models::institution::{Institution, InstitutionId};
-use cellnoor_schema::institutions::dsl::id;
+use cellnoor_models::{IdParameter, institution::Institution};
+use cellnoor_schema::institutions;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
+use uuid::Uuid;
 
 use crate::{
-    api::{self, auth, routes::ApiResponse},
     db::{self, DbConnection},
     state::AppState,
 };
@@ -17,17 +17,17 @@ use crate::{
 pub async fn show_institution(
     _: State<AppState>,
     db_conn: DbConnection,
-    Path(institution_id): Path<InstitutionId>,
-) -> Result<Json<Institution>, api::Error> {
-    fetch_institution(institution_id, db_conn).await.map(Json)
+    Path(IdParameter { id }): Path<IdParameter>,
+) -> Result<Json<Institution>, db::Error> {
+    select_institution_by_id(id, db_conn).await.map(Json)
 }
 
-pub async fn fetch_institution(
-    institution_id: InstitutionId,
+async fn select_institution_by_id(
+    institution_id: Uuid,
     mut db_conn: DbConnection,
-) -> Result<Institution, api::Error> {
+) -> Result<Institution, db::Error> {
     Ok(Institution::query()
-        .filter(id.eq(institution_id))
+        .filter(institutions::id.eq(institution_id))
         .first(&mut db_conn)
         .await?)
 }

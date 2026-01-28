@@ -3,7 +3,7 @@ use std::collections::HashSet;
 #[cfg(feature = "app")]
 use cellnoor_schema::projects;
 use macro_attributes::{filter, order_by};
-use macros::uuid_newtype;
+
 use uuid::Uuid;
 
 #[order_by(projects)]
@@ -35,7 +35,4 @@ pub struct ProjectFilter {
     pub ended_after: Option<jiff::Timestamp>,
 }
 
-#[cfg(feature = "app")]
 pub type ProjectQuery = crate::generic_query::Query<ProjectFilter, ProjectOrderBy>;
-
-uuid_newtype!(ProjectId);

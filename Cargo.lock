@@ -389,7 +389,6 @@ dependencies = [
  "default-vec",
  "diesel",
  "diesel-derive-newtype",
- "heck",
  "jiff",
  "jiff-diesel",
  "macro-attributes",

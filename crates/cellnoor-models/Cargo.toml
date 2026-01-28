@@ -15,7 +15,6 @@ diesel = { workspace = true, optional = true, features = [
   "without-deprecated",
 ] }
 diesel-derive-newtype.workspace = true
-heck.workspace = true
 jiff.workspace = true
 jiff-diesel = { workspace = true, optional = true }
 macro-attributes = { path = "macro-attributes" }

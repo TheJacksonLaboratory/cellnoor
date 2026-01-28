@@ -4,7 +4,7 @@ use std::collections::HashSet;
 use cellnoor_schema::specimens;
 use jiff::Timestamp;
 use macro_attributes::{filter, order_by};
-use macros::uuid_newtype;
+
 use serde_json::Value;
 use uuid::Uuid;
 
@@ -70,7 +70,4 @@ impl Default for SpecimenOrderBy {
     }
 }
 
-#[cfg(feature = "app")]
 pub type SpecimenQuery = generic_query::Query<SpecimenFilter, SpecimenOrderBy>;
-
-uuid_newtype!(SpecimenId);

@@ -5,29 +5,28 @@ use diesel::{SelectableExpression, prelude::*};
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 use crate::{
-    api::{self, auth, extract::JsonQuery, routes::ApiResponse},
+    api::{self, auth, extract::JsonQuery},
     db::{self, BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter, like_any},
     state::AppState,
 };
 
-#[axum::debug_handler]
 pub async fn index_institutions(
     _: State<AppState>,
-    db_conn: DbConnection,
+    mut db_conn: DbConnection,
     JsonQuery { query }: JsonQuery<InstitutionQuery>,
-) -> Result<Json<Vec<Institution>>, api::Error> {
-    select_institutions(query, db_conn).await.map(Json)
+) -> Result<Json<Vec<Institution>>, db::Error> {
+    select_institutions(query, &mut db_conn).await.map(Json)
 }
 
-pub async fn select_institutions(
+async fn select_institutions(
     InstitutionQuery {
         filter,
         limit,
         offset,
         order_by,
     }: InstitutionQuery,
-    mut db_conn: DbConnection,
-) -> Result<Vec<Institution>, api::Error> {
+    db_conn: &mut DbConnection,
+) -> Result<Vec<Institution>, db::Error> {
     let mut stmt = Institution::query()
         .limit(limit)
         .offset(offset)
@@ -38,7 +37,7 @@ pub async fn select_institutions(
         stmt = stmt.then_order_by(ordering);
     }
 
-    Ok(stmt.load(&mut db_conn).await?)
+    Ok(stmt.load(db_conn).await?)
 }
 
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for InstitutionFilter

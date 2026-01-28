@@ -19,7 +19,7 @@ use crate::{
     feature = "typescript",
     ts(rename = "SuspensionMeasurementValidationError")
 )]
-#[serde(rename_all = "snake_case", tag = "type", content = "info")]
+#[serde(rename_all = "snake_case", tag = "type")]
 pub enum Error {
     #[error("expected {expected_suspension_content}-suspension measurement")]
     WrongSuspensionContent {

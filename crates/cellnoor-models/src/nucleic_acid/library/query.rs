@@ -1,7 +1,7 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::libraries;
 use macro_attributes::{filter, order_by};
-use macros::uuid_newtype;
+
 use uuid::Uuid;
 
 #[cfg(feature = "app")]
@@ -33,7 +33,4 @@ impl Default for LibraryOrderBy {
     }
 }
 
-#[cfg(feature = "app")]
 pub type LibraryQuery = generic_query::Query<LibraryFilter, LibraryOrderBy>;
-
-uuid_newtype!(LibraryId);

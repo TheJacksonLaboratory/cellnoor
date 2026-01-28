@@ -1,29 +1,21 @@
 use aide::axum::{
     ApiRouter,
-    routing::{get, post},
+    routing::{get, get_with, post, post_with},
 };
-use axum::{
-    Router,
-    extract::State,
-    handler::Handler,
-    http::StatusCode,
-    middleware::{map_request, map_response},
-    response::Response,
-};
-use cellnoor_models::{
-    institution::{Institution, InstitutionId, InstitutionQuery, NewInstitution},
-    person::{PersonQuery, PersonSummary},
-};
+use axum::handler::Handler;
 use tower::ServiceBuilder;
 
 use crate::{
-    api::middleware::{admin_required, creation_status_code},
+    api::{
+        docs::db_and_auth_error_docs,
+        middleware::{admin_required, creation_status_code},
+    },
     state::AppState,
 };
 
 pub mod create;
 pub mod index;
-// pub mod members;
+pub mod members;
 pub mod show;
 
 pub(super) fn router() -> ApiRouter<AppState> {
@@ -33,11 +25,16 @@ pub(super) fn router() -> ApiRouter<AppState> {
 
     let create_institution = create::create_institution.layer(creation_middleware);
 
-    let router = ApiRouter::new()
-        .api_route("/", post(create_institution).get(index::index_institutions))
-        .api_route("/{id}", get(show::show_institution));
+    let root_router = ApiRouter::new()
+        .api_route(
+            "/",
+            post_with(create_institution, db_and_auth_error_docs)
+                .get_with(index::index_institutions, db_and_auth_error_docs),
+        )
+        .api_route(
+            "/{id}",
+            get_with(show::show_institution, db_and_auth_error_docs),
+        );
 
-    router
-
-    // router.merge(members::router())
+    root_router.merge(members::router())
 }

@@ -1,4 +1,4 @@
-use cellnoor_models::person::PersonCreation;
+use cellnoor_models::person::NewPerson;
 use cellnoor_schema::people::{
     dsl::{email, microsoft_entra_oid, people},
     is_admin,
@@ -8,7 +8,7 @@ use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 use crate::initial_data::Upsert;
 
-impl Upsert for PersonCreation {
+impl Upsert for NewPerson {
     async fn upsert(self, mut db_conn: &AsyncPgConnection) -> anyhow::Result<()> {
         tokio::try_join!(
             diesel::update(people)

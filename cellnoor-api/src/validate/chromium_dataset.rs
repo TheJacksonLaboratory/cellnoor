@@ -12,7 +12,7 @@ use crate::{
 #[derive(Debug, thiserror::Error, serde::Serialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(rename = "ChromiumDatasetValidationError"))]
-#[serde(rename_all = "snake_case", tag = "type", content = "info")]
+#[serde(rename_all = "snake_case", tag = "type")]
 pub enum Error {
     #[error("all libraries must come from same GEM pool")]
     DifferentGemPools,

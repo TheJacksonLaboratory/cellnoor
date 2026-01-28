@@ -8,11 +8,11 @@ use aide::{
 use anyhow::Context;
 use axum::{Extension, Router, routing::get};
 use camino::Utf8Path;
-pub use error::{DataError, Error};
 use tokio::net::TcpListener;
 
 mod auth;
-mod error;
+mod docs;
+// mod error;
 mod extract;
 pub mod middleware;
 pub mod routes;

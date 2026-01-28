@@ -8,5 +8,5 @@ pub use common::LibraryFields;
 pub use creation::LibraryCreation;
 #[cfg(feature = "app")]
 pub use query::LibraryQuery;
-pub use query::{LibraryFilter, LibraryId, LibraryOrderBy};
+pub use query::{LibraryFilter, LibraryOrderBy};
 pub use read::{Library, LibrarySummary};

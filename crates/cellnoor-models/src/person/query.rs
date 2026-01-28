@@ -1,7 +1,7 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::people;
 use macro_attributes::{filter, order_by};
-use macros::uuid_newtype;
+
 use uuid::Uuid;
 
 #[order_by(people)]
@@ -32,7 +32,4 @@ pub struct PersonFilter {
     pub microsoft_entra_oids: Option<Vec<Uuid>>,
 }
 
-#[cfg(feature = "app")]
 pub type PersonQuery = crate::generic_query::Query<PersonFilter, PersonOrderBy>;
-
-uuid_newtype!(PersonId);

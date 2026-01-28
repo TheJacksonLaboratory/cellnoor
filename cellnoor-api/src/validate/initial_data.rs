@@ -7,7 +7,7 @@ use crate::{initial_data::InitialData, validate::Validate};
 #[derive(Debug, thiserror::Error, serde::Serialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(rename = "InitialDataValidationError"))]
-#[serde(rename_all = "snake_case", tag = "type", content = "info")]
+#[serde(rename_all = "snake_case", tag = "type")]
 pub enum Error {
     #[error("app_admin must have Microsoft Entra OID")]
     AppAdminWithoutMicrosoftEntraOid,

@@ -36,5 +36,4 @@ impl Default for TenxAssayOrderBy {
     }
 }
 
-#[cfg(feature = "app")]
 pub type TenxAssayQuery = generic_query::Query<TenxAssayFilter, TenxAssayOrderBy>;

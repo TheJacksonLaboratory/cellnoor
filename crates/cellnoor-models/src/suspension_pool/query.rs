@@ -1,7 +1,7 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::suspension_pools;
 use macro_attributes::{filter, order_by};
-use macros::uuid_newtype;
+
 use uuid::Uuid;
 
 #[cfg(feature = "app")]
@@ -29,7 +29,4 @@ impl Default for SuspensionPoolOrderBy {
     }
 }
 
-#[cfg(feature = "app")]
 pub type SuspensionPoolQuery = generic_query::Query<SuspensionPoolFilter, SuspensionPoolOrderBy>;
-
-uuid_newtype!(SuspensionPoolId);

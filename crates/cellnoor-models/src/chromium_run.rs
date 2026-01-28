@@ -9,10 +9,7 @@ pub use creation::{
     MAX_SUSPENSIONS_PER_OCM_GEM_POOL, OcmBarcodeId, OcmChipLoading, OcmGemPool,
     PoolMultiplexChipLoading, PoolMultiplexGemPool, SingleplexChipLoading, SingleplexGemPool,
 };
-pub use query::{
-    ChromiumRunFilter, ChromiumRunOrderBy, GemPoolFilter, GemPoolOrderBy,
-    chromium_run_id::ChromiumRunId, gem_pool_id::GemPoolId,
-};
+pub use query::{ChromiumRunFilter, ChromiumRunOrderBy, GemPoolFilter, GemPoolOrderBy};
 #[cfg(feature = "app")]
 pub use query::{ChromiumRunQuery, GemPoolQuery};
 pub use read::{ChromiumRun, ChromiumRunSummary, GemPool, GemPoolSummary};

@@ -1,48 +1,35 @@
-use axum::{extract::State, http::StatusCode};
+use axum::{
+    Json,
+    extract::{Path, State},
+    http::StatusCode,
+};
 use cellnoor_models::{
-    institution::{self, InstitutionId},
+    IdParameter,
+    institution::{self},
     person::{self, PersonFilter, PersonQuery, PersonSummary},
 };
+use diesel::prelude::*;
 use diesel_async::AsyncPgConnection;
+use uuid::Uuid;
 
 use crate::{
     api::{
         self,
         auth::{self},
-        extract::{QsQuery, auth::AuthenticatedUser},
-        request::{AuthorizedRequest, Request},
+        extract::JsonQuery,
+        routes::people::index::index_people,
     },
-    db::{self},
+    db::{self, DbConnection, ToBoxedFilter},
     state::AppState,
 };
 
-impl AuthorizedRequest<Vec<PersonSummary>> for (InstitutionId, PersonQuery) {
-    type ValidationData = ();
+pub async fn index_institution_members(
+    state: State<AppState>,
+    db_conn: DbConnection,
+    Path(IdParameter { id }): Path<IdParameter>,
+    mut query: JsonQuery<PersonQuery>,
+) -> Result<Json<Vec<PersonSummary>>, db::Error> {
+    query.query.filter.institution_ids = Some(vec![id]);
 
-    fn validate(&self, _validation_data: ()) -> Result<(), api::DataError> {
-        Ok(())
-    }
-
-    async fn handle(
-        self,
-        _db_conn: &AsyncPgConnection,
-    ) -> Result<Vec<person::PersonSummary>, api::Error> {
-        let (institution_id, mut person_query) = self;
-        person_query.filter.institution_ids = institution_id.into();
-
-        todo!()
-    }
-}
-
-impl Request<Vec<PersonSummary>> for (InstitutionId, PersonQuery) {
-    type Authorized = Self;
-    type ValidationData = ();
-
-    async fn fetch_validation_data(&self, _db_conn: &AsyncPgConnection) -> Result<(), db::Error> {
-        Ok(())
-    }
-
-    fn authorize(self, _user: AuthenticatedUser) -> Result<Self, auth::Error> {
-        Ok(self)
-    }
+    index_people(state, db_conn, query).await
 }

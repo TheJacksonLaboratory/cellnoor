@@ -1,0 +1,1018 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "cellnoor REST API", "version": "0.1.0" },
+  "paths": {
+    "/health": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "plain text",
+            "content": { "text/plain; charset=utf-8": {} }
+          }
+        }
+      }
+    },
+    "/institutions": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "query",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "filter": {
+                      "$ref": "#/components/schemas/InstitutionFilter"
+                    },
+                    "limit": {
+                      "type": "integer",
+                      "format": "int64",
+                      "default": 500
+                    },
+                    "offset": {
+                      "type": "integer",
+                      "format": "int64",
+                      "default": 0
+                    },
+                    "order_by": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/InstitutionOrderBy"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Institution" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/NewInstitution" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Institution" }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/institutions/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Institution" }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/institutions/{id}/members": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "filter": { "$ref": "#/components/schemas/PersonFilter" },
+                    "limit": {
+                      "type": "integer",
+                      "format": "int64",
+                      "default": 500
+                    },
+                    "offset": {
+                      "type": "integer",
+                      "format": "int64",
+                      "default": 0
+                    },
+                    "order_by": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/PersonOrderBy" }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PersonSummary" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/people": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "query",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "filter": { "$ref": "#/components/schemas/PersonFilter" },
+                    "limit": {
+                      "type": "integer",
+                      "format": "int64",
+                      "default": 500
+                    },
+                    "offset": {
+                      "type": "integer",
+                      "format": "int64",
+                      "default": 0
+                    },
+                    "order_by": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/PersonOrderBy" }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PersonSummary" }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/NewPerson" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Person" }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CreatePersonError" }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/people/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Person" }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PersonUpdate" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Person" }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CreatePersonError" }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "api_token": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+    },
+    "schemas": {
+      "AuthError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": { "type": { "type": "string", "const": "database" } },
+            "allOf": [{ "$ref": "#/components/schemas/DatabaseError" }],
+            "required": ["type"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "const": "invalid_auth_token" }
+            },
+            "required": ["type"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "message": { "type": "string" },
+              "type": { "type": "string", "const": "no_auth_token_found" }
+            },
+            "required": ["type", "message"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "message": { "type": "string" },
+              "type": { "type": "string", "const": "other" }
+            },
+            "required": ["type", "message"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "const": "permission_denied" }
+            },
+            "required": ["type"]
+          }
+        ]
+      },
+      "CreatePersonError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": { "type": { "type": "string", "const": "database" } },
+            "allOf": [{ "$ref": "#/components/schemas/DatabaseError" }],
+            "required": ["type"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "const": "invalid_email" }
+            },
+            "required": ["type"]
+          }
+        ]
+      },
+      "DatabaseError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "message": { "type": "string" },
+              "type": { "type": "string", "const": "data" }
+            },
+            "required": ["type", "message"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "fields": { "type": "array", "items": { "type": "string" } },
+              "resource": { "type": "string" },
+              "type": { "type": "string", "const": "duplicate_resource" },
+              "values": { "type": "array", "items": { "type": "string" } }
+            },
+            "required": ["type", "resource", "fields", "values"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "referenced_resource": { "type": "string" },
+              "resource": { "type": "string" },
+              "type": { "type": "string", "const": "invalid_reference" },
+              "value": { "type": ["string", "null"] }
+            },
+            "required": ["type", "resource", "referenced_resource"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "const": "resource_not_found" }
+            },
+            "required": ["type"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "message": { "type": "string" },
+              "type": { "type": "string", "const": "other" }
+            },
+            "required": ["type", "message"]
+          }
+        ]
+      },
+      "Institution": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "links": { "$ref": "#/components/schemas/Links" },
+          "name": { "type": "string" }
+        },
+        "required": ["id", "name", "links"]
+      },
+      "InstitutionFilter": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": ["array", "null"],
+            "default": null,
+            "items": { "type": "string", "format": "uuid" }
+          },
+          "names": {
+            "type": ["array", "null"],
+            "default": null,
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "InstitutionOrderBy": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "descending": { "type": ["boolean", "null"] },
+              "field": { "type": "string", "const": "id" }
+            },
+            "required": ["field"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "descending": { "type": ["boolean", "null"] },
+              "field": { "type": "string", "const": "name" }
+            },
+            "required": ["field"]
+          }
+        ]
+      },
+      "Link": {
+        "anyOf": [
+          { "type": "string" },
+          { "type": "array", "items": { "type": "string" } }
+        ]
+      },
+      "Links": {
+        "type": "object",
+        "additionalProperties": { "$ref": "#/components/schemas/Link" }
+      },
+      "NewInstitution": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" }
+        },
+        "required": ["id", "name"]
+      },
+      "NewPerson": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string" },
+          "institution_id": { "type": "string", "format": "uuid" },
+          "microsoft_entra_oid": {
+            "type": ["string", "null"],
+            "format": "uuid"
+          },
+          "name": { "type": "string" },
+          "orcid": { "type": ["string", "null"] }
+        },
+        "required": ["name", "institution_id", "email"]
+      },
+      "Person": {
+        "type": "object",
+        "properties": {
+          "email": { "type": ["string", "null"] },
+          "email_verified": { "type": "boolean" },
+          "id": { "type": "string", "format": "uuid" },
+          "institution": { "$ref": "#/components/schemas/Institution" },
+          "institution_id": { "type": "string", "format": "uuid" },
+          "links": { "$ref": "#/components/schemas/Links" },
+          "microsoft_entra_oid": {
+            "type": ["string", "null"],
+            "format": "uuid"
+          },
+          "name": { "type": "string" },
+          "orcid": { "type": ["string", "null"] }
+        },
+        "required": [
+          "id",
+          "name",
+          "institution_id",
+          "email_verified",
+          "links",
+          "institution"
+        ]
+      },
+      "PersonFilter": {
+        "type": "object",
+        "properties": {
+          "emails": {
+            "type": ["array", "null"],
+            "default": null,
+            "items": { "type": "string" }
+          },
+          "ids": {
+            "type": ["array", "null"],
+            "default": null,
+            "items": { "type": "string", "format": "uuid" }
+          },
+          "institution_ids": {
+            "type": ["array", "null"],
+            "default": null,
+            "items": { "type": "string", "format": "uuid" }
+          },
+          "microsoft_entra_oids": {
+            "type": ["array", "null"],
+            "default": null,
+            "items": { "type": "string", "format": "uuid" }
+          },
+          "names": {
+            "type": ["array", "null"],
+            "default": null,
+            "items": { "type": "string" }
+          },
+          "orcids": {
+            "type": ["array", "null"],
+            "default": null,
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "PersonOrderBy": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "descending": { "type": ["boolean", "null"] },
+              "field": { "type": "string", "const": "id" }
+            },
+            "required": ["field"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "descending": { "type": ["boolean", "null"] },
+              "field": { "type": "string", "const": "name" }
+            },
+            "required": ["field"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "descending": { "type": ["boolean", "null"] },
+              "field": { "type": "string", "const": "email" }
+            },
+            "required": ["field"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "descending": { "type": ["boolean", "null"] },
+              "field": { "type": "string", "const": "email_verified" }
+            },
+            "required": ["field"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "descending": { "type": ["boolean", "null"] },
+              "field": { "type": "string", "const": "institution_id" }
+            },
+            "required": ["field"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "descending": { "type": ["boolean", "null"] },
+              "field": { "type": "string", "const": "orcid" }
+            },
+            "required": ["field"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "descending": { "type": ["boolean", "null"] },
+              "field": { "type": "string", "const": "microsoft_entra_oid" }
+            },
+            "required": ["field"]
+          }
+        ]
+      },
+      "PersonSummary": {
+        "type": "object",
+        "properties": {
+          "email": { "type": ["string", "null"] },
+          "email_verified": { "type": "boolean" },
+          "id": { "type": "string", "format": "uuid" },
+          "institution_id": { "type": "string", "format": "uuid" },
+          "links": { "$ref": "#/components/schemas/Links" },
+          "microsoft_entra_oid": {
+            "type": ["string", "null"],
+            "format": "uuid"
+          },
+          "name": { "type": "string" },
+          "orcid": { "type": ["string", "null"] }
+        },
+        "required": ["id", "name", "institution_id", "email_verified", "links"]
+      },
+      "PersonUpdate": {
+        "type": "object",
+        "properties": {
+          "email": { "type": ["string", "null"], "default": null },
+          "institution_id": {
+            "type": ["string", "null"],
+            "format": "uuid",
+            "default": null
+          },
+          "is_admin": { "type": ["boolean", "null"], "default": null },
+          "is_biology_staff": { "type": ["boolean", "null"], "default": null },
+          "is_computational_staff": {
+            "type": ["boolean", "null"],
+            "default": null
+          },
+          "microsoft_entra_oid": {
+            "type": ["string", "null"],
+            "format": "uuid",
+            "default": null
+          },
+          "name": { "type": ["string", "null"], "default": null },
+          "orcid": { "type": ["string", "null"], "default": null }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "security": [{ "api_token": [] }]
+}

@@ -1,61 +1,42 @@
 use crate::{
-    api::{
-        self,
-        auth::{self},
-        extract::{QsQuery, auth::AuthenticatedUser},
-    },
-    db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, like_any},
+    api::{self, auth, extract::JsonQuery},
+    db::{self, BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter, like_any},
     state::AppState,
 };
-use axum::{extract::State, http::status::StatusCode};
+use axum::{Json, extract::State, http::status::StatusCode};
 use cellnoor_models::person::{PersonFilter, PersonQuery, PersonSummary};
 use cellnoor_schema::people::dsl::{email, id, institution_id, microsoft_entra_oid, name, orcid};
 use diesel::{dsl::AssumeNotNull, prelude::*};
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
-impl api::AuthorizedRequest<Vec<PersonSummary>> for PersonQuery {
-    type ValidationData = ();
-
-    fn validate(&self, _validation_data: ()) -> Result<(), api::DataError> {
-        Ok(())
-    }
-
-    async fn handle(
-        self,
-        mut db_conn: &AsyncPgConnection,
-    ) -> Result<Vec<PersonSummary>, api::Error> {
-        let Self {
-            filter,
-            limit,
-            offset,
-            order_by,
-        } = self;
-
-        let mut stmt = PersonSummary::query()
-            .limit(limit)
-            .offset(offset)
-            .filter(filter.to_boxed_filter())
-            .into_boxed();
-
-        for ordering in order_by.as_ref() {
-            stmt = stmt.then_order_by(ordering);
-        }
-
-        Ok(stmt.load(&mut db_conn).await?)
-    }
+pub async fn index_people(
+    _: State<AppState>,
+    mut db_conn: DbConnection,
+    JsonQuery { query }: JsonQuery<PersonQuery>,
+) -> Result<Json<Vec<PersonSummary>>, db::Error> {
+    select_people(query, &mut db_conn).await.map(Json)
 }
 
-impl api::Request<Vec<PersonSummary>> for PersonQuery {
-    type Authorized = Self;
-    type ValidationData = ();
+async fn select_people(
+    PersonQuery {
+        filter,
+        limit,
+        offset,
+        order_by,
+    }: PersonQuery,
+    db_conn: &mut DbConnection,
+) -> Result<Vec<PersonSummary>, db::Error> {
+    let mut stmt = PersonSummary::query()
+        .limit(limit)
+        .offset(offset)
+        .filter(filter.to_boxed_filter())
+        .into_boxed();
 
-    async fn fetch_validation_data(&self, _db_conn: &AsyncPgConnection) -> Result<(), db::Error> {
-        Ok(())
+    for ordering in order_by.as_ref() {
+        stmt = stmt.then_order_by(ordering);
     }
 
-    fn authorize(self, _user: AuthenticatedUser) -> Result<Self::Authorized, auth::Error> {
-        Ok(self)
-    }
+    Ok(stmt.load(db_conn).await?)
 }
 
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for PersonFilter

@@ -1,62 +1,51 @@
+use crate::api::routes::people::create::validate_email;
+use crate::api::routes::people::show::select_person_by_id;
+use crate::db::DbConnection;
+use crate::{db, state::AppState};
+use aide::OperationIo;
+use axum::Json;
+use axum::extract::Path;
+use axum::response::IntoResponse;
 use axum::{extract::State, http::status::StatusCode};
-use cellnoor_models::person::{Person, PersonId, PersonUpdate};
+use cellnoor_models::IdParameter;
+use cellnoor_models::person::Person;
+use cellnoor_models::person::{NewPerson, PersonUpdate};
+use cellnoor_schema::people;
 use diesel::{
     prelude::*,
     sql_types::{Array, Text},
 };
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
+use regex::Regex;
+use serde::Serialize;
+use std::sync::LazyLock;
+use uuid::Uuid;
 
-use super::create::validate_email;
-use crate::{
-    api::{
-        self,
-        auth::{self},
-        extract::{Json, auth::AuthenticatedUser},
-    },
-    db,
-    state::AppState,
-};
-
-impl api::AuthorizedRequest<Person> for (PersonId, PersonUpdate) {
-    type ValidationData = Option<String>;
-
-    fn validate(&self, email: Option<String>) -> Result<(), api::DataError> {
-        let Some(email) = email else {
-            return Ok(());
-        };
-
-        Ok(validate_email(&email)?)
+pub async fn update_person(
+    _: State<AppState>,
+    mut db_conn: DbConnection,
+    Path(IdParameter { id }): Path<IdParameter>,
+    Json(mut person_update): Json<PersonUpdate>,
+) -> Result<Json<Person>, super::create::Error> {
+    if let Some(email) = person_update.email() {
+        validate_email(email)?;
     }
 
-    async fn handle(self, mut db_conn: &AsyncPgConnection) -> Result<Person, api::Error> {
-        let (person_id, mut update) = self;
-        update.set_id(person_id.0);
+    person_update.set_id(id);
 
-        diesel::update(&update)
-            .set(&update)
-            .execute(&mut db_conn)
-            .await?;
+    update_person_inner(person_update, &mut db_conn).await?;
 
-        person_id.handle(db_conn).await
-    }
+    Ok(select_person_by_id(id, &mut db_conn).await.map(Json)?)
 }
 
-impl api::Request<Person> for (PersonId, PersonUpdate) {
-    type Authorized = Self;
-    type ValidationData = Option<String>;
+async fn update_person_inner(
+    update: PersonUpdate,
+    db_conn: &mut DbConnection,
+) -> Result<(), super::create::Error> {
+    diesel::update(people::table)
+        .set(update)
+        .execute(db_conn)
+        .await?;
 
-    async fn fetch_validation_data(
-        &self,
-        _db_conn: &AsyncPgConnection,
-    ) -> Result<Option<String>, db::Error> {
-        let (_person_id, update_data) = &self;
-        // Ideally we could return a reference but that doesn't work (unless I don't know what I'm doing)
-        Ok(update_data.email().map(str::to_owned))
-    }
-
-    fn authorize(self, user: AuthenticatedUser) -> Result<Self, auth::Error> {
-        user.authorize_admin_only()?;
-
-        Ok(self)
-    }
+    Ok(())
 }

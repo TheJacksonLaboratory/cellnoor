@@ -1,7 +1,7 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::suspensions;
 use macro_attributes::{filter, order_by};
-use macros::uuid_newtype;
+
 use uuid::Uuid;
 
 #[cfg(feature = "app")]
@@ -31,7 +31,4 @@ impl Default for SuspensionOrderBy {
     }
 }
 
-#[cfg(feature = "app")]
 pub type SuspensionQuery = generic_query::Query<SuspensionFilter, SuspensionOrderBy>;
-
-uuid_newtype!(SuspensionId);

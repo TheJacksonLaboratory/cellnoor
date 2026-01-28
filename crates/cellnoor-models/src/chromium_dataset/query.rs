@@ -6,7 +6,7 @@ use std::collections::HashSet;
 use cellnoor_schema::chromium_datasets;
 use jiff::Timestamp;
 use macro_attributes::{filter, order_by};
-use macros::uuid_newtype;
+
 use uuid::Uuid;
 
 #[cfg(feature = "app")]
@@ -43,7 +43,4 @@ impl Default for ChromiumDatasetOrderBy {
     }
 }
 
-#[cfg(feature = "app")]
 pub type ChromiumDatasetQuery = generic_query::Query<ChromiumDatasetFilter, ChromiumDatasetOrderBy>;
-
-uuid_newtype!(ChromiumDatasetId);

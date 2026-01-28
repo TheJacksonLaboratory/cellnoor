@@ -8,5 +8,5 @@ pub use common::ChromiumDatasetFields;
 pub use creation::{ChromiumDatasetCmdline, ChromiumDatasetCreation, metrics};
 #[cfg(feature = "app")]
 pub use query::ChromiumDatasetQuery;
-pub use query::{ChromiumDatasetFilter, ChromiumDatasetId, ChromiumDatasetOrderBy};
+pub use query::{ChromiumDatasetFilter, ChromiumDatasetOrderBy};
 pub use read::{ChromiumDataset, ChromiumDatasetSummary};

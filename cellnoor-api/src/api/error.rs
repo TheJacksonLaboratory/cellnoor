@@ -8,8 +8,7 @@ use axum::{
     response::IntoResponse,
 };
 
-use super::{auth, routes};
-use crate::db;
+use crate::{api::auth, db};
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
@@ -82,12 +81,7 @@ impl From<MultipartError> for Error {
 
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
-        #[derive(serde::Serialize)]
-        struct ErrorResponse {
-            error: Error,
-        }
-
-        tracing::error!(error = ?self);
+        tracing::error!(error_text = serde_json::to_string(&self).unwrap());
 
         let (status_code, error) = match self {
             Self::Auth(auth::Error::Database(_))
@@ -104,9 +98,9 @@ impl IntoResponse for Error {
                 (StatusCode::UNPROCESSABLE_ENTITY, self)
             }
             Self::Database(db::Error::DuplicateResource { .. }) => (StatusCode::CONFLICT, self),
-            Self::Database(db::Error::ResourceNotFound { .. }) => (StatusCode::NOT_FOUND, self),
+            Self::Database(db::Error::ResourceNotFound) => (StatusCode::NOT_FOUND, self),
         };
 
-        (status_code, Json(ErrorResponse { error })).into_response()
+        (status_code, Json(serde_json::to_value(error))).into_response()
     }
 }

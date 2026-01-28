@@ -4,9 +4,9 @@ use aide::{
     openapi::{Content, MediaType, Parameter, ParameterSchemaOrContent, QueryStyle, SchemaObject},
     operation::{ParamLocation, add_parameters, parameters_from_schema},
 };
-use axum::extract::FromRequestParts;
+use axum::{Json, extract::FromRequestParts, http::StatusCode, response::IntoResponse};
 use schemars::JsonSchema;
-use serde::de::DeserializeOwned;
+use serde::{Serialize, de::DeserializeOwned};
 
 use crate::api;
 
@@ -54,12 +54,28 @@ where
     }
 }
 
+#[derive(Debug, thiserror::Error, Serialize, JsonSchema)]
+#[serde(rename_all = "snake_case", tag = "type")]
+#[schemars(rename = "ParseJsonQueryError")]
+pub enum Error {
+    #[error("query-string is missing parameter {missing_parameter}")]
+    MissingParameter { missing_parameter: &'static str },
+    #[error("{message}")]
+    ParseJson { message: String },
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        (StatusCode::UNPROCESSABLE_ENTITY, Json(self)).into_response()
+    }
+}
+
 impl<S, T> FromRequestParts<S> for JsonQuery<T>
 where
     S: Sync,
     T: Default + DeserializeOwned,
 {
-    type Rejection = api::Error;
+    type Rejection = Error;
 
     async fn from_request_parts(
         parts: &mut axum::http::request::Parts,
@@ -73,15 +89,14 @@ where
 
         let mut parsed_querystring = form_urlencoded::parse(query.as_bytes());
         let Some((Cow::Borrowed("query"), s)) = parsed_querystring.next() else {
-            return Err(api::Error::MalformedRequest {
-                message: "failed to parse query string - missing parameter 'query'".to_owned(),
+            return Err(Error::MissingParameter {
+                missing_parameter: "query",
             });
         };
 
-        let query =
-            serde_json::from_slice(s.as_bytes()).map_err(|e| api::Error::MalformedRequest {
-                message: format!("failed to parse JSON in query string: {e}"),
-            })?;
+        let query = serde_json::from_slice(s.as_bytes()).map_err(|e| Error::ParseJson {
+            message: format!("failed to parse JSON in query string: {e}"),
+        })?;
 
         Ok(Self { query })
     }

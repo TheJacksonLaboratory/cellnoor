@@ -4,7 +4,7 @@ use anyhow::{Context, bail, ensure};
 use cellnoor_models::{
     institution::{Institution, NewInstitution},
     multiplexing_tag::MultiplexingTagCreation,
-    person::PersonCreation,
+    person::NewPerson,
     tenx_assay::TenxAssayCreation,
 };
 use diesel_async::AsyncPgConnection;
@@ -28,7 +28,7 @@ mod tenx_assays;
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct InitialData {
     institution: NewInstitution,
-    app_admin: PersonCreation,
+    app_admin: NewPerson,
     single_index_set_urls: Vec<Url>,
     dual_index_set_urls: Vec<Url>,
     tenx_assays: Vec<TenxAssayCreation>,
@@ -40,7 +40,7 @@ impl InitialData {
         &self.institution
     }
 
-    pub fn app_admin(&self) -> &PersonCreation {
+    pub fn app_admin(&self) -> &NewPerson {
         &self.app_admin
     }
 

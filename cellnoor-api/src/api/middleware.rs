@@ -23,7 +23,7 @@ pub async fn authenticate_request(
     auth_header: Option<TypedHeader<Authorization<Bearer>>>,
     mut request: Request,
     next: Next,
-) -> Result<Response, api::Error> {
+) -> Result<Response, auth::Error> {
     let user = AuthenticatedUser::from_request(&app_state, auth_header.as_ref(), &cookies).await?;
 
     request.extensions_mut().insert(user);
@@ -35,7 +35,7 @@ pub async fn admin_required(
     Extension(user): Extension<AuthenticatedUser>,
     request: Request,
     next: Next,
-) -> Result<Response, api::Error> {
+) -> Result<Response, auth::Error> {
     if !user.is_admin() {
         Err(auth::Error::PermissionDenied)?
     }
