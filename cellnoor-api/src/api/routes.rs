@@ -58,6 +58,8 @@ pub(super) fn router(state: AppState) -> Router<AppState> {
 
     let router = router.finish_api_with(&mut api_docs, |api_docs| {
         api_docs
+            .title("cellnoor REST API")
+            .version("0.1.0")
             .security_scheme(
                 "api_token",
                 SecurityScheme::Http {
