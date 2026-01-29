@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use axum::Extension;
 use axum::Json;
 use axum::extract::State;
@@ -7,8 +9,10 @@ use diesel::SelectableExpression;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use jiff_diesel::ToDiesel;
+use uuid::Uuid;
 
 use crate::api::auth::AuthenticatedUser;
+use crate::api::auth::RemoveUnauthorizedProjects;
 use crate::api::extract::JsonQuery;
 use crate::db;
 use crate::db::BoxedFilter;
@@ -22,11 +26,11 @@ pub async fn index_projects(
     _: State<AppState>,
     mut db_conn: DbConnection,
     Extension(user): Extension<AuthenticatedUser>,
-    JsonQuery { mut query }: JsonQuery<ProjectQuery>,
+    JsonQuery { mut q }: JsonQuery<ProjectQuery>,
 ) -> Result<Json<Vec<Project>>, db::Error> {
-    query.filter.ids = user.authorized_projects(query.filter.ids);
+    q.filter.ids.remove_unauthorized_projects(&user);
 
-    select_projects(query, &mut db_conn).await.map(Json)
+    select_projects(q, &mut db_conn).await.map(Json)
 }
 
 async fn select_projects(

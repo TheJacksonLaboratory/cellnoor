@@ -21,7 +21,7 @@ pub async fn index_project_people(
     _: State<AppState>,
     mut db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
-    JsonQuery { query }: JsonQuery<PersonQuery>,
+    JsonQuery { q: query }: JsonQuery<PersonQuery>,
 ) -> Result<Json<Vec<PersonSummary>>, db::Error> {
     select_project_people(id, query, &mut db_conn)
         .await

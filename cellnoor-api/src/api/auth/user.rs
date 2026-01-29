@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 
 use axum::{RequestPartsExt, extract::FromRequestParts};
 use axum_extra::{
@@ -22,8 +22,11 @@ pub(super) mod api;
 mod common;
 mod ui;
 
+#[derive(Clone, Debug)]
+pub struct AuthenticatedUser(Arc<AuthenticatedUserInner>);
+
 #[derive(Clone, Debug, Deserialize)]
-pub struct AuthenticatedUser {
+struct AuthenticatedUserInner {
     user: PrivateClaims,
     projects: HashSet<Uuid>,
 }
@@ -56,14 +59,16 @@ impl AuthenticatedUser {
                 let db_conn = app_state.db_conn().await?;
                 api_user.with_authorized_projects(&db_conn).await?
             }
-            EncodedJwt::FromCookie(t) => Self::from_encoded_jwt(t, decoding_key, validation)?,
+            EncodedJwt::FromCookie(t) => {
+                AuthenticatedUserInner::from_encoded_jwt(t, decoding_key, validation)?
+            }
         };
 
-        Ok(user)
+        Ok(Self(Arc::new(user)))
     }
 
     pub fn new_admin() -> Self {
-        Self {
+        Self(Arc::new(AuthenticatedUserInner {
             user: PrivateClaims {
                 user_id: Uuid::nil(),
                 is_admin: true,
@@ -71,11 +76,15 @@ impl AuthenticatedUser {
                 is_computational_staff: true,
             },
             projects: HashSet::new(),
-        }
+        }))
     }
 
     fn data(&self) -> &PrivateClaims {
-        &self.user
+        &self.0.user
+    }
+
+    fn projects(&self) -> &HashSet<Uuid> {
+        &self.0.projects
     }
 
     pub fn is_admin(&self) -> bool {
@@ -94,34 +103,12 @@ impl AuthenticatedUser {
         self.is_admin() || self.is_biology_staff() || self.is_computational_staff()
     }
 
-    pub fn authorized_projects(
-        self,
-        requested_projects: Option<HashSet<Uuid>>,
-    ) -> Option<HashSet<Uuid>> {
+    pub fn authorize_project_access(&self, requested_project: Uuid) -> Result<(), super::Error> {
         if self.is_staff() {
-            return requested_projects;
+            return Ok(());
         }
 
-        let authorized_projects = self.projects;
-
-        let Some(requested_projects) = requested_projects else {
-            return Some(authorized_projects);
-        };
-
-        Some(
-            requested_projects
-                .into_iter()
-                .filter(|p| authorized_projects.contains(p))
-                .collect(),
-        )
-    }
-
-    pub fn authorize_project_access(self, requested_project: &Uuid) -> Result<(), super::Error> {
-        let authorized_projects = self
-            .authorized_projects(Some(HashSet::from([*requested_project])))
-            .expect("we passed in a project, so we should get one out");
-
-        if !authorized_projects.contains(requested_project) {
+        if !self.0.projects.contains(&requested_project) {
             return Err(super::Error::PermissionDenied);
         }
 
@@ -170,4 +157,30 @@ trait FromEncodedJwt: DeserializeOwned {
     }
 }
 
-impl FromEncodedJwt for AuthenticatedUser {}
+impl FromEncodedJwt for AuthenticatedUserInner {}
+
+pub trait RemoveUnauthorizedProjects {
+    fn remove_unauthorized_projects(&mut self, user: &AuthenticatedUser);
+}
+
+impl RemoveUnauthorizedProjects for Option<Vec<Uuid>> {
+    fn remove_unauthorized_projects(&mut self, user: &AuthenticatedUser) {
+        // Staff can view whatever they want
+        if user.is_staff() {
+            return;
+        }
+
+        let Some(requested_projects) = self.as_mut() else {
+            // If there were no requested projects, then it should just be the projects the user is authorized to view. Also this copy is unavoidable
+            self.replace(user.projects().iter().copied().collect());
+            return;
+        };
+
+        for requested_project in requested_projects {
+            if !user.projects().contains(requested_project) {
+                // We're banking on the fact that there are no projects with nil UUIDs
+                *requested_project = Uuid::nil();
+            }
+        }
+    }
+}

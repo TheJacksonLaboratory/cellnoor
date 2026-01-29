@@ -70,7 +70,7 @@ async fn authorize_project_access(
     request: Request,
     next: Next,
 ) -> Result<Response, auth::Error> {
-    user.authorize_project_access(&project_id)?;
+    user.authorize_project_access(project_id)?;
 
     Ok(next.run(request).await)
 }

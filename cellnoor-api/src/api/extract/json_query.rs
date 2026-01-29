@@ -17,7 +17,7 @@ pub struct JsonQuery<T>
 where
     T: Default,
 {
-    pub query: T,
+    pub q: T,
 }
 
 impl<T> aide::OperationInput for JsonQuery<T>
@@ -30,25 +30,25 @@ where
         operation: &mut aide::openapi::Operation,
     ) {
         let schema = ctx.schema.subschema_for::<Self>();
-        let mut params = parameters_from_schema(ctx, schema, ParamLocation::Query);
+        let params = parameters_from_schema(ctx, schema, ParamLocation::Query);
 
-        let parameter = params
-            .get_mut(0)
-            .expect("there should be one parameter called query");
+        // let parameter = params
+        //     .get_mut(0)
+        //     .expect("there should be one parameter called query");
 
-        parameter.parameter_data_mut().format =
-            ParameterSchemaOrContent::Content(Content::from([(
-                "application/json".to_owned(),
-                MediaType {
-                    schema: Some(SchemaObject {
-                        json_schema: ctx.schema.subschema_for::<T>(),
-                        example: None,
-                        external_docs: None,
-                    }),
+        // parameter.parameter_data_mut().format =
+        //     ParameterSchemaOrContent::Content(Content::from([(
+        //         "application/json".to_owned(),
+        //         MediaType {
+        //             schema: Some(SchemaObject {
+        //                 json_schema: ctx.schema.subschema_for::<T>(),
+        //                 example: None,
+        //                 external_docs: None,
+        //             }),
 
-                    ..Default::default()
-                },
-            )]));
+        //             ..Default::default()
+        //         },
+        //     )]));
 
         add_parameters(ctx, operation, params);
     }
@@ -81,23 +81,21 @@ where
         parts: &mut axum::http::request::Parts,
         _state: &S,
     ) -> Result<Self, Self::Rejection> {
-        let Some(query) = parts.uri.query() else {
-            return Ok(Self {
-                query: T::default(),
-            });
+        let Some(q) = parts.uri.query() else {
+            return Ok(Self { q: T::default() });
         };
 
-        let mut parsed_querystring = form_urlencoded::parse(query.as_bytes());
+        let mut parsed_querystring = form_urlencoded::parse(q.as_bytes());
         let Some((Cow::Borrowed("query"), s)) = parsed_querystring.next() else {
             return Err(Error::MissingParameter {
                 missing_parameter: "query",
             });
         };
 
-        let query = serde_json::from_slice(s.as_bytes()).map_err(|e| Error::ParseJson {
+        let q = serde_json::from_slice(s.as_bytes()).map_err(|e| Error::ParseJson {
             message: format!("failed to parse JSON in query string: {e}"),
         })?;
 
-        Ok(Self { query })
+        Ok(Self { q })
     }
 }

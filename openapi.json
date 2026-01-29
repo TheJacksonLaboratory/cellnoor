@@ -25,35 +25,27 @@
         "parameters": [
           {
             "in": "query",
-            "name": "query",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "filter": {
-                      "$ref": "#/components/schemas/InstitutionFilter"
-                    },
-                    "limit": {
-                      "type": "integer",
-                      "format": "int64",
-                      "default": 500
-                    },
-                    "offset": {
-                      "type": "integer",
-                      "format": "int64",
-                      "default": 0
-                    },
-                    "order_by": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/InstitutionOrderBy"
-                      }
-                    }
-                  },
-                  "additionalProperties": false
+            "name": "q",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "filter": { "$ref": "#/components/schemas/InstitutionFilter" },
+                "limit": {
+                  "type": "integer",
+                  "format": "int64",
+                  "default": 500
+                },
+                "offset": {
+                  "type": "integer",
+                  "format": "int64",
+                  "default": 0
+                },
+                "order_by": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/InstitutionOrderBy" }
                 }
-              }
+              },
+              "additionalProperties": false
             }
           }
         ],
@@ -149,31 +141,27 @@
           },
           {
             "in": "query",
-            "name": "query",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "filter": { "$ref": "#/components/schemas/PersonFilter" },
-                    "limit": {
-                      "type": "integer",
-                      "format": "int64",
-                      "default": 500
-                    },
-                    "offset": {
-                      "type": "integer",
-                      "format": "int64",
-                      "default": 0
-                    },
-                    "order_by": {
-                      "type": "array",
-                      "items": { "$ref": "#/components/schemas/PersonOrderBy" }
-                    }
-                  },
-                  "additionalProperties": false
+            "name": "q",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "filter": { "$ref": "#/components/schemas/PersonFilter" },
+                "limit": {
+                  "type": "integer",
+                  "format": "int64",
+                  "default": 500
+                },
+                "offset": {
+                  "type": "integer",
+                  "format": "int64",
+                  "default": 0
+                },
+                "order_by": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PersonOrderBy" }
                 }
-              }
+              },
+              "additionalProperties": false
             }
           }
         ],
@@ -205,31 +193,27 @@
         "parameters": [
           {
             "in": "query",
-            "name": "query",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "filter": { "$ref": "#/components/schemas/PersonFilter" },
-                    "limit": {
-                      "type": "integer",
-                      "format": "int64",
-                      "default": 500
-                    },
-                    "offset": {
-                      "type": "integer",
-                      "format": "int64",
-                      "default": 0
-                    },
-                    "order_by": {
-                      "type": "array",
-                      "items": { "$ref": "#/components/schemas/PersonOrderBy" }
-                    }
-                  },
-                  "additionalProperties": false
+            "name": "q",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "filter": { "$ref": "#/components/schemas/PersonFilter" },
+                "limit": {
+                  "type": "integer",
+                  "format": "int64",
+                  "default": 500
+                },
+                "offset": {
+                  "type": "integer",
+                  "format": "int64",
+                  "default": 0
+                },
+                "order_by": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PersonOrderBy" }
                 }
-              }
+              },
+              "additionalProperties": false
             }
           }
         ],
@@ -416,31 +400,27 @@
         "parameters": [
           {
             "in": "query",
-            "name": "query",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "filter": { "$ref": "#/components/schemas/ProjectFilter" },
-                    "limit": {
-                      "type": "integer",
-                      "format": "int64",
-                      "default": 500
-                    },
-                    "offset": {
-                      "type": "integer",
-                      "format": "int64",
-                      "default": 0
-                    },
-                    "order_by": {
-                      "type": "array",
-                      "items": { "$ref": "#/components/schemas/ProjectOrderBy" }
-                    }
-                  },
-                  "additionalProperties": false
+            "name": "q",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "filter": { "$ref": "#/components/schemas/ProjectFilter" },
+                "limit": {
+                  "type": "integer",
+                  "format": "int64",
+                  "default": 500
+                },
+                "offset": {
+                  "type": "integer",
+                  "format": "int64",
+                  "default": 0
+                },
+                "order_by": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ProjectOrderBy" }
                 }
-              }
+              },
+              "additionalProperties": false
             }
           }
         ],
@@ -536,31 +516,27 @@
           },
           {
             "in": "query",
-            "name": "query",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "filter": { "$ref": "#/components/schemas/PersonFilter" },
-                    "limit": {
-                      "type": "integer",
-                      "format": "int64",
-                      "default": 500
-                    },
-                    "offset": {
-                      "type": "integer",
-                      "format": "int64",
-                      "default": 0
-                    },
-                    "order_by": {
-                      "type": "array",
-                      "items": { "$ref": "#/components/schemas/PersonOrderBy" }
-                    }
-                  },
-                  "additionalProperties": false
+            "name": "q",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "filter": { "$ref": "#/components/schemas/PersonFilter" },
+                "limit": {
+                  "type": "integer",
+                  "format": "int64",
+                  "default": 500
+                },
+                "offset": {
+                  "type": "integer",
+                  "format": "int64",
+                  "default": 0
+                },
+                "order_by": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PersonOrderBy" }
                 }
-              }
+              },
+              "additionalProperties": false
             }
           }
         ],
@@ -706,9 +682,10 @@
           {
             "type": "object",
             "properties": {
+              "message": { "type": "string" },
               "type": { "type": "string", "const": "invalid_auth_token" }
             },
-            "required": ["type"]
+            "required": ["type", "message"]
           },
           {
             "type": "object",
@@ -1075,8 +1052,7 @@
           "ids": {
             "type": ["array", "null"],
             "default": null,
-            "items": { "type": "string", "format": "uuid" },
-            "uniqueItems": true
+            "items": { "type": "string", "format": "uuid" }
           },
           "names": {
             "type": ["array", "null"],

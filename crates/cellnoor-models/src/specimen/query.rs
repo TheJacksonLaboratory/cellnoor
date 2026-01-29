@@ -21,7 +21,7 @@ pub struct SpecimenFilter {
     pub ids: Option<Vec<Uuid>>,
     pub names: Option<Vec<String>>,
     pub submitted_by: Option<Vec<Uuid>>,
-    pub projects: Option<HashSet<Uuid>>,
+    pub projects: Option<Vec<Uuid>>,
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     pub received_before: Option<Timestamp>,
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]

@@ -42,7 +42,24 @@ pub(super) mod projects;
 // pub(super) mod suspensions;
 // pub(super) mod tenx_assays;
 
-pub(super) fn router(state: AppState) -> Router<AppState> {
+pub(super) fn app(state: AppState) -> Router<AppState> {
+    let (router, api_docs) = router();
+
+    let auth_layer = axum::middleware::from_fn_with_state(state, authenticate_request);
+    let trace_layer = TraceLayer::new_for_http().make_span_with(
+        |request: &Request| tracing::info_span!("http-request", uri = ?request.uri()),
+    );
+
+    let layers = ServiceBuilder::new().layer(auth_layer).layer(trace_layer);
+
+    // Ensure the OpenAPI documentation is added after the authentication layer so it's public
+    router
+        .layer(layers)
+        .route("/openapi.json", axum::routing::get(show_api_docs))
+        .layer(Extension(Arc::new(api_docs)))
+}
+
+pub fn router() -> (Router<AppState>, OpenApi) {
     // This is the general error-type that can be a catch-all. If handlers return more specific errors, they can document that and associate it with status codes
     #[allow(dead_code)]
     #[derive(Serialize, JsonSchema)]
@@ -76,7 +93,7 @@ pub(super) fn router(state: AppState) -> Router<AppState> {
     let router = router.finish_api_with(&mut api_docs, |api_docs| {
         api_docs
             .title("cellnoor REST API")
-            .version("0.1.0")
+            .version(env!("CARGO_PKG_VERSION"))
             .security_scheme(
                 "api_token",
                 SecurityScheme::Http {
@@ -90,23 +107,9 @@ pub(super) fn router(state: AppState) -> Router<AppState> {
             .default_response::<Json<ApiError>>()
     });
 
-    let layers = ServiceBuilder::new()
-        .layer(axum::middleware::from_fn_with_state(
-            state,
-            authenticate_request,
-        ))
-        .layer(TraceLayer::new_for_http().make_span_with(
-            |request: &Request| tracing::info_span!("http-request", uri = ?request.uri()),
-        ));
-
-    // By adding OpenAPI documentation route after the layers, it won't require authentication
-    router
-        .layer(layers)
-        .route("/openapi.json", axum::routing::get(show_api_docs))
-        .layer(Extension(Arc::new(api_docs)))
+    (router, api_docs)
 }
 
-#[axum::debug_handler]
 async fn show_api_docs(Extension(api_docs): Extension<Arc<OpenApi>>) -> Json<Arc<OpenApi>> {
     Json(api_docs)
 }

@@ -13,9 +13,9 @@ use crate::{
 pub async fn index_institutions(
     _: State<AppState>,
     mut db_conn: DbConnection,
-    JsonQuery { query }: JsonQuery<InstitutionQuery>,
+    JsonQuery { q }: JsonQuery<InstitutionQuery>,
 ) -> Result<Json<Vec<Institution>>, db::Error> {
-    select_institutions(query, &mut db_conn).await.map(Json)
+    select_institutions(q, &mut db_conn).await.map(Json)
 }
 
 async fn select_institutions(

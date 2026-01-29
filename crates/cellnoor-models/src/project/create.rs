@@ -2,7 +2,6 @@
 use cellnoor_schema::projects;
 use macro_attributes::insert;
 use non_empty::NonEmptyString;
-use uuid::Uuid;
 
 use crate::project::common::ProjectFields;
 

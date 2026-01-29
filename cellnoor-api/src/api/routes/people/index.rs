@@ -12,7 +12,7 @@ use diesel_async::{AsyncPgConnection, RunQueryDsl};
 pub async fn index_people(
     _: State<AppState>,
     mut db_conn: DbConnection,
-    JsonQuery { query }: JsonQuery<PersonQuery>,
+    JsonQuery { q: query }: JsonQuery<PersonQuery>,
 ) -> Result<Json<Vec<PersonSummary>>, db::Error> {
     select_people(query, &mut db_conn).await.map(Json)
 }

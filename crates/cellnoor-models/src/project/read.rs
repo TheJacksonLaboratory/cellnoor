@@ -1,15 +1,9 @@
 #[cfg(feature = "app")]
-use cellnoor_schema::{people, projects};
-#[cfg(feature = "app")]
-use diesel::prelude::*;
+use cellnoor_schema::projects;
 use macro_attributes::select;
 use uuid::Uuid;
 
-use crate::{
-    links::Links,
-    person::{self},
-    project::common::ProjectFields,
-};
+use crate::{links::Links, project::common::ProjectFields};
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = projects))]

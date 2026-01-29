@@ -24,7 +24,7 @@ impl User {
     pub async fn with_authorized_projects(
         &self,
         mut db_conn: &AsyncPgConnection,
-    ) -> Result<super::AuthenticatedUser, db::Error> {
+    ) -> Result<super::AuthenticatedUserInner, db::Error> {
         let user_id = self.0.sub;
 
         let user = PrivateClaims::query()
@@ -43,6 +43,6 @@ impl User {
             projects.insert(project_id?);
         }
 
-        Ok(super::AuthenticatedUser { user, projects })
+        Ok(super::AuthenticatedUserInner { user, projects })
     }
 }

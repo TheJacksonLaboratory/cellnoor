@@ -83,7 +83,7 @@ fn initialize_logging(log_dir: Option<&Utf8Path>) {
 }
 
 fn app(app_state: AppState) -> Router {
-    let api_router = routes::router(app_state.clone()).with_state(app_state);
+    let api_router = routes::app(app_state.clone()).with_state(app_state);
 
     Router::new().nest("/api", api_router)
 }

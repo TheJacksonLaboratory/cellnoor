@@ -1,3 +1,5 @@
+use std::{rc::Rc, sync::Arc};
+
 use axum::{
     Extension,
     extract::{Request, State},
@@ -26,13 +28,14 @@ pub async fn authenticate_request(
 ) -> Result<Response, auth::Error> {
     let user = AuthenticatedUser::from_request(&app_state, auth_header.as_ref(), &cookies).await?;
 
-    request.extensions_mut().insert(user);
+    // Wrap
+    request.extensions_mut().insert(Arc::new(user));
 
     Ok(next.run(request).await)
 }
 
 pub async fn admin_required(
-    Extension(user): Extension<AuthenticatedUser>,
+    Extension(user): Extension<Arc<AuthenticatedUser>>,
     request: Request,
     next: Next,
 ) -> Result<Response, auth::Error> {

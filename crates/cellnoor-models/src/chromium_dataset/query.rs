@@ -19,7 +19,7 @@ pub struct ChromiumDatasetFilter {
     pub names: Option<Vec<String>>,
     pub specimen: Option<SpecimenFilter>,
     pub assay: Option<TenxAssayFilter>,
-    pub project_ids: Option<HashSet<Uuid>>,
+    pub project_ids: Option<Vec<Uuid>>,
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     pub delivered_before: Option<Timestamp>,
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]

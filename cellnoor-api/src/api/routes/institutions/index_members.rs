@@ -20,7 +20,7 @@ pub async fn index_members(
     Path(IdParameter { id }): Path<IdParameter>,
     mut query: JsonQuery<PersonQuery>,
 ) -> Result<Json<Vec<PersonSummary>>, db::Error> {
-    query.query.filter.institution_ids = Some(vec![id]);
+    query.q.filter.institution_ids = Some(vec![id]);
 
     index_people(state, db_conn, query).await
 }
