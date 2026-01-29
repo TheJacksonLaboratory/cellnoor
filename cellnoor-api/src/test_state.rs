@@ -10,11 +10,10 @@ use cellnoor_models::{
         PoolMultiplexChipLoading, PoolMultiplexGemPool, SingleplexChipLoading, SingleplexGemPool,
         Volume,
     },
-    generic_query,
     institution::{Institution, InstitutionQuery, NewInstitution},
     library::{LibraryCreation, LibraryFields, LibraryQuery, LibrarySummary},
     multiplexing_tag::MultiplexingTag,
-    person::{PersonCreation, PersonFields, PersonQuery, PersonSummary},
+    person::{NewPerson, PersonFields, PersonQuery, PersonSummary},
     project::{NewProject, Project, ProjectFields, ProjectQuery},
     specimen::{
         BlockCreation, BlockFixative, Fixative, Species, SpecimenCommonFields, SpecimenCreation,

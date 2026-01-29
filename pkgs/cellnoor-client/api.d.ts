@@ -57,7 +57,20 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    query?: string;
+                    q?: {
+                        filter?: components["schemas"]["InstitutionFilter"];
+                        /**
+                         * Format: int64
+                         * @default 500
+                         */
+                        limit?: number;
+                        /**
+                         * Format: int64
+                         * @default 0
+                         */
+                        offset?: number;
+                        order_by?: components["schemas"]["InstitutionOrderBy"][];
+                    };
                 };
                 header?: never;
                 path?: never;
@@ -175,7 +188,20 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    query?: string;
+                    q?: {
+                        filter?: components["schemas"]["PersonFilter"];
+                        /**
+                         * Format: int64
+                         * @default 500
+                         */
+                        limit?: number;
+                        /**
+                         * Format: int64
+                         * @default 0
+                         */
+                        offset?: number;
+                        order_by?: components["schemas"]["PersonOrderBy"][];
+                    };
                 };
                 header?: never;
                 path: {
@@ -221,7 +247,20 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    query?: string;
+                    q?: {
+                        filter?: components["schemas"]["PersonFilter"];
+                        /**
+                         * Format: int64
+                         * @default 500
+                         */
+                        limit?: number;
+                        /**
+                         * Format: int64
+                         * @default 0
+                         */
+                        offset?: number;
+                        order_by?: components["schemas"]["PersonOrderBy"][];
+                    };
                 };
                 header?: never;
                 path?: never;
@@ -510,7 +549,20 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    query?: string;
+                    q?: {
+                        filter?: components["schemas"]["ProjectFilter"];
+                        /**
+                         * Format: int64
+                         * @default 500
+                         */
+                        limit?: number;
+                        /**
+                         * Format: int64
+                         * @default 0
+                         */
+                        offset?: number;
+                        order_by?: components["schemas"]["ProjectOrderBy"][];
+                    };
                 };
                 header?: never;
                 path?: never;
@@ -628,7 +680,20 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    query?: string;
+                    q?: {
+                        filter?: components["schemas"]["PersonFilter"];
+                        /**
+                         * Format: int64
+                         * @default 500
+                         */
+                        limit?: number;
+                        /**
+                         * Format: int64
+                         * @default 0
+                         */
+                        offset?: number;
+                        order_by?: components["schemas"]["PersonOrderBy"][];
+                    };
                 };
                 header?: never;
                 path: {
@@ -823,6 +888,7 @@ export interface components {
             /** @constant */
             type: "database";
         } & components["schemas"]["DatabaseError"]) | {
+            message: string;
             /** @constant */
             type: "invalid_auth_token";
         } | {

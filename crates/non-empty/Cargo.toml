@@ -4,9 +4,9 @@ name = "non-empty"
 version = "0.1.0"
 
 [dependencies]
-schemars = {workspace = true, optional = true}
 cellnoor-schema = { version = "0.1.0", path = "../cellnoor-schema", optional = true }
 diesel = { workspace = true, optional = true }
+schemars = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 thiserror.workspace = true
 ts-rs = { workspace = true, optional = true }

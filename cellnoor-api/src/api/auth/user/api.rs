@@ -1,8 +1,5 @@
 use serde::Deserialize;
-use std::{
-    collections::{HashMap, HashSet},
-    ops::DerefMut,
-};
+use std::collections::HashSet;
 use tokio_stream::StreamExt;
 
 use cellnoor_schema::{people, project_people};

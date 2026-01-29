@@ -4,6 +4,7 @@ name = "cellnoor-api"
 version = "0.1.0"
 
 [dependencies]
+aide.workspace = true
 anyhow.workspace = true
 axum.workspace = true
 axum-extra.workspace = true
@@ -18,6 +19,8 @@ diesel = { workspace = true, features = ["serde_json", "uuid"] }
 diesel-async.workspace = true
 diesel_migrations.workspace = true
 dotenvy.workspace = true
+form_urlencoded.workspace = true
+futures.workspace = true
 headers.workspace = true
 heck.workspace = true
 jiff.workspace = true
@@ -30,6 +33,7 @@ ranged = { version = "0.1.0", path = "../crates/ranged", features = ["serde"] }
 regex.workspace = true
 reqwest.workspace = true
 rstest.workspace = true
+schemars.workspace = true
 secrecy.workspace = true
 serde.workspace = true
 serde_json.workspace = true
@@ -37,18 +41,14 @@ strum.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tokio-stream.workspace = true
-futures.workspace = true
-tracing.workspace = true
 tower.workspace = true
 tower-http.workspace = true
+tracing.workspace = true
 tracing-appender.workspace = true
 tracing-subscriber.workspace = true
 ts-rs = { workspace = true, optional = true }
 url.workspace = true
 uuid.workspace = true
-aide.workspace = true
-schemars.workspace = true
-form_urlencoded.workspace = true
 
 [lints]
 workspace = true

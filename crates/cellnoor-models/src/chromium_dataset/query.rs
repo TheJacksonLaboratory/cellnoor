@@ -1,6 +1,5 @@
 #![allow(clippy::implicit_clone)]
 
-use std::collections::HashSet;
 
 #[cfg(feature = "app")]
 use cellnoor_schema::chromium_datasets;

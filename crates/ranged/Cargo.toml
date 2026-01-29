@@ -5,8 +5,8 @@ version = "0.1.0"
 
 [dependencies]
 deranged.workspace = true
-schemars = { workspace = true, optional = true }
 diesel = { workspace = true, optional = true }
+schemars = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 ts-rs = { workspace = true, optional = true }
 
@@ -15,7 +15,7 @@ ts-rs = { workspace = true, optional = true }
 workspace = true
 
 [features]
-schemars = ["dep:schemars"]
 diesel = ["dep:diesel"]
+schemars = ["dep:schemars"]
 serde = ["dep:serde", "deranged/serde"]
 typescript = ["dep:ts-rs"]

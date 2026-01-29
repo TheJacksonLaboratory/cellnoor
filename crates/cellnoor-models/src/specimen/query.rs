@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 
 #[cfg(feature = "app")]
 use cellnoor_schema::specimens;

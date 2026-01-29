@@ -5,7 +5,7 @@ export type ClientOptions = Omit<InnerClientOptions, "querySerializer">;
 
 export type CellnoorClient = InnerClient<paths>;
 
-  export function createCellnoorClient(options?: ClientOptions) {
+export function createCellnoorClient(options?: ClientOptions) {
   return createClient<paths>({
     ...options, querySerializer: (query) => `q=${JSON.stringify(query.q)}`})
 }
