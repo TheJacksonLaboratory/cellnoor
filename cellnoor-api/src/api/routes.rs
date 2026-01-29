@@ -44,10 +44,11 @@ pub(super) mod projects;
 
 pub(super) fn router(state: AppState) -> Router<AppState> {
     // This is the general error-type that can be a catch-all. If handlers return more specific errors, they can document that and associate it with status codes
+    #[allow(dead_code)]
     #[derive(Serialize, JsonSchema)]
     #[serde(untagged)]
     enum ApiError {
-        Authentication(auth::Error),
+        Auth(auth::Error),
         Database(db::Error),
     }
 

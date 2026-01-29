@@ -88,12 +88,12 @@ export async function deleteApiTokenFromDb(
   });
 }
 
-export async function getUserLabs(userId: string, dbClient: Bun.SQL) {
-  const labs =
+export async function getUserProjects(userId: string, dbClient: Bun.SQL) {
+  const projects =
     await dbClient`select project_id from project_people where person_id = ${userId}`
       .then((rows: { project_id: string }[]) => rows.map((r) => r.project_id));
 
   return {
-    labs,
+    projects,
   };
 }

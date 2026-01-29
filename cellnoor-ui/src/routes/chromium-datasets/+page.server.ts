@@ -1,16 +1,11 @@
-import { ApiClient } from "$lib/server/cellnoor-client";
-import type { ChromiumDatasetSummary } from "cellnoor-types/ChromiumDatasetSummary";
-import type { TenxAssay } from "cellnoor-types/TenxAssay";
+import { getApiClient } from "$lib/server/cellnoor-client";
 
 export async function load() {
-  const apiClient = await ApiClient.new();
+  const apiClient = await getApiClient();
 
   const [chromiumDatasets, assays] = await Promise.all([
-    apiClient.getJson<ChromiumDatasetSummary[]>(),
-    apiClient.getJson<TenxAssay[]>({
-      endpoint: "/10x-assays",
-      queryString: "",
-    }),
+    apiClient.GET("/chromium-datasets"),
+    apiClient.GET("/10x-assays"),
   ]);
 
   return {

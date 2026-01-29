@@ -1,0 +1,14 @@
+{
+  "name": "cellnoor-client",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.15.0"
+  }
+}

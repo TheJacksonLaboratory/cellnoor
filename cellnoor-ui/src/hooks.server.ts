@@ -3,8 +3,6 @@ import { svelteKitHandler } from "better-auth/svelte-kit";
 import { building } from "$app/environment";
 import { redirect } from "@sveltejs/kit";
 import { API_TOKEN_COOKIE_NAME } from "$lib/server/cellnoor-client";
-import createClient from "openapi-fetch";
-import { paths } from "$lib/server/cellnoor-client3";
 
 const NON_AUTH_ROUTES = [
   "/api/auth/sign-in/social",
@@ -19,9 +17,6 @@ function requiresAuth(path: string) {
 }
 
 export async function handle({ event, resolve }) {
-  const client = createClient<paths>({ baseUrl: "http://localhost:8000/api", querySerializer: (q) => `query=${JSON.stringify(q.query)}` });
-  client.GET("/institutions", {params: {query: {query: {names: [""]}}}})
-
   const { url: { pathname }, request: { headers } } = event;
   if (!requiresAuth(pathname)) {
     return svelteKitHandler({ event, resolve, auth, building });

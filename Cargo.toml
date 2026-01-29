@@ -5,7 +5,6 @@ members = [
   "crates/cellnoor-models/macro-attributes",
   "crates/cellnoor-models/macros",
   "crates/cellnoor-schema",
-  "crates/cellnoor-typescript",
   "crates/default-vec",
   "crates/non-empty",
   "crates/ranged"

@@ -1,4 +1,4 @@
-import { ApiClient } from "$lib/server/cellnoor-client";
+import { ApiClient } from "$lib/server/cellnoor-client-dep";
 import type { ChromiumDataset } from "cellnoor-types/ChromiumDataset";
 import type { SpecimenSummary } from "cellnoor-types/SpecimenSummary";
 import type { LibrarySummary } from "cellnoor-types/LibrarySummary";

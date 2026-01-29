@@ -4,12 +4,12 @@ import { getRequestEvent } from "$app/server";
 import { readConfig, readSecrets } from "$lib/server/config";
 import { getDbClient } from "$lib/server/db-client";
 import type { MicrosoftEntraIDProfile } from "better-auth/social-providers";
-import { getUserLabs, upsertPersonIntoDb } from "$lib/server/auth/db";
+import { getUserProjects, upsertPersonIntoDb } from "$lib/server/auth/db";
 import { createAuthMiddleware, jwt } from "better-auth/plugins";
 
 export const auth = betterAuth({
-  baseURL: (await readConfig()).publicUrl,
-  secret: (await readSecrets()).authSecret,
+  baseURL: await readConfig().then((c) => c.publicUrl),
+  secret: await readSecrets().then((c) => c.authSecret),
   user: {
     additionalFields: {
       user_id: { type: "string" },
@@ -117,7 +117,7 @@ export const auth = betterAuth({
           },
         ) {
           const dbClient = await getDbClient();
-          const { labs } = await getUserLabs(user_id, dbClient);
+          const { projects } = await getUserProjects(user_id, dbClient);
 
           return {
             user: {
@@ -126,8 +126,8 @@ export const auth = betterAuth({
               is_admin,
               is_biology_staff,
               is_computational_staff,
-              labs,
             },
+            projects
           };
         },
       },

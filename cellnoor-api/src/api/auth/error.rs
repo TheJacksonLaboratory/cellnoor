@@ -1,4 +1,3 @@
-use aide::OperationIo;
 use axum::{Json, http::StatusCode, response::IntoResponse};
 use schemars::JsonSchema;
 
@@ -12,8 +11,10 @@ use crate::db;
 #[error(transparent)]
 pub enum Error {
     Database(#[from] db::Error),
-    #[error("invalid auth token")]
-    InvalidAuthToken,
+    #[error("invalid auth token: {message}")]
+    InvalidAuthToken {
+        message: String,
+    },
     #[error("no auth token found")]
     NoAuthTokenFound {
         message: &'static str,
@@ -27,8 +28,10 @@ pub enum Error {
 }
 
 impl From<jsonwebtoken::errors::Error> for Error {
-    fn from(_: jsonwebtoken::errors::Error) -> Self {
-        Self::InvalidAuthToken
+    fn from(err: jsonwebtoken::errors::Error) -> Self {
+        Self::InvalidAuthToken {
+            message: err.to_string(),
+        }
     }
 }
 
@@ -36,7 +39,9 @@ impl Error {
     pub const fn status_code(&self) -> u16 {
         match self {
             Self::Database(_) | Self::Other { .. } => StatusCode::INTERNAL_SERVER_ERROR,
-            Self::InvalidAuthToken | Self::NoAuthTokenFound { .. } => StatusCode::UNAUTHORIZED,
+            Self::InvalidAuthToken { .. } | Self::NoAuthTokenFound { .. } => {
+                StatusCode::UNAUTHORIZED
+            }
             Self::PermissionDenied => StatusCode::FORBIDDEN,
         }
         .as_u16()

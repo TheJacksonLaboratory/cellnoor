@@ -1,4 +1,4 @@
-import { ApiClient } from "$lib/server/cellnoor-client";
+import { ApiClient } from "$lib/server/cellnoor-client-dep";
 import type { RequestHandler } from "./$types";
 
 // It would be faster to just grab the web summary from the database and send
