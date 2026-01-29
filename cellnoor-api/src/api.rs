@@ -11,7 +11,6 @@ use camino::Utf8Path;
 use tokio::net::TcpListener;
 
 mod auth;
-mod docs;
 // mod error;
 mod extract;
 pub mod middleware;

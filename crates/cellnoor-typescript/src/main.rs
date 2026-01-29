@@ -6,10 +6,10 @@ use cellnoor_models::{
         ChromiumDatasetSummary,
     },
     chromium_run::{ChromiumRunFilter, ChromiumRunOrderBy, GemPoolFilter, GemPoolOrderBy},
-    institution::{Institution, NewInstitution, InstitutionFilter, InstitutionOrderBy},
+    institution::{Institution, InstitutionFilter, InstitutionOrderBy, NewInstitution},
     library::{Library, LibraryCreation, LibraryFilter, LibraryOrderBy, LibrarySummary},
     person::{Person, PersonCreation, PersonFilter, PersonOrderBy},
-    project::{Project, ProjectCreation, ProjectFilter, ProjectOrderBy},
+    project::{Project, NewProject, ProjectFilter, ProjectOrderBy},
     sequencing_run::{SequencingRun, SequencingRunCreation},
     specimen::{
         Specimen, SpecimenCreation, SpecimenFilter, SpecimenOrderBy,
@@ -106,7 +106,7 @@ fn main() {
     PersonQuery::export_all_to(&output_dir).unwrap();
     Person::export_all_to(&output_dir).unwrap();
 
-    ProjectCreation::export_all_to(&output_dir).unwrap();
+    NewProject::export_all_to(&output_dir).unwrap();
     ProjectQuery::export_all_to(&output_dir).unwrap();
     Project::export_all_to(&output_dir).unwrap();
 

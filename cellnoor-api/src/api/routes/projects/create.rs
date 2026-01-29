@@ -1,44 +1,29 @@
-use cellnoor_models::project::{Project, ProjectCreation};
+use axum::{Json, extract::State};
+use cellnoor_models::project::{NewProject, Project};
 use cellnoor_schema::projects;
-use diesel::SelectableHelper;
+use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 
-use crate::api::{self, AuthenticatedUser};
+use crate::{
+    db::{self, DbConnection},
+    state::AppState,
+};
 
-impl api::AuthorizedRequest<Project> for ProjectCreation {
-    type ValidationData = ();
-
-    fn validate(&self, validation_data: Self::ValidationData) -> Result<(), api::DataError> {
-        // We don't need to validate that `started_at` < `ended_at` because the database validates that already
-        Ok(())
-    }
-
-    async fn handle(
-        self,
-        mut db_conn: &diesel_async::AsyncPgConnection,
-    ) -> Result<Project, api::Error> {
-        Ok(diesel::insert_into(projects::table)
-            .values(self)
-            .returning(Project::as_returning())
-            .get_result(&mut db_conn)
-            .await?)
-    }
+pub async fn create_project(
+    _: State<AppState>,
+    mut db_conn: DbConnection,
+    Json(project): Json<NewProject>,
+) -> Result<Json<Project>, db::Error> {
+    insert_project(project, &mut db_conn).await.map(Json)
 }
 
-impl api::Request<Project> for ProjectCreation {
-    type Authorized = Self;
-    type ValidationData = ();
-
-    async fn fetch_validation_data(
-        &self,
-        db_conn: &diesel_async::AsyncPgConnection,
-    ) -> Result<Self::ValidationData, crate::db::Error> {
-        Ok(())
-    }
-
-    fn authorize(self, user: AuthenticatedUser) -> Result<Self::Authorized, api::auth::Error> {
-        user.authorize_admin_only()?;
-
-        Ok(self)
-    }
+async fn insert_project(
+    project: NewProject,
+    db_conn: &mut DbConnection,
+) -> Result<Project, db::Error> {
+    Ok(diesel::insert_into(projects::table)
+        .values(project)
+        .returning(Project::as_returning())
+        .get_result(db_conn)
+        .await?)
 }

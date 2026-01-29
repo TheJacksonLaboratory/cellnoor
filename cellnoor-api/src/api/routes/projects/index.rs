@@ -1,3 +1,6 @@
+use axum::Extension;
+use axum::Json;
+use axum::extract::State;
 use cellnoor_models::project::{Project, ProjectFilter, ProjectQuery};
 use cellnoor_schema::projects::dsl::*;
 use diesel::SelectableExpression;
@@ -5,70 +8,55 @@ use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use jiff_diesel::ToDiesel;
 
-use crate::api::AuthenticatedUser;
-use crate::{
-    api,
-    db::{BoxedFilter, BoxedFilterExt, ToBoxedFilter, like_any},
-};
+use crate::api::auth::AuthenticatedUser;
+use crate::api::extract::JsonQuery;
+use crate::db;
+use crate::db::BoxedFilter;
+use crate::db::BoxedFilterExt;
+use crate::db::DbConnection;
+use crate::db::ToBoxedFilter;
+use crate::db::like_any;
+use crate::state::AppState;
 
-impl api::AuthorizedRequest<Vec<Project>> for ProjectQuery {
-    type ValidationData = ();
+pub async fn index_projects(
+    _: State<AppState>,
+    mut db_conn: DbConnection,
+    Extension(user): Extension<AuthenticatedUser>,
+    JsonQuery { mut query }: JsonQuery<ProjectQuery>,
+) -> Result<Json<Vec<Project>>, db::Error> {
+    query.filter.ids = user.authorized_projects(query.filter.ids);
 
-    fn validate(&self, validation_data: Self::ValidationData) -> Result<(), api::DataError> {
-        Ok(())
-    }
-
-    async fn handle(
-        self,
-        mut db_conn: &diesel_async::AsyncPgConnection,
-    ) -> Result<Vec<Project>, api::Error> {
-        let Self {
-            filter,
-            limit,
-            offset,
-            order_by,
-        } = self;
-
-        let mut stmt = Project::query()
-            .limit(limit)
-            .offset(offset)
-            .filter(filter.to_boxed_filter())
-            .into_boxed();
-
-        for ordering in order_by.as_ref() {
-            stmt = stmt.then_order_by(ordering);
-        }
-
-        Ok(stmt.load(&mut db_conn).await?)
-    }
+    select_projects(query, &mut db_conn).await.map(Json)
 }
 
-impl api::Request<Vec<Project>> for ProjectQuery {
-    type Authorized = Self;
-    type ValidationData = ();
+async fn select_projects(
+    ProjectQuery {
+        filter,
+        limit,
+        offset,
+        order_by,
+    }: ProjectQuery,
+    db_conn: &mut DbConnection,
+) -> Result<Vec<Project>, db::Error> {
+    let mut stmt = Project::query()
+        .limit(limit)
+        .offset(offset)
+        .filter(filter.to_boxed_filter())
+        .into_boxed();
 
-    async fn fetch_validation_data(
-        &self,
-        db_conn: &diesel_async::AsyncPgConnection,
-    ) -> Result<Self::ValidationData, crate::db::Error> {
-        Ok(())
+    for ordering in order_by.as_ref() {
+        stmt = stmt.then_order_by(ordering);
     }
 
-    fn authorize(mut self, user: AuthenticatedUser) -> Result<Self::Authorized, api::auth::Error> {
-        if user.is_admin() {
-            return Ok(self);
-        }
-
-        self.filter.ids = user.authorized_projects(self.filter.ids);
-
-        Ok(self)
-    }
+    Ok(stmt.load(db_conn).await?)
 }
 
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for ProjectFilter
 where
     id: SelectableExpression<QS>,
     name: SelectableExpression<QS>,
+    started_at: SelectableExpression<QS>,
+    ended_at: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
         let Self {

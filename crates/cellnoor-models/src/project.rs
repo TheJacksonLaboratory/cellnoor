@@ -1,11 +1,11 @@
 mod common;
-mod creation;
+mod create;
 mod query;
 mod read;
 mod update;
 
 pub use common::ProjectFields;
-pub use creation::ProjectCreation;
+pub use create::NewProject;
 #[cfg(feature = "app")]
 pub use query::ProjectQuery;
 pub use query::{ProjectFilter, ProjectOrderBy};

@@ -1,6 +1,13 @@
 use std::{fmt::Debug, sync::Arc};
 
-use crate::{api::middleware::authenticate_request, db::DbConnection, state::AppState};
+use crate::{
+    api::{
+        auth,
+        middleware::{authenticate_request, created_status_code},
+    },
+    db::{self, DbConnection},
+    state::AppState,
+};
 use aide::{
     axum::{ApiRouter, AxumOperationHandler, IntoApiResponse, routing::get},
     openapi::{OpenApi, SecurityScheme},
@@ -14,6 +21,7 @@ use axum::{
     response::IntoResponse,
 };
 use diesel::Connection;
+use schemars::JsonSchema;
 use serde::{Serialize, de::DeserializeOwned};
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
@@ -27,7 +35,7 @@ pub(super) mod institutions;
 // pub(super) mod libraries;
 // pub(super) mod multiplexing_tags;
 pub(super) mod people;
-// pub(super) mod projects;
+pub(super) mod projects;
 // pub(super) mod sequencing_runs;
 // pub(super) mod specimens;
 // pub(super) mod suspension_pools;
@@ -35,13 +43,21 @@ pub(super) mod people;
 // pub(super) mod tenx_assays;
 
 pub(super) fn router(state: AppState) -> Router<AppState> {
+    // This is the general error-type that can be a catch-all. If handlers return more specific errors, they can document that and associate it with status codes
+    #[derive(Serialize, JsonSchema)]
+    #[serde(untagged)]
+    enum ApiError {
+        Authentication(auth::Error),
+        Database(db::Error),
+    }
+
     aide::generate::infer_responses(true);
 
     let router = ApiRouter::new()
         .api_route("/health", get(async || "ok"))
         .nest("/institutions", institutions::router())
-        .nest("/people", people::router());
-    // .merge(projects::router());
+        .nest("/people", people::router())
+        .nest("/projects", projects::router());
     // .merge(specimens::router())
     // .merge(tenx_assays::router())
     // .merge(sequencing_runs::router())
@@ -70,6 +86,7 @@ pub(super) fn router(state: AppState) -> Router<AppState> {
                 },
             )
             .security_requirement("api_token")
+            .default_response::<Json<ApiError>>()
     });
 
     let layers = ServiceBuilder::new()

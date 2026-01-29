@@ -8,7 +8,7 @@ use crate::project::common::ProjectFields;
 
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = projects))]
-pub struct ProjectCreation {
+pub struct NewProject {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: ProjectFields,
@@ -19,7 +19,7 @@ pub struct ProjectCreation {
     #[cfg_attr(feature = "typescript", ts(as = "String"))]
     ended_at: jiff::Timestamp,
 }
-impl ProjectCreation {
+impl NewProject {
     #[must_use]
     pub fn new(
         name: NonEmptyString,

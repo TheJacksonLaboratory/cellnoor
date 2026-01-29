@@ -1,6 +1,6 @@
 mod common;
-mod creation;
+mod create;
 mod read;
 
-pub use creation::CdnaMeasurementCreation;
+pub use create::NewCdnaMeasurement;
 pub use read::CdnaMeasurement;

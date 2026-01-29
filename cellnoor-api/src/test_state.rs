@@ -15,7 +15,7 @@ use cellnoor_models::{
     library::{LibraryCreation, LibraryFields, LibraryQuery, LibrarySummary},
     multiplexing_tag::MultiplexingTag,
     person::{PersonCreation, PersonFields, PersonQuery, PersonSummary},
-    project::{Project, ProjectCreation, ProjectFields, ProjectQuery},
+    project::{NewProject, Project, ProjectFields, ProjectQuery},
     specimen::{
         BlockCreation, BlockFixative, Fixative, Species, SpecimenCommonFields, SpecimenCreation,
         SpecimenQuery, SpecimenSummary, SuspensionSpecimenCreation, SuspensionThermalPreservation,

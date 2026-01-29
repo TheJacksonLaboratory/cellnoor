@@ -5,6 +5,14 @@
     "/health": {
       "get": {
         "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
           "200": {
             "description": "plain text",
             "content": { "text/plain; charset=utf-8": {} }
@@ -50,6 +58,14 @@
           }
         ],
         "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
           "200": {
             "description": "",
             "content": {
@@ -58,54 +74,6 @@
                   "type": "array",
                   "items": { "$ref": "#/components/schemas/Institution" }
                 }
-              }
-            }
-          },
-          "422": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" }
               }
             }
           }
@@ -121,59 +89,19 @@
           "required": true
         },
         "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Institution" }
-              }
-            }
-          },
-          "422": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" }
               }
             }
           }
@@ -191,59 +119,19 @@
           }
         ],
         "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Institution" }
-              }
-            }
-          },
-          "422": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" }
               }
             }
           }
@@ -290,6 +178,14 @@
           }
         ],
         "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
           "200": {
             "description": "",
             "content": {
@@ -298,54 +194,6 @@
                   "type": "array",
                   "items": { "$ref": "#/components/schemas/PersonSummary" }
                 }
-              }
-            }
-          },
-          "422": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" }
               }
             }
           }
@@ -386,6 +234,14 @@
           }
         ],
         "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
           "200": {
             "description": "",
             "content": {
@@ -394,54 +250,6 @@
                   "type": "array",
                   "items": { "$ref": "#/components/schemas/PersonSummary" }
                 }
-              }
-            }
-          },
-          "422": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" }
               }
             }
           }
@@ -457,6 +265,14 @@
           "required": true
         },
         "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
           "200": {
             "description": "",
             "content": {
@@ -470,46 +286,6 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/CreatePersonError" }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" }
               }
             }
           }
@@ -527,59 +303,19 @@
           }
         ],
         "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Person" }
-              }
-            }
-          },
-          "422": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" }
               }
             }
           }
@@ -603,6 +339,14 @@
           "required": true
         },
         "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
           "200": {
             "description": "",
             "content": {
@@ -618,47 +362,324 @@
                 "schema": { "$ref": "#/components/schemas/CreatePersonError" }
               }
             }
-          },
-          "409": {
+          }
+        }
+      }
+    },
+    "/people/{id}/projects": {
+      "get": {
+        "responses": {
+          "default": {
             "description": "",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+                "schema": { "$ref": "#/components/schemas/ApiError" }
               }
             }
           },
-          "500": {
+          "200": { "description": "no content" }
+        }
+      }
+    },
+    "/people/{id}/specimens": {
+      "get": {
+        "responses": {
+          "default": {
             "description": "",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+                "schema": { "$ref": "#/components/schemas/ApiError" }
               }
             }
           },
-          "404": {
+          "200": { "description": "no content" }
+        }
+      }
+    },
+    "/people/{id}/chromium-datasets": {
+      "get": {
+        "responses": {
+          "default": {
             "description": "",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DatabaseError" }
+                "schema": { "$ref": "#/components/schemas/ApiError" }
               }
             }
           },
-          "401": {
-            "description": "",
+          "200": { "description": "no content" }
+        }
+      }
+    },
+    "/projects": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "query",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthError" }
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "filter": { "$ref": "#/components/schemas/ProjectFilter" },
+                    "limit": {
+                      "type": "integer",
+                      "format": "int64",
+                      "default": 500
+                    },
+                    "offset": {
+                      "type": "integer",
+                      "format": "int64",
+                      "default": 0
+                    },
+                    "order_by": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/ProjectOrderBy" }
+                    }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Project" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/NewProject" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Project" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Project" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{id}/people": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "filter": { "$ref": "#/components/schemas/PersonFilter" },
+                    "limit": {
+                      "type": "integer",
+                      "format": "int64",
+                      "default": 500
+                    },
+                    "offset": {
+                      "type": "integer",
+                      "format": "int64",
+                      "default": 0
+                    },
+                    "order_by": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/PersonOrderBy" }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PersonSummary" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "id": { "type": "string", "format": "uuid" } },
+                "required": ["id"]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "200": { "description": "no content" }
+        }
+      },
+      "patch": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "id": { "type": "string", "format": "uuid" } },
+                "required": ["id"]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "200": { "description": "no content" }
+        }
+      }
+    },
+    "/projects/{id}/specimens": {
+      "get": {
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "200": { "description": "no content" }
+        }
+      }
+    },
+    "/projects/{id}/chromium-datasets": {
+      "get": {
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "200": { "description": "no content" }
         }
       }
     }
@@ -668,6 +689,12 @@
       "api_token": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
     },
     "schemas": {
+      "ApiError": {
+        "anyOf": [
+          { "$ref": "#/components/schemas/AuthError" },
+          { "$ref": "#/components/schemas/DatabaseError" }
+        ]
+      },
       "AuthError": {
         "oneOf": [
           {
@@ -849,6 +876,15 @@
         },
         "required": ["name", "institution_id", "email"]
       },
+      "NewProject": {
+        "type": "object",
+        "properties": {
+          "ended_at": { "type": "string", "format": "date-time" },
+          "name": { "type": "string" },
+          "started_at": { "type": "string", "format": "date-time" }
+        },
+        "required": ["name", "started_at", "ended_at"]
+      },
       "Person": {
         "type": "object",
         "properties": {
@@ -1011,6 +1047,90 @@
           "orcid": { "type": ["string", "null"], "default": null }
         },
         "additionalProperties": false
+      },
+      "Project": {
+        "type": "object",
+        "properties": {
+          "ended_at": { "type": "string", "format": "date-time" },
+          "id": { "type": "string", "format": "uuid" },
+          "links": { "$ref": "#/components/schemas/Links" },
+          "name": { "type": "string" },
+          "started_at": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "name", "started_at", "ended_at", "links"]
+      },
+      "ProjectFilter": {
+        "type": "object",
+        "properties": {
+          "ended_after": {
+            "type": ["string", "null"],
+            "format": "date-time",
+            "default": null
+          },
+          "ended_before": {
+            "type": ["string", "null"],
+            "format": "date-time",
+            "default": null
+          },
+          "ids": {
+            "type": ["array", "null"],
+            "default": null,
+            "items": { "type": "string", "format": "uuid" },
+            "uniqueItems": true
+          },
+          "names": {
+            "type": ["array", "null"],
+            "default": null,
+            "items": { "type": "string" }
+          },
+          "started_after": {
+            "type": ["string", "null"],
+            "format": "date-time",
+            "default": null
+          },
+          "started_before": {
+            "type": ["string", "null"],
+            "format": "date-time",
+            "default": null
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProjectOrderBy": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "descending": { "type": ["boolean", "null"] },
+              "field": { "type": "string", "const": "id" }
+            },
+            "required": ["field"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "descending": { "type": ["boolean", "null"] },
+              "field": { "type": "string", "const": "name" }
+            },
+            "required": ["field"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "descending": { "type": ["boolean", "null"] },
+              "field": { "type": "string", "const": "started_at" }
+            },
+            "required": ["field"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "descending": { "type": ["boolean", "null"] },
+              "field": { "type": "string", "const": "ended_at" }
+            },
+            "required": ["field"]
+          }
+        ]
       }
     }
   },

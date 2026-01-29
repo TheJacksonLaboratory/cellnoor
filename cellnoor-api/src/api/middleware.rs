@@ -2,7 +2,7 @@ use axum::{
     Extension,
     extract::{Request, State},
     http::StatusCode,
-    middleware::Next,
+    middleware::{FromFn, FromFnLayer, MapResponseLayer, Next},
     response::Response,
 };
 use axum_extra::{TypedHeader, extract::CookieJar};
@@ -43,7 +43,7 @@ pub async fn admin_required(
     Ok(next.run(request).await)
 }
 
-pub async fn creation_status_code(mut response: Response) -> Response {
+pub async fn created_status_code(mut response: Response) -> Response {
     let status_code = response.status_mut();
 
     if status_code.is_success() {

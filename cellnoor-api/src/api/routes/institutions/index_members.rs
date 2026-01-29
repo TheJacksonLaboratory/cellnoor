@@ -1,29 +1,20 @@
 use axum::{
     Json,
     extract::{Path, State},
-    http::StatusCode,
 };
 use cellnoor_models::{
     IdParameter,
-    institution::{self},
-    person::{self, PersonFilter, PersonQuery, PersonSummary},
+    person::{PersonQuery, PersonSummary},
 };
 use diesel::prelude::*;
-use diesel_async::AsyncPgConnection;
-use uuid::Uuid;
 
 use crate::{
-    api::{
-        self,
-        auth::{self},
-        extract::JsonQuery,
-        routes::people::index::index_people,
-    },
-    db::{self, DbConnection, ToBoxedFilter},
+    api::{extract::JsonQuery, routes::people::index::index_people},
+    db::{self, DbConnection},
     state::AppState,
 };
 
-pub async fn index_institution_members(
+pub async fn index_members(
     state: State<AppState>,
     db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
