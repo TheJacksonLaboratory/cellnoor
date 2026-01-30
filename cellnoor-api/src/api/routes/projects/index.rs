@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use axum::Extension;
 use axum::Json;
 use axum::extract::State;
@@ -9,7 +7,6 @@ use diesel::SelectableExpression;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use jiff_diesel::ToDiesel;
-use uuid::Uuid;
 
 use crate::api::auth::AuthenticatedUser;
 use crate::api::auth::RemoveUnauthorizedProjects;
@@ -48,7 +45,7 @@ async fn select_projects(
         .filter(filter.to_boxed_filter())
         .into_boxed();
 
-    for ordering in order_by.as_ref() {
+    for ordering in order_by {
         stmt = stmt.then_order_by(ordering);
     }
 

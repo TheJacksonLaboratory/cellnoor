@@ -1,9 +1,8 @@
-use aide::transform::TransformOperation;
-use axum::{Json, extract::State, http::StatusCode};
+use axum::{Json, extract::State};
 use cellnoor_models::institution::{Institution, NewInstitution};
 use cellnoor_schema::institutions::dsl::institutions;
 use diesel::prelude::*;
-use diesel_async::{AsyncPgConnection, RunQueryDsl};
+use diesel_async::RunQueryDsl;
 
 use crate::{
     db::{self, DbConnection},
@@ -20,7 +19,7 @@ pub async fn create_institution(
         .map(Json)
 }
 
-async fn insert_institution(
+pub async fn insert_institution(
     institution: NewInstitution,
     db_conn: &mut DbConnection,
 ) -> Result<Institution, db::Error> {

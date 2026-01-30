@@ -1,25 +1,16 @@
 use crate::api::routes::people::create::validate_email;
 use crate::api::routes::people::show::select_person_by_id;
 use crate::db::DbConnection;
-use crate::{db, state::AppState};
-use aide::OperationIo;
+use crate::state::AppState;
 use axum::Json;
 use axum::extract::Path;
-use axum::response::IntoResponse;
-use axum::{extract::State, http::status::StatusCode};
+use axum::extract::State;
 use cellnoor_models::IdParameter;
 use cellnoor_models::person::Person;
-use cellnoor_models::person::{NewPerson, PersonUpdate};
+use cellnoor_models::person::PersonUpdate;
 use cellnoor_schema::people;
-use diesel::{
-    prelude::*,
-    sql_types::{Array, Text},
-};
-use diesel_async::{AsyncPgConnection, RunQueryDsl};
-use regex::Regex;
-use serde::Serialize;
-use std::sync::LazyLock;
-use uuid::Uuid;
+use diesel::prelude::*;
+use diesel_async::RunQueryDsl;
 
 pub async fn update_person(
     _: State<AppState>,
@@ -38,7 +29,7 @@ pub async fn update_person(
     Ok(select_person_by_id(id, &mut db_conn).await.map(Json)?)
 }
 
-async fn update_person_inner(
+pub async fn update_person_inner(
     update: PersonUpdate,
     db_conn: &mut DbConnection,
 ) -> Result<(), super::create::Error> {

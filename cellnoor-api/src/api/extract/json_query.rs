@@ -1,14 +1,12 @@
 use std::borrow::Cow;
 
 use aide::{
-    openapi::{Content, MediaType, Parameter, ParameterSchemaOrContent, QueryStyle, SchemaObject},
+    openapi::{Content, MediaType, ParameterSchemaOrContent, SchemaObject},
     operation::{ParamLocation, add_parameters, parameters_from_schema},
 };
 use axum::{Json, extract::FromRequestParts, http::StatusCode, response::IntoResponse};
 use schemars::JsonSchema;
 use serde::{Serialize, de::DeserializeOwned};
-
-use crate::api;
 
 #[derive(Default, JsonSchema)]
 #[serde(default)]
@@ -30,25 +28,25 @@ where
         operation: &mut aide::openapi::Operation,
     ) {
         let schema = ctx.schema.subschema_for::<Self>();
-        let params = parameters_from_schema(ctx, schema, ParamLocation::Query);
+        let mut params = parameters_from_schema(ctx, schema, ParamLocation::Query);
 
-        // let parameter = params
-        //     .get_mut(0)
-        //     .expect("there should be one parameter called query");
+        let parameter = params
+            .get_mut(0)
+            .expect("there should be one parameter called query");
 
-        // parameter.parameter_data_mut().format =
-        //     ParameterSchemaOrContent::Content(Content::from([(
-        //         "application/json".to_owned(),
-        //         MediaType {
-        //             schema: Some(SchemaObject {
-        //                 json_schema: ctx.schema.subschema_for::<T>(),
-        //                 example: None,
-        //                 external_docs: None,
-        //             }),
+        parameter.parameter_data_mut().format =
+            ParameterSchemaOrContent::Content(Content::from([(
+                "application/json".to_owned(),
+                MediaType {
+                    schema: Some(SchemaObject {
+                        json_schema: ctx.schema.subschema_for::<T>(),
+                        example: None,
+                        external_docs: None,
+                    }),
 
-        //             ..Default::default()
-        //         },
-        //     )]));
+                    ..Default::default()
+                },
+            )]));
 
         add_parameters(ctx, operation, params);
     }

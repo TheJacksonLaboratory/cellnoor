@@ -42,7 +42,7 @@ impl api::AuthorizedRequest<Vec<ChromiumDatasetSummary>> for (PersonId, Chromium
             .filter(project_people::person_id.eq(person_id))
             .into_boxed();
 
-        for ordering in order_by.as_ref() {
+        for ordering in order_by {
             stmt = stmt.then_order_by(ordering);
         }
 

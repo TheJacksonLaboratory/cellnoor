@@ -4,10 +4,10 @@ use tokio_stream::StreamExt;
 
 use cellnoor_schema::{people, project_people};
 use diesel::{HasQuery, prelude::*};
-use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
+use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use uuid::Uuid;
 
-use crate::db::{self, DbConnection};
+use crate::db::{self};
 
 use super::{FromEncodedJwt, common::*};
 
@@ -18,7 +18,7 @@ pub struct User(StandardClaims);
 impl FromEncodedJwt for User {}
 
 impl User {
-    pub async fn with_authorized_projects(
+    pub(super) async fn with_authorized_projects(
         &self,
         mut db_conn: &AsyncPgConnection,
     ) -> Result<super::AuthenticatedUserInner, db::Error> {

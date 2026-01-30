@@ -1,9 +1,9 @@
 use aide::axum::{
     ApiRouter,
-    routing::{get, get_with, post, post_with},
+    routing::{get, post},
 };
 use axum::{
-    Extension, Router,
+    Extension,
     extract::{Path, Request},
     handler::Handler,
     middleware::Next,
@@ -24,18 +24,18 @@ use create::create_project;
 use index::index_projects;
 // use index_chromium_datasets::index_chromium_datasets;
 use index_people::index_project_people;
-// use index_specimens::index_specimens;
+use index_specimens::index_project_specimens;
 use remove_person::remove_person_from_project;
 use show::show_project;
 
-mod add_person;
-mod create;
-mod index;
-mod index_chromium_datasets;
-mod index_people;
-mod index_specimens;
-mod remove_person;
-mod show;
+pub(super) mod add_person;
+pub(super) mod create;
+pub(super) mod index;
+pub(super) mod index_chromium_datasets;
+pub(super) mod index_people;
+pub(super) mod index_specimens;
+pub(super) mod remove_person;
+pub(super) mod show;
 
 pub(super) fn router() -> ApiRouter<AppState> {
     let id_router = ApiRouter::new()
@@ -48,7 +48,7 @@ pub(super) fn router() -> ApiRouter<AppState> {
                     remove_person_from_project.layer(axum::middleware::from_fn(admin_required)),
                 ),
         )
-        .api_route("/specimens", get(async || ()))
+        .api_route("/specimens", get(index_project_specimens))
         .api_route("/chromium-datasets", get(async || ()))
         .layer(axum::middleware::from_fn(authorize_project_access));
 
@@ -70,7 +70,13 @@ async fn authorize_project_access(
     request: Request,
     next: Next,
 ) -> Result<Response, auth::Error> {
-    user.authorize_project_access(project_id)?;
+    if user.is_staff() {
+        return Ok(next.run(request).await);
+    }
+
+    if !user.projects().contains(&project_id) {
+        return Err(auth::Error::PermissionDenied);
+    }
 
     Ok(next.run(request).await)
 }

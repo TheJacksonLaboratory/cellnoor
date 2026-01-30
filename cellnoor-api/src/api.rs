@@ -1,12 +1,7 @@
-use std::sync::Arc;
 
 use crate::{config::Config, state::AppState};
-use aide::{
-    axum::ApiRouter,
-    openapi::{Info, OpenApi, SecurityRequirement, SecurityScheme},
-};
 use anyhow::Context;
-use axum::{Extension, Router, routing::get};
+use axum::Router;
 use camino::Utf8Path;
 use tokio::net::TcpListener;
 

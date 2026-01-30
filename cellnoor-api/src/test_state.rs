@@ -16,9 +16,9 @@ use cellnoor_models::{
     person::{NewPerson, PersonFields, PersonQuery, PersonSummary},
     project::{NewProject, Project, ProjectFields, ProjectQuery},
     specimen::{
-        BlockCreation, BlockFixative, Fixative, Species, SpecimenCommonFields, SpecimenCreation,
-        SpecimenQuery, SpecimenSummary, SuspensionSpecimenCreation, SuspensionThermalPreservation,
-        ThermalPreservationMethod, TissueCreation,
+        BlockFixative, Fixative, NewBlock, NewSpecimen, NewSuspensionSpecimen, NewTissue, Species,
+        SpecimenCommonFields, SpecimenQuery, SpecimenSummary, SuspensionThermalPreservation,
+        ThermalPreservationMethod,
     },
     suspension::{
         CellSuspensionCreation, SuspensionCreationCommonFields, SuspensionFields, SuspensionQuery,

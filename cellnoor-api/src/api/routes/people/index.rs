@@ -1,13 +1,13 @@
 use crate::{
-    api::{self, auth, extract::JsonQuery},
+    api::extract::JsonQuery,
     db::{self, BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter, like_any},
     state::AppState,
 };
-use axum::{Json, extract::State, http::status::StatusCode};
+use axum::{Json, extract::State};
 use cellnoor_models::person::{PersonFilter, PersonQuery, PersonSummary};
 use cellnoor_schema::people::dsl::{email, id, institution_id, microsoft_entra_oid, name, orcid};
 use diesel::{dsl::AssumeNotNull, prelude::*};
-use diesel_async::{AsyncPgConnection, RunQueryDsl};
+use diesel_async::RunQueryDsl;
 
 pub async fn index_people(
     _: State<AppState>,
@@ -17,7 +17,7 @@ pub async fn index_people(
     select_people(query, &mut db_conn).await.map(Json)
 }
 
-async fn select_people(
+pub async fn select_people(
     PersonQuery {
         filter,
         limit,
@@ -32,7 +32,7 @@ async fn select_people(
         .filter(filter.to_boxed_filter())
         .into_boxed();
 
-    for ordering in order_by.as_ref() {
+    for ordering in order_by {
         stmt = stmt.then_order_by(ordering);
     }
 

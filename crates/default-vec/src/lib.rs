@@ -15,6 +15,15 @@ impl<T> DefaultVec<T> {
     }
 }
 
+impl<T> IntoIterator for DefaultVec<T> {
+    type IntoIter = std::vec::IntoIter<T>;
+    type Item = T;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
 impl<T> Default for DefaultVec<T>
 where
     T: Default,

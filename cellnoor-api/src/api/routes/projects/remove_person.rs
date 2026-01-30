@@ -23,7 +23,7 @@ pub async fn remove_person_from_project(
 }
 
 async fn delete_project_person_mapping(
-    project_id: Uuid,
+    _project_id: Uuid,
     person_id: Uuid,
     db_conn: &mut DbConnection,
 ) -> Result<(), db::Error> {

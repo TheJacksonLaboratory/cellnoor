@@ -57,20 +57,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    q?: {
-                        filter?: components["schemas"]["InstitutionFilter"];
-                        /**
-                         * Format: int64
-                         * @default 500
-                         */
-                        limit?: number;
-                        /**
-                         * Format: int64
-                         * @default 0
-                         */
-                        offset?: number;
-                        order_by?: components["schemas"]["InstitutionOrderBy"][];
-                    };
+                    q?: string;
                 };
                 header?: never;
                 path?: never;
@@ -188,20 +175,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    q?: {
-                        filter?: components["schemas"]["PersonFilter"];
-                        /**
-                         * Format: int64
-                         * @default 500
-                         */
-                        limit?: number;
-                        /**
-                         * Format: int64
-                         * @default 0
-                         */
-                        offset?: number;
-                        order_by?: components["schemas"]["PersonOrderBy"][];
-                    };
+                    q?: string;
                 };
                 header?: never;
                 path: {
@@ -247,20 +221,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    q?: {
-                        filter?: components["schemas"]["PersonFilter"];
-                        /**
-                         * Format: int64
-                         * @default 500
-                         */
-                        limit?: number;
-                        /**
-                         * Format: int64
-                         * @default 0
-                         */
-                        offset?: number;
-                        order_by?: components["schemas"]["PersonOrderBy"][];
-                    };
+                    q?: string;
                 };
                 header?: never;
                 path?: never;
@@ -425,19 +386,24 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    q?: string;
+                };
                 header?: never;
-                path?: never;
+                path: {
+                    id: string;
+                };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description no content */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["Project"][];
+                    };
                 };
                 default: {
                     headers: {
@@ -466,19 +432,24 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    q?: string;
+                };
                 header?: never;
-                path?: never;
+                path: {
+                    id: string;
+                };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description no content */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["SpecimenSummary"][];
+                    };
                 };
                 default: {
                     headers: {
@@ -549,20 +520,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    q?: {
-                        filter?: components["schemas"]["ProjectFilter"];
-                        /**
-                         * Format: int64
-                         * @default 500
-                         */
-                        limit?: number;
-                        /**
-                         * Format: int64
-                         * @default 0
-                         */
-                        offset?: number;
-                        order_by?: components["schemas"]["ProjectOrderBy"][];
-                    };
+                    q?: string;
                 };
                 header?: never;
                 path?: never;
@@ -680,20 +638,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    q?: {
-                        filter?: components["schemas"]["PersonFilter"];
-                        /**
-                         * Format: int64
-                         * @default 500
-                         */
-                        limit?: number;
-                        /**
-                         * Format: int64
-                         * @default 0
-                         */
-                        offset?: number;
-                        order_by?: components["schemas"]["PersonOrderBy"][];
-                    };
+                    q?: string;
                 };
                 header?: never;
                 path: {
@@ -806,6 +751,52 @@ export interface paths {
         };
         get: {
             parameters: {
+                query?: {
+                    q?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SpecimenSummary"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/projects/{id}/chromium-datasets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
                 query?: never;
                 header?: never;
                 path?: never;
@@ -838,7 +829,201 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/projects/{id}/chromium-datasets": {
+    "/specimens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SpecimenSummary"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewSpecimen"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Specimen"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/specimens/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Specimen"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/specimens/{id}/measurements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SpecimenMeasurement"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SpecimenMeasurementFields"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SpecimenMeasurement"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/specimens/{id}/chromium-datasets": {
         parameters: {
             query?: never;
             header?: never;
@@ -903,6 +1088,10 @@ export interface components {
             /** @constant */
             type: "permission_denied";
         };
+        /** @enum {string} */
+        BlockEmbeddingMatrix: "carboxymethyl_cellulose" | "optimal_cutting_temperature_compound" | "paraffin";
+        /** @enum {string} */
+        BlockFixative: "formaldehyde_derivative";
         CreatePersonError: ({
             /** @constant */
             type: "database";
@@ -934,6 +1123,8 @@ export interface components {
             /** @constant */
             type: "other";
         };
+        /** @enum {string} */
+        Fixative: "dithiobis_succinimidylpropionate" | "formaldehyde_derivative";
         Institution: {
             /** Format: uuid */
             id: string;
@@ -959,6 +1150,67 @@ export interface components {
         Links: {
             [key: string]: components["schemas"]["Link"];
         };
+        NewBlock: {
+            additional_data?: unknown;
+            /** @constant */
+            embedded_in: "optimal_cutting_temperature_compound";
+            fixative?: components["schemas"]["BlockFixative"] | null;
+            host_species?: components["schemas"]["Species"] | null;
+            name: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            tissue: string;
+        } | {
+            additional_data?: unknown;
+            /** @constant */
+            embedded_in: "carboxymethyl_cellulose";
+            fixative?: components["schemas"]["BlockFixative"] | null;
+            host_species?: components["schemas"]["Species"] | null;
+            name: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            tissue: string;
+        } | {
+            additional_data?: unknown;
+            /** @constant */
+            embedded_in: "paraffin";
+            fixative: components["schemas"]["BlockFixative"];
+            host_species?: components["schemas"]["Species"] | null;
+            name: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            tissue: string;
+        };
         NewInstitution: {
             /** Format: uuid */
             id: string;
@@ -979,6 +1231,136 @@ export interface components {
             name: string;
             /** Format: date-time */
             started_at: string;
+        };
+        NewSpecimen: ({
+            /** @constant */
+            type: "block";
+        } & components["schemas"]["NewBlock"]) | ({
+            /** @constant */
+            type: "suspension";
+        } & components["schemas"]["NewSuspensionSpecimen"]) | ({
+            /** @constant */
+            type: "tissue";
+        } & components["schemas"]["NewTissue"]);
+        NewSuspensionSpecimen: {
+            additional_data?: unknown;
+            fixative: components["schemas"]["Fixative"];
+            host_species?: components["schemas"]["Species"] | null;
+            name: string;
+            /** @constant */
+            preservation_state: "fixed";
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            tissue: string;
+        } | {
+            additional_data?: unknown;
+            host_species?: components["schemas"]["Species"] | null;
+            name: string;
+            /** @constant */
+            preservation_state: "fresh";
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            tissue: string;
+        } | {
+            additional_data?: unknown;
+            host_species?: components["schemas"]["Species"] | null;
+            name: string;
+            /** @constant */
+            preservation_state: "thermally_preserved";
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            thermal_preservation_method: components["schemas"]["SuspensionThermalPreservation"];
+            tissue: string;
+        };
+        NewTissue: {
+            additional_data?: unknown;
+            fixative: components["schemas"]["Fixative"];
+            host_species?: components["schemas"]["Species"] | null;
+            name: string;
+            /** @constant */
+            preservation_state: "fixed";
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            tissue: string;
+        } | {
+            additional_data?: unknown;
+            host_species?: components["schemas"]["Species"] | null;
+            name: string;
+            /** @constant */
+            preservation_state: "fresh";
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            tissue: string;
+        } | {
+            additional_data?: unknown;
+            host_species?: components["schemas"]["Species"] | null;
+            name: string;
+            /** @constant */
+            preservation_state: "thermally_preserved";
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            thermal_preservation_method: components["schemas"]["ThermalPreservationMethod"];
+            tissue: string;
         };
         Person: {
             email?: string | null;
@@ -1127,6 +1509,206 @@ export interface components {
             /** @constant */
             field: "ended_at";
         };
+        /** @enum {string} */
+        Species: "ambystoma_mexicanum" | "canis_familiaris" | "callithrix_jacchus" | "drosophila_melanogaster" | "gasterosteus_aculeatus" | "homo_sapiens" | "mus_musculus" | "rattus_norvegicus" | "sminthopsis_crassicaudata";
+        Specimen: {
+            additional_data?: unknown;
+            embedded_in?: components["schemas"]["BlockEmbeddingMatrix"] | null;
+            fixative?: components["schemas"]["Fixative"] | null;
+            host_species?: components["schemas"]["Species"] | null;
+            /** Format: uuid */
+            id: string;
+            links: components["schemas"]["Links"];
+            name: string;
+            project: components["schemas"]["Project"];
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            submitted_by: components["schemas"]["PersonSummary"];
+            thermal_preservation_method?: components["schemas"]["ThermalPreservationMethod"] | null;
+            tissue: string;
+            type_: components["schemas"]["SpecimenType"];
+        };
+        SpecimenFilter: {
+            /** @default null */
+            additional_data: unknown;
+            /** @default null */
+            embedded_in: components["schemas"]["BlockEmbeddingMatrix"][] | null;
+            /** @default null */
+            fixatives: components["schemas"]["Fixative"][] | null;
+            /** @default null */
+            fresh: boolean | null;
+            /** @default null */
+            host_species: components["schemas"]["Species"][] | null;
+            /** @default null */
+            ids: string[] | null;
+            /** @default null */
+            names: string[] | null;
+            /** @default null */
+            projects: string[] | null;
+            /**
+             * Format: date-time
+             * @default null
+             */
+            received_after: string | null;
+            /**
+             * Format: date-time
+             * @default null
+             */
+            received_before: string | null;
+            /**
+             * Format: date-time
+             * @default null
+             */
+            returned_after: string | null;
+            /**
+             * Format: date-time
+             * @default null
+             */
+            returned_before: string | null;
+            /** @default null */
+            returned_by: string[] | null;
+            /** @default null */
+            species: components["schemas"]["Species"][] | null;
+            /** @default null */
+            submitted_by: string[] | null;
+            /** @default null */
+            thermal_preservation_methods: components["schemas"]["ThermalPreservationMethod"][] | null;
+            /** @default null */
+            tissues: string[] | null;
+            /** @default null */
+            types: components["schemas"]["SpecimenType"][] | null;
+        };
+        SpecimenMeasurement: {
+            data: components["schemas"]["SpecimenMeasurementData"];
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            measured_at: string;
+            /** Format: uuid */
+            measured_by: string;
+            /** Format: uuid */
+            specimen_id: string;
+        };
+        SpecimenMeasurementData: {
+            instrument_name?: string | null;
+            /** @constant */
+            quantity: "DV200";
+            /** Format: uint32 */
+            value: number;
+        } | {
+            instrument_name?: string | null;
+            /** @constant */
+            quantity: "RIN";
+            /** Format: uint32 */
+            value: number;
+        };
+        SpecimenMeasurementFields: {
+            data: components["schemas"]["SpecimenMeasurementData"];
+            /** Format: date-time */
+            measured_at: string;
+            /** Format: uuid */
+            measured_by: string;
+        };
+        SpecimenOrderBy: {
+            descending?: boolean | null;
+            /** @constant */
+            field: "id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "readable_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "name";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "submitted_by";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "project_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "received_at";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "species";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "host_species";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "returned_at";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "returned_by";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "type_";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "embedded_in";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "fixative";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "thermal_preservation_method";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "tissue";
+        };
+        SpecimenSummary: {
+            additional_data?: unknown;
+            embedded_in?: components["schemas"]["BlockEmbeddingMatrix"] | null;
+            fixative?: components["schemas"]["Fixative"] | null;
+            host_species?: components["schemas"]["Species"] | null;
+            /** Format: uuid */
+            id: string;
+            links: components["schemas"]["Links"];
+            name: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            thermal_preservation_method?: components["schemas"]["ThermalPreservationMethod"] | null;
+            tissue: string;
+            type_: components["schemas"]["SpecimenType"];
+        };
+        /** @enum {string} */
+        SpecimenType: "block" | "suspension" | "tissue";
+        /** @enum {string} */
+        SuspensionThermalPreservation: "controlled_rate_freezing";
+        /** @enum {string} */
+        ThermalPreservationMethod: "controlled_rate_freezing" | "flash_freezing";
     };
     responses: never;
     parameters: never;
@@ -1134,5 +1716,43 @@ export interface components {
     headers: never;
     pathItems: never;
 }
+export type ApiError = components['schemas']['ApiError'];
+export type AuthError = components['schemas']['AuthError'];
+export type BlockEmbeddingMatrix = components['schemas']['BlockEmbeddingMatrix'];
+export type BlockFixative = components['schemas']['BlockFixative'];
+export type CreatePersonError = components['schemas']['CreatePersonError'];
+export type DatabaseError = components['schemas']['DatabaseError'];
+export type Fixative = components['schemas']['Fixative'];
+export type Institution = components['schemas']['Institution'];
+export type InstitutionFilter = components['schemas']['InstitutionFilter'];
+export type InstitutionOrderBy = components['schemas']['InstitutionOrderBy'];
+export type Link = components['schemas']['Link'];
+export type Links = components['schemas']['Links'];
+export type NewBlock = components['schemas']['NewBlock'];
+export type NewInstitution = components['schemas']['NewInstitution'];
+export type NewPerson = components['schemas']['NewPerson'];
+export type NewProject = components['schemas']['NewProject'];
+export type NewSpecimen = components['schemas']['NewSpecimen'];
+export type NewSuspensionSpecimen = components['schemas']['NewSuspensionSpecimen'];
+export type NewTissue = components['schemas']['NewTissue'];
+export type Person = components['schemas']['Person'];
+export type PersonFilter = components['schemas']['PersonFilter'];
+export type PersonOrderBy = components['schemas']['PersonOrderBy'];
+export type PersonSummary = components['schemas']['PersonSummary'];
+export type PersonUpdate = components['schemas']['PersonUpdate'];
+export type Project = components['schemas']['Project'];
+export type ProjectFilter = components['schemas']['ProjectFilter'];
+export type ProjectOrderBy = components['schemas']['ProjectOrderBy'];
+export type Species = components['schemas']['Species'];
+export type Specimen = components['schemas']['Specimen'];
+export type SpecimenFilter = components['schemas']['SpecimenFilter'];
+export type SpecimenMeasurement = components['schemas']['SpecimenMeasurement'];
+export type SpecimenMeasurementData = components['schemas']['SpecimenMeasurementData'];
+export type SpecimenMeasurementFields = components['schemas']['SpecimenMeasurementFields'];
+export type SpecimenOrderBy = components['schemas']['SpecimenOrderBy'];
+export type SpecimenSummary = components['schemas']['SpecimenSummary'];
+export type SpecimenType = components['schemas']['SpecimenType'];
+export type SuspensionThermalPreservation = components['schemas']['SuspensionThermalPreservation'];
+export type ThermalPreservationMethod = components['schemas']['ThermalPreservationMethod'];
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

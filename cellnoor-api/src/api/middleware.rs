@@ -1,21 +1,17 @@
-use std::{rc::Rc, sync::Arc};
+use std::sync::Arc;
 
 use axum::{
     Extension,
     extract::{Request, State},
     http::StatusCode,
-    middleware::{FromFn, FromFnLayer, MapResponseLayer, Next},
+    middleware::Next,
     response::Response,
 };
 use axum_extra::{TypedHeader, extract::CookieJar};
 use headers::{Authorization, authorization::Bearer};
-use tower::{Layer, Service, ServiceBuilder};
 
 use crate::{
-    api::{
-        self,
-        auth::{self, AuthenticatedUser},
-    },
+    api::auth::{self, AuthenticatedUser},
     state::AppState,
 };
 
@@ -40,7 +36,7 @@ pub async fn admin_required(
     next: Next,
 ) -> Result<Response, auth::Error> {
     if !user.is_admin() {
-        Err(auth::Error::PermissionDenied)?
+        Err(auth::Error::PermissionDenied)?;
     }
 
     Ok(next.run(request).await)

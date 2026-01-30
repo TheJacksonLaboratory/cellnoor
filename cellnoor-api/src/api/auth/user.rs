@@ -1,11 +1,9 @@
 use std::{collections::HashSet, sync::Arc};
 
-use axum::{RequestPartsExt, extract::FromRequestParts};
 use axum_extra::{
     TypedHeader,
     extract::{CookieJar, cookie::Cookie},
 };
-use diesel_async::AsyncPgConnection;
 use headers::{Authorization, authorization::Bearer};
 use jsonwebtoken::{TokenData, Validation};
 use serde::{Deserialize, de::DeserializeOwned};
@@ -60,7 +58,8 @@ impl AuthenticatedUser {
                 api_user.with_authorized_projects(&db_conn).await?
             }
             EncodedJwt::FromCookie(t) => {
-                AuthenticatedUserInner::from_encoded_jwt(t, decoding_key, validation)?
+                let ui_user = ui::User::from_encoded_jwt(t, decoding_key, validation)?;
+                ui_user.into_authenticated_user()
             }
         };
 
@@ -83,7 +82,7 @@ impl AuthenticatedUser {
         &self.0.user
     }
 
-    fn projects(&self) -> &HashSet<Uuid> {
+    pub fn projects(&self) -> &HashSet<Uuid> {
         &self.0.projects
     }
 
@@ -103,16 +102,8 @@ impl AuthenticatedUser {
         self.is_admin() || self.is_biology_staff() || self.is_computational_staff()
     }
 
-    pub fn authorize_project_access(&self, requested_project: Uuid) -> Result<(), super::Error> {
-        if self.is_staff() {
-            return Ok(());
-        }
-
-        if !self.0.projects.contains(&requested_project) {
-            return Err(super::Error::PermissionDenied);
-        }
-
-        Ok(())
+    pub fn authorized_projects(&self) -> Option<&HashSet<Uuid>> {
+        (!self.is_staff()).then_some(self.projects())
     }
 }
 
@@ -156,8 +147,6 @@ trait FromEncodedJwt: DeserializeOwned {
         Ok(claims)
     }
 }
-
-impl FromEncodedJwt for AuthenticatedUserInner {}
 
 pub trait RemoveUnauthorizedProjects {
     fn remove_unauthorized_projects(&mut self, user: &AuthenticatedUser);

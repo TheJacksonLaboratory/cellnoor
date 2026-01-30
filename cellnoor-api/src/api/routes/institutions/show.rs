@@ -1,12 +1,11 @@
 use axum::{
     Json,
     extract::{Path, State},
-    http::StatusCode,
 };
 use cellnoor_models::{IdParameter, institution::Institution};
 use cellnoor_schema::institutions;
 use diesel::prelude::*;
-use diesel_async::{AsyncPgConnection, RunQueryDsl};
+use diesel_async::RunQueryDsl;
 use uuid::Uuid;
 
 use crate::{
@@ -22,7 +21,7 @@ pub async fn show_institution(
     select_institution_by_id(id, db_conn).await.map(Json)
 }
 
-async fn select_institution_by_id(
+pub async fn select_institution_by_id(
     institution_id: Uuid,
     mut db_conn: DbConnection,
 ) -> Result<Institution, db::Error> {

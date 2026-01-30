@@ -1,71 +1,51 @@
-use std::collections::HashSet;
-
-use axum::{extract::State, http::StatusCode};
+use axum::{Extension, Json, extract::State};
 use cellnoor_models::specimen::{SpecimenFilter, SpecimenQuery, SpecimenSummary};
 use cellnoor_schema::specimens as t;
 use diesel::{dsl::AssumeNotNull, prelude::*};
+use diesel_async::RunQueryDsl;
 use jiff_diesel::ToDiesel;
-use uuid::Uuid;
 
 use crate::{
     api::{
-        auth::{self},
-        extract::{QsQuery, auth::AuthenticatedUser},
-        routes::handle_api_request,
+        auth::{AuthenticatedUser, RemoveUnauthorizedProjects},
+        extract::JsonQuery,
     },
     db::{self, BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter, like_any},
     state::AppState,
 };
 
-// pub(super) async fn list_specimens(
-//     _: Root,
-//     state: State<AppState>,
-//     user: AuthenticatedUser,
-//     QsQuery(request): QsQuery<SpecimenQuery>,
-// ) -> ApiResponse<Vec<SpecimenSummary>> {
-//     let item = handle_api_request(state, user, request).await?;
-//     Ok((StatusCode::OK, item))
-// }
+pub async fn index_specimens(
+    _: State<AppState>,
+    mut db_conn: DbConnection,
+    Extension(user): Extension<AuthenticatedUser>,
+    JsonQuery { mut q }: JsonQuery<SpecimenQuery>,
+) -> Result<Json<Vec<SpecimenSummary>>, db::Error> {
+    q.filter.projects.remove_unauthorized_projects(&user);
 
-// impl db::Operation<Vec<SpecimenSummary>> for SpecimenQuery {
-//     type ValidationData = ();
+    select_specimens(q, &mut db_conn).await.map(Json)
+}
 
-//     async fn fetch_validation_data(
-//         &self,
-//         _state: &DbConnection,
-//     ) -> Result<Self::ValidationData, db::Error> {
-//         Ok(())
-//     }
+pub async fn select_specimens(
+    SpecimenQuery {
+        filter,
+        limit,
+        offset,
+        order_by,
+    }: SpecimenQuery,
+    db_conn: &mut DbConnection,
+) -> Result<Vec<SpecimenSummary>, db::Error> {
+    let mut stmt = SpecimenSummary::query()
+        .limit(limit)
+        .offset(offset)
+        .filter(filter.to_boxed_filter())
+        .into_boxed();
 
-//     fn execute(
-//         self,
-//         user: AuthorizationData,
-//         _validation_data: (),
-//         db_conn: &mut diesel::PgConnection,
-//     ) -> Result<Vec<SpecimenSummary>, db::Error> {
-//         let requested_projects = self.filter.projects.take();
-//         self.filter.projects = user.authorized_projects(requested_projects);
+    for ordering in order_by {
+        stmt = stmt.order_by(ordering);
+    }
 
-//         let Self {
-//             filter,
-//             limit,
-//             offset,
-//             order_by,
-//         } = self;
-
-//         let mut stmt = SpecimenSummary::query()
-//             .limit(limit)
-//             .offset(offset)
-//             .filter(filter.to_boxed_filter())
-//             .into_boxed();
-
-//         for ordering in order_by.as_ref() {
-//             stmt = stmt.then_order_by(ordering);
-//         }
-
-//         Ok(stmt.load(db_conn)?)
-//     }
-// }
+    Ok(stmt.load(db_conn).await?)
+}
 
 // In order to be composed into a `ChromiumDatasetFilter`, we need calls to
 // `assume_not_null`, which has no essentially no runtime impact
@@ -165,8 +145,6 @@ where
             );
         }
 
-        // There are some calls to `assume_not_null` to satisfy the type-system. This
-        // has no impact on the generated SQL.
         if let Some(true) = fresh {
             filter = filter
                 .and_condition(t::thermal_preservation_method.assume_not_null().is_null())

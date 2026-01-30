@@ -1,12 +1,11 @@
 use axum::{
     Json,
     extract::{Path, State},
-    http::StatusCode,
 };
-use cellnoor_models::{IdParameter, institution::Institution, person::Person};
-use cellnoor_schema::{institutions, people};
+use cellnoor_models::{IdParameter, person::Person};
+use cellnoor_schema::people;
 use diesel::prelude::*;
-use diesel_async::{AsyncPgConnection, RunQueryDsl};
+use diesel_async::RunQueryDsl;
 use uuid::Uuid;
 
 use crate::{

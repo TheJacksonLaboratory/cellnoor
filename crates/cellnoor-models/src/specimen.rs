@@ -8,16 +8,16 @@ mod variable;
 pub use common::Species;
 #[cfg(feature = "builder")]
 pub use common::SpecimenCommonFields;
-pub use creation::SpecimenCreation;
+pub use creation::NewSpecimen;
 #[cfg(feature = "builder")]
 pub use creation::{
-    block::{BlockCreation, BlockFixative},
-    suspension::{SuspensionSpecimenCreation, SuspensionThermalPreservation},
-    tissue::TissueCreation,
+    block::{BlockFixative, NewBlock},
+    suspension::{NewSuspensionSpecimen, SuspensionThermalPreservation},
+    tissue::NewTissue,
 };
 #[cfg(feature = "app")]
 pub use query::SpecimenQuery;
-pub use query::{SpecimenFilter,  SpecimenOrderBy};
+pub use query::{SpecimenFilter, SpecimenOrderBy};
 pub use read::{Specimen, SpecimenSummary};
 #[cfg(feature = "builder")]
 pub use variable::{Fixative, ThermalPreservationMethod};

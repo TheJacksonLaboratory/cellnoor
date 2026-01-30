@@ -142,7 +142,7 @@ impl IntoResponse for Error {
 
         let status_code = self.status_code();
         let err = match self {
-            Self::Other { message } => Self::Other {
+            Self::Other { message: _ } => Self::Other {
                 message: "something went wrong".to_owned(),
             },
             _ => self,

@@ -1,31 +1,19 @@
-use std::{fmt::Debug, sync::Arc};
+use std::sync::Arc;
 
 use crate::{
-    api::{
-        auth,
-        middleware::{authenticate_request, created_status_code},
-    },
-    db::{self, DbConnection},
+    api::{auth, middleware::authenticate_request},
+    db::{self},
     state::AppState,
 };
 use aide::{
-    axum::{ApiRouter, AxumOperationHandler, IntoApiResponse, routing::get},
+    axum::{ApiRouter, routing::get},
     openapi::{OpenApi, SecurityScheme},
 };
-use axum::{
-    Extension, Json, Router,
-    error_handling::HandleErrorLayer,
-    extract::{FromRequest, FromRequestParts, Request},
-    http::StatusCode,
-    middleware::Next,
-    response::IntoResponse,
-};
-use diesel::Connection;
+use axum::{Extension, Json, Router, extract::Request};
 use schemars::JsonSchema;
-use serde::{Serialize, de::DeserializeOwned};
+use serde::Serialize;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
-use tracing::info_span;
 
 // pub(super) mod cdna;
 // pub(super) mod chromium_datasets;
@@ -37,7 +25,7 @@ pub(super) mod institutions;
 pub(super) mod people;
 pub(super) mod projects;
 // pub(super) mod sequencing_runs;
-// pub(super) mod specimens;
+pub(super) mod specimens;
 // pub(super) mod suspension_pools;
 // pub(super) mod suspensions;
 // pub(super) mod tenx_assays;
@@ -75,7 +63,8 @@ pub fn router() -> (Router<AppState>, OpenApi) {
         .api_route("/health", get(async || "ok"))
         .nest("/institutions", institutions::router())
         .nest("/people", people::router())
-        .nest("/projects", projects::router());
+        .nest("/projects", projects::router())
+        .nest("/specimens", specimens::router());
     // .merge(specimens::router())
     // .merge(tenx_assays::router())
     // .merge(sequencing_runs::router())
@@ -100,6 +89,7 @@ pub fn router() -> (Router<AppState>, OpenApi) {
                     scheme: "bearer".to_owned(),
                     bearer_format: Some("JWT".to_owned()),
                     description: None,
+                    #[allow(clippy::default_trait_access)]
                     extensions: Default::default(),
                 },
             )

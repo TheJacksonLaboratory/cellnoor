@@ -1,18 +1,13 @@
-use crate::api::routes::people::show::select_person_by_id;
 use crate::db::DbConnection;
 use crate::{db, state::AppState};
 use aide::OperationIo;
 use axum::Json;
 use axum::response::IntoResponse;
 use axum::{extract::State, http::status::StatusCode};
+use cellnoor_models::person::NewPerson;
 use cellnoor_models::person::Person;
-use cellnoor_models::person::{NewPerson, PersonUpdate};
 use cellnoor_schema::people;
-use diesel::{
-    prelude::*,
-    sql_types::{Array, Text},
-};
-use diesel_async::{AsyncPgConnection, RunQueryDsl};
+use diesel_async::RunQueryDsl;
 use regex::Regex;
 use schemars::JsonSchema;
 use serde::Serialize;
@@ -45,7 +40,7 @@ pub(super) fn validate_email(email: &str) -> Result<(), Error> {
     Ok(())
 }
 
-async fn insert_person(person: NewPerson, db_conn: &mut DbConnection) -> Result<Uuid, Error> {
+pub async fn insert_person(person: NewPerson, db_conn: &mut DbConnection) -> Result<Uuid, Error> {
     Ok(diesel::insert_into(people::table)
         .values(person)
         .returning(people::id)

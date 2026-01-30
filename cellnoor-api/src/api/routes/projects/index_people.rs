@@ -4,16 +4,16 @@ use axum::{
 };
 use cellnoor_models::{
     IdParameter,
-    person::{PersonOrderBy, PersonQuery, PersonSummary},
+    person::{PersonQuery, PersonSummary},
 };
-use cellnoor_schema::{people, project_people};
-use diesel::{pg::Pg, prelude::*};
+use cellnoor_schema::project_people;
+use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use uuid::Uuid;
 
 use crate::{
     api::extract::JsonQuery,
-    db::{self, BoxedFilter, DbConnection, ToBoxedFilter},
+    db::{self, DbConnection, ToBoxedFilter},
     state::AppState,
 };
 
@@ -46,7 +46,7 @@ async fn select_project_people(
         .filter(filter.to_boxed_filter())
         .into_boxed();
 
-    for ordering in order_by.as_ref() {
+    for ordering in order_by {
         stmt = stmt.then_order_by(ordering);
     }
 

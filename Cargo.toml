@@ -84,7 +84,6 @@ url = { version = "2.5.8", features = ["serde"] }
 uuid = { version = "1.19.0", features = ["serde", "v7"] }
 
 [workspace.lints.clippy]
-async_fn_in_trait = "allow"
 cast_precision_loss = "allow"
 missing_errors_doc = "allow"
 missing_panics_doc = "allow"

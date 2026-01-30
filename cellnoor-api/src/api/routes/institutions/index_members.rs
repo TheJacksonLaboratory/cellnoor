@@ -6,7 +6,6 @@ use cellnoor_models::{
     IdParameter,
     person::{PersonQuery, PersonSummary},
 };
-use diesel::prelude::*;
 
 use crate::{
     api::{extract::JsonQuery, routes::people::index::index_people},

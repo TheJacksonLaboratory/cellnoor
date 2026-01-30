@@ -7,8 +7,9 @@ use crate::specimen::{
 
 #[base_model]
 #[derive(serde::Deserialize)]
+#[cfg_attr(feature = "app", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case", tag = "preservation_state")]
-pub enum TissueCreation {
+pub enum NewTissue {
     Fixed {
         #[serde(flatten)]
         inner: SpecimenCommonFields,
@@ -25,7 +26,7 @@ pub enum TissueCreation {
     },
 }
 
-impl TissueCreation {
+impl NewTissue {
     pub(super) fn common(&self) -> &SpecimenCommonFields {
         match self {
             Self::Fixed { inner, fixative: _ }

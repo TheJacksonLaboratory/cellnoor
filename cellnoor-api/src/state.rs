@@ -1,8 +1,4 @@
-use std::{
-    sync::{Arc, RwLock, RwLockReadGuard},
-    thread::sleep,
-    time::Duration,
-};
+use std::sync::{Arc, RwLock, RwLockReadGuard};
 
 use anyhow::{Context, anyhow};
 use cellnoor_schema::json_web_keys;
@@ -157,7 +153,7 @@ impl AppState {
             .await
             .context("failed to connect to db as root to run migrations")?;
 
-        let mut root_db_conn = run_migrations(root_db_conn)?;
+        let root_db_conn = run_migrations(root_db_conn)?;
         tracing::info!("ran database migrations");
 
         tokio::try_join!(
@@ -175,7 +171,7 @@ impl AppState {
         tracing::info!("set password for database users 'cellnoor-api' and 'cellnoor-ui'");
 
         let initial_data = config.initial_data();
-        insert_initial_data(initial_data, reqwest::Client::new(), &mut root_db_conn)
+        insert_initial_data(initial_data, reqwest::Client::new(), &root_db_conn)
             .await
             .context("failed to insert initial data")?;
         tracing::info!("inserted initial data");

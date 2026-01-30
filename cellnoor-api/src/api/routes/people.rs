@@ -12,6 +12,8 @@ use aide::{
 use axum::{Json, handler::Handler, http::StatusCode};
 use create::create_person;
 use index::index_people;
+use index_projects::index_person_projects;
+use index_specimens::index_person_specimens;
 use show::show_person;
 use tower::ServiceBuilder;
 use update::update_person;
@@ -30,8 +32,8 @@ pub(super) fn router() -> ApiRouter<AppState> {
         .layer(axum::middleware::map_response(created_status_code));
 
     let person_items = ApiRouter::new()
-        .api_route("/projects", get(async || ()))
-        .api_route("/specimens", get(async || ()))
+        .api_route("/projects", get(index_person_projects))
+        .api_route("/specimens", get(index_person_specimens))
         .api_route("/chromium-datasets", get(async || ()));
 
     let id_router = ApiRouter::new()

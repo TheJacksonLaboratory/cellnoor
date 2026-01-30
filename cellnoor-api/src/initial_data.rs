@@ -1,23 +1,18 @@
-use std::{fmt::Display, str::FromStr, sync::Arc};
+use std::{fmt::Display, str::FromStr};
 
-use anyhow::{Context, bail, ensure};
+use anyhow::{bail, ensure};
 use cellnoor_models::{
-    institution::{Institution, NewInstitution},
+    institution::NewInstitution,
     multiplexing_tag::MultiplexingTagCreation,
     person::NewPerson,
     tenx_assay::TenxAssayCreation,
 };
 use diesel_async::AsyncPgConnection;
-pub(crate) use index_sets::IndexSetName;
-use tracing_subscriber::filter::FilterExt;
 use url::Url;
 
-use crate::{
-    initial_data::index_sets::{
+use crate::initial_data::index_sets::{
         download_and_insert_dual_index_sets, download_and_insert_single_index_sets,
-    },
-    state::AppState,
-};
+    };
 
 mod app_admin;
 mod index_sets;
@@ -56,7 +51,7 @@ impl InitialData {
         &self.tenx_assays
     }
 
-    async fn validate(self, db_conn: &AsyncPgConnection) -> anyhow::Result<Self> {
+    async fn validate(self, _db_conn: &AsyncPgConnection) -> anyhow::Result<Self> {
         Ok(self)
         // let Self {
         //     institution,

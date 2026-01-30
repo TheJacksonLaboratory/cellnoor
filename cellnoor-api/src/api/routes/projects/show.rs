@@ -1,16 +1,14 @@
 use axum::{
     Json,
     extract::{Path, State},
-    http::StatusCode,
 };
-use cellnoor_models::{IdParameter, institution::Institution, project::Project};
+use cellnoor_models::{IdParameter, project::Project};
 use cellnoor_schema::projects;
 use diesel::prelude::*;
-use diesel_async::{AsyncPgConnection, RunQueryDsl};
+use diesel_async::RunQueryDsl;
 use uuid::Uuid;
 
 use crate::{
-    api::{self, auth},
     db::{self, DbConnection},
     state::AppState,
 };

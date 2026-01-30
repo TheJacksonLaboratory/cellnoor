@@ -40,7 +40,7 @@ impl db::Operation<Vec<ChromiumRunSummary>> for ChromiumRunQuery {
             .filter(filter.to_boxed_filter())
             .into_boxed();
 
-        for ordering in order_by.as_ref() {
+        for ordering in order_by {
             stmt = stmt.then_order_by(ordering);
         }
 

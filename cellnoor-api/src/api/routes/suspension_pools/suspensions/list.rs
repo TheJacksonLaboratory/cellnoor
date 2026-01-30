@@ -50,7 +50,7 @@ impl db::Operation<Vec<SuspensionSummary>> for (SuspensionPoolIdSuspensions, Sus
 
         stmt = stmt.filter(filter.to_boxed_filter());
 
-        for ordering in order_by.as_ref() {
+        for ordering in order_by {
             stmt = stmt.then_order_by(ordering);
         }
 
