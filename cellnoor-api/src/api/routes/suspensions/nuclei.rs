@@ -1,17 +1,12 @@
-use axum::{Router, routing::post};
-use axum_extra::routing::{RouterExt, TypedPath};
-use cellnoor_models::suspension::SuspensionIdMeasurements;
+use aide::axum::{ApiRouter, routing::post};
 
 use crate::state::AppState;
+
+use create::create_nucleus_suspension;
 
 mod create;
 mod measurements;
 
-pub(super) fn router() -> Router<AppState> {
-    Router::new()
-        .typed_post(create::create_nucleus_suspension)
-        .route(
-            SuspensionIdMeasurements::PATH,
-            post(measurements::create_nucleus_suspension_measurement),
-        )
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new().api_route("/", post(create_nucleus_suspension))
 }

@@ -33,7 +33,7 @@ impl SuspensionCreationCommonFields {
 
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = suspensions))]
-pub struct CellSuspensionCreation {
+pub struct NewCellSuspension {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     common: SuspensionCreationCommonFields,
@@ -42,7 +42,7 @@ pub struct CellSuspensionCreation {
     created_at: Option<Timestamp>,
 }
 
-impl CellSuspensionCreation {
+impl NewCellSuspension {
     #[must_use]
     pub fn common(&self) -> &SuspensionCreationCommonFields {
         &self.common
@@ -56,7 +56,7 @@ impl CellSuspensionCreation {
 
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = suspensions))]
-pub struct NucleusSuspensionCreation {
+pub struct NewNucleusSuspension {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     common: SuspensionCreationCommonFields,
@@ -66,7 +66,7 @@ pub struct NucleusSuspensionCreation {
     lysis_duration_minutes: RangedF32<0, { u32::MAX }>,
 }
 
-impl NucleusSuspensionCreation {
+impl NewNucleusSuspension {
     #[must_use]
     pub fn common(&self) -> &SuspensionCreationCommonFields {
         &self.common

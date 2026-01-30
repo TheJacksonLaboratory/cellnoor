@@ -1,6 +1,5 @@
 use cellnoor_models::multiplexing_tag::MultiplexingTagCreation;
 use cellnoor_schema::multiplexing_tags::dsl::*;
-use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 use crate::initial_data::Upsert;

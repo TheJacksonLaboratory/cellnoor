@@ -1,20 +1,32 @@
-use axum::Router;
-use axum_extra::routing::RouterExt;
+use aide::axum::{
+    ApiRouter,
+    routing::{get, post, post_with},
+};
 
-use crate::state::AppState;
+use crate::{admin_required_creation, state::AppState};
 
-mod cells;
-mod create;
-mod fetch;
-mod list;
+use index::index_suspensions;
+use show::show_suspension;
+
+pub(super) mod cells;
+pub(super) mod index;
 mod measurements;
-mod nuclei;
+pub(super) mod nuclei;
+pub(super) mod show;
 
-pub(super) fn router() -> Router<AppState> {
-    Router::new()
-        .nest("/cells", cells::router())
-        .nest("/nuclei", nuclei::router())
-        .typed_get(fetch::fetch_suspension)
-        .typed_get(list::list_suspensions)
-        .typed_get(measurements::list::list_measurements)
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route("/", get(index_suspensions))
+        .nest("/cells", cells::router().layer(admin_required_creation!()))
+        .nest(
+            "/nuclei",
+            nuclei::router().layer(admin_required_creation!()),
+        )
+        .nest("/{id}", id_router())
+}
+
+fn id_router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route("/", get(show_suspension))
+        .nest("/measurements", measurements::router())
 }

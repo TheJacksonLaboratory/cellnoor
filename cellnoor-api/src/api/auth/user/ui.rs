@@ -1,10 +1,7 @@
-use std::collections::HashSet;
-
 use serde::Deserialize;
-use uuid::Uuid;
 
 use super::FromEncodedJwt;
-use super::{AuthenticatedUserInner, common::*};
+use super::{AuthProjects, AuthUser, common::*};
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct User {
@@ -12,14 +9,14 @@ pub struct User {
     #[serde(flatten)]
     standard_claims: StandardClaims,
     user: PrivateClaims,
-    projects: HashSet<Uuid>,
+    projects: AuthProjects,
 }
 
 impl User {
-    pub fn into_authenticated_user(self) -> AuthenticatedUserInner {
+    pub fn into_authenticated_user(self) -> AuthUser {
         let Self { user, projects, .. } = self;
 
-        AuthenticatedUserInner { user, projects }
+        AuthUser { user, projects }
     }
 }
 

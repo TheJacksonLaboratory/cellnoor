@@ -12,7 +12,7 @@ use diesel_async::RunQueryDsl;
 use uuid::Uuid;
 
 use crate::{
-    api::extract::JsonQuery,
+    api::extract::AuthJsonQuery,
     db::{self, DbConnection, ToBoxedFilter},
     state::AppState,
 };
@@ -21,7 +21,7 @@ pub async fn index_project_people(
     _: State<AppState>,
     mut db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
-    JsonQuery { q: query }: JsonQuery<PersonQuery>,
+    AuthJsonQuery { q: query }: AuthJsonQuery<PersonQuery>,
 ) -> Result<Json<Vec<PersonSummary>>, db::Error> {
     select_project_people(id, query, &mut db_conn)
         .await

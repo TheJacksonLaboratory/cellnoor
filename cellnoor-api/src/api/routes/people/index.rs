@@ -1,5 +1,8 @@
 use crate::{
-    api::extract::JsonQuery,
+    api::{
+        auth::{self, AuthUser},
+        extract::{AuthJsonQuery, Authorize},
+    },
     db::{self, BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter, like_any},
     state::AppState,
 };
@@ -12,7 +15,7 @@ use diesel_async::RunQueryDsl;
 pub async fn index_people(
     _: State<AppState>,
     mut db_conn: DbConnection,
-    JsonQuery { q: query }: JsonQuery<PersonQuery>,
+    AuthJsonQuery { q: query }: AuthJsonQuery<PersonQuery>,
 ) -> Result<Json<Vec<PersonSummary>>, db::Error> {
     select_people(query, &mut db_conn).await.map(Json)
 }
@@ -89,6 +92,12 @@ where
         }
 
         filter
+    }
+}
+
+impl Authorize for PersonQuery {
+    fn authorize(self, _user: &AuthUser) -> Result<Self, auth::Error> {
+        Ok(self)
     }
 }
 

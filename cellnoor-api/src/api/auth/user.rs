@@ -20,16 +20,13 @@ pub(super) mod api;
 mod common;
 mod ui;
 
-#[derive(Clone, Debug)]
-pub struct AuthenticatedUser(Arc<AuthenticatedUserInner>);
-
 #[derive(Clone, Debug, Deserialize)]
-struct AuthenticatedUserInner {
+pub struct AuthUser {
     user: PrivateClaims,
-    projects: HashSet<Uuid>,
+    projects: AuthProjects,
 }
 
-impl AuthenticatedUser {
+impl AuthUser {
     pub async fn from_request(
         app_state: &AppState,
         auth_header: Option<&TypedHeader<Authorization<Bearer>>>,
@@ -63,27 +60,27 @@ impl AuthenticatedUser {
             }
         };
 
-        Ok(Self(Arc::new(user)))
+        Ok(user)
     }
 
     pub fn new_admin() -> Self {
-        Self(Arc::new(AuthenticatedUserInner {
+        Self {
             user: PrivateClaims {
                 user_id: Uuid::nil(),
                 is_admin: true,
                 is_biology_staff: true,
                 is_computational_staff: true,
             },
-            projects: HashSet::new(),
-        }))
+            projects: AuthProjects::All,
+        }
     }
 
     fn data(&self) -> &PrivateClaims {
-        &self.0.user
+        &self.user
     }
 
-    pub fn projects(&self) -> &HashSet<Uuid> {
-        &self.0.projects
+    pub fn projects(&self) -> &AuthProjects {
+        &self.projects
     }
 
     pub fn is_admin(&self) -> bool {
@@ -102,9 +99,20 @@ impl AuthenticatedUser {
         self.is_admin() || self.is_biology_staff() || self.is_computational_staff()
     }
 
-    pub fn authorized_projects(&self) -> Option<&HashSet<Uuid>> {
-        (!self.is_staff()).then_some(self.projects())
+    pub fn has_access_to_project(&self, project_id: &Uuid) -> bool {
+        let AuthProjects::Restricted(projects) = self.projects() else {
+            return true;
+        };
+
+        projects.contains(project_id)
     }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(tag = "quantity", rename_all = "snake_case")]
+pub enum AuthProjects {
+    All,
+    Restricted(Arc<HashSet<Uuid>>),
 }
 
 enum EncodedJwt<'a> {
@@ -149,24 +157,23 @@ trait FromEncodedJwt: DeserializeOwned {
 }
 
 pub trait RemoveUnauthorizedProjects {
-    fn remove_unauthorized_projects(&mut self, user: &AuthenticatedUser);
+    fn remove_unauthorized_projects(&mut self, user: &AuthUser);
 }
 
 impl RemoveUnauthorizedProjects for Option<Vec<Uuid>> {
-    fn remove_unauthorized_projects(&mut self, user: &AuthenticatedUser) {
-        // Staff can view whatever they want
-        if user.is_staff() {
+    fn remove_unauthorized_projects(&mut self, user: &AuthUser) {
+        let AuthProjects::Restricted(authorized_projects) = user.projects() else {
             return;
-        }
+        };
 
         let Some(requested_projects) = self.as_mut() else {
             // If there were no requested projects, then it should just be the projects the user is authorized to view. Also this copy is unavoidable
-            self.replace(user.projects().iter().copied().collect());
+            self.replace(authorized_projects.iter().copied().collect());
             return;
         };
 
         for requested_project in requested_projects {
-            if !user.projects().contains(requested_project) {
+            if !user.has_access_to_project(requested_project) {
                 // We're banking on the fact that there are no projects with nil UUIDs
                 *requested_project = Uuid::nil();
             }

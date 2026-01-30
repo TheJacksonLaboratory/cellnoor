@@ -5,7 +5,10 @@ use diesel::{SelectableExpression, prelude::*};
 use diesel_async::RunQueryDsl;
 
 use crate::{
-    api::extract::JsonQuery,
+    api::{
+        auth::{self, AuthUser},
+        extract::{AuthJsonQuery, Authorize},
+    },
     db::{self, BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter, like_any},
     state::AppState,
 };
@@ -13,7 +16,7 @@ use crate::{
 pub async fn index_institutions(
     _: State<AppState>,
     mut db_conn: DbConnection,
-    JsonQuery { q }: JsonQuery<InstitutionQuery>,
+    AuthJsonQuery { q }: AuthJsonQuery<InstitutionQuery>,
 ) -> Result<Json<Vec<Institution>>, db::Error> {
     select_institutions(q, &mut db_conn).await.map(Json)
 }
@@ -59,6 +62,12 @@ where
         }
 
         filter
+    }
+}
+
+impl Authorize for InstitutionQuery {
+    fn authorize(self, _user: &AuthUser) -> Result<Self, auth::Error> {
+        Ok(self)
     }
 }
 

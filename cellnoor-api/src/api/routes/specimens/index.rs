@@ -1,4 +1,4 @@
-use axum::{Extension, Json, extract::State};
+use axum::{Json, extract::State};
 use cellnoor_models::specimen::{SpecimenFilter, SpecimenQuery, SpecimenSummary};
 use cellnoor_schema::specimens as t;
 use diesel::{dsl::AssumeNotNull, prelude::*};
@@ -7,8 +7,8 @@ use jiff_diesel::ToDiesel;
 
 use crate::{
     api::{
-        auth::{AuthenticatedUser, RemoveUnauthorizedProjects},
-        extract::JsonQuery,
+        auth::{self, AuthUser, RemoveUnauthorizedProjects},
+        extract::{AuthJsonQuery, Authorize},
     },
     db::{self, BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter, like_any},
     state::AppState,
@@ -17,11 +17,8 @@ use crate::{
 pub async fn index_specimens(
     _: State<AppState>,
     mut db_conn: DbConnection,
-    Extension(user): Extension<AuthenticatedUser>,
-    JsonQuery { mut q }: JsonQuery<SpecimenQuery>,
+    AuthJsonQuery { q }: AuthJsonQuery<SpecimenQuery>,
 ) -> Result<Json<Vec<SpecimenSummary>>, db::Error> {
-    q.filter.projects.remove_unauthorized_projects(&user);
-
     select_specimens(q, &mut db_conn).await.map(Json)
 }
 
@@ -183,6 +180,13 @@ where
         }
 
         filter
+    }
+}
+
+impl Authorize for SpecimenQuery {
+    fn authorize(mut self, user: &AuthUser) -> Result<Self, auth::Error> {
+        self.filter.projects.remove_unauthorized_projects(user);
+        Ok(self)
     }
 }
 

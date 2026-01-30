@@ -1,14 +1,14 @@
+use aide::axum::ApiRouter;
 use axum::{Router, routing::post};
-use axum_extra::routing::{RouterExt, TypedPath};
-use cellnoor_models::suspension::SuspensionIdMeasurements;
 
 use crate::state::AppState;
 
 mod create;
 mod measurements;
 
-pub(super) fn router() -> Router<AppState> {
-    Router::new()
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route("/")
         .typed_post(create::create_cell_suspension)
         .route(
             SuspensionIdMeasurements::PATH,

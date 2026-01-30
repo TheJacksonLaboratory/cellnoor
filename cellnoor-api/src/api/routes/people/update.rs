@@ -9,7 +9,6 @@ use cellnoor_models::IdParameter;
 use cellnoor_models::person::Person;
 use cellnoor_models::person::PersonUpdate;
 use cellnoor_schema::people;
-use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 
 pub async fn update_person(

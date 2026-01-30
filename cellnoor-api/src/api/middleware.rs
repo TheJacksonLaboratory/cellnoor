@@ -1,5 +1,7 @@
-use std::sync::Arc;
-
+use crate::{
+    api::auth::{self, AuthUser},
+    state::AppState,
+};
 use axum::{
     Extension,
     extract::{Request, State},
@@ -10,11 +12,6 @@ use axum::{
 use axum_extra::{TypedHeader, extract::CookieJar};
 use headers::{Authorization, authorization::Bearer};
 
-use crate::{
-    api::auth::{self, AuthenticatedUser},
-    state::AppState,
-};
-
 pub async fn authenticate_request(
     State(app_state): State<AppState>,
     cookies: CookieJar,
@@ -22,16 +19,15 @@ pub async fn authenticate_request(
     mut request: Request,
     next: Next,
 ) -> Result<Response, auth::Error> {
-    let user = AuthenticatedUser::from_request(&app_state, auth_header.as_ref(), &cookies).await?;
+    let user = AuthUser::from_request(&app_state, auth_header.as_ref(), &cookies).await?;
 
-    // Wrap
-    request.extensions_mut().insert(Arc::new(user));
+    request.extensions_mut().insert(user);
 
     Ok(next.run(request).await)
 }
 
 pub async fn admin_required(
-    Extension(user): Extension<Arc<AuthenticatedUser>>,
+    Extension(user): Extension<AuthUser>,
     request: Request,
     next: Next,
 ) -> Result<Response, auth::Error> {
@@ -50,4 +46,17 @@ pub async fn created_status_code(mut response: Response) -> Response {
     }
 
     response
+}
+
+#[macro_export]
+macro_rules! admin_required_creation {
+    () => {
+        tower::ServiceBuilder::new()
+            .layer(axum::middleware::from_fn(
+                crate::api::middleware::admin_required,
+            ))
+            .layer(axum::middleware::map_response(
+                crate::api::middleware::created_status_code,
+            ))
+    };
 }

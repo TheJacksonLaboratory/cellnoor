@@ -1,6 +1,5 @@
 use cellnoor_models::institution::NewInstitution;
 use cellnoor_schema::institutions::dsl::{id, institutions};
-use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 use crate::initial_data::Upsert;

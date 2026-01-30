@@ -1,4 +1,3 @@
-use axum::Extension;
 use axum::Json;
 use axum::extract::State;
 use cellnoor_models::project::{Project, ProjectFilter, ProjectQuery};
@@ -8,9 +7,11 @@ use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use jiff_diesel::ToDiesel;
 
-use crate::api::auth::AuthenticatedUser;
+use crate::api::auth;
+use crate::api::auth::AuthUser;
 use crate::api::auth::RemoveUnauthorizedProjects;
-use crate::api::extract::JsonQuery;
+use crate::api::extract::AuthJsonQuery;
+use crate::api::extract::Authorize;
 use crate::db;
 use crate::db::BoxedFilter;
 use crate::db::BoxedFilterExt;
@@ -22,11 +23,8 @@ use crate::state::AppState;
 pub async fn index_projects(
     _: State<AppState>,
     mut db_conn: DbConnection,
-    Extension(user): Extension<AuthenticatedUser>,
-    JsonQuery { mut q }: JsonQuery<ProjectQuery>,
+    AuthJsonQuery { q }: AuthJsonQuery<ProjectQuery>,
 ) -> Result<Json<Vec<Project>>, db::Error> {
-    q.filter.ids.remove_unauthorized_projects(&user);
-
     select_projects(q, &mut db_conn).await.map(Json)
 }
 
@@ -95,6 +93,14 @@ where
         }
 
         filter
+    }
+}
+
+impl Authorize for ProjectQuery {
+    fn authorize(mut self, user: &AuthUser) -> Result<Self, auth::Error> {
+        self.filter.ids.remove_unauthorized_projects(user);
+
+        Ok(self)
     }
 }
 

@@ -26,6 +26,7 @@ pub(super) mod people;
 pub(super) mod projects;
 // pub(super) mod sequencing_runs;
 pub(super) mod specimens;
+pub(super) mod suspensions;
 // pub(super) mod suspension_pools;
 // pub(super) mod suspensions;
 // pub(super) mod tenx_assays;
@@ -65,6 +66,7 @@ pub fn router() -> (Router<AppState>, OpenApi) {
         .nest("/people", people::router())
         .nest("/projects", projects::router())
         .nest("/specimens", specimens::router());
+    // .nest("/suspensions", suspensions::router());
     // .merge(specimens::router())
     // .merge(tenx_assays::router())
     // .merge(sequencing_runs::router())

@@ -1,7 +1,5 @@
 use axum::{extract::State, http::StatusCode};
-use cellnoor_models::suspension::{
-    CellSuspensionCreation, Suspension, SuspensionContent, SuspensionId,
-};
+use cellnoor_models::suspension::{NewCellSuspension, Suspension, SuspensionContent, SuspensionId};
 use cellnoor_schema::suspensions;
 use diesel::{PgConnection, prelude::*};
 
@@ -20,13 +18,13 @@ pub(super) async fn create_cell_suspension(
     _: Root,
     state: State<AppState>,
     user: AuthenticatedUser,
-    Json(request): Json<CellSuspensionCreation>,
+    Json(request): Json<NewCellSuspension>,
 ) -> ApiResponse<Suspension> {
     let item = handle_api_request(state, user, request).await?;
     Ok((StatusCode::CREATED, item))
 }
 
-impl db::Operation<Suspension> for CellSuspensionCreation {
+impl db::Operation<Suspension> for NewCellSuspension {
     fn execute(self, db_conn: &mut PgConnection) -> Result<Suspension, db::Error> {
         let preparer_ids = self.common().preparer_ids().to_vec();
 

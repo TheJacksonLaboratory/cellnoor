@@ -6,10 +6,8 @@ mod read;
 mod update;
 
 pub use common::{SuspensionContent, SuspensionFields};
-pub use creation::{
-    CellSuspensionCreation, NucleusSuspensionCreation, SuspensionCreationCommonFields,
-};
+pub use creation::{NewCellSuspension, NewNucleusSuspension, SuspensionCreationCommonFields};
 #[cfg(feature = "app")]
 pub use query::SuspensionQuery;
-pub use query::{SuspensionFilter,  SuspensionOrderBy};
+pub use query::{SuspensionFilter, SuspensionOrderBy};
 pub use read::{Suspension, SuspensionSummary};

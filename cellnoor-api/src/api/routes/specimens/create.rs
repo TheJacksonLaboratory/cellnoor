@@ -1,10 +1,14 @@
-use axum::{Json, extract::State};
+use aide::OperationIo;
+use axum::{Extension, Json, extract::State, http::StatusCode, response::IntoResponse};
 use cellnoor_models::specimen::{NewSpecimen, Specimen};
 use cellnoor_schema::specimens;
 use diesel_async::RunQueryDsl;
+use schemars::JsonSchema;
+use serde::Serialize;
 use uuid::Uuid;
 
 use crate::{
+    api::auth::AuthUser,
     db::{self, DbConnection},
     state::AppState,
 };
@@ -12,11 +16,13 @@ use crate::{
 pub async fn create_specimen(
     _: State<AppState>,
     mut db_conn: DbConnection,
+    Extension(user): Extension<AuthUser>,
     Json(specimen): Json<NewSpecimen>,
 ) -> Result<Json<Specimen>, db::Error> {
+    validate_specimen_received_after_project_started()?;
     let id = insert_specimen(specimen, &mut db_conn).await?;
 
-    super::show::select_specimen_by_id(None, id, &mut db_conn)
+    super::show::select_specimen_by_id(user.projects(), id, &mut db_conn)
         .await
         .map(Json)
 }

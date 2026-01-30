@@ -8,16 +8,16 @@ use cellnoor_models::{
 };
 
 use crate::{
-    api::{extract::JsonQuery, routes::people::index::index_people},
+    api::{extract::AuthJsonQuery, routes::people::index::index_people},
     db::{self, DbConnection},
     state::AppState,
 };
 
-pub async fn index_members(
+pub async fn index_institution_members(
     state: State<AppState>,
     db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
-    mut query: JsonQuery<PersonQuery>,
+    mut query: AuthJsonQuery<PersonQuery>,
 ) -> Result<Json<Vec<PersonSummary>>, db::Error> {
     query.q.filter.institution_ids = Some(vec![id]);
 

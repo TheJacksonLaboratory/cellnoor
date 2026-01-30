@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 use tokio_stream::StreamExt;
 
 use cellnoor_schema::{people, project_people};
@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 use crate::db::{self};
 
-use super::{FromEncodedJwt, common::*};
+use super::{AuthProjects, AuthUser, FromEncodedJwt, common::*};
 
 #[derive(Debug, Deserialize)]
 #[serde(transparent)]
@@ -21,7 +21,7 @@ impl User {
     pub(super) async fn with_authorized_projects(
         &self,
         mut db_conn: &AsyncPgConnection,
-    ) -> Result<super::AuthenticatedUserInner, db::Error> {
+    ) -> Result<AuthUser, db::Error> {
         let user_id = self.0.sub;
 
         let user = PrivateClaims::query()
@@ -35,11 +35,21 @@ impl User {
 
         let (user, mut user_projects) = tokio::try_join!(user, user_projects)?;
 
+        if user.is_admin || user.is_biology_staff || user.is_computational_staff {
+            return Ok(AuthUser {
+                user,
+                projects: AuthProjects::All,
+            });
+        }
+
         let mut projects = HashSet::with_capacity(500);
         while let Some(project_id) = user_projects.next().await {
             projects.insert(project_id?);
         }
 
-        Ok(super::AuthenticatedUserInner { user, projects })
+        Ok(AuthUser {
+            user,
+            projects: AuthProjects::Restricted(Arc::new(projects)),
+        })
     }
 }

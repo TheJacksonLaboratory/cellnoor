@@ -1,15 +1,10 @@
-use crate::{api::request::nested_index, state::AppState};
-use axum_extra::routing::Resource;
-use cellnoor_models::{
-    project::ProjectId,
-    specimen::{SpecimenQuery, SpecimenSummary},
-};
+use crate::state::AppState;
+use aide::axum::{ApiRouter, routing::get};
 
-use super::RESOURCE_NAME;
+use index::index_project_specimens;
 
 mod index;
 
-pub(super) fn router() -> Resource<AppState> {
-    Resource::named(&format!("{RESOURCE_NAME}/{{id}}/specimens"))
-        .index(nested_index::<ProjectId, SpecimenQuery, Vec<SpecimenSummary>>)
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new().api_route("/", get(index_project_specimens))
 }
