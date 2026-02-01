@@ -3,5 +3,5 @@ mod creation;
 mod read;
 
 pub use common::{SuspensionMeasurementData, SuspensionMeasurementFields};
-pub use creation::{CellSuspensionMeasurementCreation, NucleusSuspensionMeasurementCreation};
+pub use creation::NewSuspensionMeasurement;
 pub use read::SuspensionMeasurement;

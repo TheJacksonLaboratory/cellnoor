@@ -1,15 +1,14 @@
-use aide::OperationIo;
-use axum::{Extension, Json, extract::State, http::StatusCode, response::IntoResponse};
+use axum::{Extension, Json, extract::State};
 use cellnoor_models::specimen::{NewSpecimen, Specimen};
-use cellnoor_schema::specimens;
+use cellnoor_schema::{projects, specimens};
+use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
-use schemars::JsonSchema;
-use serde::Serialize;
+use jiff::Timestamp;
 use uuid::Uuid;
 
 use crate::{
-    api::auth::AuthUser,
-    db::{self, DbConnection},
+    api::{auth::AuthUser, util::validate_timestamps},
+    db::{self, DbConnection, jiff_diesel_tuple_to_jiff},
     state::AppState,
 };
 
@@ -19,7 +18,20 @@ pub async fn create_specimen(
     Extension(user): Extension<AuthUser>,
     Json(specimen): Json<NewSpecimen>,
 ) -> Result<Json<Specimen>, db::Error> {
-    validate_specimen_received_after_project_started()?;
+    let (project_start_date, project_end_date) =
+        project_start_and_end_date(specimen.project_id(), &mut db_conn).await?;
+
+    // Should I spawn two threads for these tasks? Since I love hyper-optimizing
+    validate_timestamps(
+        (project_start_date, "project_start_date"),
+        (specimen.received_at(), "specimen_received_at"),
+    )?;
+
+    validate_timestamps(
+        (specimen.received_at(), "specimen_received_at"),
+        (project_end_date, "project_end_date"),
+    )?;
+
     let id = insert_specimen(specimen, &mut db_conn).await?;
 
     super::show::select_specimen_by_id(user.projects(), id, &mut db_conn)
@@ -42,4 +54,16 @@ pub async fn insert_specimen(
         .returning(specimens::id)
         .get_result(db_conn)
         .await?)
+}
+
+async fn project_start_and_end_date(
+    project_id: Uuid,
+    db_conn: &mut DbConnection,
+) -> Result<(Timestamp, Timestamp), db::Error> {
+    Ok(projects::table
+        .select((projects::started_at, projects::ended_at))
+        .find(project_id)
+        .first(db_conn)
+        .await
+        .map(jiff_diesel_tuple_to_jiff)?)
 }

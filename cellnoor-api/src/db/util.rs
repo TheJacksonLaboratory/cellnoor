@@ -35,3 +35,15 @@ impl DerefMut for DbConnection {
         &mut self.0
     }
 }
+
+pub fn jiff_diesel_tuple_to_jiff(
+    (t1, t2): (jiff_diesel::Timestamp, jiff_diesel::Timestamp),
+) -> (jiff::Timestamp, jiff::Timestamp) {
+    (t1.to_jiff(), t2.to_jiff())
+}
+
+pub fn jiff_diesel_optional_tuple_to_jiff(
+    (t1, t2): (jiff_diesel::Timestamp, Option<jiff_diesel::Timestamp>),
+) -> (jiff::Timestamp, Option<jiff::Timestamp>) {
+    (t1.to_jiff(), t2.map(jiff_diesel::Timestamp::to_jiff))
+}

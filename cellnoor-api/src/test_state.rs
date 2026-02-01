@@ -21,7 +21,7 @@ use cellnoor_models::{
         ThermalPreservationMethod,
     },
     suspension::{
-        NewCellSuspension, SuspensionCreationCommonFields, SuspensionFields, SuspensionQuery,
+        NewCellSuspension, NewSuspensionCommonFields, SuspensionFields, SuspensionQuery,
         SuspensionSummary,
     },
     suspension_pool::{

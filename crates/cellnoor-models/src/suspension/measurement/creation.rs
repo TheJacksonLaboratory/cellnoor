@@ -1,5 +1,3 @@
-use crate::suspension::measurement::common::{Cells, Nuclei, SuspensionMeasurementFields};
+use crate::suspension::measurement::common::SuspensionMeasurementFields;
 
-pub type CellSuspensionMeasurementCreation = SuspensionMeasurementFields<Cells>;
-
-pub type NucleusSuspensionMeasurementCreation = SuspensionMeasurementFields<Nuclei>;
+pub type NewSuspensionMeasurement = SuspensionMeasurementFields;

@@ -1,7 +1,39 @@
 use aide::OperationIo;
 use axum::{Json, http::StatusCode, response::IntoResponse};
+use jiff::Timestamp;
 use schemars::JsonSchema;
 use serde::Serialize;
+
+#[derive(Debug, thiserror::Error, Serialize, JsonSchema, OperationIo)]
+#[serde(rename_all = "snake_case", tag = "type")]
+pub enum DataError {
+    #[error("{message}")]
+    Timestamp {
+        t1: Timestamp,
+        t2: Timestamp,
+        should_come_before: &'static str,
+        should_come_after: &'static str,
+        message: String,
+    },
+    #[serde(untagged)]
+    #[error("{message}")]
+    Other { message: String },
+}
+
+impl DataError {
+    pub fn new_timestamp_error(
+        (t1, should_come_before): (Timestamp, &'static str),
+        (t2, should_come_after): (Timestamp, &'static str),
+    ) -> Self {
+        Self::Timestamp {
+            t1,
+            t2,
+            should_come_before,
+            should_come_after,
+            message: format!("{should_come_before} should come before {should_come_after}"),
+        }
+    }
+}
 
 #[derive(Debug, thiserror::Error, Serialize, JsonSchema, OperationIo)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
@@ -9,8 +41,8 @@ use serde::Serialize;
 #[serde(rename_all = "snake_case", tag = "type")]
 #[schemars(rename = "DatabaseError")]
 pub enum Error {
-    #[error("{message}")]
-    Data { message: String },
+    #[error(transparent)]
+    Data(#[from] DataError),
     #[error("duplicate {resource} with fields {fields:?} and values {values:?}")]
     DuplicateResource {
         resource: String,
@@ -86,9 +118,9 @@ impl
         let values = into_split_vecs(&field_value, 2);
 
         match kind {
-            CheckViolation => Self::Data {
+            CheckViolation => Self::Data(DataError::Other {
                 message: details.to_owned(),
-            },
+            }),
             UniqueViolation => Self::DuplicateResource {
                 resource: entity.to_owned(),
                 fields,
@@ -137,7 +169,7 @@ impl Error {
 }
 
 impl IntoResponse for Error {
-    fn into_response(self) -> axum::response::Response {
+    fn into_response(mut self) -> axum::response::Response {
         tracing::error!(status = self.status_code(), error = %self);
 
         let status_code = self.status_code();

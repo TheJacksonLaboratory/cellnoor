@@ -1,5 +1,6 @@
 use jiff::Timestamp;
 use macro_attributes::base_model;
+use uuid::Uuid;
 
 use crate::specimen::{
     common::{Species, SpecimenCommonFields},
@@ -49,5 +50,10 @@ impl NewSpecimen {
     #[must_use]
     pub fn host_species(&self) -> Option<Species> {
         self.inner().host_species
+    }
+
+    #[must_use]
+    pub fn project_id(&self) -> Uuid {
+        self.inner().project_id
     }
 }

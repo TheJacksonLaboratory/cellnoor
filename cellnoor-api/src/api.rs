@@ -1,4 +1,3 @@
-
 use crate::{config::Config, state::AppState};
 use anyhow::Context;
 use axum::Router;
@@ -6,10 +5,10 @@ use camino::Utf8Path;
 use tokio::net::TcpListener;
 
 mod auth;
-// mod error;
 mod extract;
 pub mod middleware;
 pub mod routes;
+pub mod util;
 
 #[cfg(test)]
 pub async fn serve_integration_test(config: Config) -> anyhow::Result<()> {

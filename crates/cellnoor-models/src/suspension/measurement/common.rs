@@ -4,8 +4,6 @@ use jiff::Timestamp;
 use macro_attributes::{insert_select, json, simple_enum};
 use macros::{impl_enum_from_sql, impl_enum_to_sql, impl_json_from_sql, impl_json_to_sql};
 use ranged::RangedF32;
-#[cfg(feature = "app")]
-use serde::{Serialize, de::DeserializeOwned};
 use uuid::Uuid;
 
 #[cfg(any(feature = "app", feature = "typescript"))]
@@ -16,8 +14,7 @@ use crate::utils::{EnumFromSql, EnumToSql, JsonFromSql, JsonToSql};
 
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = suspension_measurements))]
-#[cfg_attr(feature = "typescript", ts(concrete(C = SuspensionContent)))]
-pub struct SuspensionMeasurementFields<C> {
+pub struct SuspensionMeasurementFields {
     measured_by: Uuid,
     #[cfg_attr(feature = "app", diesel(
         serialize_as = jiff_diesel::Timestamp,
@@ -25,29 +22,27 @@ pub struct SuspensionMeasurementFields<C> {
     ))]
     #[cfg_attr(feature = "typescript", ts(as = "String"))]
     measured_at: Timestamp,
-    data: SuspensionMeasurementData<C>,
+    data: SuspensionMeasurementData,
 }
 
-impl<C> SuspensionMeasurementFields<C> {
+impl SuspensionMeasurementFields {
     pub fn measured_at(&self) -> Timestamp {
         self.measured_at
     }
 
-    pub fn data(&self) -> &SuspensionMeasurementData<C> {
+    pub fn data(&self) -> &SuspensionMeasurementData {
         &self.data
     }
 }
 
 #[json]
 #[serde(tag = "quantity")]
-#[cfg_attr(feature = "typescript", ts(concrete(C = SuspensionContent)))]
-pub enum SuspensionMeasurementData<C> {
+pub enum SuspensionMeasurementData {
     Concentration {
         #[serde(flatten)]
         inner: Concentration,
         post_hybridization: bool,
-        #[cfg_attr(feature = "typescript", ts(as = "SuspensionContent"))]
-        numerator_unit: C,
+        numerator_unit: SuspensionContent,
     },
     Viability {
         #[serde(flatten)]
@@ -63,19 +58,17 @@ pub enum SuspensionMeasurementData<C> {
         #[serde(flatten)]
         inner: MeanDiameter,
         post_hybridization: bool,
-        #[cfg_attr(feature = "typescript", ts(as = "SuspensionContent"))]
-        object: C,
+        object: SuspensionContent,
     },
 }
 
 #[cfg(feature = "app")]
-impl<C> JsonFromSql for SuspensionMeasurementData<C> where C: DeserializeOwned {}
-impl_json_from_sql!(SuspensionMeasurementData<SuspensionContent>);
+impl JsonFromSql for SuspensionMeasurementData {}
+impl_json_from_sql!(SuspensionMeasurementData);
 
 #[cfg(feature = "app")]
-impl<C> JsonToSql for SuspensionMeasurementData<C> where C: Serialize {}
-impl_json_to_sql!(SuspensionMeasurementData<Cells>);
-impl_json_to_sql!(SuspensionMeasurementData<Nuclei>);
+impl JsonToSql for SuspensionMeasurementData {}
+impl_json_to_sql!(SuspensionMeasurementData);
 
 #[json]
 pub struct Concentration {
