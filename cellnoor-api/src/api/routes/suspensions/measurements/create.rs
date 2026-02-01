@@ -30,7 +30,10 @@ pub async fn create_suspension_measurement(
 ) -> Result<Json<SuspensionMeasurement>, db::Error> {
     let (suspension_content, suspension_created_at) = suspension_info(id, &mut db_conn).await?;
 
-    validate_suspension_content(suspension_content, measurement.data())?;
+    validate_measurement_content_matches_suspension_content(
+        suspension_content,
+        measurement.data(),
+    )?;
 
     if let Some(suspension_created_at) = suspension_created_at {
         validate_timestamps(
@@ -44,7 +47,7 @@ pub async fn create_suspension_measurement(
         .map(Json)
 }
 
-fn validate_suspension_content(
+fn validate_measurement_content_matches_suspension_content(
     suspension_content: SuspensionContent,
     measurement: &SuspensionMeasurementData,
 ) -> Result<(), db::DataError> {

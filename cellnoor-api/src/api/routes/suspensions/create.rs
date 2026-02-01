@@ -1,37 +1,65 @@
+use crate::api::auth::AuthUser;
+use crate::api::routes::suspensions::show::select_suspension_by_id;
 use crate::state::AppState;
 use crate::{
     api::util::validate_timestamps,
     db::{self, DbConnection},
 };
+use axum::Extension;
 use axum::{Json, extract::State};
 use cellnoor_models::suspension::{NewSuspension, Suspension, SuspensionContent};
 use cellnoor_schema::suspensions;
 use cellnoor_schema::{specimens, suspension_preparers};
+use diesel::pg::Pg;
 use diesel::prelude::*;
-use diesel_async::RunQueryDsl;
+use diesel_async::scoped_futures::ScopedFutureExt;
+use diesel_async::{AsyncConnection, RunQueryDsl};
 use jiff::Timestamp;
 use uuid::Uuid;
 
 pub(super) async fn create_suspension(
     _: State<AppState>,
     mut db_conn: DbConnection,
+    Extension(user): Extension<AuthUser>,
     Json(suspension): Json<NewSuspension>,
 ) -> Result<Json<Suspension>, db::Error> {
-    let (specimen_received_at, specimen_returned_at, project_id) =
-        specimen_info(suspension.parent_specimen_id(), &mut db_conn).await?;
+    let SpecimenInfo {
+        received_at,
+        returned_at,
+        project_id,
+    } = specimen_info(suspension.parent_specimen_id(), &mut db_conn).await?;
 
     validate_suspension_created_between_specimen_receipt_and_return(
         suspension.created_at(),
-        specimen_received_at,
-        specimen_returned_at,
+        received_at,
+        returned_at,
     )?;
 
     let suspension_preparers = suspension.preparer_ids().to_vec();
-    let suspension_id = insert_suspension(project_id, suspension, &mut db_conn).await?;
 
-    insert_suspension_preparers(suspension_id, &suspension_preparers, &mut db_conn).await?;
+    let suspension_id = db_conn
+        .transaction(move |db_conn| {
+            insert_suspension_and_preparers(project_id, suspension, suspension_preparers, db_conn)
+                .scope_boxed()
+        })
+        .await?;
 
-    todo!()
+    select_suspension_by_id(user.projects(), suspension_id, &mut db_conn)
+        .await
+        .map(Json)
+}
+
+async fn insert_suspension_and_preparers(
+    project_id: Uuid,
+    suspension: NewSuspension,
+    preparer_ids: Vec<Uuid>,
+    db_conn: &mut DbConnection,
+) -> Result<Uuid, db::Error> {
+    let suspension_id = insert_suspension(project_id, suspension, db_conn).await?;
+
+    insert_suspension_preparers(suspension_id, &preparer_ids, db_conn).await?;
+
+    Ok(suspension_id)
 }
 
 pub(super) async fn insert_suspension(
@@ -112,22 +140,22 @@ pub(super) fn validate_suspension_created_between_specimen_receipt_and_return(
     Ok(())
 }
 
-pub(super) async fn specimen_info(
+#[derive(HasQuery)]
+#[diesel(check_for_backend(Pg), table_name=specimens)]
+pub struct SpecimenInfo {
+    #[diesel(deserialize_as=jiff_diesel::Timestamp)]
+    pub received_at: Timestamp,
+    #[diesel(deserialize_as=jiff_diesel::NullableTimestamp)]
+    pub returned_at: Option<Timestamp>,
+    project_id: Uuid,
+}
+
+async fn specimen_info(
     specimen_id: Uuid,
     db_conn: &mut DbConnection,
-) -> Result<(Timestamp, Option<jiff::Timestamp>, Uuid), db::Error> {
-    Ok(specimens::table
-        .select((
-            specimens::received_at,
-            specimens::returned_at,
-            specimens::project_id,
-        ))
+) -> Result<SpecimenInfo, db::Error> {
+    Ok(SpecimenInfo::query()
         .find(specimen_id)
         .first(db_conn)
-        .await
-        .map(
-            |(t1, t2, project_id): (jiff_diesel::Timestamp, jiff_diesel::NullableTimestamp, _)| {
-                (t1.to_jiff(), t2.to_jiff(), project_id)
-            },
-        )?)
+        .await?)
 }

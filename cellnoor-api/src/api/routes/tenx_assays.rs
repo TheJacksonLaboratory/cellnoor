@@ -1,10 +1,11 @@
-use axum::Router;
-use axum_extra::routing::RouterExt;
+use aide::axum::{ApiRouter, routing::get};
 
 use crate::state::AppState;
 
-mod list;
+use index::index_tenx_assays;
 
-pub(super) fn router() -> Router<AppState> {
-    Router::new().typed_get(list::list_tenx_assays)
+mod index;
+
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new().api_route("/", get(index_tenx_assays))
 }

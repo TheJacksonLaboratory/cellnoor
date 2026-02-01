@@ -1,4 +1,5 @@
 use macro_attributes::base_model;
+#[cfg(feature = "app")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;

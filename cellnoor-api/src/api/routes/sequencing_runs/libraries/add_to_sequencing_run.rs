@@ -1,50 +1,89 @@
-use axum::{extract::State, http::StatusCode};
-use cellnoor_models::sequencing_run::SequencingRunIdLibraries;
-use cellnoor_schema::sequencing_submissions;
+use axum::{
+    Json,
+    extract::{Path, State},
+};
+use cellnoor_models::IdParameter;
+use cellnoor_schema::{libraries, sequencing_runs, sequencing_submissions};
 use diesel::prelude::*;
+use diesel_async::RunQueryDsl;
+use jiff::Timestamp;
 use uuid::Uuid;
 
 use crate::{
-    api::{
-        extract::{ValidPathJson, auth::AuthenticatedUser},
-        routes::{ApiResponse, handle_api_request},
-    },
-    db,
+    api::util::validate_timestamps,
+    db::{self, DbConnection, jiff_diesel_optional_tuple_to_jiff},
     state::AppState,
 };
 
 pub async fn add_libraries_to_sequencing_run(
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    ValidPathJson(sequencing_run_id, library_ids): ValidPathJson<
-        SequencingRunIdLibraries,
-        Vec<Uuid>,
-    >,
-) -> ApiResponse<()> {
-    Ok((
-        StatusCode::OK,
-        handle_api_request(state, user, (sequencing_run_id, library_ids)).await?,
-    ))
+    _: State<AppState>,
+    mut db_conn: DbConnection,
+    Path(IdParameter { id }): Path<IdParameter>,
+    Json(library_ids): Json<Vec<Uuid>>,
+) -> Result<(), db::Error> {
+    let (run_begun_at, run_finished_at) =
+        sequencing_run_begun_at_and_finished_at(id, &mut db_conn).await?;
+    let libraries_prepared_at = libraries_prepared_at(&library_ids, &mut db_conn).await?;
+
+    for lib_prep_time in libraries_prepared_at {
+        let lib_prep_time = (lib_prep_time, "library_prepared_at");
+
+        validate_timestamps((run_begun_at, "sequencing_run_begun_at"), lib_prep_time)?;
+
+        if let Some(run_finished_at) = run_finished_at {
+            validate_timestamps(
+                lib_prep_time,
+                (run_finished_at, "sequencing_run_finished_at"),
+            )?;
+        }
+    }
+
+    insert_sequencing_run_library_mappings(id, &library_ids, &mut db_conn).await
 }
 
-impl db::Operation<()> for (SequencingRunIdLibraries, Vec<Uuid>) {
-    fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<(), db::Error> {
-        let (sequencing_run_id, library_ids) = self;
+pub async fn insert_sequencing_run_library_mappings(
+    sequencing_run_id: Uuid,
+    library_ids: &[Uuid],
+    db_conn: &mut DbConnection,
+) -> Result<(), db::Error> {
+    let seq_run_lib_map: Vec<_> = library_ids
+        .iter()
+        .map(|l| {
+            (
+                sequencing_submissions::sequencing_run_id.eq(sequencing_run_id),
+                sequencing_submissions::library_id.eq(l),
+            )
+        })
+        .collect();
 
-        let seq_run_lib_map: Vec<_> = library_ids
-            .iter()
-            .map(|l| {
-                (
-                    sequencing_submissions::sequencing_run_id.eq(sequencing_run_id),
-                    sequencing_submissions::library_id.eq(l),
-                )
-            })
-            .collect();
+    diesel::insert_into(sequencing_submissions::table)
+        .values(&seq_run_lib_map)
+        .execute(db_conn)
+        .await?;
 
-        diesel::insert_into(sequencing_submissions::table)
-            .values(&seq_run_lib_map)
-            .execute(db_conn)?;
+    Ok(())
+}
 
-        Ok(())
-    }
+async fn sequencing_run_begun_at_and_finished_at(
+    sequencing_run_id: Uuid,
+    db_conn: &mut DbConnection,
+) -> Result<(Timestamp, Option<Timestamp>), db::Error> {
+    Ok(sequencing_runs::table
+        .select((sequencing_runs::begun_at, sequencing_runs::finished_at))
+        .find(sequencing_run_id)
+        .first(db_conn)
+        .await
+        .map(jiff_diesel_optional_tuple_to_jiff)?)
+}
+
+async fn libraries_prepared_at(
+    library_ids: &[Uuid],
+    db_conn: &mut DbConnection,
+) -> Result<Vec<Timestamp>, db::Error> {
+    Ok(libraries::table
+        .select(libraries::prepared_at)
+        .filter(libraries::id.eq_any(library_ids))
+        .load(db_conn)
+        .await
+        .map(|l| l.into_iter().map(jiff_diesel::Timestamp::to_jiff).collect())?)
 }

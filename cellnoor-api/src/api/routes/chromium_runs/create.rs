@@ -1,85 +1,90 @@
-use axum::{extract::State, http::StatusCode};
+use axum::{Json, extract::State, http::StatusCode};
 use cellnoor_models::chromium_run::{
-    ChromiumRun, ChromiumRunCreation, ChromiumRunFields, ChromiumRunId, GemPoolFields, OcmGemPool,
+    ChromiumRun, ChromiumRunFields, GemPoolFields, NewChromiumRun, OcmGemPool,
     PoolMultiplexGemPool, SingleplexGemPool,
 };
 use cellnoor_schema::chip_loadings;
 use diesel::prelude::*;
+use diesel_async::RunQueryDsl;
 use uuid::Uuid;
 
 use crate::{
-    api::{
-        extract::{Json, auth::AuthenticatedUser},
-        routes::{ApiResponse, Root, handle_api_request},
-    },
-    db::{self, Operation},
+    db::{self, DbConnection},
     state::AppState,
 };
 
 pub(super) async fn create_chromium_run(
-    _: Root,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    Json(request): Json<ChromiumRunCreation>,
-) -> ApiResponse<ChromiumRun> {
-    let item = handle_api_request(state, user, request).await?;
-    Ok((StatusCode::CREATED, item))
+    _: State<AppState>,
+    mut db_conn: DbConnection,
+    Json(chromium_run): Json<NewChromiumRun>,
+) -> Result<Json<ChromiumRun>, db::Error> {
+    let run_id = insert_chromium_run_and_associated_data(chromium_run, &mut db_conn).await?;
+
+    select_chromium_run_by_id(run_id, &mut db_conn)
+        .await
+        .map(Json)
 }
 
-impl Operation<ChromiumRun> for ChromiumRunCreation {
-    fn execute(self, db_conn: &mut PgConnection) -> Result<ChromiumRun, db::Error> {
-        let run_id = match self {
-            Self::OnChipMultiplexing { inner, gem_pools } => {
-                let run_id = inner.execute(db_conn)?;
+pub async fn insert_chromium_run_and_associated_data(
+    chromium_run: NewChromiumRun,
+    db_conn: &mut DbConnection,
+) -> Result<Uuid, db::Error> {
+    let run_id = match chromium_run {
+        NewChromiumRun::OnChipMultiplexing { inner, gem_pools } => {
+            let run_id = insert_chromium_run(inner, db_conn).await?;
 
-                let gem_pool_ids =
-                    insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)?;
+            let gem_pool_ids =
+                insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)
+                    .await?;
 
-                insert_ocm_chip_loadings(&gem_pool_ids, gem_pools.as_ref(), db_conn)?;
+            insert_ocm_chip_loadings(&gem_pool_ids, gem_pools.as_ref(), db_conn).await?;
 
-                run_id
-            }
-            Self::PoolMultiplex { inner, gem_pools } => {
-                let run_id = inner.execute(db_conn)?;
+            run_id
+        }
+        NewChromiumRun::PoolMultiplex { inner, gem_pools } => {
+            let run_id = insert_chromium_run(inner, db_conn).await?;
 
-                let gem_pool_ids =
-                    insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)?;
+            let gem_pool_ids =
+                insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)
+                    .await?;
 
-                insert_pool_multiplex_chip_loadings(&gem_pool_ids, gem_pools.as_ref(), db_conn)?;
+            insert_pool_multiplex_chip_loadings(&gem_pool_ids, gem_pools.as_ref(), db_conn).await?;
 
-                run_id
-            }
-            Self::Singleplex { inner, gem_pools } => {
-                let run_id = inner.execute(db_conn)?;
+            run_id
+        }
+        NewChromiumRun::Singleplex { inner, gem_pools } => {
+            let run_id = insert_chromium_run(inner, db_conn).await?;
 
-                let gem_pool_ids =
-                    insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)?;
+            let gem_pool_ids =
+                insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)
+                    .await?;
 
-                insert_singleplex_chip_loadings(&gem_pool_ids, gem_pools.as_ref(), db_conn)?;
+            insert_singleplex_chip_loadings(&gem_pool_ids, gem_pools.as_ref(), db_conn).await?;
 
-                run_id
-            }
-        };
+            run_id
+        }
+    };
 
-        run_id.execute(db_conn)
-    }
+    Ok(run_id)
 }
 
-impl Operation<ChromiumRunId> for ChromiumRunFields {
-    fn execute(self, db_conn: &mut PgConnection) -> Result<ChromiumRunId, db::Error> {
-        use cellnoor_schema::chromium_runs::dsl::*;
+async fn insert_chromium_run(
+    chromium_run: ChromiumRunFields,
+    db_conn: &mut DbConnection,
+) -> Result<Uuid, db::Error> {
+    use cellnoor_schema::chromium_runs::dsl::*;
 
-        Ok(diesel::insert_into(chromium_runs)
-            .values(self)
-            .returning(id)
-            .get_result(db_conn)?)
-    }
+    Ok(diesel::insert_into(chromium_runs)
+        .values(chromium_run)
+        .returning(id)
+        .get_result(db_conn)
+        .await?)
 }
 
-fn insert_gem_pools<'a, I>(
-    chromium_run_id: ChromiumRunId,
+async fn insert_gem_pools<'a, I>(
+    chromium_run_id: Uuid,
     gem_pool_data: I,
-    db_conn: &mut PgConnection,
+    db_conn: &mut DbConnection,
 ) -> Result<Vec<Uuid>, db::Error>
 where
     I: Iterator<Item = &'a GemPoolFields>,
@@ -93,13 +98,14 @@ where
     Ok(diesel::insert_into(gem_pools::table)
         .values(insertions)
         .returning(gem_pools::id)
-        .get_results(db_conn)?)
+        .get_results(db_conn)
+        .await?)
 }
 
-fn insert_ocm_chip_loadings(
+async fn insert_ocm_chip_loadings(
     gem_pool_ids: &[Uuid],
     gem_pools: &[OcmGemPool],
-    db_conn: &mut PgConnection,
+    db_conn: &mut DbConnection,
 ) -> Result<(), db::Error> {
     let mut chip_loading_insertions = Vec::with_capacity(gem_pool_ids.len() * 4);
 
@@ -111,15 +117,16 @@ fn insert_ocm_chip_loadings(
 
     diesel::insert_into(chip_loadings::table)
         .values(chip_loading_insertions)
-        .execute(db_conn)?;
+        .execute(db_conn)
+        .await?;
 
     Ok(())
 }
 
-fn insert_pool_multiplex_chip_loadings(
+async fn insert_pool_multiplex_chip_loadings(
     gem_pool_ids: &[Uuid],
     gem_pools: &[PoolMultiplexGemPool],
-    db_conn: &mut PgConnection,
+    db_conn: &mut DbConnection,
 ) -> Result<(), db::Error> {
     let chip_loading_insertions: Vec<_> = gem_pool_ids
         .iter()
@@ -134,15 +141,16 @@ fn insert_pool_multiplex_chip_loadings(
 
     diesel::insert_into(chip_loadings::table)
         .values(chip_loading_insertions)
-        .execute(db_conn)?;
+        .execute(db_conn)
+        .await?;
 
     Ok(())
 }
 
-fn insert_singleplex_chip_loadings(
+async fn insert_singleplex_chip_loadings(
     gem_pool_ids: &[Uuid],
     gem_pools: &[SingleplexGemPool],
-    db_conn: &mut PgConnection,
+    db_conn: &mut DbConnection,
 ) -> Result<(), db::Error> {
     let chip_loading_insertions: Vec<_> = gem_pool_ids
         .iter()
@@ -157,7 +165,8 @@ fn insert_singleplex_chip_loadings(
 
     diesel::insert_into(chip_loadings::table)
         .values(chip_loading_insertions)
-        .execute(db_conn)?;
+        .execute(db_conn)
+        .await?;
 
     Ok(())
 }

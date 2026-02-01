@@ -17,19 +17,18 @@ use tower_http::trace::TraceLayer;
 
 // pub(super) mod cdna;
 // pub(super) mod chromium_datasets;
-// pub(super) mod chromium_runs;
+pub(super) mod chromium_runs;
 // pub(super) mod gem_pools;
 pub(super) mod institutions;
 // pub(super) mod libraries;
-// pub(super) mod multiplexing_tags;
+pub(super) mod multiplexing_tags;
 pub(super) mod people;
 pub(super) mod projects;
-// pub(super) mod sequencing_runs;
+pub(super) mod sequencing_runs;
 pub(super) mod specimens;
 pub(super) mod suspension_pools;
 pub(super) mod suspensions;
-// pub(super) mod suspensions;
-// pub(super) mod tenx_assays;
+pub(super) mod tenx_assays;
 
 pub(super) fn app(state: AppState) -> Router<AppState> {
     let (router, api_docs) = router();
@@ -66,14 +65,12 @@ pub fn router() -> (Router<AppState>, OpenApi) {
         .nest("/people", people::router())
         .nest("/projects", projects::router())
         .nest("/specimens", specimens::router())
-        .nest("/suspensions", suspensions::router());
-    // .merge(specimens::router())
-    // .merge(tenx_assays::router())
-    // .merge(sequencing_runs::router())
-    // .merge(multiplexing_tags::router())
-    // .merge(suspensions::router())
-    // .merge(suspension_pools::router())
-    // .merge(chromium_runs::router())
+        .nest("/tenx-assays", tenx_assays::router())
+        .nest("/sequencing-runs", sequencing_runs::router())
+        .nest("/multiplexing-tags", multiplexing_tags::router())
+        .nest("/suspensions", suspensions::router())
+        .nest("/suspension-pools", suspension_pools::router())
+        .nest("/chromium-runs", chromium_runs::router());
     // .merge(gem_pools::router())
     // .merge(cdna::router())
     // .merge(libraries::router())

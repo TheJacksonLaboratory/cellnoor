@@ -4,6 +4,7 @@ use jiff::Timestamp;
 use macro_attributes::{base_model, insert};
 use non_empty::NonEmptyVec;
 use ranged::{RangedF32, RangedU32};
+#[cfg(feature = "app")]
 use schemars::JsonSchema;
 use serde::Deserialize;
 use uuid::Uuid;

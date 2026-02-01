@@ -5,7 +5,7 @@ mod query;
 mod read;
 
 pub use common::SequencingRunFields;
-pub use creation::SequencingRunCreation;
+pub use creation::NewSequencingRun;
 #[cfg(feature = "app")]
 pub use query::SequencingRunQuery;
 pub use query::{SequencingRunFilter, SequencingRunOrderBy};

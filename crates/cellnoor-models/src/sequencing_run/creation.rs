@@ -7,7 +7,7 @@ use crate::sequencing_run::common::SequencingRunFields;
 
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = sequencing_runs))]
-pub struct SequencingRunCreation {
+pub struct NewSequencingRun {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: SequencingRunFields,
@@ -19,7 +19,7 @@ pub struct SequencingRunCreation {
     finished_at: Option<Timestamp>,
 }
 
-impl SequencingRunCreation {
+impl NewSequencingRun {
     #[must_use]
     pub fn begun_at(&self) -> Timestamp {
         self.begun_at

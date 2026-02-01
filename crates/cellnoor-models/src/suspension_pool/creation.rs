@@ -2,6 +2,8 @@
 use cellnoor_schema::suspension_tagging;
 use macro_attributes::{base_model, insert};
 use non_empty::NonEmptyVec;
+#[cfg(feature = "app")]
+use schemars::JsonSchema;
 use uuid::Uuid;
 
 use crate::suspension_pool::common::SuspensionPoolFields;
@@ -22,6 +24,7 @@ impl SuspensionTagging {
 
 #[base_model]
 #[derive(serde::Deserialize)]
+#[cfg_attr(feature = "app", derive(JsonSchema))]
 pub struct NewSuspensionPool {
     #[serde(flatten)]
     pub inner: SuspensionPoolFields,

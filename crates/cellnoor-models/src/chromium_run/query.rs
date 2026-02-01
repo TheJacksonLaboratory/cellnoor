@@ -9,6 +9,7 @@ use crate::generic_query;
 #[filter]
 pub struct ChromiumRunFilter {
     pub ids: Option<Vec<Uuid>>,
+    pub project_ids: Option<Vec<Uuid>>,
 }
 
 #[order_by(chromium_runs)]
@@ -35,6 +36,7 @@ pub type ChromiumRunQuery = generic_query::Query<ChromiumRunFilter, ChromiumRunO
 #[filter]
 pub struct GemPoolFilter {
     pub ids: Option<Vec<Uuid>>,
+    pub project_ids: Option<Vec<Uuid>>,
 }
 
 #[order_by(gem_pools)]

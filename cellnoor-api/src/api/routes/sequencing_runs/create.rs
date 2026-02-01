@@ -1,33 +1,32 @@
-use axum::{extract::State, http::status::StatusCode};
-use cellnoor_models::sequencing_run::{SequencingRun, SequencingRunCreation};
+use axum::{Json, extract::State};
+use cellnoor_models::sequencing_run::{NewSequencingRun, SequencingRun};
 use diesel::prelude::*;
+use diesel_async::RunQueryDsl;
 
 use crate::{
-    api::{
-        extract::{Json, auth::AuthenticatedUser},
-        routes::{ApiResponse, Root, handle_api_request},
-    },
-    db,
+    db::{self, DbConnection},
     state::AppState,
 };
 
 pub(super) async fn create_sequencing_run(
-    _: Root,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    Json(request): Json<SequencingRunCreation>,
-) -> ApiResponse<SequencingRun> {
-    let item = handle_api_request(state, user, request).await?;
-    Ok((StatusCode::CREATED, item))
+    _: State<AppState>,
+    mut db_conn: DbConnection,
+    Json(sequencing_run): Json<NewSequencingRun>,
+) -> Result<Json<SequencingRun>, db::Error> {
+    insert_sequencing_run(sequencing_run, &mut db_conn)
+        .await
+        .map(Json)
 }
 
-impl db::Operation<SequencingRun> for SequencingRunCreation {
-    fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<SequencingRun, db::Error> {
-        use cellnoor_schema::sequencing_runs::dsl::*;
+pub async fn insert_sequencing_run(
+    sequencing_run: NewSequencingRun,
+    db_conn: &mut DbConnection,
+) -> Result<SequencingRun, db::Error> {
+    use cellnoor_schema::sequencing_runs::dsl::*;
 
-        Ok(diesel::insert_into(sequencing_runs)
-            .values(self)
-            .returning(SequencingRun::as_returning())
-            .get_result(db_conn)?)
-    }
+    Ok(diesel::insert_into(sequencing_runs)
+        .values(sequencing_run)
+        .returning(SequencingRun::as_returning())
+        .get_result(db_conn)
+        .await?)
 }

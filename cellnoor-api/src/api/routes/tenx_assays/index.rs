@@ -1,50 +1,43 @@
-use axum::{extract::State, http::status::StatusCode};
+use axum::{Json, extract::State};
 use cellnoor_models::tenx_assay::{TenxAssay, TenxAssayFilter, TenxAssayQuery};
 use cellnoor_schema::tenx_assays::dsl::*;
 use diesel::{dsl::AssumeNotNull, prelude::*};
+use diesel_async::RunQueryDsl;
 
 use crate::{
-    api::{
-        extract::{auth::AuthenticatedUser, query::QsQuery},
-        routes::{ApiResponse, Root, handle_api_request},
-    },
-    db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, like_any},
+    api::extract::{AuthJsonQuery, Authorize},
+    db::{self, BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter, like_any},
     state::AppState,
 };
 
-pub async fn list_tenx_assays(
-    _: Root,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    QsQuery(request): QsQuery<TenxAssayQuery>,
-) -> ApiResponse<Vec<TenxAssay>> {
-    Ok((
-        StatusCode::OK,
-        handle_api_request(state, user, request).await?,
-    ))
+pub async fn index_tenx_assays(
+    _: State<AppState>,
+    mut db_conn: DbConnection,
+    AuthJsonQuery { q }: AuthJsonQuery<TenxAssayQuery>,
+) -> Result<Json<Vec<TenxAssay>>, db::Error> {
+    select_tenx_assays(q, &mut db_conn).await.map(Json)
 }
 
-impl db::Operation<Vec<TenxAssay>> for TenxAssayQuery {
-    fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Vec<TenxAssay>, db::Error> {
-        let Self {
-            filter,
-            limit,
-            offset,
-            order_by,
-        } = self;
+pub async fn select_tenx_assays(
+    TenxAssayQuery {
+        filter,
+        limit,
+        offset,
+        order_by,
+    }: TenxAssayQuery,
+    db_conn: &mut DbConnection,
+) -> Result<Vec<TenxAssay>, db::Error> {
+    let mut stmt = TenxAssay::query()
+        .limit(limit)
+        .offset(offset)
+        .filter(filter.to_boxed_filter())
+        .into_boxed();
 
-        let mut stmt = TenxAssay::query()
-            .limit(limit)
-            .offset(offset)
-            .filter(filter.to_boxed_filter())
-            .into_boxed();
-
-        for ordering in order_by {
-            stmt = stmt.then_order_by(ordering);
-        }
-
-        Ok(stmt.load(db_conn)?)
+    for ordering in order_by {
+        stmt = stmt.then_order_by(ordering);
     }
+
+    Ok(stmt.load(db_conn).await?)
 }
 
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for TenxAssayFilter
@@ -108,5 +101,14 @@ where
         }
 
         filter
+    }
+}
+
+impl Authorize for TenxAssayQuery {
+    fn authorize(
+        self,
+        _user: &crate::api::auth::AuthUser,
+    ) -> Result<Self, crate::api::auth::Error> {
+        Ok(self)
     }
 }

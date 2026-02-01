@@ -21,6 +21,12 @@ pub enum DataError {
 }
 
 impl DataError {
+    pub fn new_other(message: &str) -> DataError {
+        DataError::Other {
+            message: message.to_string(),
+        }
+    }
+
     pub fn new_timestamp_error(
         (t1, should_come_before): (Timestamp, &'static str),
         (t2, should_come_after): (Timestamp, &'static str),

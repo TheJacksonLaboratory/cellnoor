@@ -1,10 +1,12 @@
+use aide::axum::{ApiRouter, routing::get};
 use axum::Router;
-use axum_extra::routing::RouterExt;
 
 use crate::state::AppState;
 
-mod list;
+use index::index_multiplexing_tags;
 
-pub(super) fn router() -> Router<AppState> {
-    Router::new().typed_get(list::list_multiplexing_tags)
+mod index;
+
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new().api_route("/", get(index_multiplexing_tags))
 }
