@@ -25,7 +25,7 @@ use cellnoor_models::{
         SuspensionSummary,
     },
     suspension_pool::{
-        SuspensionPool, SuspensionPoolCreation, SuspensionPoolFields, SuspensionPoolQuery,
+        NewSuspensionPool, SuspensionPool, SuspensionPoolFields, SuspensionPoolQuery,
         SuspensionTagging,
     },
     tenx_assay::{LibraryType, SampleMultiplexing, TenxAssayFilter, TenxAssayQuery},

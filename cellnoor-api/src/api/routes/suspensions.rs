@@ -1,6 +1,6 @@
 use aide::axum::{
     ApiRouter,
-    routing::{get, post, post_with},
+    routing::{get, post},
 };
 use axum::handler::Handler;
 

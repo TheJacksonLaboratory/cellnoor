@@ -26,8 +26,8 @@ pub(super) mod people;
 pub(super) mod projects;
 // pub(super) mod sequencing_runs;
 pub(super) mod specimens;
+pub(super) mod suspension_pools;
 pub(super) mod suspensions;
-// pub(super) mod suspension_pools;
 // pub(super) mod suspensions;
 // pub(super) mod tenx_assays;
 

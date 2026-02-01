@@ -22,7 +22,7 @@ impl SuspensionTagging {
 
 #[base_model]
 #[derive(serde::Deserialize)]
-pub struct SuspensionPoolCreation {
+pub struct NewSuspensionPool {
     #[serde(flatten)]
     pub inner: SuspensionPoolFields,
     pub preparer_ids: NonEmptyVec<Uuid, { usize::MAX }>,
