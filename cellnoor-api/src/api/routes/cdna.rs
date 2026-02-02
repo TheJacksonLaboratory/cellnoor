@@ -4,9 +4,10 @@ use aide::axum::{
     routing::{get, post},
 };
 
+use axum::handler::Handler;
 use create::create_cdna;
-use index::list_cdna;
-use show::fetch_cdna;
+use index::index_cdna;
+use show::show_cdna;
 
 mod create;
 mod index;
@@ -17,13 +18,13 @@ pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new()
         .api_route(
             "/",
-            post(create_cdna.layer(admin_required_creation!())).get(list_cdna),
+            post(create_cdna.layer(admin_required_creation!())).get(index_cdna),
         )
         .nest("/{id}", id_router())
 }
 
 fn id_router() -> ApiRouter<AppState> {
     ApiRouter::new()
-        .api_route("/", get(fetch_cdna))
-        .api_route("/measurements", measurements::router())
+        .api_route("/", get(show_cdna))
+        .nest("/measurements", measurements::router())
 }

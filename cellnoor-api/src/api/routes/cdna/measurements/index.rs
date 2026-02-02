@@ -1,34 +1,50 @@
-use axum::{extract::State, http::StatusCode};
-use cellnoor_models::cdna::{CdnaIdMeasurements, measurement::CdnaMeasurement};
-use cellnoor_schema::cdna_measurements;
+use axum::{
+    Extension, Json,
+    extract::{Path, State},
+    http::StatusCode,
+};
+use cellnoor_models::{IdParameter, cdna::measurement::CdnaMeasurement};
+use cellnoor_schema::{cdna, cdna_measurements};
 use diesel::prelude::*;
+use diesel_async::RunQueryDsl;
+use uuid::Uuid;
 
 use crate::{
-    api::{
-        extract::auth::AuthenticatedUser,
-        routes::{ApiResponse, handle_api_request},
-    },
-    db::{self},
+    api::auth::{AuthProjects, AuthUser},
+    db::{self, DbConnection},
     state::AppState,
 };
 
-pub async fn list_measurements(
-    cdna_id: CdnaIdMeasurements,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-) -> ApiResponse<Vec<CdnaMeasurement>> {
-    let item = handle_api_request(state, user, cdna_id).await?;
-    Ok((StatusCode::OK, item))
+pub async fn index_measurements(
+    _: State<AppState>,
+    mut db_conn: DbConnection,
+    Extension(user): Extension<AuthUser>,
+    Path(IdParameter { id }): Path<IdParameter>,
+) -> Result<Json<Vec<CdnaMeasurement>>, db::Error> {
+    select_measurements(user.projects(), id, &mut db_conn)
+        .await
+        .map(Json)
 }
 
-impl db::Operation<Vec<CdnaMeasurement>> for CdnaIdMeasurements {
-    fn execute(
-        self,
-        db_conn: &mut diesel::PgConnection,
-    ) -> Result<Vec<CdnaMeasurement>, db::Error> {
-        Ok(CdnaMeasurement::query()
-            .order_by(cdna_measurements::measured_at)
-            .filter(cdna_measurements::cdna_id.eq(self))
-            .load(db_conn)?)
-    }
+pub async fn select_measurements(
+    authorized_projects: &AuthProjects,
+    cdna_id: Uuid,
+    db_conn: &mut DbConnection,
+) -> Result<Vec<CdnaMeasurement>, db::Error> {
+    let query = CdnaMeasurement::query()
+        .order_by(cdna_measurements::measured_at)
+        .filter(cdna_measurements::cdna_id.eq(cdna_id));
+
+    let measurements = match authorized_projects {
+        AuthProjects::All => query.load(db_conn).await?,
+        AuthProjects::Restricted(projects) => {
+            query
+                .inner_join(cdna::table)
+                .filter(cdna::project_id.eq_any(projects.iter()))
+                .load(db_conn)
+                .await?
+        }
+    };
+
+    Ok(measurements)
 }

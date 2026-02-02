@@ -1,7 +1,7 @@
 use std::ops::Range;
 
 use cellnoor_models::{
-    cdna::{CdnaCreation, CdnaFields, CdnaQuery, CdnaSummary},
+    cdna::{CdnaFields, CdnaQuery, CdnaSummary, NewCdna},
     chromium_dataset::{ChromiumDatasetCreation, ChromiumDatasetQuery, ChromiumDatasetSummary},
     chromium_run::{
         ChipLoadingFields, ChromiumRunFields, GemPoolFields, GemPoolQuery, GemPoolSummary,

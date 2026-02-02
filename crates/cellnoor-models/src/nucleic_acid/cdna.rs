@@ -5,7 +5,7 @@ mod query;
 mod read;
 
 pub use common::CdnaFields;
-pub use create::CdnaCreation;
+pub use create::NewCdna;
 #[cfg(feature = "app")]
 pub use query::CdnaQuery;
 pub use query::{CdnaFilter, CdnaOrderBy};

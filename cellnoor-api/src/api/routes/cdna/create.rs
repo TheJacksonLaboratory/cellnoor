@@ -1,7 +1,7 @@
 use axum::{Extension, Json, extract::State};
 use cellnoor_models::{
-    cdna::{Cdna, CdnaCreation},
-    tenx_assay::LibraryTypeSpecification,
+    cdna::{Cdna, NewCdna},
+    tenx_assay::{LibraryType, LibraryTypeSpecification},
 };
 use cellnoor_schema::{
     cdna, cdna_preparers, chromium_runs, gem_pools, library_type_specifications as lib_specs,
@@ -22,7 +22,7 @@ pub async fn create_cdna(
     _: State<AppState>,
     mut db_conn: DbConnection,
     Extension(user): Extension<AuthUser>,
-    Json(new_cdna): Json<CdnaCreation>,
+    Json(new_cdna): Json<NewCdna>,
 ) -> Result<Json<Cdna>, db::Error> {
     let Some(gem_pool_id) = new_cdna.gem_pool_id() else {
         return Err(db::DataError::new_other(
@@ -30,7 +30,8 @@ pub async fn create_cdna(
         ))?;
     };
 
-    let parent_info = nucleic_acid_parent_info(gem_pool_id, &mut db_conn).await?;
+    let parent_info =
+        nucleic_acid_parent_info(gem_pool_id, new_cdna.library_type(), &mut db_conn).await?;
 
     validate_volume(&parent_info, new_cdna.volume_µl())?;
     validate_timestamps(
@@ -52,7 +53,7 @@ pub async fn create_cdna(
 
 pub async fn insert_cdna_and_preparers(
     project_id: Uuid,
-    new_cdna: CdnaCreation,
+    new_cdna: NewCdna,
     db_conn: &mut DbConnection,
 ) -> Result<Uuid, db::Error> {
     let preparer_ids = new_cdna.preparer_ids().to_vec();
@@ -113,10 +114,12 @@ struct NucleicAcidParentInfo {
 
 async fn nucleic_acid_parent_info(
     gem_pool_id: Uuid,
+    library_type: LibraryType,
     db_conn: &mut DbConnection,
 ) -> Result<NucleicAcidParentInfo, db::Error> {
     Ok(NucleicAcidParentInfo::query()
         .filter(gem_pools::id.eq(gem_pool_id))
+        .filter(lib_specs::library_type.eq(library_type))
         .first(db_conn)
         .await?)
 }
@@ -130,10 +133,10 @@ fn validate_volume(
 ) -> Result<(), db::DataError> {
     let expected_volume = library_type_specification.cdna_volume_µl();
 
-    if volume != expected_volume {
+    if volume as u16 != expected_volume {
+        let library_type: &str = library_type_specification.library_type().into();
         return Err(db::DataError::new_other(&format!(
-            "for library type {}, expected cDNA volume of {}",
-            library_type_specification.library_type(),
+            "for library type {}, expected cDNA volume of {library_type}",
             expected_volume
         )));
     }

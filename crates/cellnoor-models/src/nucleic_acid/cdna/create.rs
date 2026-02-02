@@ -9,7 +9,7 @@ use crate::{nucleic_acid::cdna::common::CdnaFields, tenx_assay::LibraryType};
 
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = cdna))]
-pub struct CdnaCreation {
+pub struct NewCdna {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: CdnaFields,
@@ -24,7 +24,7 @@ pub struct CdnaCreation {
     preparer_ids: NonEmptyVec<Uuid, { usize::MAX }>,
 }
 
-impl CdnaCreation {
+impl NewCdna {
     #[must_use]
     pub fn gem_pool_id(&self) -> Option<Uuid> {
         self.inner.gem_pool_id
