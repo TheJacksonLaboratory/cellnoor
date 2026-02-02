@@ -1,7 +1,6 @@
 use axum::{
     Extension, Json,
     extract::{Path, State},
-    http::StatusCode,
 };
 use cellnoor_models::{IdParameter, chromium_run::ChromiumRun};
 use diesel::prelude::*;

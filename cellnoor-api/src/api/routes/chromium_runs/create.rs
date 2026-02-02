@@ -1,16 +1,20 @@
 use axum::{Extension, Json, extract::State};
 use cellnoor_models::chromium_run::{
-    ChromiumRun, ChromiumRunFields, GemPoolFields, NewChromiumRun, OcmGemPool,
+    ChromiumRun, ChromiumRunFields, GemPoolFields, NewChromiumRun, OcmChipLoading, OcmGemPool,
     PoolMultiplexGemPool, SingleplexGemPool,
 };
-use cellnoor_schema::chip_loadings;
+use cellnoor_schema::{chip_loadings, specimens, suspension_pools, suspensions};
 use diesel::prelude::*;
 use diesel_async::{AsyncConnection, RunQueryDsl, scoped_futures::ScopedFutureExt};
+use jiff::Timestamp;
 use uuid::Uuid;
 
 use crate::{
-    api::{auth::AuthUser, routes::chromium_runs::show::select_chromium_run_by_id},
-    db::{self, DbConnection},
+    api::{
+        auth::AuthUser, routes::chromium_runs::show::select_chromium_run_by_id,
+        util::validate_timestamps,
+    },
+    db::{self, DbConnection, jiff_diesel_optional_tuple_to_jiff},
     state::AppState,
 };
 
@@ -175,4 +179,125 @@ async fn insert_singleplex_chip_loadings(
         .await?;
 
     Ok(())
+}
+
+pub(super) async fn validate_chromium_run_time(
+    chromium_run: NewChromiumRun,
+    db_conn: &mut DbConnection,
+) -> Result<(), db::Error> {
+    let run_at = chromium_run.run_at();
+
+    let suspension_ids: Vec<Uuid> = match chromium_run {
+        NewChromiumRun::OnChipMultiplexing {
+            inner: _,
+            gem_pools,
+        } => gem_pools
+            .as_ref()
+            .iter()
+            .flat_map(|p| p.loading.as_ref().iter().map(OcmChipLoading::suspension_id))
+            .collect(),
+        NewChromiumRun::PoolMultiplex {
+            inner: _,
+            gem_pools,
+        } => {
+            let suspension_pool_ids = gem_pools
+                .as_ref()
+                .iter()
+                .map(|p| p.loading.suspension_pool_id())
+                .collect();
+
+            return validate_suspensions_pooled_before_chromium_run(
+                suspension_pool_ids,
+                run_at,
+                db_conn,
+            )
+            .await;
+        }
+        NewChromiumRun::Singleplex {
+            inner: _,
+            gem_pools,
+        } => gem_pools
+            .as_ref()
+            .iter()
+            .map(|p| p.loading.suspension_id())
+            .collect(),
+    };
+
+    validate_suspensions_created_before_chromium_run(&suspension_ids, run_at, db_conn).await
+}
+
+async fn validate_suspensions_pooled_before_chromium_run(
+    pool_ids: Vec<Uuid>,
+    chromium_run_at: Timestamp,
+    db_conn: &mut DbConnection,
+) -> Result<(), db::Error> {
+    let pooling_times = suspension_pool_timestamps(&pool_ids, db_conn).await?;
+
+    for pooled_at in pooling_times {
+        validate_timestamps(
+            (pooled_at, "suspensions_pooled_at"),
+            (chromium_run_at, "chromium_run_at"),
+        )?;
+    }
+
+    Ok(())
+}
+
+async fn validate_suspensions_created_before_chromium_run(
+    suspension_ids: &[Uuid],
+    chromium_run_at: Timestamp,
+    db_conn: &mut DbConnection,
+) -> Result<(), db::Error> {
+    let timestamps = suspension_timestamps(suspension_ids, db_conn).await?;
+
+    for suspension_created_at in timestamps {
+        validate_timestamps(
+            (suspension_created_at, "suspension_created_at"),
+            (chromium_run_at, "chromium_run_at"),
+        )?;
+    }
+
+    Ok(())
+}
+
+async fn suspension_timestamps(
+    suspension_ids: &[Uuid],
+    db_conn: &mut DbConnection,
+) -> Result<Vec<Timestamp>, db::Error> {
+    let timestamps = join_suspensions_to_specimens(suspension_ids)
+        .select((specimens::received_at, suspensions::created_at))
+        .load(db_conn)
+        .await?;
+
+    let timestamps = timestamps
+        .into_iter()
+        .map(jiff_diesel_optional_tuple_to_jiff)
+        .map(|(t1, t2)| t2.unwrap_or(t1))
+        .collect();
+
+    Ok(timestamps)
+}
+
+async fn suspension_pool_timestamps(
+    pool_ids: &[Uuid],
+    db_conn: &mut DbConnection,
+) -> Result<Vec<Timestamp>, db::Error> {
+    let timestamps = suspension_pools::table
+        .select(suspension_pools::pooled_at)
+        .filter(suspension_pools::id.eq_any(pool_ids))
+        .load(db_conn)
+        .await?;
+
+    Ok(timestamps
+        .into_iter()
+        .map(jiff_diesel::Timestamp::to_jiff)
+        .collect())
+}
+
+#[allow(clippy::elidable_lifetime_names)]
+#[diesel::dsl::auto_type]
+pub(super) fn join_suspensions_to_specimens<'a>(suspension_ids: &'a [Uuid]) -> _ {
+    suspensions::table
+        .inner_join(specimens::table)
+        .filter(suspensions::id.eq_any(suspension_ids))
 }

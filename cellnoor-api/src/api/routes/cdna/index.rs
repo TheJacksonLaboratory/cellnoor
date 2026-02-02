@@ -4,15 +4,10 @@ use cellnoor_schema::cdna::dsl::id;
 use diesel::{SelectableExpression, prelude::*};
 
 use crate::{
-    api::{
-        extract::{auth::AuthenticatedUser, query::QsQuery},
-        routes::{ApiResponse, Root, handle_api_request},
-    },
     db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter},
     state::AppState,
 };
 
-#[axum::debug_handler]
 pub(super) async fn list_cdna(
     _: Root,
     state: State<AppState>,

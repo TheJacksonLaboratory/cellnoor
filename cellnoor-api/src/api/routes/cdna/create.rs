@@ -1,49 +1,77 @@
-use axum::{extract::State, http::status::StatusCode};
-use cellnoor_models::cdna::{Cdna, CdnaCreation, CdnaId};
-use cellnoor_schema::cdna_preparers;
-use diesel::{RunQueryDsl, prelude::*};
+use axum::{Extension, Json, extract::State};
+use cellnoor_models::{
+    cdna::{Cdna, CdnaCreation},
+    tenx_assay::LibraryTypeSpecification,
+};
+use cellnoor_schema::{
+    cdna, cdna_preparers, chromium_runs, gem_pools, library_type_specifications as lib_specs,
+    tenx_assays,
+};
+use diesel::{pg::Pg, prelude::*};
+use diesel_async::{AsyncConnection, RunQueryDsl, scoped_futures::ScopedFutureExt};
+use jiff::Timestamp;
 use uuid::Uuid;
 
 use crate::{
-    api::{
-        extract::{Json, auth::AuthenticatedUser},
-        routes::{ApiResponse, Root, handle_api_request},
-    },
-    db,
+    api::{auth::AuthUser, routes::cdna::show::select_cdna_by_id, util::validate_timestamps},
+    db::{self, DbConnection},
     state::AppState,
 };
 
-pub(super) async fn create_cdna(
-    _: Root,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    Json(request): Json<CdnaCreation>,
-) -> ApiResponse<Cdna> {
-    let item = handle_api_request(state, user, request).await?;
-    Ok((StatusCode::CREATED, item))
+pub async fn create_cdna(
+    _: State<AppState>,
+    mut db_conn: DbConnection,
+    Extension(user): Extension<AuthUser>,
+    Json(new_cdna): Json<CdnaCreation>,
+) -> Result<Json<Cdna>, db::Error> {
+    let Some(gem_pool_id) = new_cdna.gem_pool_id() else {
+        return Err(db::DataError::new_other(
+            "cDNA without GEMs pool not supported",
+        ))?;
+    };
+
+    let parent_info = nucleic_acid_parent_info(gem_pool_id, &mut db_conn).await?;
+
+    validate_volume(&parent_info, new_cdna.volume_µl())?;
+    validate_timestamps(
+        (new_cdna.prepared_at(), "cdna_prepared_at"),
+        (parent_info.chromium_run.run_at, "chromium_run_at"),
+    )?;
+
+    let cdna_id = db_conn
+        .transaction(|db_conn| {
+            insert_cdna_and_preparers(parent_info.chromium_run.project_id, new_cdna, db_conn)
+                .scope_boxed()
+        })
+        .await?;
+
+    select_cdna_by_id(user.projects(), cdna_id, &mut db_conn)
+        .await
+        .map(Json)
 }
 
-impl db::Operation<Cdna> for CdnaCreation {
-    fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Cdna, db::Error> {
-        use cellnoor_schema::cdna::dsl::*;
+pub async fn insert_cdna_and_preparers(
+    project_id: Uuid,
+    new_cdna: CdnaCreation,
+    db_conn: &mut DbConnection,
+) -> Result<Uuid, db::Error> {
+    let preparer_ids = new_cdna.preparer_ids().to_vec();
 
-        let preparer_ids = self.preparer_ids().to_vec();
+    let cdna_id = diesel::insert_into(cdna::table)
+        .values((cdna::project_id.eq(project_id), new_cdna))
+        .returning(cdna::id)
+        .get_result(db_conn)
+        .await?;
 
-        let cdna_id: CdnaId = diesel::insert_into(cdna)
-            .values(self)
-            .returning(id)
-            .get_result(db_conn)?;
+    insert_cdna_preparers(cdna_id, &preparer_ids, db_conn).await?;
 
-        insert_cdna_preparers(cdna_id, &preparer_ids, db_conn)?;
-
-        cdna_id.execute(db_conn)
-    }
+    Ok(cdna_id)
 }
 
-fn insert_cdna_preparers(
-    cdna_id: CdnaId,
+async fn insert_cdna_preparers(
+    cdna_id: Uuid,
     preparer_ids: &[Uuid],
-    db_conn: &mut diesel::PgConnection,
+    db_conn: &mut DbConnection,
 ) -> Result<(), db::Error> {
     let preparer_mappings: Vec<_> = preparer_ids
         .iter()
@@ -57,7 +85,58 @@ fn insert_cdna_preparers(
 
     diesel::insert_into(cdna_preparers::table)
         .values(preparer_mappings)
-        .execute(db_conn)?;
+        .execute(db_conn)
+        .await?;
+
+    Ok(())
+}
+
+#[derive(HasQuery)]
+#[diesel(table_name = chromium_runs, check_for_backend(Pg), base_query=chromium_runs::table.inner_join(tenx_assays::table),
+)]
+pub struct ChromiumRunInfo {
+    #[diesel(deserialize_as = jiff_diesel::Timestamp)]
+    run_at: Timestamp,
+    project_id: Uuid,
+}
+
+#[derive(HasQuery)]
+#[diesel(table_name = gem_pools, check_for_backend(Pg), base_query=gem_pools::table.inner_join(
+    chromium_runs::table.inner_join(tenx_assays::table.inner_join(lib_specs::table)),
+))]
+struct NucleicAcidParentInfo {
+    #[diesel(embed)]
+    library_type_specification: LibraryTypeSpecification,
+    #[diesel(embed)]
+    chromium_run: ChromiumRunInfo,
+}
+
+async fn nucleic_acid_parent_info(
+    gem_pool_id: Uuid,
+    db_conn: &mut DbConnection,
+) -> Result<NucleicAcidParentInfo, db::Error> {
+    Ok(NucleicAcidParentInfo::query()
+        .filter(gem_pools::id.eq(gem_pool_id))
+        .first(db_conn)
+        .await?)
+}
+
+fn validate_volume(
+    NucleicAcidParentInfo {
+        library_type_specification,
+        ..
+    }: &NucleicAcidParentInfo,
+    volume: u8,
+) -> Result<(), db::DataError> {
+    let expected_volume = library_type_specification.cdna_volume_µl();
+
+    if volume != expected_volume {
+        return Err(db::DataError::new_other(&format!(
+            "for library type {}, expected cDNA volume of {}",
+            library_type_specification.library_type(),
+            expected_volume
+        )));
+    }
 
     Ok(())
 }

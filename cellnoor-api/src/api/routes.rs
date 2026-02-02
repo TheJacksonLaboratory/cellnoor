@@ -15,7 +15,7 @@ use serde::Serialize;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 
-// pub(super) mod cdna;
+pub(super) mod cdna;
 // pub(super) mod chromium_datasets;
 pub(super) mod chromium_runs;
 pub(super) mod gem_pools;
@@ -71,8 +71,8 @@ pub fn router() -> (Router<AppState>, OpenApi) {
         .nest("/suspensions", suspensions::router())
         .nest("/suspension-pools", suspension_pools::router())
         .nest("/chromium-runs", chromium_runs::router())
-        .nest("/gem-pools", gem_pools::router());
-    // .merge(cdna::router())
+        .nest("/gem-pools", gem_pools::router())
+        .nest("/cdna", cdna::router());
     // .merge(libraries::router())
     // .merge(chromium_datasets::router())
 

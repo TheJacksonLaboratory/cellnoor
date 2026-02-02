@@ -53,7 +53,7 @@ impl EnumToSql for SampleMultiplexing {}
 impl_enum_to_sql!(SampleMultiplexing);
 
 #[insert]
-#[cfg_attr(feature = "app", derive(AsChangeset))]
+#[cfg_attr(feature = "app", derive(AsChangeset, HasQuery))]
 pub struct LibraryTypeSpecification {
     library_type: LibraryType,
     index_kit: String,
@@ -66,6 +66,10 @@ pub struct LibraryTypeSpecification {
 impl LibraryTypeSpecification {
     pub fn library_type(&self) -> LibraryType {
         self.library_type
+    }
+
+    pub fn cdna_volume_µl(&self) -> u16 {
+        self.cdna_volume_µl.into()
     }
 }
 

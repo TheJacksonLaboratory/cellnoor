@@ -14,8 +14,7 @@ create table gem_pools (
     id uuid primary key default uuidv7(),
     links jsonb generated always as (construct_links('gem-pools', id)) stored not null,
     readable_id case_insensitive_text unique not null,
-    chromium_run_id uuid not null references chromium_runs on delete restrict on update restrict,
-    project_id uuid references projects on delete restrict on update restrict not null
+    chromium_run_id uuid not null references chromium_runs on delete restrict on update restrict
 );
 
 create table chip_loadings (

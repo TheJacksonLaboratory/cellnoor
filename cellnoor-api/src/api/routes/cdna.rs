@@ -1,22 +1,29 @@
-use axum::{Router, routing::post};
-use axum_extra::routing::{RouterExt, TypedPath};
-use cellnoor_models::cdna::CdnaIdMeasurements;
+use crate::{admin_required_creation, state::AppState};
+use aide::axum::{
+    ApiRouter,
+    routing::{get, post},
+};
 
-use crate::state::AppState;
+use create::create_cdna;
+use index::list_cdna;
+use show::fetch_cdna;
 
 mod create;
-mod fetch;
-mod list;
+mod index;
 mod measurements;
+mod show;
 
-pub(super) fn router() -> Router<AppState> {
-    Router::new()
-        .typed_post(create::create_cdna)
-        .typed_get(fetch::fetch_cdna)
-        .typed_get(list::list_cdna)
-        .route(
-            CdnaIdMeasurements::PATH,
-            post(measurements::create::create_measurement),
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route(
+            "/",
+            post(create_cdna.layer(admin_required_creation!())).get(list_cdna),
         )
-        .typed_get(measurements::list::list_measurements)
+        .nest("/{id}", id_router())
+}
+
+fn id_router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route("/", get(fetch_cdna))
+        .api_route("/measurements", measurements::router())
 }

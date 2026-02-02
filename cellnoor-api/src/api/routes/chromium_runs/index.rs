@@ -1,4 +1,4 @@
-use axum::{Json, extract::State, http::StatusCode};
+use axum::{Json, extract::State};
 use cellnoor_models::chromium_run::{ChromiumRunFilter, ChromiumRunQuery, ChromiumRunSummary};
 use cellnoor_schema::chromium_runs::dsl::*;
 use diesel::prelude::*;

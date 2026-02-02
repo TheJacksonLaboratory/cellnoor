@@ -127,7 +127,6 @@ diesel::table! {
         links -> Jsonb,
         readable_id -> Text,
         chromium_run_id -> Uuid,
-        project_id -> Uuid,
     }
 }
 
@@ -431,7 +430,7 @@ diesel::joinable!(committee_approval -> institutions (institution_id));
 diesel::joinable!(committee_approval -> specimens (specimen_id));
 diesel::joinable!(dual_index_sets -> index_kits (kit));
 diesel::joinable!(gem_pools -> chromium_runs (chromium_run_id));
-diesel::joinable!(gem_pools -> projects (project_id));
+
 diesel::joinable!(json_web_tokens -> people (sub));
 diesel::joinable!(libraries -> cdna (cdna_id));
 diesel::joinable!(libraries -> dual_index_sets (dual_index_set_name));

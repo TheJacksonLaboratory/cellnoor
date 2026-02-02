@@ -19,15 +19,32 @@ impl<const MIN: u16, const MAX: u16> RangedU16<MIN, MAX> {
     }
 }
 
+impl<const MIN: u16, const MAX: u16> From<RangedU16<MIN, MAX>> for u16 {
+    fn from(value: RangedU16<MIN, MAX>) -> u16 {
+        value.0.into()
+    }
+}
+
 #[cfg(feature = "diesel")]
 mod diesel_impls {
     use diesel::{
-        pg::Pg,
+        deserialize::FromSql,
+        pg::{Pg, PgValue},
         serialize::{Output, ToSql},
         sql_types::Integer,
     };
 
     use super::RangedU16;
+
+    impl<const MIN: u16, const MAX: u16> FromSql<Integer, Pg> for RangedU16<MIN, MAX> {
+        fn from_sql(bytes: PgValue) -> diesel::deserialize::Result<Self> {
+            let as_int = <i32 as FromSql<Integer, Pg>>::from_sql(bytes)?;
+
+            Ok(deranged::RangedU16::<MIN, MAX>::new(as_int as u16)
+                .map(RangedU16)
+                .unwrap())
+        }
+    }
 
     impl<const MIN: u16, const MAX: u16> ToSql<Integer, Pg> for RangedU16<MIN, MAX> {
         fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Pg>) -> diesel::serialize::Result {

@@ -17,7 +17,7 @@ use crate::{
 pub struct GemPoolSummary {
     id: Uuid,
     chromium_run_id: Uuid,
-    project_id: Uuid,
+
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: GemPoolFields,
