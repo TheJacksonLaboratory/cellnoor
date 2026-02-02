@@ -20,7 +20,9 @@ pub(super) async fn show_chromium_run(
     Extension(user): Extension<AuthUser>,
     Path(IdParameter { id }): Path<IdParameter>,
 ) -> Result<Json<ChromiumRun>, db::Error> {
-    todo!()
+    select_chromium_run_by_id(user.projects(), id, &mut db_conn)
+        .await
+        .map(Json)
 }
 
 pub(super) async fn select_chromium_run_by_id(
@@ -32,5 +34,15 @@ pub(super) async fn select_chromium_run_by_id(
 
     let query = ChromiumRun::query().filter(id.eq(chromium_run_id));
 
-    match
+    let chromium_run = match authorized_projects {
+        AuthProjects::All => query.first(db_conn).await?,
+        AuthProjects::Restricted(projects) => {
+            query
+                .filter(project_id.eq_any(projects.iter()))
+                .first(db_conn)
+                .await?
+        }
+    };
+
+    Ok(chromium_run)
 }

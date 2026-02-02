@@ -1,6 +1,8 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::chip_loadings;
 use macro_attributes::{base_model, insert};
+#[cfg(feature = "app")]
+use schemars::JsonSchema;
 use uuid::Uuid;
 
 use crate::chromium_run::common::{ChipLoadingFields, GemPoolFields};
@@ -23,6 +25,7 @@ impl SingleplexChipLoading {
 
 #[base_model]
 #[derive(serde::Deserialize)]
+#[cfg_attr(feature = "app", derive(JsonSchema))]
 pub struct SingleplexGemPool {
     #[serde(flatten)]
     pub inner: GemPoolFields,

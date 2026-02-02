@@ -2,6 +2,7 @@ use aide::axum::{
     ApiRouter,
     routing::{get, post},
 };
+use axum::handler::Handler;
 
 use crate::{admin_required_creation, state::AppState};
 

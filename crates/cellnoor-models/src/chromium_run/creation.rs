@@ -1,6 +1,8 @@
 use jiff::Timestamp;
 use macro_attributes::base_model;
 use non_empty::NonEmptyVec;
+#[cfg(feature = "app")]
+use schemars::JsonSchema;
 
 use crate::chromium_run::common::ChromiumRunFields;
 
@@ -17,6 +19,7 @@ pub const MAX_GEM_POOLS_PER_NON_OCM_RUN: usize = 8;
 
 #[base_model]
 #[derive(serde::Deserialize)]
+#[cfg_attr(feature = "app", derive(JsonSchema))]
 #[serde(tag = "plexy", rename_all = "snake_case")]
 pub enum NewChromiumRun {
     OnChipMultiplexing {

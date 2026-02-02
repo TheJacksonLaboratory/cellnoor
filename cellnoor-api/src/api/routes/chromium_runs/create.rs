@@ -1,14 +1,15 @@
-use axum::{Json, extract::State, http::StatusCode};
+use axum::{Extension, Json, extract::State};
 use cellnoor_models::chromium_run::{
     ChromiumRun, ChromiumRunFields, GemPoolFields, NewChromiumRun, OcmGemPool,
     PoolMultiplexGemPool, SingleplexGemPool,
 };
 use cellnoor_schema::chip_loadings;
 use diesel::prelude::*;
-use diesel_async::RunQueryDsl;
+use diesel_async::{AsyncConnection, RunQueryDsl, scoped_futures::ScopedFutureExt};
 use uuid::Uuid;
 
 use crate::{
+    api::{auth::AuthUser, routes::chromium_runs::show::select_chromium_run_by_id},
     db::{self, DbConnection},
     state::AppState,
 };
@@ -16,11 +17,16 @@ use crate::{
 pub(super) async fn create_chromium_run(
     _: State<AppState>,
     mut db_conn: DbConnection,
+    Extension(user): Extension<AuthUser>,
     Json(chromium_run): Json<NewChromiumRun>,
 ) -> Result<Json<ChromiumRun>, db::Error> {
-    let run_id = insert_chromium_run_and_associated_data(chromium_run, &mut db_conn).await?;
+    let run_id = db_conn
+        .transaction(move |db_conn| {
+            insert_chromium_run_and_associated_data(chromium_run, db_conn).scope_boxed()
+        })
+        .await?;
 
-    select_chromium_run_by_id(run_id, &mut db_conn)
+    select_chromium_run_by_id(user.projects(), run_id, &mut db_conn)
         .await
         .map(Json)
 }

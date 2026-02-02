@@ -18,7 +18,7 @@ use tower_http::trace::TraceLayer;
 // pub(super) mod cdna;
 // pub(super) mod chromium_datasets;
 pub(super) mod chromium_runs;
-// pub(super) mod gem_pools;
+pub(super) mod gem_pools;
 pub(super) mod institutions;
 // pub(super) mod libraries;
 pub(super) mod multiplexing_tags;
@@ -70,8 +70,8 @@ pub fn router() -> (Router<AppState>, OpenApi) {
         .nest("/multiplexing-tags", multiplexing_tags::router())
         .nest("/suspensions", suspensions::router())
         .nest("/suspension-pools", suspension_pools::router())
-        .nest("/chromium-runs", chromium_runs::router());
-    // .merge(gem_pools::router())
+        .nest("/chromium-runs", chromium_runs::router())
+        .nest("/gem-pools", gem_pools::router());
     // .merge(cdna::router())
     // .merge(libraries::router())
     // .merge(chromium_datasets::router())

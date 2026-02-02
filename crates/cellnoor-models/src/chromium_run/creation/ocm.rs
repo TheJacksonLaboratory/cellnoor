@@ -3,6 +3,8 @@ use cellnoor_schema::chip_loadings;
 use macro_attributes::{base_model, insert, simple_enum};
 use macros::impl_enum_to_sql;
 use non_empty::NonEmptyVec;
+#[cfg(feature = "app")]
+use schemars::JsonSchema;
 use uuid::Uuid;
 
 use crate::chromium_run::common::{ChipLoadingFields, GemPoolFields};
@@ -43,6 +45,7 @@ impl OcmChipLoading {
 
 #[base_model]
 #[derive(serde::Deserialize)]
+#[cfg_attr(feature = "app", derive(JsonSchema))]
 pub struct OcmGemPool {
     #[serde(flatten)]
     pub inner: GemPoolFields,
