@@ -13,11 +13,10 @@ use crate::{
 
 #[select]
 #[cfg_attr(feature = "app", derive(Identifiable))]
-#[cfg_attr(feature = "app", diesel(table_name = gem_pools))]
+#[cfg_attr(feature = "app", diesel(table_name = gem_pools, base_query = gem_pools::table.inner_join(chromium_runs::table)))]
 pub struct GemPoolSummary {
     id: Uuid,
     chromium_run_id: Uuid,
-
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: GemPoolFields,

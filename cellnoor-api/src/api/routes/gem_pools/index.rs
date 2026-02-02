@@ -1,6 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_models::chromium_run::{GemPoolFilter, GemPoolQuery, GemPoolSummary};
-use cellnoor_schema::gem_pools;
+use cellnoor_schema::{chromium_runs, gem_pools};
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 
@@ -46,7 +46,7 @@ pub async fn select_gems(
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for GemPoolFilter
 where
     gem_pools::id: SelectableExpression<QS>,
-    gem_pools::project_id: SelectableExpression<QS>,
+    chromium_runs::project_id: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
         let Self { ids, project_ids } = self;
@@ -57,7 +57,7 @@ where
         }
 
         if let Some(project_ids) = project_ids {
-            filter = filter.and_condition(gem_pools::project_id.eq_any(project_ids.iter()));
+            filter = filter.and_condition(chromium_runs::project_id.eq_any(project_ids.iter()));
         }
 
         filter
