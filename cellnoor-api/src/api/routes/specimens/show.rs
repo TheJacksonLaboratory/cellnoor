@@ -28,17 +28,17 @@ pub(super) async fn show_specimen(
 pub async fn select_specimen_by_id(
     authorized_projects: &AuthProjects,
     specimen_id: Uuid,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Specimen, db::Error> {
     let q = Specimen::query().filter(specimens::id.eq(specimen_id));
 
     let specimen = match authorized_projects {
         AuthProjects::Restricted(projects) => {
             q.filter(specimens::project_id.eq_any(projects.iter()))
-                .first(db_conn)
+                .first(&mut db_conn)
                 .await?
         }
-        AuthProjects::All => q.first(db_conn).await?,
+        AuthProjects::All => q.first(&mut db_conn).await?,
     };
 
     Ok(specimen)

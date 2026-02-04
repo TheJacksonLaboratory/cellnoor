@@ -1,3 +1,9 @@
+use axum::{Json, extract::State};
+use cellnoor_models::person::{PersonFilter, PersonQuery, PersonSummary};
+use cellnoor_schema::people::dsl::{email, id, institution_id, microsoft_entra_oid, name, orcid};
+use diesel::{dsl::AssumeNotNull, prelude::*};
+use diesel_async::RunQueryDsl;
+
 use crate::{
     api::{
         auth::{self, AuthUser},
@@ -6,11 +12,6 @@ use crate::{
     db::{self, BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter, like_any},
     state::AppState,
 };
-use axum::{Json, extract::State};
-use cellnoor_models::person::{PersonFilter, PersonQuery, PersonSummary};
-use cellnoor_schema::people::dsl::{email, id, institution_id, microsoft_entra_oid, name, orcid};
-use diesel::{dsl::AssumeNotNull, prelude::*};
-use diesel_async::RunQueryDsl;
 
 pub async fn index_people(
     _: State<AppState>,
@@ -27,7 +28,7 @@ pub async fn select_people(
         offset,
         order_by,
     }: PersonQuery,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<PersonSummary>, db::Error> {
     let mut stmt = PersonSummary::query()
         .limit(limit)
@@ -39,7 +40,7 @@ pub async fn select_people(
         stmt = stmt.then_order_by(ordering);
     }
 
-    Ok(stmt.load(db_conn).await?)
+    Ok(stmt.load(&mut db_conn).await?)
 }
 
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for PersonFilter
@@ -105,14 +106,14 @@ impl Authorize for PersonQuery {
 mod tests {
     use std::cmp::Ordering;
 
-    use cellnoor_models::person::*;
-    use rstest::rstest;
-
+    use super::select_people;
     use crate::{
         db::DbConnection,
         test_state::{Database, database, root_db_conn},
         test_util::test_query,
     };
+    use cellnoor_models::person::*;
+    use rstest::rstest;
 
     fn sort_by_id(i1: &&PersonSummary, i2: &&PersonSummary) -> Ordering {
         i1.id().cmp(&i2.id())
@@ -129,7 +130,7 @@ mod tests {
         #[future] root_db_conn: DbConnection,
         #[future] database: &'static Database,
     ) {
-        test_query::<PersonQuery, _>()
+        test_query(select_people)
             .all_records(&database.people)
             .sort_by(sort_by_name)
             .run(root_db_conn)
@@ -158,7 +159,7 @@ mod tests {
             })
             .build();
 
-        test_query()
+        test_query(select_people)
             .all_records(&database.people)
             .filter(|i| {
                 let s = i.name().to_lowercase();

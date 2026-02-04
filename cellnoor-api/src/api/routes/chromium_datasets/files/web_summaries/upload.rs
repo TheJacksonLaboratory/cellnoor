@@ -1,62 +1,68 @@
 use axum::{
-    Json,
-    extract::{Multipart, State},
+    Extension, Json,
+    extract::{Multipart, Path, State},
     http::StatusCode,
 };
-use cellnoor_models::chromium_dataset::ChromiumDatasetIdWebSummaries;
+use cellnoor_models::IdParameter;
 use diesel::prelude::*;
+use diesel_async::RunQueryDsl;
+use uuid::Uuid;
 
 use crate::{
     api::{
-        extract::auth::AuthenticatedUser,
-        routes::{
-            ApiResponse,
-            chromium_datasets::files::common::{FieldExt, ParsedMultipartFormField},
-            handle_api_request,
-        },
+        auth::AuthUser,
+        routes::chromium_datasets::files::common::{FieldExt, ParsedMultipartFormField},
     },
-    db,
+    db::{self, DbConnection},
     state::AppState,
 };
 
 static ALLOWED_CONTENT_TYPES: &[&str] = &["text/html"];
 
 pub async fn upload_web_summary(
-    chromium_dataset_id: ChromiumDatasetIdWebSummaries,
-    state: State<AppState>,
-    user: AuthenticatedUser,
+    _: State<AppState>,
+    mut db_conn: DbConnection,
+    Extension(user): Extension<AuthUser>,
+    Path(IdParameter { id }): Path<IdParameter>,
     mut request: Multipart,
-) -> ApiResponse<()> {
+) -> Result<(), db::Error> {
     let mut extracted_web_summaries = Vec::with_capacity(16);
-    while let Some(field) = request.next_field().await? {
+    while let Some(field) = request
+        .next_field()
+        .await
+        .map_err(|e| db::DataError::new_other(&e.to_string()))?
+    {
         extracted_web_summaries.push(field.parse(ALLOWED_CONTENT_TYPES).await?);
     }
 
-    let _ = handle_api_request(state, user, (chromium_dataset_id, extracted_web_summaries)).await?;
-    Ok((StatusCode::CREATED, Json(())))
+    insert_chromium_dataset_web_summaries(id, &extracted_web_summaries, &mut db_conn).await?;
+
+    Ok(())
 }
 
-impl db::Operation<()> for (ChromiumDatasetIdWebSummaries, Vec<ParsedMultipartFormField>) {
-    fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<(), db::Error> {
-        use cellnoor_schema::chromium_dataset_web_summaries::dsl::*;
+async fn insert_chromium_dataset_web_summaries(
+    chromium_dataset_id: Uuid,
+    web_summaries: &[ParsedMultipartFormField],
+    mut db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<(), db::Error> {
+    use cellnoor_schema::chromium_dataset_web_summaries::dsl::*;
 
-        let (ds_id, data) = self;
-        let insertables: Vec<_> = data
-            .iter()
-            .map(|d| {
-                (
-                    dataset_id.eq(ds_id),
-                    directory.eq(d.directory()),
-                    filename.eq(d.filename()),
-                    content.eq(d.content()),
-                )
-            })
-            .collect();
+    let insertables: Vec<_> = web_summaries
+        .iter()
+        .map(|d| {
+            (
+                dataset_id.eq(chromium_dataset_id),
+                directory.eq(d.directory()),
+                filename.eq(d.filename()),
+                content.eq(d.content()),
+            )
+        })
+        .collect();
 
-        diesel::insert_into(chromium_dataset_web_summaries)
-            .values(insertables)
-            .execute(db_conn)?;
+    diesel::insert_into(chromium_dataset_web_summaries)
+        .values(insertables)
+        .execute(&mut db_conn)
+        .await?;
 
-        Ok(())
-    }
+    Ok(())
 }

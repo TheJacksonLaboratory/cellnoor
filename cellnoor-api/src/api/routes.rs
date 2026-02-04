@@ -1,10 +1,5 @@
 use std::sync::Arc;
 
-use crate::{
-    api::{auth, middleware::authenticate_request},
-    db::{self},
-    state::AppState,
-};
 use aide::{
     axum::{ApiRouter, routing::get},
     openapi::{OpenApi, SecurityScheme},
@@ -15,20 +10,26 @@ use serde::Serialize;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 
-pub(super) mod cdna;
-// pub(super) mod chromium_datasets;
-pub(super) mod chromium_runs;
-pub(super) mod gem_pools;
-pub(super) mod institutions;
-// pub(super) mod libraries;
-pub(super) mod multiplexing_tags;
-pub(super) mod people;
-pub(super) mod projects;
-pub(super) mod sequencing_runs;
-pub(super) mod specimens;
-pub(super) mod suspension_pools;
-pub(super) mod suspensions;
-pub(super) mod tenx_assays;
+use crate::{
+    api::{auth, middleware::authenticate_request},
+    db::{self},
+    state::AppState,
+};
+
+pub mod cdna;
+pub mod chromium_datasets;
+pub mod chromium_runs;
+pub mod gem_pools;
+pub mod institutions;
+pub mod libraries;
+pub mod multiplexing_tags;
+pub mod people;
+pub mod projects;
+pub mod sequencing_runs;
+pub mod specimens;
+pub mod suspension_pools;
+pub mod suspensions;
+pub mod tenx_assays;
 
 pub(super) fn app(state: AppState) -> Router<AppState> {
     let (router, api_docs) = router();
@@ -40,7 +41,8 @@ pub(super) fn app(state: AppState) -> Router<AppState> {
 
     let layers = ServiceBuilder::new().layer(auth_layer).layer(trace_layer);
 
-    // Ensure the OpenAPI documentation is added after the authentication layer so it's public
+    // Ensure the OpenAPI documentation is added after the authentication layer so
+    // it's public
     router
         .layer(layers)
         .route("/openapi.json", axum::routing::get(show_api_docs))
@@ -48,7 +50,9 @@ pub(super) fn app(state: AppState) -> Router<AppState> {
 }
 
 pub fn router() -> (Router<AppState>, OpenApi) {
-    // This is the general error-type that can be a catch-all. If handlers return more specific errors, they can document that and associate it with status codes
+    // This is the general error-type that can be a catch-all. If handlers return
+    // more specific errors, they can document that and associate it with status
+    // codes
     #[allow(dead_code)]
     #[derive(Serialize, JsonSchema)]
     #[serde(untagged)]
@@ -72,9 +76,9 @@ pub fn router() -> (Router<AppState>, OpenApi) {
         .nest("/suspension-pools", suspension_pools::router())
         .nest("/chromium-runs", chromium_runs::router())
         .nest("/gem-pools", gem_pools::router())
-        .nest("/cdna", cdna::router());
-    // .merge(libraries::router())
-    // .merge(chromium_datasets::router())
+        .nest("/cdna", cdna::router())
+        .nest("/libraries", libraries::router())
+        .nest("/chromium-datasets", chromium_datasets::router());
 
     let mut api_docs = OpenApi::default();
 

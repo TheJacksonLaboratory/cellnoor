@@ -1,21 +1,22 @@
 use std::{fmt::Display, str::FromStr};
 
-use anyhow::{bail, ensure};
+use anyhow::{Context, bail, ensure};
 use cellnoor_models::{
-    institution::NewInstitution,
-    multiplexing_tag::MultiplexingTagCreation,
-    person::NewPerson,
-    tenx_assay::TenxAssayCreation,
+    institution::NewInstitution, multiplexing_tag::NewMultiplexingTag, person::NewPerson,
+    tenx_assay::NewTenxAssay,
 };
 use diesel_async::AsyncPgConnection;
 use url::Url;
 
-use crate::initial_data::index_sets::{
+use crate::{
+    api::util::validate_email,
+    initial_data::index_sets::{
         download_and_insert_dual_index_sets, download_and_insert_single_index_sets,
-    };
+    },
+};
 
 mod app_admin;
-mod index_sets;
+pub(crate) mod index_sets;
 mod institution;
 mod multiplexing_tags;
 mod tenx_assays;
@@ -26,8 +27,8 @@ pub struct InitialData {
     app_admin: NewPerson,
     single_index_set_urls: Vec<Url>,
     dual_index_set_urls: Vec<Url>,
-    tenx_assays: Vec<TenxAssayCreation>,
-    multiplexing_tags: Vec<MultiplexingTagCreation>,
+    tenx_assays: Vec<NewTenxAssay>,
+    multiplexing_tags: Vec<NewMultiplexingTag>,
 }
 
 impl InitialData {
@@ -47,58 +48,55 @@ impl InitialData {
         &self.dual_index_set_urls
     }
 
-    pub fn tenx_assays(&self) -> &[TenxAssayCreation] {
+    pub fn tenx_assays(&self) -> &[NewTenxAssay] {
         &self.tenx_assays
     }
 
-    async fn validate(self, _db_conn: &AsyncPgConnection) -> anyhow::Result<Self> {
-        Ok(self)
-        // let Self {
-        //     institution,
-        //     app_admin,
-        //     single_index_set_urls,
-        //     dual_index_set_urls,
-        //     tenx_assays,
-        //     multiplexing_tags,
-        // } = self;
+    async fn validate(self) -> anyhow::Result<Self> {
+        let Self {
+            institution,
+            app_admin,
+            single_index_set_urls,
+            dual_index_set_urls,
+            tenx_assays,
+            multiplexing_tags,
+        } = self;
 
-        // let validation_data = institution.fetch_validation_data(db_conn).await?;
-        // institution
-        //     .validate(validation_data)
-        //     .context("failed to validate institution in initial data")?;
+        validate_email(app_admin.email())
+            .context("failed to validate app admin in initial data")?;
 
-        // // let validation_data = app_admin
-        // //     .fetch_validation_data(db_pool.get().await?)
-        // //     .await?;
-        // // app_admin
-        // //     .validate(validation_data)
-        // //     .context("failed to validate app admin in initial data")?;
+        ensure!(
+            app_admin.microsoft_entra_oid().is_some(),
+            "app admin must have Microsoft Entra OID"
+        );
 
-        // single_index_set_urls
-        //     .iter()
-        //     .try_for_each(validate_10x_genomics_url)?;
-        // dual_index_set_urls
-        //     .iter()
-        //     .try_for_each(validate_10x_genomics_url)?;
-        // // tenx_assays.iter().try_for_each(|a| a.validate(db_conn))?;
+        single_index_set_urls
+            .iter()
+            .try_for_each(validate_10x_genomics_url)?;
+        dual_index_set_urls
+            .iter()
+            .try_for_each(validate_10x_genomics_url)?;
+        tenx_assays
+            .iter()
+            .try_for_each(|a| validate_10x_genomics_url(&a.protocol_url()))?;
 
-        // Ok(Self {
-        //     institution,
-        //     app_admin,
-        //     single_index_set_urls,
-        //     dual_index_set_urls,
-        //     tenx_assays,
-        //     multiplexing_tags,
-        // })
+        Ok(Self {
+            institution,
+            app_admin,
+            single_index_set_urls,
+            dual_index_set_urls,
+            tenx_assays,
+            multiplexing_tags,
+        })
     }
 }
 
 pub async fn insert_initial_data(
     initial_data: InitialData,
     http_client: reqwest::Client,
-    db_conn: &AsyncPgConnection,
+    mut db_conn: &AsyncPgConnection,
 ) -> anyhow::Result<()> {
-    let initial_data = initial_data.validate(db_conn).await?;
+    let initial_data = initial_data.validate().await?;
 
     let InitialData {
         institution,
@@ -109,16 +107,16 @@ pub async fn insert_initial_data(
         multiplexing_tags,
     } = initial_data;
 
-    let upsert_assays = tenx_assays.into_iter().map(|a| a.upsert(db_conn));
-    let upsert_multiplexing_tags = multiplexing_tags.into_iter().map(|t| t.upsert(db_conn));
+    let upsert_assays = tenx_assays.into_iter().map(|a| a.upsert(&db_conn));
+    let upsert_multiplexing_tags = multiplexing_tags.into_iter().map(|t| t.upsert(&db_conn));
 
     download_and_insert_single_index_sets(single_index_set_urls, http_client.clone(), db_conn)
         .await?;
     download_and_insert_dual_index_sets(dual_index_set_urls, http_client, db_conn).await?;
 
     tokio::try_join!(
-        institution.upsert(db_conn),
-        app_admin.upsert(db_conn),
+        institution.upsert(&db_conn),
+        app_admin.upsert(&db_conn),
         futures::future::try_join_all(upsert_assays),
         futures::future::try_join_all(upsert_multiplexing_tags)
     )?;

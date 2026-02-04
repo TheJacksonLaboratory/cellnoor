@@ -12,7 +12,7 @@ use crate::tenx_assay::common::{
 #[insert]
 #[cfg_attr(feature = "app", derive(AsChangeset))]
 #[cfg_attr(feature = "app", diesel(table_name = tenx_assays))]
-pub struct ChromiumAssayCreation {
+pub struct NewChromiumAssay {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: TenxAssayFields,
@@ -24,7 +24,7 @@ pub struct ChromiumAssayCreation {
     library_type_specifications: NonEmptyVec<LibraryTypeSpecification, { usize::MAX }>,
 }
 
-impl ChromiumAssayCreation {
+impl NewChromiumAssay {
     pub fn protocol_url(&self) -> &str {
         self.inner.protocol_url()
     }

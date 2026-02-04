@@ -1,31 +1,36 @@
-use axum::Router;
-use axum_extra::routing::RouterExt;
-pub(crate) use list::chromium_datasets_to_all_specimens;
+use aide::axum::{
+    ApiRouter,
+    routing::{get, post},
+};
+use axum::handler::Handler;
+use create::create_chromium_dataset;
+use index::index_chromium_datasets;
+use show::show_chromium_dataset;
 
-use crate::state::AppState;
+use crate::{admin_required_creation, state::AppState};
+pub(crate) use index::chromium_datasets_to_all_specimens;
 
-// mod create;
-// mod fetch;
-// mod files;
-// mod libraries;
-mod list;
-// mod read;
-// mod specimens;
+pub mod create;
+pub mod files;
+pub mod index;
+pub mod libraries;
+pub mod show;
+pub mod specimens;
 
-const ROUGHLY_16MB: usize = 2usize.pow(24);
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route(
+            "/",
+            post(create_chromium_dataset.layer(admin_required_creation!()))
+                .get(index_chromium_datasets),
+        )
+        .nest("/{id}", id_router())
+}
 
-// pub(super) fn router() -> Router<AppState> {
-//     Router::new()
-//         .typed_post(create::create_chromium_dataset)
-//         // .typed_post(files::metrics::upload::upload_metrics_file)
-//         // .typed_post(
-//         //     files::web_summaries::upload::upload_web_summary
-//         //         .layer(DefaultBodyLimit::max(ROUGHLY_16MB)),
-//         // )
-//         // .typed_get(fetch::fetch_chromium_dataset)
-//         // .typed_get(list::list_chromium_datasets)
-//         // .typed_get(specimens::list::list_specimens)
-//         // .typed_get(libraries::list::list_libraries)
-//     // .typed_get(files::metrics::fetch::fetch_metrics_file)
-//     // .typed_get(files::web_summaries::fetch::fetch_web_summary)
-// }
+fn id_router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route("/", get(show_chromium_dataset))
+        .nest("/specimens", specimens::router())
+        .nest("/libraries", libraries::router())
+        .merge(files::router())
+}

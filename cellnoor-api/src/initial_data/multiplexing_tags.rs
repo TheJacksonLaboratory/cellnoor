@@ -1,10 +1,10 @@
-use cellnoor_models::multiplexing_tag::MultiplexingTagCreation;
+use cellnoor_models::multiplexing_tag::NewMultiplexingTag;
 use cellnoor_schema::multiplexing_tags::dsl::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 use crate::initial_data::Upsert;
 
-impl Upsert for MultiplexingTagCreation {
+impl Upsert for NewMultiplexingTag {
     async fn upsert(self, mut db_conn: &AsyncPgConnection) -> anyhow::Result<()> {
         diesel::insert_into(multiplexing_tags)
             .values(&self)

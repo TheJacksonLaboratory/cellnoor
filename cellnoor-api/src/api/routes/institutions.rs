@@ -1,4 +1,3 @@
-use crate::{admin_required_creation, state::AppState};
 use aide::axum::{
     ApiRouter,
     routing::{get, post},
@@ -8,10 +7,12 @@ use create::create_institution;
 use index::index_institutions;
 use show::show_institution;
 
-pub(super) mod create;
-pub(super) mod index;
-pub(super) mod members;
-pub(super) mod show;
+use crate::{admin_required_creation, state::AppState};
+
+pub mod create;
+pub mod index;
+pub mod members;
+pub mod show;
 
 pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new()

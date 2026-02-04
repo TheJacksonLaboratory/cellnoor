@@ -2,5 +2,5 @@ mod common;
 mod creation;
 mod read;
 
-pub use creation::MultiplexingTagCreation;
+pub use creation::NewMultiplexingTag;
 pub use read::MultiplexingTag;

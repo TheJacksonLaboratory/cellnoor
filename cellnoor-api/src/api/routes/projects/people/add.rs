@@ -25,14 +25,14 @@ pub async fn add_person_to_project(
 async fn insert_project_person_mapping(
     project_id: Uuid,
     person_id: Uuid,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), db::Error> {
     diesel::insert_into(project_people::table)
         .values((
             project_people::project_id.eq(project_id),
             project_people::person_id.eq(person_id),
         ))
-        .execute(db_conn)
+        .execute(&mut db_conn)
         .await?;
 
     Ok(())

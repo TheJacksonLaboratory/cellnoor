@@ -1,4 +1,3 @@
-use crate::{admin_required_creation, state::AppState};
 use aide::{
     axum::{
         ApiRouter,
@@ -8,17 +7,19 @@ use aide::{
 };
 use axum::{Json, handler::Handler, http::StatusCode};
 use create::create_person;
+pub use create::validate_email;
 use index::index_people;
 use show::show_person;
 use update::update_person;
 
-pub(super) mod chromium_datasets;
-pub(super) mod create;
-pub(super) mod index;
-pub(super) mod projects;
-pub(super) mod show;
-pub(super) mod specimens;
-pub(super) mod update;
+use crate::{admin_required_creation, state::AppState};
+
+pub mod create;
+pub mod index;
+pub mod projects;
+pub mod show;
+pub mod specimens;
+pub mod update;
 
 pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new()
@@ -44,7 +45,6 @@ fn id_router() -> ApiRouter<AppState> {
         )
         .nest("/projects", projects::router())
         .nest("/specimens", specimens::router())
-        .nest("/chromium-datasets", chromium_datasets::router())
 }
 
 fn post_and_patch_docs(api_docs: TransformOperation) -> TransformOperation {

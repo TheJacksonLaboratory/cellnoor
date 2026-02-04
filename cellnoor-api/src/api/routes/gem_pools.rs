@@ -1,12 +1,11 @@
 use aide::axum::{ApiRouter, routing::get};
-
-use crate::state::AppState;
-
 use index::index_gem_pools;
 use show::show_gem_pool;
 
-mod index;
-mod show;
+use crate::state::AppState;
+
+pub mod index;
+pub mod show;
 
 pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new()

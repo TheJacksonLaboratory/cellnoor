@@ -52,7 +52,8 @@ fn validate_measurement_content_matches_suspension_content(
     suspension_content: SuspensionContent,
     measurement: &SuspensionPoolMeasurementData,
 ) -> Result<(), db::DataError> {
-    // Using a match statement is better than a let guard because if you ever add another measurement variant, the compiler protects you
+    // Using a match statement is better than a let guard because if you ever add
+    // another measurement variant, the compiler protects you
     let measurement_content = match measurement {
         SuspensionPoolMeasurementData::Concentration {
             numerator_unit: measurement_content,
@@ -79,13 +80,13 @@ fn validate_measurement_content_matches_suspension_content(
 
 async fn suspension_info(
     suspension_pool_id: Uuid,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(Timestamp, SuspensionContent), db::Error> {
     Ok(suspension_pools::table
         .inner_join(suspension_tagging::table.inner_join(suspensions::table))
         .select((suspension_pools::pooled_at, suspensions::content))
         .filter(suspension_pools::id.eq(suspension_pool_id))
-        .first(db_conn)
+        .first(&mut db_conn)
         .await
         .map(|(t, c): (jiff_diesel::Timestamp, _)| (t.to_jiff(), c))?)
 }
@@ -93,7 +94,7 @@ async fn suspension_info(
 pub async fn insert_suspension_pool_measurement(
     suspension_pool_id: Uuid,
     measurement: NewSuspensionPoolMeasurement,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<SuspensionPoolMeasurement, db::Error> {
     Ok(diesel::insert_into(suspension_pool_measurements::table)
         .values((
@@ -101,6 +102,6 @@ pub async fn insert_suspension_pool_measurement(
             measurement,
         ))
         .returning(SuspensionPoolMeasurement::as_returning())
-        .get_result(db_conn)
+        .get_result(&mut db_conn)
         .await?)
 }

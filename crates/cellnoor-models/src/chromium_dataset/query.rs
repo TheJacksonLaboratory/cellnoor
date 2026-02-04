@@ -1,6 +1,5 @@
 #![allow(clippy::implicit_clone)]
 
-
 #[cfg(feature = "app")]
 use cellnoor_schema::chromium_datasets;
 use jiff::Timestamp;

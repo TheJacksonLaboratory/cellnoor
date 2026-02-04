@@ -12,7 +12,10 @@ use crate::{
 
 // Manually derive everything because the query is too complicated to write here
 #[derive(Clone, Debug, PartialEq, serde::Serialize)]
-#[cfg_attr(feature = "app", derive(diesel::Selectable, diesel::Queryable))]
+#[cfg_attr(
+    feature = "app",
+    derive(diesel::Selectable, diesel::Queryable, schemars::JsonSchema)
+)]
 #[cfg_attr(feature = "typescript", derive(::ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(optional_fields))]
 #[cfg_attr(feature = "app", diesel(table_name = chromium_datasets, check_for_backend(Pg)))]
@@ -39,7 +42,10 @@ impl ChromiumDatasetSummary {
 
 // Manually derive everything because the query is too complicated to write here
 #[derive(Clone, Debug, PartialEq, serde::Serialize)]
-#[cfg_attr(feature = "app", derive(diesel::Selectable, diesel::Queryable))]
+#[cfg_attr(
+    feature = "app",
+    derive(diesel::Selectable, diesel::Queryable, schemars::JsonSchema)
+)]
 #[cfg_attr(feature = "typescript", derive(::ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(optional_fields))]
 #[cfg_attr(feature = "app", diesel(table_name = chromium_datasets, check_for_backend(Pg)))]

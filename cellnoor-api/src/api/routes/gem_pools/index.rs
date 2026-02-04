@@ -18,17 +18,17 @@ pub async fn index_gem_pools(
     mut db_conn: DbConnection,
     AuthJsonQuery { q }: AuthJsonQuery<GemPoolQuery>,
 ) -> Result<Json<Vec<GemPoolSummary>>, db::Error> {
-    select_gems(q, &mut db_conn).await.map(Json)
+    select_gem_pools(q, &mut db_conn).await.map(Json)
 }
 
-pub async fn select_gems(
+pub async fn select_gem_pools(
     GemPoolQuery {
         filter,
         limit,
         offset,
         order_by,
     }: GemPoolQuery,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<GemPoolSummary>, db::Error> {
     let mut stmt = GemPoolSummary::query()
         .limit(limit)
@@ -40,7 +40,7 @@ pub async fn select_gems(
         stmt = stmt.then_order_by(ordering);
     }
 
-    Ok(stmt.load(db_conn).await?)
+    Ok(stmt.load(&mut db_conn).await?)
 }
 
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for GemPoolFilter

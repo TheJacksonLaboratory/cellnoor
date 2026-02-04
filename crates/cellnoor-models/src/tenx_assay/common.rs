@@ -68,8 +68,16 @@ impl LibraryTypeSpecification {
         self.library_type
     }
 
+    pub fn index_kit(&self) -> &str {
+        &self.index_kit
+    }
+
     pub fn cdna_volume_µl(&self) -> u16 {
         self.cdna_volume_µl.into()
+    }
+
+    pub fn library_volume_µl(&self) -> u16 {
+        self.library_volume_µl.into()
     }
 }
 

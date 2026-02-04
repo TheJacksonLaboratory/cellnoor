@@ -20,13 +20,13 @@ pub(super) async fn create_sequencing_run(
 
 pub async fn insert_sequencing_run(
     sequencing_run: NewSequencingRun,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<SequencingRun, db::Error> {
     use cellnoor_schema::sequencing_runs::dsl::*;
 
     Ok(diesel::insert_into(sequencing_runs)
         .values(sequencing_run)
         .returning(SequencingRun::as_returning())
-        .get_result(db_conn)
+        .get_result(&mut db_conn)
         .await?)
 }

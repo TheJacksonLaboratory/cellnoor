@@ -33,18 +33,18 @@ pub async fn index_suspension_measurements(
 async fn select_suspension_measurements(
     authorized_projects: &AuthProjects,
     suspension_id: Uuid,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<SuspensionMeasurement>, db::Error> {
     let q = SuspensionMeasurement::query()
         .order_by(suspension_measurements::measured_at)
         .filter(suspension_measurements::suspension_id.eq(suspension_id));
 
     let measurements = match authorized_projects {
-        AuthProjects::All => q.load(db_conn).await?,
+        AuthProjects::All => q.load(&mut db_conn).await?,
         AuthProjects::Restricted(projects) => {
             q.inner_join(suspensions::table)
                 .filter(suspensions::project_id.eq_any(projects.iter()))
-                .load(db_conn)
+                .load(&mut db_conn)
                 .await?
         }
     };

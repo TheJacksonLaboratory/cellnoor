@@ -3,7 +3,7 @@
 pub mod chromium_dataset;
 pub mod chromium_run;
 mod generic_id;
-pub(crate) mod generic_query;
+pub mod generic_query;
 pub mod institution;
 mod links;
 pub mod multiplexing_tag;

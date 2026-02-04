@@ -33,7 +33,11 @@ pub async fn create_cdna(
     let parent_info =
         nucleic_acid_parent_info(gem_pool_id, new_cdna.library_type(), &mut db_conn).await?;
 
-    validate_volume(&parent_info, new_cdna.volume_µl())?;
+    validate_volume(
+        &parent_info,
+        new_cdna.volume_µl(),
+        parent_info.library_type_specification.cdna_volume_µl(),
+    )?;
     validate_timestamps(
         (new_cdna.prepared_at(), "cdna_prepared_at"),
         (parent_info.chromium_run.run_at, "chromium_run_at"),
@@ -54,14 +58,14 @@ pub async fn create_cdna(
 pub async fn insert_cdna_and_preparers(
     project_id: Uuid,
     new_cdna: NewCdna,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Uuid, db::Error> {
     let preparer_ids = new_cdna.preparer_ids().to_vec();
 
     let cdna_id = diesel::insert_into(cdna::table)
         .values((cdna::project_id.eq(project_id), new_cdna))
         .returning(cdna::id)
-        .get_result(db_conn)
+        .get_result(&mut db_conn)
         .await?;
 
     insert_cdna_preparers(cdna_id, &preparer_ids, db_conn).await?;
@@ -72,7 +76,7 @@ pub async fn insert_cdna_and_preparers(
 async fn insert_cdna_preparers(
     cdna_id: Uuid,
     preparer_ids: &[Uuid],
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), db::Error> {
     let preparer_mappings: Vec<_> = preparer_ids
         .iter()
@@ -86,53 +90,56 @@ async fn insert_cdna_preparers(
 
     diesel::insert_into(cdna_preparers::table)
         .values(preparer_mappings)
-        .execute(db_conn)
+        .execute(&mut db_conn)
         .await?;
 
     Ok(())
 }
 
 #[derive(HasQuery)]
-#[diesel(table_name = chromium_runs, check_for_backend(Pg), base_query=chromium_runs::table.inner_join(tenx_assays::table),
-)]
+#[diesel(table_name = chromium_runs, check_for_backend(Pg), base_query=chromium_runs::table.inner_join(tenx_assays::table))]
 pub struct ChromiumRunInfo {
     #[diesel(deserialize_as = jiff_diesel::Timestamp)]
-    run_at: Timestamp,
-    project_id: Uuid,
+    pub run_at: Timestamp,
+    pub project_id: Uuid,
+}
+
+#[diesel::dsl::auto_type]
+pub fn gem_pools_to_library_specs() -> _ {
+    gem_pools::table.inner_join(
+        chromium_runs::table.inner_join(tenx_assays::table.inner_join(lib_specs::table)),
+    )
 }
 
 #[derive(HasQuery)]
-#[diesel(table_name = gem_pools, check_for_backend(Pg), base_query=gem_pools::table.inner_join(
-    chromium_runs::table.inner_join(tenx_assays::table.inner_join(lib_specs::table)),
-))]
-struct NucleicAcidParentInfo {
+#[diesel(table_name = gem_pools, check_for_backend(Pg), base_query=gem_pools_to_library_specs())]
+pub struct NucleicAcidParentInfo {
     #[diesel(embed)]
-    library_type_specification: LibraryTypeSpecification,
+    pub library_type_specification: LibraryTypeSpecification,
     #[diesel(embed)]
-    chromium_run: ChromiumRunInfo,
+    pub chromium_run: ChromiumRunInfo,
 }
 
 async fn nucleic_acid_parent_info(
     gem_pool_id: Uuid,
     library_type: LibraryType,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<NucleicAcidParentInfo, db::Error> {
     Ok(NucleicAcidParentInfo::query()
         .filter(gem_pools::id.eq(gem_pool_id))
         .filter(lib_specs::library_type.eq(library_type))
-        .first(db_conn)
+        .first(&mut db_conn)
         .await?)
 }
 
-fn validate_volume(
+pub fn validate_volume(
     NucleicAcidParentInfo {
         library_type_specification,
         ..
     }: &NucleicAcidParentInfo,
     volume: u8,
+    expected_volume: u16,
 ) -> Result<(), db::DataError> {
-    let expected_volume = library_type_specification.cdna_volume_µl();
-
     if volume as u16 != expected_volume {
         let library_type: &str = library_type_specification.library_type().into();
         return Err(db::DataError::new_other(&format!(

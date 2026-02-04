@@ -29,7 +29,7 @@ pub async fn select_specimens(
         offset,
         order_by,
     }: SpecimenQuery,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<SpecimenSummary>, db::Error> {
     let mut stmt = SpecimenSummary::query()
         .limit(limit)
@@ -41,7 +41,7 @@ pub async fn select_specimens(
         stmt = stmt.order_by(ordering);
     }
 
-    Ok(stmt.load(db_conn).await?)
+    Ok(stmt.load(&mut db_conn).await?)
 }
 
 // In order to be composed into a `ChromiumDatasetFilter`, we need calls to
@@ -194,14 +194,14 @@ impl Authorize for SpecimenQuery {
 mod tests {
     use std::cmp::Ordering;
 
-    use cellnoor_models::specimen::*;
-    use rstest::rstest;
-
+    use super::select_specimens;
     use crate::{
         db::DbConnection,
         test_state::{Database, database, root_db_conn},
         test_util::test_query,
     };
+    use cellnoor_models::specimen::*;
+    use rstest::rstest;
 
     fn sort_by_received_at(i1: &&SpecimenSummary, i2: &&SpecimenSummary) -> Ordering {
         i2.received_at().cmp(&i1.received_at())
@@ -218,7 +218,7 @@ mod tests {
         #[future] root_db_conn: DbConnection,
         #[future] database: &'static Database,
     ) {
-        test_query::<SpecimenQuery, _>()
+        test_query(select_specimens)
             .all_records(&database.specimens)
             .sort_by(sort_by_received_at)
             .run(root_db_conn)
@@ -247,7 +247,7 @@ mod tests {
             })
             .build();
 
-        test_query()
+        test_query(select_specimens)
             .all_records(&database.specimens)
             .filter(|i| {
                 let s = i.name().to_lowercase();

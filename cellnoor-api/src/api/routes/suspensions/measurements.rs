@@ -1,9 +1,8 @@
 use aide::axum::{ApiRouter, routing::post};
-
-use crate::state::AppState;
-
 use create::create_suspension_measurement;
 use index::index_suspension_measurements;
+
+use crate::state::AppState;
 
 mod create;
 mod index;

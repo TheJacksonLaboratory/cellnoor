@@ -17,10 +17,10 @@ pub(super) async fn index_multiplexing_tags(
 }
 
 pub async fn select_multiplexing_tags(
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<MultiplexingTag>, db::Error> {
     Ok(MultiplexingTag::query()
         .order_by((type_, tag_id))
-        .load(db_conn)
+        .load(&mut db_conn)
         .await?)
 }

@@ -5,6 +5,7 @@ use axum::{
 use cellnoor_models::{
     IdParameter,
     cdna::measurement::{CdnaMeasurement, NewCdnaMeasurement},
+    nucleic_acid_measurement::NucleicAcidMeasurementData,
 };
 use cellnoor_schema::{cdna, cdna_measurements};
 use diesel::prelude::*;
@@ -24,6 +25,8 @@ pub async fn create_cdna_measurement(
     Path(IdParameter { id }): Path<IdParameter>,
     Json(measurement): Json<NewCdnaMeasurement>,
 ) -> Result<Json<CdnaMeasurement>, db::Error> {
+    validate_electrophoretic_measurement(measurement.data())?;
+
     let prepared_at = cdna_prepared_at(id, &mut db_conn).await?;
 
     validate_timestamps(
@@ -38,12 +41,12 @@ pub async fn create_cdna_measurement(
 
 async fn cdna_prepared_at(
     cdna_id: Uuid,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Timestamp, db::Error> {
     Ok(cdna::table
         .select(cdna::prepared_at)
         .find(cdna_id)
-        .first(db_conn)
+        .first(&mut db_conn)
         .await
         .map(jiff_diesel::Timestamp::to_jiff)?)
 }
@@ -51,11 +54,36 @@ async fn cdna_prepared_at(
 pub async fn insert_cdna_measurement(
     cdna_id: Uuid,
     measurement: NewCdnaMeasurement,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<CdnaMeasurement, db::Error> {
     Ok(diesel::insert_into(cdna_measurements::table)
         .values((cdna_measurements::cdna_id.eq(cdna_id), measurement))
         .returning(CdnaMeasurement::as_returning())
-        .get_result(db_conn)
+        .get_result(&mut db_conn)
         .await?)
+}
+
+pub fn validate_electrophoretic_measurement(
+    measurement_data: &NucleicAcidMeasurementData,
+) -> Result<(), db::DataError> {
+    match measurement_data {
+        NucleicAcidMeasurementData::Electrophoretic {
+            instrument_name: _,
+            mean_size_bp: _,
+            sizing_range: (min, max),
+            concentration: _,
+        } => {
+            if min > max {
+                return Err(db::DataError::new_other(
+                    "sizing range minimum must be less than sizing range maximum, but found \
+                     ({min}, {max})",
+                ))?;
+            }
+            Ok(())
+        }
+        NucleicAcidMeasurementData::Fluorometric {
+            instrument_name: _,
+            concentration: _,
+        } => Ok(()),
+    }
 }

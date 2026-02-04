@@ -41,7 +41,7 @@ pub async fn create_specimen(
 
 pub async fn insert_specimen(
     specimen: NewSpecimen,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Uuid, db::Error> {
     let split = match specimen {
         NewSpecimen::Block(s) => s.split_for_insertion(),
@@ -52,18 +52,18 @@ pub async fn insert_specimen(
     Ok(diesel::insert_into(specimens::table)
         .values(split)
         .returning(specimens::id)
-        .get_result(db_conn)
+        .get_result(&mut db_conn)
         .await?)
 }
 
 async fn project_start_and_end_date(
     project_id: Uuid,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(Timestamp, Timestamp), db::Error> {
     Ok(projects::table
         .select((projects::started_at, projects::ended_at))
         .find(project_id)
-        .first(db_conn)
+        .first(&mut db_conn)
         .await
         .map(jiff_diesel_tuple_to_jiff)?)
 }

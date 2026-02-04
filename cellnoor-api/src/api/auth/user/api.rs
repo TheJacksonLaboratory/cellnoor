@@ -1,15 +1,14 @@
-use serde::Deserialize;
 use std::{collections::HashSet, sync::Arc};
-use tokio_stream::StreamExt;
 
 use cellnoor_schema::{people, project_people};
 use diesel::{HasQuery, prelude::*};
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
+use serde::Deserialize;
+use tokio_stream::StreamExt;
 use uuid::Uuid;
 
-use crate::db::{self};
-
 use super::{AuthProjects, AuthUser, FromEncodedJwt, common::*};
+use crate::db::{self};
 
 #[derive(Debug, Deserialize)]
 #[serde(transparent)]

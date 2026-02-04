@@ -1,24 +1,20 @@
-use axum::Json;
-use axum::extract::State;
+use axum::{Json, extract::State};
 use cellnoor_models::project::{Project, ProjectFilter, ProjectQuery};
 use cellnoor_schema::projects::dsl::*;
-use diesel::SelectableExpression;
-use diesel::prelude::*;
+use diesel::{SelectableExpression, prelude::*};
 use diesel_async::RunQueryDsl;
 use jiff_diesel::ToDiesel;
 
-use crate::api::auth;
-use crate::api::auth::AuthUser;
-use crate::api::auth::RemoveUnauthorizedProjects;
-use crate::api::extract::AuthJsonQuery;
-use crate::api::extract::Authorize;
-use crate::db;
-use crate::db::BoxedFilter;
-use crate::db::BoxedFilterExt;
-use crate::db::DbConnection;
-use crate::db::ToBoxedFilter;
-use crate::db::like_any;
-use crate::state::AppState;
+use crate::{
+    api::{
+        auth,
+        auth::{AuthUser, RemoveUnauthorizedProjects},
+        extract::{AuthJsonQuery, Authorize},
+    },
+    db,
+    db::{BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter, like_any},
+    state::AppState,
+};
 
 pub async fn index_projects(
     _: State<AppState>,
@@ -28,14 +24,14 @@ pub async fn index_projects(
     select_projects(q, &mut db_conn).await.map(Json)
 }
 
-async fn select_projects(
+pub async fn select_projects(
     ProjectQuery {
         filter,
         limit,
         offset,
         order_by,
     }: ProjectQuery,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<Project>, db::Error> {
     let mut stmt = Project::query()
         .limit(limit)
@@ -47,7 +43,7 @@ async fn select_projects(
         stmt = stmt.then_order_by(ordering);
     }
 
-    Ok(stmt.load(db_conn).await?)
+    Ok(stmt.load(&mut db_conn).await?)
 }
 
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for ProjectFilter
@@ -111,6 +107,7 @@ mod tests {
     use cellnoor_models::project::*;
     use rstest::rstest;
 
+    use super::select_projects;
     use crate::{
         db::DbConnection,
         test_state::{Database, database, root_db_conn},
@@ -128,7 +125,7 @@ mod tests {
         #[future] root_db_conn: DbConnection,
         #[future] database: &'static Database,
     ) {
-        test_query::<ProjectQuery, _>()
+        test_query(select_projects)
             .all_records(&database.projects)
             .sort_by(sort_by_name)
             .run(root_db_conn)
@@ -154,7 +151,7 @@ mod tests {
             })
             .build();
 
-        test_query()
+        test_query(select_projects)
             .all_records(&database.projects)
             .filter(|i| {
                 let s = i.name().to_lowercase();

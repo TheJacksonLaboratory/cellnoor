@@ -1,4 +1,4 @@
-use cellnoor_models::tenx_assay::TenxAssayCreation;
+use cellnoor_models::tenx_assay::NewTenxAssay;
 use cellnoor_schema::{library_type_specifications, tenx_assays::dsl::*};
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::initial_data::Upsert;
 
-impl Upsert for TenxAssayCreation {
+impl Upsert for NewTenxAssay {
     async fn upsert(self, mut db_conn: &AsyncPgConnection) -> anyhow::Result<()> {
         let lib_type_specs = self.library_type_specifications().map(<[_]>::to_vec);
 

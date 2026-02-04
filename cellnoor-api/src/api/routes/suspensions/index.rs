@@ -13,7 +13,7 @@ use crate::{
     state::AppState,
 };
 
-pub(super) async fn index_suspensions(
+pub async fn index_suspensions(
     _: State<AppState>,
     mut db_conn: DbConnection,
     AuthJsonQuery { q }: AuthJsonQuery<SuspensionQuery>,
@@ -21,14 +21,14 @@ pub(super) async fn index_suspensions(
     Ok(select_suspensions(q, &mut db_conn).await.map(Json)?)
 }
 
-pub(super) async fn select_suspensions(
+pub async fn select_suspensions(
     SuspensionQuery {
         filter,
         limit,
         offset,
         order_by,
     }: SuspensionQuery,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<SuspensionSummary>, db::Error> {
     let mut stmt = SuspensionSummary::query()
         .limit(limit)
@@ -40,7 +40,7 @@ pub(super) async fn select_suspensions(
         stmt = stmt.then_order_by(ordering);
     }
 
-    Ok(stmt.load(db_conn).await?)
+    Ok(stmt.load(&mut db_conn).await?)
 }
 
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for SuspensionFilter

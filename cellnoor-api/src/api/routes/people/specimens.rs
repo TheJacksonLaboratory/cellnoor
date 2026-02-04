@@ -1,8 +1,7 @@
 use aide::axum::{ApiRouter, routing::get};
+use index::index_person_specimens;
 
 use crate::state::AppState;
-
-use index::index_person_specimens;
 
 mod index;
 

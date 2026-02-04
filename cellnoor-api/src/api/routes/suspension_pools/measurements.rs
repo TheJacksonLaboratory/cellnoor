@@ -1,10 +1,9 @@
 use aide::axum::{ApiRouter, routing::post};
 use axum::handler::Handler;
-
-use crate::{admin_required_creation, state::AppState};
-
 use create::create_suspension_pool_measurement;
 use index::index_measurements;
+
+use crate::{admin_required_creation, state::AppState};
 
 mod create;
 mod index;

@@ -2,15 +2,16 @@ use std::ops::Range;
 
 use cellnoor_models::{
     cdna::{CdnaFields, CdnaQuery, CdnaSummary, NewCdna},
-    chromium_dataset::{ChromiumDatasetCreation, ChromiumDatasetQuery, ChromiumDatasetSummary},
+    chromium_dataset::{ChromiumDatasetQuery, ChromiumDatasetSummary, NewChromiumDataset},
     chromium_run::{
         ChipLoadingFields, ChromiumRunFields, GemPoolFields, GemPoolQuery, GemPoolSummary,
         MAX_GEM_POOLS_PER_NON_OCM_RUN, MAX_GEM_POOLS_PER_OCM_RUN, MAX_SUSPENSIONS_PER_OCM_GEM_POOL,
         NewChromiumRun, OcmBarcodeId, OcmChipLoading, OcmGemPool, PoolMultiplexChipLoading,
         PoolMultiplexGemPool, SingleplexChipLoading, SingleplexGemPool, Volume,
     },
+    generic_query::{self, Query},
     institution::{Institution, InstitutionQuery, NewInstitution},
-    library::{LibraryCreation, LibraryFields, LibraryQuery, LibrarySummary},
+    library::{LibraryFields, LibraryQuery, LibrarySummary, NewLibrary},
     multiplexing_tag::MultiplexingTag,
     person::{NewPerson, PersonFields, PersonQuery, PersonSummary},
     project::{NewProject, Project, ProjectFields, ProjectQuery},
@@ -19,10 +20,7 @@ use cellnoor_models::{
         SpecimenCommonFields, SpecimenQuery, SpecimenSummary, SuspensionThermalPreservation,
         ThermalPreservationMethod,
     },
-    suspension::{
-        NewCellSuspension, NewSuspensionCommonFields, SuspensionFields, SuspensionQuery,
-        SuspensionSummary,
-    },
+    suspension::{NewSuspensionCommonFields, SuspensionFields, SuspensionQuery, SuspensionSummary},
     suspension_pool::{
         NewSuspensionPool, SuspensionPool, SuspensionPoolFields, SuspensionPoolQuery,
         SuspensionTagging,
@@ -47,9 +45,20 @@ use tokio::{sync::OnceCell, task::JoinSet};
 use uuid::Uuid;
 
 use crate::{
-    api,
+    api::routes::{
+        cdna::index::select_cdna,
+        chromium_datasets::index::select_chromium_datasets,
+        gem_pools::index::select_gem_pools,
+        institutions::{create::insert_institution, index::select_institutions},
+        libraries::index::select_libraries,
+        people::{create::insert_person, index::select_people},
+        projects::{create::insert_project, index::select_projects},
+        specimens::index::select_specimens,
+        suspension_pools::index::select_suspension_pools,
+        suspensions::index::select_suspensions,
+    },
     config::Config,
-    db::{DbConnection, DbConnectionPool},
+    db::{self, DbConnection, DbConnectionPool},
     state::{AppState, create_test_db_pool},
 };
 
@@ -90,9 +99,7 @@ impl TestState {
     async fn populate_db(&'static self) {
         // This is a safeguard so that a failure to initialize test state doesn't cause
         // endless repetition
-        let institution_ids = self
-            .all_extract::<InstitutionQuery, _, _, _>(Institution::id)
-            .await;
+        let institution_ids = self.all_extract(select_institutions, Institution::id).await;
         if institution_ids.len() > 1 {
             return;
         }
@@ -101,30 +108,30 @@ impl TestState {
 
         self.insert_institutions(db_conn).await;
         self.insert_people(db_conn).await;
-        // self.insert_labs().await;
-        // self.insert_specimens().await;
-        // self.insert_suspensions().await;
-        // self.insert_suspension_pools().await;
-        // self.insert_singleplex_chromium_runs().await;
-        // self.insert_ocm_chromium_runs().await;
-        // self.insert_pool_multiplex_chromium_runs().await;
-        // self.insert_cdna().await;
-        // self.insert_libraries().await;
-        // self.insert_chromium_datasets().await;
+        self.insert_projects(db_conn).await;
+        // self.insert_specimens(&mut db_conn).await;
+        // self.insert_suspensions(&mut db_conn).await;
+        // self.insert_suspension_pools(&mut db_conn).await;
+        // self.insert_singleplex_chromium_runs(&mut db_conn).await;
+        // self.insert_ocm_chromium_runs(&mut db_conn).await;
+        // self.insert_pool_multiplex_chromium_runs(&mut db_conn).await;
+        // self.insert_cdna(&mut db_conn).await;
+        // self.insert_libraries(&mut db_conn).await;
+        // self.insert_chromium_datasets(&mut db_conn).await;
     }
 
     async fn insert_institutions(&'static self, db_conn: &AsyncPgConnection) {
-        futures::future::join_all((0..N_INSTITUTIONS).map(|_| {
-            NewInstitution::new(Uuid::now_v7(), random_non_empty_string())
-                .handle_without_authorization(db_conn)
-        }))
-        .await;
+        let mut insertions = Vec::with_capacity(N_INSTITUTIONS);
+        for _ in 0..N_INSTITUTIONS {
+            let institution = NewInstitution::new(Uuid::now_v7(), random_non_empty_string());
+            insertions.push(insert_institution(institution, db_conn));
+        }
+
+        futures::future::join_all(insertions).await;
     }
 
     async fn insert_people(&'static self, db_conn: &AsyncPgConnection) {
-        let institution_ids = self
-            .all_extract::<InstitutionQuery, _, _, _>(Institution::id)
-            .await;
+        let institution_ids = self.all_extract(select_institutions, Institution::id).await;
 
         let mut insertions = Vec::with_capacity(N_PEOPLE_PER_INSTITUTION * N_INSTITUTIONS);
 
@@ -133,7 +140,7 @@ impl TestState {
             for _ in 0..N_PEOPLE_PER_INSTITUTION {
                 let name = random_string();
                 let email = format!("{name}@example.com");
-                let person_creation = PersonCreation::builder()
+                let person = NewPerson::builder()
                     .inner(
                         PersonFields::builder()
                             .name(NonEmptyString::new(name).unwrap())
@@ -141,65 +148,55 @@ impl TestState {
                             .build(),
                     )
                     .email(NonEmptyString::new(email).unwrap())
-                    .build()
-                    .handle_without_authorization(db_conn);
+                    .build();
 
-                insertions.push(person_creation);
+                insertions.push(insert_person(person, db_conn));
             }
         }
 
         futures::future::join_all(insertions).await;
     }
 
-    // async fn insert_labs(&'static self) {
-    //     let people_ids = self.all_people_ids().await;
+    async fn insert_projects(&'static self, db_conn: &AsyncPgConnection) {
+        let mut insertions = Vec::with_capacity(N_PROJECTS);
+        for _ in 0..N_PROJECTS {
+            let project = NewProject::builder()
+                .inner(
+                    ProjectFields::builder()
+                        .name(random_non_empty_string())
+                        .build(),
+                )
+                .started_at(random_time())
+                .ended_at(random_time())
+                .build();
 
-    //     let join_set: JoinSet<_> = (0..N_LABS)
-    //         .map(|i| self.insert_random_lab(people_ids[i]))
-    //         .collect();
+            insertions.push(insert_project(project, db_conn));
+        }
 
-    //     join_set.join_all().await;
-    // }
-
-    // async fn insert_random_lab(&self, pi_id: Uuid) {
-    //     let db_conn = self.root_db_conn().await;
-
-    //     db_conn
-    //         .interact(move |db_conn| {
-    //             ProjectCreation::builder()
-    //                 .inner(
-    //                     ProjectFields::builder()
-    //                         .name(random_non_empty_string())
-    //                         .build(),
-    //                 )
-    //                 .started_at(random_time())
-    //                 .ended_at(random_time())
-    //                 .build()
-    //                 .execute_without_authorization(db_conn);
-    //         })
-    //         .await
-    //         .unwrap();
-    // }
+        futures::future::join_all(insertions).await;
+    }
 
     // async fn insert_specimens(&'static self) {
     //     let people_ids = self.all_people_ids().await;
-    //     let project_ids = self.all_extract::<ProjectQuery, _, _, _>(Project::id).await;
+    //     let project_ids = self.all_extract::<ProjectQuery, _, _,
+    // _>(Project::id).await;
 
     //     let mut join_set = JoinSet::new();
     //     let mut counter = 0;
     //     // Skip the first person
     //     for person_id in &people_ids[1..] {
-    //         for project_id in project_ids.iter().copied().take(N_SPECIMENS_PER_PERSON) {
-    //             counter += 1;
-    //             join_set.spawn(self.insert_random_specimen(counter, *person_id, project_id));
+    //         for project_id in
+    // project_ids.iter().copied().take(N_SPECIMENS_PER_PERSON) {
+    // counter += 1;
+    // join_set.spawn(self.insert_random_specimen(counter, *person_id, project_id));
     //         }
     //     }
 
     //     join_set.join_all().await;
     // }
 
-    // async fn insert_random_specimen(&self, i: usize, submitted_by: Uuid, project_id: Uuid) {
-    //     let db_conn = self.root_db_conn().await;
+    // async fn insert_random_specimen(&self, i: usize, submitted_by: Uuid,
+    // project_id: Uuid) {     let db_conn = self.root_db_conn().await;
 
     //     let inner = SpecimenCommonFields::builder()
     //         .readable_id(random_non_empty_string())
@@ -209,8 +206,8 @@ impl TestState {
     //         .received_at(random_time())
     //         .species(Species::VARIANTS.choose_unwrap())
     //         .tissue(random_non_empty_string())
-    //         .additional_data(serde_json::json!({"krabby_patty_formular": "secret"}))
-    //         .build();
+    //         .additional_data(serde_json::json!({"krabby_patty_formular":
+    // "secret"}))         .build();
 
     //     let new_specimen = if i.is_multiple_of(9) {
     //         SpecimenCreation::Block(BlockCreation::CarboxymethylCellulose {
@@ -228,8 +225,8 @@ impl TestState {
     //             fixative: BlockFixative::VARIANTS.choose_unwrap(),
     //         })
     //     } else if i.is_multiple_of(6) {
-    //         SpecimenCreation::Suspension(SuspensionSpecimenCreation::Fresh { inner })
-    //     } else if i.is_multiple_of(5) {
+    //         SpecimenCreation::Suspension(SuspensionSpecimenCreation::Fresh {
+    // inner })     } else if i.is_multiple_of(5) {
     //         SpecimenCreation::Suspension(SuspensionSpecimenCreation::Fixed {
     //             inner,
     //             fixative: Fixative::VARIANTS.choose_unwrap(),
@@ -237,8 +234,8 @@ impl TestState {
     //     } else if i.is_multiple_of(4) {
     //         SpecimenCreation::Suspension(SuspensionSpecimenCreation::ThermallyPreserved {
     //             inner,
-    //             thermal_preservation_method: SuspensionThermalPreservation::VARIANTS
-    //                 .choose_unwrap(),
+    //             thermal_preservation_method:
+    // SuspensionThermalPreservation::VARIANTS                 .choose_unwrap(),
     //         })
     //     } else if i.is_multiple_of(3) {
     //         SpecimenCreation::Tissue(TissueCreation::Fresh { inner })
@@ -250,13 +247,13 @@ impl TestState {
     //     } else {
     //         SpecimenCreation::Tissue(TissueCreation::ThermallyPreserved {
     //             inner,
-    //             thermal_preservation_method: ThermalPreservationMethod::VARIANTS.choose_unwrap(),
-    //         })
+    //             thermal_preservation_method:
+    // ThermalPreservationMethod::VARIANTS.choose_unwrap(),         })
     //     };
 
     //     db_conn
     //         .interact(|db_conn| {
-    //             new_specimen.execute_without_authorization(db_conn);
+    //             new_specimen.execute_without_authorization(&mut db_conn);
     //         })
     //         .await
     //         .unwrap();
@@ -264,8 +261,8 @@ impl TestState {
 
     // async fn insert_suspensions(&'static self) {
     //     let specimens = self
-    //         .all_extract::<SpecimenQuery, _, _, _>(|s| (s.id(), s.submitted_by()))
-    //         .await;
+    //         .all_extract::<SpecimenQuery, _, _, _>(|s| (s.id(),
+    // s.submitted_by()))         .await;
 
     //     let join_set: JoinSet<_> = specimens
     //         .into_iter()
@@ -275,8 +272,8 @@ impl TestState {
     //     join_set.join_all().await;
     // }
 
-    // async fn insert_random_suspension(&self, specimen_id: Uuid, preparer_id: Uuid) {
-    //     let new_suspension = {
+    // async fn insert_random_suspension(&self, specimen_id: Uuid, preparer_id:
+    // Uuid) {     let new_suspension = {
     //         let common = SuspensionCreationCommonFields::builder()
     //             .inner(
     //                 SuspensionFields::builder()
@@ -294,8 +291,8 @@ impl TestState {
     //     let db_conn = self.root_db_conn().await;
 
     //     db_conn
-    //         .interact(|db_conn| new_suspension.execute_without_authorization(db_conn))
-    //         .await
+    //         .interact(|db_conn|
+    // new_suspension.execute_without_authorization(&mut db_conn))         .await
     //         .unwrap();
     // }
 
@@ -303,8 +300,9 @@ impl TestState {
     //     let mut suspension_ids = self
     //         .all_extract::<SuspensionQuery, _, _, _>(SuspensionSummary::id)
     //         .await;
-    //     let mut multiplexing_tags = self.all_extract::<(), _, _, _>(MultiplexingTag::id).await;
-    //     let people_ids = self.all_people_ids().await;
+    //     let mut multiplexing_tags = self.all_extract::<(), _, _,
+    // _>(MultiplexingTag::id).await;     let people_ids =
+    // self.all_people_ids().await;
 
     //     let mut join_set = JoinSet::new();
     //     for _ in 0..N_SUSPENSION_POOLS {
@@ -318,8 +316,8 @@ impl TestState {
     //             suspension_tags.push(suspension_tag);
     //         }
     //         join_set.spawn(
-    //             self.insert_random_suspension_pool(suspension_tags, people_ids.choose_unwrap()),
-    //         );
+    //             self.insert_random_suspension_pool(suspension_tags,
+    // people_ids.choose_unwrap()),         );
     //     }
 
     //     join_set.join_all().await;
@@ -342,8 +340,8 @@ impl TestState {
 
     //     let db_conn = self.root_db_conn().await;
     //     db_conn
-    //         .interact(|db_conn| suspension_pool.execute_without_authorization(db_conn))
-    //         .await
+    //         .interact(|db_conn|
+    // suspension_pool.execute_without_authorization(&mut db_conn))         .await
     //         .unwrap();
     // }
 
@@ -366,7 +364,8 @@ impl TestState {
     //     let db_conn = self.root_db_conn().await;
 
     //     let three_prime_gex_assay_id = db_conn
-    //         .interact(|db_conn| three_prime_gex_query.execute_without_authorization(db_conn))
+    //         .interact(|db_conn|
+    // three_prime_gex_query.execute_without_authorization(&mut db_conn))
     //         .await
     //         .unwrap();
     //     assert_eq!(three_prime_gex_assay_id.len(), 1);
@@ -413,8 +412,8 @@ impl TestState {
 
     //     let db_conn = self.root_db_conn().await;
     //     db_conn
-    //         .interact(|db_conn| chromium_run.execute_without_authorization(db_conn))
-    //         .await
+    //         .interact(|db_conn|
+    // chromium_run.execute_without_authorization(&mut db_conn))         .await
     //         .unwrap();
     // }
 
@@ -427,7 +426,8 @@ impl TestState {
     //         .filter(
     //             TenxAssayFilter::builder()
     //                 .names(["Universal 3' Gene Expression".to_owned()])
-    //                 .sample_multiplexing([SampleMultiplexing::OnChipMultiplexing])
+    //
+    // .sample_multiplexing([SampleMultiplexing::OnChipMultiplexing])
     //                 .chemistry_versions(["v4 - GEM-X".to_owned()])
     //                 .library_types([vec![LibraryType::GeneExpression]])
     //                 .build(),
@@ -437,16 +437,16 @@ impl TestState {
     //     let db_conn = self.root_db_conn().await;
 
     //     let ocm_assay_id = db_conn
-    //         .interact(|db_conn| ocm_gex_query.execute_without_authorization(db_conn))
-    //         .await
+    //         .interact(|db_conn|
+    // ocm_gex_query.execute_without_authorization(&mut db_conn))         .await
     //         .unwrap();
     //     assert_eq!(ocm_assay_id.len(), 1);
     //     let ocm_assay_id = ocm_assay_id[0].id();
 
     //     let mut join_set = JoinSet::new();
-    //     // We already used up all the suspension IDs when inserting singleplex Chromium
-    //     // runs, so no matter what we will have to reuse suspension IDs. These OCM runs
-    //     // will also use them all up anyways.
+    //     // We already used up all the suspension IDs when inserting singleplex
+    // Chromium     // runs, so no matter what we will have to reuse suspension
+    // IDs. These OCM runs     // will also use them all up anyways.
     //     for _ in 0..N_OCM_CHROMIUM_RUNS {
     //         let this_run_suspensions = (0..MAX_GEM_POOLS_PER_OCM_RUN)
     //             .map(|_| {
@@ -499,8 +499,8 @@ impl TestState {
 
     //     let db_conn = self.root_db_conn().await;
     //     db_conn
-    //         .interact(|db_conn| chromium_run.execute_without_authorization(db_conn))
-    //         .await
+    //         .interact(|db_conn|
+    // chromium_run.execute_without_authorization(&mut db_conn))         .await
     //         .unwrap();
     // }
 
@@ -523,8 +523,8 @@ impl TestState {
     //     let db_conn = self.root_db_conn().await;
 
     //     let flex_assay_id = db_conn
-    //         .interact(|db_conn| flex_query.execute_without_authorization(db_conn))
-    //         .await
+    //         .interact(|db_conn|
+    // flex_query.execute_without_authorization(&mut db_conn))         .await
     //         .unwrap();
     //     assert_eq!(flex_assay_id.len(), 1);
     //     let flex_assay_id = flex_assay_id[0].id();
@@ -570,8 +570,8 @@ impl TestState {
 
     //     let db_conn = self.root_db_conn().await;
     //     db_conn
-    //         .interact(|db_conn| chromium_run.execute_without_authorization(db_conn))
-    //         .await
+    //         .interact(|db_conn|
+    // chromium_run.execute_without_authorization(&mut db_conn))         .await
     //         .unwrap();
     // }
 
@@ -607,7 +607,7 @@ impl TestState {
     //     let db_conn = self.root_db_conn().await;
 
     //     db_conn
-    //         .interact(|db_conn| cdna.execute_without_authorization(db_conn))
+    //         .interact(|db_conn| cdna.execute_without_authorization(&mut db_conn))
     //         .await
     //         .unwrap();
     // }
@@ -627,13 +627,14 @@ impl TestState {
     // }
 
     // async fn insert_random_library(&self, cdna_id: Uuid, preparer_id: Uuid) {
-    //     // Technically this isn't 100% correct because Flex libraries and Universal 3'
-    //     // GEX libraries have different index sets and volumes, but we don't care here
-    //     let library = LibraryCreation::builder()
+    //     // Technically this isn't 100% correct because Flex libraries and
+    // Universal 3'     // GEX libraries have different index sets and volumes,
+    // but we don't care here     let library = LibraryCreation::builder()
     //         .inner(
     //             LibraryFields::builder()
     //                 .cdna_id(cdna_id)
-    //                 .dual_index_set_name(NonEmptyString::new("SI-TT-A1").unwrap())
+    //
+    // .dual_index_set_name(NonEmptyString::new("SI-TT-A1").unwrap())
     //                 .readable_id(random_non_empty_string())
     //                 .build(),
     //         )
@@ -646,7 +647,7 @@ impl TestState {
 
     //     let db_conn = self.root_db_conn().await;
     //     db_conn
-    //         .interact(|db_conn| library.execute_without_authorization(db_conn))
+    //         .interact(|db_conn| library.execute_without_authorization(&mut db_conn))
     //         .await
     //         .unwrap();
     // }
@@ -675,96 +676,83 @@ impl TestState {
     //             "cmdline": "cellranger multi"
     //         }
     //     );
-    //     let dataset: ChromiumDatasetCreation = serde_json::from_value(dataset).unwrap();
+    //     let dataset: ChromiumDatasetCreation =
+    // serde_json::from_value(dataset).unwrap();
 
     //     let db_conn = self.root_db_conn().await;
     //     db_conn
     //         .interact(|db_conn| {
-    //             use cellnoor_schema::{chromium_dataset_web_summaries as ws, chromium_dataset_metrics_files as mf};
-    //             let created_ds_id = dataset.execute_without_authorization(db_conn).id();
+    //             use cellnoor_schema::{chromium_dataset_web_summaries as ws,
+    // chromium_dataset_metrics_files as mf};             let created_ds_id =
+    // dataset.execute_without_authorization(&mut db_conn).id();
 
     //             let values = |i| {
     //                 let content = format!("<!DOCTYPE html><html><head><title>Web summary</title></head><body>web summary{i} - {created_ds_id}</body></html>");
-    //                 (ws::dataset_id.eq(created_ds_id), ws::directory.eq(format!("specimen{i}")), ws::filename.eq("web_summary.html"), ws::content.eq(content.into_bytes()))
+    //                 (ws::dataset_id.eq(created_ds_id),
+    // ws::directory.eq(format!("specimen{i}")),
+    // ws::filename.eq("web_summary.html"), ws::content.eq(content.into_bytes()))
     //             };
-    //             diesel::insert_into(ws::table).values([values(0), values(1)]).execute_without_authorization(db_conn);
+    //             diesel::insert_into(ws::table).values([values(0),
+    // values(1)]).execute_without_authorization(&mut db_conn);
 
     //             let values = |i| {
-    //                 let raw_content = format!("ds_id, some_metric,another_metric,n\n{created_ds_id}100,42,{i}");
-    //                 let parsed_data = serde_json::json!({"ds_id": created_ds_id, "some_metric": 100, "another_metric": 42, "n": i});
-    //                 (mf::dataset_id.eq(created_ds_id), mf::directory.eq(format!("specimen{i}")), mf::filename.eq("metrics_summary.csv"), mf::raw_content.eq(raw_content.into_bytes()), mf::content_type.eq("text/csv"), mf::parsed_data.eq(parsed_data))
+    //                 let raw_content = format!("ds_id,
+    // some_metric,another_metric,n\n{created_ds_id}100,42,{i}");
+    // let parsed_data = serde_json::json!({"ds_id": created_ds_id, "some_metric":
+    // 100, "another_metric": 42, "n": i});
+    // (mf::dataset_id.eq(created_ds_id), mf::directory.eq(format!("specimen{i}")),
+    // mf::filename.eq("metrics_summary.csv"),
+    // mf::raw_content.eq(raw_content.into_bytes()),
+    // mf::content_type.eq("text/csv"), mf::parsed_data.eq(parsed_data))
     //             };
-    //             diesel::insert_into(mf::table).values([values(0), values(1)]).execute_without_authorization(db_conn);
-    //         })
+    //             diesel::insert_into(mf::table).values([values(0),
+    // values(1)]).execute_without_authorization(&mut db_conn);         })
     //         .await
     //         .unwrap();
     // }
 
     async fn root_db_conn(&self) -> DbConnection {
-        self.root_db_pool.get().await.unwrap()
+        DbConnection::new(self.root_db_pool.get().await.unwrap())
     }
 
-    async fn all<Q, T>(&self) -> Vec<T>
+    async fn all<SelectFn, Filter, OrderBy, Return>(&self, select: SelectFn) -> Vec<Return>
     where
-        Q: DefaultWithNoLimit + api::Request<Vec<T>>,
-        T: 'static + Send,
+        Filter: Default,
+        OrderBy: Default,
+        SelectFn: AsyncFn(
+            generic_query::Query<Filter, OrderBy>,
+            &AsyncPgConnection,
+        ) -> Result<Vec<Return>, db::Error>,
+        Return: 'static + Send,
     {
         let db_conn = self.root_db_conn().await;
-        Q::default_with_no_limit()
-            .handle_without_authorization(&db_conn)
-            .await
+        let query = generic_query::Query::default_with_no_limit();
+
+        select(query, &db_conn).await.unwrap()
     }
 
-    async fn all_extract<Q, F, T, U>(&self, f: F) -> Vec<U>
+    async fn all_extract<SelectFn, ExtractFn, Filter, OrderBy, Intermediate, Return>(
+        &self,
+        select: SelectFn,
+        extract: ExtractFn,
+    ) -> Vec<Return>
     where
-        Q: DefaultWithNoLimit + api::Request<Vec<T>>,
-        T: 'static + Send,
-        F: Fn(&T) -> U,
+        Filter: Default,
+        OrderBy: Default,
+        SelectFn: AsyncFn(
+            generic_query::Query<Filter, OrderBy>,
+            &AsyncPgConnection,
+        ) -> Result<Vec<Intermediate>, db::Error>,
+        Intermediate: 'static + Send,
+        ExtractFn: Fn(&Intermediate) -> Return,
     {
-        self.all::<Q, _>().await.iter().map(f).collect()
+        self.all(select).await.iter().map(extract).collect()
     }
 
-    // async fn all_people_ids(&'static self) -> &'static [Uuid] {
-    //     PEOPLE_IDS
-    //         .get_or_init(|| self.all_extract::<PersonQuery, _, _, _>(PersonSummary::id))
-    //         .await
-    // }
-}
-
-pub trait DefaultWithNoLimit {
-    fn default_with_no_limit() -> Self;
-}
-
-impl<F, O> DefaultWithNoLimit for generic_query::Query<F, O>
-where
-    F: Default,
-    O: Default,
-{
-    fn default_with_no_limit() -> Self {
-        Self {
-            filter: F::default(),
-            limit: i64::MAX,
-            offset: 0,
-            order_by: Default::default(),
-        }
-    }
-}
-
-impl DefaultWithNoLimit for () {
-    fn default_with_no_limit() -> Self {}
-}
-
-impl<U, F, O> DefaultWithNoLimit for (U, generic_query::Query<F, O>)
-where
-    U: From<Uuid>,
-    F: Default,
-    O: Default,
-{
-    fn default_with_no_limit() -> Self {
-        (
-            Uuid::default().into(),
-            generic_query::Query::<F, O>::default_with_no_limit(),
-        )
+    async fn all_people_ids(&'static self) -> &'static [Uuid] {
+        PEOPLE_IDS
+            .get_or_init(|| self.all_extract(select_people, PersonSummary::id))
+            .await
     }
 }
 
@@ -775,12 +763,12 @@ pub struct Database {
     pub people: Vec<PersonSummary>,
     pub projects: Vec<Project>,
     pub specimens: Vec<SpecimenSummary>,
-    pub _suspensions: Vec<SuspensionSummary>,
+    pub suspensions: Vec<SuspensionSummary>,
     pub suspension_pools: Vec<SuspensionPool>,
-    pub _gem_pools: Vec<GemPoolSummary>,
-    pub _cdna: Vec<CdnaSummary>,
-    pub _libraries: Vec<LibrarySummary>,
-    pub _chromium_datasets: Vec<ChromiumDatasetSummary>,
+    pub gem_pools: Vec<GemPoolSummary>,
+    pub cdna: Vec<CdnaSummary>,
+    pub libraries: Vec<LibrarySummary>,
+    pub chromium_datasets: Vec<ChromiumDatasetSummary>,
 }
 
 impl Database {
@@ -789,39 +777,39 @@ impl Database {
 
         let (
             institutions,
-            // people,
-            // projects,
-            // specimens,
-            // suspensions,
-            // suspension_pools,
-            // gem_pools,
-            // cdna,
-            // libraries,
-            // chromium_datasets,
+            people,
+            projects,
+            specimens,
+            suspensions,
+            suspension_pools,
+            gem_pools,
+            cdna,
+            libraries,
+            chromium_datasets,
         ) = tokio::join!(
-            test_state.all::<InstitutionQuery, _>(),
-            // test_state.all::<PersonQuery, _>(),
-            // test_state.all::<ProjectQuery, _>(),
-            // test_state.all::<SpecimenQuery, _>(),
-            // test_state.all::<SuspensionQuery, _>(),
-            // test_state.all::<SuspensionPoolQuery, _>(),
-            // test_state.all::<GemPoolQuery, _>(),
-            // test_state.all::<CdnaQuery, _>(),
-            // test_state.all::<LibraryQuery, _>(),
-            // test_state.all::<ChromiumDatasetQuery, _>()
+            test_state.all(select_institutions),
+            test_state.all(select_people),
+            test_state.all(select_projects),
+            test_state.all(select_specimens),
+            test_state.all(select_suspensions),
+            test_state.all(select_suspension_pools),
+            test_state.all(select_gem_pools),
+            test_state.all(select_cdna),
+            test_state.all(select_libraries),
+            test_state.all(select_chromium_datasets)
         );
 
         Self {
             institutions,
-            people: Vec::new(),
-            projects: Vec::new(),
-            specimens: Vec::new(),
-            _suspensions: Vec::new(),
-            suspension_pools: Vec::new(),
-            _gem_pools: Vec::new(),
-            _cdna: Vec::new(),
-            _libraries: Vec::new(),
-            _chromium_datasets: Vec::new(),
+            people,
+            projects,
+            specimens,
+            suspensions,
+            suspension_pools,
+            gem_pools,
+            cdna,
+            libraries,
+            chromium_datasets,
         }
     }
 }
@@ -873,7 +861,7 @@ fn random_chip_loading_fields() -> ChipLoadingFields {
 
 const N_INSTITUTIONS: usize = 4;
 const N_PEOPLE_PER_INSTITUTION: usize = 32;
-const N_LABS: usize = N_INSTITUTIONS * 4;
+const N_PROJECTS: usize = N_INSTITUTIONS * 4;
 
 const N_SPECIMENS_PER_PERSON: usize = 2;
 const N_SPECIMENS: usize = N_SPECIMENS_PER_PERSON * N_PEOPLE_PER_INSTITUTION * N_INSTITUTIONS;

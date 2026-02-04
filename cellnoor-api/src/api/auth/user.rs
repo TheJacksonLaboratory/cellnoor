@@ -1,4 +1,7 @@
-use std::{collections::HashSet, sync::Arc};
+use std::{
+    collections::HashSet,
+    sync::{Arc, RwLockReadGuard},
+};
 
 use axum_extra::{
     TypedHeader,
@@ -7,7 +10,6 @@ use axum_extra::{
 use headers::{Authorization, authorization::Bearer};
 use jsonwebtoken::{TokenData, Validation};
 use serde::{Deserialize, de::DeserializeOwned};
-use std::sync::RwLockReadGuard;
 use uuid::Uuid;
 
 use crate::{
@@ -167,7 +169,8 @@ impl RemoveUnauthorizedProjects for Option<Vec<Uuid>> {
         };
 
         let Some(requested_projects) = self.as_mut() else {
-            // If there were no requested projects, then it should just be the projects the user is authorized to view. Also this copy is unavoidable
+            // If there were no requested projects, then it should just be the projects the
+            // user is authorized to view. Also this copy is unavoidable
             self.replace(authorized_projects.iter().copied().collect());
             return;
         };

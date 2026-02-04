@@ -2,5 +2,5 @@ mod common;
 mod create;
 mod read;
 
-pub use create::LibraryMeasurementCreation;
+pub use create::NewLibraryMeasurement;
 pub use read::LibraryMeasurement;

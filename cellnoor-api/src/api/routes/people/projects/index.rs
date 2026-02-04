@@ -34,7 +34,7 @@ pub async fn select_person_projects(
         offset,
         order_by,
     }: ProjectQuery,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<Project>, db::Error> {
     let mut stmt = Project::query()
         .inner_join(project_people::table)
@@ -48,5 +48,5 @@ pub async fn select_person_projects(
         stmt = stmt.order_by(ordering);
     }
 
-    Ok(stmt.load(db_conn).await?)
+    Ok(stmt.load(&mut db_conn).await?)
 }

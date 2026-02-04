@@ -18,7 +18,6 @@ pub struct TenxAssay {
     chemistry_version: String,
     protocol_url: String,
     chromium_chip: Option<String>,
-    // It's pretty annoying to have a `schema.patch` file so we just deal Vec<Option<T>>
     cmdlines: Option<Vec<Option<String>>>,
 }
 

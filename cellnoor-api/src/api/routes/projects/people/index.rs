@@ -36,7 +36,7 @@ async fn select_project_people(
         offset,
         order_by,
     }: PersonQuery,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<PersonSummary>, db::Error> {
     let mut stmt = PersonSummary::query()
         .inner_join(project_people::table)
@@ -50,5 +50,5 @@ async fn select_project_people(
         stmt = stmt.then_order_by(ordering);
     }
 
-    Ok(stmt.load(db_conn).await?)
+    Ok(stmt.load(&mut db_conn).await?)
 }

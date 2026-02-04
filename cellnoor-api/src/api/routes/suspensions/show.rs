@@ -28,15 +28,15 @@ pub(super) async fn show_suspension(
 pub(super) async fn select_suspension_by_id(
     authorized_projects: &AuthProjects,
     suspension_id: Uuid,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Suspension, db::Error> {
     let stmt = Suspension::query().filter(suspensions::id.eq(suspension_id));
 
     let suspension = match authorized_projects {
-        AuthProjects::All => stmt.first(db_conn).await?,
+        AuthProjects::All => stmt.first(&mut db_conn).await?,
         AuthProjects::Restricted(project_ids) => {
             stmt.filter(suspensions::project_id.eq_any(project_ids.iter()))
-                .first(db_conn)
+                .first(&mut db_conn)
                 .await?
         }
     };

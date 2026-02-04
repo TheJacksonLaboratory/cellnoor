@@ -28,7 +28,7 @@ pub async fn select_cdna(
         offset,
         order_by,
     }: CdnaQuery,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<CdnaSummary>, db::Error> {
     let mut stmt = CdnaSummary::query()
         .limit(limit)
@@ -40,7 +40,7 @@ pub async fn select_cdna(
         stmt = stmt.then_order_by(ordering);
     }
 
-    Ok(stmt.load(db_conn).await?)
+    Ok(stmt.load(&mut db_conn).await?)
 }
 
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for CdnaFilter

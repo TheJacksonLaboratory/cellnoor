@@ -1,7 +1,6 @@
 use serde::Deserialize;
 
-use super::FromEncodedJwt;
-use super::{AuthProjects, AuthUser, common::*};
+use super::{AuthProjects, AuthUser, FromEncodedJwt, common::*};
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct User {

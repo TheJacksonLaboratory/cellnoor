@@ -17,13 +17,13 @@ pub async fn create_project(
     insert_project(project, &mut db_conn).await.map(Json)
 }
 
-async fn insert_project(
+pub async fn insert_project(
     project: NewProject,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Project, db::Error> {
     Ok(diesel::insert_into(projects::table)
         .values(project)
         .returning(Project::as_returning())
-        .get_result(db_conn)
+        .get_result(&mut db_conn)
         .await?)
 }

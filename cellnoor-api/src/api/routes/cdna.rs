@@ -1,18 +1,20 @@
-use crate::{admin_required_creation, state::AppState};
 use aide::axum::{
     ApiRouter,
     routing::{get, post},
 };
-
 use axum::handler::Handler;
 use create::create_cdna;
+pub(super) use create::{NucleicAcidParentInfo, gem_pools_to_library_specs, validate_volume};
 use index::index_cdna;
+pub(super) use measurements::validate_electrophoretic_measurement;
 use show::show_cdna;
 
-mod create;
-mod index;
-mod measurements;
-mod show;
+use crate::{admin_required_creation, state::AppState};
+
+pub mod create;
+pub mod index;
+pub mod measurements;
+pub mod show;
 
 pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new()

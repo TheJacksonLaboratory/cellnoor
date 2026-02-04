@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+pub(crate) use common::IndexSetName;
 use diesel_async::AsyncPgConnection;
 use serde::de::DeserializeOwned;
 use tokio::task::JoinSet;
@@ -34,15 +35,11 @@ pub(super) async fn download_and_insert_single_index_sets(
 async fn download_and_insert_index_sets<T>(
     file_urls: Vec<Url>,
     http_client: reqwest::Client,
-    db_conn: &AsyncPgConnection,
+    mut db_conn: &AsyncPgConnection,
 ) -> anyhow::Result<()>
 where
     T: 'static + DeserializeOwned + Send + Upsert,
 {
-    // let downloads = JoinSet::new();
-    // for url in file_urls {
-    //     downloads.spawn(download_json::<T>(http_client.clone(), url));
-    // }
     let downloads: JoinSet<_> = file_urls
         .into_iter()
         .map(|url| download_json::<T>(http_client.clone(), url))
@@ -56,7 +53,7 @@ where
 
     // A for-loop is fine because this is like 10 URLs max, and each of these is a
     // bulk insert
-    let index_sets = index_sets.into_iter().map(|s| s.upsert(db_conn));
+    let index_sets = index_sets.into_iter().map(|s| s.upsert(&mut db_conn));
     futures::future::try_join_all(index_sets).await?;
 
     Ok(())

@@ -25,7 +25,7 @@ pub async fn select_tenx_assays(
         offset,
         order_by,
     }: TenxAssayQuery,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<TenxAssay>, db::Error> {
     let mut stmt = TenxAssay::query()
         .limit(limit)
@@ -37,7 +37,7 @@ pub async fn select_tenx_assays(
         stmt = stmt.then_order_by(ordering);
     }
 
-    Ok(stmt.load(db_conn).await?)
+    Ok(stmt.load(&mut db_conn).await?)
 }
 
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for TenxAssayFilter

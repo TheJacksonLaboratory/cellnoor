@@ -10,7 +10,7 @@ use crate::nucleic_acid::library::common::LibraryFields;
 
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = libraries))]
-pub struct LibraryCreation {
+pub struct NewLibrary {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: LibraryFields,
@@ -25,7 +25,7 @@ pub struct LibraryCreation {
     preparer_ids: NonEmptyVec<Uuid, { usize::MAX }>,
 }
 
-impl LibraryCreation {
+impl NewLibrary {
     #[must_use]
     pub fn cdna_id(&self) -> Uuid {
         self.inner.cdna_id

@@ -37,7 +37,7 @@ pub async fn select_pooled_suspensions(
         offset,
         order_by,
     }: SuspensionQuery,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<SuspensionSummary>, db::Error> {
     let mut stmt = suspension_tagging::table
         .filter(suspension_tagging::pool_id.eq(suspension_pool_id))
@@ -53,7 +53,7 @@ pub async fn select_pooled_suspensions(
         stmt = stmt.then_order_by(ordering);
     }
 
-    Ok(stmt.load(db_conn).await?)
+    Ok(stmt.load(&mut db_conn).await?)
 }
 
 #[cfg(test)]
@@ -63,8 +63,8 @@ mod tests {
 
     // use crate::{
     //     db::DbConnection,
-    //     test_state::{Database, N_SUSPENSIONS_PER_POOL, database, root_db_conn},
-    // };
+    //     test_state::{Database, N_SUSPENSIONS_PER_POOL, database,
+    // root_db_conn}, };
 
     // #[rstest]
     // #[awt]
@@ -81,14 +81,14 @@ mod tests {
     //     );
 
     //     let suspensions = root_db_conn
-    //         .interact(|db_conn| query.execute(db_conn).unwrap())
+    //         .interact(|db_conn| query.execute(&mut db_conn).unwrap())
     //         .await
     //         .unwrap();
 
     //     assert_eq!(
     //         suspensions.len(),
     //         N_SUSPENSIONS_PER_POOL,
-    //         "found different number of suspensions in suspension pool than expected"
-    //     );
+    //         "found different number of suspensions in suspension pool than
+    // expected"     );
     // }
 }

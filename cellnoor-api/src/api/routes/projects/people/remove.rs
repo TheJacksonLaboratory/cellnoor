@@ -25,10 +25,10 @@ pub async fn remove_person_from_project(
 async fn delete_project_person_mapping(
     _project_id: Uuid,
     person_id: Uuid,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), db::Error> {
     diesel::delete(project_people::table.filter(project_people::person_id.eq(person_id)))
-        .execute(db_conn)
+        .execute(&mut db_conn)
         .await?;
 
     Ok(())

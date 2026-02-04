@@ -1,4 +1,3 @@
-use crate::{admin_required_creation, state::AppState};
 use aide::axum::{
     ApiRouter,
     routing::{get, post},
@@ -8,11 +7,13 @@ use create::create_specimen;
 use index::index_specimens;
 use show::show_specimen;
 
-pub(super) mod chromium_datasets;
-pub(super) mod create;
-pub(super) mod index;
-pub(super) mod measurements;
-pub(super) mod show;
+use crate::{admin_required_creation, state::AppState};
+
+pub mod chromium_datasets;
+pub mod create;
+pub mod index;
+pub mod measurements;
+pub mod show;
 
 pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new()

@@ -6,8 +6,8 @@ use crate::{
     state::AppState,
 };
 
-mod create;
-mod libraries;
+pub mod create;
+pub mod libraries;
 
 pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new()

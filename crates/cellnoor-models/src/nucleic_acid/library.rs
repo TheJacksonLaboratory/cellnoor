@@ -5,7 +5,7 @@ mod query;
 mod read;
 
 pub use common::LibraryFields;
-pub use create::LibraryCreation;
+pub use create::NewLibrary;
 #[cfg(feature = "app")]
 pub use query::LibraryQuery;
 pub use query::{LibraryFilter, LibraryOrderBy};

@@ -5,7 +5,7 @@ use axum::{
 use cellnoor_models::{IdParameter, person::Person};
 use cellnoor_schema::people;
 use diesel::prelude::*;
-use diesel_async::RunQueryDsl;
+use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use uuid::Uuid;
 
 use crate::{
@@ -23,10 +23,10 @@ pub async fn show_person(
 
 pub async fn select_person_by_id(
     person_id: Uuid,
-    db_conn: &mut DbConnection,
+    mut db_conn: &AsyncPgConnection,
 ) -> Result<Person, db::Error> {
     Ok(Person::query()
         .filter(people::id.eq(person_id))
-        .first(db_conn)
+        .first(&mut db_conn)
         .await?)
 }

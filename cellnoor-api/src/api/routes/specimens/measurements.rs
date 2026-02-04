@@ -1,10 +1,9 @@
 use aide::axum::{ApiRouter, routing::get};
 use axum::{Json, handler::Handler, http::StatusCode};
-
-use crate::{admin_required_creation, state::AppState};
-
 use create::create_specimen_measurement;
 use index::index_specimen_measurements;
+
+use crate::{admin_required_creation, state::AppState};
 
 mod create;
 mod index;

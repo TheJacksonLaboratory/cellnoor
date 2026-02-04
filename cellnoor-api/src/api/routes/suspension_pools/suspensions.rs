@@ -1,8 +1,7 @@
 use aide::axum::{ApiRouter, routing::get};
+use index::index_pooled_suspensions;
 
 use crate::state::AppState;
-
-use index::index_pooled_suspensions;
 
 pub(super) mod index;
 

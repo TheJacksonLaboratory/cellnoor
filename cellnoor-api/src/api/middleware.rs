@@ -1,7 +1,3 @@
-use crate::{
-    api::auth::{self, AuthUser},
-    state::AppState,
-};
 use axum::{
     Extension,
     extract::{Request, State},
@@ -11,6 +7,11 @@ use axum::{
 };
 use axum_extra::{TypedHeader, extract::CookieJar};
 use headers::{Authorization, authorization::Bearer};
+
+use crate::{
+    api::auth::{self, AuthUser},
+    state::AppState,
+};
 
 pub async fn authenticate_request(
     State(app_state): State<AppState>,

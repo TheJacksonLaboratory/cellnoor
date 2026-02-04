@@ -1,8 +1,9 @@
-use crate::{config::Config, state::AppState};
 use anyhow::Context;
 use axum::Router;
 use camino::Utf8Path;
 use tokio::net::TcpListener;
+
+use crate::{config::Config, state::AppState};
 
 mod auth;
 mod extract;

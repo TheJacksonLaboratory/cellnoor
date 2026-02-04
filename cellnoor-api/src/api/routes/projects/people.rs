@@ -1,11 +1,10 @@
+use add::add_person_to_project;
 use aide::axum::{ApiRouter, routing::get};
 use axum::handler::Handler;
-
-use crate::{api::middleware::admin_required, state::AppState};
-
-use add::add_person_to_project;
 use index::index_project_people;
 use remove::remove_person_from_project;
+
+use crate::{api::middleware::admin_required, state::AppState};
 
 mod add;
 mod index;

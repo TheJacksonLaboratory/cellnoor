@@ -10,6 +10,7 @@ use crate::generic_query;
 #[filter]
 pub struct LibraryFilter {
     pub ids: Option<Vec<Uuid>>,
+    pub project_ids: Option<Vec<Uuid>>,
 }
 
 #[order_by(libraries)]

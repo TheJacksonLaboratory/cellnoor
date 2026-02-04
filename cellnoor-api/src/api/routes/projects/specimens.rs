@@ -1,7 +1,7 @@
-use crate::state::AppState;
 use aide::axum::{ApiRouter, routing::get};
-
 use index::index_project_specimens;
+
+use crate::state::AppState;
 
 mod index;
 

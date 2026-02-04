@@ -21,8 +21,8 @@ impl FromEncodedJwt for StandardClaims {}
 #[diesel(table_name = people, check_for_backend(Pg))]
 pub(super) struct PrivateClaims {
     // (This comment should be read with imagined profanity and vitriol) better-auth, in its
-    // definitely-not-vibe-coded glory, completely ignores my attempt to overwrite the `user.id` field, so I have to
-    // use a custom field to get the user's ID from the JWT :)
+    // definitely-not-vibe-coded glory, completely ignores my attempt to overwrite the `user.id`
+    // field, so I have to use a custom field to get the user's ID from the JWT :)
     #[allow(dead_code)]
     #[diesel(column_name = id)]
     pub(super) user_id: Uuid,

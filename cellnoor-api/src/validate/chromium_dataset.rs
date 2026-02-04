@@ -114,7 +114,7 @@ fn fetch_validation_data(
             sequencing_runs::finished_at,
             tenx_assays::cmdlines,
         ))
-        .load(db_conn)?;
+        .load(&mut db_conn)?;
 
     Ok(results
         .into_iter()

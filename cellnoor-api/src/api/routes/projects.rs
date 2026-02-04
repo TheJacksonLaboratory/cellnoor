@@ -10,22 +10,22 @@ use axum::{
     response::Response,
 };
 use cellnoor_models::IdParameter;
+use create::create_project;
+use index::index_projects;
+use show::show_project;
 
 use crate::{
     admin_required_creation,
     api::auth::{self, AuthUser},
     state::AppState,
 };
-use create::create_project;
-use index::index_projects;
-use show::show_project;
 
-pub(super) mod chromium_datasets;
-pub(super) mod create;
-pub(super) mod index;
-pub(super) mod people;
-pub(super) mod show;
-pub(super) mod specimens;
+pub mod chromium_datasets;
+pub mod create;
+pub mod index;
+pub mod people;
+pub mod show;
+pub mod specimens;
 
 pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new()

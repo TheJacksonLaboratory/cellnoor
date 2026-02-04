@@ -28,7 +28,7 @@ pub async fn select_institutions(
         offset,
         order_by,
     }: InstitutionQuery,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<Institution>, db::Error> {
     let mut stmt = Institution::query()
         .limit(limit)
@@ -40,7 +40,7 @@ pub async fn select_institutions(
         stmt = stmt.then_order_by(ordering);
     }
 
-    Ok(stmt.load(db_conn).await?)
+    Ok(stmt.load(&mut db_conn).await?)
 }
 
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for InstitutionFilter
@@ -75,6 +75,7 @@ impl Authorize for InstitutionQuery {
 mod tests {
     use std::cmp::Ordering;
 
+    use super::select_institutions;
     use cellnoor_models::institution::*;
     use rstest::rstest;
 
@@ -99,7 +100,7 @@ mod tests {
         #[future] root_db_conn: DbConnection,
         #[future] database: &'static Database,
     ) {
-        test_query::<InstitutionQuery, _>()
+        test_query(select_institutions)
             .all_records(&database.institutions)
             .sort_by(sort_by_name)
             .run(root_db_conn)
@@ -127,7 +128,7 @@ mod tests {
             })
             .build();
 
-        test_query()
+        test_query(select_institutions)
             .all_records(&database.institutions)
             .filter(|i| {
                 let s = i.name().to_lowercase();

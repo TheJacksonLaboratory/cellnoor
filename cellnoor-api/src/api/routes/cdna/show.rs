@@ -28,15 +28,15 @@ pub async fn show_cdna(
 pub async fn select_cdna_by_id(
     authorized_projects: &AuthProjects,
     cdna_id: Uuid,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Cdna, db::Error> {
     let stmt = Cdna::query().filter(cdna::id.eq(cdna_id));
 
     let cdna = match authorized_projects {
-        AuthProjects::All => stmt.first(db_conn).await?,
+        AuthProjects::All => stmt.first(&mut db_conn).await?,
         AuthProjects::Restricted(projects) => {
             stmt.filter(cdna::project_id.eq_any(projects.iter()))
-                .first(db_conn)
+                .first(&mut db_conn)
                 .await?
         }
     };

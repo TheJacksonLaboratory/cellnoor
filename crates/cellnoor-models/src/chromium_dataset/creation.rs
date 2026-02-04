@@ -40,7 +40,7 @@ impl_enum_to_sql!(ChromiumDatasetCmdline);
 
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = chromium_datasets))]
-pub struct ChromiumDatasetCreation {
+pub struct NewChromiumDataset {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: ChromiumDatasetFields,
@@ -53,7 +53,7 @@ pub struct ChromiumDatasetCreation {
     cmdline: ChromiumDatasetCmdline,
 }
 
-impl ChromiumDatasetCreation {
+impl NewChromiumDataset {
     #[must_use]
     pub fn cmdline(&self) -> ChromiumDatasetCmdline {
         self.cmdline

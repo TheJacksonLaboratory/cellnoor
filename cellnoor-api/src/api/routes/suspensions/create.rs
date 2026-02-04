@@ -1,21 +1,19 @@
-use crate::api::auth::AuthUser;
-use crate::api::routes::suspensions::show::select_suspension_by_id;
-use crate::state::AppState;
-use crate::{
-    api::util::validate_timestamps,
-    db::{self, DbConnection},
-};
-use axum::Extension;
-use axum::{Json, extract::State};
+use axum::{Extension, Json, extract::State};
 use cellnoor_models::suspension::{NewSuspension, Suspension, SuspensionContent};
-use cellnoor_schema::suspensions;
-use cellnoor_schema::{specimens, suspension_preparers};
-use diesel::pg::Pg;
-use diesel::prelude::*;
-use diesel_async::scoped_futures::ScopedFutureExt;
-use diesel_async::{AsyncConnection, RunQueryDsl};
+use cellnoor_schema::{specimens, suspension_preparers, suspensions};
+use diesel::{pg::Pg, prelude::*};
+use diesel_async::{AsyncConnection, RunQueryDsl, scoped_futures::ScopedFutureExt};
 use jiff::Timestamp;
 use uuid::Uuid;
+
+use crate::{
+    api::{
+        auth::AuthUser, routes::suspensions::show::select_suspension_by_id,
+        util::validate_timestamps,
+    },
+    db::{self, DbConnection},
+    state::AppState,
+};
 
 pub(super) async fn create_suspension(
     _: State<AppState>,
@@ -53,7 +51,7 @@ async fn insert_suspension_and_preparers(
     project_id: Uuid,
     suspension: NewSuspension,
     preparer_ids: Vec<Uuid>,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Uuid, db::Error> {
     let suspension_id = insert_suspension(project_id, suspension, db_conn).await?;
 
@@ -65,7 +63,7 @@ async fn insert_suspension_and_preparers(
 pub(super) async fn insert_suspension(
     project_id: Uuid,
     suspension: NewSuspension,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Uuid, db::Error> {
     let (suspension, suspension_content, lysis_duration_minutes) = match suspension {
         NewSuspension::Cell(s) => (s, SuspensionContent::Cells, None),
@@ -87,14 +85,14 @@ pub(super) async fn insert_suspension(
             suspensions::lysis_duration_minutes.eq(lysis_duration_minutes),
         ))
         .returning(suspensions::id)
-        .get_result(db_conn)
+        .get_result(&mut db_conn)
         .await?)
 }
 
 pub(super) async fn insert_suspension_preparers(
     suspension_id: Uuid,
     preparer_ids: &[Uuid],
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), db::Error> {
     let preparer_mappings: Vec<_> = preparer_ids
         .iter()
@@ -108,7 +106,7 @@ pub(super) async fn insert_suspension_preparers(
 
     diesel::insert_into(suspension_preparers::table)
         .values(preparer_mappings)
-        .execute(db_conn)
+        .execute(&mut db_conn)
         .await?;
 
     Ok(())
@@ -152,10 +150,10 @@ pub struct SpecimenInfo {
 
 async fn specimen_info(
     specimen_id: Uuid,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<SpecimenInfo, db::Error> {
     Ok(SpecimenInfo::query()
         .find(specimen_id)
-        .first(db_conn)
+        .first(&mut db_conn)
         .await?)
 }

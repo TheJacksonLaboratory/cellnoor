@@ -1,4 +1,4 @@
-use axum::{extract::State, http::StatusCode};
+use axum::{Json, extract::State};
 use cellnoor_models::chromium_dataset::{
     ChromiumDatasetFilter, ChromiumDatasetQuery, ChromiumDatasetSummary,
 };
@@ -17,51 +17,56 @@ use cellnoor_schema::{
     tenx_assays::{self, table as tenx_assays_table},
 };
 use diesel::{dsl::AssumeNotNull, prelude::*};
-use diesel_async::{AsyncPgConnection, methods::LoadQuery};
+use diesel_async::RunQueryDsl;
 use jiff::Timestamp;
 use jiff_diesel::ToDiesel;
 
 use crate::{
     api::{
-        extract::{QsQuery, auth::AuthenticatedUser},
-        routes::handle_api_request,
+        auth::RemoveUnauthorizedProjects,
+        extract::{AuthJsonQuery, Authorize},
     },
-    db::{self, BoxedFilter, BoxedFilterExt, ToBoxedFilter, like_any},
+    db::{self, BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter, like_any},
     state::AppState,
 };
 
-// impl db::Operation<Vec<ChromiumDatasetSummary>> for ChromiumDatasetQuery {
-//     fn execute(
-//         self,
-//         db_conn: &mut diesel::PgConnection,
-//     ) -> Result<Vec<ChromiumDatasetSummary>, db::Error> {
-//         let Self {
-//             filter,
-//             limit,
-//             offset,
-//             order_by,
-//         } = self;
+#[axum::debug_handler]
+pub async fn index_chromium_datasets(
+    _: State<AppState>,
+    mut db_conn: DbConnection,
+    AuthJsonQuery { q }: AuthJsonQuery<ChromiumDatasetQuery>,
+) -> Result<Json<Vec<ChromiumDatasetSummary>>, db::Error> {
+    select_chromium_datasets(q, &mut db_conn).await.map(Json)
+}
 
-//         let mut stmt = chromium_datasets_to_all_specimens()
-//             .select(ChromiumDatasetSummary::as_select())
-//             .limit(limit)
-//             .offset(offset)
-//             .filter(filter.to_boxed_filter())
-//             .into_boxed();
+pub async fn select_chromium_datasets(
+    ChromiumDatasetQuery {
+        filter,
+        limit,
+        offset,
+        order_by,
+    }: ChromiumDatasetQuery,
+    mut db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<Vec<ChromiumDatasetSummary>, db::Error> {
+    let mut stmt = chromium_datasets_to_all_specimens()
+        .select(ChromiumDatasetSummary::as_select())
+        .limit(limit)
+        .offset(offset)
+        .filter(filter.to_boxed_filter())
+        .into_boxed();
 
-//         for ordering in order_by {
-//             stmt = stmt.then_order_by(ordering);
-//         }
+    for ordering in order_by {
+        stmt = stmt.then_order_by(ordering);
+    }
 
-//         Ok(stmt.load(db_conn)?)
-//     }
-// }
+    Ok(stmt.load(&mut db_conn).await?)
+}
 
 diesel::alias!(specimens as pooled_specimens: PooledSpecimens);
 diesel::alias!(suspensions as pooled_suspensions: PooledSuspensions);
 
 #[diesel::dsl::auto_type]
-pub(crate) fn chromium_datasets_to_all_specimens() -> _ {
+pub fn chromium_datasets_to_all_specimens() -> _ {
     chromium_datasets
         .inner_join(
             chromium_dataset_libraries.inner_join(
@@ -138,8 +143,7 @@ where
         }
 
         if let Some(assay_filter) = assay {
-            todo!()
-            // filter = filter.and_condition(assay_filter.to_boxed_filter());
+            filter = filter.and_condition(assay_filter.to_boxed_filter());
         }
 
         if let Some(project_ids) = project_ids {
@@ -155,5 +159,16 @@ where
         }
 
         filter
+    }
+}
+
+impl Authorize for ChromiumDatasetQuery {
+    fn authorize(
+        mut self,
+        user: &crate::api::auth::AuthUser,
+    ) -> Result<Self, crate::api::auth::Error> {
+        self.filter.project_ids.remove_unauthorized_projects(user);
+
+        Ok(self)
     }
 }

@@ -25,10 +25,10 @@ pub async fn show_gem_pool(
 
 pub async fn select_gem_pool_by_id(
     gem_pool_id: Uuid,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<GemPool, db::Error> {
     Ok(GemPool::query()
         .filter(gem_pools::id.eq(gem_pool_id))
-        .first(db_conn)
+        .first(&mut db_conn)
         .await?)
 }

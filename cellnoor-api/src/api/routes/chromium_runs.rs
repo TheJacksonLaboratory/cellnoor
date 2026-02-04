@@ -3,16 +3,15 @@ use aide::axum::{
     routing::{get, post},
 };
 use axum::handler::Handler;
-
-use crate::{admin_required_creation, state::AppState};
-
 use create::create_chromium_run;
 use index::index_chromium_runs;
 use show::show_chromium_run;
 
-mod create;
-mod index;
-mod show;
+use crate::{admin_required_creation, state::AppState};
+
+pub mod create;
+pub mod index;
+pub mod show;
 
 pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new()

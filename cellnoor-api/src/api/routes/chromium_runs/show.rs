@@ -27,18 +27,18 @@ pub(super) async fn show_chromium_run(
 pub(super) async fn select_chromium_run_by_id(
     authorized_projects: &AuthProjects,
     chromium_run_id: Uuid,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<ChromiumRun, db::Error> {
     use cellnoor_schema::chromium_runs::dsl::*;
 
     let query = ChromiumRun::query().filter(id.eq(chromium_run_id));
 
     let chromium_run = match authorized_projects {
-        AuthProjects::All => query.first(db_conn).await?,
+        AuthProjects::All => query.first(&mut db_conn).await?,
         AuthProjects::Restricted(projects) => {
             query
                 .filter(project_id.eq_any(projects.iter()))
-                .first(db_conn)
+                .first(&mut db_conn)
                 .await?
         }
     };

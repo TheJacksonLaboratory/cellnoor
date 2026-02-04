@@ -9,7 +9,7 @@ use crate::multiplexing_tag::common::MultiplexingTagFields;
 #[insert]
 #[cfg_attr(feature = "app", derive(AsChangeset))]
 #[cfg_attr(feature = "app", diesel(table_name = multiplexing_tags))]
-pub struct MultiplexingTagCreation {
+pub struct NewMultiplexingTag {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: MultiplexingTagFields,

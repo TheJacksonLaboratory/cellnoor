@@ -64,7 +64,7 @@ async fn insert_suspension_pool_and_preparers_and_tags(
     suspension_pool: SuspensionPoolFields,
     preparer_ids: NonEmptyVec<Uuid, { usize::MAX }>,
     pooled_suspensions: NonEmptyVec<SuspensionTagging, { usize::MAX }>,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<SuspensionPool, db::Error> {
     let suspension_pool = insert_suspension_pool(project_id, suspension_pool, db_conn).await?;
 
@@ -77,19 +77,19 @@ async fn insert_suspension_pool_and_preparers_and_tags(
 pub(super) async fn insert_suspension_pool(
     project_id: Uuid,
     suspension_pool: SuspensionPoolFields,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<SuspensionPool, db::Error> {
     Ok(diesel::insert_into(suspension_pools::table)
         .values((suspension_pool, suspension_pools::project_id.eq(project_id)))
         .returning(SuspensionPool::as_returning())
-        .get_result(db_conn)
+        .get_result(&mut db_conn)
         .await?)
 }
 
 async fn insert_suspension_pool_preparers(
     pool_id: Uuid,
     preparer_ids: &[Uuid],
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), db::Error> {
     let preparer_mappings: Vec<_> = preparer_ids
         .iter()
@@ -103,7 +103,7 @@ async fn insert_suspension_pool_preparers(
 
     diesel::insert_into(suspension_pool_preparers::table)
         .values(preparer_mappings)
-        .execute(db_conn)
+        .execute(&mut db_conn)
         .await?;
 
     Ok(())
@@ -112,7 +112,7 @@ async fn insert_suspension_pool_preparers(
 async fn insert_suspension_tags(
     pool_id: Uuid,
     taggings: &[SuspensionTagging],
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), db::Error> {
     let tag_mappings: Vec<_> = taggings
         .iter()
@@ -121,7 +121,7 @@ async fn insert_suspension_tags(
 
     diesel::insert_into(suspension_tagging::table)
         .values(tag_mappings)
-        .execute(db_conn)
+        .execute(&mut db_conn)
         .await?;
 
     Ok(())
@@ -140,11 +140,11 @@ struct SuspensionInfo {
 
 async fn suspension_info(
     suspension_ids: impl Iterator<Item = Uuid>,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<SuspensionInfo>, db::Error> {
     Ok(SuspensionInfo::query()
         .filter(suspensions::id.eq_any(suspension_ids))
-        .load(db_conn)
+        .load(&mut db_conn)
         .await?)
 }
 

@@ -3,18 +3,17 @@ use aide::axum::{
     routing::{get, post},
 };
 use axum::handler::Handler;
-
-use crate::{admin_required_creation, state::AppState};
-
 use create::create_suspension_pool;
 use index::index_suspension_pools;
 use show::show_suspension_pool;
 
-mod create;
-mod index;
-mod measurements;
-mod show;
-mod suspensions;
+use crate::{admin_required_creation, state::AppState};
+
+pub mod create;
+pub mod index;
+pub mod measurements;
+pub mod show;
+pub mod suspensions;
 
 pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new()

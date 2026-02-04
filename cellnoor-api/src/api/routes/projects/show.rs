@@ -23,10 +23,10 @@ pub async fn show_project(
 
 async fn select_project_by_id(
     project_id: Uuid,
-    db_conn: &mut DbConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Project, db::Error> {
     Ok(Project::query()
         .filter(projects::id.eq(project_id))
-        .first(db_conn)
+        .first(&mut db_conn)
         .await?)
 }

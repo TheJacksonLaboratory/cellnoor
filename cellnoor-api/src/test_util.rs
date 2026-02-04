@@ -1,12 +1,12 @@
 use std::{cmp::Ordering, fmt::Debug};
 
+use cellnoor_models::generic_query;
 use diesel_async::{AsyncConnection, AsyncPgConnection, scoped_futures::ScopedFutureExt};
 use pretty_assertions::assert_eq;
 
 use crate::{
     api,
     db::{self, DbConnection},
-    test_state::DefaultWithNoLimit,
 };
 
 #[bon::builder]
@@ -35,14 +35,21 @@ where
 
 #[bon::builder]
 #[builder(finish_fn = run)]
-pub async fn test_query<Query, Record>(
+pub async fn test_query<SelectFn, Filter, OrderBy, Record>(
+    #[builder(start_fn)] select_fn: SelectFn,
     #[builder(finish_fn)] mut db_conn: DbConnection,
-    #[builder(default = Query::default_with_no_limit())] db_query: Query,
+    #[builder(default = generic_query::Query::<Filter, OrderBy>::default_with_no_limit())]
+    db_query: generic_query::Query<Filter, OrderBy>,
     all_records: &'static [Record],
     filter: Option<fn(&&Record) -> bool>,
     sort_by: Option<fn(&&Record, &&Record) -> Ordering>,
 ) where
-    Query: 'static + api::Request<Vec<Record>> + DefaultWithNoLimit + Send,
+    Filter: Default,
+    OrderBy: Default,
+    SelectFn: AsyncFn(
+        generic_query::Query<Filter, OrderBy>,
+        &AsyncPgConnection,
+    ) -> Result<Vec<Record>, db::Error>,
     Record: 'static + Debug + PartialEq + Send + Sync,
 {
     let expected_records = filter_and_sort()
@@ -56,45 +63,34 @@ pub async fn test_query<Query, Record>(
         "no records found after data was filtered"
     );
 
-    db_conn
-        .test_transaction::<_, db::Error, _>(|tx| {
-            async {
-            let loaded_records = db_query.handle_without_authorization(tx).await;
+    let loaded_records = select_fn(db_query, &mut db_conn).await.unwrap();
+    assert!(
+        !loaded_records.is_empty(),
+        "no records loaded from database"
+    );
 
-            assert!(
-                !loaded_records.is_empty(),
-                "no records loaded from database"
-            );
+    let loaded_len = loaded_records.len();
+    let expected_len = expected_records.len();
 
-            let loaded_len = loaded_records.len();
-            let expected_len = expected_records.len();
+    assert_eq!(
+        loaded_len, expected_len,
+        "database query returned {loaded_len} records, but Rust function returned \
+         {expected_len}"
+    );
 
-            assert_eq!(
-                loaded_len, expected_len,
-                "database query returned {loaded_len} records, but Rust function returned \
-             {expected_len}"
-            );
+    for loaded in &loaded_records {
+        assert!(expected_records.contains(&loaded));
+    }
 
-            for loaded in &loaded_records {
-                assert!(expected_records.contains(&loaded));
-            }
+    for expected in &expected_records {
+        assert!(loaded_records.contains(*expected));
+    }
 
-            for expected in &expected_records {
-                assert!(loaded_records.contains(*expected));
-            }
-
-            for (i, (loaded, expected)) in loaded_records.iter().zip(&expected_records).enumerate()
-            {
-                assert_eq!(
-                    loaded, *expected,
-                    "loaded data and expected data are sorted differently (comparison failed at \
-                 record {i})"
-                );
-            }
-
-            Ok(())
-        }
-        .scope_boxed()
-        })
-        .await;
+    for (i, (loaded, expected)) in loaded_records.iter().zip(&expected_records).enumerate() {
+        assert_eq!(
+            loaded, *expected,
+            "loaded data and expected data are sorted differently (comparison failed \
+             at record {i})"
+        );
+    }
 }
