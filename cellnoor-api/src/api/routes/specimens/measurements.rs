@@ -1,5 +1,5 @@
 use aide::axum::{ApiRouter, routing::get};
-use axum::{Json, handler::Handler, http::StatusCode};
+use axum::handler::Handler;
 use create::create_specimen_measurement;
 use index::index_specimen_measurements;
 

@@ -14,7 +14,7 @@ use crate::{db, db::DbConnection, state::AppState};
 
 pub async fn create_person(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Json(person): Json<NewPerson>,
 ) -> Result<Json<Person>, Error> {
     validate_email(person.email())?;

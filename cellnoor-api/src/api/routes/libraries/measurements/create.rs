@@ -1,7 +1,6 @@
 use axum::{
-    Extension, Json,
+    Json,
     extract::{Path, State},
-    http::status::StatusCode,
 };
 use cellnoor_models::{
     IdParameter,
@@ -14,10 +13,7 @@ use jiff::Timestamp;
 use uuid::Uuid;
 
 use crate::{
-    api::{
-        auth::AuthUser, routes::cdna::validate_electrophoretic_measurement,
-        util::validate_timestamps,
-    },
+    api::{routes::cdna::validate_electrophoretic_measurement, util::validate_timestamps},
     db::{self, DbConnection},
     state::AppState,
 };

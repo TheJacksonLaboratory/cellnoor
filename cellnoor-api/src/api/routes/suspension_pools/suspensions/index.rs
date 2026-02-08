@@ -13,7 +13,7 @@ use uuid::Uuid;
 
 use crate::{
     api::{
-        auth::{AuthProjects, AuthUser, RemoveUnauthorizedProjects},
+        auth::{AuthUser, RemoveUnauthorizedProjects},
         extract::AuthJsonQuery,
     },
     db::{self, DbConnection, ToBoxedFilter},

@@ -108,15 +108,15 @@ pub async fn insert_initial_data(
     } = initial_data;
 
     let upsert_assays = tenx_assays.into_iter().map(|a| a.upsert(&db_conn));
-    let upsert_multiplexing_tags = multiplexing_tags.into_iter().map(|t| t.upsert(&db_conn));
+    let upsert_multiplexing_tags = multiplexing_tags.into_iter().map(|t| t.upsert(db_conn));
 
     download_and_insert_single_index_sets(single_index_set_urls, http_client.clone(), db_conn)
         .await?;
     download_and_insert_dual_index_sets(dual_index_set_urls, http_client, db_conn).await?;
 
     tokio::try_join!(
-        institution.upsert(&db_conn),
-        app_admin.upsert(&db_conn),
+        institution.upsert(db_conn),
+        app_admin.upsert(db_conn),
         futures::future::try_join_all(upsert_assays),
         futures::future::try_join_all(upsert_multiplexing_tags)
     )?;

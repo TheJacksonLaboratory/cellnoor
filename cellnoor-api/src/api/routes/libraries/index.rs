@@ -6,7 +6,7 @@ use diesel_async::RunQueryDsl;
 
 use crate::{
     api::{
-        auth::{AuthProjects, RemoveUnauthorizedProjects},
+        auth::RemoveUnauthorizedProjects,
         extract::{AuthJsonQuery, Authorize},
     },
     db::{self, BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter},

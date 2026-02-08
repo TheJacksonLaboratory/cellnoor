@@ -1,5 +1,4 @@
 use aide::axum::{ApiRouter, routing::get};
-use axum::Router;
 use index::index_multiplexing_tags;
 
 use crate::state::AppState;

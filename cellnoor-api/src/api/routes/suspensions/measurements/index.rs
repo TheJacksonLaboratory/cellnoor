@@ -2,11 +2,8 @@ use axum::{
     Extension, Json,
     extract::{Path, State},
 };
-use cellnoor_models::{
-    IdParameter, specimen::measurement::SpecimenMeasurement,
-    suspension::measurement::SuspensionMeasurement,
-};
-use cellnoor_schema::{specimen_measurements, specimens, suspension_measurements, suspensions};
+use cellnoor_models::{IdParameter, suspension::measurement::SuspensionMeasurement};
+use cellnoor_schema::{suspension_measurements, suspensions};
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use uuid::Uuid;

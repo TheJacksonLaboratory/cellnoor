@@ -5,11 +5,8 @@ use axum::{
 use cellnoor_models::{
     IdParameter,
     suspension::SuspensionContent,
-    suspension_pool::{
-        SuspensionPool,
-        measurement::{
-            NewSuspensionPoolMeasurement, SuspensionPoolMeasurement, SuspensionPoolMeasurementData,
-        },
+    suspension_pool::measurement::{
+        NewSuspensionPoolMeasurement, SuspensionPoolMeasurement, SuspensionPoolMeasurementData,
     },
 };
 use cellnoor_schema::{

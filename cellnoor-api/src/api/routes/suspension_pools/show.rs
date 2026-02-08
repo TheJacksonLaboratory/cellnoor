@@ -1,7 +1,6 @@
 use axum::{
     Extension, Json,
     extract::{Path, State},
-    http::StatusCode,
 };
 use cellnoor_models::{IdParameter, suspension_pool::SuspensionPool};
 use cellnoor_schema::suspension_pools;

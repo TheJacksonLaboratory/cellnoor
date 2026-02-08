@@ -1,7 +1,4 @@
-use aide::axum::{
-    ApiRouter,
-    routing::{get, post},
-};
+use aide::axum::{ApiRouter, routing::post};
 use axum::handler::Handler;
 use create::create_library_measurement;
 use index::index_library_measurements;

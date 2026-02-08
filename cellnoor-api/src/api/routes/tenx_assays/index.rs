@@ -12,10 +12,10 @@ use crate::{
 
 pub async fn index_tenx_assays(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     AuthJsonQuery { q }: AuthJsonQuery<TenxAssayQuery>,
 ) -> Result<Json<Vec<TenxAssay>>, db::Error> {
-    select_tenx_assays(q, &mut db_conn).await.map(Json)
+    select_tenx_assays(q, &db_conn).await.map(Json)
 }
 
 pub async fn select_tenx_assays(

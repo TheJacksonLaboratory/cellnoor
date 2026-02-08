@@ -5,7 +5,6 @@ use axum::{
 use cellnoor_models::{
     IdParameter,
     chromium_dataset::{ChromiumDatasetQuery, ChromiumDatasetSummary},
-    specimen::SpecimenFilter,
 };
 
 use crate::{
