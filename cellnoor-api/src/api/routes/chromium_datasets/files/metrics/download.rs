@@ -2,7 +2,7 @@ use axum::{
     Extension, Json,
     body::Body,
     extract::{Path, State},
-    http::{HeaderValue, Response, StatusCode},
+    http::{HeaderValue, Response},
     response::IntoResponse,
 };
 use cellnoor_models::chromium_dataset::metrics::ParsedMetricsData;
@@ -75,10 +75,10 @@ async fn select_chromium_dataset_metrics_by_id(
 
         let response = match authorized_projects {
             AuthProjects::All => query.first::<Vec<u8>>(&mut db_conn).await,
-            AuthProjects::Restricted(projects) => {
+            AuthProjects::Some { project_ids } => {
                 query
                     .inner_join(chromium_datasets::table)
-                    .filter(chromium_datasets::project_id.eq_any(projects.iter()))
+                    .filter(chromium_datasets::project_id.eq_any({ project_ids }.iter()))
                     .first::<Vec<u8>>(&mut db_conn)
                     .await
             }

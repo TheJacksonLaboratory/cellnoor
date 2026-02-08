@@ -1,4 +1,4 @@
-use axum::{Json, extract::State, http::status::StatusCode};
+use axum::{Json, extract::State};
 use cellnoor_models::cdna::{CdnaFilter, CdnaQuery, CdnaSummary};
 use cellnoor_schema::cdna::{dsl::id, project_id};
 use diesel::{SelectableExpression, prelude::*};

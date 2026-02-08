@@ -2,7 +2,7 @@ import { readConfig } from "$lib/server/config";
 import { auth } from "../auth";
 import * as jose from "jose";
 import { getRequestEvent } from "$app/server";
-import { createCellnoorClient, type CellnoorClient } from "cellnoor-client";
+import { type CellnoorClient, createCellnoorClient } from "cellnoor-client";
 import type { Middleware } from "openapi-fetch";
 
 let apiClient: CellnoorClient | null = null;
@@ -13,20 +13,39 @@ export async function getApiClient() {
   }
 
   const baseUrl = await readConfig().then((c) => c.apiUrl);
-  const client = createCellnoorClient({ baseUrl, fetch: getRequestEvent().fetch });
+  const client = createCellnoorClient({
+    baseUrl,
+    fetch: getRequestEvent().fetch,
+  });
 
-  client.use(authMiddleware)
+  client.use(middleware);
 
-  return client
+  return client;
 }
 
-const authMiddleware: Middleware = {
-  async onRequest() {
+const middleware: Middleware = {
+  async onRequest(request) {
     await reauthenticate();
-  }
-}
 
-async function reauthenticate() {
+    if (!request.params.query || !request.params.query.q) {
+      request.params.query = { q: JSON.stringify({ limit: 50 }) };
+    }
+
+    // @ts-ignore
+    const parsedQuery = JSON.parse(request.params.query.q);
+
+    if (!parsedQuery.limit) {
+      parsedQuery.limit = 50;
+    }
+
+    const url = new URL(request.request.url);
+    url.searchParams.set("q", JSON.stringify(parsedQuery));
+
+    return new Request(url, request.request);
+  },
+};
+
+export async function reauthenticate() {
   let apiToken = await getApiTokenFromCookies();
 
   if (!apiToken) {

@@ -55,7 +55,6 @@ pub struct ChromiumRunFields {
     pub(super) readable_id: NonEmptyString,
     pub(super) assay_id: Uuid,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp, deserialize_as = jiff_diesel::Timestamp))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     pub(super) run_at: Timestamp,
     pub(super) run_by: Uuid,
     pub(super) succeeded: bool,

@@ -1,7 +1,6 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::libraries;
 use macro_attributes::{filter, order_by};
-
 use uuid::Uuid;
 
 #[cfg(feature = "app")]

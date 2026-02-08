@@ -8,7 +8,6 @@ use index::index_chromium_datasets;
 use show::show_chromium_dataset;
 
 use crate::{admin_required_creation, state::AppState};
-pub(crate) use index::chromium_datasets_to_all_specimens;
 
 pub mod create;
 pub mod files;
@@ -24,7 +23,7 @@ pub(super) fn router() -> ApiRouter<AppState> {
             post(create_chromium_dataset.layer(admin_required_creation!()))
                 .get(index_chromium_datasets),
         )
-        .nest("/{id}", id_router())
+        .nest("/{dataset_id}", id_router())
 }
 
 fn id_router() -> ApiRouter<AppState> {

@@ -34,9 +34,9 @@ pub async fn select_library_by_id(
 
     let library = match authorized_projects {
         AuthProjects::All => query.first(&mut db_conn).await?,
-        AuthProjects::Restricted(projects) => {
+        AuthProjects::Some { project_ids } => {
             query
-                .filter(libraries::project_id.eq_any(projects.iter()))
+                .filter(libraries::project_id.eq_any(project_ids.iter()))
                 .first(&mut db_conn)
                 .await?
         }

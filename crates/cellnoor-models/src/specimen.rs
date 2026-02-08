@@ -11,7 +11,7 @@ pub use common::SpecimenCommonFields;
 pub use creation::NewSpecimen;
 #[cfg(feature = "builder")]
 pub use creation::{
-    block::{BlockFixative, NewBlock},
+    block::{BlockEmbeddingMatrix, BlockFixative, NewBlock},
     suspension::{NewSuspensionSpecimen, SuspensionThermalPreservation},
     tissue::NewTissue,
 };

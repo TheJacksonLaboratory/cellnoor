@@ -1,7 +1,6 @@
 use axum::{
     Extension, Json,
     extract::{Path, State},
-    http::StatusCode,
 };
 use cellnoor_models::{IdParameter, cdna::measurement::CdnaMeasurement};
 use cellnoor_schema::{cdna, cdna_measurements};
@@ -37,10 +36,10 @@ pub async fn select_cdna_measurements(
 
     let measurements = match authorized_projects {
         AuthProjects::All => query.load(&mut db_conn).await?,
-        AuthProjects::Restricted(projects) => {
+        AuthProjects::Some { project_ids } => {
             query
                 .inner_join(cdna::table)
-                .filter(cdna::project_id.eq_any(projects.iter()))
+                .filter(cdna::project_id.eq_any(project_ids.iter()))
                 .load(&mut db_conn)
                 .await?
         }

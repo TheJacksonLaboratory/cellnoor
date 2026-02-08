@@ -18,7 +18,7 @@ use crate::{
     state::AppState,
 };
 
-pub(super) async fn create_suspension_pool(
+pub async fn create_suspension_pool(
     _: State<AppState>,
     mut db_conn: DbConnection,
     Json(NewSuspensionPool {
@@ -59,12 +59,12 @@ pub(super) async fn create_suspension_pool(
     Ok(Json(suspension_pool))
 }
 
-async fn insert_suspension_pool_and_preparers_and_tags(
+pub async fn insert_suspension_pool_and_preparers_and_tags(
     project_id: Uuid,
     suspension_pool: SuspensionPoolFields,
     preparer_ids: NonEmptyVec<Uuid, { usize::MAX }>,
     pooled_suspensions: NonEmptyVec<SuspensionTagging, { usize::MAX }>,
-    mut db_conn: &diesel_async::AsyncPgConnection,
+    db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<SuspensionPool, db::Error> {
     let suspension_pool = insert_suspension_pool(project_id, suspension_pool, db_conn).await?;
 

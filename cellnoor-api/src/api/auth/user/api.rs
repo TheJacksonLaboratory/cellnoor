@@ -48,7 +48,9 @@ impl User {
 
         Ok(AuthUser {
             user,
-            projects: AuthProjects::Restricted(Arc::new(projects)),
+            projects: AuthProjects::Some {
+                project_ids: Arc::new(projects),
+            },
         })
     }
 }

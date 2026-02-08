@@ -19,7 +19,7 @@ pub async fn index_project_specimens(
     Path(IdParameter { id }): Path<IdParameter>,
     AuthJsonQuery { mut q }: AuthJsonQuery<SpecimenQuery>,
 ) -> Result<Json<Vec<SpecimenSummary>>, db::Error> {
-    q.filter.projects = Some(vec![id]);
+    q.filter.project_ids = Some(vec![id]);
 
     select_specimens(q, &mut db_conn).await.map(Json)
 }

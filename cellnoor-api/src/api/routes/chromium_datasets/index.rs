@@ -172,3 +172,151 @@ impl Authorize for ChromiumDatasetQuery {
         Ok(self)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::cmp::Ordering;
+
+    use cellnoor_models::{
+        chromium_dataset::*,
+        specimen::{BlockEmbeddingMatrix, Species, SpecimenFilter, SpecimenQuery, SpecimenSummary},
+    };
+    use jiff::Timestamp;
+    use rstest::rstest;
+
+    use super::select_chromium_datasets;
+    use crate::{
+        api::{
+            auth::AuthProjects,
+            routes::{
+                chromium_datasets::specimens::index::select_chromium_dataset_specimens,
+                specimens::index::select_specimens,
+            },
+        },
+        db::DbConnection,
+        test_state::{Database, database, root_db_conn},
+        test_util::test_query,
+    };
+
+    fn sort_by_delivered_at(
+        i1: &&ChromiumDatasetSummary,
+        i2: &&ChromiumDatasetSummary,
+    ) -> Ordering {
+        i1.delivered_at().cmp(&i2.delivered_at())
+    }
+
+    fn sort_by_name(i1: &&ChromiumDatasetSummary, i2: &&ChromiumDatasetSummary) -> Ordering {
+        i1.name().to_lowercase().cmp(&i2.name().to_lowercase())
+    }
+
+    #[rstest]
+    #[awt]
+    #[tokio::test(flavor = "multi_thread")]
+    async fn default_chromium_dataset_query(
+        #[future] root_db_conn: DbConnection,
+        #[future] database: &'static Database,
+    ) {
+        test_query(select_chromium_datasets)
+            .all_records(&database.chromium_datasets)
+            .sort_by(|i1, i2| sort_by_delivered_at(i1, i2).reverse())
+            .run(root_db_conn)
+            .await;
+    }
+
+    #[rstest]
+    #[awt]
+    #[tokio::test(flavor = "multi_thread")]
+    async fn specific_chromium_dataset_query(
+        #[future] root_db_conn: DbConnection,
+        #[future] database: &'static Database,
+    ) {
+        let query = ChromiumDatasetQuery::builder()
+            .filter(
+                ChromiumDatasetFilter::builder()
+                    .names(["%s", "%p%"].map(str::to_owned))
+                    .build(),
+            )
+            .limit(i64::MAX)
+            .order_by(ChromiumDatasetOrderBy::delivered_at {
+                descending: Some(false),
+            })
+            .order_by(ChromiumDatasetOrderBy::name {
+                descending: Some(true),
+            })
+            .build();
+
+        test_query(select_chromium_datasets)
+            .all_records(&database.chromium_datasets)
+            .filter(|i| {
+                let s = i.name().to_lowercase();
+                s.ends_with("s") | s.contains("p")
+            })
+            .sort_by(|i1, i2| sort_by_delivered_at(i1, i2).then(sort_by_name(i1, i2).reverse()))
+            .db_query(query)
+            .run(root_db_conn)
+            .await;
+    }
+
+    #[rstest]
+    #[awt]
+    #[tokio::test(flavor = "multi_thread")]
+    async fn dataset_filter_respects_specimen_filter(
+        #[future] root_db_conn: DbConnection,
+        #[future] _database: &'static Database,
+    ) {
+        let specimen_filter = SpecimenFilter::builder()
+            .species([Species::HomoSapiens, Species::MusMusculus])
+            .embedded_in([BlockEmbeddingMatrix::CarboxymethylCellulose])
+            .received_before(Timestamp::now())
+            .build();
+        let specimen_query = SpecimenQuery::builder()
+            .filter(specimen_filter.clone())
+            .limit(i64::MAX)
+            .build();
+        let dataset_filter = ChromiumDatasetFilter::builder()
+            .specimen(specimen_filter)
+            .build();
+        let dataset_query = ChromiumDatasetQuery::builder()
+            .filter(dataset_filter)
+            .limit(i64::MAX)
+            .build();
+
+        let (specimens, datasets) = tokio::try_join!(
+            select_specimens(specimen_query, &root_db_conn),
+            select_chromium_datasets(dataset_query, &root_db_conn)
+        )
+        .unwrap();
+
+        let specimens_from_datasets =
+            datasets
+                .iter()
+                .map(ChromiumDatasetSummary::id)
+                .map(|ds_id| {
+                    select_chromium_dataset_specimens(&AuthProjects::All, ds_id, &root_db_conn)
+                });
+        let mut specimens_from_datasets: Vec<_> =
+            futures::future::try_join_all(specimens_from_datasets)
+                .await
+                .unwrap();
+
+        for specimen_set in &mut specimens_from_datasets {
+            specimen_set.sort_by_key(SpecimenSummary::id);
+            let pre_deduplication_length = specimen_set.len();
+            specimen_set.dedup();
+            assert_eq!(
+                pre_deduplication_length,
+                specimen_set.len(),
+                "query returned duplicate specimens"
+            );
+        }
+
+        let specimens_from_datasets: Vec<_> =
+            specimens_from_datasets.into_iter().flatten().collect();
+        for specimen in &specimens {
+            assert!(
+                specimens_from_datasets.contains(specimen),
+                "chromium dataset query did not respect specimen filter"
+            );
+        }
+    }
+}

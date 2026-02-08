@@ -15,7 +15,7 @@ use crate::{
     state::AppState,
 };
 
-pub(super) async fn create_suspension(
+pub async fn create_suspension(
     _: State<AppState>,
     mut db_conn: DbConnection,
     Extension(user): Extension<AuthUser>,
@@ -47,11 +47,11 @@ pub(super) async fn create_suspension(
         .map(Json)
 }
 
-async fn insert_suspension_and_preparers(
+pub async fn insert_suspension_and_preparers(
     project_id: Uuid,
     suspension: NewSuspension,
     preparer_ids: Vec<Uuid>,
-    mut db_conn: &diesel_async::AsyncPgConnection,
+    db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Uuid, db::Error> {
     let suspension_id = insert_suspension(project_id, suspension, db_conn).await?;
 
@@ -60,7 +60,7 @@ async fn insert_suspension_and_preparers(
     Ok(suspension_id)
 }
 
-pub(super) async fn insert_suspension(
+pub async fn insert_suspension(
     project_id: Uuid,
     suspension: NewSuspension,
     mut db_conn: &diesel_async::AsyncPgConnection,

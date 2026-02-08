@@ -14,6 +14,5 @@ pub struct SequencedLibrary {
     #[cfg_attr(feature = "app", diesel(embed))]
     summary: LibrarySummary,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     submitted_at: Timestamp,
 }

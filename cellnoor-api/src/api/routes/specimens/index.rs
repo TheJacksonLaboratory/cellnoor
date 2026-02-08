@@ -38,7 +38,7 @@ pub async fn select_specimens(
         .into_boxed();
 
     for ordering in order_by {
-        stmt = stmt.order_by(ordering);
+        stmt = stmt.then_order_by(ordering);
     }
 
     Ok(stmt.load(&mut db_conn).await?)
@@ -71,7 +71,7 @@ where
             ids,
             names,
             submitted_by,
-            projects,
+            project_ids,
             received_before,
             received_after,
             species,
@@ -100,8 +100,8 @@ where
             filter = filter.and_condition(t::submitted_by.assume_not_null().eq_any(submitter_list));
         }
 
-        if let Some(projects) = projects {
-            filter = filter.and_condition(t::project_id.assume_not_null().eq_any(projects));
+        if let Some(project_ids) = project_ids {
+            filter = filter.and_condition(t::project_id.assume_not_null().eq_any(project_ids));
         }
 
         if let Some(received_before) = received_before.map(ToDiesel::to_diesel) {
@@ -185,7 +185,7 @@ where
 
 impl Authorize for SpecimenQuery {
     fn authorize(mut self, user: &AuthUser) -> Result<Self, auth::Error> {
-        self.filter.projects.remove_unauthorized_projects(user);
+        self.filter.project_ids.remove_unauthorized_projects(user);
         Ok(self)
     }
 }
@@ -194,17 +194,18 @@ impl Authorize for SpecimenQuery {
 mod tests {
     use std::cmp::Ordering;
 
+    use cellnoor_models::specimen::*;
+    use rstest::rstest;
+
     use super::select_specimens;
     use crate::{
         db::DbConnection,
         test_state::{Database, database, root_db_conn},
         test_util::test_query,
     };
-    use cellnoor_models::specimen::*;
-    use rstest::rstest;
 
     fn sort_by_received_at(i1: &&SpecimenSummary, i2: &&SpecimenSummary) -> Ordering {
-        i2.received_at().cmp(&i1.received_at())
+        i1.received_at().cmp(&i2.received_at())
     }
 
     fn sort_by_tissue(i1: &&SpecimenSummary, i2: &&SpecimenSummary) -> Ordering {
@@ -220,7 +221,7 @@ mod tests {
     ) {
         test_query(select_specimens)
             .all_records(&database.specimens)
-            .sort_by(sort_by_received_at)
+            .sort_by(|i1, i2| sort_by_received_at(i1, i2).reverse())
             .run(root_db_conn)
             .await;
     }
@@ -253,11 +254,7 @@ mod tests {
                 let s = i.name().to_lowercase();
                 s.ends_with("s") | s.contains("p")
             })
-            .sort_by(|i1, i2| {
-                sort_by_received_at(i1, i2)
-                    .reverse()
-                    .then(sort_by_tissue(i1, i2).reverse())
-            })
+            .sort_by(|i1, i2| sort_by_received_at(i1, i2).then(sort_by_tissue(i1, i2).reverse()))
             .db_query(query)
             .run(root_db_conn)
             .await;

@@ -6,7 +6,7 @@ use macros::{impl_enum_from_sql, impl_enum_to_sql, impl_json_from_sql, impl_json
 use ranged::RangedF32;
 use uuid::Uuid;
 
-#[cfg(any(feature = "app", feature = "typescript"))]
+#[cfg(feature = "app")]
 use crate::suspension::SuspensionContent;
 use crate::units::{Microliter, Micrometer, Milliliter};
 #[cfg(feature = "app")]
@@ -20,16 +20,17 @@ pub struct SuspensionMeasurementFields {
         serialize_as = jiff_diesel::Timestamp,
         deserialize_as = jiff_diesel::Timestamp
     ))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     measured_at: Timestamp,
     data: SuspensionMeasurementData,
 }
 
 impl SuspensionMeasurementFields {
+    #[must_use]
     pub fn measured_at(&self) -> Timestamp {
         self.measured_at
     }
 
+    #[must_use]
     pub fn data(&self) -> &SuspensionMeasurementData {
         &self.data
     }

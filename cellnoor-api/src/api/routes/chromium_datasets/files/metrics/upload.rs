@@ -1,10 +1,6 @@
 use std::{collections::HashMap, str::FromStr};
 
-use axum::{
-    Extension, Json,
-    extract::{Multipart, Path, State},
-    http::StatusCode,
-};
+use axum::extract::{Multipart, Path, State};
 use cellnoor_models::{
     IdParameter,
     chromium_dataset::metrics::{
@@ -19,11 +15,7 @@ use serde_json::{Number, Value};
 use uuid::Uuid;
 
 use crate::{
-    api::{
-        self,
-        auth::AuthUser,
-        routes::chromium_datasets::files::common::{FieldExt, ParsedMultipartFormField},
-    },
+    api::routes::chromium_datasets::files::common::{FieldExt, ParsedMultipartFormField},
     db::{self, DbConnection},
     state::AppState,
 };

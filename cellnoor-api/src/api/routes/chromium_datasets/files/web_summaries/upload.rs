@@ -1,18 +1,11 @@
-use axum::{
-    Extension, Json,
-    extract::{Multipart, Path, State},
-    http::StatusCode,
-};
+use axum::extract::{Multipart, Path, State};
 use cellnoor_models::IdParameter;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use uuid::Uuid;
 
 use crate::{
-    api::{
-        auth::AuthUser,
-        routes::chromium_datasets::files::common::{FieldExt, ParsedMultipartFormField},
-    },
+    api::routes::chromium_datasets::files::common::{FieldExt, ParsedMultipartFormField},
     db::{self, DbConnection},
     state::AppState,
 };
@@ -22,7 +15,6 @@ static ALLOWED_CONTENT_TYPES: &[&str] = &["text/html"];
 pub async fn upload_web_summary(
     _: State<AppState>,
     mut db_conn: DbConnection,
-    Extension(user): Extension<AuthUser>,
     Path(IdParameter { id }): Path<IdParameter>,
     mut request: Multipart,
 ) -> Result<(), db::Error> {

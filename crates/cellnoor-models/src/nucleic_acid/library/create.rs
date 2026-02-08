@@ -19,7 +19,6 @@ pub struct NewLibrary {
     volume_µl: u8,
     target_reads_per_cell: RangedU32<0, { u32::MAX }>,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     prepared_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
     preparer_ids: NonEmptyVec<Uuid, { usize::MAX }>,

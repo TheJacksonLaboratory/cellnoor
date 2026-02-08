@@ -4,7 +4,6 @@
 use cellnoor_schema::chromium_datasets;
 use jiff::Timestamp;
 use macro_attributes::{filter, order_by};
-
 use uuid::Uuid;
 
 #[cfg(feature = "app")]
@@ -18,9 +17,7 @@ pub struct ChromiumDatasetFilter {
     pub specimen: Option<SpecimenFilter>,
     pub assay: Option<TenxAssayFilter>,
     pub project_ids: Option<Vec<Uuid>>,
-    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     pub delivered_before: Option<Timestamp>,
-    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     pub delivered_after: Option<Timestamp>,
 }
 

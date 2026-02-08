@@ -35,9 +35,9 @@ pub(super) async fn select_chromium_run_by_id(
 
     let chromium_run = match authorized_projects {
         AuthProjects::All => query.first(&mut db_conn).await?,
-        AuthProjects::Restricted(projects) => {
+        AuthProjects::Some { project_ids } => {
             query
-                .filter(project_id.eq_any(projects.iter()))
+                .filter(project_id.eq_any(project_ids.iter()))
                 .first(&mut db_conn)
                 .await?
         }

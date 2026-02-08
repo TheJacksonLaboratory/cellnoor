@@ -28,13 +28,13 @@ pub enum NewBlock {
     OptimalCuttingTemperatureCompound {
         #[serde(flatten)]
         inner: SpecimenCommonFields,
-        #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
+
         fixative: Option<BlockFixative>,
     },
     CarboxymethylCellulose {
         #[serde(flatten)]
         inner: SpecimenCommonFields,
-        #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
+
         fixative: Option<BlockFixative>,
     },
     Paraffin {

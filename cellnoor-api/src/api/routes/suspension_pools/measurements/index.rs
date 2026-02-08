@@ -35,9 +35,9 @@ pub async fn select_suspension_pool_measurements(
 
     let measurements = match authorized_projects {
         AuthProjects::All => stmt.load(&mut db_conn).await?,
-        AuthProjects::Restricted(projects) => {
+        AuthProjects::Some { project_ids } => {
             stmt.inner_join(suspension_pools::table)
-                .filter(suspension_pools::project_id.eq_any(projects.iter()))
+                .filter(suspension_pools::project_id.eq_any(project_ids.iter()))
                 .load(&mut db_conn)
                 .await?
         }

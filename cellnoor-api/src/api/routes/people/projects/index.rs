@@ -45,7 +45,7 @@ pub async fn select_person_projects(
         .into_boxed();
 
     for ordering in order_by {
-        stmt = stmt.order_by(ordering);
+        stmt = stmt.then_order_by(ordering);
     }
 
     Ok(stmt.load(&mut db_conn).await?)

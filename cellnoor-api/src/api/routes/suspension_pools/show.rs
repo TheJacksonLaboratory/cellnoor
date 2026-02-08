@@ -35,7 +35,7 @@ pub(super) async fn select_suspension_pool_by_id(
 
     let suspension_pool = match authorized_projects {
         AuthProjects::All => stmt.first(&mut db_conn).await?,
-        AuthProjects::Restricted(project_ids) => {
+        AuthProjects::Some { project_ids } => {
             stmt.filter(suspension_pools::project_id.eq_any(project_ids.iter()))
                 .first(&mut db_conn)
                 .await?

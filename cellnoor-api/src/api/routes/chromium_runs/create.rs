@@ -40,7 +40,7 @@ pub(super) async fn create_chromium_run(
 pub async fn insert_chromium_run_and_associated_data(
     project_id: Uuid,
     chromium_run: NewChromiumRun,
-    mut db_conn: &diesel_async::AsyncPgConnection,
+    db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Uuid, db::Error> {
     let run_id = match chromium_run {
         NewChromiumRun::OnChipMultiplexing { inner, gem_pools } => {
@@ -185,7 +185,7 @@ async fn insert_singleplex_chip_loadings(
 
 pub(super) async fn validate_chromium_run(
     chromium_run: &NewChromiumRun,
-    mut db_conn: &diesel_async::AsyncPgConnection,
+    db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Uuid, db::Error> {
     let run_at = chromium_run.run_at();
 
@@ -226,7 +226,7 @@ pub(super) async fn validate_chromium_run(
 async fn validate_loaded_suspension_pools(
     pool_ids: Vec<Uuid>,
     chromium_run_at: Timestamp,
-    mut db_conn: &diesel_async::AsyncPgConnection,
+    db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Uuid, db::Error> {
     let project_ids_and_pooling_times = suspension_pools_info(&pool_ids, db_conn).await?;
 
@@ -245,7 +245,7 @@ async fn validate_loaded_suspension_pools(
 async fn validate_loaded_suspensions(
     suspension_ids: &[Uuid],
     chromium_run_at: Timestamp,
-    mut db_conn: &diesel_async::AsyncPgConnection,
+    db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Uuid, db::Error> {
     let project_ids_and_suspension_creation_times =
         suspensions_info(suspension_ids, db_conn).await?;

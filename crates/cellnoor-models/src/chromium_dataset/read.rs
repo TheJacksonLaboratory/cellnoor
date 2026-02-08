@@ -16,8 +16,6 @@ use crate::{
     feature = "app",
     derive(diesel::Selectable, diesel::Queryable, schemars::JsonSchema)
 )]
-#[cfg_attr(feature = "typescript", derive(::ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(optional_fields))]
 #[cfg_attr(feature = "app", diesel(table_name = chromium_datasets, check_for_backend(Pg)))]
 pub struct ChromiumDatasetSummary {
     id: Uuid,
@@ -27,7 +25,6 @@ pub struct ChromiumDatasetSummary {
     project_id: Uuid,
     links: Links,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     delivered_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(embed))]
     assay: TenxAssay,
@@ -38,6 +35,16 @@ impl ChromiumDatasetSummary {
     pub fn id(&self) -> Uuid {
         self.id
     }
+
+    #[must_use]
+    pub fn delivered_at(&self) -> Timestamp {
+        self.delivered_at
+    }
+
+    #[must_use]
+    pub fn name(&self) -> &str {
+        self.inner.name.as_ref()
+    }
 }
 
 // Manually derive everything because the query is too complicated to write here
@@ -46,8 +53,6 @@ impl ChromiumDatasetSummary {
     feature = "app",
     derive(diesel::Selectable, diesel::Queryable, schemars::JsonSchema)
 )]
-#[cfg_attr(feature = "typescript", derive(::ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(optional_fields))]
 #[cfg_attr(feature = "app", diesel(table_name = chromium_datasets, check_for_backend(Pg)))]
 pub struct ChromiumDataset {
     #[serde(flatten)]

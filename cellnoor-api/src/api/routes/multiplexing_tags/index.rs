@@ -9,7 +9,7 @@ use crate::{
     state::AppState,
 };
 
-pub(super) async fn index_multiplexing_tags(
+pub async fn index_multiplexing_tags(
     _: State<AppState>,
     mut db_conn: DbConnection,
 ) -> Result<Json<Vec<MultiplexingTag>>, db::Error> {

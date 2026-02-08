@@ -4,8 +4,6 @@ use schemars::JsonSchema;
 use crate::db;
 
 #[derive(Debug, thiserror::Error, serde::Serialize, JsonSchema)]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(rename = "AuthError"))]
 #[serde(rename_all = "snake_case", tag = "type")]
 #[schemars(rename = "AuthError")]
 #[error(transparent)]

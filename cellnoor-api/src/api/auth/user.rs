@@ -102,11 +102,11 @@ impl AuthUser {
     }
 
     pub fn has_access_to_project(&self, project_id: &Uuid) -> bool {
-        let AuthProjects::Restricted(projects) = self.projects() else {
+        let AuthProjects::Some { project_ids } = self.projects() else {
             return true;
         };
 
-        projects.contains(project_id)
+        project_ids.contains(project_id)
     }
 }
 
@@ -114,7 +114,7 @@ impl AuthUser {
 #[serde(tag = "quantity", rename_all = "snake_case")]
 pub enum AuthProjects {
     All,
-    Restricted(Arc<HashSet<Uuid>>),
+    Some { project_ids: Arc<HashSet<Uuid>> },
 }
 
 enum EncodedJwt<'a> {
@@ -164,14 +164,14 @@ pub trait RemoveUnauthorizedProjects {
 
 impl RemoveUnauthorizedProjects for Option<Vec<Uuid>> {
     fn remove_unauthorized_projects(&mut self, user: &AuthUser) {
-        let AuthProjects::Restricted(authorized_projects) = user.projects() else {
+        let AuthProjects::Some { project_ids } = user.projects() else {
             return;
         };
 
         let Some(requested_projects) = self.as_mut() else {
             // If there were no requested projects, then it should just be the projects the
             // user is authorized to view. Also this copy is unavoidable
-            self.replace(authorized_projects.iter().copied().collect());
+            self.replace(project_ids.iter().copied().collect());
             return;
         };
 

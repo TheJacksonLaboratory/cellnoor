@@ -7,10 +7,8 @@ use crate::units::{Microliter, Nanogram, Picogram};
 use crate::utils::{JsonFromSql, JsonToSql};
 
 #[json]
-#[cfg_attr(feature = "typescript", ts(concrete(N = String)))]
 pub struct Concentration<N> {
     value: u32,
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     numerator_unit: N,
     denominator_unit: Microliter,
 }

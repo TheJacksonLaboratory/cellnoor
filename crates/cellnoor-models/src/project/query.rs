@@ -1,7 +1,6 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::projects;
 use macro_attributes::{filter, order_by};
-
 use uuid::Uuid;
 
 #[order_by(projects)]
@@ -23,13 +22,9 @@ impl Default for ProjectOrderBy {
 pub struct ProjectFilter {
     pub ids: Option<Vec<Uuid>>,
     pub names: Option<Vec<String>>,
-    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     pub started_before: Option<jiff::Timestamp>,
-    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     pub started_after: Option<jiff::Timestamp>,
-    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     pub ended_before: Option<jiff::Timestamp>,
-    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     pub ended_after: Option<jiff::Timestamp>,
 }
 

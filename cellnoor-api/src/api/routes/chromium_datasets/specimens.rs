@@ -3,7 +3,7 @@ use index::index_chromium_dataset_specimens;
 
 use crate::state::AppState;
 
-mod index;
+pub mod index;
 
 pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new().api_route("/", get(index_chromium_dataset_specimens))

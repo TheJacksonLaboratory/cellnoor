@@ -111,9 +111,9 @@ where
         };
 
         let mut parsed_querystring = form_urlencoded::parse(q.as_bytes());
-        let Some((Cow::Borrowed("query"), s)) = parsed_querystring.next() else {
+        let Some((Cow::Borrowed("q"), s)) = parsed_querystring.next() else {
             return Err(Error::MissingParameter {
-                missing_parameter: "query",
+                missing_parameter: "q",
             });
         };
 

@@ -1,10 +1,5 @@
-use std::{convert::identity, iter::Map};
-
-use axum::{Extension, Json, extract::State, http::StatusCode};
-use cellnoor_models::{
-    chromium_dataset::{ChromiumDataset, NewChromiumDataset},
-    tenx_assay::TenxAssay,
-};
+use axum::{Extension, Json, extract::State};
+use cellnoor_models::chromium_dataset::{ChromiumDataset, NewChromiumDataset};
 use cellnoor_schema::{
     cdna, chromium_dataset_libraries, chromium_datasets, libraries, sequencing_runs,
     sequencing_submissions, tenx_assays,
@@ -27,7 +22,7 @@ use crate::{
     state::AppState,
 };
 
-pub(super) async fn create_chromium_dataset(
+pub async fn create_chromium_dataset(
     _: State<AppState>,
     Extension(user): Extension<AuthUser>,
     mut db_conn: DbConnection,
@@ -65,7 +60,7 @@ fn validate_chromium_dataset(
     Ok(())
 }
 
-pub(super) async fn insert_chromium_dataset_and_libraries(
+pub async fn insert_chromium_dataset_and_libraries(
     project_id: Uuid,
     chromium_dataset: NewChromiumDataset,
     mut db_conn: &diesel_async::AsyncPgConnection,
@@ -175,8 +170,6 @@ fn validate_sequencing_runs_finished(
 #[derive(Selectable, Queryable)]
 #[diesel(check_for_backend(Pg), table_name = sequencing_runs)]
 struct SequencingRunInfo {
-    #[diesel(deserialize_as = jiff_diesel::Timestamp)]
-    begun_at: Timestamp,
     #[diesel(deserialize_as = jiff_diesel::NullableTimestamp)]
     finished_at: Option<Timestamp>,
 }

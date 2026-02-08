@@ -45,7 +45,6 @@ pub struct NewChromiumDataset {
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: ChromiumDatasetFields,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     delivered_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
     library_ids: Vec<Uuid>,

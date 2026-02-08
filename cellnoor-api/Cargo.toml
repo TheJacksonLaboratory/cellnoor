@@ -46,7 +46,6 @@ tower-http.workspace = true
 tracing.workspace = true
 tracing-appender.workspace = true
 tracing-subscriber.workspace = true
-ts-rs = { workspace = true, optional = true }
 url.workspace = true
 uuid.workspace = true
 
@@ -64,4 +63,3 @@ rand.workspace = true
 
 [features]
 dummy-data = ["cellnoor-models/builder", "dep:pretty_assertions", "dep:rand"]
-typescript = ["dep:ts-rs"]

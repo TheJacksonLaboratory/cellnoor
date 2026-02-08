@@ -12,10 +12,8 @@ pub struct NewSequencingRun {
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: SequencingRunFields,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     begun_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::NullableTimestamp))]
-    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     finished_at: Option<Timestamp>,
 }
 

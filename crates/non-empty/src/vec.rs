@@ -5,7 +5,7 @@ use std::fmt::Debug;
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "serde", serde(try_from = "Vec<T>"))]
 #[cfg_attr(feature = "schemars", schemars(with = "Vec<T>"))]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+
 pub struct NonEmptyVec<T, const N: usize>(Vec<T>);
 
 impl<T, const N: usize> From<T> for NonEmptyVec<T, N> {

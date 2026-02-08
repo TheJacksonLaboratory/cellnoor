@@ -12,7 +12,10 @@ use diesel_async::RunQueryDsl;
 use uuid::Uuid;
 
 use crate::{
-    api::{auth::AuthUser, extract::AuthJsonQuery},
+    api::{
+        auth::{AuthProjects, AuthUser, RemoveUnauthorizedProjects},
+        extract::AuthJsonQuery,
+    },
     db::{self, DbConnection, ToBoxedFilter},
     state::AppState,
 };
@@ -22,8 +25,10 @@ pub async fn index_pooled_suspensions(
     mut db_conn: DbConnection,
     Extension(user): Extension<AuthUser>,
     Path(IdParameter { id }): Path<IdParameter>,
-    AuthJsonQuery { q }: AuthJsonQuery<SuspensionQuery>,
+    AuthJsonQuery { mut q }: AuthJsonQuery<SuspensionQuery>,
 ) -> Result<Json<Vec<SuspensionSummary>>, db::Error> {
+    q.filter.project_ids.remove_unauthorized_projects(&user);
+
     select_pooled_suspensions(id, q, &mut db_conn)
         .await
         .map(Json)
@@ -58,37 +63,36 @@ pub async fn select_pooled_suspensions(
 
 #[cfg(test)]
 mod tests {
-    // use cellnoor_models::{suspension::SuspensionQuery, suspension_pool::*};
-    // use rstest::rstest;
+    use cellnoor_models::suspension::SuspensionQuery;
+    use rstest::rstest;
 
-    // use crate::{
-    //     db::DbConnection,
-    //     test_state::{Database, N_SUSPENSIONS_PER_POOL, database,
-    // root_db_conn}, };
+    use super::select_pooled_suspensions;
+    use crate::{
+        db::DbConnection,
+        test_state::{Database, N_SUSPENSIONS_PER_POOL, database, root_db_conn},
+    };
 
-    // #[rstest]
-    // #[awt]
-    // #[tokio::test(flavor = "multi_thread")]
-    // async fn suspension_pool_has_suspensions(
-    //     #[future] root_db_conn: DbConnection,
-    //     #[future] database: &'static Database,
-    // ) {
-    //     let suspension_pool = &database.suspension_pools[0];
+    #[rstest]
+    #[awt]
+    #[tokio::test(flavor = "multi_thread")]
+    async fn suspension_pool_has_suspensions(
+        #[future] root_db_conn: DbConnection,
+        #[future] database: &'static Database,
+    ) {
+        let suspension_pool = &database.suspension_pools[0];
 
-    //     let query = (
-    //         SuspensionPoolIdSuspensions(suspension_pool.id()),
-    //         SuspensionQuery::default_with_no_limit(),
-    //     );
+        let suspensions = select_pooled_suspensions(
+            suspension_pool.id(),
+            SuspensionQuery::default_with_no_limit(),
+            &root_db_conn,
+        )
+        .await
+        .unwrap();
 
-    //     let suspensions = root_db_conn
-    //         .interact(|db_conn| query.execute(&mut db_conn).unwrap())
-    //         .await
-    //         .unwrap();
-
-    //     assert_eq!(
-    //         suspensions.len(),
-    //         N_SUSPENSIONS_PER_POOL,
-    //         "found different number of suspensions in suspension pool than
-    // expected"     );
-    // }
+        assert_eq!(
+            suspensions.len(),
+            N_SUSPENSIONS_PER_POOL,
+            "found different number of suspensions in suspension pool than expected"
+        );
+    }
 }

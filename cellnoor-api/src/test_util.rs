@@ -74,23 +74,37 @@ pub async fn test_query<SelectFn, Filter, OrderBy, Record>(
 
     assert_eq!(
         loaded_len, expected_len,
-        "database query returned {loaded_len} records, but Rust function returned \
-         {expected_len}"
+        "database query returned {loaded_len} records, but Rust function returned {expected_len}"
     );
 
-    for loaded in &loaded_records {
-        assert!(expected_records.contains(&loaded));
-    }
-
-    for expected in &expected_records {
-        assert!(loaded_records.contains(*expected));
-    }
+    let loaded_records: Vec<_> = loaded_records.iter().collect();
+    slices_contain_the_same_elements_the_same_number_of_times(&loaded_records, &expected_records);
 
     for (i, (loaded, expected)) in loaded_records.iter().zip(&expected_records).enumerate() {
         assert_eq!(
-            loaded, *expected,
-            "loaded data and expected data are sorted differently (comparison failed \
-             at record {i})"
+            *loaded, *expected,
+            "loaded data and expected data are sorted differently (comparison failed at record \
+             {i})"
+        );
+    }
+}
+
+pub fn slices_contain_the_same_elements_the_same_number_of_times<T: PartialEq>(
+    slice1: &[T],
+    slice2: &[T],
+) {
+    let slice1_len = slice1.len();
+    let slice2_len = slice2.len();
+
+    assert_eq!(slice1_len, slice2_len, "slices have different lengths");
+
+    for (i, ele) in slice1.iter().enumerate() {
+        let count1 = slice1.iter().filter(|x| ele == *x).count();
+        let count2 = slice2.iter().filter(|x| ele == *x).count();
+
+        assert_eq!(
+            count1, count2,
+            "element {i} appeared a different number of times in each slice"
         );
     }
 }

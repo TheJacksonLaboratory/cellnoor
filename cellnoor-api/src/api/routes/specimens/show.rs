@@ -33,8 +33,8 @@ pub async fn select_specimen_by_id(
     let q = Specimen::query().filter(specimens::id.eq(specimen_id));
 
     let specimen = match authorized_projects {
-        AuthProjects::Restricted(projects) => {
-            q.filter(specimens::project_id.eq_any(projects.iter()))
+        AuthProjects::Some { project_ids } => {
+            q.filter(specimens::project_id.eq_any(project_ids.iter()))
                 .first(&mut db_conn)
                 .await?
         }

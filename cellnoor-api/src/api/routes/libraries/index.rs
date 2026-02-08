@@ -1,4 +1,4 @@
-use axum::{Json, extract::State, http::status::StatusCode};
+use axum::{Json, extract::State};
 use cellnoor_models::library::{LibraryFilter, LibraryQuery, LibrarySummary};
 use cellnoor_schema::libraries::{id, project_id};
 use diesel::{SelectableExpression, prelude::*};
@@ -56,7 +56,7 @@ where
             filter = filter.and_condition(id.eq_any(ids));
         }
 
-        if let Some(project_ids) = ids {
+        if let Some(project_ids) = project_ids {
             filter = filter.and_condition(project_id.eq_any(project_ids));
         }
 

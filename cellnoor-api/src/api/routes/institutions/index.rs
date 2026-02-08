@@ -75,10 +75,10 @@ impl Authorize for InstitutionQuery {
 mod tests {
     use std::cmp::Ordering;
 
-    use super::select_institutions;
     use cellnoor_models::institution::*;
     use rstest::rstest;
 
+    use super::select_institutions;
     use crate::{
         db::DbConnection,
         test_state::{Database, database, root_db_conn},

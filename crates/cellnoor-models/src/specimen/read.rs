@@ -11,7 +11,7 @@ use crate::{
     person::PersonSummary,
     project::Project,
     specimen::{
-        common::SpecimenCommonFields, creation::block::BlockEmbeddingMatrix,
+        Species, common::SpecimenCommonFields, creation::block::BlockEmbeddingMatrix,
         variable::SpecimenVariableFields,
     },
 };
@@ -58,6 +58,16 @@ impl SpecimenSummary {
     #[must_use]
     pub fn submitted_by(&self) -> Uuid {
         self.common.submitted_by
+    }
+
+    #[must_use]
+    pub fn project_id(&self) -> Uuid {
+        self.common.project_id
+    }
+
+    #[must_use]
+    pub fn species(&self) -> Species {
+        self.common.species
     }
 }
 

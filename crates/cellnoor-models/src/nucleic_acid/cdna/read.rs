@@ -17,7 +17,6 @@ pub struct CdnaSummary {
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: CdnaFields,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     prepared_at: Timestamp,
     n_amplification_cycles: i32,
 }
@@ -26,6 +25,11 @@ impl CdnaSummary {
     #[must_use]
     pub fn id(&self) -> Uuid {
         self.id
+    }
+
+    #[must_use]
+    pub fn project_id(&self) -> Uuid {
+        self.project_id
     }
 }
 

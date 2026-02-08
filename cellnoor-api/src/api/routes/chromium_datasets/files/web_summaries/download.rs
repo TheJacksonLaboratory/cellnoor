@@ -1,13 +1,11 @@
 use axum::{
     Extension,
     extract::{Path, State},
-    http::StatusCode,
     response::Html,
 };
 use cellnoor_schema::{chromium_dataset_web_summaries, chromium_datasets};
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
-use uuid::Uuid;
 
 use crate::{
     api::{
@@ -55,10 +53,10 @@ async fn select_chromium_dataset_web_summaries(
 
     let web_summary = match authorized_projects {
         AuthProjects::All => query.first(&mut db_conn).await?,
-        AuthProjects::Restricted(projects) => {
+        AuthProjects::Some { project_ids } => {
             query
                 .inner_join(chromium_datasets::table)
-                .filter(chromium_datasets::project_id.eq_any(projects.iter()))
+                .filter(chromium_datasets::project_id.eq_any(project_ids.iter()))
                 .first(&mut db_conn)
                 .await?
         }

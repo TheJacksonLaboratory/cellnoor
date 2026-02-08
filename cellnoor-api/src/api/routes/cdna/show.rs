@@ -34,8 +34,8 @@ pub async fn select_cdna_by_id(
 
     let cdna = match authorized_projects {
         AuthProjects::All => stmt.first(&mut db_conn).await?,
-        AuthProjects::Restricted(projects) => {
-            stmt.filter(cdna::project_id.eq_any(projects.iter()))
+        AuthProjects::Some { project_ids } => {
+            stmt.filter(cdna::project_id.eq_any(project_ids.iter()))
                 .first(&mut db_conn)
                 .await?
         }

@@ -3,7 +3,7 @@ use axum::{
     extract::{Path, State},
 };
 use cellnoor_models::{IdParameter, library::LibrarySummary};
-use cellnoor_schema::{chromium_dataset_libraries, chromium_datasets, libraries};
+use cellnoor_schema::{chromium_dataset_libraries, libraries};
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use uuid::Uuid;
@@ -37,9 +37,9 @@ async fn select_chromium_dataset_libraries(
 
     let ds_libraries = match authorized_projects {
         AuthProjects::All => query.load(&mut db_conn).await?,
-        AuthProjects::Restricted(projects) => {
+        AuthProjects::Some { project_ids } => {
             query
-                .filter(libraries::project_id.eq_any(projects.iter()))
+                .filter(libraries::project_id.eq_any(project_ids.iter()))
                 .load(&mut db_conn)
                 .await?
         }

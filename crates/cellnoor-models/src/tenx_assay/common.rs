@@ -64,18 +64,22 @@ pub struct LibraryTypeSpecification {
 }
 
 impl LibraryTypeSpecification {
+    #[must_use]
     pub fn library_type(&self) -> LibraryType {
         self.library_type
     }
 
+    #[must_use]
     pub fn index_kit(&self) -> &str {
         &self.index_kit
     }
 
+    #[must_use]
     pub fn cdna_volume_µl(&self) -> u16 {
         self.cdna_volume_µl.into()
     }
 
+    #[must_use]
     pub fn library_volume_µl(&self) -> u16 {
         self.library_volume_µl.into()
     }

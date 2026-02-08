@@ -13,15 +13,11 @@ fn base_derives(input: TokenStream, with_default: bool) -> proc_macro2::TokenStr
     if with_default {
         quote! {
             #[derive(Clone, Debug, Default, PartialEq)]
-            #[cfg_attr(feature = "typescript", derive(::ts_rs::TS))]
-            #[cfg_attr(feature = "typescript", ts(optional_fields))]
             #serde_default
         }
     } else {
         quote! {
             #[derive(Clone, Debug, PartialEq)]
-            #[cfg_attr(feature = "typescript", derive(::ts_rs::TS))]
-            #[cfg_attr(feature = "typescript", ts(optional_fields))]
         }
     }
 }

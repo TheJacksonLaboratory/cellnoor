@@ -1,41 +1,21 @@
-import { isSuccess } from "$lib/cellnoor-typeguard";
 import { getApiClient } from "$lib/server/cellnoor-client.js";
-import qs from "qs";
 
-export async function load() {
+export async function load({ params: { id } }) {
   const apiClient = await getApiClient();
 
-  const dataset = await apiClient.GET("/chromium-datasets");
+  const params = { path: { id } };
 
-  const [specimens, libraries] = isSuccess(dataset)
-    ? await Promise.all([
-      apiClient.getJson<SpecimenSummary>({
-        endpoint: dataset.links.specimens as string,
-        queryString: "",
-      }),
-      apiClient.getJson<LibrarySummary>({
-        endpoint: dataset.links.libraries as string,
-        queryString: "",
-      }),
-    ])
-    : [undefined, undefined];
+  const [dataset, specimens, libraries] = await Promise.all([
+    apiClient.GET("/chromium-datasets/{dataset_id}", {
+      params,
+    }),
+    apiClient.GET("/chromium-datasets/{dataset_id}/specimens", { params }),
+    apiClient.GET("/chromium-datasets/{dataset_id}/libraries", { params }),
+  ]);
 
   return {
-    dataset,
-    specimens,
-    libraries,
+    dataset: dataset.data,
+    specimens: specimens.data,
+    libraries: libraries.data,
   };
 }
-
-export const actions = {
-  search: async ({ request }) => {
-    const specimenName = await request.formData().then((d) =>
-      d.get("specimenName")
-    );
-    const query: ChromiumDatasetQuery = {
-      filter: { specimen: { names: [`%${specimenName}%`] } },
-    };
-
-    qs.stringify(query, { encodeValuesOnly: true });
-  },
-};

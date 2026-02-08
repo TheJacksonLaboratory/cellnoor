@@ -6,12 +6,10 @@ use uuid::Uuid;
 
 use crate::{
     db,
-    validate::{Validate, cdna::cdna_to_library_spec},
+    validate::{cdna::cdna_to_library_spec, Validate},
 };
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(rename = "ChromiumDatasetValidationError"))]
 #[serde(rename_all = "snake_case", tag = "type")]
 pub enum Error {
     #[error("all libraries must come from same GEM pool")]

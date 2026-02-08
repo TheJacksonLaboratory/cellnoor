@@ -2,19 +2,18 @@
   import { resolve } from "$app/paths";
   import "../app.css";
   import { authClient } from "$lib/auth-client";
-  import { afterNavigate, goto } from "$app/navigation";
-  import type { ChromiumDatasetQuery } from "cellnoor-types/ChromiumDatasetQuery";
-  import qs from "qs";
-  import { redirect } from "@sveltejs/kit";
+  import { goto } from "$app/navigation";
+  import type { ChromiumDatasetFilter } from "cellnoor-client";
 
   let { userName }: { userName: string } = $props();
   const links = [[resolve("/chromium-datasets"), "Chromium Datasets"]];
 
   let searchBarValue = $state("");
-  let query: ChromiumDatasetQuery = $derived({
+  // @ts-ignore
+  let query: { filter: ChromiumDatasetFilter } = $derived({
     filter: { specimen: { names: [`%${searchBarValue}%`] } },
   });
-  afterNavigate(() => searchBarValue = searchBarValue.replaceAll("%", ""));
+  let stringifiedQuery = $derived(JSON.stringify(query));
 </script>
 
 <nav class="navbar bg-base-200 sticky top-0 z-50 mb-4 justify-between">
@@ -45,14 +44,15 @@
           clip-rule="evenodd"
         />
       </svg>
-      <form action ="/chromium-datasets?/search" class="grow">
+      <form action="/chromium-datasets?/search" class="grow">
         <input
-          name="specimenName"
           bind:value={searchBarValue}
           aria-label="search for Chromium datasets by specimen name"
           type="search"
           placeholder="Search Chromium datasets by specimen name"
         />
+        <input hidden name="q" bind:value={stringifiedQuery} />
+        <button hidden>Search</button>
       </form>
     </label>
     <ul class="menu menu-horizontal">

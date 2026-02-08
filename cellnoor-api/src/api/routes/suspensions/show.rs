@@ -34,7 +34,7 @@ pub(super) async fn select_suspension_by_id(
 
     let suspension = match authorized_projects {
         AuthProjects::All => stmt.first(&mut db_conn).await?,
-        AuthProjects::Restricted(project_ids) => {
+        AuthProjects::Some { project_ids } => {
             stmt.filter(suspensions::project_id.eq_any(project_ids.iter()))
                 .first(&mut db_conn)
                 .await?

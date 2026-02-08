@@ -36,10 +36,10 @@ pub async fn select_library_measurements(
 
     let measurements = match authorized_projects {
         AuthProjects::All => query.load(&mut db_conn).await?,
-        AuthProjects::Restricted(projects) => {
+        AuthProjects::Some { project_ids } => {
             query
                 .inner_join(libraries::table)
-                .filter(libraries::project_id.eq_any(projects.iter()))
+                .filter(libraries::project_id.eq_any(project_ids.iter()))
                 .load(&mut db_conn)
                 .await?
         }

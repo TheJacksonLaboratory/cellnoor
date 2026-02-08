@@ -42,8 +42,6 @@ impl DataError {
 }
 
 #[derive(Debug, thiserror::Error, Serialize, JsonSchema, OperationIo)]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(rename = "DatabaseError"))]
 #[serde(rename_all = "snake_case", tag = "type")]
 #[schemars(rename = "DatabaseError")]
 pub enum Error {
@@ -175,7 +173,7 @@ impl Error {
 }
 
 impl IntoResponse for Error {
-    fn into_response(mut self) -> axum::response::Response {
+    fn into_response(self) -> axum::response::Response {
         tracing::error!(status = self.status_code(), error = %self);
 
         let status_code = self.status_code();

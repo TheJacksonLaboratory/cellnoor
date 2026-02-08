@@ -9,7 +9,6 @@ diesel = { workspace = true, optional = true }
 schemars = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 thiserror.workspace = true
-ts-rs = { workspace = true, optional = true }
 
 
 [lints]
@@ -19,7 +18,6 @@ workspace = true
 diesel = ["dep:cellnoor-schema", "dep:diesel"]
 schemars = ["dep:schemars"]
 serde = ["dep:serde"]
-typescript = ["dep:ts-rs"]
 
 
 [dev-dependencies]

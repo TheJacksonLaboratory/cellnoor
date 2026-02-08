@@ -106,14 +106,15 @@ impl Authorize for PersonQuery {
 mod tests {
     use std::cmp::Ordering;
 
+    use cellnoor_models::person::*;
+    use rstest::rstest;
+
     use super::select_people;
     use crate::{
         db::DbConnection,
         test_state::{Database, database, root_db_conn},
         test_util::test_query,
     };
-    use cellnoor_models::person::*;
-    use rstest::rstest;
 
     fn sort_by_id(i1: &&PersonSummary, i2: &&PersonSummary) -> Ordering {
         i1.id().cmp(&i2.id())

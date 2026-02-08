@@ -1,11 +1,9 @@
-import createClient, { type Client as InnerClient, type ClientOptions as InnerClientOptions } from "openapi-fetch";
+import createClient, { type ClientOptions, type Client } from "openapi-fetch";
 import type { paths } from "./api";
+export type * from "./api.d.ts";
 
-export type ClientOptions = Omit<InnerClientOptions, "querySerializer">;
-
-export type CellnoorClient = InnerClient<paths>;
+export type CellnoorClient = Client<paths>;
 
 export function createCellnoorClient(options?: ClientOptions) {
-  return createClient<paths>({
-    ...options, querySerializer: (query) => `q=${JSON.stringify(query.q)}`})
+  return createClient<paths>(options)
 }

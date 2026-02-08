@@ -117,7 +117,14 @@ export const auth = betterAuth({
           },
         ) {
           const dbClient = await getDbClient();
-          const { projects } = await getUserProjects(user_id, dbClient);
+          const isStaff = is_admin || is_biology_staff ||
+            is_computational_staff;
+
+          const projects = isStaff
+            ? { quantity: "all" }
+            : await getUserProjects(user_id, dbClient).then(({ projects }) => {
+              return { quantity: "some", project_ids: projects };
+            });
 
           return {
             user: {
@@ -127,7 +134,7 @@ export const auth = betterAuth({
               is_biology_staff,
               is_computational_staff,
             },
-            projects
+            projects,
           };
         },
       },

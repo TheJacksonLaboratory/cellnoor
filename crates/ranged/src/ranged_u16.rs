@@ -8,8 +8,6 @@
     derive(diesel::deserialize::FromSqlRow, diesel::expression::AsExpression)
 )]
 #[cfg_attr(feature = "diesel", diesel(sql_type = ::diesel::sql_types::Integer))]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(as = "u32"))]
 pub struct RangedU16<const MIN: u16, const MAX: u16>(deranged::RangedU16<MIN, MAX>);
 
 impl<const MIN: u16, const MAX: u16> RangedU16<MIN, MAX> {

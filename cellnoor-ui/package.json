@@ -32,7 +32,7 @@
     "@fontsource-variable/comfortaa": "^5.2.8",
     "@hey-api/openapi-ts": "^0.90.10",
     "@tailwindcss/vite": "^4.1.18",
-    "better-auth": "1.4.16",
+    "better-auth": "1.4.18",
     "cellnoor-client": "workspace:*",
     "daisyui": "^5.5.14",
     "jose": "^6.1.3",

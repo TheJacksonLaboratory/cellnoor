@@ -26,4 +26,9 @@ impl SuspensionPool {
     pub fn pooled_at(&self) -> Timestamp {
         self.inner.pooled_at()
     }
+
+    #[must_use]
+    pub fn project_id(&self) -> Uuid {
+        self.project_id
+    }
 }

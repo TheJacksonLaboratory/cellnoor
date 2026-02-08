@@ -13,10 +13,8 @@ pub struct Project {
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: ProjectFields,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     started_at: jiff::Timestamp,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     ended_at: jiff::Timestamp,
     links: Links,
 }

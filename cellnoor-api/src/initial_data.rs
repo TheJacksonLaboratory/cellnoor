@@ -52,7 +52,7 @@ impl InitialData {
         &self.tenx_assays
     }
 
-    async fn validate(self) -> anyhow::Result<Self> {
+    fn validate(self) -> anyhow::Result<Self> {
         let Self {
             institution,
             app_admin,
@@ -94,9 +94,9 @@ impl InitialData {
 pub async fn insert_initial_data(
     initial_data: InitialData,
     http_client: reqwest::Client,
-    mut db_conn: &AsyncPgConnection,
+    db_conn: &AsyncPgConnection,
 ) -> anyhow::Result<()> {
-    let initial_data = initial_data.validate().await?;
+    let initial_data = initial_data.validate()?;
 
     let InitialData {
         institution,

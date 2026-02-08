@@ -21,7 +21,6 @@ pub struct SuspensionSummary {
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: SuspensionFields,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::NullableTimestamp))]
-    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     created_at: Option<Timestamp>,
     target_cell_recovery: Option<i64>,
     lysis_duration_minutes: Option<f32>,
@@ -38,6 +37,11 @@ impl SuspensionSummary {
     #[must_use]
     pub fn created_at(&self) -> Option<Timestamp> {
         self.created_at
+    }
+
+    #[must_use]
+    pub fn project_id(&self) -> Uuid {
+        self.project_id
     }
 }
 

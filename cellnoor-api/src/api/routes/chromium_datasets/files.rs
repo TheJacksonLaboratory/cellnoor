@@ -1,4 +1,3 @@
-use aide::axum::ApiRouter;
 use axum::{
     Router,
     extract::DefaultBodyLimit,
@@ -10,7 +9,6 @@ use tower::ServiceBuilder;
 use web_summaries::{download::download_web_summary, upload::upload_web_summary};
 
 use crate::{
-    admin_required_creation,
     api::middleware::{admin_required, created_status_code},
     state::AppState,
 };
@@ -33,7 +31,7 @@ pub(super) fn router() -> Router<AppState> {
             post(upload_metrics_file).layer(file_upload_layer.clone()),
         )
         .route(
-            "/metrics-summaries/{directory}/{filename}",
+            "/metrics/{directory}/{filename}",
             get(download_metrics_file),
         )
         .route(

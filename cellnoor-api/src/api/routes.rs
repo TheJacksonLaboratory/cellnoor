@@ -69,7 +69,7 @@ pub fn router() -> (Router<AppState>, OpenApi) {
         .nest("/people", people::router())
         .nest("/projects", projects::router())
         .nest("/specimens", specimens::router())
-        .nest("/tenx-assays", tenx_assays::router())
+        .nest("/10x-assays", tenx_assays::router())
         .nest("/sequencing-runs", sequencing_runs::router())
         .nest("/multiplexing-tags", multiplexing_tags::router())
         .nest("/suspensions", suspensions::router())

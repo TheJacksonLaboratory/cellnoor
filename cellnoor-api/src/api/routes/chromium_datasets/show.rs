@@ -39,9 +39,9 @@ pub(super) async fn select_chromium_dataset_by_id(
 
     let dataset = match authorized_projects {
         AuthProjects::All => query.first(&mut db_conn).await?,
-        AuthProjects::Restricted(projects) => {
+        AuthProjects::Some { project_ids } => {
             query
-                .filter(chromium_datasets::project_id.eq_any(projects.iter()))
+                .filter(chromium_datasets::project_id.eq_any(project_ids.iter()))
                 .first(&mut db_conn)
                 .await?
         }

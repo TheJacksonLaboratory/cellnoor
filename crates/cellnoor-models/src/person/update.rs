@@ -8,7 +8,6 @@ use uuid::Uuid;
 #[cfg_attr(feature = "builder", derive(bon::Builder))]
 #[cfg_attr(feature = "builder", builder(on(_, into)))]
 #[cfg_attr(feature = "app", diesel(table_name = people))]
-#[cfg_attr(feature = "typescript", ts(rename = "PersonUpdate"))]
 pub struct PersonUpdate {
     #[serde(skip)]
     #[cfg_attr(feature = "builder", builder(skip))]

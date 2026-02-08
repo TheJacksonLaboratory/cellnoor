@@ -377,139 +377,6 @@ export interface paths {
         };
         trace?: never;
     };
-    "/people/{id}/projects": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    q?: string;
-                };
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Project"][];
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiError"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/people/{id}/specimens": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    q?: string;
-                };
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["SpecimenSummary"][];
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiError"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/people/{id}/chromium-datasets": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description no content */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiError"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/projects": {
         parameters: {
             query?: never;
@@ -797,19 +664,24 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    q?: string;
+                };
                 header?: never;
-                path?: never;
+                path: {
+                    id: string;
+                };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description no content */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["ChromiumDatasetSummary"][];
+                    };
                 };
                 default: {
                     headers: {
@@ -1032,12 +904,156 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    q?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChromiumDatasetSummary"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/10x-assays": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TenxAssay"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sequencing-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewSequencingRun"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SequencingRun"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sequencing-runs/{id}/libraries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": string[];
+                };
+            };
             responses: {
                 /** @description no content */
                 200: {
@@ -1045,6 +1061,1280 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/multiplexing-tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MultiplexingTag"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/suspensions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuspensionSummary"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewSuspension"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Suspension"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/suspensions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Suspension"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/suspensions/{id}/measurements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuspensionMeasurement"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SuspensionMeasurementFields"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuspensionMeasurement"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/suspension-pools": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuspensionPool"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewSuspensionPool"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuspensionPool"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/suspension-pools/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuspensionPool"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/suspension-pools/{id}/suspensions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuspensionSummary"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/suspension-pools/{id}/measurements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuspensionPoolMeasurement"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SuspensionPoolMeasurementFields"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuspensionPoolMeasurement"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/chromium-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChromiumRunSummary"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewChromiumRun"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChromiumRun"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/chromium-runs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChromiumRun"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/gem-pools": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["GemPoolSummary"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/gem-pools/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["GemPool"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cdna": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CdnaSummary"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewCdna"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Cdna"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cdna/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Cdna"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cdna/{id}/measurements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CdnaMeasurement"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CdnaMeasurementFields"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CdnaMeasurement"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/libraries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LibrarySummary"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewLibrary"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Library"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/libraries/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Library"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/libraries/{id}/measurements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LibraryMeasurement"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["LibraryMeasurementFields"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LibraryMeasurement"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/chromium-datasets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChromiumDatasetSummary"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewChromiumDataset"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChromiumDataset"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/chromium-datasets/{dataset_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChromiumDataset"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/chromium-datasets/{dataset_id}/specimens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SpecimenSummary"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/chromium-datasets/{dataset_id}/libraries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LibrarySummary"][];
+                    };
                 };
                 default: {
                     headers: {
@@ -1092,6 +2382,256 @@ export interface components {
         BlockEmbeddingMatrix: "carboxymethyl_cellulose" | "optimal_cutting_temperature_compound" | "paraffin";
         /** @enum {string} */
         BlockFixative: "formaldehyde_derivative";
+        Cdna: {
+            additional_data?: unknown;
+            gem_pool: components["schemas"]["GemPoolSummary"];
+            /** Format: uuid */
+            gem_pool_id?: string | null;
+            /** Format: uuid */
+            id: string;
+            library_type: components["schemas"]["LibraryType"];
+            /** Format: int32 */
+            n_amplification_cycles: number;
+            /** Format: date-time */
+            prepared_at: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+        };
+        CdnaFilter: {
+            /** @default null */
+            ids: string[] | null;
+            /** @default null */
+            project_ids: string[] | null;
+        };
+        CdnaMeasurement: {
+            /** Format: uuid */
+            cdna_id: string;
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            measured_at: string;
+            /** Format: uuid */
+            measured_by: string;
+        } & ({
+            concentration: components["schemas"]["Concentration"];
+            instrument_name: string;
+            /** Format: uint16 */
+            mean_size_bp?: number | null;
+            sizing_range: [
+                number,
+                number
+            ];
+            /** @constant */
+            type: "electrophoretic";
+        } | {
+            concentration: components["schemas"]["Concentration2"];
+            instrument_name: string;
+            /** @constant */
+            type: "fluorometric";
+        });
+        CdnaMeasurementFields: {
+            /** Format: date-time */
+            measured_at: string;
+            /** Format: uuid */
+            measured_by: string;
+        } & ({
+            concentration: components["schemas"]["Concentration"];
+            instrument_name: string;
+            /** Format: uint16 */
+            mean_size_bp?: number | null;
+            sizing_range: [
+                number,
+                number
+            ];
+            /** @constant */
+            type: "electrophoretic";
+        } | {
+            concentration: components["schemas"]["Concentration2"];
+            instrument_name: string;
+            /** @constant */
+            type: "fluorometric";
+        });
+        CdnaOrderBy: {
+            descending?: boolean | null;
+            /** @constant */
+            field: "id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "readable_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "library_type";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "prepared_at";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "gem_pool_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "n_amplification_cycles";
+        };
+        CdnaSummary: {
+            additional_data?: unknown;
+            /** Format: uuid */
+            gem_pool_id?: string | null;
+            /** Format: uuid */
+            id: string;
+            library_type: components["schemas"]["LibraryType"];
+            /** Format: int32 */
+            n_amplification_cycles: number;
+            /** Format: date-time */
+            prepared_at: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+        };
+        ChromiumDataset: {
+            assay: components["schemas"]["TenxAssay"];
+            /** Format: date-time */
+            delivered_at: string;
+            /** Format: uuid */
+            id: string;
+            links: components["schemas"]["Links"];
+            name: string;
+            project: components["schemas"]["Project"];
+            /** Format: uuid */
+            project_id: string;
+        };
+        /** @enum {string} */
+        ChromiumDatasetCmdline: "cellranger-arc count" | "cellranger-atac count" | "cellranger count" | "cellranger multi" | "cellranger vdj";
+        ChromiumDatasetFilter: {
+            /** @default null */
+            assay: components["schemas"]["TenxAssayFilter"] | null;
+            /**
+             * Format: date-time
+             * @default null
+             */
+            delivered_after: string | null;
+            /**
+             * Format: date-time
+             * @default null
+             */
+            delivered_before: string | null;
+            /** @default null */
+            ids: string[] | null;
+            /** @default null */
+            names: string[] | null;
+            /** @default null */
+            project_ids: string[] | null;
+            /** @default null */
+            specimen: components["schemas"]["SpecimenFilter"] | null;
+        };
+        ChromiumDatasetOrderBy: {
+            descending?: boolean | null;
+            /** @constant */
+            field: "id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "name";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "project_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "delivered_at";
+        };
+        ChromiumDatasetSummary: {
+            assay: components["schemas"]["TenxAssay"];
+            /** Format: date-time */
+            delivered_at: string;
+            /** Format: uuid */
+            id: string;
+            links: components["schemas"]["Links"];
+            name: string;
+            /** Format: uuid */
+            project_id: string;
+        };
+        ChromiumRun: {
+            additional_data?: unknown;
+            assay: components["schemas"]["TenxAssay"];
+            /** Format: uuid */
+            assay_id: string;
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            run_at: string;
+            /** Format: uuid */
+            run_by: string;
+            succeeded: boolean;
+        };
+        ChromiumRunFilter: {
+            /** @default null */
+            ids: string[] | null;
+            /** @default null */
+            project_ids: string[] | null;
+        };
+        ChromiumRunOrderBy: {
+            descending?: boolean | null;
+            /** @constant */
+            field: "id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "readable_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "assay_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "run_at";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "run_by";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "succeeded";
+        };
+        ChromiumRunSummary: {
+            additional_data?: unknown;
+            /** Format: uuid */
+            assay_id: string;
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            run_at: string;
+            /** Format: uuid */
+            run_by: string;
+            succeeded: boolean;
+        };
+        Concentration: {
+            denominator_unit: components["schemas"]["Microliter"];
+            numerator_unit: components["schemas"]["Picogram"];
+            /** Format: uint32 */
+            value: number;
+        };
+        Concentration2: {
+            denominator_unit: components["schemas"]["Microliter"];
+            numerator_unit: components["schemas"]["Nanogram"];
+            /** Format: uint32 */
+            value: number;
+        };
+        /** @enum {string} */
+        CountingMethod: "bright_field" | "acridine_orange_propidium_iodide" | "trypan_blue";
         CreatePersonError: ({
             /** @constant */
             type: "database";
@@ -1099,11 +2639,23 @@ export interface components {
             /** @constant */
             type: "invalid_email";
         };
-        DatabaseError: {
+        DataError: {
             message: string;
+            should_come_after: string;
+            should_come_before: string;
+            /** Format: date-time */
+            t1: string;
+            /** Format: date-time */
+            t2: string;
+            /** @constant */
+            type: "timestamp";
+        } | {
+            message: string;
+        };
+        DatabaseError: ({
             /** @constant */
             type: "data";
-        } | {
+        } & components["schemas"]["DataError"]) | {
             fields: string[];
             resource: string;
             /** @constant */
@@ -1125,6 +2677,36 @@ export interface components {
         };
         /** @enum {string} */
         Fixative: "dithiobis_succinimidylpropionate" | "formaldehyde_derivative";
+        GemPool: {
+            chromium_run: components["schemas"]["ChromiumRunSummary"];
+            /** Format: uuid */
+            chromium_run_id: string;
+            /** Format: uuid */
+            id: string;
+            readable_id: string;
+        };
+        GemPoolFilter: {
+            /** @default null */
+            ids: string[] | null;
+            /** @default null */
+            project_ids: string[] | null;
+        };
+        GemPoolOrderBy: {
+            descending?: boolean | null;
+            /** @constant */
+            field: "id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "readable_id";
+        };
+        GemPoolSummary: {
+            /** Format: uuid */
+            chromium_run_id: string;
+            /** Format: uuid */
+            id: string;
+            readable_id: string;
+        };
         Institution: {
             /** Format: uuid */
             id: string;
@@ -1146,10 +2728,154 @@ export interface components {
             /** @constant */
             field: "name";
         };
+        Library: {
+            additional_data?: unknown;
+            cdna: components["schemas"]["CdnaSummary"];
+            /** Format: uuid */
+            cdna_id: string;
+            dual_index_set_name?: string | null;
+            /** Format: uuid */
+            id: string;
+            links: components["schemas"]["Links"];
+            /** Format: int32 */
+            number_of_sample_index_pcr_cycles: number;
+            /** Format: date-time */
+            prepared_at: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            single_index_set_name?: string | null;
+            /** Format: int64 */
+            target_reads_per_cell: number;
+        };
+        LibraryFilter: {
+            /** @default null */
+            ids: string[] | null;
+            /** @default null */
+            project_ids: string[] | null;
+        };
+        LibraryMeasurement: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            library_id: string;
+            /** Format: date-time */
+            measured_at: string;
+            /** Format: uuid */
+            measured_by: string;
+        } & ({
+            concentration: components["schemas"]["Concentration"];
+            instrument_name: string;
+            /** Format: uint16 */
+            mean_size_bp?: number | null;
+            sizing_range: [
+                number,
+                number
+            ];
+            /** @constant */
+            type: "electrophoretic";
+        } | {
+            concentration: components["schemas"]["Concentration2"];
+            instrument_name: string;
+            /** @constant */
+            type: "fluorometric";
+        });
+        LibraryMeasurementFields: {
+            /** Format: date-time */
+            measured_at: string;
+            /** Format: uuid */
+            measured_by: string;
+        } & ({
+            concentration: components["schemas"]["Concentration"];
+            instrument_name: string;
+            /** Format: uint16 */
+            mean_size_bp?: number | null;
+            sizing_range: [
+                number,
+                number
+            ];
+            /** @constant */
+            type: "electrophoretic";
+        } | {
+            concentration: components["schemas"]["Concentration2"];
+            instrument_name: string;
+            /** @constant */
+            type: "fluorometric";
+        });
+        LibraryOrderBy: {
+            descending?: boolean | null;
+            /** @constant */
+            field: "id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "readable_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "cdna_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "single_index_set_name";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "dual_index_set_name";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "number_of_sample_index_pcr_cycles";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "target_reads_per_cell";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "prepared_at";
+        };
+        LibrarySummary: {
+            additional_data?: unknown;
+            /** Format: uuid */
+            cdna_id: string;
+            dual_index_set_name?: string | null;
+            /** Format: uuid */
+            id: string;
+            links: components["schemas"]["Links"];
+            /** Format: int32 */
+            number_of_sample_index_pcr_cycles: number;
+            /** Format: date-time */
+            prepared_at: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            single_index_set_name?: string | null;
+            /** Format: int64 */
+            target_reads_per_cell: number;
+        };
+        /** @enum {string} */
+        LibraryType: "antibody_capture" | "antigen_capture" | "chromatin_accessibility" | "crispr_guide_capture" | "custom" | "gene_expression" | "multiplexing_capture" | "vdj" | "vdj_b" | "vdj_t" | "vdj_t_gd";
         Link: string | string[];
         Links: {
             [key: string]: components["schemas"]["Link"];
         };
+        /** @enum {string} */
+        Microliter: "microliter";
+        /** @enum {string} */
+        Micrometer: "micrometer";
+        /** @enum {string} */
+        Milliliter: "milliliter";
+        MultiplexingTag: {
+            /** Format: uuid */
+            id: string;
+            tag_id: string;
+            type_: components["schemas"]["MultiplexingTagType"];
+        };
+        /** @enum {string} */
+        MultiplexingTagType: "flex_barcode" | "on_chip_multiplexing" | "TotalSeq-A" | "TotalSeq-B" | "TotalSeq-C";
+        /** @enum {string} */
+        Nanogram: "nanogram";
         NewBlock: {
             additional_data?: unknown;
             /** @constant */
@@ -1211,10 +2937,88 @@ export interface components {
             submitted_by: string;
             tissue: string;
         };
+        NewCdna: {
+            additional_data?: unknown;
+            /** Format: uuid */
+            gem_pool_id?: string | null;
+            library_type: components["schemas"]["LibraryType"];
+            /** Format: uint8 */
+            n_amplification_cycles: number;
+            /** Format: date-time */
+            prepared_at: string;
+            preparer_ids: string[];
+            readable_id: string;
+            /** Format: uint8 */
+            "volume_\u00B5l": number;
+        };
+        NewChromiumDataset: {
+            cmdline: components["schemas"]["ChromiumDatasetCmdline"];
+            /** Format: date-time */
+            delivered_at: string;
+            library_ids: string[];
+            name: string;
+        };
+        NewChromiumRun: {
+            additional_data?: unknown;
+            /** Format: uuid */
+            assay_id: string;
+            gem_pools: components["schemas"]["OcmGemPool"][];
+            /** @constant */
+            plexy: "on_chip_multiplexing";
+            readable_id: string;
+            /** Format: date-time */
+            run_at: string;
+            /** Format: uuid */
+            run_by: string;
+            succeeded: boolean;
+        } | {
+            additional_data?: unknown;
+            /** Format: uuid */
+            assay_id: string;
+            gem_pools: components["schemas"]["PoolMultiplexGemPool"][];
+            /** @constant */
+            plexy: "pool_multiplex";
+            readable_id: string;
+            /** Format: date-time */
+            run_at: string;
+            /** Format: uuid */
+            run_by: string;
+            succeeded: boolean;
+        } | {
+            additional_data?: unknown;
+            /** Format: uuid */
+            assay_id: string;
+            gem_pools: components["schemas"]["SingleplexGemPool"][];
+            /** @constant */
+            plexy: "singleplex";
+            readable_id: string;
+            /** Format: date-time */
+            run_at: string;
+            /** Format: uuid */
+            run_by: string;
+            succeeded: boolean;
+        };
         NewInstitution: {
             /** Format: uuid */
             id: string;
             name: string;
+        };
+        NewLibrary: {
+            additional_data?: unknown;
+            /** Format: uuid */
+            cdna_id: string;
+            dual_index_set_name?: string | null;
+            /** Format: uint32 */
+            number_of_sample_index_pcr_cycles: number;
+            /** Format: date-time */
+            prepared_at: string;
+            preparer_ids: string[];
+            readable_id: string;
+            single_index_set_name?: string | null;
+            /** Format: uint32 */
+            target_reads_per_cell: number;
+            /** Format: uint8 */
+            "volume_\u00B5l": number;
         };
         NewPerson: {
             email: string;
@@ -1232,6 +3036,14 @@ export interface components {
             /** Format: date-time */
             started_at: string;
         };
+        NewSequencingRun: {
+            additional_data?: unknown;
+            /** Format: date-time */
+            begun_at: string;
+            /** Format: date-time */
+            finished_at?: string | null;
+            readable_id: string;
+        };
         NewSpecimen: ({
             /** @constant */
             type: "block";
@@ -1242,6 +3054,44 @@ export interface components {
             /** @constant */
             type: "tissue";
         } & components["schemas"]["NewTissue"]);
+        NewSuspension: ({
+            /** @constant */
+            content: "cell";
+        } & components["schemas"]["NewSuspensionCommonFields"]) | {
+            additional_data?: unknown;
+            /** @constant */
+            content: "nucleus";
+            /** Format: date-time */
+            created_at?: string | null;
+            /** Format: uint32 */
+            lysis_duration_minutes: number;
+            /** Format: uuid */
+            parent_specimen_id: string;
+            preparer_ids: string[];
+            readable_id: string;
+            /** Format: uint32 */
+            target_cell_recovery?: number | null;
+        };
+        NewSuspensionCommonFields: {
+            additional_data?: unknown;
+            /** Format: date-time */
+            created_at?: string | null;
+            /** Format: uuid */
+            parent_specimen_id: string;
+            preparer_ids: string[];
+            readable_id: string;
+            /** Format: uint32 */
+            target_cell_recovery?: number | null;
+        };
+        NewSuspensionPool: {
+            additional_data?: unknown;
+            name: string;
+            /** Format: date-time */
+            pooled_at: string;
+            preparer_ids: string[];
+            readable_id: string;
+            suspensions: components["schemas"]["SuspensionTagging"][];
+        };
         NewSuspensionSpecimen: {
             additional_data?: unknown;
             fixative: components["schemas"]["Fixative"];
@@ -1362,6 +3212,20 @@ export interface components {
             thermal_preservation_method: components["schemas"]["ThermalPreservationMethod"];
             tissue: string;
         };
+        /** @enum {string} */
+        OcmBarcodeId: "ob1" | "ob2" | "ob3" | "ob4";
+        OcmChipLoading: {
+            additional_data?: unknown;
+            buffer_volume_loaded: components["schemas"]["Volume2"];
+            ocm_barcode_id: components["schemas"]["OcmBarcodeId"];
+            /** Format: uuid */
+            suspension_id: string;
+            suspension_volume_loaded: components["schemas"]["Volume2"];
+        };
+        OcmGemPool: {
+            loading: components["schemas"]["OcmChipLoading"][];
+            readable_id: string;
+        };
         Person: {
             email?: string | null;
             email_verified: boolean;
@@ -1456,6 +3320,19 @@ export interface components {
             /** @default null */
             orcid: string | null;
         };
+        /** @enum {string} */
+        Picogram: "picogram";
+        PoolMultiplexChipLoading: {
+            additional_data?: unknown;
+            buffer_volume_loaded: components["schemas"]["Volume2"];
+            /** Format: uuid */
+            suspension_pool_id: string;
+            suspension_volume_loaded: components["schemas"]["Volume2"];
+        };
+        PoolMultiplexGemPool: {
+            loading: components["schemas"]["PoolMultiplexChipLoading"];
+            readable_id: string;
+        };
         Project: {
             /** Format: date-time */
             ended_at: string;
@@ -1510,6 +3387,29 @@ export interface components {
             field: "ended_at";
         };
         /** @enum {string} */
+        SampleMultiplexing: "cellplex" | "flex_barcode" | "hashtag" | "on_chip_multiplexing" | "singleplex";
+        SequencingRun: {
+            additional_data?: unknown;
+            /** Format: date-time */
+            begun_at: string;
+            /** Format: date-time */
+            finished_at?: string | null;
+            /** Format: uuid */
+            id: string;
+            readable_id: string;
+        };
+        SingleplexChipLoading: {
+            additional_data?: unknown;
+            buffer_volume_loaded: components["schemas"]["Volume2"];
+            /** Format: uuid */
+            suspension_id: string;
+            suspension_volume_loaded: components["schemas"]["Volume2"];
+        };
+        SingleplexGemPool: {
+            loading: components["schemas"]["SingleplexChipLoading"];
+            readable_id: string;
+        };
+        /** @enum {string} */
         Species: "ambystoma_mexicanum" | "canis_familiaris" | "callithrix_jacchus" | "drosophila_melanogaster" | "gasterosteus_aculeatus" | "homo_sapiens" | "mus_musculus" | "rattus_norvegicus" | "sminthopsis_crassicaudata";
         Specimen: {
             additional_data?: unknown;
@@ -1552,7 +3452,7 @@ export interface components {
             /** @default null */
             names: string[] | null;
             /** @default null */
-            projects: string[] | null;
+            project_ids: string[] | null;
             /**
              * Format: date-time
              * @default null
@@ -1705,10 +3605,283 @@ export interface components {
         };
         /** @enum {string} */
         SpecimenType: "block" | "suspension" | "tissue";
+        Suspension: {
+            additional_data?: unknown;
+            content: components["schemas"]["SuspensionContent"];
+            /** Format: date-time */
+            created_at?: string | null;
+            /** Format: uuid */
+            id: string;
+            links: components["schemas"]["Links"];
+            /** Format: float */
+            lysis_duration_minutes?: number | null;
+            parent_specimen: components["schemas"]["SpecimenSummary"];
+            /** Format: uuid */
+            parent_specimen_id: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: int64 */
+            target_cell_recovery?: number | null;
+        };
+        /** @enum {string} */
+        SuspensionContent: "cells" | "nuclei";
+        SuspensionFilter: {
+            /** @default null */
+            ids: string[] | null;
+            /** @default null */
+            project_ids: string[] | null;
+        };
+        SuspensionMeasurement: {
+            data: components["schemas"]["SuspensionMeasurementData"];
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            measured_at: string;
+            /** Format: uuid */
+            measured_by: string;
+            /** Format: uuid */
+            suspension_id: string;
+        };
+        SuspensionMeasurementData: {
+            counting_method?: components["schemas"]["CountingMethod"] | null;
+            denominator_unit: components["schemas"]["Milliliter"];
+            numerator_unit: components["schemas"]["SuspensionContent"];
+            post_hybridization: boolean;
+            /** @constant */
+            quantity: "concentration";
+            /** Format: uint32 */
+            value: number;
+        } | {
+            post_hybridization: boolean;
+            /** @constant */
+            quantity: "viability";
+            /** Format: uint32 */
+            value: number;
+        } | {
+            post_hybridization: boolean;
+            /** @constant */
+            quantity: "volume";
+            unit: components["schemas"]["Microliter"];
+            /** Format: uint32 */
+            value: number;
+        } | {
+            object: components["schemas"]["SuspensionContent"];
+            post_hybridization: boolean;
+            /** @constant */
+            quantity: "mean_diameter";
+            unit: components["schemas"]["Micrometer"];
+            /** Format: uint32 */
+            value: number;
+        };
+        SuspensionMeasurementFields: {
+            data: components["schemas"]["SuspensionMeasurementData"];
+            /** Format: date-time */
+            measured_at: string;
+            /** Format: uuid */
+            measured_by: string;
+        };
+        SuspensionOrderBy: {
+            descending?: boolean | null;
+            /** @constant */
+            field: "id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "readable_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "parent_specimen_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "created_at";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "lysis_duration_minutes";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "target_cell_recovery";
+        };
+        SuspensionPool: {
+            additional_data?: unknown;
+            /** Format: uuid */
+            id: string;
+            links: components["schemas"]["Links"];
+            name: string;
+            /** Format: date-time */
+            pooled_at: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+        };
+        SuspensionPoolFilter: {
+            /** @default null */
+            ids: string[] | null;
+            /** @default null */
+            project_ids: string[] | null;
+        };
+        SuspensionPoolMeasurement: {
+            data: components["schemas"]["SuspensionPoolMeasurementData"];
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            measured_at: string;
+            /** Format: uuid */
+            measured_by: string;
+            /** Format: uuid */
+            pool_id: string;
+        };
+        SuspensionPoolMeasurementData: {
+            counting_method?: components["schemas"]["CountingMethod"] | null;
+            denominator_unit: components["schemas"]["Milliliter"];
+            numerator_unit: components["schemas"]["SuspensionContent"];
+            /** @constant */
+            quantity: "concentration";
+            /** Format: uint32 */
+            value: number;
+        } | ({
+            /** @constant */
+            quantity: "viability";
+        } & components["schemas"]["Viability"]) | ({
+            /** @constant */
+            quantity: "volume";
+        } & components["schemas"]["Volume"]) | {
+            object: components["schemas"]["SuspensionContent"];
+            /** @constant */
+            quantity: "mean_diameter";
+            unit: components["schemas"]["Micrometer"];
+            /** Format: uint32 */
+            value: number;
+        };
+        SuspensionPoolMeasurementFields: {
+            data: components["schemas"]["SuspensionPoolMeasurementData"];
+            /** Format: date-time */
+            measured_at: string;
+            /** Format: uuid */
+            measured_by: string;
+        };
+        SuspensionPoolOrderBy: {
+            descending?: boolean | null;
+            /** @constant */
+            field: "id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "readable_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "name";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "pooled_at";
+        };
+        SuspensionSummary: {
+            additional_data?: unknown;
+            content: components["schemas"]["SuspensionContent"];
+            /** Format: date-time */
+            created_at?: string | null;
+            /** Format: uuid */
+            id: string;
+            links: components["schemas"]["Links"];
+            /** Format: float */
+            lysis_duration_minutes?: number | null;
+            /** Format: uuid */
+            parent_specimen_id: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: int64 */
+            target_cell_recovery?: number | null;
+        };
+        SuspensionTagging: {
+            /** Format: uuid */
+            suspension_id: string;
+            /** Format: uuid */
+            tag_id: string;
+        };
         /** @enum {string} */
         SuspensionThermalPreservation: "controlled_rate_freezing";
+        TenxAssay: {
+            chemistry_version: string;
+            chromium_chip?: string | null;
+            cmdlines?: (string | null)[] | null;
+            /** Format: uuid */
+            id: string;
+            library_types?: (components["schemas"]["LibraryType"] | null)[] | null;
+            links: components["schemas"]["Links"];
+            name: string;
+            protocol_url: string;
+            sample_multiplexing?: components["schemas"]["SampleMultiplexing"] | null;
+        };
+        TenxAssayFilter: {
+            /** @default null */
+            chemistry_versions: string[] | null;
+            /** @default null */
+            chromium_chips: string[] | null;
+            /** @default null */
+            ids: string[] | null;
+            /** @default null */
+            library_types: components["schemas"]["LibraryType"][][] | null;
+            /** @default null */
+            names: string[] | null;
+            /** @default null */
+            sample_multiplexing: components["schemas"]["SampleMultiplexing"][] | null;
+        };
+        TenxAssayOrderBy: {
+            descending?: boolean | null;
+            /** @constant */
+            field: "id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "name";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "library_types";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "sample_multiplexing";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "chemistry_version";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "protocol_url";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "chromium_chip";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "cmdlines";
+        };
         /** @enum {string} */
         ThermalPreservationMethod: "controlled_rate_freezing" | "flash_freezing";
+        Viability: {
+            /** Format: uint32 */
+            value: number;
+        };
+        Volume: {
+            unit: components["schemas"]["Microliter"];
+            /** Format: uint32 */
+            value: number;
+        };
+        Volume2: {
+            unit: components["schemas"]["Microliter"];
+            /** Format: uint8 */
+            value: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -1720,29 +3893,83 @@ export type ApiError = components['schemas']['ApiError'];
 export type AuthError = components['schemas']['AuthError'];
 export type BlockEmbeddingMatrix = components['schemas']['BlockEmbeddingMatrix'];
 export type BlockFixative = components['schemas']['BlockFixative'];
+export type Cdna = components['schemas']['Cdna'];
+export type CdnaFilter = components['schemas']['CdnaFilter'];
+export type CdnaMeasurement = components['schemas']['CdnaMeasurement'];
+export type CdnaMeasurementFields = components['schemas']['CdnaMeasurementFields'];
+export type CdnaOrderBy = components['schemas']['CdnaOrderBy'];
+export type CdnaSummary = components['schemas']['CdnaSummary'];
+export type ChromiumDataset = components['schemas']['ChromiumDataset'];
+export type ChromiumDatasetCmdline = components['schemas']['ChromiumDatasetCmdline'];
+export type ChromiumDatasetFilter = components['schemas']['ChromiumDatasetFilter'];
+export type ChromiumDatasetOrderBy = components['schemas']['ChromiumDatasetOrderBy'];
+export type ChromiumDatasetSummary = components['schemas']['ChromiumDatasetSummary'];
+export type ChromiumRun = components['schemas']['ChromiumRun'];
+export type ChromiumRunFilter = components['schemas']['ChromiumRunFilter'];
+export type ChromiumRunOrderBy = components['schemas']['ChromiumRunOrderBy'];
+export type ChromiumRunSummary = components['schemas']['ChromiumRunSummary'];
+export type Concentration = components['schemas']['Concentration'];
+export type Concentration2 = components['schemas']['Concentration2'];
+export type CountingMethod = components['schemas']['CountingMethod'];
 export type CreatePersonError = components['schemas']['CreatePersonError'];
+export type DataError = components['schemas']['DataError'];
 export type DatabaseError = components['schemas']['DatabaseError'];
 export type Fixative = components['schemas']['Fixative'];
+export type GemPool = components['schemas']['GemPool'];
+export type GemPoolFilter = components['schemas']['GemPoolFilter'];
+export type GemPoolOrderBy = components['schemas']['GemPoolOrderBy'];
+export type GemPoolSummary = components['schemas']['GemPoolSummary'];
 export type Institution = components['schemas']['Institution'];
 export type InstitutionFilter = components['schemas']['InstitutionFilter'];
 export type InstitutionOrderBy = components['schemas']['InstitutionOrderBy'];
+export type Library = components['schemas']['Library'];
+export type LibraryFilter = components['schemas']['LibraryFilter'];
+export type LibraryMeasurement = components['schemas']['LibraryMeasurement'];
+export type LibraryMeasurementFields = components['schemas']['LibraryMeasurementFields'];
+export type LibraryOrderBy = components['schemas']['LibraryOrderBy'];
+export type LibrarySummary = components['schemas']['LibrarySummary'];
+export type LibraryType = components['schemas']['LibraryType'];
 export type Link = components['schemas']['Link'];
 export type Links = components['schemas']['Links'];
+export type Microliter = components['schemas']['Microliter'];
+export type Micrometer = components['schemas']['Micrometer'];
+export type Milliliter = components['schemas']['Milliliter'];
+export type MultiplexingTag = components['schemas']['MultiplexingTag'];
+export type MultiplexingTagType = components['schemas']['MultiplexingTagType'];
+export type Nanogram = components['schemas']['Nanogram'];
 export type NewBlock = components['schemas']['NewBlock'];
+export type NewCdna = components['schemas']['NewCdna'];
+export type NewChromiumDataset = components['schemas']['NewChromiumDataset'];
+export type NewChromiumRun = components['schemas']['NewChromiumRun'];
 export type NewInstitution = components['schemas']['NewInstitution'];
+export type NewLibrary = components['schemas']['NewLibrary'];
 export type NewPerson = components['schemas']['NewPerson'];
 export type NewProject = components['schemas']['NewProject'];
+export type NewSequencingRun = components['schemas']['NewSequencingRun'];
 export type NewSpecimen = components['schemas']['NewSpecimen'];
+export type NewSuspension = components['schemas']['NewSuspension'];
+export type NewSuspensionCommonFields = components['schemas']['NewSuspensionCommonFields'];
+export type NewSuspensionPool = components['schemas']['NewSuspensionPool'];
 export type NewSuspensionSpecimen = components['schemas']['NewSuspensionSpecimen'];
 export type NewTissue = components['schemas']['NewTissue'];
+export type OcmBarcodeId = components['schemas']['OcmBarcodeId'];
+export type OcmChipLoading = components['schemas']['OcmChipLoading'];
+export type OcmGemPool = components['schemas']['OcmGemPool'];
 export type Person = components['schemas']['Person'];
 export type PersonFilter = components['schemas']['PersonFilter'];
 export type PersonOrderBy = components['schemas']['PersonOrderBy'];
 export type PersonSummary = components['schemas']['PersonSummary'];
 export type PersonUpdate = components['schemas']['PersonUpdate'];
+export type Picogram = components['schemas']['Picogram'];
+export type PoolMultiplexChipLoading = components['schemas']['PoolMultiplexChipLoading'];
+export type PoolMultiplexGemPool = components['schemas']['PoolMultiplexGemPool'];
 export type Project = components['schemas']['Project'];
 export type ProjectFilter = components['schemas']['ProjectFilter'];
 export type ProjectOrderBy = components['schemas']['ProjectOrderBy'];
+export type SampleMultiplexing = components['schemas']['SampleMultiplexing'];
+export type SequencingRun = components['schemas']['SequencingRun'];
+export type SingleplexChipLoading = components['schemas']['SingleplexChipLoading'];
+export type SingleplexGemPool = components['schemas']['SingleplexGemPool'];
 export type Species = components['schemas']['Species'];
 export type Specimen = components['schemas']['Specimen'];
 export type SpecimenFilter = components['schemas']['SpecimenFilter'];
@@ -1752,7 +3979,28 @@ export type SpecimenMeasurementFields = components['schemas']['SpecimenMeasureme
 export type SpecimenOrderBy = components['schemas']['SpecimenOrderBy'];
 export type SpecimenSummary = components['schemas']['SpecimenSummary'];
 export type SpecimenType = components['schemas']['SpecimenType'];
+export type Suspension = components['schemas']['Suspension'];
+export type SuspensionContent = components['schemas']['SuspensionContent'];
+export type SuspensionFilter = components['schemas']['SuspensionFilter'];
+export type SuspensionMeasurement = components['schemas']['SuspensionMeasurement'];
+export type SuspensionMeasurementData = components['schemas']['SuspensionMeasurementData'];
+export type SuspensionMeasurementFields = components['schemas']['SuspensionMeasurementFields'];
+export type SuspensionOrderBy = components['schemas']['SuspensionOrderBy'];
+export type SuspensionPool = components['schemas']['SuspensionPool'];
+export type SuspensionPoolFilter = components['schemas']['SuspensionPoolFilter'];
+export type SuspensionPoolMeasurement = components['schemas']['SuspensionPoolMeasurement'];
+export type SuspensionPoolMeasurementData = components['schemas']['SuspensionPoolMeasurementData'];
+export type SuspensionPoolMeasurementFields = components['schemas']['SuspensionPoolMeasurementFields'];
+export type SuspensionPoolOrderBy = components['schemas']['SuspensionPoolOrderBy'];
+export type SuspensionSummary = components['schemas']['SuspensionSummary'];
+export type SuspensionTagging = components['schemas']['SuspensionTagging'];
 export type SuspensionThermalPreservation = components['schemas']['SuspensionThermalPreservation'];
+export type TenxAssay = components['schemas']['TenxAssay'];
+export type TenxAssayFilter = components['schemas']['TenxAssayFilter'];
+export type TenxAssayOrderBy = components['schemas']['TenxAssayOrderBy'];
 export type ThermalPreservationMethod = components['schemas']['ThermalPreservationMethod'];
+export type Viability = components['schemas']['Viability'];
+export type Volume = components['schemas']['Volume'];
+export type Volume2 = components['schemas']['Volume2'];
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

@@ -1,7 +1,6 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::institutions;
 use macro_attributes::{filter, order_by};
-
 use uuid::Uuid;
 
 // You might think it would be better to factor out the field definition into
