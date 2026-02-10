@@ -1,3 +1,4 @@
+// TODO: split the different aspects of the configuration into different places
 use std::{path::Path, str::FromStr};
 
 use anyhow::Context;
@@ -171,10 +172,10 @@ struct Cli {
     db_port: Option<u16>,
     #[arg(long, env = "CELLNOOR_DB_NAME")]
     db_name: Option<String>,
-    #[arg(long, env = "CELLNOOR_JWT_AUDIENCE")]
-    jwt_audience: Option<String>,
     #[arg(long, env = "CELLNOOR_JWT_ISSUER")]
     jwt_issuer: Option<String>,
+    #[arg(long, env = "CELLNOOR_JWT_AUDIENCE")]
+    jwt_audience: Option<String>,
     #[arg(long, env = "CELLNOOR_API_HOST")]
     host: Option<String>,
     #[arg(long, env = "CELLNOOR_API_PORT")]
