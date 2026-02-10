@@ -20,18 +20,18 @@ use crate::{
 
 pub async fn create_specimen_measurement(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
     Json(measurement): Json<NewSpecimenMeasurement>,
 ) -> Result<Json<SpecimenMeasurement>, db::Error> {
-    let specimen_received_at = specimen_received_at(id, &mut db_conn).await?;
+    let specimen_received_at = specimen_received_at(id, &db_conn).await?;
 
     validate_timestamps(
         (specimen_received_at, "specimen_received_at"),
         (measurement.measured_at(), "measurement_made_at"),
     )?;
 
-    insert_specimen_measurement(id, measurement, &mut db_conn)
+    insert_specimen_measurement(id, measurement, &db_conn)
         .await
         .map(Json)
 }

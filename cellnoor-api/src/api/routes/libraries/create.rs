@@ -26,7 +26,7 @@ pub(super) async fn create_library(
     Extension(user): Extension<AuthUser>,
     Json(library): Json<NewLibrary>,
 ) -> Result<Json<Library>, db::Error> {
-    let cdna_info = cdna_info(library.cdna_id(), &mut db_conn).await?;
+    let cdna_info = cdna_info(library.cdna_id(), &db_conn).await?;
 
     validate_volume(
         &cdna_info.parent_info,
@@ -56,7 +56,7 @@ pub(super) async fn create_library(
         })
         .await?;
 
-    select_library_by_id(user.projects(), library_id, &mut db_conn)
+    select_library_by_id(user.projects(), library_id, &db_conn)
         .await
         .map(Json)
 }
@@ -120,15 +120,13 @@ fn validate_index_kit(
 
     let found_index_kit = index_set.kit_name().map_err(|_| {
         db::DataError::new_other(&format!(
-            "expected index kit {}, found none",
-            expected_index_kit
+            "expected index kit {expected_index_kit}, found none"
         ))
     })?;
 
     if expected_index_kit != found_index_kit {
         return Err(db::DataError::new_other(&format!(
-            "expected index kit {}, found {found_index_kit}",
-            expected_index_kit
+            "expected index kit {expected_index_kit}, found {found_index_kit}"
         )));
     }
 

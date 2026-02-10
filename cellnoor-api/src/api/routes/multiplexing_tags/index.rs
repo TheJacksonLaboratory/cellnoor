@@ -11,9 +11,9 @@ use crate::{
 
 pub async fn index_multiplexing_tags(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
 ) -> Result<Json<Vec<MultiplexingTag>>, db::Error> {
-    select_multiplexing_tags(&mut db_conn).await.map(Json)
+    select_multiplexing_tags(&db_conn).await.map(Json)
 }
 
 pub async fn select_multiplexing_tags(

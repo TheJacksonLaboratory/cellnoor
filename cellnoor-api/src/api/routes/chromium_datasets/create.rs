@@ -28,7 +28,7 @@ pub async fn create_chromium_dataset(
     mut db_conn: DbConnection,
     Json(chromium_dataset): Json<NewChromiumDataset>,
 ) -> Result<Json<ChromiumDataset>, db::Error> {
-    let libraries_info = libraries_info(chromium_dataset.library_ids(), &mut db_conn).await?;
+    let libraries_info = libraries_info(chromium_dataset.library_ids(), &db_conn).await?;
 
     validate_chromium_dataset(&chromium_dataset, &libraries_info)?;
 
@@ -43,7 +43,7 @@ pub async fn create_chromium_dataset(
         })
         .await?;
 
-    select_chromium_dataset_by_id(user.projects(), dataset_id, &mut db_conn)
+    select_chromium_dataset_by_id(user.projects(), dataset_id, &db_conn)
         .await
         .map(Json)
 }
@@ -54,7 +54,7 @@ fn validate_chromium_dataset(
 ) -> Result<(), db::DataError> {
     validate_same_project(libraries_info)?;
     validate_same_gem_pool(libraries_info)?;
-    validate_cmdline(&chromium_dataset, libraries_info)?;
+    validate_cmdline(chromium_dataset, libraries_info)?;
     validate_sequencing_runs_finished(chromium_dataset, libraries_info)?;
 
     Ok(())
@@ -108,7 +108,7 @@ fn validate_same_project(libraries_info: &[LibraryInfo]) -> Result<(), db::DataE
     if !libraries_info.iter().map(|i| i.project_id).all_same() {
         return Err(db::DataError::new_other(
             "all libraries must be in the same project",
-        ))?;
+        ));
     }
 
     Ok(())
@@ -118,7 +118,7 @@ fn validate_same_gem_pool(libraries_info: &[LibraryInfo]) -> Result<(), db::Data
     if !libraries_info.iter().map(|i| i.cdna.gem_pool_id).all_same() {
         return Err(db::DataError::new_other(
             "all libraries must come from the same GEMs pool",
-        ))?;
+        ));
     }
 
     Ok(())
@@ -136,7 +136,7 @@ fn validate_cmdline(
         let as_str: &str = chromium_dataset.cmdline().into();
         expected == as_str
     }) {
-        return Err(db::DataError::new_other(&format!("invalid cmdline used")));
+        return Err(db::DataError::new_other("invalid cmdline used"));
     }
 
     Ok(())

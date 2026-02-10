@@ -16,10 +16,10 @@ use crate::{
 
 pub async fn index_specimens(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     AuthJsonQuery { q }: AuthJsonQuery<SpecimenQuery>,
 ) -> Result<Json<Vec<SpecimenSummary>>, db::Error> {
-    select_specimens(q, &mut db_conn).await.map(Json)
+    select_specimens(q, &db_conn).await.map(Json)
 }
 
 pub async fn select_specimens(

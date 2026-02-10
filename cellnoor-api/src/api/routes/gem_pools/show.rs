@@ -16,11 +16,11 @@ use crate::{
 
 pub async fn show_gem_pool(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Extension(_user): Extension<AuthUser>,
     Path(IdParameter { id }): Path<IdParameter>,
 ) -> Result<Json<GemPool>, db::Error> {
-    select_gem_pool_by_id(id, &mut db_conn).await.map(Json)
+    select_gem_pool_by_id(id, &db_conn).await.map(Json)
 }
 
 pub async fn select_gem_pool_by_id(

@@ -15,10 +15,10 @@ use crate::{
 
 pub async fn show_project(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
 ) -> Result<Json<Project>, db::Error> {
-    select_project_by_id(id, &mut db_conn).await.map(Json)
+    select_project_by_id(id, &db_conn).await.map(Json)
 }
 
 async fn select_project_by_id(

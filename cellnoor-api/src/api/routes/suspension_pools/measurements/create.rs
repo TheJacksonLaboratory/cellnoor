@@ -25,11 +25,11 @@ use crate::{
 
 pub async fn create_suspension_pool_measurement(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
     Json(measurement): Json<NewSuspensionPoolMeasurement>,
 ) -> Result<Json<SuspensionPoolMeasurement>, db::Error> {
-    let (pooled_at, suspension_content) = suspension_info(id, &mut db_conn).await?;
+    let (pooled_at, suspension_content) = suspension_info(id, &db_conn).await?;
 
     validate_timestamps(
         (pooled_at, "suspension_pool_pooled_at"),
@@ -40,7 +40,7 @@ pub async fn create_suspension_pool_measurement(
         measurement.data(),
     )?;
 
-    insert_suspension_pool_measurement(id, measurement, &mut db_conn)
+    insert_suspension_pool_measurement(id, measurement, &db_conn)
         .await
         .map(Json)
 }

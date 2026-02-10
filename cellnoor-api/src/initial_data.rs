@@ -107,7 +107,7 @@ pub async fn insert_initial_data(
         multiplexing_tags,
     } = initial_data;
 
-    let upsert_assays = tenx_assays.into_iter().map(|a| a.upsert(&db_conn));
+    let upsert_assays = tenx_assays.into_iter().map(|a| a.upsert(db_conn));
     let upsert_multiplexing_tags = multiplexing_tags.into_iter().map(|t| t.upsert(db_conn));
 
     download_and_insert_single_index_sets(single_index_set_urls, http_client.clone(), db_conn)

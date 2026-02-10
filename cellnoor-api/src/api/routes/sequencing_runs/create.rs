@@ -10,10 +10,10 @@ use crate::{
 
 pub(super) async fn create_sequencing_run(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Json(sequencing_run): Json<NewSequencingRun>,
 ) -> Result<Json<SequencingRun>, db::Error> {
-    insert_sequencing_run(sequencing_run, &mut db_conn)
+    insert_sequencing_run(sequencing_run, &db_conn)
         .await
         .map(Json)
 }

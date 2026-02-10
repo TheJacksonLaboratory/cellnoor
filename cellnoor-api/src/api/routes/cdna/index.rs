@@ -15,10 +15,10 @@ use crate::{
 
 pub(super) async fn index_cdna(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     AuthJsonQuery { q }: AuthJsonQuery<CdnaQuery>,
 ) -> Result<Json<Vec<CdnaSummary>>, db::Error> {
-    select_cdna(q, &mut db_conn).await.map(Json)
+    select_cdna(q, &db_conn).await.map(Json)
 }
 
 pub async fn select_cdna(

@@ -31,7 +31,7 @@ pub async fn create_cdna(
     };
 
     let parent_info =
-        nucleic_acid_parent_info(gem_pool_id, new_cdna.library_type(), &mut db_conn).await?;
+        nucleic_acid_parent_info(gem_pool_id, new_cdna.library_type(), &db_conn).await?;
 
     validate_volume(
         &parent_info,
@@ -50,7 +50,7 @@ pub async fn create_cdna(
         })
         .await?;
 
-    select_cdna_by_id(user.projects(), cdna_id, &mut db_conn)
+    select_cdna_by_id(user.projects(), cdna_id, &db_conn)
         .await
         .map(Json)
 }
@@ -104,6 +104,7 @@ pub struct ChromiumRunInfo {
     pub project_id: Uuid,
 }
 
+#[must_use]
 #[diesel::dsl::auto_type]
 pub fn gem_pools_to_library_specs() -> _ {
     gem_pools::table.inner_join(
@@ -140,11 +141,10 @@ pub fn validate_volume(
     volume: u8,
     expected_volume: u16,
 ) -> Result<(), db::DataError> {
-    if volume as u16 != expected_volume {
+    if u16::from(volume) != expected_volume {
         let library_type: &str = library_type_specification.library_type().into();
         return Err(db::DataError::new_other(&format!(
-            "for library type {}, expected cDNA volume of {library_type}",
-            expected_volume
+            "for library type {expected_volume}, expected cDNA volume of {library_type}"
         )));
     }
 

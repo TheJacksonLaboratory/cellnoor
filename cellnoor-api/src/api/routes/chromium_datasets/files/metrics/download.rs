@@ -24,7 +24,7 @@ const JSON_CONTENT_TYPE: &[u8] = b"application/json";
 
 pub async fn download_metrics_file(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Extension(user): Extension<AuthUser>,
     Path(file_path): Path<FilePath>,
     request: axum::extract::Request,
@@ -42,13 +42,9 @@ pub async fn download_metrics_file(
         .or(headers.get("accept"))
         .map_or(JSON_CONTENT_TYPE, HeaderValue::as_bytes);
 
-    let response = select_chromium_dataset_metrics_by_id(
-        user.projects(),
-        content_type,
-        &file_path,
-        &mut db_conn,
-    )
-    .await?;
+    let response =
+        select_chromium_dataset_metrics_by_id(user.projects(), content_type, &file_path, &db_conn)
+            .await?;
 
     Ok(response)
 }

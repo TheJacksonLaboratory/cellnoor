@@ -17,7 +17,7 @@ use crate::{
 
 pub async fn add_libraries_to_sequencing_run(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
     Json(library_ids): Json<Vec<Uuid>>,
 ) -> Result<(), db::Error> {
@@ -39,7 +39,7 @@ pub async fn add_libraries_to_sequencing_run(
         }
     }
 
-    insert_sequencing_run_library_mappings(id, &library_ids, &mut db_conn).await
+    insert_sequencing_run_library_mappings(id, &library_ids, &db_conn).await
 }
 
 pub async fn insert_sequencing_run_library_mappings(

@@ -15,10 +15,10 @@ use crate::{
 
 pub async fn show_person(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
 ) -> Result<Json<Person>, db::Error> {
-    select_person_by_id(id, &mut db_conn).await.map(Json)
+    select_person_by_id(id, &db_conn).await.map(Json)
 }
 
 pub async fn select_person_by_id(

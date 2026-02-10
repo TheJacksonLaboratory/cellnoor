@@ -33,10 +33,10 @@ use crate::{
 #[axum::debug_handler]
 pub async fn index_chromium_datasets(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     AuthJsonQuery { q }: AuthJsonQuery<ChromiumDatasetQuery>,
 ) -> Result<Json<Vec<ChromiumDatasetSummary>>, db::Error> {
-    select_chromium_datasets(q, &mut db_conn).await.map(Json)
+    select_chromium_datasets(q, &db_conn).await.map(Json)
 }
 
 pub async fn select_chromium_datasets(
@@ -65,6 +65,7 @@ pub async fn select_chromium_datasets(
 diesel::alias!(specimens as pooled_specimens: PooledSpecimens);
 diesel::alias!(suspensions as pooled_suspensions: PooledSuspensions);
 
+#[must_use]
 #[diesel::dsl::auto_type]
 pub fn chromium_datasets_to_all_specimens() -> _ {
     chromium_datasets

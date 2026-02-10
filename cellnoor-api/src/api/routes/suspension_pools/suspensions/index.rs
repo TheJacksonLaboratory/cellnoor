@@ -22,16 +22,14 @@ use crate::{
 
 pub async fn index_pooled_suspensions(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Extension(user): Extension<AuthUser>,
     Path(IdParameter { id }): Path<IdParameter>,
     AuthJsonQuery { mut q }: AuthJsonQuery<SuspensionQuery>,
 ) -> Result<Json<Vec<SuspensionSummary>>, db::Error> {
     q.filter.project_ids.remove_unauthorized_projects(&user);
 
-    select_pooled_suspensions(id, q, &mut db_conn)
-        .await
-        .map(Json)
+    select_pooled_suspensions(id, q, &db_conn).await.map(Json)
 }
 
 pub async fn select_pooled_suspensions(

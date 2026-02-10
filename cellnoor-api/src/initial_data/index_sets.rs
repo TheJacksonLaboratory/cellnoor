@@ -35,7 +35,7 @@ pub(super) async fn download_and_insert_single_index_sets(
 async fn download_and_insert_index_sets<T>(
     file_urls: Vec<Url>,
     http_client: reqwest::Client,
-    mut db_conn: &AsyncPgConnection,
+    db_conn: &AsyncPgConnection,
 ) -> anyhow::Result<()>
 where
     T: 'static + DeserializeOwned + Send + Upsert,
@@ -53,7 +53,7 @@ where
 
     // A for-loop is fine because this is like 10 URLs max, and each of these is a
     // bulk insert
-    let index_sets = index_sets.into_iter().map(|s| s.upsert(&mut db_conn));
+    let index_sets = index_sets.into_iter().map(|s| s.upsert(db_conn));
     futures::future::try_join_all(index_sets).await?;
 
     Ok(())

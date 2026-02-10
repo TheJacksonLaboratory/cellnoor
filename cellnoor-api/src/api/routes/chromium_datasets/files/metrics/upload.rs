@@ -25,7 +25,7 @@ static ALLOWED_CONTENT_TYPES: &[&str] = &["application/json", "text/csv"];
 #[axum::debug_handler]
 pub async fn upload_metrics_file(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
     mut request: Multipart,
 ) -> Result<(), db::Error> {
@@ -48,7 +48,7 @@ pub async fn upload_metrics_file(
         extracted_metrics_files.push((extracted, parsed_content));
     }
 
-    insert_file(id, &extracted_metrics_files, &mut db_conn).await
+    insert_file(id, &extracted_metrics_files, &db_conn).await
 }
 
 async fn insert_file(

@@ -16,13 +16,13 @@ use crate::{
 
 pub async fn index_specimen_measurements(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Extension(user): Extension<AuthUser>,
     Path(IdParameter { id }): Path<IdParameter>,
 ) -> Result<Json<Vec<SpecimenMeasurement>>, db::Error> {
     let authorized_projects = user.projects();
 
-    select_specimen_measurements(authorized_projects, id, &mut db_conn)
+    select_specimen_measurements(authorized_projects, id, &db_conn)
         .await
         .map(Json)
 }

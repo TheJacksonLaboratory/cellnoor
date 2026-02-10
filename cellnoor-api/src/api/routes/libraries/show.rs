@@ -16,11 +16,11 @@ use crate::{
 
 pub(super) async fn show_library(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Extension(user): Extension<AuthUser>,
     Path(IdParameter { id }): Path<IdParameter>,
 ) -> Result<Json<Library>, db::Error> {
-    select_library_by_id(user.projects(), id, &mut db_conn)
+    select_library_by_id(user.projects(), id, &db_conn)
         .await
         .map(Json)
 }

@@ -38,6 +38,7 @@ mod diesel_impls {
         fn from_sql(bytes: PgValue) -> diesel::deserialize::Result<Self> {
             let as_int = <i32 as FromSql<Integer, Pg>>::from_sql(bytes)?;
 
+            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
             Ok(deranged::RangedU16::<MIN, MAX>::new(as_int as u16)
                 .map(RangedU16)
                 .unwrap())

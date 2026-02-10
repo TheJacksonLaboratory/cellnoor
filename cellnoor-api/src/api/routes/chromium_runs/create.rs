@@ -24,7 +24,7 @@ pub(super) async fn create_chromium_run(
     Extension(user): Extension<AuthUser>,
     Json(chromium_run): Json<NewChromiumRun>,
 ) -> Result<Json<ChromiumRun>, db::Error> {
-    let project_id = validate_chromium_run(&chromium_run, &mut db_conn).await?;
+    let project_id = validate_chromium_run(&chromium_run, &db_conn).await?;
 
     let run_id = db_conn
         .transaction(move |db_conn| {
@@ -32,7 +32,7 @@ pub(super) async fn create_chromium_run(
         })
         .await?;
 
-    select_chromium_run_by_id(user.projects(), run_id, &mut db_conn)
+    select_chromium_run_by_id(user.projects(), run_id, &db_conn)
         .await
         .map(Json)
 }

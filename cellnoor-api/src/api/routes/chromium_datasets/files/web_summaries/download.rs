@@ -18,7 +18,7 @@ use crate::{
 
 pub async fn download_web_summary(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Extension(user): Extension<AuthUser>,
     Path(web_summary_path): Path<FilePath>,
 ) -> Result<Html<Vec<u8>>, db::Error> {
@@ -30,8 +30,7 @@ pub async fn download_web_summary(
     );
 
     let file =
-        select_chromium_dataset_web_summaries(user.projects(), &web_summary_path, &mut db_conn)
-            .await?;
+        select_chromium_dataset_web_summaries(user.projects(), &web_summary_path, &db_conn).await?;
 
     Ok(Html(file))
 }

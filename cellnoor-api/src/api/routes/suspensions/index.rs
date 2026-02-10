@@ -15,10 +15,10 @@ use crate::{
 
 pub async fn index_suspensions(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     AuthJsonQuery { q }: AuthJsonQuery<SuspensionQuery>,
 ) -> Result<Json<Vec<SuspensionSummary>>, db::Error> {
-    Ok(select_suspensions(q, &mut db_conn).await.map(Json)?)
+    select_suspensions(q, &db_conn).await.map(Json)
 }
 
 pub async fn select_suspensions(

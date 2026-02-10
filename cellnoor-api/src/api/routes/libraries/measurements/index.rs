@@ -16,11 +16,11 @@ use crate::{
 
 pub async fn index_library_measurements(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Extension(user): Extension<AuthUser>,
     Path(IdParameter { id }): Path<IdParameter>,
 ) -> Result<Json<Vec<LibraryMeasurement>>, db::Error> {
-    select_library_measurements(user.projects(), id, &mut db_conn)
+    select_library_measurements(user.projects(), id, &db_conn)
         .await
         .map(Json)
 }

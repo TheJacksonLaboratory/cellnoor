@@ -15,11 +15,11 @@ use crate::{
 
 pub async fn add_person_to_project(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Path(IdParameter { id: project_id }): Path<IdParameter>,
     Json(IdParameter { id: person_id }): Json<IdParameter>,
 ) -> Result<(), db::Error> {
-    insert_project_person_mapping(project_id, person_id, &mut db_conn).await
+    insert_project_person_mapping(project_id, person_id, &db_conn).await
 }
 
 async fn insert_project_person_mapping(

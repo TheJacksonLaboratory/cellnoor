@@ -3,7 +3,7 @@ use std::{path::Path, str::FromStr};
 use anyhow::Context;
 use camino::{Utf8Path, Utf8PathBuf};
 use clap::Parser;
-use secrecy::{ExposeSecret, SecretBox, SecretString};
+use secrecy::{ExposeSecret, SecretString};
 
 use crate::initial_data::InitialData;
 

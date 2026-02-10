@@ -15,10 +15,10 @@ use crate::{
 
 pub async fn index_suspension_pools(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     AuthJsonQuery { q }: AuthJsonQuery<SuspensionPoolQuery>,
 ) -> Result<Json<Vec<SuspensionPool>>, db::Error> {
-    Ok(select_suspension_pools(q, &mut db_conn).await.map(Json)?)
+    select_suspension_pools(q, &db_conn).await.map(Json)
 }
 
 pub async fn select_suspension_pools(
@@ -57,7 +57,7 @@ where
         }
 
         if let Some(project_ids) = project_ids {
-            filter = filter.and_condition(project_id.eq_any(project_ids))
+            filter = filter.and_condition(project_id.eq_any(project_ids));
         }
 
         filter

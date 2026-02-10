@@ -14,12 +14,12 @@ use crate::{
 
 pub async fn create_specimen(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Extension(user): Extension<AuthUser>,
     Json(specimen): Json<NewSpecimen>,
 ) -> Result<Json<Specimen>, db::Error> {
     let (project_start_date, project_end_date) =
-        project_start_and_end_date(specimen.project_id(), &mut db_conn).await?;
+        project_start_and_end_date(specimen.project_id(), &db_conn).await?;
 
     // Should I spawn two threads for these tasks? Since I love hyper-optimizing
     validate_timestamps(
@@ -32,9 +32,9 @@ pub async fn create_specimen(
         (project_end_date, "project_end_date"),
     )?;
 
-    let id = insert_specimen(specimen, &mut db_conn).await?;
+    let id = insert_specimen(specimen, &db_conn).await?;
 
-    super::show::select_specimen_by_id(user.projects(), id, &mut db_conn)
+    super::show::select_specimen_by_id(user.projects(), id, &db_conn)
         .await
         .map(Json)
 }

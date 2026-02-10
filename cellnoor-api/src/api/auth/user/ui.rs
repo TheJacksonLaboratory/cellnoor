@@ -7,15 +7,22 @@ pub struct User {
     #[allow(dead_code)]
     #[serde(flatten)]
     standard_claims: StandardClaims,
-    user: PrivateClaims,
+    private_claims: PrivateClaims,
     projects: AuthProjects,
 }
 
 impl User {
     pub fn into_authenticated_user(self) -> AuthUser {
-        let Self { user, projects, .. } = self;
+        let Self {
+            private_claims,
+            projects,
+            ..
+        } = self;
 
-        AuthUser { user, projects }
+        AuthUser {
+            user: private_claims,
+            projects,
+        }
     }
 }
 

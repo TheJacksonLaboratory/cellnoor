@@ -16,11 +16,11 @@ use crate::{
 
 pub async fn index_chromium_dataset_libraries(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Extension(user): Extension<AuthUser>,
     Path(IdParameter { id }): Path<IdParameter>,
 ) -> Result<Json<Vec<LibrarySummary>>, db::Error> {
-    select_chromium_dataset_libraries(user.projects(), id, &mut db_conn)
+    select_chromium_dataset_libraries(user.projects(), id, &db_conn)
         .await
         .map(Json)
 }

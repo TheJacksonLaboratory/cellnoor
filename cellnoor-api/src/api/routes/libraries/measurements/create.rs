@@ -20,19 +20,19 @@ use crate::{
 
 pub async fn create_library_measurement(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
     Json(measurement): Json<NewLibraryMeasurement>,
 ) -> Result<Json<LibraryMeasurement>, db::Error> {
     validate_electrophoretic_measurement(measurement.data())?;
 
-    let library_prepared_at = library_prepared_at(id, &mut db_conn).await?;
+    let library_prepared_at = library_prepared_at(id, &db_conn).await?;
     validate_timestamps(
         (library_prepared_at, "library_prepared_at"),
         (measurement.measured_at(), "measurement_made_at"),
     )?;
 
-    insert_library_measurement(id, measurement, &mut db_conn)
+    insert_library_measurement(id, measurement, &db_conn)
         .await
         .map(Json)
 }

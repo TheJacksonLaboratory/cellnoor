@@ -15,10 +15,10 @@ use crate::{
 
 pub async fn index_gem_pools(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     AuthJsonQuery { q }: AuthJsonQuery<GemPoolQuery>,
 ) -> Result<Json<Vec<GemPoolSummary>>, db::Error> {
-    select_gem_pools(q, &mut db_conn).await.map(Json)
+    select_gem_pools(q, &db_conn).await.map(Json)
 }
 
 pub async fn select_gem_pools(

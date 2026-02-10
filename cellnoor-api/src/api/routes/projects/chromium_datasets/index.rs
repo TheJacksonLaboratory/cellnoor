@@ -15,11 +15,11 @@ use crate::{
 
 pub async fn index_project_chromium_datasets(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
     AuthJsonQuery { mut q }: AuthJsonQuery<ChromiumDatasetQuery>,
 ) -> Result<Json<Vec<ChromiumDatasetSummary>>, db::Error> {
     q.filter.project_ids = Some(vec![id]);
 
-    select_chromium_datasets(q, &mut db_conn).await.map(Json)
+    select_chromium_datasets(q, &db_conn).await.map(Json)
 }

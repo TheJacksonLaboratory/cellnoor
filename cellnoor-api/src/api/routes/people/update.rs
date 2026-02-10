@@ -17,7 +17,7 @@ use crate::{
 
 pub async fn update_person(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
     Json(mut person_update): Json<PersonUpdate>,
 ) -> Result<Json<Person>, super::create::Error> {
@@ -27,9 +27,9 @@ pub async fn update_person(
 
     person_update.set_id(id);
 
-    update_person_inner(person_update, &mut db_conn).await?;
+    update_person_inner(person_update, &db_conn).await?;
 
-    Ok(select_person_by_id(id, &mut db_conn).await.map(Json)?)
+    Ok(select_person_by_id(id, &db_conn).await.map(Json)?)
 }
 
 pub async fn update_person_inner(

@@ -25,7 +25,7 @@ pub async fn create_suspension(
         received_at,
         returned_at,
         project_id,
-    } = specimen_info(suspension.parent_specimen_id(), &mut db_conn).await?;
+    } = specimen_info(suspension.parent_specimen_id(), &db_conn).await?;
 
     validate_suspension_created_between_specimen_receipt_and_return(
         suspension.created_at(),
@@ -42,7 +42,7 @@ pub async fn create_suspension(
         })
         .await?;
 
-    select_suspension_by_id(user.projects(), suspension_id, &mut db_conn)
+    select_suspension_by_id(user.projects(), suspension_id, &db_conn)
         .await
         .map(Json)
 }

@@ -14,7 +14,7 @@ static ALLOWED_CONTENT_TYPES: &[&str] = &["text/html"];
 
 pub async fn upload_web_summary(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
     mut request: Multipart,
 ) -> Result<(), db::Error> {
@@ -27,7 +27,7 @@ pub async fn upload_web_summary(
         extracted_web_summaries.push(field.parse(ALLOWED_CONTENT_TYPES).await?);
     }
 
-    insert_chromium_dataset_web_summaries(id, &extracted_web_summaries, &mut db_conn).await?;
+    insert_chromium_dataset_web_summaries(id, &extracted_web_summaries, &db_conn).await?;
 
     Ok(())
 }

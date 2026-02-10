@@ -21,20 +21,20 @@ use crate::{
 
 pub async fn create_cdna_measurement(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
     Json(measurement): Json<NewCdnaMeasurement>,
 ) -> Result<Json<CdnaMeasurement>, db::Error> {
     validate_electrophoretic_measurement(measurement.data())?;
 
-    let prepared_at = cdna_prepared_at(id, &mut db_conn).await?;
+    let prepared_at = cdna_prepared_at(id, &db_conn).await?;
 
     validate_timestamps(
         (prepared_at, "cdna_prepared_at"),
         (measurement.measured_at(), "measurement_made_at"),
     )?;
 
-    insert_cdna_measurement(id, measurement, &mut db_conn)
+    insert_cdna_measurement(id, measurement, &db_conn)
         .await
         .map(Json)
 }

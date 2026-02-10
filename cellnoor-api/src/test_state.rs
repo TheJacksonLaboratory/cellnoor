@@ -1,35 +1,27 @@
 use std::ops::Range;
 
 use cellnoor_models::{
-    cdna::{CdnaFields, CdnaQuery, CdnaSummary, NewCdna},
-    chromium_dataset::{ChromiumDatasetQuery, ChromiumDatasetSummary, NewChromiumDataset},
+    cdna::{CdnaFields, CdnaSummary, NewCdna},
+    chromium_dataset::{ChromiumDatasetSummary, NewChromiumDataset},
     chromium_run::{
-        ChipLoadingFields, ChromiumRunFields, ChromiumRunSummary, GemPoolFields, GemPoolQuery,
-        GemPoolSummary, MAX_GEM_POOLS_PER_NON_OCM_RUN, MAX_GEM_POOLS_PER_OCM_RUN,
-        MAX_SUSPENSIONS_PER_OCM_GEM_POOL, NewChromiumRun, OcmBarcodeId, OcmChipLoading, OcmGemPool,
-        PoolMultiplexChipLoading, PoolMultiplexGemPool, SingleplexChipLoading, SingleplexGemPool,
-        Volume,
+        ChipLoadingFields, ChromiumRunFields, ChromiumRunSummary, GemPoolFields, GemPoolSummary,
+        MAX_GEM_POOLS_PER_NON_OCM_RUN, MAX_GEM_POOLS_PER_OCM_RUN, MAX_SUSPENSIONS_PER_OCM_GEM_POOL,
+        NewChromiumRun, OcmBarcodeId, OcmChipLoading, OcmGemPool, PoolMultiplexChipLoading,
+        PoolMultiplexGemPool, SingleplexChipLoading, SingleplexGemPool, Volume,
     },
-    generic_query::{self, Query},
-    institution::{Institution, InstitutionQuery, NewInstitution},
-    library::{LibraryFields, LibraryQuery, LibrarySummary, NewLibrary},
-    multiplexing_tag::MultiplexingTag,
-    person::{NewPerson, PersonFields, PersonQuery, PersonSummary},
-    project::{NewProject, Project, ProjectFields, ProjectQuery},
+    generic_query::{self},
+    institution::{Institution, NewInstitution},
+    library::{LibraryFields, LibrarySummary, NewLibrary},
+    person::{NewPerson, PersonFields, PersonSummary},
+    project::{NewProject, Project, ProjectFields},
     specimen::{
         BlockFixative, Fixative, NewBlock, NewSpecimen, NewSuspensionSpecimen, NewTissue, Species,
-        SpecimenCommonFields, SpecimenQuery, SpecimenSummary, SuspensionThermalPreservation,
+        SpecimenCommonFields, SpecimenSummary, SuspensionThermalPreservation,
         ThermalPreservationMethod,
     },
-    suspension::{
-        self, NewSuspension, NewSuspensionCommonFields, SuspensionFields, SuspensionQuery,
-        SuspensionSummary,
-    },
-    suspension_pool::{
-        NewSuspensionPool, SuspensionPool, SuspensionPoolFields, SuspensionPoolQuery,
-        SuspensionTagging,
-    },
-    tenx_assay::{LibraryType, SampleMultiplexing, TenxAssay, TenxAssayFilter, TenxAssayQuery},
+    suspension::{NewSuspension, NewSuspensionCommonFields, SuspensionFields, SuspensionSummary},
+    suspension_pool::{SuspensionPool, SuspensionPoolFields, SuspensionTagging},
+    tenx_assay::{LibraryType, SampleMultiplexing, TenxAssayFilter, TenxAssayQuery},
 };
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
@@ -46,7 +38,7 @@ use ranged::{RangedU16, RangedU32};
 use rstest::fixture;
 use serde_json::json;
 use strum::VariantArray;
-use tokio::{sync::OnceCell, task::JoinSet};
+use tokio::sync::OnceCell;
 use uuid::Uuid;
 
 use crate::{
@@ -69,7 +61,7 @@ use crate::{
             projects::{create::insert_project, index::select_projects},
             specimens::{create::insert_specimen, index::select_specimens},
             suspension_pools::{
-                create::{create_suspension_pool, insert_suspension_pool_and_preparers_and_tags},
+                create::insert_suspension_pool_and_preparers_and_tags,
                 index::select_suspension_pools,
             },
             suspensions::{create::insert_suspension, index::select_suspensions},

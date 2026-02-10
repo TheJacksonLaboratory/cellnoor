@@ -24,11 +24,11 @@ use crate::{
 
 pub async fn create_suspension_measurement(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
     Json(measurement): Json<NewSuspensionMeasurement>,
 ) -> Result<Json<SuspensionMeasurement>, db::Error> {
-    let (suspension_content, suspension_created_at) = suspension_info(id, &mut db_conn).await?;
+    let (suspension_content, suspension_created_at) = suspension_info(id, &db_conn).await?;
 
     validate_measurement_content_matches_suspension_content(
         suspension_content,
@@ -42,7 +42,7 @@ pub async fn create_suspension_measurement(
         )?;
     }
 
-    insert_suspension_measurement(id, measurement, &mut db_conn)
+    insert_suspension_measurement(id, measurement, &db_conn)
         .await
         .map(Json)
 }

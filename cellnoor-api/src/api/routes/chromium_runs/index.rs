@@ -15,10 +15,10 @@ use crate::{
 
 pub(super) async fn index_chromium_runs(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     AuthJsonQuery { q }: AuthJsonQuery<ChromiumRunQuery>,
 ) -> Result<Json<Vec<ChromiumRunSummary>>, db::Error> {
-    select_chromium_runs(q, &mut db_conn).await.map(Json)
+    select_chromium_runs(q, &db_conn).await.map(Json)
 }
 
 pub async fn select_chromium_runs(

@@ -11,10 +11,10 @@ use crate::{
 
 pub async fn create_project(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Json(project): Json<NewProject>,
 ) -> Result<Json<Project>, db::Error> {
-    insert_project(project, &mut db_conn).await.map(Json)
+    insert_project(project, &db_conn).await.map(Json)
 }
 
 pub async fn insert_project(

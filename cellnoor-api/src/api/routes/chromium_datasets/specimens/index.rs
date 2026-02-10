@@ -19,11 +19,11 @@ use crate::{
 
 pub async fn index_chromium_dataset_specimens(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Extension(user): Extension<AuthUser>,
     Path(IdParameter { id }): Path<IdParameter>,
 ) -> Result<Json<Vec<SpecimenSummary>>, db::Error> {
-    select_chromium_dataset_specimens(user.projects(), id, &mut db_conn)
+    select_chromium_dataset_specimens(user.projects(), id, &db_conn)
         .await
         .map(Json)
 }
@@ -67,7 +67,7 @@ pub async fn select_chromium_dataset_specimens(
                     .await?
             }
         };
-    };
+    }
 
     Ok(specimens)
 }

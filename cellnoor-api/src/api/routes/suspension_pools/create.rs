@@ -1,3 +1,4 @@
+#![allow(clippy::get_first)]
 use axum::{Json, extract::State};
 use cellnoor_models::{
     suspension::SuspensionContent,
@@ -32,7 +33,7 @@ pub async fn create_suspension_pool(
             .as_ref()
             .iter()
             .map(SuspensionTagging::suspension_id),
-        &mut db_conn,
+        &db_conn,
     )
     .await?;
 
@@ -154,8 +155,9 @@ fn validate_suspensions_created_or_received_before_pooled(
 ) -> Result<(), db::DataError> {
     for (timestamp, field_name) in suspension_info.iter().map(|s| {
         s.created_at
-            .map(|t| (t, "suspension_created_at"))
-            .unwrap_or((s.specimen_info.received_at, "specimen_received_at"))
+            .map_or((s.specimen_info.received_at, "specimen_received_at"), |t| {
+                (t, "suspension_created_at")
+            })
     }) {
         validate_timestamps(
             (timestamp, field_name),

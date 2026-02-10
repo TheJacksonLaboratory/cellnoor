@@ -19,13 +19,11 @@ use crate::{
 
 pub async fn index_project_people(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
     AuthJsonQuery { q: query }: AuthJsonQuery<PersonQuery>,
 ) -> Result<Json<Vec<PersonSummary>>, db::Error> {
-    select_project_people(id, query, &mut db_conn)
-        .await
-        .map(Json)
+    select_project_people(id, query, &db_conn).await.map(Json)
 }
 
 async fn select_project_people(

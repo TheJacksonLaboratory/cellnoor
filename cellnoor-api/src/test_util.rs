@@ -1,13 +1,10 @@
 use std::{cmp::Ordering, fmt::Debug};
 
 use cellnoor_models::generic_query;
-use diesel_async::{AsyncConnection, AsyncPgConnection, scoped_futures::ScopedFutureExt};
+use diesel_async::AsyncPgConnection;
 use pretty_assertions::assert_eq;
 
-use crate::{
-    api,
-    db::{self, DbConnection},
-};
+use crate::db::{self, DbConnection};
 
 #[bon::builder]
 fn filter_and_sort<Record>(

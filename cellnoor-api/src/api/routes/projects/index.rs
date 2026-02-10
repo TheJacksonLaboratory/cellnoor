@@ -18,10 +18,10 @@ use crate::{
 
 pub async fn index_projects(
     _: State<AppState>,
-    mut db_conn: DbConnection,
+    db_conn: DbConnection,
     AuthJsonQuery { q }: AuthJsonQuery<ProjectQuery>,
 ) -> Result<Json<Vec<Project>>, db::Error> {
-    select_projects(q, &mut db_conn).await.map(Json)
+    select_projects(q, &db_conn).await.map(Json)
 }
 
 pub async fn select_projects(

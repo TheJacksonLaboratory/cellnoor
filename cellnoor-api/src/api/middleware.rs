@@ -49,6 +49,7 @@ pub async fn created_status_code(mut response: Response) -> Response {
     response
 }
 
+#[allow(clippy::crate_in_macro_def)]
 #[macro_export]
 macro_rules! admin_required_creation {
     () => {
