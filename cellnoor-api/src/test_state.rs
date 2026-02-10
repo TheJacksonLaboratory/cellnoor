@@ -70,7 +70,8 @@ use crate::{
     },
     config::Config,
     db::{self, DbConnection, DbConnectionPool},
-    state::{AppState, create_test_db_pool},
+    initial_data::insert_initial_data,
+    state::create_test_db_pool,
 };
 
 static TEST_STATE: OnceCell<TestState> = OnceCell::const_new();
@@ -89,7 +90,6 @@ pub async fn root_db_conn() -> DbConnection {
 }
 
 pub struct TestState {
-    _inner: AppState,
     root_db_pool: DbConnectionPool,
 }
 
@@ -97,14 +97,17 @@ impl TestState {
     async fn new() -> Self {
         let config = Config::read()
             .expect("test configuration should be readable from environment variables");
-        let db_root_url = config.db_root_url();
 
-        Self {
-            _inner: AppState::initialize(config)
-                .await
-                .expect("should be able to initialize app state"),
-            root_db_pool: create_test_db_pool(&db_root_url).unwrap(),
-        }
+        let root_db_pool = create_test_db_pool(&config.db_root_url()).unwrap();
+        insert_initial_data(
+            config.initial_data(),
+            reqwest::Client::new(),
+            &root_db_pool.get().await.unwrap(),
+        )
+        .await
+        .unwrap();
+
+        Self { root_db_pool }
     }
 
     async fn populate_db(&'static self) {

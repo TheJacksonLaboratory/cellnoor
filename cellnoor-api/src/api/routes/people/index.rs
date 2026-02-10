@@ -126,7 +126,7 @@ mod tests {
 
     #[rstest]
     #[awt]
-    #[tokio::test(flavor = "multi_thread")]
+    #[tokio::test]
     async fn default_person_query(
         #[future] root_db_conn: DbConnection,
         #[future] database: &'static Database,
@@ -140,7 +140,7 @@ mod tests {
 
     #[rstest]
     #[awt]
-    #[tokio::test(flavor = "multi_thread")]
+    #[tokio::test]
     async fn specific_person_query(
         #[future] root_db_conn: DbConnection,
         #[future] database: &'static Database,

@@ -212,7 +212,7 @@ mod tests {
 
     #[rstest]
     #[awt]
-    #[tokio::test(flavor = "multi_thread")]
+    #[tokio::test]
     async fn default_chromium_dataset_query(
         #[future] root_db_conn: DbConnection,
         #[future] database: &'static Database,
@@ -226,7 +226,7 @@ mod tests {
 
     #[rstest]
     #[awt]
-    #[tokio::test(flavor = "multi_thread")]
+    #[tokio::test]
     async fn specific_chromium_dataset_query(
         #[future] root_db_conn: DbConnection,
         #[future] database: &'static Database,
@@ -260,7 +260,7 @@ mod tests {
 
     #[rstest]
     #[awt]
-    #[tokio::test(flavor = "multi_thread")]
+    #[tokio::test]
     async fn dataset_filter_respects_specimen_filter(
         #[future] root_db_conn: DbConnection,
         #[future] _database: &'static Database,

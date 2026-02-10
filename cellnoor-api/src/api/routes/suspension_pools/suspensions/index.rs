@@ -72,7 +72,7 @@ mod tests {
 
     #[rstest]
     #[awt]
-    #[tokio::test(flavor = "multi_thread")]
+    #[tokio::test]
     async fn suspension_pool_has_suspensions(
         #[future] root_db_conn: DbConnection,
         #[future] database: &'static Database,

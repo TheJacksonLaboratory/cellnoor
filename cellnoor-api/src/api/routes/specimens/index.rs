@@ -214,7 +214,7 @@ mod tests {
 
     #[rstest]
     #[awt]
-    #[tokio::test(flavor = "multi_thread")]
+    #[tokio::test]
     async fn default_specimen_query(
         #[future] root_db_conn: DbConnection,
         #[future] database: &'static Database,
@@ -228,7 +228,7 @@ mod tests {
 
     #[rstest]
     #[awt]
-    #[tokio::test(flavor = "multi_thread")]
+    #[tokio::test]
     async fn specific_specimen_query(
         #[future] root_db_conn: DbConnection,
         #[future] database: &'static Database,
