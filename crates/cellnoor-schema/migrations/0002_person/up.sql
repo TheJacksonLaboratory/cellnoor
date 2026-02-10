@@ -9,7 +9,7 @@
 create table people (
     id uuid primary key default uuidv7(),
     links jsonb generated always as (
-        construct_links('people', id, '{"projects", "specimens", "chromium-datasets"}')
+        construct_links('people', id, '{"projects", "specimens"}')
     ) stored not null,
     name case_insensitive_text not null,
     email case_insensitive_text unique,

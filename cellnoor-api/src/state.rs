@@ -188,13 +188,8 @@ impl AppState {
             AppMode::Production => {
                 let mut jwt_validation = Validation::new(Algorithm::EdDSA);
 
-                if let Some(api_url) = config.public_api_url() {
-                    jwt_validation.set_audience(&[api_url]);
-                }
-
-                if let Some(ui_url) = config.public_ui_url() {
-                    jwt_validation.set_issuer(&[ui_url]);
-                }
+                jwt_validation.set_audience(&[config.jwt_audience()]);
+                jwt_validation.set_issuer(&[config.jwt_issuer()]);
 
                 Self::Production(ProductionState {
                     db_pool,

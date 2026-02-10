@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
 use aide::{
-    axum::{ApiRouter, routing::get},
+    axum::ApiRouter,
     openapi::{OpenApi, SecurityScheme},
 };
-use axum::{Extension, Json, Router, extract::Request};
+use axum::{Extension, Json, Router, extract::Request, routing::get};
 use schemars::JsonSchema;
 use serde::Serialize;
 use tower::ServiceBuilder;
@@ -41,10 +41,11 @@ pub(super) fn app(state: AppState) -> Router<AppState> {
 
     let layers = ServiceBuilder::new().layer(auth_layer).layer(trace_layer);
 
-    // Ensure the OpenAPI documentation is added after the authentication layer so
-    // it's public
+    // Ensure the OpenAPI documentation route and health route are added after the authentication layer so they're
+    // public
     router
         .layer(layers)
+        .route("/health", get(async || "ok"))
         .route("/openapi.json", axum::routing::get(show_api_docs))
         .layer(Extension(Arc::new(api_docs)))
 }
@@ -64,7 +65,6 @@ pub fn router() -> (Router<AppState>, OpenApi) {
     aide::generate::infer_responses(true);
 
     let router = ApiRouter::new()
-        .api_route("/health", get(async || "ok"))
         .nest("/institutions", institutions::router())
         .nest("/people", people::router())
         .nest("/projects", projects::router())

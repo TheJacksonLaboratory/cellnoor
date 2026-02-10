@@ -12,7 +12,7 @@ export async function getApiClient() {
     return apiClient;
   }
 
-  const baseUrl = await readConfig().then((c) => c.apiUrl);
+  const baseUrl = await readConfig().then(({ apiUrl }) => apiUrl);
   const client = createCellnoorClient({
     baseUrl,
     fetch: getRequestEvent().fetch,
@@ -31,17 +31,7 @@ const middleware: Middleware = {
       request.params.query = { q: JSON.stringify({ limit: 50 }) };
     }
 
-    // @ts-ignore
-    const parsedQuery = JSON.parse(request.params.query.q);
-
-    if (!parsedQuery.limit) {
-      parsedQuery.limit = 50;
-    }
-
-    const url = new URL(request.request.url);
-    url.searchParams.set("q", JSON.stringify(parsedQuery));
-
-    return new Request(url, request.request);
+    return request.request;
   },
 };
 
@@ -65,6 +55,8 @@ async function setNewApiToken() {
 
   const { token: newToken } = await auth.api.getToken({ headers });
   const { exp } = jose.decodeJwt(newToken);
+
+  const sameSite = await readConfig().then(({ apiUrl, publicUrl }) => apiUrl.startsWith(publicUrl || "") ? "strict" : "lax");
 
   cookies.set(API_TOKEN_COOKIE_NAME, newToken, {
     path: "/",

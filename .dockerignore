@@ -1,0 +1,25 @@
+# Build artifacts
+node_modules
+target
+
+# Docker
+Dockerfile*
+compose*
+.dockerignore
+
+# Git
+.git
+.gitignore
+
+# Environment
+.env*
+
+# Extraneous files
+README.md
+scripts
+.pre-commit-config.yaml
+.taplo.toml
+initial_data*
+openapi.json
+rust-toolchain.toml
+rustfmt.toml

@@ -1,15 +1,14 @@
-import { betterAuth, hostname } from "better-auth";
+import { betterAuth } from "better-auth";
 import { sveltekitCookies } from "better-auth/svelte-kit";
 import { getRequestEvent } from "$app/server";
 import { readConfig, readSecrets } from "$lib/server/config";
 import { getDbClient } from "$lib/server/db-client";
-import type { MicrosoftEntraIDProfile } from "better-auth/social-providers";
 import { getUserProjects, upsertPersonIntoDb } from "$lib/server/auth/db";
-import { createAuthMiddleware, jwt } from "better-auth/plugins";
+import { jwt } from "better-auth/plugins";
 
 export const auth = betterAuth({
-  baseURL: await readConfig().then((c) => c.publicUrl),
-  secret: await readSecrets().then((c) => c.authSecret),
+  baseURL: await readConfig().then(({ publicUrl }) => publicUrl),
+  secret: await readSecrets().then(({ authSecret }) => authSecret),
   user: {
     additionalFields: {
       user_id: { type: "string" },
@@ -26,11 +25,15 @@ export const auth = betterAuth({
   },
   socialProviders: {
     microsoft: {
-      clientId: await readSecrets().then((c) => c.microsoftEntraClientId),
-      clientSecret: await readSecrets().then((c) =>
-        c.microsoftEntraClientSecret
+      clientId: await readSecrets().then(({ microsoftEntraClientId }) =>
+        microsoftEntraClientId
       ),
-      tenantId: await readSecrets().then((c) => c.microsoftEntraTenant),
+      clientSecret: await readSecrets().then(({ microsoftEntraClientSecret }) =>
+        microsoftEntraClientSecret
+      ),
+      tenantId: await readSecrets().then(({ microsoftEntraTenant }) =>
+        microsoftEntraTenant
+      ),
       mapProfileToUser: async (profile) => {
         // It's useful to have the user's roles in the JWT assigned by better-auth in order to display certain UI
         // elements according to the user's roles. However, it's not great that this function only runs on a fresh
@@ -101,9 +104,8 @@ export const auth = betterAuth({
         getSubject: (session) => {
           return session.user.user_id;
         },
-        issuer: await readConfig().then((c) => c.publicUrl) ??
-          "http://localhost:5173", // Just assume that if `publicUrl` isn't set, we're serving on dev
-        audience: await readConfig().then((c) => c.apiUrl),
+        issuer: await readConfig().then(({ jwtIssuer }) => jwtIssuer),
+        audience: await readConfig().then(({ jwtAudience }) => jwtAudience),
         expirationTime: "30 minutes",
         async definePayload(
           {

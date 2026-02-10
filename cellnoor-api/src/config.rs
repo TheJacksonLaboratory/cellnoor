@@ -19,8 +19,8 @@ pub struct Config {
     db_host: String,
     db_port: u16,
     db_name: String,
-    public_api_url: Option<String>,
-    public_ui_url: Option<String>,
+    jwt_audience: String,
+    jwt_issuer: String,
     host: String,
     port: u16,
     initial_data: InitialData,
@@ -39,8 +39,8 @@ impl Config {
             db_host,
             db_port,
             db_name,
-            public_api_url,
-            public_ui_url,
+            jwt_audience,
+            jwt_issuer,
             host,
             port,
             log_dir,
@@ -57,10 +57,8 @@ impl Config {
             db_host: db_host.or_load(config_dir.join("db_host"))?,
             db_port: db_port.or_load(config_dir.join("db_port"))?,
             db_name: db_name.or_load(config_dir.join("db_name"))?,
-            public_api_url: public_api_url
-                .or_load(config_dir.join("public_api_url"))
-                .ok(),
-            public_ui_url: public_ui_url.or_load(config_dir.join("public_ui_url")).ok(),
+            jwt_audience: jwt_audience.or_load(config_dir.join("public_api_url"))?,
+            jwt_issuer: jwt_issuer.or_load(config_dir.join("public_ui_url"))?,
             host: host.or_load(config_dir.join("host"))?,
             port: port.or_load(config_dir.join("port"))?,
             initial_data: None::<InitialData>.or_load(config_dir.join("initial_data"))?,
@@ -117,13 +115,13 @@ impl Config {
     }
 
     #[must_use]
-    pub fn public_api_url(&self) -> Option<&str> {
-        self.public_api_url.as_deref()
+    pub fn jwt_audience(&self) -> &str {
+        &self.jwt_audience
     }
 
     #[must_use]
-    pub fn public_ui_url(&self) -> Option<&str> {
-        self.public_ui_url.as_deref()
+    pub fn jwt_issuer(&self) -> &str {
+        &self.jwt_issuer
     }
 
     #[must_use]
@@ -175,10 +173,10 @@ struct Cli {
     db_port: Option<u16>,
     #[arg(long, env = "CELLNOOR_DB_NAME")]
     db_name: Option<String>,
-    #[arg(long, env = "CELLNOOR_PUBLIC_API_URL")]
-    public_api_url: Option<String>,
-    #[arg(long, env = "CELLNOOR_PUBLIC_UI_URL")]
-    public_ui_url: Option<String>,
+    #[arg(long, env = "CELLNOOR_JWT_AUDIENCE")]
+    jwt_audience: Option<String>,
+    #[arg(long, env = "CELLNOOR_JWT_ISSUER")]
+    jwt_issuer: Option<String>,
     #[arg(long, env = "CELLNOOR_API_HOST")]
     host: Option<String>,
     #[arg(long, env = "CELLNOOR_API_PORT")]

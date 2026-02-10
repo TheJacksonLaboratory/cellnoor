@@ -2,10 +2,7 @@ name: Build
 permissions:
   contents: read
   packages: write
-on:
-  pull_request:
-    branches:
-      - main
+on: workflow_dispatch
 jobs:
   build:
     runs-on: ubuntu-latest

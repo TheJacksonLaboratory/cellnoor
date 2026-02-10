@@ -14,7 +14,5 @@ export async function GET({ fetch, params: { id, directory, filename } }) {
     `${c.apiUrl}/chromium-datasets/${id}/web-summaries/${directory}/${filename}`
   );
 
-  console.log(url);
-
   return fetch(url);
 }
