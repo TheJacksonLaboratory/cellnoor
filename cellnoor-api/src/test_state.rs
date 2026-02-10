@@ -50,27 +50,31 @@ use tokio::{sync::OnceCell, task::JoinSet};
 use uuid::Uuid;
 
 use crate::{
-    api::routes::{
-        cdna::{create::insert_cdna_and_preparers, index::select_cdna},
-        chromium_datasets::{
-            create::insert_chromium_dataset_and_libraries, index::select_chromium_datasets,
+    api::{
+        AuthProjects,
+        routes::{
+            cdna::{create::insert_cdna_and_preparers, index::select_cdna},
+            chromium_datasets::{
+                create::insert_chromium_dataset_and_libraries, index::select_chromium_datasets,
+                specimens::index::select_chromium_dataset_specimens,
+            },
+            chromium_runs::{
+                create::insert_chromium_run_and_associated_data, index::select_chromium_runs,
+            },
+            gem_pools::index::select_gem_pools,
+            institutions::{create::insert_institution, index::select_institutions},
+            libraries::{create::insert_library_and_preparers, index::select_libraries},
+            multiplexing_tags::index::select_multiplexing_tags,
+            people::{create::insert_person, index::select_people},
+            projects::{create::insert_project, index::select_projects},
+            specimens::{create::insert_specimen, index::select_specimens},
+            suspension_pools::{
+                create::{create_suspension_pool, insert_suspension_pool_and_preparers_and_tags},
+                index::select_suspension_pools,
+            },
+            suspensions::{create::insert_suspension, index::select_suspensions},
+            tenx_assays::index::select_tenx_assays,
         },
-        chromium_runs::{
-            create::insert_chromium_run_and_associated_data, index::select_chromium_runs,
-        },
-        gem_pools::index::select_gem_pools,
-        institutions::{create::insert_institution, index::select_institutions},
-        libraries::{create::insert_library_and_preparers, index::select_libraries},
-        multiplexing_tags::index::select_multiplexing_tags,
-        people::{create::insert_person, index::select_people},
-        projects::{create::insert_project, index::select_projects},
-        specimens::{create::insert_specimen, index::select_specimens},
-        suspension_pools::{
-            create::{create_suspension_pool, insert_suspension_pool_and_preparers_and_tags},
-            index::select_suspension_pools,
-        },
-        suspensions::{create::insert_suspension, index::select_suspensions},
-        tenx_assays::index::select_tenx_assays,
     },
     config::Config,
     db::{self, DbConnection, DbConnectionPool},
@@ -733,41 +737,52 @@ impl TestState {
             insert_chromium_dataset_and_libraries(library.project_id(), dataset, db_conn)
                 .await
                 .unwrap();
+        let specimens: Vec<_> =
+            select_chromium_dataset_specimens(&AuthProjects::All, dataset_id, db_conn)
+                .await
+                .unwrap()
+                .iter()
+                .map(SpecimenSummary::name)
+                .map(str::to_owned)
+                .collect();
 
-        let values = |i| {
+        let values = |name| {
             let content = format!(
-                "<!DOCTYPE html><html><head><title>Web summary</title></head><body>web summary{i} \
-                 - {dataset_id}</body></html>"
+                "<!DOCTYPE html><html><head><title>Web summary</title></head><body>web summary \
+                 {name} - {dataset_id}</body></html>"
             );
             (
                 ws::dataset_id.eq(dataset_id),
-                ws::directory.eq(format!("specimen{i}")),
+                ws::directory.eq(name),
                 ws::filename.eq("web_summary.html"),
                 ws::content.eq(content.into_bytes()),
             )
         };
+        let values: Vec<_> = specimens.iter().map(values).collect();
 
         diesel::insert_into(ws::table)
-            .values([values(0), values(1)])
+            .values(values)
             .execute(&mut db_conn)
             .await
             .unwrap();
 
-        let values = |i| {
+        let values = |name| {
             let raw_content =
-                format!("ds_id, some_metric,another_metric,n\n{dataset_id}100,42,{i}");
-            let parsed_data = serde_json::json!({"ds_id": dataset_id, "some_metric": 100, "another_metric": 42, "n": i});
+                format!("ds_id, some_metric,another_metric,n\n{dataset_id}100,42,name");
+            let parsed_data = serde_json::json!({"ds_id": dataset_id, "some_metric": 100, "another_metric": 42, "specimen_name": name});
             (
                 mf::dataset_id.eq(dataset_id),
-                mf::directory.eq(format!("specimen{i}")),
+                mf::directory.eq(name),
                 mf::filename.eq("metrics_summary.csv"),
                 mf::raw_content.eq(raw_content.into_bytes()),
                 mf::content_type.eq("text/csv"),
                 mf::parsed_data.eq(parsed_data),
             )
         };
+        let values: Vec<_> = specimens.iter().map(values).collect();
+
         diesel::insert_into(mf::table)
-            .values([values(0), values(1)])
+            .values(values)
             .execute(&mut db_conn)
             .await
             .unwrap();

@@ -41,8 +41,8 @@ pub(super) fn app(state: AppState) -> Router<AppState> {
 
     let layers = ServiceBuilder::new().layer(auth_layer).layer(trace_layer);
 
-    // Ensure the OpenAPI documentation route and health route are added after the authentication layer so they're
-    // public
+    // Ensure the OpenAPI documentation route and health route are added after the
+    // authentication layer so they're public
     router
         .layer(layers)
         .route("/health", get(async || "ok"))

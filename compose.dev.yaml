@@ -3,6 +3,7 @@ services:
     build:
       args:
         BUILD_PROFILE: "dev"
+      tags: !reset []
     environment:
       JWT_ISSUER: &ui_url "http://cellnoor-ui"
       JWT_AUDIENCE: &api_url "http://cellnoor-api/api"
@@ -15,10 +16,7 @@ services:
       PUBLIC_URL: &public_url https://localhost
   cellnoor-ui:
     build:
-      args:
-        # For some reason, these have to be supplied at build-time?
-        PUBLIC_URL: *public_url
-        API_URL: *api_url
+      tags: !reset []
     environment:
       JWT_ISSUER: *ui_url
       JWT_AUDIENCE: *api_url

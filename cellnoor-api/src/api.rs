@@ -1,4 +1,6 @@
 use anyhow::Context;
+#[cfg(any(feature = "dummy-data", test))]
+pub use auth::AuthProjects;
 use axum::Router;
 use camino::Utf8Path;
 use tokio::net::TcpListener;

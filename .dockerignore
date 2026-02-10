@@ -1,6 +1,8 @@
 # Build artifacts
 node_modules
 target
+.svelte-kit
+build
 
 # Docker
 Dockerfile*
@@ -14,12 +16,17 @@ compose*
 # Environment
 .env*
 
-# Extraneous files
+# Formatting files
+.taplo.toml
+rustfmt.toml
+.sqlfluff
+.sqlfluffignore
+
+# Miscellaneous files
 README.md
 scripts
 .pre-commit-config.yaml
-.taplo.toml
 initial_data*
 openapi.json
 rust-toolchain.toml
-rustfmt.toml
+.github

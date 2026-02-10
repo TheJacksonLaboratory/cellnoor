@@ -24,14 +24,18 @@ export async function getApiClient() {
 }
 
 const middleware: Middleware = {
-  async onRequest(request) {
+  async onRequest({ request }) {
     await reauthenticate();
 
-    if (!request.params.query || !request.params.query.q) {
-      request.params.query = { q: JSON.stringify({ limit: 50 }) };
-    }
+    const { apiUrl, publicUrl } = await readConfig();
+    const { cookies } = getRequestEvent();
 
-    return request.request;
+    if (!apiUrl.startsWith(publicUrl || "")) {
+      request.headers.set(
+        "Cookie",
+        `${API_TOKEN_COOKIE_NAME}=${cookies.get(API_TOKEN_COOKIE_NAME)}`,
+      );
+    }
   },
 };
 
@@ -55,8 +59,6 @@ async function setNewApiToken() {
 
   const { token: newToken } = await auth.api.getToken({ headers });
   const { exp } = jose.decodeJwt(newToken);
-
-  const sameSite = await readConfig().then(({ apiUrl, publicUrl }) => apiUrl.startsWith(publicUrl || "") ? "strict" : "lax");
 
   cookies.set(API_TOKEN_COOKIE_NAME, newToken, {
     path: "/",

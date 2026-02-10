@@ -47,4 +47,4 @@ USER appuser
 
 EXPOSE ${PORT:-80}
 
-CMD /bin/cellnoor-api --mode ${MODE:-production} --db-host ${DB_HOST} --db-port ${DB_PORT} --jwt-issuer ${JWT_ISSUER} --jwt-audience ${JWT_AUDIENCE} --host 0.0.0.0 --port ${PORT} --db-root-user ${DB_ROOT_USER} --log-dir logs --config-dir /run/secrets
+CMD /bin/cellnoor-api --mode ${MODE:-production} --db-host ${DB_HOST} --db-port ${DB_PORT} --jwt-issuer ${JWT_ISSUER} --jwt-audience ${JWT_AUDIENCE} --host 0.0.0.0 --port ${PORT} --db-root-user ${DB_ROOT_USER} --config-dir /run/secrets
