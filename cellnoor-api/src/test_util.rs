@@ -4,7 +4,7 @@ use cellnoor_models::generic_query;
 use diesel_async::AsyncPgConnection;
 use pretty_assertions::assert_eq;
 
-use crate::db::{self, DbConnection};
+use crate::db;
 
 #[bon::builder]
 fn filter_and_sort<Record>(
@@ -34,7 +34,7 @@ where
 #[builder(finish_fn = run)]
 pub async fn test_query<SelectFn, Filter, OrderBy, Record>(
     #[builder(start_fn)] select_fn: SelectFn,
-    #[builder(finish_fn)] mut db_conn: DbConnection,
+    #[builder(finish_fn)] db_conn: &AsyncPgConnection,
     #[builder(default = generic_query::Query::<Filter, OrderBy>::default_with_no_limit())]
     db_query: generic_query::Query<Filter, OrderBy>,
     all_records: &'static [Record],
@@ -60,7 +60,7 @@ pub async fn test_query<SelectFn, Filter, OrderBy, Record>(
         "no records found after data was filtered"
     );
 
-    let loaded_records = select_fn(db_query, &mut db_conn).await.unwrap();
+    let loaded_records = select_fn(db_query, db_conn).await.unwrap();
     assert!(
         !loaded_records.is_empty(),
         "no records loaded from database"

@@ -134,7 +134,7 @@ mod tests {
         test_query(select_people)
             .all_records(&database.people)
             .sort_by(sort_by_name)
-            .run(root_db_conn)
+            .run(&root_db_conn)
             .await;
     }
 
@@ -168,7 +168,7 @@ mod tests {
             })
             .sort_by(|i1, i2| sort_by_id(i1, i2).then(sort_by_name(i1, i2).reverse()))
             .db_query(query)
-            .run(root_db_conn)
+            .run(&root_db_conn)
             .await;
     }
 }

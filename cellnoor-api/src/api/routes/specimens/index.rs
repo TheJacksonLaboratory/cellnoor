@@ -222,7 +222,7 @@ mod tests {
         test_query(select_specimens)
             .all_records(&database.specimens)
             .sort_by(|i1, i2| sort_by_received_at(i1, i2).reverse())
-            .run(root_db_conn)
+            .run(&root_db_conn)
             .await;
     }
 
@@ -256,7 +256,7 @@ mod tests {
             })
             .sort_by(|i1, i2| sort_by_received_at(i1, i2).then(sort_by_tissue(i1, i2).reverse()))
             .db_query(query)
-            .run(root_db_conn)
+            .run(&root_db_conn)
             .await;
     }
 }
