@@ -5,32 +5,6 @@ on:
       - "**/*.rs"
 
 jobs:
-  check_cellnoor-schema:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:18-alpine
-        env:
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports:
-          - 5432:5432
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
-
-      - name: Cache cargo files
-        uses: Swatinem/rust-cache@v2
-        with:
-          cache-all-crates: true
-          cache-workspace-crates: true
-
-      - name: Install diesel-cli
-        run: cargo install diesel_cli --no-default-features --features postgres
-
-      - name: Check schema
-        working-directory: crates/cellnoor-schema
-        run: diesel setup --database-url postgres://postgres@localhost/postgres --locked-schema
-
   lint:
     runs-on: ubuntu-latest
     env:
@@ -70,17 +44,11 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:18-alpine
-        env:
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports:
-          - 5432:5432
     env:
-      CELLNOOR_GENERATE_SCHEMA: false
-      # Unfortunately, some of these environment variables are unnecessary for unit tests, but have to be included because the unit tests read the entire app configuration as one big piece
+      # Unfortunately, some of these environment variables are unnecessary for unit tests, but have to be included
+      # because the unit tests read the entire app configuration as one big piece
       # TODO: split the different aspects of the configuration into different places
+      CELLNOOR_GENERATE_SCHEMA: false
       CELLNOOR_CONFIG_DIR: .
       CELLNOOR_DB_ROOT_USER: postgres
       CELLNOOR_DB_ROOT_PASSWORD: ""
@@ -93,7 +61,13 @@ jobs:
       CELLNOOR_JWT_AUDIENCE: ""
       CELLNOOR_API_HOST: localhost
       CELLNOOR_API_PORT: 8000
-
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -103,6 +77,13 @@ jobs:
         with:
           cache-all-crates: true
           cache-workspace-crates: true
+
+      - name: Install diesel-cli
+        run: cargo install diesel_cli --no-default-features --features postgres
+
+      - name: Check schema
+        working-directory: crates/cellnoor-schema
+        run: diesel setup --database-url postgres://postgres@localhost/postgres --locked-schema
 
       - name: Test
         run: |
