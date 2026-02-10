@@ -17,15 +17,8 @@ until docker exec --user postgres cellnoor-api_test pg_isready >/dev/null 2>&1; 
     sleep 0.1
 done
 
-export CELLNOOR_CONFIG_DIR=".."
 export CELLNOOR_DB_ROOT_USER=postgres
 export CELLNOOR_DB_ROOT_PASSWORD="p"
 export CELLNOOR_API_DB_PASSWORD="p"
-export CELLNOOR_UI_DB_PASSWORD=""
-export CELLNOOR_DB_HOST=localhost
-export CELLNOOR_DB_PORT=5433
-export CELLNOOR_DB_NAME=postgres
-export CELLNOOR_API_HOST=localhost
-export CELLNOOR_API_PORT=8000
 
-cargo test --workspace $@
+cargo test --workspace --all-features $@

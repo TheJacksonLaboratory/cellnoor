@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres
+        image: postgres:18-alpine
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
         ports:
@@ -47,9 +47,6 @@ jobs:
           cache-all-crates: true
           cache-workspace-crates: true
 
-      - name: Install diesel-cli
-        run: cargo install diesel_cli --no-default-features --features postgres
-
       - name: Lint
         run: cargo clippy --workspace --all-features
 
@@ -66,25 +63,25 @@ jobs:
           cache-workspace-crates: true
 
       - name: Install nightly toolchain
-        run: rustup component add --toolchain nightly-2025-11-24 rustfmt # This is updated weekly-ish
+        run: rustup component add --toolchain nightly-2026-02-10 rustfmt # This is updated weekly-ish
 
       - name: Format
-        run: cargo +nightly-2025-11-24 fmt -- --check
+        run: cargo +nightly-2026-02-10 fmt -- --check
 
   test:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres
+        image: postgres:18-alpine
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5432:5432
     env:
+      CELLNOOR_GENERATE_SCHEMA: false
       # Unfortunately, some of these environment variables are unnecessary for unit tests, but have to be included because the unit tests read the entire app configuration as one big piece
       # TODO: split the different aspects of the configuration into different places
       CELLNOOR_CONFIG_DIR: .
-      CELLNOOR_GENERATE_SCHEMA: false
       CELLNOOR_DB_ROOT_USER: postgres
       CELLNOOR_DB_ROOT_PASSWORD: ""
       CELLNOOR_API_DB_PASSWORD: ""
@@ -107,10 +104,7 @@ jobs:
           cache-all-crates: true
           cache-workspace-crates: true
 
-      - name: Install diesel-cli
-        run: cargo install diesel_cli --no-default-features --features postgres
-
       - name: Test
         run: |
           mv initial_data.sample.json cellnoor-api/initial_data
-          cargo test --workspace
+          cargo test --workspace --all-features

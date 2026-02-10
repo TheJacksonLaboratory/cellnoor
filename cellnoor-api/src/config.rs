@@ -28,6 +28,8 @@ pub struct Config {
 
 impl Config {
     pub fn read() -> anyhow::Result<Self> {
+        dotenvy::dotenv().unwrap_or_default();
+
         let Cli {
             config_dir,
             mode,

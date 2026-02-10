@@ -51,8 +51,8 @@ fn validate_measurement_content_matches_suspension_content(
     suspension_content: SuspensionContent,
     measurement: &SuspensionMeasurementData,
 ) -> Result<(), db::DataError> {
-    // Using a match statement is better than a let guard because if you ever add
-    // another measurement variant, the compiler protects you
+    // Using a match statement is better than a let guard because the compiler
+    // protects us if we ever add another type of suspension measurement
     let measurement_content = match measurement {
         SuspensionMeasurementData::Concentration {
             numerator_unit: measurement_content,
