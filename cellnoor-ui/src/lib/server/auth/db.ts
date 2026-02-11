@@ -79,13 +79,7 @@ export async function deleteApiTokenFromDb(
   { user_id, jti }: { user_id: string; jti: string },
   dbClient: Bun.SQL,
 ) {
-  await dbClient.begin(async (client) => {
-    const result =
-      await client`delete from json_web_tokens where sub = ${user_id} and jti = ${jti} returning exp`;
-
-    const revoke = { jti, exp: result[0].exp };
-    await client`insert into revoked_json_web_tokens ${client(revoke)}`;
-  });
+  await dbClient`delete from json_web_tokens where sub = ${user_id} and jti = ${jti}`;
 }
 
 export async function getUserProjects(userId: string, dbClient: Bun.SQL) {

@@ -4,7 +4,8 @@ import { getRequestEvent } from "$app/server";
 import { readConfig, readSecrets } from "$lib/server/config";
 import { getDbClient } from "$lib/server/db-client";
 import { getUserProjects, upsertPersonIntoDb } from "$lib/server/auth/db";
-import { jwt } from "better-auth/plugins";
+import { createAuthMiddleware, jwt } from "better-auth/plugins";
+import { API_TOKEN_COOKIE_NAME } from "./server/cellnoor-client";
 
 export const auth = betterAuth({
   baseURL: await readConfig().then(({ publicUrl }) => publicUrl),
@@ -53,6 +54,13 @@ export const auth = betterAuth({
         };
       },
     },
+  },
+  hooks: {
+    after: createAuthMiddleware(async (resp) => {
+      if (resp.path.includes("sign-out")) {
+        resp.setCookie(API_TOKEN_COOKIE_NAME, "", { path: "/", maxAge: 0 });
+      }
+    }),
   },
   plugins: [
     jwt({
@@ -128,6 +136,7 @@ export const auth = betterAuth({
             });
 
           return {
+            jti: Bun.randomUUIDv7(),
             private_claims: {
               user_id,
               is_admin,

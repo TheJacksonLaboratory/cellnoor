@@ -12,12 +12,9 @@ trap cleanup_docker EXIT
 # (started in restart-compilation-db.sh) is using port 5432
 docker run --name cellnoor-dev-db --env POSTGRES_PASSWORD=p --publish 5433:5432 --detach postgres:18-alpine
 
-# Thanks ChatGPT
-until docker exec --user postgres cellnoor-dev-db pg_isready >/dev/null 2>&1; do
+until diesel database setup --config-file crates/cellnoor-schema/diesel.toml --database-url postgres://postgres:p@localhost:5433/postgres --migration-dir crates/cellnoor-schema/migrations >/dev/null 2>&1; do
     sleep 0.1
 done
-
-
 
 # The build script cellnoor-schema/build.rs calls the diesel-cli, which may need a connection to a database. We
 # provide the URL of the database spun up in restart-compilation-db.sh via an environment variable, which diesel picks

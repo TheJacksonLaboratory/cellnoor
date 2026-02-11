@@ -1,7 +1,7 @@
 use std::{collections::HashSet, sync::Arc};
 
-use cellnoor_schema::{people, project_people};
-use diesel::{HasQuery, prelude::*};
+use cellnoor_schema::{json_web_tokens, people, project_people};
+use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use serde::Deserialize;
 use tokio_stream::StreamExt;
@@ -21,10 +21,14 @@ impl User {
         &self,
         mut db_conn: &AsyncPgConnection,
     ) -> Result<AuthUser, db::Error> {
+        let jti = self.0.jti;
         let user_id = self.0.sub;
 
-        let user = PrivateClaims::query()
+        let user = json_web_tokens::table
+            .inner_join(people::table)
+            .filter(json_web_tokens::jti.eq(jti))
             .filter(people::id.eq(user_id))
+            .select(PrivateClaims::as_select())
             .first(&mut db_conn);
 
         let user_projects = project_people::table
