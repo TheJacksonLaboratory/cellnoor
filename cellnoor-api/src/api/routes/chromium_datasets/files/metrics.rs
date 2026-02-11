@@ -1,2 +1,2 @@
-pub mod fetch;
+pub mod download;
 pub mod upload;

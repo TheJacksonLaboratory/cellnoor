@@ -1,51 +1,45 @@
-use axum::{extract::State, http::status::StatusCode};
-use cellnoor_models::person::{Person, PersonId, PersonUpdate};
-use diesel::{
-    RunQueryDsl,
-    prelude::*,
-    sql_types::{Array, Text},
+use axum::{
+    Json,
+    extract::{Path, State},
 };
+use cellnoor_models::{
+    IdParameter,
+    person::{Person, PersonUpdate},
+};
+use cellnoor_schema::people;
+use diesel_async::RunQueryDsl;
 
 use crate::{
-    api::{
-        extract::{ValidJson, auth::AuthenticatedUser},
-        routes::{ApiResponse, inner_handler},
-    },
-    db,
+    api::routes::people::{create::validate_email, show::select_person_by_id},
+    db::DbConnection,
     state::AppState,
 };
 
-pub(super) async fn update_person(
-    id: PersonId,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    ValidJson(request): ValidJson<PersonUpdate>,
-) -> ApiResponse<Person> {
-    let item = inner_handler(state, user, (id, request)).await?;
-    Ok((StatusCode::OK, item))
+pub async fn update_person(
+    _: State<AppState>,
+    db_conn: DbConnection,
+    Path(IdParameter { id }): Path<IdParameter>,
+    Json(mut person_update): Json<PersonUpdate>,
+) -> Result<Json<Person>, super::create::Error> {
+    if let Some(email) = person_update.email() {
+        validate_email(email)?;
+    }
+
+    person_update.set_id(id);
+
+    update_person_inner(person_update, &db_conn).await?;
+
+    Ok(select_person_by_id(id, &db_conn).await.map(Json)?)
 }
 
-define_sql_function! {fn grant_roles_to_user(user_id: Text, roles: Array<Text>)}
+pub async fn update_person_inner(
+    update: PersonUpdate,
+    mut db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<(), super::create::Error> {
+    diesel::update(people::table)
+        .set(update)
+        .execute(&mut db_conn)
+        .await?;
 
-define_sql_function! {fn revoke_roles_from_user(user_id: Text, roles: Array<Text>)}
-
-impl db::Operation<Person> for (PersonId, PersonUpdate) {
-    fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Person, db::Error> {
-        let (id, mut update) = self;
-        update.set_id(id.0);
-
-        diesel::update(&update).set(&update).execute(db_conn)?;
-
-        let id_string = id.to_id_string();
-
-        if let Some(grant_roles) = update.grant_roles() {
-            diesel::select(grant_roles_to_user(&id_string, grant_roles)).execute(db_conn)?;
-        }
-
-        if let Some(revoke_roles) = update.revoke_roles() {
-            diesel::select(revoke_roles_from_user(&id_string, revoke_roles)).execute(db_conn)?;
-        }
-
-        id.execute(db_conn)
-    }
+    Ok(())
 }

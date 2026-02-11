@@ -42,34 +42,6 @@ create function role_exists(user_id text) returns boolean language plpgsql volat
     end;
 $$;
 
-create function grant_roles_to_user(
-    user_id text,
-    roles text []
-) returns void language plpgsql volatile strict as $$
-    declare r text;
-    begin
-        foreach r in array roles loop
-            execute format('grant %I to %I', r, user_id);
-        end loop;
-    end;
-$$;
-
-create function revoke_roles_from_user(
-    user_id text,
-    roles text []
-) returns void language plpgsql volatile strict as $$
-    declare r text;
-    begin
-        if not role_exists(user_id) then
-            return;
-        end if;
-
-        foreach r in array roles loop
-            execute format('revoke %I from %I', r, user_id);
-        end loop;
-    end;
-$$;
-
 create function create_role_if_not_exists(
     role_name text
 ) returns void language plpgsql volatile strict as $$
@@ -77,31 +49,6 @@ create function create_role_if_not_exists(
         if not role_exists(role_name) then
             execute format('create role %I', role_name);
         end if;
-    end;
-$$;
-
-create function create_user_if_not_exists(
-    user_id text,
-    password text,
-    roles text []
-) returns void language plpgsql volatile strict as $$
-    begin
-        set local role user_creator;
-        perform create_role_if_not_exists(user_id);
-        execute format('grant %I to cellnoor_api with admin true, inherit false', user_id);
-        execute format('alter role %I with login password %L', user_id, password);
-        reset role;
-        perform grant_roles_to_user(user_id, roles);
-    end;
-$$;
-
-create function get_user_roles(
-    user_id text
-) returns text [] language plpgsql volatile strict as $$
-    declare roles text [];
-    begin
-        select coalesce(nullif(array_agg(pg_roles.rolname), '{null}'), '{}') from pg_roles inner join pg_auth_members on pg_roles.oid = pg_auth_members.roleid and pg_auth_members.member = (select usesysid from pg_user where usename = user_id) into roles;
-        return roles;
     end;
 $$;
 
@@ -121,25 +68,11 @@ create function construct_links(
     end;
 $$;
 
--- Roles assigned to people
-select create_role_if_not_exists('app_admin');
-select create_role_if_not_exists('biology_staff');
-select create_role_if_not_exists('computational_staff');
-
--- The API logs in as cellnoor_api before switching  to the appropriate user for a query
 select create_role_if_not_exists('cellnoor_api');
 alter role cellnoor_api with login;
 
--- The UI logs in as cellnoor_ui
 select create_role_if_not_exists('cellnoor_ui');
 alter role cellnoor_ui with login;
-
--- cellnoor_ui needs to grant users to cellnoor_api so that cellnoor_api can switch to that user. That means
--- cellnoor_ui needs admin on the new user, but a role cannot give admin on a different role to itself, so this role
--- simply allows us to circumvent that.
-select create_role_if_not_exists('user_creator');
-alter role user_creator with createrole;
-grant user_creator to cellnoor_ui with inherit false; -- noqa: PRS
 
 create collation case_insensitive (provider = icu, deterministic = false, locale = 'en-u-ks-level1');
 create domain case_insensitive_text as text collate case_insensitive;

@@ -1,12 +1,13 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "serde", serde(transparent))]
+#[cfg_attr(feature = "schemars", schemars(with = "u32"))]
 #[cfg_attr(
     feature = "diesel",
     derive(diesel::deserialize::FromSqlRow, diesel::expression::AsExpression)
 )]
 #[cfg_attr(feature = "diesel", diesel(sql_type = ::diesel::sql_types::BigInt))]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(as = "u32"))]
 pub struct RangedU32<const MIN: u32, const MAX: u32>(deranged::RangedU32<MIN, MAX>);
 
 impl<const MIN: u32, const MAX: u32> RangedU32<MIN, MAX> {

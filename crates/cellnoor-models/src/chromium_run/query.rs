@@ -1,7 +1,6 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::{chromium_runs, gem_pools};
 use macro_attributes::{filter, order_by};
-use macros::uuid_newtype;
 use uuid::Uuid;
 
 #[cfg(feature = "app")]
@@ -10,6 +9,7 @@ use crate::generic_query;
 #[filter]
 pub struct ChromiumRunFilter {
     pub ids: Option<Vec<Uuid>>,
+    pub project_ids: Option<Vec<Uuid>>,
 }
 
 #[order_by(chromium_runs)]
@@ -31,14 +31,12 @@ impl Default for ChromiumRunOrderBy {
     }
 }
 
-#[cfg(feature = "app")]
 pub type ChromiumRunQuery = generic_query::Query<ChromiumRunFilter, ChromiumRunOrderBy>;
-
-uuid_newtype!(ChromiumRunId, "/{id}");
 
 #[filter]
 pub struct GemPoolFilter {
     pub ids: Option<Vec<Uuid>>,
+    pub project_ids: Option<Vec<Uuid>>,
 }
 
 #[order_by(gem_pools)]
@@ -54,7 +52,4 @@ impl Default for GemPoolOrderBy {
     }
 }
 
-#[cfg(feature = "app")]
 pub type GemPoolQuery = generic_query::Query<GemPoolFilter, GemPoolOrderBy>;
-
-uuid_newtype!(GemPoolId, "/{id}");

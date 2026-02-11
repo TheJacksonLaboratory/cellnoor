@@ -42,9 +42,8 @@ pub struct SpecimenCommonFields {
         serialize_as = jiff_diesel::Timestamp,
         deserialize_as = jiff_diesel::Timestamp
     ))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     pub(super) received_at: Timestamp,
-    pub(super) lab_id: Uuid,
+    pub(super) project_id: Uuid,
     pub(super) species: Species,
     pub(super) host_species: Option<Species>,
     pub(super) returned_by: Option<Uuid>,
@@ -52,7 +51,6 @@ pub struct SpecimenCommonFields {
         serialize_as = jiff_diesel::NullableTimestamp,
         deserialize_as = jiff_diesel::NullableTimestamp
     ))]
-    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     pub(super) returned_at: Option<Timestamp>,
     pub(super) tissue: NonEmptyString,
     pub(super) additional_data: Option<Value>,

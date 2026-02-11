@@ -6,7 +6,6 @@ version = "0.1.0"
 [dependencies]
 diesel = { workspace = true, features = [
   "32-column-tables",
-  "postgres",
   "serde_json",
   "uuid",
   "without-deprecated",

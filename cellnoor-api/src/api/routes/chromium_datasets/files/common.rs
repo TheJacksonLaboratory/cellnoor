@@ -1,8 +1,19 @@
 #![allow(clippy::result_large_err)]
-use axum::{extract::multipart::Field, http::StatusCode};
+use axum::extract::multipart::Field;
 use camino::Utf8Path;
+use schemars::JsonSchema;
+use serde::Deserialize;
+use uuid::Uuid;
 
-use crate::api::{self, ErrorResponse};
+use crate::db;
+
+#[derive(Deserialize, JsonSchema)]
+#[schemars(inline)]
+pub struct FilePath {
+    pub dataset_id: Uuid,
+    pub directory: String,
+    pub filename: String,
+}
 
 #[derive(Debug)]
 pub struct ParsedMultipartFormField {
@@ -34,23 +45,26 @@ pub trait FieldExt<'a> {
     async fn parse(
         self,
         allowed_content_types: &[&str],
-    ) -> Result<ParsedMultipartFormField, ErrorResponse>;
+    ) -> Result<ParsedMultipartFormField, db::DataError>;
 }
 
 impl<'a> FieldExt<'a> for Field<'a> {
     async fn parse(
         self,
         allowed_content_types: &[&str],
-    ) -> Result<ParsedMultipartFormField, ErrorResponse> {
+    ) -> Result<ParsedMultipartFormField, db::DataError> {
         let content_type = extract_content_type(self.content_type(), allowed_content_types)?;
 
         let (directory, filename) = extract_path(self.file_name())?;
 
         Ok(ParsedMultipartFormField {
             content_type,
-            directory: directory.to_string(),
-            filename: filename.to_string(),
-            content: self.bytes().await?,
+            directory: directory.to_owned(),
+            filename: filename.to_owned(),
+            content: self
+                .bytes()
+                .await
+                .map_err(|e| db::DataError::new_other(&e.to_string()))?,
         })
     }
 }
@@ -58,42 +72,25 @@ impl<'a> FieldExt<'a> for Field<'a> {
 fn extract_content_type(
     content_type: Option<&str>,
     allowed_content_types: &[&str],
-) -> Result<String, ErrorResponse> {
+) -> Result<String, db::DataError> {
     let Some(content_type) = content_type else {
-        return Err(ErrorResponse {
-            status: StatusCode::NOT_ACCEPTABLE.as_u16(),
-            public_error: api::Error::MalformedRequest {
-                message: "file-upload must have content-type".to_owned(),
-            },
-            internal_error: None,
-        });
+        return Err(db::DataError::new_other(
+            "file-upload must have content-type",
+        ))?;
     };
 
     if !allowed_content_types.contains(&content_type) {
-        return Err(ErrorResponse {
-            status: StatusCode::NOT_ACCEPTABLE.as_u16(),
-            public_error: api::Error::MalformedRequest {
-                message: format!(
-                    "file-upload must have one of the following content-types: \
-                     {allowed_content_types:?}"
-                ),
-            },
-            internal_error: None,
-        });
+        return Err(db::DataError::new_other(&format!(
+            "file-upload must have one of the following content-types: {allowed_content_types:?}"
+        )));
     }
 
     Ok(content_type.to_owned())
 }
 
-fn extract_path(filename: Option<&str>) -> Result<(&str, &str), ErrorResponse> {
+fn extract_path(filename: Option<&str>) -> Result<(&str, &str), db::DataError> {
     let Some(path) = filename.map(Utf8Path::new) else {
-        return Err(ErrorResponse {
-            status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
-            public_error: api::Error::MalformedRequest {
-                message: "file-upload must have filename".to_owned(),
-            },
-            internal_error: None,
-        });
+        return Err(db::DataError::new_other("uploaded file must have filename"));
     };
 
     let (directory, filename) = {
@@ -104,13 +101,9 @@ fn extract_path(filename: Option<&str>) -> Result<(&str, &str), ErrorResponse> {
             path.file_name(),
             ancestors.next().map(Utf8Path::as_str),
         ) else {
-            return Err(ErrorResponse {
-                status: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
-                public_error: api::Error::MalformedRequest {
-                    message: "filename must be of the form 'directory/filename'".to_owned(),
-                },
-                internal_error: None,
-            });
+            return Err(db::DataError::new_other(
+                "filename must be of the form 'directory/filename'",
+            ));
         };
 
         (directory, filename)

@@ -7,10 +7,7 @@ FROM rust:${RUST_VERSION}-trixie AS build
 ARG BUILD_PROFILE
 WORKDIR /app
 
-RUN apt update && \
-    apt install postgresql-common --yes && \
-    /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y && \
-    apt install libpq5 --yes
+RUN apt update
 
 # Build the app, bind-mounting all the workspace crates and cache-mounting useful directories
 RUN --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
@@ -30,9 +27,7 @@ RUN --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
 FROM debian:trixie AS final
 
 RUN apt update && \
-    apt install postgresql-common --yes && \
-    /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y && \
-    apt install libpq5 adduser --yes
+    apt install adduser ca-certificates curl --yes
 
 RUN mkdir app
 
@@ -52,4 +47,4 @@ USER appuser
 
 EXPOSE ${PORT:-80}
 
-CMD /bin/cellnoor-api --mode ${MODE:-production} --db-host ${DB_HOST} --db-port ${DB_PORT} --api-key-prefix-length ${API_KEY_PREFIX_LENGTH} --host 0.0.0.0 --port ${PORT} --db-root-user ${DB_ROOT_USER} --log-dir logs --config-dir /run/secrets
+CMD /bin/cellnoor-api --mode ${MODE:-production} --db-host ${DB_HOST} --db-port ${DB_PORT} --jwt-issuer ${JWT_ISSUER} --jwt-audience ${JWT_AUDIENCE} --host 0.0.0.0 --port ${PORT} --db-root-user ${DB_ROOT_USER} --config-dir /run/secrets

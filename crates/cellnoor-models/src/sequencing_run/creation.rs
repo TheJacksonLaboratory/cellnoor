@@ -7,19 +7,17 @@ use crate::sequencing_run::common::SequencingRunFields;
 
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = sequencing_runs))]
-pub struct SequencingRunCreation {
+pub struct NewSequencingRun {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: SequencingRunFields,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     begun_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::NullableTimestamp))]
-    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
     finished_at: Option<Timestamp>,
 }
 
-impl SequencingRunCreation {
+impl NewSequencingRun {
     #[must_use]
     pub fn begun_at(&self) -> Timestamp {
         self.begun_at

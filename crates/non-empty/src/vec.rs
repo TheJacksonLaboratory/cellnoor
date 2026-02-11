@@ -2,8 +2,10 @@ use std::fmt::Debug;
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "serde", serde(try_from = "Vec<T>"))]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "schemars", schemars(with = "Vec<T>"))]
+
 pub struct NonEmptyVec<T, const N: usize>(Vec<T>);
 
 impl<T, const N: usize> From<T> for NonEmptyVec<T, N> {

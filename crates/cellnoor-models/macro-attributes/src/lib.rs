@@ -13,15 +13,11 @@ fn base_derives(input: TokenStream, with_default: bool) -> proc_macro2::TokenStr
     if with_default {
         quote! {
             #[derive(Clone, Debug, Default, PartialEq)]
-            #[cfg_attr(feature = "typescript", derive(::ts_rs::TS))]
-            #[cfg_attr(feature = "typescript", ts(optional_fields))]
             #serde_default
         }
     } else {
         quote! {
             #[derive(Clone, Debug, PartialEq)]
-            #[cfg_attr(feature = "typescript", derive(::ts_rs::TS))]
-            #[cfg_attr(feature = "typescript", ts(optional_fields))]
         }
     }
 }
@@ -87,6 +83,7 @@ pub fn insert_select(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
     quote! {
         #[derive(::serde::Deserialize, ::serde::Serialize)]
+        #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
         #base_derives
         #insertable
         #has_query
@@ -108,6 +105,7 @@ pub fn insert(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
     quote! {
         #[derive(::serde::Deserialize)]
+        #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
         #base_derives
         #insertable
         #check_for_backend
@@ -125,6 +123,7 @@ pub fn filter(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
     quote! {
         #[derive(::serde::Deserialize, ::serde::Serialize)]
+        #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
         #base_derives
         #[serde(deny_unknown_fields)]
         #[cfg_attr(feature = "builder", derive(bon::Builder))]
@@ -144,6 +143,7 @@ pub fn select(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
     quote! {
         #[derive(::serde::Serialize)]
+        #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
         #base_derives
         #has_query
         #check_for_backend
@@ -161,6 +161,7 @@ pub fn update(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
     quote! {
         #[derive(::serde::Deserialize)]
+        #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
         #base_derives
         #[serde(deny_unknown_fields)]
         #[cfg_attr(feature = "app", derive(::diesel::AsChangeset, ::diesel::Identifiable))]
@@ -208,9 +209,9 @@ pub fn order_by(attr: TokenStream, input: TokenStream) -> TokenStream {
 
     quote! {
         #base_derives
-        #[derive(::serde::Deserialize, ::serde::Serialize)]
-        #[derive(Copy)]
-        #[serde(rename_all = "snake_case")]
+        #[derive(Copy, ::serde::Deserialize, ::serde::Serialize)]
+        #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
+        #[serde(tag = "field", rename_all = "snake_case")]
         #enum_def
 
         #[cfg(feature = "app")]
@@ -257,8 +258,9 @@ pub fn simple_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
     quote! {
         #[derive(::serde::Deserialize, ::serde::Serialize)]
+        #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
         #base_derives
-        #[derive(Copy, Eq, PartialOrd, Ord, ::strum::EnumString, ::strum::IntoStaticStr)]
+        #[derive(Copy, Eq, PartialOrd, Ord, Hash, ::strum::EnumString, ::strum::IntoStaticStr)]
         #[cfg_attr(feature = "app", derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression))]
         #[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Text, sql_type = ::cellnoor_schema::sql_types::CaseInsensitiveText))]
         #[serde(rename_all = "snake_case")]
@@ -275,6 +277,7 @@ pub fn json(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
     quote! {
         #[derive(::serde::Deserialize, ::serde::Serialize)]
+        #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
         #base_derives
         #[cfg_attr(feature = "app", derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression))]
         #[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Jsonb))]

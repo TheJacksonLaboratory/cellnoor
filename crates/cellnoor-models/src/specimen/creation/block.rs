@@ -22,18 +22,19 @@ impl From<BlockFixative> for Fixative {
 
 #[base_model]
 #[derive(serde::Deserialize)]
+#[cfg_attr(feature = "app", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case", tag = "embedded_in")]
-pub enum BlockCreation {
+pub enum NewBlock {
     OptimalCuttingTemperatureCompound {
         #[serde(flatten)]
         inner: SpecimenCommonFields,
-        #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
+
         fixative: Option<BlockFixative>,
     },
     CarboxymethylCellulose {
         #[serde(flatten)]
         inner: SpecimenCommonFields,
-        #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
+
         fixative: Option<BlockFixative>,
     },
     Paraffin {
@@ -58,7 +59,7 @@ impl_enum_from_sql!(BlockEmbeddingMatrix);
 impl EnumToSql for BlockEmbeddingMatrix {}
 impl_enum_to_sql!(BlockEmbeddingMatrix);
 
-impl BlockCreation {
+impl NewBlock {
     pub(super) fn common(&self) -> &SpecimenCommonFields {
         match self {
             Self::CarboxymethylCellulose { inner, .. }

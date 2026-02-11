@@ -1,29 +1,31 @@
 import type { MicrosoftEntraIDProfile } from "better-auth/social-providers";
-import { EncryptedApiKey } from "./api-key";
-import { decryptHexEncodedApiKey } from "./crypto";
-import { readConfig } from "../config";
 
 export async function upsertPersonIntoDb(
   {
     name,
     email,
-    emailVerified,
+    email_verified,
     tid,
     oid,
-  }: {
-    emailVerified: boolean;
-  } & MicrosoftEntraIDProfile,
+  }: MicrosoftEntraIDProfile,
   dbClient: Bun.SQL,
-): Promise<string> {
+): Promise<
+  {
+    id: string;
+    is_admin: boolean;
+    is_biology_staff: boolean;
+    is_computational_staff: boolean;
+  }
+> {
   const newPerson = {
     name,
     email,
-    email_verified: emailVerified,
+    email_verified: email_verified ?? false,
     institution_id: tid,
     microsoft_entra_oid: oid,
   };
 
-  const newPersonId = await dbClient.begin(async (tx) => {
+  const createdPerson = await dbClient.begin(async (tx) => {
     // Anyone else with this email should have it removed
     await tx`update people set email = ${null}, email_verified = ${false} where email = ${newPerson.email}`;
 
@@ -35,79 +37,63 @@ export async function upsertPersonIntoDb(
       tx(
         newPerson,
       )
-    } returning id`;
-    const newPersonId = result[0].id;
+    } returning id, is_admin, is_biology_staff, is_computational_staff`;
 
-    // Create a db user corresponding to this person so we can assign them roles later on. Note that we set a random
-    // password and no roles so that nobody can log into the database as that user.
-    await tx`select create_user_if_not_exists(${newPersonId}, ${
-      crypto
-        .getRandomValues(new Uint8Array(32))
-        .toHex()
-    }, '{}')`;
-
-    return newPersonId;
+    // Note that we don't need the user's name and email because better-auth already has that
+    return result[0];
   });
 
-  return newPersonId;
+  return createdPerson;
 }
 
-export async function insertApiKeyIntoDb(
-  encryptedApiKey: EncryptedApiKey,
-  personId: string,
+export async function getUserJsonWebTokens(
+  userId: string,
   dbClient: Bun.SQL,
-): Promise<Date> {
-  const apiKeyData = {
-    prefix: encryptedApiKey.prefix,
-    hash: encryptedApiKey.hash,
-    user_id: personId,
-  };
-
-  const createdAt = await dbClient.begin(async (tx) => {
-    const result = await tx`insert into api_keys ${
-      tx(apiKeyData)
-    } returning created_at`;
-
-    return result[0].created_at;
-  });
-
-  return createdAt;
+): Promise<
+  {
+    jti: string;
+    name: string;
+    description: string;
+    iat: Date;
+    exp: Date;
+  }[]
+> {
+  return await dbClient`select jti, name, description, iat, exp from json_web_tokens where sub = ${userId} order by iat`;
 }
 
-export async function deleteApiKeyFromDb(
-  {
-    hexEncodedEncryptedApiKey,
-    encryptionSecret,
-    initializationVector,
-    apiKeyPrefixLength,
-  }: {
-    hexEncodedEncryptedApiKey: string;
-    encryptionSecret: CryptoKey;
-    initializationVector: string;
-    apiKeyPrefixLength: number;
+export async function insertJsonWebToken(
+  data: {
+    jti: string;
+    sub: string;
+    name: string;
+    description?: string | null;
+    iat: Date;
+    exp: Date;
   },
   dbClient: Bun.SQL,
 ) {
-  const decrypted = await decryptHexEncodedApiKey(
-    initializationVector,
-    encryptionSecret,
-    hexEncodedEncryptedApiKey,
-  );
-
-  const prefix = new Uint8Array(decrypted.slice(0, apiKeyPrefixLength));
-
-  // No two API keys share the same prefix
-  await dbClient`delete from api_keys where prefix = ${prefix}`;
+  await dbClient`insert into json_web_tokens ${dbClient(data)}`;
 }
 
-export async function getUserByApiKeyFromDb(
-  apiKey: ArrayBuffer,
+export async function deleteApiTokenFromDb(
+  { user_id, jti }: { user_id: string; jti: string },
   dbClient: Bun.SQL,
-): Promise<string> {
-  const config = await readConfig();
-  const apiKeyPrefix = apiKey.slice(0, config.apiKeyPrefixLength);
-  const results =
-    await dbClient`select user_id from api_keys where prefix = ${apiKeyPrefix};`;
+) {
+  await dbClient.begin(async (client) => {
+    const result =
+      await client`delete from json_web_tokens where sub = ${user_id} and jti = ${jti} returning exp`;
 
-  return results[0].user_id;
+    const revoke = { jti, exp: result[0].exp };
+    await client`insert into revoked_json_web_tokens ${client(revoke)}`;
+  });
+}
+
+export async function getUserProjects(userId: string, dbClient: Bun.SQL) {
+  const projects =
+    await dbClient`select project_id from project_people where person_id = ${userId}`
+      .then((rows: { project_id: string }[]) => rows.map((r) => r.project_id));
+
+  return {
+    projects,
+  };
 }

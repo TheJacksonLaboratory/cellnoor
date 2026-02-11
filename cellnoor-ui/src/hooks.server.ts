@@ -1,42 +1,43 @@
-import { auth } from "./auth";
+import { auth } from "$lib/auth";
 import { svelteKitHandler } from "better-auth/svelte-kit";
 import { building } from "$app/environment";
-import { type Cookies, redirect } from "@sveltejs/kit";
-import { apiKeyFromCookies } from "$lib/server/auth/cookies";
-import { API_KEY_ENCRYPTION_SECRET } from "$lib/server/auth/crypto";
+import { redirect } from "@sveltejs/kit";
+import { API_TOKEN_COOKIE_NAME } from "$lib/server/cellnoor-client";
 
-const NON_AUTH_ROUTES = ["/auth/sign-in", "/health", "/api/auth"];
+const NON_AUTH_ROUTES = [
+  "/api/auth/sign-in/social",
+  "/api/auth/callback/microsoft",
+  "/api/auth/jwks",
+  "/auth/sign-in",
+  "/health",
+];
 
-async function hexEncodedApiKeyFromCookies(
-  cookies: Cookies,
-  encryptionSecret: CryptoKey,
-): Promise<string | null> {
-  const decryptedBytes = await apiKeyFromCookies(cookies, encryptionSecret);
-  if (!decryptedBytes) {
-    return null;
-  }
-
-  return new Uint8Array(decryptedBytes).toHex();
+function requiresAuth(path: string) {
+  return !NON_AUTH_ROUTES.some((s) => path.includes(s));
 }
 
 export async function handle({ event, resolve }) {
-  if (NON_AUTH_ROUTES.some((s) => event.url.pathname.includes(s))) {
+  const { url: { pathname }, request: { headers } } = event;
+  if (!requiresAuth(pathname)) {
     return svelteKitHandler({ event, resolve, auth, building });
   }
 
   const session = await auth.api.getSession({
-    headers: event.request.headers,
+    headers,
   });
 
   if (!session) {
     return redirect(307, "/auth/sign-in");
   }
 
-  const hexEncodedApiKey = await hexEncodedApiKeyFromCookies(
-    event.cookies,
-    API_KEY_ENCRYPTION_SECRET,
-  );
-  event.locals.apiKey = hexEncodedApiKey ?? ""; // This kinda sucks :( but it's the simplest solution
+  const userIsSingingOut = pathname.includes("sign-out");
+  if (userIsSingingOut) {
+    event.cookies.delete(API_TOKEN_COOKIE_NAME, { path: "/" });
+  }
+
+  // We could destructure this (the way we do with other things above), but I'm not sure if `session` is a reference or
+  // a deep clone because JavaScript <3
+  event.locals.user = session.user;
 
   return svelteKitHandler({ event, resolve, auth, building });
 }

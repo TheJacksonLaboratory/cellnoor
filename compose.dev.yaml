@@ -3,15 +3,28 @@ services:
     build:
       args:
         BUILD_PROFILE: "dev"
+      tags: !reset []
+    environment:
+      JWT_ISSUER: &ui_url "http://cellnoor-ui"
+      JWT_AUDIENCE: &api_url "http://cellnoor-api/api"
     secrets:
       - source: initial_data
         uid: "10001"
   caddy:
     environment:
-      PUBLIC_URL: localhost
+      # https is necessary here for better-auth
+      PUBLIC_URL: &public_url https://localhost
   cellnoor-ui:
+    build:
+      tags: !reset []
     environment:
-      API_URL: http://cellnoor-api/api
+      JWT_ISSUER: *ui_url
+      JWT_AUDIENCE: *api_url
+      PUBLIC_URL: *public_url
+      # We need to supply the API URL here because from *within* the container, https://localhost/api points to nothing.
+      # Instead, we need to tell cellnoor-ui that the API URL is http://cellnoor-api/api, using Docker Compose's
+      # networking model
+      API_URL: *api_url
 secrets:
   initial_data:
     file: initial_data

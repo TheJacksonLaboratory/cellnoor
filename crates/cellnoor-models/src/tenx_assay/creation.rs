@@ -1,19 +1,17 @@
 use macro_attributes::base_model;
 
-use crate::tenx_assay::{
-    common::LibraryTypeSpecification, creation::chromium::ChromiumAssayCreation,
-};
+use crate::tenx_assay::{common::LibraryTypeSpecification, creation::chromium::NewChromiumAssay};
 
 mod chromium;
 
 #[base_model]
 #[derive(serde::Deserialize)]
 #[serde(tag = "platform", rename_all = "snake_case")]
-pub enum TenxAssayCreation {
-    Chromium(ChromiumAssayCreation),
+pub enum NewTenxAssay {
+    Chromium(NewChromiumAssay),
 }
 
-impl TenxAssayCreation {
+impl NewTenxAssay {
     #[must_use]
     pub fn protocol_url(&self) -> &str {
         match self {

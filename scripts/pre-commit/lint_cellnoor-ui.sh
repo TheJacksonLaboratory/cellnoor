@@ -2,9 +2,7 @@
 
 set -euo pipefail
 
-mv pkgs/cellnoor-types/package.json cellnoor-types.package.json
-rm -rf pkgs/cellnoor-types/*
-cargo run --package cellnoor-typescript
-mv cellnoor-types.package.json pkgs/cellnoor-types/package.json
+cargo run --bin openapi > openapi.json
+bunx openapi-typescript openapi.json -o pkgs/cellnoor-client/api.d.ts --root-types --root-types-no-schema-prefix --default-no-nullable false
 bun run --bun --cwd=cellnoor-ui check
 bun run --bun --cwd=cellnoor-ui fmt

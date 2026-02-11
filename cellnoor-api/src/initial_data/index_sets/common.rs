@@ -2,7 +2,8 @@ use std::sync::LazyLock;
 
 use anyhow::anyhow;
 use cellnoor_schema::index_kits::dsl::{index_kits, name};
-use diesel::{PgConnection, prelude::*};
+use diesel::prelude::*;
+use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use regex::Regex;
 
 pub(super) static INDEX_SET_NAME_REGEX: LazyLock<Regex> = LazyLock::new(|| {
@@ -30,11 +31,15 @@ pub(crate) trait IndexSetName: AsRef<str> {
 
 impl<T> IndexSetName for T where T: AsRef<str> {}
 
-pub(super) fn insert_kit_name(kit_name: &str, db_conn: &mut PgConnection) -> anyhow::Result<()> {
+pub(super) async fn insert_kit_name(
+    kit_name: &str,
+    mut db_conn: &AsyncPgConnection,
+) -> anyhow::Result<()> {
     diesel::insert_into(index_kits)
         .values(name.eq(kit_name))
         .on_conflict_do_nothing()
-        .execute(db_conn)?;
+        .execute(&mut db_conn)
+        .await?;
 
     Ok(())
 }

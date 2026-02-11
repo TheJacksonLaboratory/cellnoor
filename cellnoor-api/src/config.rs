@@ -1,36 +1,35 @@
-// The three fields not zeroized in `Config` cause a linting error
-#![allow(unused)]
+// TODO: split the different aspects of the configuration into different places
 use std::{path::Path, str::FromStr};
 
 use anyhow::Context;
 use camino::{Utf8Path, Utf8PathBuf};
 use clap::Parser;
-use zeroize::Zeroize;
+use secrecy::{ExposeSecret, SecretString};
 
 use crate::initial_data::InitialData;
 
-#[derive(Debug, Zeroize)]
+#[derive(Debug)]
 pub struct Config {
-    #[zeroize(skip)]
     mode: AppMode,
     db_root_user: String,
-    db_root_password: String,
-    cellnoor_api_db_password: String,
-    cellnoor_ui_db_password: String,
+    db_root_password: SecretString,
+    cellnoor_api_db_password: SecretString,
+    cellnoor_ui_db_password: SecretString,
     db_host: String,
     db_port: u16,
     db_name: String,
-    api_key_prefix_length: usize,
+    jwt_audience: String,
+    jwt_issuer: String,
     host: String,
     port: u16,
-    #[zeroize(skip)]
     initial_data: InitialData,
-    #[zeroize(skip)]
     log_dir: Option<Utf8PathBuf>,
 }
 
 impl Config {
     pub fn read() -> anyhow::Result<Self> {
+        dotenvy::dotenv().unwrap_or_default();
+
         let Cli {
             config_dir,
             mode,
@@ -41,7 +40,8 @@ impl Config {
             db_host,
             db_port,
             db_name,
-            api_key_prefix_length,
+            jwt_audience,
+            jwt_issuer,
             host,
             port,
             log_dir,
@@ -58,26 +58,26 @@ impl Config {
             db_host: db_host.or_load(config_dir.join("db_host"))?,
             db_port: db_port.or_load(config_dir.join("db_port"))?,
             db_name: db_name.or_load(config_dir.join("db_name"))?,
-            api_key_prefix_length: api_key_prefix_length
-                .or_load(config_dir.join("api_key_prefix_length"))?,
+            jwt_audience: jwt_audience.or_load(config_dir.join("jwt_audience"))?,
+            jwt_issuer: jwt_issuer.or_load(config_dir.join("jwt_issuer"))?,
             host: host.or_load(config_dir.join("host"))?,
             port: port.or_load(config_dir.join("port"))?,
-            initial_data: None.or_load(config_dir.join("initial_data"))?,
+            initial_data: None::<InitialData>.or_load(config_dir.join("initial_data"))?,
             log_dir: log_dir.or_load(config_dir.join("log_dir")).ok(),
         })
     }
 
     #[must_use]
-    pub fn cellnoor_api_db_password(&self) -> &str {
+    pub fn cellnoor_api_db_password(&self) -> &SecretString {
         &self.cellnoor_api_db_password
     }
 
     #[must_use]
-    pub fn cellnoor_ui_db_password(&self) -> &str {
+    pub fn cellnoor_ui_db_password(&self) -> &SecretString {
         &self.cellnoor_ui_db_password
     }
 
-    fn db_url(&self, database_user: DatabaseUser) -> String {
+    fn db_url(&self, database_user: DatabaseUser) -> SecretString {
         let Self {
             db_root_user,
             db_root_password,
@@ -85,36 +85,44 @@ impl Config {
             db_host,
             db_port,
             db_name,
-            mode: _,
-            cellnoor_ui_db_password: _,
-            api_key_prefix_length: _,
-            host: _,
-            port: _,
-            initial_data: _,
-            log_dir: _,
+            ..
         } = self;
 
         let base = "postgres://";
         let db_spec = format!("{db_host}:{db_port}/{db_name}");
 
         match database_user {
-            DatabaseUser::Root => {
-                format!("{base}{db_root_user}:{db_root_password}@{db_spec}")
-            }
-            DatabaseUser::CellnoorApi => {
-                format!("{base}cellnoor_api:{cellnoor_api_db_password}@{db_spec}")
-            }
+            DatabaseUser::Root => format!(
+                "{base}{db_root_user}:{}@{db_spec}",
+                db_root_password.expose_secret()
+            )
+            .into(),
+            DatabaseUser::CellnoorApi => format!(
+                "{base}cellnoor_api:{}@{db_spec}",
+                cellnoor_api_db_password.expose_secret()
+            )
+            .into(),
         }
     }
 
     #[must_use]
-    pub fn db_root_url(&self) -> String {
+    pub fn db_root_url(&self) -> SecretString {
         self.db_url(DatabaseUser::Root)
     }
 
     #[must_use]
-    pub fn cellnoor_api_db_url(&self) -> String {
+    pub fn cellnoor_api_db_url(&self) -> SecretString {
         self.db_url(DatabaseUser::CellnoorApi)
+    }
+
+    #[must_use]
+    pub fn jwt_audience(&self) -> &str {
+        &self.jwt_audience
+    }
+
+    #[must_use]
+    pub fn jwt_issuer(&self) -> &str {
+        &self.jwt_issuer
     }
 
     #[must_use]
@@ -134,28 +142,9 @@ impl Config {
 
     #[must_use]
     pub fn address(&self) -> String {
-        let Self {
-            host,
-            port,
-            mode: _,
-            db_root_user: _,
-            db_root_password: _,
-            cellnoor_api_db_password: _,
-            cellnoor_ui_db_password: _,
-            db_host: _,
-            db_port: _,
-            db_name: _,
-            api_key_prefix_length: _,
-            initial_data: _,
-            log_dir: _,
-        } = self;
+        let Self { host, port, .. } = self;
 
         format!("{host}:{port}")
-    }
-
-    #[must_use]
-    pub fn api_key_prefix_length(&self) -> usize {
-        self.api_key_prefix_length
     }
 }
 
@@ -174,19 +163,21 @@ struct Cli {
     #[arg(long, env = "CELLNOOR_DB_ROOT_USER")]
     db_root_user: Option<String>,
     #[arg(long, env = "CELLNOOR_DB_ROOT_PASSWORD")]
-    db_root_password: Option<String>,
+    db_root_password: Option<SecretString>,
     #[arg(long, env = "CELLNOOR_API_DB_PASSWORD")]
-    cellnoor_api_db_password: Option<String>,
+    cellnoor_api_db_password: Option<SecretString>,
     #[arg(long, env = "CELLNOOR_UI_DB_PASSWORD")]
-    cellnoor_ui_db_password: Option<String>,
+    cellnoor_ui_db_password: Option<SecretString>,
     #[arg(long, env = "CELLNOOR_DB_HOST")]
     db_host: Option<String>,
     #[arg(long, env = "CELLNOOR_DB_PORT")]
     db_port: Option<u16>,
     #[arg(long, env = "CELLNOOR_DB_NAME")]
     db_name: Option<String>,
-    #[arg(long, env = "CELLNOOR_API_KEY_PREFIX_LENGTH")]
-    api_key_prefix_length: Option<usize>,
+    #[arg(long, env = "CELLNOOR_JWT_ISSUER")]
+    jwt_issuer: Option<String>,
+    #[arg(long, env = "CELLNOOR_JWT_AUDIENCE")]
+    jwt_audience: Option<String>,
     #[arg(long, env = "CELLNOOR_API_HOST")]
     host: Option<String>,
     #[arg(long, env = "CELLNOOR_API_PORT")]
@@ -198,16 +189,16 @@ struct Cli {
 trait OptionExt<T> {
     fn or_load<P>(self, path: P) -> anyhow::Result<T>
     where
-        T: FromStr,
-        T::Err: Send + Sync + std::error::Error + std::fmt::Display + 'static,
         P: std::fmt::Display + AsRef<Path>;
 }
 
-impl<T> OptionExt<T> for Option<T> {
+impl<T> OptionExt<T> for Option<T>
+where
+    T: FromStr,
+    T::Err: Send + Sync + std::error::Error + 'static,
+{
     fn or_load<P>(self, path: P) -> anyhow::Result<T>
     where
-        T: FromStr,
-        T::Err: Send + Sync + std::error::Error + 'static,
         P: std::fmt::Display + AsRef<Path>,
     {
         if let Some(value) = self {
@@ -221,6 +212,27 @@ impl<T> OptionExt<T> for Option<T> {
             "failed to parse contents of {path} as {}",
             std::any::type_name::<T>()
         ))
+    }
+}
+
+trait SecretStringExt {
+    fn or_load<P>(self, path: P) -> anyhow::Result<SecretString>
+    where
+        P: std::fmt::Display + AsRef<Path>;
+}
+
+impl SecretStringExt for Option<SecretString> {
+    fn or_load<P>(self, path: P) -> anyhow::Result<SecretString>
+    where
+        P: std::fmt::Display + AsRef<Path>,
+    {
+        if let Some(value) = self {
+            return Ok(value);
+        }
+
+        std::fs::read_to_string(&path)
+            .context(format!("failed to read contents of file {path}"))
+            .map(SecretString::from)
     }
 }
 

@@ -1,17 +1,17 @@
 use anyhow::Context;
-use axum::{Extension, Router, routing::get};
+#[cfg(any(feature = "dummy-data", test))]
+pub use auth::AuthProjects;
+use axum::Router;
 use camino::Utf8Path;
-use serde_qs::axum::QsQueryConfig;
 use tokio::net::TcpListener;
-use zeroize::Zeroize;
 
 use crate::{config::Config, state::AppState};
 
-mod error;
+mod auth;
 mod extract;
-mod routes;
-
-pub use error::{Error, ErrorResponse};
+pub mod middleware;
+pub mod routes;
+pub mod util;
 
 #[cfg(test)]
 pub async fn serve_integration_test(config: Config) -> anyhow::Result<()> {
@@ -31,21 +31,20 @@ pub async fn serve(config: Config) -> anyhow::Result<()> {
     serve_inner(config).await
 }
 
-async fn serve_inner(mut config: Config) -> anyhow::Result<()> {
-    let app_state = AppState::initialize(&config)
+async fn serve_inner(config: Config) -> anyhow::Result<()> {
+    let app_addr = config.address();
+
+    let app_state = AppState::initialize(config)
         .await
         .context("failed to initialize app state")?;
     tracing::info!("initialized app state");
 
     let app = app(app_state.clone());
 
-    let app_addr = config.address();
     let listener = TcpListener::bind(&app_addr)
         .await
         .context(format!("failed to listen on {app_addr}"))?;
     tracing::info!("cellnoor listening on {}", listener.local_addr()?);
-
-    config.zeroize();
 
     axum::serve(listener, app)
         .await
@@ -81,14 +80,7 @@ fn initialize_logging(log_dir: Option<&Utf8Path>) {
 }
 
 fn app(app_state: AppState) -> Router {
-    // The browser form-encodes everything so we have to enable the less-readable
-    // form-encoding
-    let query_string_config =
-        QsQueryConfig::new().config(serde_qs::Config::new().use_form_encoding(true));
-    let api_router = routes::router()
-        .route("/health", get(async || "OK"))
-        .layer(Extension(query_string_config))
-        .with_state(app_state);
+    let api_router = routes::app(app_state.clone()).with_state(app_state);
 
     Router::new().nest("/api", api_router)
 }

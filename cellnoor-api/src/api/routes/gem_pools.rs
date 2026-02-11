@@ -1,13 +1,14 @@
-use axum::Router;
-use axum_extra::routing::RouterExt;
+use aide::axum::{ApiRouter, routing::get};
+use index::index_gem_pools;
+use show::show_gem_pool;
 
 use crate::state::AppState;
 
-mod fetch;
-mod list;
+pub mod index;
+pub mod show;
 
-pub(super) fn router() -> Router<AppState> {
-    Router::new()
-        .typed_get(list::list_gems)
-        .typed_get(fetch::fetch_gem_pool)
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route("/", get(index_gem_pools))
+        .api_route("/{id}", get(show_gem_pool))
 }

@@ -9,4 +9,3 @@ mod state;
 mod test_state;
 #[cfg(test)]
 mod test_util;
-mod validate;

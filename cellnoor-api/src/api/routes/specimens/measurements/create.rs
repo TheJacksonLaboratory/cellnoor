@@ -1,42 +1,64 @@
-use axum::{extract::State, http::status::StatusCode};
-use cellnoor_models::specimen::{
-    SpecimenIdMeasurements,
-    measurement::{SpecimenMeasurement, SpecimenMeasurementCreation},
+use axum::{
+    Json,
+    extract::{Path, State},
 };
-use cellnoor_schema::specimen_measurements;
-use diesel::{RunQueryDsl, prelude::*};
+use cellnoor_models::{
+    IdParameter,
+    specimen::measurement::{NewSpecimenMeasurement, SpecimenMeasurement},
+};
+use cellnoor_schema::{specimen_measurements, specimens};
+use diesel::prelude::*;
+use diesel_async::RunQueryDsl;
+use jiff::Timestamp;
+use uuid::Uuid;
 
 use crate::{
-    api::{
-        extract::{ValidPathJson, auth::AuthenticatedUser},
-        routes::{ApiResponse, inner_handler},
-    },
-    db,
+    api::util::validate_timestamps,
+    db::{self, DbConnection},
     state::AppState,
 };
 
-pub async fn create_measurement(
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    ValidPathJson(specimen_id, measurement): ValidPathJson<
-        SpecimenIdMeasurements,
-        SpecimenMeasurementCreation,
-    >,
-) -> ApiResponse<SpecimenMeasurement> {
-    let item = inner_handler(state, user, (specimen_id, measurement)).await?;
-    Ok((StatusCode::CREATED, item))
+pub async fn create_specimen_measurement(
+    _: State<AppState>,
+    db_conn: DbConnection,
+    Path(IdParameter { id }): Path<IdParameter>,
+    Json(measurement): Json<NewSpecimenMeasurement>,
+) -> Result<Json<SpecimenMeasurement>, db::Error> {
+    let specimen_received_at = specimen_received_at(id, &db_conn).await?;
+
+    validate_timestamps(
+        (specimen_received_at, "specimen_received_at"),
+        (measurement.measured_at(), "measurement_made_at"),
+    )?;
+
+    insert_specimen_measurement(id, measurement, &db_conn)
+        .await
+        .map(Json)
 }
 
-impl db::Operation<SpecimenMeasurement> for (SpecimenIdMeasurements, SpecimenMeasurementCreation) {
-    fn execute(self, db_conn: &mut PgConnection) -> Result<SpecimenMeasurement, db::Error> {
-        let (specimen_id, measurement) = self;
+async fn specimen_received_at(
+    specimen_id: Uuid,
+    mut db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<Timestamp, db::Error> {
+    Ok(specimens::table
+        .select(specimens::received_at)
+        .filter(specimens::id.eq(specimen_id))
+        .first(&mut db_conn)
+        .await
+        .map(jiff_diesel::Timestamp::to_jiff)?)
+}
 
-        Ok(diesel::insert_into(specimen_measurements::table)
-            .values((
-                specimen_measurements::specimen_id.eq(specimen_id),
-                measurement,
-            ))
-            .returning(SpecimenMeasurement::as_returning())
-            .get_result(db_conn)?)
-    }
+async fn insert_specimen_measurement(
+    specimen_id: Uuid,
+    measurement: NewSpecimenMeasurement,
+    mut db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<SpecimenMeasurement, db::Error> {
+    Ok(diesel::insert_into(specimen_measurements::table)
+        .values((
+            specimen_measurements::specimen_id.eq(specimen_id),
+            measurement,
+        ))
+        .returning(SpecimenMeasurement::as_returning())
+        .get_result(&mut db_conn)
+        .await?)
 }

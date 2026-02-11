@@ -1,5 +1,4 @@
-pub mod auth;
-pub mod query;
-mod valid_json;
+mod db_connection;
+mod json_query;
 
-pub use valid_json::{ValidJson, ValidPathJson};
+pub use json_query::{AuthJsonQuery, Authorize};

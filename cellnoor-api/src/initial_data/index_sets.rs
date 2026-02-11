@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 pub(crate) use common::IndexSetName;
+use diesel_async::AsyncPgConnection;
 use serde::de::DeserializeOwned;
 use tokio::task::JoinSet;
 use url::Url;
@@ -17,7 +18,7 @@ mod single;
 pub(super) async fn download_and_insert_dual_index_sets(
     file_urls: Vec<Url>,
     http_client: reqwest::Client,
-    db_conn: &deadpool_diesel::postgres::Connection,
+    db_conn: &AsyncPgConnection,
 ) -> anyhow::Result<()> {
     download_and_insert_index_sets::<HashMap<String, DualIndexSet>>(file_urls, http_client, db_conn)
         .await
@@ -26,7 +27,7 @@ pub(super) async fn download_and_insert_dual_index_sets(
 pub(super) async fn download_and_insert_single_index_sets(
     file_urls: Vec<Url>,
     http_client: reqwest::Client,
-    db_conn: &deadpool_diesel::postgres::Connection,
+    db_conn: &AsyncPgConnection,
 ) -> anyhow::Result<()> {
     download_and_insert_index_sets::<Vec<SingleIndexSet>>(file_urls, http_client, db_conn).await
 }
@@ -34,15 +35,11 @@ pub(super) async fn download_and_insert_single_index_sets(
 async fn download_and_insert_index_sets<T>(
     file_urls: Vec<Url>,
     http_client: reqwest::Client,
-    db_conn: &deadpool_diesel::postgres::Connection,
+    db_conn: &AsyncPgConnection,
 ) -> anyhow::Result<()>
 where
     T: 'static + DeserializeOwned + Send + Upsert,
 {
-    // let downloads = JoinSet::new();
-    // for url in file_urls {
-    //     downloads.spawn(download_json::<T>(http_client.clone(), url));
-    // }
     let downloads: JoinSet<_> = file_urls
         .into_iter()
         .map(|url| download_json::<T>(http_client.clone(), url))
@@ -56,12 +53,8 @@ where
 
     // A for-loop is fine because this is like 10 URLs max, and each of these is a
     // bulk insert
-    for sets in index_sets {
-        db_conn
-            .interact(|db_conn| sets.upsert(db_conn))
-            .await
-            .unwrap()?;
-    }
+    let index_sets = index_sets.into_iter().map(|s| s.upsert(db_conn));
+    futures::future::try_join_all(index_sets).await?;
 
     Ok(())
 }

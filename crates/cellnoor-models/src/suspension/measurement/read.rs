@@ -3,9 +3,7 @@ use cellnoor_schema::suspension_measurements;
 use macro_attributes::select;
 use uuid::Uuid;
 
-use crate::suspension::{
-    common::SuspensionContent, measurement::common::SuspensionMeasurementFields,
-};
+use crate::suspension::measurement::common::SuspensionMeasurementFields;
 
 #[select]
 pub struct SuspensionMeasurement {
@@ -13,5 +11,5 @@ pub struct SuspensionMeasurement {
     suspension_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: SuspensionMeasurementFields<SuspensionContent>,
+    inner: SuspensionMeasurementFields,
 }

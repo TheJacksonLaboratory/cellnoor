@@ -8,20 +8,6 @@ use diesel::{
     sql_types,
 };
 use serde::{Serialize, de::DeserializeOwned};
-use uuid::Uuid;
-
-pub trait UuidNewtypeFromSql: Sized + From<Uuid> {
-    fn from_sql_inner(bytes: PgValue<'_>) -> deserialize::Result<Self> {
-        let id = Uuid::from_sql(bytes)?;
-        Ok(Self::from(id))
-    }
-}
-
-pub trait UuidNewtypeToSql: AsRef<Uuid> {
-    fn to_sql_inner<'b>(&'b self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
-        ToSql::<sql_types::Uuid, Pg>::to_sql(self.as_ref(), &mut out.reborrow())
-    }
-}
 
 pub trait EnumFromSql: FromStr
 where

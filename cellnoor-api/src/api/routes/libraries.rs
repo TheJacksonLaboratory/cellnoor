@@ -1,22 +1,30 @@
-use axum::{Router, routing::post};
-use axum_extra::routing::{RouterExt, TypedPath};
-use cellnoor_models::library::LibraryIdMeasurements;
+use aide::axum::{
+    ApiRouter,
+    routing::{get, post},
+};
+use axum::handler::Handler;
+use create::create_library;
+use index::index_libraries;
+use show::show_library;
 
-use crate::state::AppState;
+use crate::{admin_required_creation, state::AppState};
 
-mod create;
-mod fetch;
-mod list;
-mod measurements;
+pub mod create;
+pub mod index;
+pub mod measurements;
+pub mod show;
 
-pub(super) fn router() -> Router<AppState> {
-    Router::new()
-        .typed_post(create::create_library)
-        .typed_get(fetch::fetch_library)
-        .typed_get(list::list_libraries)
-        .route(
-            LibraryIdMeasurements::PATH,
-            post(measurements::create::create_measurement),
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route(
+            "/",
+            post(create_library.layer(admin_required_creation!())).get(index_libraries),
         )
-        .typed_get(measurements::list::list_measurements)
+        .nest("/{id}", id_router())
+}
+
+fn id_router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route("/", get(show_library))
+        .nest("/measurements", measurements::router())
 }

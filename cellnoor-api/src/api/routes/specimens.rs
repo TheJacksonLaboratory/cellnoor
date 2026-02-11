@@ -1,25 +1,32 @@
-use axum::{Router, routing::post};
-use axum_extra::routing::{RouterExt, TypedPath};
-use cellnoor_models::specimen::SpecimenIdMeasurements;
+use aide::axum::{
+    ApiRouter,
+    routing::{get, post},
+};
+use axum::handler::Handler;
+use create::create_specimen;
+use index::index_specimens;
+use show::show_specimen;
 
-use crate::state::AppState;
+use crate::{admin_required_creation, state::AppState};
 
-mod chromium_datasets;
-mod create;
-mod fetch;
-mod list;
-mod measurements;
-mod update;
+pub mod chromium_datasets;
+pub mod create;
+pub mod index;
+pub mod measurements;
+pub mod show;
 
-pub(super) fn router() -> Router<AppState> {
-    Router::new()
-        .typed_post(create::create_specimen)
-        .typed_get(fetch::fetch_specimen)
-        .typed_get(list::list_specimens)
-        .route(
-            SpecimenIdMeasurements::PATH,
-            post(measurements::create::create_measurement),
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route(
+            "/",
+            post(create_specimen.layer(admin_required_creation!())).get(index_specimens),
         )
-        .typed_get(measurements::list::list_measurements)
-        .typed_get(chromium_datasets::list::list_chromium_datasets)
+        .nest("/{id}", id_router())
+}
+
+fn id_router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route("/", get(show_specimen))
+        .nest("/measurements", measurements::router())
+        .nest("/chromium-datasets", chromium_datasets::router())
 }

@@ -8,7 +8,6 @@ use uuid::Uuid;
 pub struct SequencingSubmission {
     library_id: Uuid,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     submitted_at: Timestamp,
 }
 

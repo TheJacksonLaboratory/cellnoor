@@ -1,69 +1,20 @@
 <script lang="ts">
   import { DATE_FORMATTER } from "$lib/date.js";
-  import type { ChromiumDatasetQuery } from "cellnoor-types/ChromiumDatasetQuery";
   import LibraryTypeBadges from "../LibraryTypeBadges.svelte";
-  import { isSuccess } from "$lib/cellnoor-typeguard";
-  import type { ChromiumDatasetSummary } from "cellnoor-types/ChromiumDatasetSummary";
+  import type {
+    ChromiumDatasetFilter,
+    ChromiumDatasetOrderBy,
+  } from "cellnoor-client";
 
   const { data } = $props();
   const { chromiumDatasets } = $derived(data);
 
-  function createFileTree(dataset: ChromiumDatasetSummary) {
-    const linkMap: Map<string, string[]> = new Map();
-
-    for (
-      const link of (dataset.links["web-summaries"] as string[]).concat(
-        dataset.links["metrics-files"] as string[],
-      )
-    ) {
-      const parts = link.split("/");
-
-      const directoryName = parts.at(-2) as string;
-
-      const existingLinks = linkMap.get(directoryName);
-      if (existingLinks) {
-        existingLinks.push(link);
-      } else {
-        linkMap.set(directoryName, [link]);
-      }
-    }
-
-    return linkMap;
-  }
-
-  const fileTrees = $derived(
-    isSuccess(chromiumDatasets) ? chromiumDatasets.map(createFileTree) : [],
-  );
-
-  let query: ChromiumDatasetQuery = $state({
-    filter: {
-      ids: [],
-      specimen: {
-        ids: [],
-        names: [],
-        submitted_by: [],
-        labs: [],
-        species: [],
-        host_species: [],
-        types: [],
-        embedded_in: [],
-        fixatives: [],
-        tissues: [],
-        returned_by: [],
-        additional_data: {},
-      },
-      assay: {
-        ids: [],
-        names: [],
-        library_types: [],
-        sample_multiplexing: [],
-        chemistry_versions: [],
-        chromium_chips: [],
-      },
-      lab_ids: [],
-    },
-    order_by: [],
-  });
+  let query: {
+    filter?: ChromiumDatasetFilter;
+    limit?: number;
+    offset?: number;
+    order_by?: ChromiumDatasetOrderBy[];
+  } = $state({});
 </script>
 
 <div class="drawer lg:drawer-open">
@@ -72,8 +23,8 @@
     <label for="filter-drawer" class="btn mx-2 drawer-button lg:hidden">
       Filter and sort
     </label>
-    {#if isSuccess(chromiumDatasets)}
-      {#each chromiumDatasets as { name, delivered_at, assay, links }, i}
+    {#if chromiumDatasets}
+      {#each chromiumDatasets as { name, delivered_at, assay, links, files }}
         <div
           class="flex flex-row p-4 mx-8 my-2 border border-neutral rounded-box place-content-between"
         >
@@ -86,13 +37,15 @@
               {assay.name} <span class="font-extralight"
               >({assay.chemistry_version})</span>
             </p>
-            <LibraryTypeBadges libraryTypes={assay.library_types} />
+            {#if assay.library_types}
+              <LibraryTypeBadges libraryTypes={assay.library_types} />
+            {/if}
             <span class="text-sm mt-2">Delivered on {
                 DATE_FORMATTER.format(new Date(delivered_at))
               }</span>
           </div>
           <div class="menu flex-row flex-wrap gap-2">
-            {#each fileTrees.at(i)?.keys() as directory}
+            {#each files.entries() as [directory, links]}
               <li>
                 <details class="dropdown">
                   <summary>
@@ -115,7 +68,7 @@
                     </div>
                   </summary>
                   <ul>
-                    {#each fileTrees.at(i)?.get(directory) as link}
+                    {#each links as link}
                       <li>
                         <a target="_blank" href={link}>
                           <svg

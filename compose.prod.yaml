@@ -3,6 +3,10 @@ services:
     build: !reset null
     image: ghcr.io/thejacksonlaboratory/cellnoor-api:latest
     pull_policy: always
+    environment:
+      JWT_ISSUER: &public_url https://cellnoor.jax.org
+      JWT_AUDIENCE: &api_url https://cellnoor.jax.org/api
+      CELLNOOR_LOG_DIR: logs
     secrets:
       - source: initial_data
         uid: "10001"
@@ -11,7 +15,11 @@ services:
     image: ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
     pull_policy: always
     environment:
-      PUBLIC_URL: &public_url https://cellnoor.jax.org
+      JWT_ISSUER: *public_url
+      JWT_AUDIENCE: *api_url
+      # Technically, we don't have to set both the `API_URL` and `PUBLIC_URL`, since cellnoor-ui will infer the former from the latter
+      API_URL: *api_url
+      PUBLIC_URL: *public_url
   caddy:
     environment:
       PUBLIC_URL: *public_url

@@ -13,12 +13,12 @@ pub struct TenxAssay {
     id: Uuid,
     links: Links,
     name: String,
-    library_types: Option<Vec<LibraryType>>,
+    library_types: Option<Vec<Option<LibraryType>>>,
     sample_multiplexing: Option<SampleMultiplexing>,
     chemistry_version: String,
     protocol_url: String,
     chromium_chip: Option<String>,
-    cmdlines: Option<Vec<String>>,
+    cmdlines: Option<Vec<Option<String>>>,
 }
 
 impl TenxAssay {

@@ -1,11 +1,10 @@
 use jiff::Timestamp;
 use macro_attributes::base_model;
+use uuid::Uuid;
 
 use crate::specimen::{
     common::{Species, SpecimenCommonFields},
-    creation::{
-        block::BlockCreation, suspension::SuspensionSpecimenCreation, tissue::TissueCreation,
-    },
+    creation::{block::NewBlock, suspension::NewSuspensionSpecimen, tissue::NewTissue},
 };
 
 pub mod block;
@@ -14,16 +13,17 @@ pub mod tissue;
 
 #[base_model]
 #[derive(serde::Deserialize)]
+#[cfg_attr(feature = "app", derive(schemars::JsonSchema))]
 #[serde(tag = "type", rename_all = "snake_case")]
-pub enum SpecimenCreation {
-    Block(BlockCreation),
-    Suspension(SuspensionSpecimenCreation),
-    Tissue(TissueCreation),
+pub enum NewSpecimen {
+    Block(NewBlock),
+    Suspension(NewSuspensionSpecimen),
+    Tissue(NewTissue),
 }
 
-impl SpecimenCreation {
+impl NewSpecimen {
     fn inner(&self) -> &SpecimenCommonFields {
-        use SpecimenCreation::{Block, Suspension, Tissue};
+        use NewSpecimen::{Block, Suspension, Tissue};
 
         match self {
             Block(s) => s.common(),
@@ -50,5 +50,10 @@ impl SpecimenCreation {
     #[must_use]
     pub fn host_species(&self) -> Option<Species> {
         self.inner().host_species
+    }
+
+    #[must_use]
+    pub fn project_id(&self) -> Uuid {
+        self.inner().project_id
     }
 }

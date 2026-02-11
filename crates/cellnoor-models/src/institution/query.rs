@@ -1,7 +1,6 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::institutions;
 use macro_attributes::{filter, order_by};
-use macros::uuid_newtype;
 use uuid::Uuid;
 
 // You might think it would be better to factor out the field definition into
@@ -35,9 +34,4 @@ pub struct InstitutionFilter {
     pub names: Option<Vec<String>>,
 }
 
-#[cfg(feature = "app")]
 pub type InstitutionQuery = crate::generic_query::Query<InstitutionFilter, InstitutionOrderBy>;
-
-uuid_newtype!(InstitutionId, "/{id}");
-
-uuid_newtype!(InstitutionIdMembers, "/{id}/members");

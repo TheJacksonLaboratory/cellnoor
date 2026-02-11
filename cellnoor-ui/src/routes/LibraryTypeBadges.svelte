@@ -1,6 +1,6 @@
 <script lang="ts">
   import { libraryTypeMap } from "$lib/string-maps";
-  import type { LibraryType } from "cellnoor-types/LibraryType";
+  import type { LibraryType } from "cellnoor-client";
 
   const { libraryTypes }: {
     libraryTypes: (LibraryType | null)[] | undefined;

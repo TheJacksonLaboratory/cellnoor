@@ -1,14 +1,52 @@
-use uuid::Uuid;
+use aide::OperationIo;
+use axum::{Json, http::StatusCode, response::IntoResponse};
+use jiff::Timestamp;
+use schemars::JsonSchema;
+use serde::Serialize;
 
-#[derive(Debug, thiserror::Error, serde::Serialize)]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(rename = "DatabaseError"))]
-#[serde(rename_all = "snake_case", tag = "type", content = "info")]
-pub enum Error {
-    #[error("failed to find {resource} with ID {resource_id}")]
-    ResourceNotFound { resource: String, resource_id: Uuid },
+#[derive(Debug, thiserror::Error, Serialize, JsonSchema, OperationIo)]
+#[serde(rename_all = "snake_case", tag = "type")]
+pub enum DataError {
     #[error("{message}")]
-    Data { message: String },
+    Timestamp {
+        t1: Timestamp,
+        t2: Timestamp,
+        should_come_before: &'static str,
+        should_come_after: &'static str,
+        message: String,
+    },
+    #[serde(untagged)]
+    #[error("{message}")]
+    Other { message: String },
+}
+
+impl DataError {
+    pub fn new_other(message: &str) -> DataError {
+        DataError::Other {
+            message: message.to_string(),
+        }
+    }
+
+    pub fn new_timestamp_error(
+        (t1, should_come_before): (Timestamp, &'static str),
+        (t2, should_come_after): (Timestamp, &'static str),
+    ) -> Self {
+        Self::Timestamp {
+            t1,
+            t2,
+            should_come_before,
+            should_come_after,
+            message: format!("{should_come_before} should come before {should_come_after}"),
+        }
+    }
+}
+
+#[derive(Debug, thiserror::Error, Serialize, JsonSchema, OperationIo)]
+#[serde(rename_all = "snake_case", tag = "type")]
+#[schemars(rename = "DatabaseError")]
+pub enum Error {
+    #[error(transparent)]
+    Data(#[from] DataError),
     #[error("duplicate {resource} with fields {fields:?} and values {values:?}")]
     DuplicateResource {
         resource: String,
@@ -21,6 +59,8 @@ pub enum Error {
         referenced_resource: String,
         value: Option<String>,
     },
+    #[error("failed to find resource")]
+    ResourceNotFound,
     #[error("{message}")]
     Other { message: String },
 }
@@ -30,13 +70,8 @@ impl From<diesel::result::Error> for Error {
         use diesel::result::Error::{DatabaseError, NotFound};
 
         match err {
-            DatabaseError(kind, info) => Self::from((kind, info)),
-            // Return default values because the error-handling up the chain will populate the
-            // correct values
-            NotFound => Self::ResourceNotFound {
-                resource: String::new(),
-                resource_id: Uuid::nil(),
-            },
+            DatabaseError(kind, info) => (kind, info).into(),
+            NotFound => Self::ResourceNotFound,
             err => Self::Other {
                 message: err.to_string(),
             },
@@ -87,9 +122,9 @@ impl
         let values = into_split_vecs(&field_value, 2);
 
         match kind {
-            CheckViolation => Self::Data {
+            CheckViolation => Self::Data(DataError::Other {
                 message: details.to_owned(),
-            },
+            }),
             UniqueViolation => Self::DuplicateResource {
                 resource: entity.to_owned(),
                 fields,
@@ -117,18 +152,38 @@ impl
     }
 }
 
-impl From<deadpool_diesel::PoolError> for Error {
-    fn from(value: deadpool_diesel::PoolError) -> Self {
+impl From<diesel_async::pooled_connection::deadpool::PoolError> for Error {
+    fn from(err: diesel_async::pooled_connection::deadpool::PoolError) -> Self {
         Self::Other {
-            message: value.to_string(),
+            message: err.to_string(),
         }
     }
 }
 
-impl From<deadpool_diesel::InteractError> for Error {
-    fn from(value: deadpool_diesel::InteractError) -> Self {
-        Self::Other {
-            message: value.to_string(),
+impl Error {
+    pub const fn status_code(&self) -> u16 {
+        match self {
+            Self::Data { .. } | Self::InvalidReference { .. } => StatusCode::UNPROCESSABLE_ENTITY,
+            Self::DuplicateResource { .. } => StatusCode::CONFLICT,
+            Self::Other { .. } => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::ResourceNotFound => StatusCode::NOT_FOUND,
         }
+        .as_u16()
+    }
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        tracing::error!(status = self.status_code(), error = %self);
+
+        let status_code = self.status_code();
+        let err = match self {
+            Self::Other { message: _ } => Self::Other {
+                message: "something went wrong".to_owned(),
+            },
+            _ => self,
+        };
+
+        (StatusCode::from_u16(status_code).unwrap(), Json(err)).into_response()
     }
 }

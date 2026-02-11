@@ -1,5 +1,4 @@
-import type { LibraryType } from "cellnoor-types/LibraryType";
-import type { SampleMultiplexing } from "cellnoor-types/SampleMultiplexing";
+import type { LibraryType, SampleMultiplexing } from "cellnoor-client";
 
 export const libraryTypeMap: Map<LibraryType, string> = new Map([
   ["antibody_capture", "Antibody Capture"],

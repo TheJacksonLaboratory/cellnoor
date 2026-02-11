@@ -1,5 +1,5 @@
 #[cfg(feature = "app")]
-use cellnoor_schema::{labs, people, specimens};
+use cellnoor_schema::{people, projects, specimens};
 #[cfg(feature = "app")]
 use diesel::prelude::*;
 use jiff::Timestamp;
@@ -7,11 +7,11 @@ use macro_attributes::select;
 use uuid::Uuid;
 
 use crate::{
-    lab::LabSummary,
     links::Links,
     person::PersonSummary,
+    project::Project,
     specimen::{
-        common::SpecimenCommonFields, creation::block::BlockEmbeddingMatrix,
+        Species, common::SpecimenCommonFields, creation::block::BlockEmbeddingMatrix,
         variable::SpecimenVariableFields,
     },
 };
@@ -59,16 +59,26 @@ impl SpecimenSummary {
     pub fn submitted_by(&self) -> Uuid {
         self.common.submitted_by
     }
+
+    #[must_use]
+    pub fn project_id(&self) -> Uuid {
+        self.common.project_id
+    }
+
+    #[must_use]
+    pub fn species(&self) -> Species {
+        self.common.species
+    }
 }
 
 #[select]
-#[cfg_attr(feature = "app", diesel(base_query = specimens::table.inner_join(labs::table).inner_join(people::table.on(specimens::submitted_by.eq(people::id)))))]
+#[cfg_attr(feature = "app", diesel(base_query = specimens::table.inner_join(projects::table).inner_join(people::table.on(specimens::submitted_by.eq(people::id)))))]
 pub struct Specimen {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     summary: SpecimenSummary,
     #[cfg_attr(feature = "app", diesel(embed))]
-    lab: LabSummary,
+    project: Project,
     #[cfg_attr(feature = "app", diesel(embed))]
     submitted_by: PersonSummary,
 }

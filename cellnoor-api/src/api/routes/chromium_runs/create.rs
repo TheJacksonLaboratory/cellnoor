@@ -1,85 +1,102 @@
-use axum::{extract::State, http::StatusCode};
+use axum::{Extension, Json, extract::State};
 use cellnoor_models::chromium_run::{
-    ChromiumRun, ChromiumRunCreation, ChromiumRunFields, ChromiumRunId, GemPoolFields, OcmGemPool,
+    ChromiumRun, ChromiumRunFields, GemPoolFields, NewChromiumRun, OcmChipLoading, OcmGemPool,
     PoolMultiplexGemPool, SingleplexGemPool,
 };
-use cellnoor_schema::chip_loadings;
+use cellnoor_schema::{chip_loadings, chromium_runs, specimens, suspension_pools, suspensions};
 use diesel::prelude::*;
+use diesel_async::{AsyncConnection, RunQueryDsl, scoped_futures::ScopedFutureExt};
+use jiff::Timestamp;
 use uuid::Uuid;
 
 use crate::{
     api::{
-        extract::{ValidJson, auth::AuthenticatedUser},
-        routes::{ApiResponse, Root, inner_handler},
+        auth::AuthUser, routes::chromium_runs::show::select_chromium_run_by_id,
+        util::validate_timestamps,
     },
-    db::{self, Operation},
+    db::{self, DbConnection},
     state::AppState,
 };
 
 pub(super) async fn create_chromium_run(
-    _: Root,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    ValidJson(request): ValidJson<ChromiumRunCreation>,
-) -> ApiResponse<ChromiumRun> {
-    let item = inner_handler(state, user, request).await?;
-    Ok((StatusCode::CREATED, item))
+    _: State<AppState>,
+    mut db_conn: DbConnection,
+    Extension(user): Extension<AuthUser>,
+    Json(chromium_run): Json<NewChromiumRun>,
+) -> Result<Json<ChromiumRun>, db::Error> {
+    let project_id = validate_chromium_run(&chromium_run, &db_conn).await?;
+
+    let run_id = db_conn
+        .transaction(move |db_conn| {
+            insert_chromium_run_and_associated_data(project_id, chromium_run, db_conn).scope_boxed()
+        })
+        .await?;
+
+    select_chromium_run_by_id(user.projects(), run_id, &db_conn)
+        .await
+        .map(Json)
 }
 
-impl Operation<ChromiumRun> for ChromiumRunCreation {
-    fn execute(self, db_conn: &mut PgConnection) -> Result<ChromiumRun, db::Error> {
-        let run_id = match self {
-            Self::OnChipMultiplexing { inner, gem_pools } => {
-                let run_id = inner.execute(db_conn)?;
+pub async fn insert_chromium_run_and_associated_data(
+    project_id: Uuid,
+    chromium_run: NewChromiumRun,
+    db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<Uuid, db::Error> {
+    let run_id = match chromium_run {
+        NewChromiumRun::OnChipMultiplexing { inner, gem_pools } => {
+            let run_id = insert_chromium_run(project_id, inner, db_conn).await?;
 
-                let gem_pool_ids =
-                    insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)?;
+            let gem_pool_ids =
+                insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)
+                    .await?;
 
-                insert_ocm_chip_loadings(&gem_pool_ids, gem_pools.as_ref(), db_conn)?;
+            insert_ocm_chip_loadings(&gem_pool_ids, gem_pools.as_ref(), db_conn).await?;
 
-                run_id
-            }
-            Self::PoolMultiplex { inner, gem_pools } => {
-                let run_id = inner.execute(db_conn)?;
+            run_id
+        }
+        NewChromiumRun::PoolMultiplex { inner, gem_pools } => {
+            let run_id = insert_chromium_run(project_id, inner, db_conn).await?;
 
-                let gem_pool_ids =
-                    insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)?;
+            let gem_pool_ids =
+                insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)
+                    .await?;
 
-                insert_pool_multiplex_chip_loadings(&gem_pool_ids, gem_pools.as_ref(), db_conn)?;
+            insert_pool_multiplex_chip_loadings(&gem_pool_ids, gem_pools.as_ref(), db_conn).await?;
 
-                run_id
-            }
-            Self::Singleplex { inner, gem_pools } => {
-                let run_id = inner.execute(db_conn)?;
+            run_id
+        }
+        NewChromiumRun::Singleplex { inner, gem_pools } => {
+            let run_id = insert_chromium_run(project_id, inner, db_conn).await?;
 
-                let gem_pool_ids =
-                    insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)?;
+            let gem_pool_ids =
+                insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)
+                    .await?;
 
-                insert_singleplex_chip_loadings(&gem_pool_ids, gem_pools.as_ref(), db_conn)?;
+            insert_singleplex_chip_loadings(&gem_pool_ids, gem_pools.as_ref(), db_conn).await?;
 
-                run_id
-            }
-        };
+            run_id
+        }
+    };
 
-        run_id.execute(db_conn)
-    }
+    Ok(run_id)
 }
 
-impl Operation<ChromiumRunId> for ChromiumRunFields {
-    fn execute(self, db_conn: &mut PgConnection) -> Result<ChromiumRunId, db::Error> {
-        use cellnoor_schema::chromium_runs::dsl::*;
-
-        Ok(diesel::insert_into(chromium_runs)
-            .values(self)
-            .returning(id)
-            .get_result(db_conn)?)
-    }
+async fn insert_chromium_run(
+    project_id: Uuid,
+    chromium_run: ChromiumRunFields,
+    mut db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<Uuid, db::Error> {
+    Ok(diesel::insert_into(chromium_runs::table)
+        .values((chromium_runs::project_id.eq(project_id), chromium_run))
+        .returning(chromium_runs::id)
+        .get_result(&mut db_conn)
+        .await?)
 }
 
-fn insert_gem_pools<'a, I>(
-    chromium_run_id: ChromiumRunId,
+async fn insert_gem_pools<'a, I>(
+    chromium_run_id: Uuid,
     gem_pool_data: I,
-    db_conn: &mut PgConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<Uuid>, db::Error>
 where
     I: Iterator<Item = &'a GemPoolFields>,
@@ -93,13 +110,14 @@ where
     Ok(diesel::insert_into(gem_pools::table)
         .values(insertions)
         .returning(gem_pools::id)
-        .get_results(db_conn)?)
+        .get_results(&mut db_conn)
+        .await?)
 }
 
-fn insert_ocm_chip_loadings(
+async fn insert_ocm_chip_loadings(
     gem_pool_ids: &[Uuid],
     gem_pools: &[OcmGemPool],
-    db_conn: &mut PgConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), db::Error> {
     let mut chip_loading_insertions = Vec::with_capacity(gem_pool_ids.len() * 4);
 
@@ -111,15 +129,16 @@ fn insert_ocm_chip_loadings(
 
     diesel::insert_into(chip_loadings::table)
         .values(chip_loading_insertions)
-        .execute(db_conn)?;
+        .execute(&mut db_conn)
+        .await?;
 
     Ok(())
 }
 
-fn insert_pool_multiplex_chip_loadings(
+async fn insert_pool_multiplex_chip_loadings(
     gem_pool_ids: &[Uuid],
     gem_pools: &[PoolMultiplexGemPool],
-    db_conn: &mut PgConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), db::Error> {
     let chip_loading_insertions: Vec<_> = gem_pool_ids
         .iter()
@@ -134,15 +153,16 @@ fn insert_pool_multiplex_chip_loadings(
 
     diesel::insert_into(chip_loadings::table)
         .values(chip_loading_insertions)
-        .execute(db_conn)?;
+        .execute(&mut db_conn)
+        .await?;
 
     Ok(())
 }
 
-fn insert_singleplex_chip_loadings(
+async fn insert_singleplex_chip_loadings(
     gem_pool_ids: &[Uuid],
     gem_pools: &[SingleplexGemPool],
-    db_conn: &mut PgConnection,
+    mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), db::Error> {
     let chip_loading_insertions: Vec<_> = gem_pool_ids
         .iter()
@@ -157,7 +177,156 @@ fn insert_singleplex_chip_loadings(
 
     diesel::insert_into(chip_loadings::table)
         .values(chip_loading_insertions)
-        .execute(db_conn)?;
+        .execute(&mut db_conn)
+        .await?;
 
     Ok(())
+}
+
+pub(super) async fn validate_chromium_run(
+    chromium_run: &NewChromiumRun,
+    db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<Uuid, db::Error> {
+    let run_at = chromium_run.run_at();
+
+    let suspension_ids: Vec<Uuid> = match chromium_run {
+        NewChromiumRun::OnChipMultiplexing {
+            inner: _,
+            gem_pools,
+        } => gem_pools
+            .as_ref()
+            .iter()
+            .flat_map(|p| p.loading.as_ref().iter().map(OcmChipLoading::suspension_id))
+            .collect(),
+        NewChromiumRun::PoolMultiplex {
+            inner: _,
+            gem_pools,
+        } => {
+            let suspension_pool_ids = gem_pools
+                .as_ref()
+                .iter()
+                .map(|p| p.loading.suspension_pool_id())
+                .collect();
+
+            return validate_loaded_suspension_pools(suspension_pool_ids, run_at, db_conn).await;
+        }
+        NewChromiumRun::Singleplex {
+            inner: _,
+            gem_pools,
+        } => gem_pools
+            .as_ref()
+            .iter()
+            .map(|p| p.loading.suspension_id())
+            .collect(),
+    };
+
+    validate_loaded_suspensions(&suspension_ids, run_at, db_conn).await
+}
+
+async fn validate_loaded_suspension_pools(
+    pool_ids: Vec<Uuid>,
+    chromium_run_at: Timestamp,
+    db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<Uuid, db::Error> {
+    let project_ids_and_pooling_times = suspension_pools_info(&pool_ids, db_conn).await?;
+
+    for (_, pooled_at) in &project_ids_and_pooling_times {
+        validate_timestamps(
+            (*pooled_at, "suspensions_pooled_at"),
+            (chromium_run_at, "chromium_run_at"),
+        )?;
+    }
+
+    Ok(validate_all_loaded_suspensions_have_same_project(
+        &project_ids_and_pooling_times,
+    )?)
+}
+
+async fn validate_loaded_suspensions(
+    suspension_ids: &[Uuid],
+    chromium_run_at: Timestamp,
+    db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<Uuid, db::Error> {
+    let project_ids_and_suspension_creation_times =
+        suspensions_info(suspension_ids, db_conn).await?;
+
+    for (_, suspension_created_at) in &project_ids_and_suspension_creation_times {
+        validate_timestamps(
+            (*suspension_created_at, "suspension_created_at"),
+            (chromium_run_at, "chromium_run_at"),
+        )?;
+    }
+
+    Ok(validate_all_loaded_suspensions_have_same_project(
+        &project_ids_and_suspension_creation_times,
+    )?)
+}
+
+async fn suspensions_info(
+    suspension_ids: &[Uuid],
+    mut db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<Vec<(Uuid, Timestamp)>, db::Error> {
+    let timestamps = join_suspensions_to_specimens(suspension_ids)
+        .select((
+            suspensions::project_id,
+            specimens::received_at,
+            suspensions::created_at,
+        ))
+        .load(&mut db_conn)
+        .await?;
+
+    let timestamps = timestamps
+        .into_iter()
+        .map(
+            |(project_id, t1, t2): (_, jiff_diesel::Timestamp, jiff_diesel::NullableTimestamp)| {
+                (project_id, t2.to_jiff().unwrap_or(t1.to_jiff()))
+            },
+        )
+        .collect();
+
+    Ok(timestamps)
+}
+
+async fn suspension_pools_info(
+    pool_ids: &[Uuid],
+    mut db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<Vec<(Uuid, Timestamp)>, db::Error> {
+    let timestamps = suspension_pools::table
+        .select((suspension_pools::project_id, suspension_pools::pooled_at))
+        .filter(suspension_pools::id.eq_any(pool_ids))
+        .load(&mut db_conn)
+        .await?;
+
+    Ok(timestamps
+        .into_iter()
+        .map(|(project_id, ts): (_, jiff_diesel::Timestamp)| (project_id, ts.to_jiff()))
+        .collect())
+}
+
+fn validate_all_loaded_suspensions_have_same_project(
+    project_ids_and_timestamps: &[(Uuid, Timestamp)],
+) -> Result<Uuid, db::DataError> {
+    let mut project_ids = project_ids_and_timestamps
+        .iter()
+        .map(|(project_id, _)| project_id);
+
+    let Some(first_project_id) = project_ids.next() else {
+        return Err(db::DataError::new_other("invalid suspension IDs"));
+    };
+
+    if !project_ids.all(|p| first_project_id == p) {
+        return Err(db::DataError::new_other(
+            "cannot load suspensions from different project in same Chromium run",
+        ));
+    }
+
+    Ok(*first_project_id)
+}
+
+#[allow(clippy::elidable_lifetime_names)]
+#[diesel::dsl::auto_type]
+pub(super) fn join_suspensions_to_specimens<'a>(suspension_ids: &'a [Uuid]) -> _ {
+    suspensions::table
+        .inner_join(specimens::table)
+        .filter(suspensions::id.eq_any(suspension_ids))
 }

@@ -1,5 +1,6 @@
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "serde", serde(transparent))]
 pub struct DefaultVec<T>(Vec<T>);
 
@@ -11,6 +12,15 @@ impl<T> DefaultVec<T> {
 
     pub fn push(&mut self, value: T) {
         self.0.push(value);
+    }
+}
+
+impl<T> IntoIterator for DefaultVec<T> {
+    type IntoIter = std::vec::IntoIter<T>;
+    type Item = T;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
     }
 }
 

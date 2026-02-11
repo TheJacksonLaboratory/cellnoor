@@ -2,12 +2,14 @@ use std::fmt::Display;
 
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "serde", serde(transparent))]
+#[cfg_attr(feature = "schemars", schemars(with = "u32"))]
 #[cfg_attr(
     feature = "diesel",
     derive(diesel::deserialize::FromSqlRow, diesel::expression::AsExpression)
 )]
 #[cfg_attr(feature = "diesel", diesel(sql_type = ::diesel::sql_types::Float))]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 pub struct RangedF32<const MIN: u32, const MAX: u32>(f32);
 
 impl<const MIN: u32, const MAX: u32> Display for RangedF32<MIN, MAX> {

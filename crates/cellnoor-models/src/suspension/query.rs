@@ -1,7 +1,6 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::suspensions;
 use macro_attributes::{filter, order_by};
-use macros::uuid_newtype;
 use uuid::Uuid;
 
 #[cfg(feature = "app")]
@@ -10,6 +9,7 @@ use crate::generic_query;
 #[filter]
 pub struct SuspensionFilter {
     pub ids: Option<Vec<Uuid>>,
+    pub project_ids: Option<Vec<Uuid>>,
 }
 
 #[order_by(suspensions)]
@@ -31,9 +31,4 @@ impl Default for SuspensionOrderBy {
     }
 }
 
-#[cfg(feature = "app")]
 pub type SuspensionQuery = generic_query::Query<SuspensionFilter, SuspensionOrderBy>;
-
-uuid_newtype!(SuspensionId, "/{id}");
-
-uuid_newtype!(SuspensionIdMeasurements, "/{id}/measurements");

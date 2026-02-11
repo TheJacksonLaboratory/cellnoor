@@ -2,5 +2,5 @@ mod common;
 mod creation;
 mod read;
 
-pub use creation::SpecimenMeasurementCreation;
+pub use creation::NewSpecimenMeasurement;
 pub use read::SpecimenMeasurement;

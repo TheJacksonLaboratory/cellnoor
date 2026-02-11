@@ -18,7 +18,6 @@ pub struct SpecimenMeasurementFields {
         serialize_as = jiff_diesel::Timestamp,
         deserialize_as = jiff_diesel::Timestamp
     ))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     measured_at: Timestamp,
     data: SpecimenMeasurementData,
 }

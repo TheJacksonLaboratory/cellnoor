@@ -1,3 +1,5 @@
+import { building } from "$app/environment";
+
 // This module could be improved but I hate writing TypeScript so it's not worth it
 async function readEnvVar(name: string): Promise<string | undefined> {
   const key = name.toUpperCase();
@@ -29,14 +31,28 @@ interface Secrets {
   dbPort: number;
   cellnoorUiDbPassword: string;
   dbName: string;
-  microsoft_entra_client_id: string;
-  microsoft_entra_client_secret: string;
-  microsoft_entra_tenant: string;
+  authSecret: string;
+  microsoftEntraClientId: string;
+  microsoftEntraClientSecret: string;
+  microsoftEntraTenant: string;
 }
 
 let secrets: Secrets | null = null;
 
 export async function readSecrets() {
+  if (building) {
+    return {
+      dbHost: "",
+      dbPort: 0,
+      cellnoorUiDbPassword: "",
+      dbName: "",
+      authSecret: "",
+      microsoftEntraClientId: "",
+      microsoftEntraClientSecret: "",
+      microsoftEntraTenant: "",
+    };
+  }
+
   if (secrets !== null) {
     return secrets;
   }
@@ -46,31 +62,38 @@ export async function readSecrets() {
     dbPort: parseInt(await readRequiredEnvVar("db_port")),
     cellnoorUiDbPassword: await readSecret("cellnoor_ui_db_password"),
     dbName: await readSecret("db_name"),
-    microsoft_entra_client_id: await readSecret("microsoft_entra_client_id"),
-    microsoft_entra_client_secret: await readSecret(
+    authSecret: await readSecret("auth_secret"),
+    microsoftEntraClientId: await readSecret("microsoft_entra_client_id"),
+    microsoftEntraClientSecret: await readSecret(
       "microsoft_entra_client_secret",
     ),
-    microsoft_entra_tenant: await readSecret("microsoft_entra_tenant"),
+    microsoftEntraTenant: await readSecret("microsoft_entra_tenant"),
   };
 
   return secrets;
 }
 
 interface Config {
-  apiKeyPrefixLength: number;
   publicUrl?: string;
   apiUrl: string;
+  jwtAudience: string;
+  jwtIssuer: string;
 }
 
 let appConfig: Config | null = null;
 
 export async function readConfig() {
+  if (building) {
+    return { publicUrl: "", apiUrl: "", jwtAudience: "", jwtIssuer: "" };
+  }
+
   if (appConfig !== null) {
     return appConfig;
   }
 
-  const publicUrl = await readEnvVar("public_url");
-  let apiUrl = await readEnvVar("api_url");
+  let [publicUrl, apiUrl] = await Promise.all(
+    ["public_url", "api_url"].map(readEnvVar),
+  );
 
   if (apiUrl === undefined) {
     if (publicUrl === undefined) {
@@ -80,13 +103,18 @@ export async function readConfig() {
     apiUrl = `${publicUrl}/api`;
   }
 
+  const [jwtAudience, jwtIssuer] = await Promise.all(
+    ["jwt_audience", "jwt_issuer"].map(readRequiredEnvVar),
+  );
+
   appConfig = {
-    apiKeyPrefixLength: parseInt(
-      await readRequiredEnvVar("api_key_prefix_length"),
-    ),
     publicUrl,
     apiUrl,
+    // @ts-ignore
+    jwtAudience,
+    // @ts-ignore
+    jwtIssuer,
   };
 
-  return appConfig;
+  return appConfig as Config;
 }

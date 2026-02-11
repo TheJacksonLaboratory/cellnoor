@@ -9,20 +9,39 @@
 create table people (
     id uuid primary key default uuidv7(),
     links jsonb generated always as (
-        construct_links('people', id, '{"labs", "specimens", "chromium-datasets"}')
+        construct_links('people', id, '{"projects", "specimens"}')
     ) stored not null,
     name case_insensitive_text not null,
     email case_insensitive_text unique,
     email_verified boolean not null default false,
     institution_id uuid references institutions on delete restrict on update restrict not null,
     orcid case_insensitive_text unique,
-    microsoft_entra_oid uuid unique
+    microsoft_entra_oid uuid unique,
+    is_admin boolean not null default false,
+    is_biology_staff boolean not null default false,
+    is_computational_staff boolean not null default false
 );
 
-create table api_keys (
-    prefix bytea unique not null,
-    created_at timestamptz not null default current_timestamp,
-    hash text unique not null,
-    user_id uuid references people on delete cascade on update cascade not null,
-    primary key (prefix, hash)
+create table json_web_keys (
+    id uuid primary key default uuidv7(),
+    public_key text not null,
+    private_key text not null,
+    created_at timestamptz not null,
+    expires_at timestamptz not null
+);
+
+-- This table is just for displaying the JWTs a user has created in the UI. It's not used for auth checks in
+-- cellnoor-api
+create table json_web_tokens (
+    jti uuid primary key,
+    sub uuid references people on delete cascade on update cascade,
+    name case_insensitive_text not null,
+    description case_insensitive_text,
+    iat timestamptz not null,
+    exp timestamptz not null
+);
+
+create table revoked_json_web_tokens (
+    jti uuid primary key,
+    exp timestamptz not null
 );

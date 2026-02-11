@@ -6,6 +6,7 @@ use diesel::{
     serialize::{Output, ToSql},
     sql_types::Text,
 };
+use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 use crate::initial_data::{
     Upsert,
@@ -44,11 +45,11 @@ struct SingleIndexSetInsertion<'a> {
     name: &'a str,
     kit: &'a str,
     well: &'a str,
-    sequences: &'a [StringWrapper],
+    sequences: Vec<Option<&'a StringWrapper>>,
 }
 
 impl Upsert for Vec<SingleIndexSet> {
-    fn upsert(self, db_conn: &mut diesel::PgConnection) -> anyhow::Result<()> {
+    async fn upsert(self, mut db_conn: &AsyncPgConnection) -> anyhow::Result<()> {
         self.iter().try_for_each(SingleIndexSet::validate)?;
 
         #[allow(clippy::get_first)]
@@ -57,7 +58,7 @@ impl Upsert for Vec<SingleIndexSet> {
         };
 
         let kit_name = index_set_name.kit_name()?;
-        insert_kit_name(kit_name, db_conn)?;
+        insert_kit_name(kit_name, db_conn).await?;
 
         let mut insertables = Vec::with_capacity(self.len());
         for SingleIndexSet(index_set_name, sequences) in &self {
@@ -67,14 +68,15 @@ impl Upsert for Vec<SingleIndexSet> {
                 name: index_set_name,
                 kit: kit_name,
                 well: well_name,
-                sequences,
+                sequences: sequences.iter().map(Some).collect(),
             });
         }
 
         diesel::insert_into(single_index_sets::table)
             .values(insertables)
             .on_conflict_do_nothing()
-            .execute(db_conn)?;
+            .execute(&mut db_conn)
+            .await?;
 
         Ok(())
     }

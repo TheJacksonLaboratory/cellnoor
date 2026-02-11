@@ -17,7 +17,14 @@ until docker exec --user postgres cellnoor-dev-db pg_isready >/dev/null 2>&1; do
     sleep 0.1
 done
 
+
+
 # The build script cellnoor-schema/build.rs calls the diesel-cli, which may need a connection to a database. We
 # provide the URL of the database spun up in restart-compilation-db.sh via an environment variable, which diesel picks
 # up automatically
-DATABASE_URL="postgres://postgres@localhost:5432/cellnoor-compilation" cargo run --package cellnoor-api $@
+export DATABASE_URL="postgres://postgres@localhost:5432/cellnoor-compilation"
+export CELLNOOR_DB_ROOT_USER="postgres"
+export CELLNOOR_DB_ROOT_PASSWORD="p"
+export CELLNOOR_API_DB_PASSWORD="p"
+
+cargo run --bin cellnoor-api $@

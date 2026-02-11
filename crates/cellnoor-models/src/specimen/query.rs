@@ -2,7 +2,6 @@
 use cellnoor_schema::specimens;
 use jiff::Timestamp;
 use macro_attributes::{filter, order_by};
-use macros::uuid_newtype;
 use serde_json::Value;
 use uuid::Uuid;
 
@@ -19,10 +18,9 @@ pub struct SpecimenFilter {
     pub ids: Option<Vec<Uuid>>,
     pub names: Option<Vec<String>>,
     pub submitted_by: Option<Vec<Uuid>>,
-    pub labs: Option<Vec<Uuid>>,
-    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
+    pub project_ids: Option<Vec<Uuid>>,
     pub received_before: Option<Timestamp>,
-    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
+
     pub received_after: Option<Timestamp>,
     pub species: Option<Vec<Species>>,
     pub host_species: Option<Vec<Species>>,
@@ -32,9 +30,9 @@ pub struct SpecimenFilter {
     pub thermal_preservation_methods: Option<Vec<ThermalPreservationMethod>>,
     pub fresh: Option<bool>,
     pub tissues: Option<Vec<String>>,
-    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
+
     pub returned_before: Option<Timestamp>,
-    #[cfg_attr(feature = "typescript", ts(as = "Option<String>"))]
+
     pub returned_after: Option<Timestamp>,
     pub returned_by: Option<Vec<Uuid>>,
     pub additional_data: Option<Value>,
@@ -47,7 +45,7 @@ pub enum SpecimenOrderBy {
     readable_id { descending: Option<bool> },
     name { descending: Option<bool> },
     submitted_by { descending: Option<bool> },
-    lab_id { descending: Option<bool> },
+    project_id { descending: Option<bool> },
     received_at { descending: Option<bool> },
     species { descending: Option<bool> },
     host_species { descending: Option<bool> },
@@ -68,13 +66,4 @@ impl Default for SpecimenOrderBy {
     }
 }
 
-#[cfg(feature = "app")]
 pub type SpecimenQuery = generic_query::Query<SpecimenFilter, SpecimenOrderBy>;
-
-uuid_newtype!(SpecimenId, "/{id}");
-
-uuid_newtype!(SpecimenIdMeasurements, "/{id}/measurements");
-
-uuid_newtype!(SpecimenIdSuspensions, "/{id}/suspensions");
-
-uuid_newtype!(SpecimenIdChromiumDatasets, "/{id}/chromium-datasets");

@@ -1,32 +1,29 @@
-use axum::{extract::State, http::StatusCode};
-use cellnoor_models::institution::{Institution, InstitutionCreation};
+use axum::{Json, extract::State};
+use cellnoor_models::institution::{Institution, NewInstitution};
 use cellnoor_schema::institutions::dsl::institutions;
 use diesel::prelude::*;
+use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 use crate::{
-    api::{
-        extract::{ValidJson, auth::AuthenticatedUser},
-        routes::{ApiResponse, Root, inner_handler},
-    },
-    db,
+    db::{self, DbConnection},
     state::AppState,
 };
 
-pub(super) async fn create_institution(
-    _: Root,
-    state: State<AppState>,
-    user: AuthenticatedUser,
-    ValidJson(request): ValidJson<InstitutionCreation>,
-) -> ApiResponse<Institution> {
-    let item = inner_handler(state, user, request).await?;
-    Ok((StatusCode::CREATED, item))
+pub async fn create_institution(
+    _: State<AppState>,
+    db_conn: DbConnection,
+    Json(institution): Json<NewInstitution>,
+) -> Result<Json<Institution>, db::Error> {
+    insert_institution(institution, &db_conn).await.map(Json)
 }
 
-impl db::Operation<Institution> for InstitutionCreation {
-    fn execute(self, db_conn: &mut diesel::PgConnection) -> Result<Institution, db::Error> {
-        Ok(diesel::insert_into(institutions)
-            .values(self)
-            .returning(Institution::as_returning())
-            .get_result(db_conn)?)
-    }
+pub async fn insert_institution(
+    institution: NewInstitution,
+    mut db_conn: &AsyncPgConnection,
+) -> Result<Institution, db::Error> {
+    Ok(diesel::insert_into(institutions)
+        .values(institution)
+        .returning(Institution::as_returning())
+        .get_result(&mut db_conn)
+        .await?)
 }

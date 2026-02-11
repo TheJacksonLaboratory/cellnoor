@@ -19,8 +19,9 @@ impl From<SuspensionThermalPreservation> for ThermalPreservationMethod {
 
 #[base_model]
 #[derive(serde::Deserialize)]
+#[cfg_attr(feature = "app", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case", tag = "preservation_state")]
-pub enum SuspensionSpecimenCreation {
+pub enum NewSuspensionSpecimen {
     Fixed {
         #[serde(flatten)]
         inner: SpecimenCommonFields,
@@ -37,7 +38,7 @@ pub enum SuspensionSpecimenCreation {
     },
 }
 
-impl SuspensionSpecimenCreation {
+impl NewSuspensionSpecimen {
     pub(super) fn common(&self) -> &SpecimenCommonFields {
         match self {
             Self::Fixed { inner, fixative: _ }

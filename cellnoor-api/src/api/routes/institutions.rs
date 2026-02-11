@@ -1,17 +1,30 @@
-use axum::Router;
-use axum_extra::routing::RouterExt;
+use aide::axum::{
+    ApiRouter,
+    routing::{get, post},
+};
+use axum::handler::Handler;
+use create::create_institution;
+use index::index_institutions;
+use show::show_institution;
 
-use crate::state::AppState;
+use crate::{admin_required_creation, state::AppState};
 
-mod create;
-mod fetch;
-mod list;
-mod members;
+pub mod create;
+pub mod index;
+pub mod members;
+pub mod show;
 
-pub(super) fn router() -> Router<AppState> {
-    Router::new()
-        .typed_post(create::create_institution)
-        .typed_get(fetch::fetch_institution)
-        .typed_get(list::list_institutions)
-        .typed_get(members::list::list_members)
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route(
+            "/",
+            post(create_institution.layer(admin_required_creation!())).get(index_institutions),
+        )
+        .nest("/{id}", id_router())
+}
+
+fn id_router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route("/", get(show_institution))
+        .nest("/members", members::router())
 }

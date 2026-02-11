@@ -1,0 +1,32 @@
+# Build artifacts
+node_modules
+target
+.svelte-kit
+build
+
+# Docker
+Dockerfile*
+compose*
+.dockerignore
+
+# Git
+.git
+.gitignore
+
+# Environment
+.env*
+
+# Formatting files
+.taplo.toml
+rustfmt.toml
+.sqlfluff
+.sqlfluffignore
+
+# Miscellaneous files
+README.md
+scripts
+.pre-commit-config.yaml
+initial_data*
+openapi.json
+rust-toolchain.toml
+.github

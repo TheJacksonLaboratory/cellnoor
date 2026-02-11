@@ -7,13 +7,13 @@ export async function getDbClient() {
     return dbClient;
   }
 
-  const secrets = await readSecrets();
+  const { cellnoorUiDbPassword, dbHost, dbPort, dbName } = await readSecrets();
   dbClient = new Bun.SQL({
     username: "cellnoor_ui",
-    password: secrets.cellnoorUiDbPassword,
-    hostname: secrets.dbHost,
-    port: secrets.dbPort,
-    database: secrets.dbName,
+    password: cellnoorUiDbPassword,
+    hostname: dbHost,
+    port: dbPort,
+    database: dbName,
   });
 
   return dbClient;

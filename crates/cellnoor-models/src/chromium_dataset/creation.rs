@@ -40,12 +40,11 @@ impl_enum_to_sql!(ChromiumDatasetCmdline);
 
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = chromium_datasets))]
-pub struct ChromiumDatasetCreation {
+pub struct NewChromiumDataset {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: ChromiumDatasetFields,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp))]
-    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     delivered_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
     library_ids: Vec<Uuid>,
@@ -53,7 +52,7 @@ pub struct ChromiumDatasetCreation {
     cmdline: ChromiumDatasetCmdline,
 }
 
-impl ChromiumDatasetCreation {
+impl NewChromiumDataset {
     #[must_use]
     pub fn cmdline(&self) -> ChromiumDatasetCmdline {
         self.cmdline

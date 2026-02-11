@@ -1,0 +1,25 @@
+use axum::{
+    Json,
+    extract::{Path, State},
+};
+use cellnoor_models::{
+    IdParameter,
+    chromium_dataset::{ChromiumDatasetQuery, ChromiumDatasetSummary},
+};
+
+use crate::{
+    api::{extract::AuthJsonQuery, routes::chromium_datasets::index::select_chromium_datasets},
+    db::{self, DbConnection},
+    state::AppState,
+};
+
+pub async fn index_project_chromium_datasets(
+    _: State<AppState>,
+    db_conn: DbConnection,
+    Path(IdParameter { id }): Path<IdParameter>,
+    AuthJsonQuery { mut q }: AuthJsonQuery<ChromiumDatasetQuery>,
+) -> Result<Json<Vec<ChromiumDatasetSummary>>, db::Error> {
+    q.filter.project_ids = Some(vec![id]);
+
+    select_chromium_datasets(q, &db_conn).await.map(Json)
+}

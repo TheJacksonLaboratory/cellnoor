@@ -1,7 +1,7 @@
 use serde_json::Value;
 
 #[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize, Eq)]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
 pub struct SimpleFields {
     #[serde(alias = "Category")]
     category: String,
@@ -16,7 +16,7 @@ pub struct SimpleFields {
 }
 
 #[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize, Eq)]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
 pub struct Row {
     #[serde(flatten)]
     simple_fields: SimpleFields,

@@ -13,7 +13,7 @@ use crate::{
 
 #[select]
 #[cfg_attr(feature = "app", derive(Identifiable))]
-#[cfg_attr(feature = "app", diesel(table_name = gem_pools))]
+#[cfg_attr(feature = "app", diesel(table_name = gem_pools, base_query = gem_pools::table.inner_join(chromium_runs::table)))]
 pub struct GemPoolSummary {
     id: Uuid,
     chromium_run_id: Uuid,
@@ -27,15 +27,33 @@ impl GemPoolSummary {
     pub fn id(&self) -> Uuid {
         self.id
     }
+
+    #[must_use]
+    pub fn chromium_run_id(&self) -> Uuid {
+        self.chromium_run_id
+    }
 }
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = chromium_runs))]
 pub struct ChromiumRunSummary {
     id: Uuid,
+    project_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: ChromiumRunFields,
+}
+
+impl ChromiumRunSummary {
+    #[must_use]
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+
+    #[must_use]
+    pub fn project_id(&self) -> Uuid {
+        self.project_id
+    }
 }
 
 #[select]

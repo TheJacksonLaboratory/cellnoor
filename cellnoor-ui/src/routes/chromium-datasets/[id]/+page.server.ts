@@ -1,35 +1,21 @@
-import { ApiClient } from "$lib/server/cellnoor-client";
-import type { ChromiumDataset } from "cellnoor-types/ChromiumDataset";
-import type { SpecimenSummary } from "cellnoor-types/SpecimenSummary";
-import type { LibrarySummary } from "cellnoor-types/LibrarySummary";
-import { isSuccess } from "$lib/cellnoor-typeguard";
+import { getApiClient } from "$lib/server/cellnoor-client.js";
 
-export async function load(
-  event,
-) {
-  const apiClient = await ApiClient.new();
+export async function load({ params: { id } }) {
+  const apiClient = await getApiClient();
 
-  const dataset = await apiClient.getJson<ChromiumDataset>(event);
+  const params = { path: { id } };
 
-  const [specimens, libraries] = isSuccess(dataset)
-    ? await Promise.all([
-      apiClient.getJson<SpecimenSummary>(
-        event,
-        undefined,
-        { endpoint: dataset.links.specimens as string, queryString: "" },
-      ),
-      apiClient.getJson<LibrarySummary>(
-        event,
-        undefined,
-        { endpoint: dataset.links.libraries as string, queryString: "" },
-      ),
-      ,
-    ])
-    : [undefined, undefined];
+  const [dataset, specimens, libraries] = await Promise.all([
+    apiClient.GET("/chromium-datasets/{dataset_id}", {
+      params,
+    }),
+    apiClient.GET("/chromium-datasets/{dataset_id}/specimens", { params }),
+    apiClient.GET("/chromium-datasets/{dataset_id}/libraries", { params }),
+  ]);
 
   return {
-    dataset,
-    specimens,
-    libraries,
+    dataset: dataset.data,
+    specimens: specimens.data,
+    libraries: libraries.data,
   };
 }

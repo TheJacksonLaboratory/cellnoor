@@ -6,13 +6,11 @@ use uuid::Uuid;
 
 use crate::{
     db,
-    validate::{Validate, cdna::cdna_to_library_spec},
+    validate::{cdna::cdna_to_library_spec, Validate},
 };
 
 #[derive(Debug, thiserror::Error, serde::Serialize)]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(rename = "ChromiumDatasetValidationError"))]
-#[serde(rename_all = "snake_case", tag = "type", content = "info")]
+#[serde(rename_all = "snake_case", tag = "type")]
 pub enum Error {
     #[error("all libraries must come from same GEM pool")]
     DifferentGemPools,
@@ -104,7 +102,7 @@ fn fetch_validation_data(
     let results: Vec<(
         Uuid,
         jiff_diesel::NullableTimestamp,
-        Option<Vec<ChromiumDatasetCmdline>>,
+        Option<Vec<Option<ChromiumDatasetCmdline>>>,
     )> = libraries::table
         .inner_join(cdna_to_library_spec())
         .inner_join(sequencing_submissions::table.inner_join(sequencing_runs::table))
@@ -114,10 +112,16 @@ fn fetch_validation_data(
             sequencing_runs::finished_at,
             tenx_assays::cmdlines,
         ))
-        .load(db_conn)?;
+        .load(&mut db_conn)?;
 
     Ok(results
         .into_iter()
-        .map(|(id, ts, cmdlines)| (id, ts.to_jiff(), cmdlines.into_iter().flatten().collect()))
+        .map(|(id, ts, cmdlines)| {
+            (
+                id,
+                ts.to_jiff(),
+                cmdlines.into_iter().flatten().flatten().collect(),
+            )
+        })
         .collect())
 }
