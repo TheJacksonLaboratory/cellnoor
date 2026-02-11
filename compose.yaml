@@ -14,8 +14,6 @@ services:
       POSTGRES_PASSWORD_FILE: /run/secrets/db_root_password
       POSTGRES_DB_FILE: /run/secrets/db_name
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
-    expose:
-      - &db_port 5432
     healthcheck:
       test: pg_isready --dbname $(cat /run/secrets/db_name) || exit 1
       interval: 5s
@@ -33,10 +31,8 @@ services:
     environment:
       DB_ROOT_USER: *db_root_user
       DB_HOST: *db_host
-      DB_PORT: *db_port
+      DB_PORT: &db_port 5432
       PORT: &api_port 80
-    expose:
-      - *api_port
     secrets:
       - source: db_root_password
         uid: *uid
