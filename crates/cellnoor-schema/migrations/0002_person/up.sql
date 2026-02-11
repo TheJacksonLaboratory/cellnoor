@@ -30,18 +30,14 @@ create table json_web_keys (
     expires_at timestamptz not null
 );
 
--- This table is just for displaying the JWTs a user has created in the UI. It's not used for auth checks in
--- cellnoor-api
+-- This table has two functions:
+-- 1. Display the JWTs a user has created in the UI (for programmatic access)
+-- 2. Allow users to delete JWTs, since cellnoor-api checks this table when authenticating API requests
 create table json_web_tokens (
     jti uuid primary key,
     sub uuid references people on delete cascade on update cascade,
     name case_insensitive_text not null,
     description case_insensitive_text,
     iat timestamptz not null,
-    exp timestamptz not null
-);
-
-create table revoked_json_web_tokens (
-    jti uuid primary key,
     exp timestamptz not null
 );

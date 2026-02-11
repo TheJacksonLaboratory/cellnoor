@@ -13,13 +13,15 @@
 </script>
 
 <div class="min-h-1/2 mx-auto flex flex-col items-center w-fit">
-  <div class="avatar">
-    <img
-      class="rounded-full"
-      src={image}
-      alt="profile"
-    />
-  </div>
+  {#if image}
+    <div class="avatar">
+      <img
+        class="rounded-full"
+        src={image}
+        alt="profile"
+      />
+    </div>
+  {/if}
   <h1 class="text-4xl font-bold">{userName}</h1>
   <p class="text-xl font-bold">{email}</p>
   <div class="divider"></div>

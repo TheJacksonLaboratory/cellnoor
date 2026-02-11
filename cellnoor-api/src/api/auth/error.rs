@@ -36,10 +36,16 @@ impl From<jsonwebtoken::errors::Error> for Error {
 impl Error {
     pub const fn status_code(&self) -> u16 {
         match self {
-            Self::Database(_) | Self::Other { .. } => StatusCode::INTERNAL_SERVER_ERROR,
-            Self::InvalidAuthToken { .. } | Self::NoAuthTokenFound { .. } => {
-                StatusCode::UNAUTHORIZED
-            }
+            Self::Database(
+                db::Error::Data(_)
+                | db::Error::DuplicateResource { .. }
+                | db::Error::InvalidReference { .. }
+                | db::Error::Other { .. },
+            )
+            | Self::Other { .. } => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::Database(db::Error::ResourceNotFound)
+            | Self::InvalidAuthToken { .. }
+            | Self::NoAuthTokenFound { .. } => StatusCode::UNAUTHORIZED,
             Self::PermissionDenied => StatusCode::FORBIDDEN,
         }
         .as_u16()

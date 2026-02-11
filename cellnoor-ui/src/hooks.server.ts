@@ -30,11 +30,6 @@ export async function handle({ event, resolve }) {
     return redirect(307, "/auth/sign-in");
   }
 
-  const userIsSingingOut = pathname.includes("sign-out");
-  if (userIsSingingOut) {
-    event.cookies.delete(API_TOKEN_COOKIE_NAME, { path: "/" });
-  }
-
   // We could destructure this (the way we do with other things above), but I'm not sure if `session` is a reference or
   // a deep clone because JavaScript <3
   event.locals.user = session.user;

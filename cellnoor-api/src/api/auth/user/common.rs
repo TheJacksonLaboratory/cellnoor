@@ -8,6 +8,7 @@ use super::FromEncodedJwt;
 #[allow(dead_code)]
 #[derive(Clone, Debug, Deserialize)]
 pub(super) struct StandardClaims {
+    pub(super) jti: Uuid,
     pub(super) sub: Uuid,
     pub(super) iat: usize,
     pub(super) exp: usize,
@@ -17,7 +18,7 @@ pub(super) struct StandardClaims {
 
 impl FromEncodedJwt for StandardClaims {}
 
-#[derive(Clone, Debug, Deserialize, HasQuery)]
+#[derive(Clone, Debug, Deserialize, Selectable, Queryable)]
 #[diesel(table_name = people, check_for_backend(Pg))]
 pub(super) struct PrivateClaims {
     // (This comment should be read with imagined profanity and vitriol) better-auth, in its

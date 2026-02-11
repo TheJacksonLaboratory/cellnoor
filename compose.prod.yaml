@@ -5,7 +5,7 @@ services:
     pull_policy: always
     environment:
       JWT_ISSUER: &public_url https://cellnoor.jax.org
-      JWT_AUDIENCE: &api_url https://cellnoor.jax.org/api
+      JWT_AUDIENCE: &jwt_audience https://cellnoor.jax.org/api
       CELLNOOR_LOG_DIR: logs
     secrets:
       - source: initial_data
@@ -16,9 +16,7 @@ services:
     pull_policy: always
     environment:
       JWT_ISSUER: *public_url
-      JWT_AUDIENCE: *api_url
-      # Technically, we don't have to set both the `API_URL` and `PUBLIC_URL`, since cellnoor-ui will infer the former from the latter
-      API_URL: *api_url
+      JWT_AUDIENCE: *jwt_audience
       PUBLIC_URL: *public_url
   caddy:
     environment:

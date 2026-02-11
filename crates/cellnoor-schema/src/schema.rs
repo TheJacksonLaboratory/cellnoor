@@ -253,13 +253,6 @@ diesel::table! {
 }
 
 diesel::table! {
-    revoked_json_web_tokens (jti) {
-        jti -> Uuid,
-        exp -> Timestamptz,
-    }
-}
-
-diesel::table! {
     sequencing_runs (id) {
         id -> Uuid,
         links -> Jsonb,
@@ -490,7 +483,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     people,
     project_people,
     projects,
-    revoked_json_web_tokens,
     sequencing_runs,
     sequencing_submissions,
     single_index_sets,
