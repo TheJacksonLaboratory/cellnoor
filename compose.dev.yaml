@@ -3,7 +3,7 @@ services:
     build:
       args:
         BUILD_PROFILE: "dev"
-      tags: !reset []
+      tags: !reset null
     environment:
       JWT_ISSUER: &ui_url "http://cellnoor-ui"
       JWT_AUDIENCE: &api_url "http://cellnoor-api/api"
@@ -16,7 +16,7 @@ services:
       PUBLIC_URL: &public_url https://localhost
   cellnoor-ui:
     build:
-      tags: !reset []
+      tags: !reset null
     environment:
       JWT_ISSUER: *ui_url
       JWT_AUDIENCE: *api_url

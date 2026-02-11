@@ -23,7 +23,7 @@ services:
   caddy:
     environment:
       PUBLIC_URL: *public_url
-      TLS_SETTINGS: /run/secrets/tls_certificate /run/secrets/tls_key
+      TLS_SETTINGS: tls /run/secrets/tls_certificate /run/secrets/tls_key
     secrets:
       - tls_certificate
       - tls_key
