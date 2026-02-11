@@ -5,10 +5,7 @@ use macro_attributes::{insert_select, json};
 use macros::{impl_json_from_sql, impl_json_to_sql};
 use uuid::Uuid;
 
-use crate::suspension::{
-    SuspensionContent,
-    measurement::common::{Concentration, MeanDiameter, Viability, Volume},
-};
+use crate::suspension::measurement::common::{Concentration, MeanDiameter, Viability, Volume};
 #[cfg(feature = "app")]
 use crate::utils::{JsonFromSql, JsonToSql};
 
@@ -39,18 +36,10 @@ impl SuspensionPoolMeasurementFields {
 #[json]
 #[serde(tag = "quantity")]
 pub enum SuspensionPoolMeasurementData {
-    Concentration {
-        #[serde(flatten)]
-        inner: Concentration,
-        numerator_unit: SuspensionContent,
-    },
+    Concentration(Concentration),
     Viability(Viability),
     Volume(Volume),
-    MeanDiameter {
-        #[serde(flatten)]
-        inner: MeanDiameter,
-        object: SuspensionContent,
-    },
+    MeanDiameter(MeanDiameter),
 }
 
 #[cfg(feature = "app")]

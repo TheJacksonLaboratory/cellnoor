@@ -18,6 +18,7 @@ pub struct GemPoolFields {
 }
 
 #[json]
+#[cfg_attr(feature = "app", schemars(rename = "LoadingVolume"))]
 pub struct Volume {
     value: u8,
     unit: Microliter,

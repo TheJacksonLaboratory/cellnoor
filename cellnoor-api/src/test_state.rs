@@ -30,7 +30,7 @@ use jiff::Timestamp;
 use non_empty::{NonEmptyString, NonEmptyVec};
 use pretty_assertions::assert_eq;
 use rand::{
-    Rng,
+    RngExt,
     distr::Alphanumeric,
     seq::{IndexedRandom, IteratorRandom},
 };
