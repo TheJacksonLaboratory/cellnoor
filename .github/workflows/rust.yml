@@ -20,6 +20,7 @@ jobs:
         with:
           cache-all-crates: true
           cache-workspace-crates: true
+          cache-on-failure: true
 
       - name: Lint
         run: cargo clippy --workspace --all-features
@@ -35,6 +36,7 @@ jobs:
         with:
           cache-all-crates: true
           cache-workspace-crates: true
+          cache-on-failure: true
 
       - name: Install nightly toolchain
         run: rustup component add --toolchain nightly-2026-02-10 rustfmt # This is updated weekly-ish
