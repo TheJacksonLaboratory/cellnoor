@@ -70,6 +70,7 @@ services:
       DB_HOST: *db_host
       DB_PORT: *db_port
       PORT: &ui_port 80
+      API_URL: http://cellnoor-api/api
     depends_on:
       cellnoor-api:
         condition: service_healthy
