@@ -2371,7 +2371,7 @@ export interface components {
             /** Format: uuid */
             measured_by: string;
         } & ({
-            concentration: components["schemas"]["Concentration"];
+            concentration: components["schemas"]["NucleicAcidConcentrationPicogram"];
             instrument_name: string;
             /** Format: uint16 */
             mean_size_bp?: number | null;
@@ -2382,7 +2382,7 @@ export interface components {
             /** @constant */
             type: "electrophoretic";
         } | {
-            concentration: components["schemas"]["Concentration2"];
+            concentration: components["schemas"]["NucleicAcidConcentrationNanogram"];
             instrument_name: string;
             /** @constant */
             type: "fluorometric";
@@ -2393,7 +2393,7 @@ export interface components {
             /** Format: uuid */
             measured_by: string;
         } & ({
-            concentration: components["schemas"]["Concentration"];
+            concentration: components["schemas"]["NucleicAcidConcentrationPicogram"];
             instrument_name: string;
             /** Format: uint16 */
             mean_size_bp?: number | null;
@@ -2404,7 +2404,7 @@ export interface components {
             /** @constant */
             type: "electrophoretic";
         } | {
-            concentration: components["schemas"]["Concentration2"];
+            concentration: components["schemas"]["NucleicAcidConcentrationNanogram"];
             instrument_name: string;
             /** @constant */
             type: "fluorometric";
@@ -2575,18 +2575,6 @@ export interface components {
             run_by: string;
             succeeded: boolean;
         };
-        Concentration: {
-            denominator_unit: components["schemas"]["Microliter"];
-            numerator_unit: components["schemas"]["Picogram"];
-            /** Format: uint32 */
-            value: number;
-        };
-        Concentration2: {
-            denominator_unit: components["schemas"]["Microliter"];
-            numerator_unit: components["schemas"]["Nanogram"];
-            /** Format: uint32 */
-            value: number;
-        };
         /** @enum {string} */
         CountingMethod: "bright_field" | "acridine_orange_propidium_iodide" | "trypan_blue";
         CreatePersonError: ({
@@ -2721,7 +2709,7 @@ export interface components {
             /** Format: uuid */
             measured_by: string;
         } & ({
-            concentration: components["schemas"]["Concentration"];
+            concentration: components["schemas"]["NucleicAcidConcentrationPicogram"];
             instrument_name: string;
             /** Format: uint16 */
             mean_size_bp?: number | null;
@@ -2732,7 +2720,7 @@ export interface components {
             /** @constant */
             type: "electrophoretic";
         } | {
-            concentration: components["schemas"]["Concentration2"];
+            concentration: components["schemas"]["NucleicAcidConcentrationNanogram"];
             instrument_name: string;
             /** @constant */
             type: "fluorometric";
@@ -2743,7 +2731,7 @@ export interface components {
             /** Format: uuid */
             measured_by: string;
         } & ({
-            concentration: components["schemas"]["Concentration"];
+            concentration: components["schemas"]["NucleicAcidConcentrationPicogram"];
             instrument_name: string;
             /** Format: uint16 */
             mean_size_bp?: number | null;
@@ -2754,7 +2742,7 @@ export interface components {
             /** @constant */
             type: "electrophoretic";
         } | {
-            concentration: components["schemas"]["Concentration2"];
+            concentration: components["schemas"]["NucleicAcidConcentrationNanogram"];
             instrument_name: string;
             /** @constant */
             type: "fluorometric";
@@ -2816,6 +2804,17 @@ export interface components {
         Link: string | string[];
         Links: {
             [key: string]: components["schemas"]["Link"];
+        };
+        LoadingVolume: {
+            unit: components["schemas"]["Microliter"];
+            /** Format: uint8 */
+            value: number;
+        };
+        MeanDiameter: {
+            object: components["schemas"]["SuspensionContent"];
+            unit: components["schemas"]["Micrometer"];
+            /** Format: uint32 */
+            value: number;
         };
         /** @enum {string} */
         Microliter: "microliter";
@@ -3169,15 +3168,27 @@ export interface components {
             thermal_preservation_method: components["schemas"]["ThermalPreservationMethod"];
             tissue: string;
         };
+        NucleicAcidConcentrationNanogram: {
+            denominator_unit: components["schemas"]["Microliter"];
+            numerator_unit: components["schemas"]["Nanogram"];
+            /** Format: uint32 */
+            value: number;
+        };
+        NucleicAcidConcentrationPicogram: {
+            denominator_unit: components["schemas"]["Microliter"];
+            numerator_unit: components["schemas"]["Picogram"];
+            /** Format: uint32 */
+            value: number;
+        };
         /** @enum {string} */
         OcmBarcodeId: "ob1" | "ob2" | "ob3" | "ob4";
         OcmChipLoading: {
             additional_data?: unknown;
-            buffer_volume_loaded: components["schemas"]["Volume2"];
+            buffer_volume_loaded: components["schemas"]["LoadingVolume"];
             ocm_barcode_id: components["schemas"]["OcmBarcodeId"];
             /** Format: uuid */
             suspension_id: string;
-            suspension_volume_loaded: components["schemas"]["Volume2"];
+            suspension_volume_loaded: components["schemas"]["LoadingVolume"];
         };
         OcmGemPool: {
             loading: components["schemas"]["OcmChipLoading"][];
@@ -3281,10 +3292,10 @@ export interface components {
         Picogram: "picogram";
         PoolMultiplexChipLoading: {
             additional_data?: unknown;
-            buffer_volume_loaded: components["schemas"]["Volume2"];
+            buffer_volume_loaded: components["schemas"]["LoadingVolume"];
             /** Format: uuid */
             suspension_pool_id: string;
-            suspension_volume_loaded: components["schemas"]["Volume2"];
+            suspension_volume_loaded: components["schemas"]["LoadingVolume"];
         };
         PoolMultiplexGemPool: {
             loading: components["schemas"]["PoolMultiplexChipLoading"];
@@ -3357,10 +3368,10 @@ export interface components {
         };
         SingleplexChipLoading: {
             additional_data?: unknown;
-            buffer_volume_loaded: components["schemas"]["Volume2"];
+            buffer_volume_loaded: components["schemas"]["LoadingVolume"];
             /** Format: uuid */
             suspension_id: string;
-            suspension_volume_loaded: components["schemas"]["Volume2"];
+            suspension_volume_loaded: components["schemas"]["LoadingVolume"];
         };
         SingleplexGemPool: {
             loading: components["schemas"]["SingleplexChipLoading"];
@@ -3581,6 +3592,13 @@ export interface components {
             /** Format: int64 */
             target_cell_recovery?: number | null;
         };
+        SuspensionConcentration: {
+            counting_method?: components["schemas"]["CountingMethod"] | null;
+            denominator_unit: components["schemas"]["Milliliter"];
+            numerator_unit: components["schemas"]["SuspensionContent"];
+            /** Format: uint32 */
+            value: number;
+        };
         /** @enum {string} */
         SuspensionContent: "cells" | "nuclei";
         SuspensionFilter: {
@@ -3692,28 +3710,19 @@ export interface components {
             /** Format: uuid */
             pool_id: string;
         };
-        SuspensionPoolMeasurementData: {
-            counting_method?: components["schemas"]["CountingMethod"] | null;
-            denominator_unit: components["schemas"]["Milliliter"];
-            numerator_unit: components["schemas"]["SuspensionContent"];
+        SuspensionPoolMeasurementData: ({
             /** @constant */
             quantity: "concentration";
-            /** Format: uint32 */
-            value: number;
-        } | ({
+        } & components["schemas"]["SuspensionConcentration"]) | ({
             /** @constant */
             quantity: "viability";
         } & components["schemas"]["Viability"]) | ({
             /** @constant */
             quantity: "volume";
-        } & components["schemas"]["Volume"]) | {
-            object: components["schemas"]["SuspensionContent"];
+        } & components["schemas"]["SuspensionVolume"]) | ({
             /** @constant */
             quantity: "mean_diameter";
-            unit: components["schemas"]["Micrometer"];
-            /** Format: uint32 */
-            value: number;
-        };
+        } & components["schemas"]["MeanDiameter"]);
         SuspensionPoolMeasurementFields: {
             data: components["schemas"]["SuspensionPoolMeasurementData"];
             /** Format: date-time */
@@ -3764,6 +3773,11 @@ export interface components {
         };
         /** @enum {string} */
         SuspensionThermalPreservation: "controlled_rate_freezing";
+        SuspensionVolume: {
+            unit: components["schemas"]["Microliter"];
+            /** Format: uint32 */
+            value: number;
+        };
         TenxAssay: {
             chemistry_version: string;
             chromium_chip?: string | null;
@@ -3829,16 +3843,6 @@ export interface components {
             /** Format: uint32 */
             value: number;
         };
-        Volume: {
-            unit: components["schemas"]["Microliter"];
-            /** Format: uint32 */
-            value: number;
-        };
-        Volume2: {
-            unit: components["schemas"]["Microliter"];
-            /** Format: uint8 */
-            value: number;
-        };
     };
     responses: never;
     parameters: never;
@@ -3865,8 +3869,6 @@ export type ChromiumRun = components['schemas']['ChromiumRun'];
 export type ChromiumRunFilter = components['schemas']['ChromiumRunFilter'];
 export type ChromiumRunOrderBy = components['schemas']['ChromiumRunOrderBy'];
 export type ChromiumRunSummary = components['schemas']['ChromiumRunSummary'];
-export type Concentration = components['schemas']['Concentration'];
-export type Concentration2 = components['schemas']['Concentration2'];
 export type CountingMethod = components['schemas']['CountingMethod'];
 export type CreatePersonError = components['schemas']['CreatePersonError'];
 export type DataError = components['schemas']['DataError'];
@@ -3888,6 +3890,8 @@ export type LibrarySummary = components['schemas']['LibrarySummary'];
 export type LibraryType = components['schemas']['LibraryType'];
 export type Link = components['schemas']['Link'];
 export type Links = components['schemas']['Links'];
+export type LoadingVolume = components['schemas']['LoadingVolume'];
+export type MeanDiameter = components['schemas']['MeanDiameter'];
 export type Microliter = components['schemas']['Microliter'];
 export type Micrometer = components['schemas']['Micrometer'];
 export type Milliliter = components['schemas']['Milliliter'];
@@ -3909,6 +3913,8 @@ export type NewSuspensionCommonFields = components['schemas']['NewSuspensionComm
 export type NewSuspensionPool = components['schemas']['NewSuspensionPool'];
 export type NewSuspensionSpecimen = components['schemas']['NewSuspensionSpecimen'];
 export type NewTissue = components['schemas']['NewTissue'];
+export type NucleicAcidConcentrationNanogram = components['schemas']['NucleicAcidConcentrationNanogram'];
+export type NucleicAcidConcentrationPicogram = components['schemas']['NucleicAcidConcentrationPicogram'];
 export type OcmBarcodeId = components['schemas']['OcmBarcodeId'];
 export type OcmChipLoading = components['schemas']['OcmChipLoading'];
 export type OcmGemPool = components['schemas']['OcmGemPool'];
@@ -3937,6 +3943,7 @@ export type SpecimenOrderBy = components['schemas']['SpecimenOrderBy'];
 export type SpecimenSummary = components['schemas']['SpecimenSummary'];
 export type SpecimenType = components['schemas']['SpecimenType'];
 export type Suspension = components['schemas']['Suspension'];
+export type SuspensionConcentration = components['schemas']['SuspensionConcentration'];
 export type SuspensionContent = components['schemas']['SuspensionContent'];
 export type SuspensionFilter = components['schemas']['SuspensionFilter'];
 export type SuspensionMeasurement = components['schemas']['SuspensionMeasurement'];
@@ -3952,12 +3959,11 @@ export type SuspensionPoolOrderBy = components['schemas']['SuspensionPoolOrderBy
 export type SuspensionSummary = components['schemas']['SuspensionSummary'];
 export type SuspensionTagging = components['schemas']['SuspensionTagging'];
 export type SuspensionThermalPreservation = components['schemas']['SuspensionThermalPreservation'];
+export type SuspensionVolume = components['schemas']['SuspensionVolume'];
 export type TenxAssay = components['schemas']['TenxAssay'];
 export type TenxAssayFilter = components['schemas']['TenxAssayFilter'];
 export type TenxAssayOrderBy = components['schemas']['TenxAssayOrderBy'];
 export type ThermalPreservationMethod = components['schemas']['ThermalPreservationMethod'];
 export type Viability = components['schemas']['Viability'];
-export type Volume = components['schemas']['Volume'];
-export type Volume2 = components['schemas']['Volume2'];
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

@@ -7,6 +7,7 @@ use crate::units::{Microliter, Nanogram, Picogram};
 use crate::utils::{JsonFromSql, JsonToSql};
 
 #[json]
+#[cfg_attr(feature = "app", schemars(rename = "NucleicAcidConcentration{N}"))]
 pub struct Concentration<N> {
     value: u32,
     numerator_unit: N,

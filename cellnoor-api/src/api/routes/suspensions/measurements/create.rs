@@ -54,14 +54,8 @@ fn validate_measurement_content_matches_suspension_content(
     // Using a match statement is better than a let guard because the compiler
     // protects us if we ever add another type of suspension measurement
     let measurement_content = match measurement {
-        SuspensionMeasurementData::Concentration {
-            numerator_unit: measurement_content,
-            ..
-        }
-        | SuspensionMeasurementData::MeanDiameter {
-            object: measurement_content,
-            ..
-        } => *measurement_content,
+        SuspensionMeasurementData::Concentration { inner, .. } => inner.numerator_unit(),
+        SuspensionMeasurementData::MeanDiameter { inner, .. } => inner.object(),
         SuspensionMeasurementData::Viability { .. } | SuspensionMeasurementData::Volume { .. } => {
             return Ok(());
         }

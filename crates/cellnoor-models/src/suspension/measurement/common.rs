@@ -43,7 +43,6 @@ pub enum SuspensionMeasurementData {
         #[serde(flatten)]
         inner: Concentration,
         post_hybridization: bool,
-        numerator_unit: SuspensionContent,
     },
     Viability {
         #[serde(flatten)]
@@ -59,7 +58,6 @@ pub enum SuspensionMeasurementData {
         #[serde(flatten)]
         inner: MeanDiameter,
         post_hybridization: bool,
-        object: SuspensionContent,
     },
 }
 
@@ -72,10 +70,18 @@ impl JsonToSql for SuspensionMeasurementData {}
 impl_json_to_sql!(SuspensionMeasurementData);
 
 #[json]
+#[cfg_attr(feature = "app", schemars(rename = "SuspensionConcentration"))]
 pub struct Concentration {
     counting_method: Option<CountingMethod>,
     value: u32,
+    numerator_unit: SuspensionContent,
     denominator_unit: Milliliter,
+}
+
+impl Concentration {
+    pub fn numerator_unit(&self) -> SuspensionContent {
+        self.numerator_unit
+    }
 }
 
 #[json]
@@ -90,6 +96,7 @@ impl Viability {
 }
 
 #[json]
+#[cfg_attr(feature = "app", schemars(rename = "SuspensionVolume"))]
 pub struct Volume {
     value: RangedF32<0, { u32::MAX }>,
     unit: Microliter,
@@ -98,7 +105,14 @@ pub struct Volume {
 #[json]
 pub struct MeanDiameter {
     value: RangedF32<0, { u32::MAX }>,
+    object: SuspensionContent,
     unit: Micrometer,
+}
+
+impl MeanDiameter {
+    pub fn object(&self) -> SuspensionContent {
+        self.object
+    }
 }
 
 #[simple_enum]
