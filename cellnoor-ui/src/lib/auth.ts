@@ -110,7 +110,6 @@ export const auth = betterAuth({
         async definePayload(
           {
             user: {
-              id,
               user_id,
               is_admin,
               is_biology_staff,
@@ -129,8 +128,7 @@ export const auth = betterAuth({
             });
 
           return {
-            user: {
-              id,
+            private_claims: {
               user_id,
               is_admin,
               is_biology_staff,
