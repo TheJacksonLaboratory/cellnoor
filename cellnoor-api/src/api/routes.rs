@@ -8,6 +8,7 @@ use axum::{Extension, Json, Router, extract::Request, routing::get};
 use schemars::JsonSchema;
 use serde::Serialize;
 use tower::ServiceBuilder;
+use tower_http::decompression::RequestDecompressionLayer;
 use tower_http::trace::TraceLayer;
 
 use crate::{
@@ -48,6 +49,8 @@ pub(super) fn app(state: AppState) -> Router<AppState> {
         .route("/health", get(async || "ok"))
         .route("/openapi.json", axum::routing::get(show_api_docs))
         .layer(Extension(Arc::new(api_docs)))
+        // Apply decompression layer last (outermost) so it processes requests first
+        .layer(RequestDecompressionLayer::new())
 }
 
 pub fn router() -> (Router<AppState>, OpenApi) {

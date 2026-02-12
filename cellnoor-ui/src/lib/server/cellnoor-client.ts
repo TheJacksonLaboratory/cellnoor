@@ -16,6 +16,7 @@ export async function getApiClient() {
   const client = createCellnoorClient({
     baseUrl,
     fetch: getRequestEvent().fetch,
+    compressRequests: true, // Enable request compression
   });
 
   client.use(middleware);
