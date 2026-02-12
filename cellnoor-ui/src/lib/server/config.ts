@@ -1,14 +1,14 @@
 import { building } from "$app/environment";
 
 // This module could be improved but I hate writing TypeScript so it's not worth it
-async function readEnvVar(name: string): Promise<string | undefined> {
+async function readEnvVar(name: string) {
   const key = name.toUpperCase();
   const val = Bun.env[key] || Bun.env[`CELLNOOR_${key}`];
 
   return val;
 }
 
-async function readRequiredEnvVar(name: string): Promise<string> {
+async function readRequiredEnvVar(name: string) {
   const val = await readEnvVar(name);
 
   if (val === undefined) {
@@ -74,7 +74,7 @@ export async function readSecrets() {
 }
 
 interface Config {
-  publicUrl?: string;
+  publicUrl: string;
   apiUrl: string;
   jwtAudience: string;
   jwtIssuer: string;
@@ -91,17 +91,9 @@ export async function readConfig() {
     return appConfig;
   }
 
-  let [publicUrl, apiUrl] = await Promise.all(
-    ["public_url", "api_url"].map(readEnvVar),
+  const [publicUrl, apiUrl] = await Promise.all(
+    ["public_url", "api_url"].map(readRequiredEnvVar),
   );
-
-  if (apiUrl === undefined) {
-    if (publicUrl === undefined) {
-      throw "must have at least one of API_URL or PUBLIC_URL set";
-    }
-
-    apiUrl = `${publicUrl}/api`;
-  }
 
   const [jwtAudience, jwtIssuer] = await Promise.all(
     ["jwt_audience", "jwt_issuer"].map(readRequiredEnvVar),
@@ -110,11 +102,9 @@ export async function readConfig() {
   appConfig = {
     publicUrl,
     apiUrl,
-    // @ts-ignore
     jwtAudience,
-    // @ts-ignore
     jwtIssuer,
-  };
+  } as Config;
 
-  return appConfig as Config;
+  return appConfig;
 }
