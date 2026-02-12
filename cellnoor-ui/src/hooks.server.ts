@@ -2,7 +2,6 @@ import { auth } from "$lib/auth";
 import { svelteKitHandler } from "better-auth/svelte-kit";
 import { building } from "$app/environment";
 import { redirect } from "@sveltejs/kit";
-import { API_TOKEN_COOKIE_NAME } from "$lib/server/cellnoor-client";
 
 const NON_AUTH_ROUTES = [
   "/api/auth/sign-in/social",
