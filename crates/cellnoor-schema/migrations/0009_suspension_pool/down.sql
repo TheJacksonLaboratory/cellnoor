@@ -1,1 +1,0 @@
-drop table multiplexed_suspension_preparers, multiplexed_suspension_measurement, multiplexed_suspension;
