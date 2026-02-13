@@ -40,8 +40,8 @@ impl NewSuspensionCommonFields {
 #[derive(Deserialize, JsonSchema)]
 #[serde(tag = "content", rename_all = "snake_case")]
 pub enum NewSuspension {
-    Cell(NewSuspensionCommonFields),
-    Nucleus {
+    Cells(NewSuspensionCommonFields),
+    Nuclei {
         #[serde(flatten)]
         common: NewSuspensionCommonFields,
         lysis_duration_minutes: RangedF32<0, { u32::MAX }>,
@@ -52,8 +52,8 @@ impl NewSuspension {
     #[must_use]
     fn common(&self) -> &NewSuspensionCommonFields {
         match self {
-            Self::Cell(s) => s,
-            Self::Nucleus { common, .. } => common,
+            Self::Cells(s) => s,
+            Self::Nuclei { common, .. } => common,
         }
     }
 
