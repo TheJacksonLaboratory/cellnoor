@@ -66,8 +66,8 @@ pub async fn insert_suspension(
     mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Uuid, db::Error> {
     let (suspension, suspension_content, lysis_duration_minutes) = match suspension {
-        NewSuspension::Cell(s) => (s, SuspensionContent::Cells, None),
-        NewSuspension::Nucleus {
+        NewSuspension::Cells(s) => (s, SuspensionContent::Cells, None),
+        NewSuspension::Nuclei {
             common,
             lysis_duration_minutes,
         } => (

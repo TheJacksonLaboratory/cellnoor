@@ -3012,11 +3012,11 @@ export interface components {
         } & components["schemas"]["NewTissue"]);
         NewSuspension: ({
             /** @constant */
-            content: "cell";
+            content: "cells";
         } & components["schemas"]["NewSuspensionCommonFields"]) | {
             additional_data?: unknown;
             /** @constant */
-            content: "nucleus";
+            content: "nuclei";
             /** Format: date-time */
             created_at?: string | null;
             /** Format: uint32 */

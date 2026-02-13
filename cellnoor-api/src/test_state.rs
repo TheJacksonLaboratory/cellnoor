@@ -307,7 +307,7 @@ impl TestState {
                 .preparer_ids(specimen.submitted_by())
                 .build();
 
-            NewSuspension::Cell(common)
+            NewSuspension::Cells(common)
         };
 
         insert_suspension(specimen.project_id(), new_suspension, db_conn)
