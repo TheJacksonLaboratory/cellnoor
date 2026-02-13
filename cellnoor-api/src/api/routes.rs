@@ -27,6 +27,7 @@ pub mod people;
 pub mod projects;
 pub mod sequencing_runs;
 pub mod specimens;
+mod staff;
 pub mod suspension_pools;
 pub mod suspensions;
 pub mod tenx_assays;
@@ -65,6 +66,7 @@ pub fn router() -> (Router<AppState>, OpenApi) {
     aide::generate::infer_responses(true);
 
     let router = ApiRouter::new()
+        .nest("/staff", staff::router())
         .nest("/institutions", institutions::router())
         .nest("/people", people::router())
         .nest("/projects", projects::router())

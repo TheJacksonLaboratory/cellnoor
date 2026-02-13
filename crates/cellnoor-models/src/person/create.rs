@@ -14,6 +14,7 @@ pub struct NewPerson {
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: PersonFields,
     email: NonEmptyString,
+    microsoft_entra_oid: Option<Uuid>,
 }
 
 impl NewPerson {
@@ -33,7 +34,7 @@ impl NewPerson {
 
     #[must_use]
     pub fn microsoft_entra_oid(&self) -> Option<Uuid> {
-        self.inner.microsoft_entra_oid
+        self.microsoft_entra_oid
     }
 
     #[must_use]

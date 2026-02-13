@@ -28,7 +28,17 @@ pub struct PersonFilter {
     pub emails: Option<Vec<String>>,
     pub institution_ids: Option<Vec<Uuid>>,
     pub orcids: Option<Vec<String>>,
+}
+
+#[filter]
+pub struct PersonFilterStaff {
+    #[serde(flatten)]
+    pub inner: Option<PersonFilter>,
     pub microsoft_entra_oids: Option<Vec<Uuid>>,
+    pub is_admin: Option<bool>,
+    pub is_computational_staff: Option<bool>,
+    pub is_biology_staff: Option<bool>,
 }
 
 pub type PersonQuery = crate::generic_query::Query<PersonFilter, PersonOrderBy>;
+pub type PersonQueryStaff = crate::generic_query::Query<PersonFilterStaff, PersonOrderBy>;

@@ -39,6 +39,18 @@ pub async fn admin_required(
     Ok(next.run(request).await)
 }
 
+pub async fn staff_required(
+    Extension(user): Extension<AuthUser>,
+    request: Request,
+    next: Next,
+) -> Result<Response, auth::Error> {
+    if !user.is_staff() {
+        Err(auth::Error::PermissionDenied)?;
+    }
+
+    Ok(next.run(request).await)
+}
+
 pub async fn created_status_code(mut response: Response) -> Response {
     let status_code = response.status_mut();
 

@@ -15,7 +15,6 @@ pub struct PersonSummary {
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: PersonFields,
     email: Option<String>,
-    email_verified: bool,
     links: Links,
 }
 
@@ -34,6 +33,18 @@ impl PersonSummary {
     pub fn email(&self) -> Option<&str> {
         self.email.as_deref()
     }
+}
+
+#[select]
+#[cfg_attr(feature = "app", diesel(table_name = people))]
+pub struct PersonSummaryStaff {
+    #[serde(flatten)]
+    #[cfg_attr(feature = "app", diesel(embed))]
+    inner: PersonSummary,
+    microsoft_entra_oid: Option<Uuid>,
+    is_admin: bool,
+    is_biology_staff: bool,
+    is_computational_staff: bool,
 }
 
 #[select]
