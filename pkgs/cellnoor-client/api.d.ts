@@ -3196,15 +3196,12 @@ export interface components {
         };
         Person: {
             email?: string | null;
-            email_verified: boolean;
             /** Format: uuid */
             id: string;
             institution: components["schemas"]["Institution"];
             /** Format: uuid */
             institution_id: string;
             links: components["schemas"]["Links"];
-            /** Format: uuid */
-            microsoft_entra_oid?: string | null;
             name: string;
             orcid?: string | null;
         };
@@ -3215,6 +3212,24 @@ export interface components {
             ids: string[] | null;
             /** @default null */
             institution_ids: string[] | null;
+            /** @default null */
+            names: string[] | null;
+            /** @default null */
+            orcids: string[] | null;
+        };
+        PersonFilterStaff: {
+            /** @default null */
+            emails: string[] | null;
+            /** @default null */
+            ids: string[] | null;
+            /** @default null */
+            institution_ids: string[] | null;
+            /** @default null */
+            is_admin: boolean | null;
+            /** @default null */
+            is_biology_staff: boolean | null;
+            /** @default null */
+            is_computational_staff: boolean | null;
             /** @default null */
             microsoft_entra_oids: string[] | null;
             /** @default null */
@@ -3253,11 +3268,23 @@ export interface components {
         };
         PersonSummary: {
             email?: string | null;
-            email_verified: boolean;
             /** Format: uuid */
             id: string;
             /** Format: uuid */
             institution_id: string;
+            links: components["schemas"]["Links"];
+            name: string;
+            orcid?: string | null;
+        };
+        PersonSummaryStaff: {
+            email?: string | null;
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            institution_id: string;
+            is_admin: boolean;
+            is_biology_staff: boolean;
+            is_computational_staff: boolean;
             links: components["schemas"]["Links"];
             /** Format: uuid */
             microsoft_entra_oid?: string | null;
@@ -3920,8 +3947,10 @@ export type OcmChipLoading = components['schemas']['OcmChipLoading'];
 export type OcmGemPool = components['schemas']['OcmGemPool'];
 export type Person = components['schemas']['Person'];
 export type PersonFilter = components['schemas']['PersonFilter'];
+export type PersonFilterStaff = components['schemas']['PersonFilterStaff'];
 export type PersonOrderBy = components['schemas']['PersonOrderBy'];
 export type PersonSummary = components['schemas']['PersonSummary'];
+export type PersonSummaryStaff = components['schemas']['PersonSummaryStaff'];
 export type PersonUpdate = components['schemas']['PersonUpdate'];
 export type Picogram = components['schemas']['Picogram'];
 export type PoolMultiplexChipLoading = components['schemas']['PoolMultiplexChipLoading'];

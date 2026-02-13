@@ -11,5 +11,4 @@ pub struct PersonFields {
     pub(super) name: NonEmptyString,
     pub(super) orcid: Option<NonEmptyString>,
     pub(super) institution_id: Uuid,
-    pub(super) microsoft_entra_oid: Option<Uuid>,
 }
