@@ -3,12 +3,10 @@
   "module": "index.ts",
   "type": "module",
   "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
   },
   "dependencies": {
-    "openapi-fetch": "^0.16.0"
+    "openapi-fetch": "catalog:"
   }
 }
