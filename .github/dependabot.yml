@@ -9,8 +9,8 @@ updates:
         patterns:
           - "*"
 
-  - package-ecosystem: npm
-    directory: cellnoor-ui
+  - package-ecosystem: bun
+    directory: .
     schedule:
       interval: weekly
     groups:
