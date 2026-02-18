@@ -1,7 +1,6 @@
 [package]
 edition.workspace = true
 name = "ranged"
-version = "0.1.0"
 
 [dependencies]
 deranged.workspace = true

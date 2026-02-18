@@ -25,7 +25,7 @@ export const auth = betterAuth({
   session: {
     cookieCache: {
       strategy: "jwt",
-      maxAge: 30 * 60, // 30 minutes
+      maxAge: 7 * 24 * 60 * 60, // 1 week
     },
   },
   socialProviders: {
@@ -120,7 +120,7 @@ export const auth = betterAuth({
         },
         issuer: await readConfig().then(({ jwtIssuer }) => jwtIssuer),
         audience: await readConfig().then(({ jwtAudience }) => jwtAudience),
-        expirationTime: "30 minutes",
+        expirationTime: "1 hour",
         async definePayload({ user: { user_id } }) {
           const dbClient = await getDbClient();
 

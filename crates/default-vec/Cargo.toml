@@ -1,7 +1,6 @@
 [package]
 edition.workspace = true
 name = "default-vec"
-version = "0.1.0"
 
 [dependencies]
 schemars = { workspace = true, optional = true }

@@ -1,10 +1,9 @@
 [package]
 edition.workspace = true
 name = "non-empty"
-version = "0.1.0"
 
 [dependencies]
-cellnoor-schema = { version = "0.1.0", path = "../cellnoor-schema", optional = true }
+cellnoor-schema = { path = "../cellnoor-schema", optional = true }
 diesel = { workspace = true, optional = true }
 schemars = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
