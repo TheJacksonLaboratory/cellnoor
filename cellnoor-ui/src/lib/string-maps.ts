@@ -14,13 +14,11 @@ export const libraryTypeMap: Map<LibraryType, string> = new Map([
 ]);
 
 export const multiplexingTypeMap: Map<SampleMultiplexing | undefined, string> =
-  new Map(
-    [
-      ["cellplex", "CellPlex"],
-      ["flex_barcode", "Flex Barcode"],
-      ["hashtag", "Hashtagging"],
-      ["on_chip_multiplexing", "On Chip Multiplexing"],
-      ["singleplex", ""],
-      [undefined, ""],
-    ],
-  );
+  new Map([
+    ["cellplex", "CellPlex"],
+    ["flex_barcode", "Flex Barcode"],
+    ["hashtag", "Hashtagging"],
+    ["on_chip_multiplexing", "On Chip Multiplexing"],
+    ["singleplex", ""],
+    [undefined, ""],
+  ]);

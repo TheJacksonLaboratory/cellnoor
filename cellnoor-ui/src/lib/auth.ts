@@ -3,7 +3,11 @@ import { sveltekitCookies } from "better-auth/svelte-kit";
 import { getRequestEvent } from "$app/server";
 import { readConfig, readSecrets } from "$lib/server/config";
 import { getDbClient } from "$lib/server/db-client";
-import { getUserProjects, upsertPersonIntoDb } from "$lib/server/auth/db";
+import {
+  getUserProjects,
+  getUserRoles,
+  upsertPersonIntoDb,
+} from "$lib/server/auth/db";
 import { createAuthMiddleware, jwt } from "better-auth/plugins";
 import { API_TOKEN_COOKIE_NAME } from "./server/cellnoor-client";
 
@@ -26,14 +30,14 @@ export const auth = betterAuth({
   },
   socialProviders: {
     microsoft: {
-      clientId: await readSecrets().then(({ microsoftEntraClientId }) =>
-        microsoftEntraClientId
+      clientId: await readSecrets().then(
+        ({ microsoftEntraClientId }) => microsoftEntraClientId,
       ),
-      clientSecret: await readSecrets().then(({ microsoftEntraClientSecret }) =>
-        microsoftEntraClientSecret
+      clientSecret: await readSecrets().then(
+        ({ microsoftEntraClientSecret }) => microsoftEntraClientSecret,
       ),
-      tenantId: await readSecrets().then(({ microsoftEntraTenant }) =>
-        microsoftEntraTenant
+      tenantId: await readSecrets().then(
+        ({ microsoftEntraTenant }) => microsoftEntraTenant,
       ),
       mapProfileToUser: async (profile) => {
         // It's useful to have the user's roles in the JWT assigned by better-auth in order to display certain UI
@@ -75,7 +79,9 @@ export const auth = betterAuth({
             private_key: webKey.privateKey,
           };
           const result = await dbClient`insert into json_web_keys ${
-            dbClient(data)
+            dbClient(
+              data,
+            )
           } returning id`;
           const id: string = result[0].id;
 
@@ -115,17 +121,12 @@ export const auth = betterAuth({
         issuer: await readConfig().then(({ jwtIssuer }) => jwtIssuer),
         audience: await readConfig().then(({ jwtAudience }) => jwtAudience),
         expirationTime: "30 minutes",
-        async definePayload(
-          {
-            user: {
-              user_id,
-              is_admin,
-              is_biology_staff,
-              is_computational_staff,
-            },
-          },
-        ) {
+        async definePayload({ user: { user_id } }) {
           const dbClient = await getDbClient();
+
+          const { is_admin, is_biology_staff, is_computational_staff } =
+            await getUserRoles(user_id, dbClient);
+
           const isStaff = is_admin || is_biology_staff ||
             is_computational_staff;
 

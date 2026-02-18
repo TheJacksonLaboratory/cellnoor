@@ -55,7 +55,10 @@ async function getApiTokenFromCookies() {
 }
 
 async function setNewApiToken() {
-  const { request: { headers }, cookies } = getRequestEvent();
+  const {
+    request: { headers },
+    cookies,
+  } = getRequestEvent();
 
   const { token: newToken } = await auth.api.getToken({ headers });
   const { exp } = jose.decodeJwt(newToken);
@@ -69,12 +72,10 @@ async function setNewApiToken() {
   });
 }
 
-async function refreshApiToken(
-  apiToken: string,
-) {
+async function refreshApiToken(apiToken: string) {
   // We don't actually need to verify the JWT because the REST API will do that for us
   const { exp } = jose.decodeJwt(apiToken);
-  if ((exp! * 1000) < Date.now()) {
+  if (exp! * 1000 < Date.now()) {
     await setNewApiToken();
   }
 }
