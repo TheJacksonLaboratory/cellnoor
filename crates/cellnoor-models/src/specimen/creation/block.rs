@@ -28,13 +28,11 @@ pub enum NewBlock {
     OptimalCuttingTemperatureCompound {
         #[serde(flatten)]
         inner: SpecimenCommonFields,
-
         fixative: Option<BlockFixative>,
     },
     CarboxymethylCellulose {
         #[serde(flatten)]
         inner: SpecimenCommonFields,
-
         fixative: Option<BlockFixative>,
     },
     Paraffin {

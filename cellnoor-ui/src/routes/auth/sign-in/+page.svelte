@@ -12,9 +12,7 @@
         src="/jax-logo.png"
         alt="The Jackson Laboratory Logo"
       />
-      <h1 class="font-comfortaa text-6xl">
-        cellnoor
-      </h1>
+      <h1 class="font-comfortaa text-6xl">cellnoor</h1>
     </div>
     <button
       class="btn btn-ghost p-0"

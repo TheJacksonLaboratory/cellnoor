@@ -17,6 +17,10 @@ services:
   cellnoor-ui:
     build:
       tags: !reset null
+    develop:
+      watch:
+        - action: rebuild
+          path: ./cellnoor-ui
     environment:
       JWT_ISSUER: *ui_url
       JWT_AUDIENCE: *api_url

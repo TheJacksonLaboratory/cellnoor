@@ -1,22 +1,14 @@
 import type { MicrosoftEntraIDProfile } from "better-auth/social-providers";
 
 export async function upsertPersonIntoDb(
-  {
-    name,
-    email,
-    email_verified,
-    tid,
-    oid,
-  }: MicrosoftEntraIDProfile,
+  { name, email, email_verified, tid, oid }: MicrosoftEntraIDProfile,
   dbClient: Bun.SQL,
-): Promise<
-  {
-    id: string;
-    is_admin: boolean;
-    is_biology_staff: boolean;
-    is_computational_staff: boolean;
-  }
-> {
+): Promise<{
+  id: string;
+  is_admin: boolean;
+  is_biology_staff: boolean;
+  is_computational_staff: boolean;
+}> {
   const newPerson = {
     name,
     email,
@@ -85,9 +77,25 @@ export async function deleteApiTokenFromDb(
 export async function getUserProjects(userId: string, dbClient: Bun.SQL) {
   const projects =
     await dbClient`select project_id from project_people where person_id = ${userId}`
-      .then((rows: { project_id: string }[]) => rows.map((r) => r.project_id));
+      .then(
+        (rows: { project_id: string }[]) => rows.map((r) => r.project_id),
+      );
 
   return {
     projects,
   };
+}
+
+export async function getUserRoles(
+  userId: string,
+  dbClient: Bun.SQL,
+): Promise<{
+  is_admin: boolean;
+  is_biology_staff: boolean;
+  is_computational_staff: boolean;
+}> {
+  const person =
+    await dbClient`select is_admin, is_biology_staff, is_computational_staff from people where id = ${userId}`;
+
+  return person[0];
 }
