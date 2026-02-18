@@ -6,11 +6,11 @@ export async function load({ params: { id } }) {
   const params = { path: { id } };
 
   const [dataset, specimens, libraries] = await Promise.all([
-    apiClient.GET("/chromium-datasets/{dataset_id}", {
+    apiClient.GET("/chromium-datasets/{id}", {
       params,
     }),
-    apiClient.GET("/chromium-datasets/{dataset_id}/specimens", { params }),
-    apiClient.GET("/chromium-datasets/{dataset_id}/libraries", { params }),
+    apiClient.GET("/chromium-datasets/{id}/specimens", { params }),
+    apiClient.GET("/chromium-datasets/{id}/libraries", { params }),
   ]);
 
   return {

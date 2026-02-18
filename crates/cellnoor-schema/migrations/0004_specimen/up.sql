@@ -2,7 +2,7 @@ create table specimens (
     id uuid primary key default uuidv7(),
     readable_id case_insensitive_text unique not null,
     links jsonb generated always as (
-        construct_links('specimens', id, '{"measurements", "suspensions", "chromium-datasets"}')
+        construct_links('specimens', id, '{"measurements", "suspensions", "chromium_datasets"}')
     ) stored not null,
     name case_insensitive_text not null,
     submitted_by uuid references people on delete restrict on update restrict not null,
@@ -36,5 +36,7 @@ create table specimen_measurements (
     specimen_id uuid not null references specimens on delete restrict on update restrict,
     measured_by uuid not null references people on delete restrict on update restrict,
     measured_at timestamptz not null,
-    data jsonb not null
+    data jsonb not null,
+
+    unique (specimen_id, measured_by, measured_at, data)
 );

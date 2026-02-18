@@ -23,7 +23,7 @@ pub(super) fn router() -> ApiRouter<AppState> {
             post(create_chromium_dataset.layer(admin_required_creation!()))
                 .get(index_chromium_datasets),
         )
-        .nest("/{dataset_id}", id_router())
+        .nest("/{id}", id_router())
 }
 
 fn id_router() -> ApiRouter<AppState> {

@@ -10,7 +10,7 @@ use crate::db;
 #[derive(Deserialize, JsonSchema)]
 #[schemars(inline)]
 pub struct FilePath {
-    pub dataset_id: Uuid,
+    pub id: Uuid,
     pub directory: String,
     pub filename: String,
 }
@@ -64,7 +64,7 @@ impl<'a> FieldExt<'a> for Field<'a> {
             content: self
                 .bytes()
                 .await
-                .map_err(|e| db::DataError::new_other(&e.to_string()))?,
+                .map_err(|e| db::DataError::new_other(&e.body_text()))?,
         })
     }
 }

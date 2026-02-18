@@ -926,8 +926,8 @@ fn random_gem_pool_fields() -> GemPoolFields {
 
 fn random_chip_loading_fields() -> ChipLoadingFields {
     ChipLoadingFields::builder()
-        .suspension_volume_loaded(Volume::new(0))
-        .buffer_volume_loaded(Volume::new(0))
+        .suspension_volume_loaded(Volume::new(0.0))
+        .buffer_volume_loaded(Volume::new(0.0))
         .build()
 }
 

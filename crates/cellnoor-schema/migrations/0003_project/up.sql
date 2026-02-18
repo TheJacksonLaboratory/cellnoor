@@ -1,7 +1,7 @@
 create table projects (
     id uuid primary key default uuidv7(),
     links jsonb generated always as (
-        construct_links('projects', id, '{"people", "specimens", "chromium-datasets"}')
+        construct_links('projects', id, '{"people", "specimens", "chromium_datasets"}')
     ) stored not null,
     name case_insensitive_text unique not null,
     started_at timestamptz not null,

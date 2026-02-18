@@ -33,7 +33,9 @@ create table suspension_measurements (
     suspension_id uuid references suspensions on delete restrict on update restrict not null,
     measured_by uuid references people on delete restrict on update restrict not null,
     measured_at timestamptz not null,
-    data jsonb not null
+    data jsonb not null,
+
+    unique (suspension_id, measured_by, measured_at, data)
 );
 
 create table suspension_preparers (

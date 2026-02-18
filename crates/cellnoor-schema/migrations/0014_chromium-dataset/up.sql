@@ -3,7 +3,9 @@ create table chromium_datasets (
     links jsonb default '{}' not null,
     name case_insensitive_text not null,
     project_id uuid references projects on delete restrict on update restrict not null,
-    delivered_at timestamptz not null
+    delivered_at timestamptz not null,
+
+    unique (name, project_id)
 );
 
 create table chromium_dataset_libraries (
@@ -33,11 +35,11 @@ create table chromium_dataset_web_summaries (
 create function initialize_chromium_dataset_links() returns trigger language plpgsql volatile strict as $$
     begin
         new.links = json_object(
-            'self_': '/chromium-datasets/' || new.id,
+            'self': '/chromium-datasets/' || new.id,
             'specimens': '/chromium-datasets/' || new.id || '/specimens',
             'libraries': '/chromium-datasets/' || new.id || '/libraries',
-            'web-summaries': jsonb_build_array(),
-            'metrics-files': jsonb_build_array()
+            'web_summaries': jsonb_build_array(),
+            'metrics': jsonb_build_array()
         );
         return new;
     end;
@@ -45,14 +47,14 @@ $$;
 
 create function update_web_summaries_links() returns trigger language plpgsql volatile strict as $$
     begin
-        update chromium_datasets set links = jsonb_set(links, '{web-summaries}', links -> 'web-summaries' || jsonb_build_array('/chromium-datasets/' || id || '/web-summaries/' || new.directory || '/' || new.filename)) where id = new.dataset_id;
+        update chromium_datasets set links = jsonb_set(links, '{web_summaries}', links -> 'web_summaries' || jsonb_build_array('/chromium-datasets/' || id || '/web-summaries/' || new.directory || '/' || new.filename)) where id = new.dataset_id;
         return new;
     end;
 $$;
 
 create function update_metrics_files_links() returns trigger language plpgsql volatile strict as $$
     begin
-        update chromium_datasets set links = jsonb_set(links, '{metrics-files}', links -> 'metrics-files' || jsonb_build_array('/chromium-datasets/' || id || '/metrics-files/' || new.directory || '/' || new.filename)) where id = new.dataset_id;
+        update chromium_datasets set links = jsonb_set(links, '{metrics}', links -> 'metrics' || jsonb_build_array('/chromium-datasets/' || id || '/metrics/' || new.directory || '/' || new.filename)) where id = new.dataset_id;
         return new;
     end;
 $$;

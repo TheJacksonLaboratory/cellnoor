@@ -22,7 +22,7 @@ pub async fn upload_web_summary(
     while let Some(field) = request
         .next_field()
         .await
-        .map_err(|e| db::DataError::new_other(&e.to_string()))?
+        .map_err(|e| db::DataError::new_other(&e.body_text()))?
     {
         extracted_web_summaries.push(field.parse(ALLOWED_CONTENT_TYPES).await?);
     }

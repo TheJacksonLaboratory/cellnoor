@@ -26,7 +26,7 @@ pub async fn download_web_summary(
         "fetching web summary {}/{} for Chromium dataset {}",
         web_summary_path.directory,
         web_summary_path.filename,
-        web_summary_path.dataset_id
+        web_summary_path.id
     );
 
     let file =
@@ -38,7 +38,7 @@ pub async fn download_web_summary(
 async fn select_chromium_dataset_web_summaries(
     authorized_projects: &AuthProjects,
     FilePath {
-        dataset_id,
+        id,
         directory,
         filename,
     }: &FilePath,
@@ -46,7 +46,7 @@ async fn select_chromium_dataset_web_summaries(
 ) -> Result<Vec<u8>, db::Error> {
     let query = chromium_dataset_web_summaries::table
         .select(chromium_dataset_web_summaries::content)
-        .filter(chromium_dataset_web_summaries::dataset_id.eq(dataset_id))
+        .filter(chromium_dataset_web_summaries::dataset_id.eq(id))
         .filter(chromium_dataset_web_summaries::directory.eq(directory))
         .filter(chromium_dataset_web_summaries::filename.eq(filename));
 
