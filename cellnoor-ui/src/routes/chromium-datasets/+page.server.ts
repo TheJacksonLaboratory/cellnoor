@@ -50,7 +50,7 @@ async function loadData(q?: string): Promise<ReturnType> {
     // @ts-ignore
     ds.files = createFileTree(
       ds.links.web_summaries as string[],
-      ds.links.metrics_files as string[],
+      ds.links.metrics as string[],
     );
   }
 

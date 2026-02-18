@@ -31,17 +31,21 @@
           <div class="flex flex-col gap-1">
             <a
               class="link link-primary link-hover text-xl font-semibold max-w-fit"
-              href={links.self_ as string}
+              href={links.self as string}
             >{name}</a>
             <p>
-              {assay.name} <span class="font-extralight"
-              >({assay.chemistry_version})</span>
+              {assay.name}
+              <span class="font-extralight">({assay.chemistry_version})</span>
             </p>
             {#if assay.library_types}
-              <LibraryTypeBadges libraryTypes={assay.library_types} />
+              <LibraryTypeBadges
+                libraryTypes={assay.library_types}
+              />
             {/if}
             <span class="text-sm mt-2">Delivered on {
-                DATE_FORMATTER.format(new Date(delivered_at))
+                DATE_FORMATTER.format(
+                  new Date(delivered_at),
+                )
               }</span>
           </div>
           <div class="menu flex-row flex-wrap gap-2">
@@ -49,7 +53,9 @@
               <li>
                 <details class="dropdown">
                   <summary>
-                    <div class="flex flex-row gap-1 items-center">
+                    <div
+                      class="flex flex-row gap-1 items-center"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -97,9 +103,7 @@
         </div>
       {/each}
     {:else}
-      <p class="text-center text-error">
-        Something went wrong
-      </p>
+      <p class="text-center text-error">Something went wrong</p>
     {/if}
   </div>
   <div class="drawer-side bg-base">
