@@ -10,7 +10,7 @@ use crate::{
     api::{
         auth::AuthUser,
         routes::{
-            cdna::{NucleicAcidParentInfo, gem_pools_to_library_specs, validate_volume},
+            cdna::{NucleicAcidParentInfo, gem_pools_to_library_specifications, validate_volume},
             libraries::show::select_library_by_id,
         },
         util::validate_timestamps,
@@ -134,7 +134,7 @@ fn validate_index_kit(
 }
 
 #[derive(HasQuery)]
-#[diesel(check_for_backend(Pg), table_name = cdna, base_query = cdna::table.inner_join(gem_pools_to_library_specs()))]
+#[diesel(check_for_backend(Pg), table_name = cdna, base_query = cdna::table.inner_join(gem_pools_to_library_specifications()))]
 struct CdnaInfo {
     #[diesel(embed)]
     parent_info: NucleicAcidParentInfo,

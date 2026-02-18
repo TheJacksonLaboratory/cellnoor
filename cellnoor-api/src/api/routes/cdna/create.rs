@@ -106,14 +106,14 @@ pub struct ChromiumRunInfo {
 
 #[must_use]
 #[diesel::dsl::auto_type]
-pub fn gem_pools_to_library_specs() -> _ {
+pub fn gem_pools_to_library_specifications() -> _ {
     gem_pools::table.inner_join(
         chromium_runs::table.inner_join(tenx_assays::table.inner_join(lib_specs::table)),
     )
 }
 
 #[derive(HasQuery)]
-#[diesel(table_name = gem_pools, check_for_backend(Pg), base_query=gem_pools_to_library_specs())]
+#[diesel(table_name = gem_pools, check_for_backend(Pg), base_query=gem_pools_to_library_specifications())]
 pub struct NucleicAcidParentInfo {
     #[diesel(embed)]
     pub library_type_specification: LibraryTypeSpecification,
@@ -129,6 +129,7 @@ async fn nucleic_acid_parent_info(
     Ok(NucleicAcidParentInfo::query()
         .filter(gem_pools::id.eq(gem_pool_id))
         .filter(lib_specs::library_type.eq(library_type))
+        .distinct()
         .first(&mut db_conn)
         .await?)
 }
