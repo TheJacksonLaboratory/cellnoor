@@ -31,7 +31,7 @@ pub async fn download_metrics_file(
 ) -> Result<Response<Body>, db::Error> {
     tracing::info!(
         "fetching Chromium dataset metrics file {}/{}/{}",
-        file_path.dataset_id,
+        file_path.id,
         file_path.directory,
         file_path.filename
     );
@@ -53,14 +53,14 @@ async fn select_chromium_dataset_metrics_by_id(
     authorized_projects: &AuthProjects,
     content_type: &[u8],
     FilePath {
-        dataset_id,
+        id,
         directory,
         filename,
     }: &FilePath,
     mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Response<Body>, db::Error> {
     let query = chromium_dataset_metrics_files::table
-        .filter(chromium_dataset_metrics_files::dataset_id.eq(dataset_id))
+        .filter(chromium_dataset_metrics_files::dataset_id.eq(id))
         .filter(chromium_dataset_metrics_files::directory.eq(directory))
         .filter(chromium_dataset_metrics_files::filename.eq(filename));
 

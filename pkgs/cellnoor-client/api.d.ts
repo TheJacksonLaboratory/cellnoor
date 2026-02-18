@@ -2179,7 +2179,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/chromium-datasets/{dataset_id}": {
+    "/chromium-datasets/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -2223,7 +2223,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/chromium-datasets/{dataset_id}/specimens": {
+    "/chromium-datasets/{id}/specimens": {
         parameters: {
             query?: never;
             header?: never;
@@ -2267,7 +2267,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/chromium-datasets/{dataset_id}/libraries": {
+    "/chromium-datasets/{id}/libraries": {
         parameters: {
             query?: never;
             header?: never;
@@ -2347,6 +2347,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             library_type: components["schemas"]["LibraryType"];
+            links: components["schemas"]["Links"];
             /** Format: int32 */
             n_amplification_cycles: number;
             /** Format: date-time */
@@ -2360,6 +2361,8 @@ export interface components {
             ids: string[] | null;
             /** @default null */
             project_ids: string[] | null;
+            /** @default null */
+            readable_ids: string[] | null;
         };
         CdnaMeasurement: {
             /** Format: uuid */
@@ -2441,6 +2444,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             library_type: components["schemas"]["LibraryType"];
+            links: components["schemas"]["Links"];
             /** Format: int32 */
             n_amplification_cycles: number;
             /** Format: date-time */
@@ -2698,6 +2702,8 @@ export interface components {
             ids: string[] | null;
             /** @default null */
             project_ids: string[] | null;
+            /** @default null */
+            readable_ids: string[] | null;
         };
         LibraryMeasurement: {
             /** Format: uuid */
@@ -2807,7 +2813,7 @@ export interface components {
         };
         LoadingVolume: {
             unit: components["schemas"]["Microliter"];
-            /** Format: uint8 */
+            /** Format: float */
             value: number;
         };
         MeanDiameter: {

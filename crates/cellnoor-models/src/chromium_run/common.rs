@@ -20,13 +20,13 @@ pub struct GemPoolFields {
 #[json]
 #[cfg_attr(feature = "app", schemars(rename = "LoadingVolume"))]
 pub struct Volume {
-    value: u8,
+    value: f32,
     unit: Microliter,
 }
 
 impl Volume {
     #[must_use]
-    pub fn new(value: u8) -> Self {
+    pub fn new(value: f32) -> Self {
         Self {
             value,
             unit: Microliter::Microliter,

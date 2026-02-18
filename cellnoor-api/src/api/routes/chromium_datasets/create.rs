@@ -1,12 +1,10 @@
 use axum::{Extension, Json, extract::State};
 use cellnoor_models::chromium_dataset::{ChromiumDataset, NewChromiumDataset};
 use cellnoor_schema::{
-    cdna, chromium_dataset_libraries, chromium_datasets, libraries, sequencing_runs,
-    sequencing_submissions, tenx_assays,
+    cdna, chromium_dataset_libraries, chromium_datasets, libraries, tenx_assays,
 };
 use diesel::{pg::Pg, prelude::*};
 use diesel_async::{AsyncConnection, RunQueryDsl, scoped_futures::ScopedFutureExt};
-use jiff::Timestamp;
 use uuid::Uuid;
 
 use crate::{
@@ -16,7 +14,7 @@ use crate::{
             cdna::gem_pools_to_library_specs,
             chromium_datasets::show::select_chromium_dataset_by_id,
         },
-        util::{AllSame, validate_timestamps},
+        util::AllSame,
     },
     db::{self, DbConnection},
     state::AppState,
@@ -55,7 +53,9 @@ fn validate_chromium_dataset(
     validate_same_project(libraries_info)?;
     validate_same_gem_pool(libraries_info)?;
     validate_cmdline(chromium_dataset, libraries_info)?;
-    validate_sequencing_runs_finished(chromium_dataset, libraries_info)?;
+    // I absolutely hate the data source for sequencing runs, so for now, we're not
+    // even gonna worry about requiring libraries to have been sequenced
+    // validate_sequencing_runs_finished(chromium_dataset, libraries_info)?;
 
     Ok(())
 }
@@ -130,49 +130,52 @@ fn validate_cmdline(
 ) -> Result<(), db::DataError> {
     let mut expected_cmdlines = libraries_info
         .iter()
-        .flat_map(|i| i.assay.cmdlines.iter().flatten().flatten());
+        .flat_map(|i| i.assay.cmdlines.iter().flatten().flatten())
+        .map(String::as_str);
 
-    if !expected_cmdlines.any(|expected| {
-        let as_str: &str = chromium_dataset.cmdline().into();
-        expected == as_str
-    }) {
+    let found_cmdline: &str = chromium_dataset.cmdline().into();
+
+    // We could collect the `expected_cmdlines` into a set but it's kind of
+    // pointless because that requires an iteration anyways
+    if !expected_cmdlines.any(|expected| expected == found_cmdline) {
         return Err(db::DataError::new_other("invalid cmdline used"));
     }
 
     Ok(())
 }
 
-fn validate_sequencing_runs_finished(
-    chromium_dataset: &NewChromiumDataset,
-    libraries_info: &[LibraryInfo],
-) -> Result<(), db::DataError> {
-    if libraries_info.is_empty() {
-        return Err(db::DataError::new_other("libraries not sequenced"));
-    }
+// #[allow(dead_code)]
+// fn validate_sequencing_runs_finished(
+//     chromium_dataset: &NewChromiumDataset,
+//     libraries_info: &[LibraryInfo],
+// ) -> Result<(), db::DataError> {
+//     if libraries_info.is_empty() {
+//         return Err(db::DataError::new_other("libraries not sequenced"));
+//     }
 
-    for lib_info in libraries_info {
-        let Some(finished_at) = lib_info.sequencing_run.finished_at else {
-            return Err(db::DataError::new_other(&format!(
-                "library {} was not sequenced",
-                lib_info.id
-            )));
-        };
+//     for lib_info in libraries_info {
+//         let Some(finished_at) = lib_info.sequencing_run.finished_at else {
+//             return Err(db::DataError::new_other(&format!(
+//                 "library {} was not sequenced",
+//                 lib_info.id
+//             )));
+//         };
 
-        validate_timestamps(
-            (finished_at, "sequencing_run_finished_at"),
-            (chromium_dataset.delivered_at(), "dataset_delivered_at"),
-        )?;
-    }
+//         validate_timestamps(
+//             (finished_at, "sequencing_run_finished_at"),
+//             (chromium_dataset.delivered_at(), "dataset_delivered_at"),
+//         )?;
+//     }
 
-    Ok(())
-}
+//     Ok(())
+// }
 
-#[derive(Selectable, Queryable)]
-#[diesel(check_for_backend(Pg), table_name = sequencing_runs)]
-struct SequencingRunInfo {
-    #[diesel(deserialize_as = jiff_diesel::NullableTimestamp)]
-    finished_at: Option<Timestamp>,
-}
+// #[derive(Selectable, Queryable)]
+// #[diesel(check_for_backend(Pg), table_name = sequencing_runs)]
+// struct SequencingRunInfo {
+//     #[diesel(deserialize_as = jiff_diesel::NullableTimestamp)]
+//     finished_at: Option<Timestamp>,
+// }
 
 #[derive(Selectable, Queryable)]
 #[diesel(check_for_backend(Pg), table_name = cdna)]
@@ -189,11 +192,10 @@ struct AssayInfo {
 #[derive(HasQuery)]
 #[diesel(check_for_backend(Pg), table_name = libraries, base_query = libraries_to_library_spec_with_sequencing_runs())]
 struct LibraryInfo {
-    id: Uuid,
     #[diesel(embed)]
     cdna: CdnaInfo,
-    #[diesel(embed)]
-    sequencing_run: SequencingRunInfo,
+    // #[diesel(embed)]
+    // sequencing_run: SequencingRunInfo,
     #[diesel(embed)]
     assay: AssayInfo,
     project_id: Uuid,
@@ -211,7 +213,5 @@ async fn libraries_info(
 
 #[diesel::dsl::auto_type]
 fn libraries_to_library_spec_with_sequencing_runs() -> _ {
-    libraries::table
-        .inner_join(cdna::table.inner_join(gem_pools_to_library_specs()))
-        .inner_join(sequencing_submissions::table.inner_join(sequencing_runs::table))
+    libraries::table.inner_join(cdna::table.inner_join(gem_pools_to_library_specs()))
 }

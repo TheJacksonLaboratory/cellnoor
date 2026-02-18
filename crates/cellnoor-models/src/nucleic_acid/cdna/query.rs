@@ -9,6 +9,7 @@ use crate::generic_query;
 #[filter]
 pub struct CdnaFilter {
     pub ids: Option<Vec<Uuid>>,
+    pub readable_ids: Option<Vec<String>>,
     pub project_ids: Option<Vec<Uuid>>,
 }
 

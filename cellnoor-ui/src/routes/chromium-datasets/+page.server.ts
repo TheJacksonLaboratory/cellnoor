@@ -7,8 +7,9 @@ import type {
 
 type ReturnType =
   | {
-    chromiumDatasets:
-      (ChromiumDatasetSummary & { files: Map<string, string[]> })[];
+    chromiumDatasets: (ChromiumDatasetSummary & {
+      files: Map<string, string[]>;
+    })[];
     assays: TenxAssay[];
   }
   | { error: ApiError };
@@ -41,15 +42,15 @@ async function loadData(q?: string): Promise<ReturnType> {
   if (!chromiumDatasets.data || !assays.data) {
     return {
       error: chromiumDatasets.error ||
-        (assays.error || { type: "other", message: "something went wrong :(" }),
+        assays.error || { type: "other", message: "something went wrong :(" },
     };
   }
 
   for (const ds of chromiumDatasets.data) {
     // @ts-ignore
     ds.files = createFileTree(
-      ds.links["web-summaries"] as string[],
-      ds.links["metrics-files"] as string[],
+      ds.links.web_summaries as string[],
+      ds.links.metrics_files as string[],
     );
   }
 
@@ -63,11 +64,7 @@ async function loadData(q?: string): Promise<ReturnType> {
 function createFileTree(webSummaries: string[], metricsFiles: string[]) {
   const linkMap: Map<string, string[]> = new Map();
 
-  for (
-    const link of webSummaries.concat(
-      metricsFiles,
-    )
-  ) {
+  for (const link of webSummaries.concat(metricsFiles)) {
     const parts = link.split("/");
 
     const directoryName = parts.at(-2) as string;

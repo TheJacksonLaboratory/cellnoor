@@ -60,7 +60,7 @@ create function construct_links(
     declare links jsonb;
     declare child text;
     begin
-        select json_object('self_': concat('/', self_name, '/', id)) into links;
+        select json_object('self': concat('/', self_name, '/', id)) into links;
         foreach child in array children loop
             select links || json_object(child: concat('/', self_name, '/', id, '/', child))::jsonb into links;
         end loop;

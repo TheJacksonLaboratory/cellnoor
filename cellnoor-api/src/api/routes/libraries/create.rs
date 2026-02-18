@@ -1,6 +1,6 @@
 use axum::{Extension, Json, extract::State};
 use cellnoor_models::library::{Library, NewLibrary};
-use cellnoor_schema::{cdna, library_preparers};
+use cellnoor_schema::{cdna, library_preparers, library_type_specifications};
 use diesel::{pg::Pg, prelude::*};
 use diesel_async::{AsyncConnection, RunQueryDsl, scoped_futures::ScopedFutureExt};
 use jiff::Timestamp;
@@ -46,8 +46,8 @@ pub(super) async fn create_library(
     )?;
 
     validate_timestamps(
+        (cdna_info.prepared_at, "cdna_prepared_at"),
         (library.prepared_at(), "library_prepared_at"),
-        (cdna_info.prepared_at, "chromium_run_at"),
     )?;
 
     let library_id = db_conn
@@ -149,6 +149,7 @@ async fn cdna_info(
 ) -> Result<CdnaInfo, db::Error> {
     Ok(CdnaInfo::query()
         .filter(cdna::id.eq(cdna_id))
+        .filter(library_type_specifications::library_type.eq(cdna::library_type))
         .first(&mut db_conn)
         .await?)
 }

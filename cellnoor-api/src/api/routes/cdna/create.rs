@@ -39,8 +39,8 @@ pub async fn create_cdna(
         parent_info.library_type_specification.cdna_volume_µl(),
     )?;
     validate_timestamps(
-        (new_cdna.prepared_at(), "cdna_prepared_at"),
         (parent_info.chromium_run.run_at, "chromium_run_at"),
+        (new_cdna.prepared_at(), "cdna_prepared_at"),
     )?;
 
     let cdna_id = db_conn
@@ -144,7 +144,7 @@ pub fn validate_volume(
     if u16::from(volume) != expected_volume {
         let library_type: &str = library_type_specification.library_type().into();
         return Err(db::DataError::new_other(&format!(
-            "for library type {expected_volume}, expected cDNA volume of {library_type}"
+            "for library type {library_type}, expected cDNA volume of {expected_volume}"
         )));
     }
 

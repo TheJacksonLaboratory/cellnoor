@@ -1,7 +1,7 @@
 create table libraries (
     id uuid primary key default uuidv7(),
     links jsonb generated always as (
-        construct_links('libraries', id, '{"measurements", "sequencing-runs", "chromium-datasets"}')
+        construct_links('libraries', id, '{"measurements", "sequencing_runs", "chromium_datasets"}')
     ) stored not null,
     readable_id case_insensitive_text unique not null,
     cdna_id uuid references cdna on delete restrict on update restrict not null,
@@ -20,7 +20,9 @@ create table library_measurements (
     library_id uuid references libraries on delete restrict on update restrict not null,
     measured_by uuid references people on delete restrict on update restrict not null,
     measured_at timestamptz not null,
-    data jsonb not null
+    data jsonb not null,
+
+    unique (library_id, measured_by, measured_at, data)
 );
 
 create table library_preparers (

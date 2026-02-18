@@ -5,25 +5,19 @@ use axum::{
     routing::{get, post},
 };
 use metrics::{download::download_metrics_file, upload::upload_metrics_file};
-use tower::ServiceBuilder;
 use web_summaries::{download::download_web_summary, upload::upload_web_summary};
 
-use crate::{
-    api::middleware::{admin_required, created_status_code},
-    state::AppState,
-};
+use crate::{admin_required_creation, state::AppState};
 
 mod common;
 mod metrics;
 mod web_summaries;
 
 pub(super) fn router() -> Router<AppState> {
-    const ROUGHLY_16MB: usize = 2usize.pow(24);
+    const BODY_LIMIT_128MB: usize = 128_000_000;
 
-    let file_upload_layer = ServiceBuilder::new()
-        .layer(axum::middleware::from_fn(admin_required))
-        .layer(axum::middleware::map_response(created_status_code))
-        .layer(DefaultBodyLimit::max(ROUGHLY_16MB));
+    let file_upload_layer =
+        admin_required_creation!().layer(DefaultBodyLimit::max(BODY_LIMIT_128MB));
 
     Router::new()
         .route(

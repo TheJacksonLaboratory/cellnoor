@@ -1,6 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_models::cdna::{CdnaFilter, CdnaQuery, CdnaSummary};
-use cellnoor_schema::cdna::{dsl::id, project_id};
+use cellnoor_schema::cdna::{id, project_id, readable_id};
 use diesel::{SelectableExpression, prelude::*};
 use diesel_async::RunQueryDsl;
 
@@ -46,14 +46,23 @@ pub async fn select_cdna(
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for CdnaFilter
 where
     id: SelectableExpression<QS>,
+    readable_id: SelectableExpression<QS>,
     project_id: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
-        let Self { ids, project_ids } = self;
+        let Self {
+            ids,
+            readable_ids,
+            project_ids,
+        } = self;
         let mut filter = BoxedFilter::new_true();
 
         if let Some(ids) = ids {
             filter = filter.and_condition(id.eq_any(ids));
+        }
+
+        if let Some(readable_ids) = readable_ids {
+            filter = filter.and_condition(readable_id.eq_any(readable_ids));
         }
 
         if let Some(project_ids) = project_ids {
