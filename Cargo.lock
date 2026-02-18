@@ -331,7 +331,7 @@ dependencies = [
 
 [[package]]
 name = "cellnoor-api"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "aide",
  "anyhow",
@@ -380,7 +380,7 @@ dependencies = [
 
 [[package]]
 name = "cellnoor-models"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "bon",
  "cellnoor-schema",
@@ -405,7 +405,7 @@ dependencies = [
 
 [[package]]
 name = "cellnoor-schema"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "diesel",
 ]
@@ -740,7 +740,7 @@ checksum = "092966b41edc516079bdf31ec78a2e0588d1d0c08f78b91d8307215928642b2b"
 
 [[package]]
 name = "default-vec"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "schemars",
  "serde",
@@ -1843,7 +1843,7 @@ dependencies = [
 
 [[package]]
 name = "non-empty"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "cellnoor-schema",
  "diesel",
@@ -2339,7 +2339,7 @@ checksum = "0c8d0fd677905edcbeedbf2edb6494d676f0e98d54d5cf9bda0b061cb8fb8aba"
 
 [[package]]
 name = "ranged"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "deranged",
  "diesel",

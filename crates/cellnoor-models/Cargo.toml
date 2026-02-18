@@ -1,7 +1,6 @@
 [package]
 edition.workspace = true
 name = "cellnoor-models"
-version = "0.1.0"
 
 [dependencies]
 bon = { workspace = true, optional = true }
@@ -20,7 +19,7 @@ jiff-diesel = { workspace = true, optional = true }
 macro-attributes = { path = "macro-attributes" }
 macros = { path = "macros" }
 non-empty = { path = "../non-empty", features = ["serde"] }
-ranged = { version = "0.1.0", path = "../ranged", features = ["serde"] }
+ranged = { path = "../ranged", features = ["serde"] }
 schemars = { workspace = true, optional = true }
 serde.workspace = true
 serde_json.workspace = true

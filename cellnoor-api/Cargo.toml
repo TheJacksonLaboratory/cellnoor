@@ -1,7 +1,6 @@
 [package]
 edition.workspace = true
 name = "cellnoor-api"
-version = "0.1.0"
 
 [dependencies]
 aide.workspace = true
@@ -9,10 +8,8 @@ anyhow.workspace = true
 axum.workspace = true
 axum-extra.workspace = true
 camino.workspace = true
-cellnoor-models = { version = "0.1.0", path = "../crates/cellnoor-models", features = [
-  "app",
-] }
-cellnoor-schema = { version = "0.1.0", path = "../crates/cellnoor-schema" }
+cellnoor-models = { path = "../crates/cellnoor-models", features = ["app"] }
+cellnoor-schema = { path = "../crates/cellnoor-schema" }
 clap.workspace = true
 csv.workspace = true
 diesel = { workspace = true, features = ["serde_json", "uuid"] }
@@ -29,7 +26,7 @@ jsonwebtoken.workspace = true
 non-empty = { path = "../crates/non-empty" }
 pretty_assertions = { workspace = true, optional = true }
 rand = { workspace = true, optional = true }
-ranged = { version = "0.1.0", path = "../crates/ranged", features = ["serde"] }
+ranged = { path = "../crates/ranged", features = ["serde"] }
 regex.workspace = true
 reqwest.workspace = true
 rstest.workspace = true
@@ -54,7 +51,7 @@ workspace = true
 
 [dev-dependencies]
 bon.workspace = true
-cellnoor-models = { version = "0.1.0", path = "../crates/cellnoor-models", features = [
+cellnoor-models = { path = "../crates/cellnoor-models", features = [
   "app",
   "builder",
 ] }
