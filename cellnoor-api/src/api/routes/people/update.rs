@@ -7,7 +7,9 @@ use cellnoor_models::{
     person::{Person, PersonUpdate},
 };
 use cellnoor_schema::people;
+use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
+use uuid::Uuid;
 
 use crate::{
     api::routes::people::{create::validate_email, show::select_person_by_id},
@@ -27,16 +29,17 @@ pub async fn update_person(
 
     person_update.set_id(id);
 
-    update_person_inner(person_update, &db_conn).await?;
+    update_person_inner(id, person_update, &db_conn).await?;
 
     Ok(select_person_by_id(id, &db_conn).await.map(Json)?)
 }
 
 pub async fn update_person_inner(
+    id: Uuid,
     update: PersonUpdate,
     mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), super::create::Error> {
-    diesel::update(people::table)
+    diesel::update(people::table.filter(people::id.eq(id)))
         .set(update)
         .execute(&mut db_conn)
         .await?;
