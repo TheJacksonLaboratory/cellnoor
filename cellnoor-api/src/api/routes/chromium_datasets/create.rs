@@ -11,7 +11,7 @@ use crate::{
     api::{
         auth::AuthUser,
         routes::{
-            cdna::gem_pools_to_library_specs,
+            cdna::gem_pools_to_library_specifications,
             chromium_datasets::show::select_chromium_dataset_by_id,
         },
         util::AllSame,
@@ -190,7 +190,7 @@ struct AssayInfo {
 }
 
 #[derive(HasQuery)]
-#[diesel(check_for_backend(Pg), table_name = libraries, base_query = libraries_to_library_spec_with_sequencing_runs())]
+#[diesel(check_for_backend(Pg), table_name = libraries, base_query = libraries_to_library_specifications())]
 struct LibraryInfo {
     #[diesel(embed)]
     cdna: CdnaInfo,
@@ -207,11 +207,12 @@ async fn libraries_info(
 ) -> Result<Vec<LibraryInfo>, db::Error> {
     Ok(LibraryInfo::query()
         .filter(libraries::id.eq_any(library_ids))
+        .distinct()
         .load(&mut db_conn)
         .await?)
 }
 
 #[diesel::dsl::auto_type]
-fn libraries_to_library_spec_with_sequencing_runs() -> _ {
-    libraries::table.inner_join(cdna::table.inner_join(gem_pools_to_library_specs()))
+fn libraries_to_library_specifications() -> _ {
+    libraries::table.inner_join(cdna::table.inner_join(gem_pools_to_library_specifications()))
 }
