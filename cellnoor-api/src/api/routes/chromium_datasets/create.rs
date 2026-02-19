@@ -1,7 +1,8 @@
 use axum::{Extension, Json, extract::State};
 use cellnoor_models::chromium_dataset::{ChromiumDataset, NewChromiumDataset};
 use cellnoor_schema::{
-    cdna, chromium_dataset_libraries, chromium_datasets, libraries, tenx_assays,
+    cdna, chromium_dataset_libraries, chromium_datasets, libraries, library_type_specifications,
+    tenx_assays,
 };
 use diesel::{pg::Pg, prelude::*};
 use diesel_async::{AsyncConnection, RunQueryDsl, scoped_futures::ScopedFutureExt};
@@ -11,8 +12,8 @@ use crate::{
     api::{
         auth::AuthUser,
         routes::{
-            cdna::gem_pools_to_library_specifications,
             chromium_datasets::show::select_chromium_dataset_by_id,
+            libraries::create::cdna_to_library_specification,
         },
         util::AllSame,
     },
@@ -207,12 +208,12 @@ async fn libraries_info(
 ) -> Result<Vec<LibraryInfo>, db::Error> {
     Ok(LibraryInfo::query()
         .filter(libraries::id.eq_any(library_ids))
-        .distinct()
+        .filter(library_type_specifications::library_type.eq(cdna::library_type))
         .load(&mut db_conn)
         .await?)
 }
 
 #[diesel::dsl::auto_type]
 fn libraries_to_library_specifications() -> _ {
-    libraries::table.inner_join(cdna::table.inner_join(gem_pools_to_library_specifications()))
+    libraries::table.inner_join(cdna_to_library_specification())
 }
