@@ -112,5 +112,13 @@
       aria-label="close sidebar"
       class="drawer-overlay"
     ></label>
+    <form>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">Specimen Information</legend>
+        <label class="label">Name
+          <input type="text" class="input" placeholder="Sample 1" />
+        </label>
+      </fieldset>
+    </form>
   </div>
 </div>
