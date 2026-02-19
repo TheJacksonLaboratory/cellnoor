@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::nucleic_acid::measurement::NucleicAcidMeasurementData;
 
 #[insert_select]
-#[cfg_attr(feature = "app", diesel(table_name = library_measurements))]
+#[cfg_attr(feature = "app", diesel(table_name = library_measurements), schemars(inline))]
 pub struct LibraryMeasurementFields {
     measured_by: Uuid,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp, deserialize_as = jiff_diesel::Timestamp))]

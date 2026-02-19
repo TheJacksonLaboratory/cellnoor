@@ -19,6 +19,7 @@ aide = { version = "0.16.0-alpha.2", features = [
   "axum",
   "axum-json",
   "macros",
+  "redoc",
   "skip_serializing_defaults",
 ] }
 anyhow = "1.0.101"

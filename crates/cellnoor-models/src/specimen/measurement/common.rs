@@ -11,7 +11,7 @@ use uuid::Uuid;
 use crate::utils::{JsonFromSql, JsonToSql};
 
 #[insert_select]
-#[cfg_attr(feature = "app", diesel(table_name = specimen_measurements))]
+#[cfg_attr(feature = "app", diesel(table_name = specimen_measurements), schemars(inline))]
 pub struct SpecimenMeasurementFields {
     measured_by: Uuid,
     #[cfg_attr(feature = "app", diesel(

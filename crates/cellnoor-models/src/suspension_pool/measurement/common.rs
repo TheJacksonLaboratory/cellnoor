@@ -10,7 +10,7 @@ use crate::suspension::measurement::common::{Concentration, MeanDiameter, Viabil
 use crate::utils::{JsonFromSql, JsonToSql};
 
 #[insert_select]
-#[cfg_attr(feature = "app", diesel(table_name = suspension_pool_measurements))]
+#[cfg_attr(feature = "app", diesel(table_name = suspension_pool_measurements), schemars(inline))]
 pub struct SuspensionPoolMeasurementFields {
     measured_by: Uuid,
     #[cfg_attr(feature = "app", diesel(

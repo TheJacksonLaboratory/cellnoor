@@ -13,7 +13,7 @@ use crate::units::{Microliter, Micrometer, Milliliter};
 use crate::utils::{EnumFromSql, EnumToSql, JsonFromSql, JsonToSql};
 
 #[insert_select]
-#[cfg_attr(feature = "app", diesel(table_name = suspension_measurements))]
+#[cfg_attr(feature = "app", diesel(table_name = suspension_measurements), schemars(inline))]
 pub struct SuspensionMeasurementFields {
     measured_by: Uuid,
     #[cfg_attr(feature = "app", diesel(

@@ -3,6 +3,7 @@ use std::sync::Arc;
 use aide::{
     axum::ApiRouter,
     openapi::{OpenApi, SecurityScheme},
+    redoc::Redoc,
 };
 use axum::{Extension, Json, Router, extract::Request, routing::get};
 use schemars::JsonSchema;
@@ -42,12 +43,18 @@ pub(super) fn app(state: AppState) -> Router<AppState> {
 
     let layers = ServiceBuilder::new().layer(auth_layer).layer(trace_layer);
 
-    // Ensure the OpenAPI documentation route and health route are added after the
+    // Ensure the OpenAPI documentation routes and health route are added after the
     // authentication layer so they're public
     router
         .layer(layers)
         .route("/health", get(async || "ok"))
         .route("/openapi.json", axum::routing::get(show_api_docs))
+        .route(
+            "/docs/redoc",
+            get(Redoc::new("/api/openapi.json")
+                .with_title("cellnoor REST API")
+                .axum_handler()),
+        )
         .layer(Extension(Arc::new(api_docs)))
 }
 
@@ -87,7 +94,7 @@ pub fn router() -> (Router<AppState>, OpenApi) {
     let router = router.finish_api_with(&mut api_docs, |api_docs| {
         api_docs
             .title("cellnoor REST API")
-            .version(env!("CARGO_PKG_VERSION"))
+            .version("0.1.0")
             .security_scheme(
                 "api_token",
                 SecurityScheme::Http {
