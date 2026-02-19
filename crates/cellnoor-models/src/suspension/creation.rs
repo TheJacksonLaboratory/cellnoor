@@ -12,7 +12,7 @@ use uuid::Uuid;
 use crate::suspension::common::SuspensionFields;
 
 #[insert]
-#[cfg_attr(feature = "app", diesel(table_name = suspensions))]
+#[cfg_attr(feature = "app", diesel(table_name = suspensions), schemars(inline))]
 pub struct NewSuspensionCommonFields {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]

@@ -824,7 +824,13 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["SpecimenMeasurementFields"];
+                    "application/json": {
+                        data: components["schemas"]["SpecimenMeasurementData"];
+                        /** Format: date-time */
+                        measured_at: string;
+                        /** Format: uuid */
+                        measured_by: string;
+                    };
                 };
             };
             responses: {
@@ -1243,7 +1249,13 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["SuspensionMeasurementFields"];
+                    "application/json": {
+                        data: components["schemas"]["SuspensionMeasurementData"];
+                        /** Format: date-time */
+                        measured_at: string;
+                        /** Format: uuid */
+                        measured_by: string;
+                    };
                 };
             };
             responses: {
@@ -1483,7 +1495,13 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["SuspensionPoolMeasurementFields"];
+                    "application/json": {
+                        data: components["schemas"]["SuspensionPoolMeasurementData"];
+                        /** Format: date-time */
+                        measured_at: string;
+                        /** Format: uuid */
+                        measured_by: string;
+                    };
                 };
             };
             responses: {
@@ -1883,7 +1901,28 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["CdnaMeasurementFields"];
+                    "application/json": {
+                        /** Format: date-time */
+                        measured_at: string;
+                        /** Format: uuid */
+                        measured_by: string;
+                    } & ({
+                        concentration: components["schemas"]["NucleicAcidConcentrationPicogram"];
+                        instrument_name: string;
+                        /** Format: uint16 */
+                        mean_size_bp?: number | null;
+                        sizing_range: [
+                            number,
+                            number
+                        ];
+                        /** @constant */
+                        type: "electrophoretic";
+                    } | {
+                        concentration: components["schemas"]["NucleicAcidConcentrationNanogram"];
+                        instrument_name: string;
+                        /** @constant */
+                        type: "fluorometric";
+                    });
                 };
             };
             responses: {
@@ -2077,7 +2116,28 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["LibraryMeasurementFields"];
+                    "application/json": {
+                        /** Format: date-time */
+                        measured_at: string;
+                        /** Format: uuid */
+                        measured_by: string;
+                    } & ({
+                        concentration: components["schemas"]["NucleicAcidConcentrationPicogram"];
+                        instrument_name: string;
+                        /** Format: uint16 */
+                        mean_size_bp?: number | null;
+                        sizing_range: [
+                            number,
+                            number
+                        ];
+                        /** @constant */
+                        type: "electrophoretic";
+                    } | {
+                        concentration: components["schemas"]["NucleicAcidConcentrationNanogram"];
+                        instrument_name: string;
+                        /** @constant */
+                        type: "fluorometric";
+                    });
                 };
             };
             responses: {
@@ -2369,28 +2429,6 @@ export interface components {
             cdna_id: string;
             /** Format: uuid */
             id: string;
-            /** Format: date-time */
-            measured_at: string;
-            /** Format: uuid */
-            measured_by: string;
-        } & ({
-            concentration: components["schemas"]["NucleicAcidConcentrationPicogram"];
-            instrument_name: string;
-            /** Format: uint16 */
-            mean_size_bp?: number | null;
-            sizing_range: [
-                number,
-                number
-            ];
-            /** @constant */
-            type: "electrophoretic";
-        } | {
-            concentration: components["schemas"]["NucleicAcidConcentrationNanogram"];
-            instrument_name: string;
-            /** @constant */
-            type: "fluorometric";
-        });
-        CdnaMeasurementFields: {
             /** Format: date-time */
             measured_at: string;
             /** Format: uuid */
@@ -2731,28 +2769,6 @@ export interface components {
             /** @constant */
             type: "fluorometric";
         });
-        LibraryMeasurementFields: {
-            /** Format: date-time */
-            measured_at: string;
-            /** Format: uuid */
-            measured_by: string;
-        } & ({
-            concentration: components["schemas"]["NucleicAcidConcentrationPicogram"];
-            instrument_name: string;
-            /** Format: uint16 */
-            mean_size_bp?: number | null;
-            sizing_range: [
-                number,
-                number
-            ];
-            /** @constant */
-            type: "electrophoretic";
-        } | {
-            concentration: components["schemas"]["NucleicAcidConcentrationNanogram"];
-            instrument_name: string;
-            /** @constant */
-            type: "fluorometric";
-        });
         LibraryOrderBy: {
             descending?: boolean | null;
             /** @constant */
@@ -3016,10 +3032,19 @@ export interface components {
             /** @constant */
             type: "tissue";
         } & components["schemas"]["NewTissue"]);
-        NewSuspension: ({
+        NewSuspension: {
+            additional_data?: unknown;
             /** @constant */
             content: "cells";
-        } & components["schemas"]["NewSuspensionCommonFields"]) | {
+            /** Format: date-time */
+            created_at?: string | null;
+            /** Format: uuid */
+            parent_specimen_id: string;
+            preparer_ids: string[];
+            readable_id: string;
+            /** Format: uint32 */
+            target_cell_recovery?: number | null;
+        } | {
             additional_data?: unknown;
             /** @constant */
             content: "nuclei";
@@ -3027,17 +3052,6 @@ export interface components {
             created_at?: string | null;
             /** Format: uint32 */
             lysis_duration_minutes: number;
-            /** Format: uuid */
-            parent_specimen_id: string;
-            preparer_ids: string[];
-            readable_id: string;
-            /** Format: uint32 */
-            target_cell_recovery?: number | null;
-        };
-        NewSuspensionCommonFields: {
-            additional_data?: unknown;
-            /** Format: date-time */
-            created_at?: string | null;
             /** Format: uuid */
             parent_specimen_id: string;
             preparer_ids: string[];
@@ -3511,13 +3525,6 @@ export interface components {
             /** Format: uint32 */
             value: number;
         };
-        SpecimenMeasurementFields: {
-            data: components["schemas"]["SpecimenMeasurementData"];
-            /** Format: date-time */
-            measured_at: string;
-            /** Format: uuid */
-            measured_by: string;
-        };
         SpecimenOrderBy: {
             descending?: boolean | null;
             /** @constant */
@@ -3682,13 +3689,6 @@ export interface components {
             /** Format: uint32 */
             value: number;
         };
-        SuspensionMeasurementFields: {
-            data: components["schemas"]["SuspensionMeasurementData"];
-            /** Format: date-time */
-            measured_at: string;
-            /** Format: uuid */
-            measured_by: string;
-        };
         SuspensionOrderBy: {
             descending?: boolean | null;
             /** @constant */
@@ -3756,13 +3756,6 @@ export interface components {
             /** @constant */
             quantity: "mean_diameter";
         } & components["schemas"]["MeanDiameter"]);
-        SuspensionPoolMeasurementFields: {
-            data: components["schemas"]["SuspensionPoolMeasurementData"];
-            /** Format: date-time */
-            measured_at: string;
-            /** Format: uuid */
-            measured_by: string;
-        };
         SuspensionPoolOrderBy: {
             descending?: boolean | null;
             /** @constant */
@@ -3890,7 +3883,6 @@ export type BlockFixative = components['schemas']['BlockFixative'];
 export type Cdna = components['schemas']['Cdna'];
 export type CdnaFilter = components['schemas']['CdnaFilter'];
 export type CdnaMeasurement = components['schemas']['CdnaMeasurement'];
-export type CdnaMeasurementFields = components['schemas']['CdnaMeasurementFields'];
 export type CdnaOrderBy = components['schemas']['CdnaOrderBy'];
 export type CdnaSummary = components['schemas']['CdnaSummary'];
 export type ChromiumDataset = components['schemas']['ChromiumDataset'];
@@ -3917,7 +3909,6 @@ export type InstitutionOrderBy = components['schemas']['InstitutionOrderBy'];
 export type Library = components['schemas']['Library'];
 export type LibraryFilter = components['schemas']['LibraryFilter'];
 export type LibraryMeasurement = components['schemas']['LibraryMeasurement'];
-export type LibraryMeasurementFields = components['schemas']['LibraryMeasurementFields'];
 export type LibraryOrderBy = components['schemas']['LibraryOrderBy'];
 export type LibrarySummary = components['schemas']['LibrarySummary'];
 export type LibraryType = components['schemas']['LibraryType'];
@@ -3942,7 +3933,6 @@ export type NewProject = components['schemas']['NewProject'];
 export type NewSequencingRun = components['schemas']['NewSequencingRun'];
 export type NewSpecimen = components['schemas']['NewSpecimen'];
 export type NewSuspension = components['schemas']['NewSuspension'];
-export type NewSuspensionCommonFields = components['schemas']['NewSuspensionCommonFields'];
 export type NewSuspensionPool = components['schemas']['NewSuspensionPool'];
 export type NewSuspensionSpecimen = components['schemas']['NewSuspensionSpecimen'];
 export type NewTissue = components['schemas']['NewTissue'];
@@ -3973,7 +3963,6 @@ export type Specimen = components['schemas']['Specimen'];
 export type SpecimenFilter = components['schemas']['SpecimenFilter'];
 export type SpecimenMeasurement = components['schemas']['SpecimenMeasurement'];
 export type SpecimenMeasurementData = components['schemas']['SpecimenMeasurementData'];
-export type SpecimenMeasurementFields = components['schemas']['SpecimenMeasurementFields'];
 export type SpecimenOrderBy = components['schemas']['SpecimenOrderBy'];
 export type SpecimenSummary = components['schemas']['SpecimenSummary'];
 export type SpecimenType = components['schemas']['SpecimenType'];
@@ -3983,13 +3972,11 @@ export type SuspensionContent = components['schemas']['SuspensionContent'];
 export type SuspensionFilter = components['schemas']['SuspensionFilter'];
 export type SuspensionMeasurement = components['schemas']['SuspensionMeasurement'];
 export type SuspensionMeasurementData = components['schemas']['SuspensionMeasurementData'];
-export type SuspensionMeasurementFields = components['schemas']['SuspensionMeasurementFields'];
 export type SuspensionOrderBy = components['schemas']['SuspensionOrderBy'];
 export type SuspensionPool = components['schemas']['SuspensionPool'];
 export type SuspensionPoolFilter = components['schemas']['SuspensionPoolFilter'];
 export type SuspensionPoolMeasurement = components['schemas']['SuspensionPoolMeasurement'];
 export type SuspensionPoolMeasurementData = components['schemas']['SuspensionPoolMeasurementData'];
-export type SuspensionPoolMeasurementFields = components['schemas']['SuspensionPoolMeasurementFields'];
 export type SuspensionPoolOrderBy = components['schemas']['SuspensionPoolOrderBy'];
 export type SuspensionSummary = components['schemas']['SuspensionSummary'];
 export type SuspensionTagging = components['schemas']['SuspensionTagging'];
