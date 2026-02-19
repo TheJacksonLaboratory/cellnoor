@@ -129,7 +129,6 @@ async fn nucleic_acid_parent_info(
     Ok(NucleicAcidParentInfo::query()
         .filter(gem_pools::id.eq(gem_pool_id))
         .filter(lib_specs::library_type.eq(library_type))
-        .distinct()
         .first(&mut db_conn)
         .await?)
 }

@@ -134,13 +134,19 @@ fn validate_index_kit(
 }
 
 #[derive(HasQuery)]
-#[diesel(check_for_backend(Pg), table_name = cdna, base_query = cdna::table.inner_join(gem_pools_to_library_specifications()))]
+#[diesel(check_for_backend(Pg), table_name = cdna, base_query = cdna_to_library_specification())]
 struct CdnaInfo {
     #[diesel(embed)]
     parent_info: NucleicAcidParentInfo,
     #[diesel(deserialize_as = jiff_diesel::Timestamp)]
     prepared_at: Timestamp,
     project_id: Uuid,
+}
+
+#[diesel::dsl::auto_type]
+#[must_use]
+pub fn cdna_to_library_specification() -> _ {
+    cdna::table.inner_join(gem_pools_to_library_specifications())
 }
 
 async fn cdna_info(
