@@ -3,20 +3,32 @@
   import "../app.css";
   import { authClient } from "$lib/auth-client";
   import { goto } from "$app/navigation";
-  import type { ChromiumDatasetFilter } from "cellnoor-client";
-  import { subWhitespaceWithPercent } from "$lib/query-utils";
+  import type {
+    ChromiumDatasetFilter,
+    ChromiumDatasetOrderBy,
+  } from "cellnoor-client";
+  import {
+    emptyAssayFilter,
+    emptySpecimenFilter,
+    Query,
+  } from "$lib/query-utils";
 
   let { userName }: { userName: string } = $props();
   const links = [[resolve("/chromium-datasets"), "Chromium Datasets"]];
 
   let searchBarValue = $state("");
-  // @ts-ignore
-  let query: { filter: ChromiumDatasetFilter } = $derived({
-    filter: {
-      specimen: { names: [subWhitespaceWithPercent(searchBarValue)] },
-    },
-  });
-  let stringifiedQuery = $derived(JSON.stringify(query));
+
+  let query: Query<ChromiumDatasetFilter, ChromiumDatasetOrderBy> =
+    $derived(
+      new Query({
+        ids: [],
+        names: [],
+        project_ids: [],
+        assay: emptyAssayFilter,
+        specimen: { ...emptySpecimenFilter, names: [searchBarValue] },
+      }),
+    );
+  let stringifiedQuery = $derived(query.toQuerystring());
 </script>
 
 <nav class="navbar bg-base-200 sticky top-0 z-50 mb-4 justify-between">

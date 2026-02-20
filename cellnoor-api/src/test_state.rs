@@ -720,7 +720,6 @@ impl TestState {
         let dataset = json!(
             {
                 "name": random_non_empty_string(),
-                "data_path": random_non_empty_string(),
                 "delivered_at": random_time(),
                 "library_ids": vec![library.id()],
                 "cmdline": "cellranger multi"

@@ -1,5 +1,11 @@
 <script lang="ts">
   import { DATE_FORMATTER } from "$lib/date.js";
+  import {
+    emptyAssayFilter,
+    emptySpecimenFilter,
+    Query,
+  } from "$lib/query-utils";
+  import InputList from "../InputList.svelte";
   import LibraryTypeBadges from "../LibraryTypeBadges.svelte";
   import type {
     ChromiumDatasetFilter,
@@ -9,12 +15,18 @@
   const { data } = $props();
   const { chromiumDatasets } = $derived(data);
 
-  let query: {
-    filter?: ChromiumDatasetFilter;
-    limit?: number;
-    offset?: number;
-    order_by?: ChromiumDatasetOrderBy[];
-  } = $state({});
+  const query: Query<ChromiumDatasetFilter, ChromiumDatasetOrderBy> =
+    $state(
+      new Query({
+        ids: [],
+        names: [],
+        project_ids: [],
+        assay: emptyAssayFilter,
+        specimen: emptySpecimenFilter,
+      }),
+    );
+
+  let specimenName = $state("");
 </script>
 
 <div class="drawer lg:drawer-open">
@@ -106,7 +118,7 @@
       <p class="text-center text-error">Something went wrong</p>
     {/if}
   </div>
-  <div class="drawer-side bg-base">
+  <div class="drawer-side bg-base px-4">
     <label
       for="filter-drawer"
       aria-label="close sidebar"
@@ -115,9 +127,10 @@
     <form>
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Specimen Information</legend>
-        <label class="label">Name
-          <input type="text" class="input" placeholder="Sample 1" />
-        </label>
+        <InputList
+          fieldName="Specimen Name"
+          targetArray={query.filter.specimen.names}
+        />
       </fieldset>
     </form>
   </div>
