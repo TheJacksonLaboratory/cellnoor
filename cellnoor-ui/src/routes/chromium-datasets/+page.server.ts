@@ -17,7 +17,7 @@ type ReturnType =
   | { error: ApiError };
 
 export async function load({ url }) {
-  return await loadData(url.searchParams.get("q") || undefined);
+  return await loadData(url.searchParams.get("q") || `{"limit": 50}`);
 }
 
 export const actions = {

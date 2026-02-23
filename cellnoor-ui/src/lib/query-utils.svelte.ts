@@ -75,6 +75,7 @@ export const emptyAssayFilter: Filter<TenxAssayFilter> = {
   sample_multiplexing: [],
 };
 
+// @ts-expect-error
 export const emptySpecimenFilter: Filter<SpecimenFilter> = {
   ids: [],
   names: [],
@@ -85,7 +86,6 @@ export const emptySpecimenFilter: Filter<SpecimenFilter> = {
   fixatives: [],
   embedded_in: [],
   project_ids: [],
-  additional_data: {},
   submitted_by: [],
   returned_by: [],
   types: [],
