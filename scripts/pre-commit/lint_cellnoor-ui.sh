@@ -3,6 +3,6 @@
 set -euo pipefail
 
 cargo run --bin openapi > openapi.json
-bunx openapi-typescript openapi.json -o pkgs/cellnoor-client/api.d.ts --root-types --root-types-no-schema-prefix --default-no-nullable false
+bunx openapi-typescript openapi.json -o pkgs/cellnoor-client/api.d.ts --root-types --root-types-no-schema-prefix --default-non-nullable false
 bun run --bun --cwd=cellnoor-ui check
 bun run --bun --cwd=cellnoor-ui fmt

@@ -1,19 +1,11 @@
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
-use syn::{Ident, Item, ItemEnum, parse, parse_macro_input};
+use syn::{Ident, ItemEnum, parse_macro_input};
 
-fn base_derives(input: TokenStream, with_default: bool) -> proc_macro2::TokenStream {
-    let parsed = parse::<Item>(input).unwrap();
-    let serde_default = match &parsed {
-        Item::Enum(..) => quote! {},
-        Item::Struct(..) => quote! { #[serde(default)] },
-        _ => panic!("only enum definitions and struct definitions are supported"),
-    };
-
+fn base_derives(with_default: bool) -> proc_macro2::TokenStream {
     if with_default {
         quote! {
             #[derive(Clone, Debug, Default, PartialEq)]
-            #serde_default
         }
     } else {
         quote! {
@@ -24,7 +16,7 @@ fn base_derives(input: TokenStream, with_default: bool) -> proc_macro2::TokenStr
 
 #[proc_macro_attribute]
 pub fn base_model(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let derives = base_derives(input.clone(), false);
+    let derives = base_derives(false);
     let input: proc_macro2::TokenStream = input.into();
 
     quote! {
@@ -36,7 +28,7 @@ pub fn base_model(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn base_model_default(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let derives = base_derives(input.clone(), true);
+    let derives = base_derives(true);
     let input: proc_macro2::TokenStream = input.into();
 
     quote! {
@@ -73,7 +65,7 @@ fn builder() -> proc_macro2::TokenStream {
 
 #[proc_macro_attribute]
 pub fn insert_select(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let base_derives = base_derives(input.clone(), false);
+    let base_derives = base_derives(false);
     let insertable = diesel_insertable();
     let has_query = diesel_has_query();
     let check_for_backend = diesel_check_for_backend();
@@ -87,6 +79,7 @@ pub fn insert_select(_attr: TokenStream, input: TokenStream) -> TokenStream {
         #base_derives
         #insertable
         #has_query
+        #[serde(deny_unknown_fields)]
         #check_for_backend
         #builder
         #input
@@ -96,7 +89,7 @@ pub fn insert_select(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn insert(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let base_derives = base_derives(input.clone(), false);
+    let base_derives = base_derives(false);
     let insertable = diesel_insertable();
     let check_for_backend = diesel_check_for_backend();
     let builder = builder();
@@ -108,6 +101,7 @@ pub fn insert(_attr: TokenStream, input: TokenStream) -> TokenStream {
         #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
         #base_derives
         #insertable
+        #[serde(deny_unknown_fields)]
         #check_for_backend
         #builder
         #input
@@ -117,7 +111,7 @@ pub fn insert(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn filter(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let base_derives = base_derives(input.clone(), true);
+    let base_derives = base_derives(true);
 
     let input: proc_macro2::TokenStream = input.into();
 
@@ -135,7 +129,7 @@ pub fn filter(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn select(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let base_derives = base_derives(input.clone(), false);
+    let base_derives = base_derives(false);
     let has_query = diesel_has_query();
     let check_for_backend = diesel_check_for_backend();
 
@@ -146,6 +140,7 @@ pub fn select(_attr: TokenStream, input: TokenStream) -> TokenStream {
         #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
         #base_derives
         #has_query
+        #[serde(deny_unknown_fields)]
         #check_for_backend
         #input
     }
@@ -154,7 +149,7 @@ pub fn select(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn update(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let base_derives = base_derives(input.clone(), true);
+    let base_derives = base_derives(true);
     let check_for_backend = diesel_check_for_backend();
 
     let input: proc_macro2::TokenStream = input.into();
@@ -173,7 +168,7 @@ pub fn update(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn order_by(attr: TokenStream, input: TokenStream) -> TokenStream {
-    let base_derives = base_derives(input.clone(), false);
+    let base_derives = base_derives(false);
 
     let cellnoor_schema_mod = parse_macro_input!(attr as Ident);
     let diesel_mod = format_ident!("diesel_{cellnoor_schema_mod}");
@@ -209,7 +204,7 @@ pub fn order_by(attr: TokenStream, input: TokenStream) -> TokenStream {
 
     quote! {
         #base_derives
-        #[derive(Copy, ::serde::Deserialize, ::serde::Serialize)]
+        #[derive(Copy, Eq, PartialOrd, Ord, Hash, ::serde::Deserialize, ::serde::Serialize)]
         #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
         #[serde(tag = "field", rename_all = "snake_case")]
         #enum_def
@@ -252,15 +247,14 @@ pub fn order_by(attr: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn simple_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let base_derives = base_derives(input.clone(), false);
+    let base_derives = base_derives(false);
 
     let input: proc_macro2::TokenStream = input.into();
 
     quote! {
-        #[derive(::serde::Deserialize, ::serde::Serialize)]
-        #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
         #base_derives
-        #[derive(Copy, Eq, PartialOrd, Ord, Hash, ::strum::EnumString, ::strum::IntoStaticStr)]
+        #[derive(Copy, Eq, PartialOrd, Ord, Hash, ::strum::EnumString, ::strum::IntoStaticStr, ::serde::Deserialize, ::serde::Serialize)]
+        #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
         #[cfg_attr(feature = "app", derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression))]
         #[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Text, sql_type = ::cellnoor_schema::sql_types::CaseInsensitiveText))]
         #[serde(rename_all = "snake_case")]
@@ -271,14 +265,14 @@ pub fn simple_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn json(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let base_derives = base_derives(input.clone(), false);
+    let base_derives = base_derives(false);
 
     let input: proc_macro2::TokenStream = input.into();
 
     quote! {
+        #base_derives
         #[derive(::serde::Deserialize, ::serde::Serialize)]
         #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
-        #base_derives
         #[cfg_attr(feature = "app", derive(::diesel::deserialize::FromSqlRow, ::diesel::expression::AsExpression))]
         #[cfg_attr(feature = "app", diesel(sql_type = ::diesel::sql_types::Jsonb))]
         #[serde(rename_all = "snake_case")]

@@ -3,20 +3,38 @@
   import "../app.css";
   import { authClient } from "$lib/auth-client";
   import { goto } from "$app/navigation";
-  import type { ChromiumDatasetFilter } from "cellnoor-client";
+  import type {
+    ChromiumDatasetFilter,
+    ChromiumDatasetOrderBy,
+  } from "cellnoor-client";
+  import {
+    emptyAssayFilter,
+    emptySpecimenFilter,
+    type Query,
+    toQueryString,
+  } from "$lib/query-utils.svelte";
 
-  let { userName }: { userName: string } = $props();
+  const { userName }: { userName: string } = $props();
   const links = [[resolve("/chromium-datasets"), "Chromium Datasets"]];
 
-  let searchBarValue = $state("");
-  // @ts-ignore
-  let query: { filter: ChromiumDatasetFilter } = $derived({
-    filter: { specimen: { names: [`%${searchBarValue}%`] } },
-  });
-  let stringifiedQuery = $derived(JSON.stringify(query));
+  const query: Query<ChromiumDatasetFilter, ChromiumDatasetOrderBy> =
+    $state({
+      filter: {
+        ids: [],
+        names: [],
+        project_ids: [],
+        assay: emptyAssayFilter,
+        specimen: {
+          ...emptySpecimenFilter,
+          names: [""],
+        },
+      },
+      limit: 50,
+    });
+  let stringifiedQuery = $derived(toQueryString(query));
 </script>
 
-<nav class="navbar bg-base-200 sticky top-0 z-50 mb-4 justify-between">
+<nav class="navbar bg-base-200 sticky z-64 justify-between border-b">
   <div>
     <a
       class="flex flex-row shrink items-center text-2xl font-comfortaa font-bold"
@@ -46,13 +64,14 @@
       </svg>
       <form action="/chromium-datasets?/search" class="grow">
         <input
-          bind:value={searchBarValue}
+          bind:value={query.filter.specimen.names[0]}
+          onkeydown={() => console.log(toQueryString(query))}
           aria-label="search for Chromium datasets by specimen name"
           type="search"
           placeholder="Search Chromium datasets by specimen name"
         />
         <input hidden name="q" bind:value={stringifiedQuery} />
-        <button hidden>Search</button>
+        <button hidden class="join-item">Search</button>
       </form>
     </label>
     <ul class="menu menu-horizontal">

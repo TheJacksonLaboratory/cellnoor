@@ -2,6 +2,7 @@ import { getApiClient } from "$lib/server/cellnoor-client";
 import type {
   ApiError,
   ChromiumDatasetSummary,
+  Project,
   TenxAssay,
 } from "cellnoor-client";
 
@@ -11,6 +12,7 @@ type ReturnType =
       files: Map<string, string[]>;
     })[];
     assays: TenxAssay[];
+    projects: Project[];
   }
   | { error: ApiError };
 
@@ -28,7 +30,7 @@ export const actions = {
 async function loadData(q?: string): Promise<ReturnType> {
   const apiClient = await getApiClient();
 
-  const [chromiumDatasets, assays] = await Promise.all([
+  const [chromiumDatasets, assays, projects] = await Promise.all([
     apiClient.GET("/chromium-datasets", {
       params: {
         query: {
@@ -37,9 +39,10 @@ async function loadData(q?: string): Promise<ReturnType> {
       },
     }),
     apiClient.GET("/10x-assays"),
+    apiClient.GET("/projects"),
   ]);
 
-  if (!chromiumDatasets.data || !assays.data) {
+  if (!chromiumDatasets.data || !assays.data || !projects.data) {
     return {
       error: chromiumDatasets.error ||
         assays.error || { type: "other", message: "something went wrong :(" },
@@ -58,6 +61,7 @@ async function loadData(q?: string): Promise<ReturnType> {
     // @ts-ignore
     chromiumDatasets: chromiumDatasets.data,
     assays: assays.data,
+    projects: projects.data,
   };
 }
 

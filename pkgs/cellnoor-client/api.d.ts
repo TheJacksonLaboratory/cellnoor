@@ -2417,22 +2417,24 @@ export interface components {
             readable_id: string;
         };
         CdnaFilter: {
-            /** @default null */
-            ids: string[] | null;
-            /** @default null */
-            project_ids: string[] | null;
-            /** @default null */
-            readable_ids: string[] | null;
+            ids?: string[] | null;
+            project_ids?: string[] | null;
+            readable_ids?: string[] | null;
         };
         CdnaMeasurement: {
             /** Format: uuid */
             cdna_id: string;
+            concentration?: unknown;
             /** Format: uuid */
             id: string;
+            instrument_name?: unknown;
+            mean_size_bp?: unknown;
             /** Format: date-time */
             measured_at: string;
             /** Format: uuid */
             measured_by: string;
+            sizing_range?: unknown;
+            type?: unknown;
         } & ({
             concentration: components["schemas"]["NucleicAcidConcentrationPicogram"];
             instrument_name: string;
@@ -2506,26 +2508,15 @@ export interface components {
         /** @enum {string} */
         ChromiumDatasetCmdline: "cellranger-arc count" | "cellranger-atac count" | "cellranger count" | "cellranger multi" | "cellranger vdj";
         ChromiumDatasetFilter: {
-            /** @default null */
-            assay: components["schemas"]["TenxAssayFilter"] | null;
-            /**
-             * Format: date-time
-             * @default null
-             */
-            delivered_after: string | null;
-            /**
-             * Format: date-time
-             * @default null
-             */
-            delivered_before: string | null;
-            /** @default null */
-            ids: string[] | null;
-            /** @default null */
-            names: string[] | null;
-            /** @default null */
-            project_ids: string[] | null;
-            /** @default null */
-            specimen: components["schemas"]["SpecimenFilter"] | null;
+            assay?: components["schemas"]["TenxAssayFilter"] | null;
+            /** Format: date-time */
+            delivered_after?: string | null;
+            /** Format: date-time */
+            delivered_before?: string | null;
+            ids?: string[] | null;
+            names?: string[] | null;
+            project_ids?: string[] | null;
+            specimen?: components["schemas"]["SpecimenFilter"] | null;
         };
         ChromiumDatasetOrderBy: {
             descending?: boolean | null;
@@ -2572,10 +2563,8 @@ export interface components {
             succeeded: boolean;
         };
         ChromiumRunFilter: {
-            /** @default null */
-            ids: string[] | null;
-            /** @default null */
-            project_ids: string[] | null;
+            ids?: string[] | null;
+            project_ids?: string[] | null;
         };
         ChromiumRunOrderBy: {
             descending?: boolean | null;
@@ -2673,10 +2662,8 @@ export interface components {
             readable_id: string;
         };
         GemPoolFilter: {
-            /** @default null */
-            ids: string[] | null;
-            /** @default null */
-            project_ids: string[] | null;
+            ids?: string[] | null;
+            project_ids?: string[] | null;
         };
         GemPoolOrderBy: {
             descending?: boolean | null;
@@ -2701,10 +2688,8 @@ export interface components {
             name: string;
         };
         InstitutionFilter: {
-            /** @default null */
-            ids: string[] | null;
-            /** @default null */
-            names: string[] | null;
+            ids?: string[] | null;
+            names?: string[] | null;
         };
         InstitutionOrderBy: {
             descending?: boolean | null;
@@ -2736,22 +2721,24 @@ export interface components {
             target_reads_per_cell: number;
         };
         LibraryFilter: {
-            /** @default null */
-            ids: string[] | null;
-            /** @default null */
-            project_ids: string[] | null;
-            /** @default null */
-            readable_ids: string[] | null;
+            ids?: string[] | null;
+            project_ids?: string[] | null;
+            readable_ids?: string[] | null;
         };
         LibraryMeasurement: {
+            concentration?: unknown;
             /** Format: uuid */
             id: string;
+            instrument_name?: unknown;
             /** Format: uuid */
             library_id: string;
+            mean_size_bp?: unknown;
             /** Format: date-time */
             measured_at: string;
             /** Format: uuid */
             measured_by: string;
+            sizing_range?: unknown;
+            type?: unknown;
         } & ({
             concentration: components["schemas"]["NucleicAcidConcentrationPicogram"];
             instrument_name: string;
@@ -3226,36 +3213,22 @@ export interface components {
             orcid?: string | null;
         };
         PersonFilter: {
-            /** @default null */
-            emails: string[] | null;
-            /** @default null */
-            ids: string[] | null;
-            /** @default null */
-            institution_ids: string[] | null;
-            /** @default null */
-            names: string[] | null;
-            /** @default null */
-            orcids: string[] | null;
+            emails?: string[] | null;
+            ids?: string[] | null;
+            institution_ids?: string[] | null;
+            names?: string[] | null;
+            orcids?: string[] | null;
         };
         PersonFilterStaff: {
-            /** @default null */
-            emails: string[] | null;
-            /** @default null */
-            ids: string[] | null;
-            /** @default null */
-            institution_ids: string[] | null;
-            /** @default null */
-            is_admin: boolean | null;
-            /** @default null */
-            is_biology_staff: boolean | null;
-            /** @default null */
-            is_computational_staff: boolean | null;
-            /** @default null */
-            microsoft_entra_oids: string[] | null;
-            /** @default null */
-            names: string[] | null;
-            /** @default null */
-            orcids: string[] | null;
+            emails?: string[] | null;
+            ids?: string[] | null;
+            institution_ids?: string[] | null;
+            is_admin?: boolean | null;
+            is_biology_staff?: boolean | null;
+            is_computational_staff?: boolean | null;
+            microsoft_entra_oids?: string[] | null;
+            names?: string[] | null;
+            orcids?: string[] | null;
         };
         PersonOrderBy: {
             descending?: boolean | null;
@@ -3312,28 +3285,16 @@ export interface components {
             orcid?: string | null;
         };
         PersonUpdate: {
-            /** @default null */
-            email: string | null;
-            /**
-             * Format: uuid
-             * @default null
-             */
-            institution_id: string | null;
-            /** @default null */
-            is_admin: boolean | null;
-            /** @default null */
-            is_biology_staff: boolean | null;
-            /** @default null */
-            is_computational_staff: boolean | null;
-            /**
-             * Format: uuid
-             * @default null
-             */
-            microsoft_entra_oid: string | null;
-            /** @default null */
-            name: string | null;
-            /** @default null */
-            orcid: string | null;
+            email?: string | null;
+            /** Format: uuid */
+            institution_id?: string | null;
+            is_admin?: boolean | null;
+            is_biology_staff?: boolean | null;
+            is_computational_staff?: boolean | null;
+            /** Format: uuid */
+            microsoft_entra_oid?: string | null;
+            name?: string | null;
+            orcid?: string | null;
         };
         /** @enum {string} */
         Picogram: "picogram";
@@ -3359,30 +3320,16 @@ export interface components {
             started_at: string;
         };
         ProjectFilter: {
-            /**
-             * Format: date-time
-             * @default null
-             */
-            ended_after: string | null;
-            /**
-             * Format: date-time
-             * @default null
-             */
-            ended_before: string | null;
-            /** @default null */
-            ids: string[] | null;
-            /** @default null */
-            names: string[] | null;
-            /**
-             * Format: date-time
-             * @default null
-             */
-            started_after: string | null;
-            /**
-             * Format: date-time
-             * @default null
-             */
-            started_before: string | null;
+            /** Format: date-time */
+            ended_after?: string | null;
+            /** Format: date-time */
+            ended_before?: string | null;
+            ids?: string[] | null;
+            names?: string[] | null;
+            /** Format: date-time */
+            started_after?: string | null;
+            /** Format: date-time */
+            started_before?: string | null;
         };
         ProjectOrderBy: {
             descending?: boolean | null;
@@ -3452,54 +3399,28 @@ export interface components {
             type_: components["schemas"]["SpecimenType"];
         };
         SpecimenFilter: {
-            /** @default null */
-            additional_data: unknown;
-            /** @default null */
-            embedded_in: components["schemas"]["BlockEmbeddingMatrix"][] | null;
-            /** @default null */
-            fixatives: components["schemas"]["Fixative"][] | null;
-            /** @default null */
-            fresh: boolean | null;
-            /** @default null */
-            host_species: components["schemas"]["Species"][] | null;
-            /** @default null */
-            ids: string[] | null;
-            /** @default null */
-            names: string[] | null;
-            /** @default null */
-            project_ids: string[] | null;
-            /**
-             * Format: date-time
-             * @default null
-             */
-            received_after: string | null;
-            /**
-             * Format: date-time
-             * @default null
-             */
-            received_before: string | null;
-            /**
-             * Format: date-time
-             * @default null
-             */
-            returned_after: string | null;
-            /**
-             * Format: date-time
-             * @default null
-             */
-            returned_before: string | null;
-            /** @default null */
-            returned_by: string[] | null;
-            /** @default null */
-            species: components["schemas"]["Species"][] | null;
-            /** @default null */
-            submitted_by: string[] | null;
-            /** @default null */
-            thermal_preservation_methods: components["schemas"]["ThermalPreservationMethod"][] | null;
-            /** @default null */
-            tissues: string[] | null;
-            /** @default null */
-            types: components["schemas"]["SpecimenType"][] | null;
+            additional_data?: unknown;
+            embedded_in?: components["schemas"]["BlockEmbeddingMatrix"][] | null;
+            fixatives?: components["schemas"]["Fixative"][] | null;
+            fresh?: boolean | null;
+            host_species?: components["schemas"]["Species"][] | null;
+            ids?: string[] | null;
+            names?: string[] | null;
+            project_ids?: string[] | null;
+            /** Format: date-time */
+            received_after?: string | null;
+            /** Format: date-time */
+            received_before?: string | null;
+            /** Format: date-time */
+            returned_after?: string | null;
+            /** Format: date-time */
+            returned_before?: string | null;
+            returned_by?: string[] | null;
+            species?: components["schemas"]["Species"][] | null;
+            submitted_by?: string[] | null;
+            thermal_preservation_methods?: components["schemas"]["ThermalPreservationMethod"][] | null;
+            tissues?: string[] | null;
+            types?: components["schemas"]["SpecimenType"][] | null;
         };
         SpecimenMeasurement: {
             data: components["schemas"]["SpecimenMeasurementData"];
@@ -3642,10 +3563,8 @@ export interface components {
         /** @enum {string} */
         SuspensionContent: "cells" | "nuclei";
         SuspensionFilter: {
-            /** @default null */
-            ids: string[] | null;
-            /** @default null */
-            project_ids: string[] | null;
+            ids?: string[] | null;
+            project_ids?: string[] | null;
         };
         SuspensionMeasurement: {
             data: components["schemas"]["SuspensionMeasurementData"];
@@ -3727,10 +3646,8 @@ export interface components {
             readable_id: string;
         };
         SuspensionPoolFilter: {
-            /** @default null */
-            ids: string[] | null;
-            /** @default null */
-            project_ids: string[] | null;
+            ids?: string[] | null;
+            project_ids?: string[] | null;
         };
         SuspensionPoolMeasurement: {
             data: components["schemas"]["SuspensionPoolMeasurementData"];
@@ -3817,18 +3734,12 @@ export interface components {
             sample_multiplexing?: components["schemas"]["SampleMultiplexing"] | null;
         };
         TenxAssayFilter: {
-            /** @default null */
-            chemistry_versions: string[] | null;
-            /** @default null */
-            chromium_chips: string[] | null;
-            /** @default null */
-            ids: string[] | null;
-            /** @default null */
-            library_types: components["schemas"]["LibraryType"][][] | null;
-            /** @default null */
-            names: string[] | null;
-            /** @default null */
-            sample_multiplexing: components["schemas"]["SampleMultiplexing"][] | null;
+            chemistry_versions?: string[] | null;
+            chromium_chips?: string[] | null;
+            ids?: string[] | null;
+            library_types?: components["schemas"]["LibraryType"][][] | null;
+            names?: string[] | null;
+            sample_multiplexing?: components["schemas"]["SampleMultiplexing"][] | null;
         };
         TenxAssayOrderBy: {
             descending?: boolean | null;
