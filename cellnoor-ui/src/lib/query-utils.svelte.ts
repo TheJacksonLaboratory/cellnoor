@@ -1,5 +1,4 @@
 import type { SpecimenFilter, TenxAssayFilter } from "cellnoor-client";
-import { expect, test } from "bun:test";
 
 const whitespaceRegex = /\s|_|-/g;
 
@@ -11,13 +10,25 @@ function subWhitespaceWithPercent(s: unknown) {
   return `%${s.replace(whitespaceRegex, "_")}%`;
 }
 
-function jsonReplacer(_key: string | number, value: unknown) {
+const DO_NOT_REPLACE = [
+  "species",
+  "host_species",
+  "library_type",
+  "type",
+  "project_ids",
+];
+
+function jsonReplacer(key: string | number, value: unknown) {
   if (!Array.isArray(value)) {
     return value;
   }
 
   if (value.length === 0) {
     return undefined;
+  }
+
+  if (typeof key === "string" && DO_NOT_REPLACE.includes(key)) {
+    return value;
   }
 
   return value.map(subWhitespaceWithPercent);
@@ -44,21 +55,15 @@ type ArrayFields<T> = {
 
 type Filter<T> = PrimitiveFields<T> & ObjectFields<T> & ArrayFields<T>;
 
-export class Query<F, O> {
+export interface Query<F, O> {
   filter: Filter<F>;
   limit: number;
   offset?: number;
-  order_by: O[];
+  order_by?: O[];
+}
 
-  constructor(filter: Filter<F>, limit: number = 500, orderBy: O[] = []) {
-    this.filter = filter;
-    this.limit = limit;
-    this.order_by = orderBy;
-  }
-
-  toQuerystring() {
-    return JSON.stringify(this, jsonReplacer);
-  }
+export function toQueryString<F, O>(q: Query<F, O>) {
+  return JSON.stringify(q, jsonReplacer);
 }
 
 export const emptyAssayFilter: Filter<TenxAssayFilter> = {

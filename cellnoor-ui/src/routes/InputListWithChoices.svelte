@@ -1,4 +1,3 @@
-<!-- TODO: this is extremely repetetive and IDK how to consolidate it with the other `InputList` component -->
 <script lang="ts">
   import { tick } from "svelte";
   import Badge from "./Badge.svelte";
@@ -6,10 +5,12 @@
   let {
     parentForm,
     fieldName,
+    options,
     targetArray = $bindable(),
   }: {
     parentForm: HTMLFormElement;
     fieldName: string;
+    options: { optValue: string; displayText: string }[];
     targetArray: string[];
   } = $props();
   let value = $state("");
@@ -33,6 +34,7 @@
 }</label>
 <div class="join">
   <input
+    list={`${fieldName}-options`}
     autocomplete="off"
     id={fieldName}
     bind:value
@@ -40,6 +42,11 @@
     type="text"
     class="input join-item grow"
   />
+  <datalist id={`${fieldName}-options`}>
+    {#each options as { optValue, displayText }}
+      <option value={optValue}>{displayText}</option>
+    {/each}
+  </datalist>
   <button
     aria-label="add item"
     onclick={handleAddition}
@@ -72,14 +79,16 @@
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 16 16"
-          fill="currentColor"
-          class="size-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="size-6"
         >
           <path
-            fill-rule="evenodd"
-            d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm2.78-4.22a.75.75 0 0 1-1.06 0L8 9.06l-1.72 1.72a.75.75 0 1 1-1.06-1.06L6.94 8 5.22 6.28a.75.75 0 0 1 1.06-1.06L8 6.94l1.72-1.72a.75.75 0 1 1 1.06 1.06L9.06 8l1.72 1.72a.75.75 0 0 1 0 1.06Z"
-            clip-rule="evenodd"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
           />
         </svg>
       </button>
