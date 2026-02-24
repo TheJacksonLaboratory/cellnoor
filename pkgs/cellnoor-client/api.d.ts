@@ -3015,47 +3015,7 @@ export interface components {
         } & components["schemas"]["NewBlock"]) | ({
             /** @constant */
             type: "suspension";
-        } & components["schemas"]["NewSuspensionSpecimen"]) | ({
-            /** @constant */
-            type: "tissue";
-        } & components["schemas"]["NewTissue"]);
-        NewSuspension: {
-            additional_data?: unknown;
-            /** @constant */
-            content: "cells";
-            /** Format: date-time */
-            created_at?: string | null;
-            /** Format: uuid */
-            parent_specimen_id: string;
-            preparer_ids: string[];
-            readable_id: string;
-            /** Format: uint32 */
-            target_cell_recovery?: number | null;
-        } | {
-            additional_data?: unknown;
-            /** @constant */
-            content: "nuclei";
-            /** Format: date-time */
-            created_at?: string | null;
-            /** Format: uint32 */
-            lysis_duration_minutes: number;
-            /** Format: uuid */
-            parent_specimen_id: string;
-            preparer_ids: string[];
-            readable_id: string;
-            /** Format: uint32 */
-            target_cell_recovery?: number | null;
-        };
-        NewSuspensionPool: {
-            additional_data?: unknown;
-            name: string;
-            /** Format: date-time */
-            pooled_at: string;
-            preparer_ids: string[];
-            readable_id: string;
-            suspensions: components["schemas"]["SuspensionTagging"][];
-        };
-        NewSuspensionSpecimen: {
+        } & ({
             additional_data?: unknown;
             fixative: components["schemas"]["Fixative"];
             host_species?: components["schemas"]["Species"] | null;
@@ -3114,6 +3074,45 @@ export interface components {
             submitted_by: string;
             thermal_preservation_method: components["schemas"]["SuspensionThermalPreservation"];
             tissue: string;
+        })) | ({
+            /** @constant */
+            type: "tissue";
+        } & components["schemas"]["NewTissue"]);
+        NewSuspension: {
+            additional_data?: unknown;
+            /** @constant */
+            content: "cells";
+            /** Format: date-time */
+            created_at?: string | null;
+            /** Format: uuid */
+            parent_specimen_id: string;
+            preparer_ids: string[];
+            readable_id: string;
+            /** Format: uint32 */
+            target_cell_recovery?: number | null;
+        } | {
+            additional_data?: unknown;
+            /** @constant */
+            content: "nuclei";
+            /** Format: date-time */
+            created_at?: string | null;
+            /** Format: uint32 */
+            lysis_duration_minutes?: number | null;
+            /** Format: uuid */
+            parent_specimen_id: string;
+            preparer_ids: string[];
+            readable_id: string;
+            /** Format: uint32 */
+            target_cell_recovery?: number | null;
+        };
+        NewSuspensionPool: {
+            additional_data?: unknown;
+            name: string;
+            /** Format: date-time */
+            pooled_at: string;
+            preparer_ids: string[];
+            readable_id: string;
+            suspensions: components["schemas"]["SuspensionTagging"][];
         };
         NewTissue: {
             additional_data?: unknown;
@@ -3845,7 +3844,6 @@ export type NewSequencingRun = components['schemas']['NewSequencingRun'];
 export type NewSpecimen = components['schemas']['NewSpecimen'];
 export type NewSuspension = components['schemas']['NewSuspension'];
 export type NewSuspensionPool = components['schemas']['NewSuspensionPool'];
-export type NewSuspensionSpecimen = components['schemas']['NewSuspensionSpecimen'];
 export type NewTissue = components['schemas']['NewTissue'];
 export type NucleicAcidConcentrationNanogram = components['schemas']['NucleicAcidConcentrationNanogram'];
 export type NucleicAcidConcentrationPicogram = components['schemas']['NucleicAcidConcentrationPicogram'];
