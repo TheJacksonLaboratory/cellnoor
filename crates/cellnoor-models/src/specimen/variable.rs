@@ -10,6 +10,7 @@ use crate::utils::{EnumFromSql, EnumToSql};
 #[simple_enum]
 pub enum SpecimenType {
     Block,
+    CellPellet,
     Suspension,
     Tissue,
 }

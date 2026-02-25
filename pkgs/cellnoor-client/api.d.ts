@@ -2493,6 +2493,8 @@ export interface components {
             project_id: string;
             readable_id: string;
         };
+        /** @enum {string} */
+        CellPelletThermalPreservation: "flash_freezing";
         ChromiumDataset: {
             assay: components["schemas"]["TenxAssay"];
             /** Format: date-time */
@@ -2916,6 +2918,25 @@ export interface components {
             /** Format: uint8 */
             "volume_\u00B5l": number;
         };
+        NewCellPellet: {
+            additional_data?: unknown;
+            host_species?: components["schemas"]["Species"] | null;
+            name: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            thermal_preservation_method: components["schemas"]["CellPelletThermalPreservation"];
+            tissue: string;
+        };
         NewChromiumDataset: {
             cmdline: components["schemas"]["ChromiumDatasetCmdline"];
             /** Format: date-time */
@@ -3013,6 +3034,9 @@ export interface components {
             /** @constant */
             type: "block";
         } & components["schemas"]["NewBlock"]) | ({
+            /** @constant */
+            type: "cell_pellet";
+        } & components["schemas"]["NewCellPellet"]) | ({
             /** @constant */
             type: "suspension";
         } & ({
@@ -3532,7 +3556,7 @@ export interface components {
             type_: components["schemas"]["SpecimenType"];
         };
         /** @enum {string} */
-        SpecimenType: "block" | "suspension" | "tissue";
+        SpecimenType: "block" | "cell_pellet" | "suspension" | "tissue";
         Suspension: {
             additional_data?: unknown;
             content: components["schemas"]["SuspensionContent"];
@@ -3795,6 +3819,7 @@ export type CdnaFilter = components['schemas']['CdnaFilter'];
 export type CdnaMeasurement = components['schemas']['CdnaMeasurement'];
 export type CdnaOrderBy = components['schemas']['CdnaOrderBy'];
 export type CdnaSummary = components['schemas']['CdnaSummary'];
+export type CellPelletThermalPreservation = components['schemas']['CellPelletThermalPreservation'];
 export type ChromiumDataset = components['schemas']['ChromiumDataset'];
 export type ChromiumDatasetCmdline = components['schemas']['ChromiumDatasetCmdline'];
 export type ChromiumDatasetFilter = components['schemas']['ChromiumDatasetFilter'];
@@ -3834,6 +3859,7 @@ export type MultiplexingTagType = components['schemas']['MultiplexingTagType'];
 export type Nanogram = components['schemas']['Nanogram'];
 export type NewBlock = components['schemas']['NewBlock'];
 export type NewCdna = components['schemas']['NewCdna'];
+export type NewCellPellet = components['schemas']['NewCellPellet'];
 export type NewChromiumDataset = components['schemas']['NewChromiumDataset'];
 export type NewChromiumRun = components['schemas']['NewChromiumRun'];
 export type NewInstitution = components['schemas']['NewInstitution'];

@@ -12,8 +12,10 @@ pub enum SuspensionThermalPreservation {
 }
 
 impl From<SuspensionThermalPreservation> for ThermalPreservationMethod {
-    fn from(_: SuspensionThermalPreservation) -> Self {
-        Self::ControlledRateFreezing
+    fn from(suspension_thermal_preservation: SuspensionThermalPreservation) -> Self {
+        match suspension_thermal_preservation {
+            SuspensionThermalPreservation::ControlledRateFreezing => Self::ControlledRateFreezing,
+        }
     }
 }
 

@@ -4,10 +4,14 @@ use uuid::Uuid;
 
 use crate::specimen::{
     common::{Species, SpecimenCommonFields},
-    creation::{block::NewBlock, suspension::NewSuspensionSpecimen, tissue::NewTissue},
+    creation::{
+        block::NewBlock, cell_pellet::NewCellPellet, suspension::NewSuspensionSpecimen,
+        tissue::NewTissue,
+    },
 };
 
 pub mod block;
+pub mod cell_pellet;
 pub mod suspension;
 pub mod tissue;
 
@@ -17,16 +21,18 @@ pub mod tissue;
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum NewSpecimen {
     Block(NewBlock),
+    CellPellet(NewCellPellet),
     Suspension(NewSuspensionSpecimen),
     Tissue(NewTissue),
 }
 
 impl NewSpecimen {
     fn inner(&self) -> &SpecimenCommonFields {
-        use NewSpecimen::{Block, Suspension, Tissue};
+        use NewSpecimen::{Block, CellPellet, Suspension, Tissue};
 
         match self {
             Block(s) => s.common(),
+            CellPellet(s) => s.common(),
             Suspension(s) => s.common(),
             Tissue(s) => s.common(),
         }
