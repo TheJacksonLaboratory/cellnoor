@@ -18,7 +18,7 @@ pub struct LibrarySummary {
     inner: LibraryFields,
     links: Links,
     number_of_sample_index_pcr_cycles: i32,
-    target_reads_per_cell: i64,
+    target_reads_per_cell: Option<i64>,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
     prepared_at: Timestamp,
 }

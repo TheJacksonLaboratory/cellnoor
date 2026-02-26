@@ -8,6 +8,7 @@ use tokio::net::TcpListener;
 use crate::{config::Config, state::AppState};
 
 mod auth;
+pub mod error;
 mod extract;
 pub mod middleware;
 pub mod routes;

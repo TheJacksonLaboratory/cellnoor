@@ -9,7 +9,7 @@ use crate::{
         auth::RemoveUnauthorizedProjects,
         extract::{AuthJsonQuery, Authorize},
     },
-    db::{self, BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter},
+    db::{self, BoxedFilter, BoxedFilterExt, DbConnection, ToBoxedFilter, like_any},
     state::AppState,
 };
 
@@ -62,7 +62,7 @@ where
         }
 
         if let Some(readable_ids) = readable_ids {
-            filter = filter.and_condition(readable_id.eq_any(readable_ids));
+            filter = filter.and_condition(like_any(readable_id, readable_ids));
         }
 
         if let Some(project_ids) = project_ids {

@@ -6,16 +6,10 @@ use aide::{
     redoc::Redoc,
 };
 use axum::{Extension, Json, Router, extract::Request, routing::get};
-use schemars::JsonSchema;
-use serde::Serialize;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 
-use crate::{
-    api::{auth, middleware::authenticate_request},
-    db::{self},
-    state::AppState,
-};
+use crate::{api::middleware::authenticate_request, state::AppState};
 
 pub mod cdna;
 pub mod chromium_datasets;
@@ -59,17 +53,6 @@ pub(super) fn app(state: AppState) -> Router<AppState> {
 }
 
 pub fn router() -> (Router<AppState>, OpenApi) {
-    // This is the general error-type that can be a catch-all. If handlers return
-    // more specific errors, they can document that and associate it with status
-    // codes
-    #[allow(dead_code)]
-    #[derive(Serialize, JsonSchema)]
-    #[serde(untagged)]
-    enum ApiError {
-        Auth(auth::Error),
-        Database(db::Error),
-    }
-
     aide::generate::infer_responses(true);
 
     let router = ApiRouter::new()
@@ -106,7 +89,7 @@ pub fn router() -> (Router<AppState>, OpenApi) {
                 },
             )
             .security_requirement("api_token")
-            .default_response::<Json<ApiError>>()
+            .default_response::<Json<super::error::ApiErrorResponse>>()
     });
 
     (router, api_docs)

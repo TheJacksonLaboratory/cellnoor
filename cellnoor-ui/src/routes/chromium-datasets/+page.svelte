@@ -60,7 +60,6 @@
       {/each}
     {:else if error}
       <p class="text-center text-error">Something went wrong</p>
-      {JSON.stringify(error)}
     {:else}
       <p class="text-center">No matching Chromium datasets found</p>
     {/if}

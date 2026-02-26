@@ -37,6 +37,14 @@ pub async fn create_suspension_pool(
     )
     .await?;
 
+    if suspension_info.is_empty() {
+        return Err(db::Error::InvalidReference {
+            resource: "suspension_pools".to_owned(),
+            referenced_resource: "suspension".to_owned(),
+            value: Some(pooled_suspensions.as_ref()[0].suspension_id().to_string()),
+        });
+    }
+
     validate_all_suspensions_have_same_contents(&suspension_info)?;
     validate_all_suspensions_have_same_project(&suspension_info)?;
     validate_suspensions_created_or_received_before_pooled(
