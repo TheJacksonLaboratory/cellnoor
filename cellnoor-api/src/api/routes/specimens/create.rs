@@ -45,6 +45,7 @@ pub async fn insert_specimen(
 ) -> Result<Uuid, db::Error> {
     let split = match specimen {
         NewSpecimen::Block(s) => s.split_for_insertion(),
+        NewSpecimen::CellPellet(s) => s.split_for_insertion(),
         NewSpecimen::Suspension(s) => s.split_for_insertion(),
         NewSpecimen::Tissue(s) => s.split_for_insertion(),
     };

@@ -251,7 +251,7 @@ impl TestState {
                 fixative: BlockFixative::VARIANTS.choose_unwrap(),
             })
         } else if i.is_multiple_of(6) {
-            NewSpecimen::Suspension(NewSuspensionSpecimen::Fresh { inner })
+            NewSpecimen::Suspension(NewSuspensionSpecimen::Fresh(inner))
         } else if i.is_multiple_of(5) {
             NewSpecimen::Suspension(NewSuspensionSpecimen::Fixed {
                 inner,

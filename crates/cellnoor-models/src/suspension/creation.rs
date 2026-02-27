@@ -44,7 +44,7 @@ pub enum NewSuspension {
     Nuclei {
         #[serde(flatten)]
         common: NewSuspensionCommonFields,
-        lysis_duration_minutes: RangedF32<0, { u32::MAX }>,
+        lysis_duration_minutes: Option<RangedF32<0, { u32::MAX }>>,
     },
 }
 

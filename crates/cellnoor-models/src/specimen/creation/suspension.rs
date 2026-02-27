@@ -12,8 +12,10 @@ pub enum SuspensionThermalPreservation {
 }
 
 impl From<SuspensionThermalPreservation> for ThermalPreservationMethod {
-    fn from(_: SuspensionThermalPreservation) -> Self {
-        Self::ControlledRateFreezing
+    fn from(suspension_thermal_preservation: SuspensionThermalPreservation) -> Self {
+        match suspension_thermal_preservation {
+            SuspensionThermalPreservation::ControlledRateFreezing => Self::ControlledRateFreezing,
+        }
     }
 }
 
@@ -27,10 +29,7 @@ pub enum NewSuspensionSpecimen {
         inner: SpecimenCommonFields,
         fixative: Fixative,
     },
-    Fresh {
-        #[serde(flatten)]
-        inner: SpecimenCommonFields,
-    },
+    Fresh(SpecimenCommonFields),
     ThermallyPreserved {
         #[serde(flatten)]
         inner: SpecimenCommonFields,
@@ -42,7 +41,7 @@ impl NewSuspensionSpecimen {
     pub(super) fn common(&self) -> &SpecimenCommonFields {
         match self {
             Self::Fixed { inner, fixative: _ }
-            | Self::Fresh { inner }
+            | Self::Fresh(inner)
             | Self::ThermallyPreserved {
                 inner,
                 thermal_preservation_method: _,
@@ -53,7 +52,7 @@ impl NewSuspensionSpecimen {
     fn into_common(self) -> SpecimenCommonFields {
         match self {
             Self::Fixed { inner, fixative: _ }
-            | Self::Fresh { inner }
+            | Self::Fresh(inner)
             | Self::ThermallyPreserved {
                 inner,
                 thermal_preservation_method: _,
@@ -64,7 +63,7 @@ impl NewSuspensionSpecimen {
     fn fixative(&self) -> Option<Fixative> {
         match self {
             Self::Fixed { inner: _, fixative } => Some(*fixative),
-            Self::Fresh { inner: _ }
+            Self::Fresh(_)
             | Self::ThermallyPreserved {
                 inner: _,
                 thermal_preservation_method: _,

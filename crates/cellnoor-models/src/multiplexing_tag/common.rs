@@ -20,6 +20,7 @@ pub struct MultiplexingTagFields {
 #[simple_enum]
 pub enum MultiplexingTagType {
     FlexBarcode,
+    FlexOligonucleotideBarcode,
     OnChipMultiplexing,
     #[serde(rename = "TotalSeq-A")]
     #[strum(serialize = "TotalSeq-A")]

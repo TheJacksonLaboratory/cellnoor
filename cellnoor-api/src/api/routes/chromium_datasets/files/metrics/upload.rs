@@ -111,11 +111,12 @@ fn parse_single_row_csv(raw_content: &[u8]) -> Result<HashMap<String, Value>, db
     // would require an extra iteration to transform `Vec<Result<_>>` to
     // `Result<Vec<_>>` before constructing the two-tuple
     for (field_name, field_value) in snake_case_header.into_iter().zip(first_record.iter()) {
+        // Some of the fields of these CSVs have strings instead of numbers. If that's
+        // the case, then we just insert the original string
         parsed_data.insert(
             field_name,
             parse_str_as_number(field_value)
-                .map_err(|e| db::DataError::new_other(&e.to_string()))?
-                .into(),
+                .map_or_else(|_| Value::String(field_value.to_owned()), Value::Number),
         );
     }
 
@@ -176,4 +177,65 @@ fn parse_str_as_number(value: &str) -> Result<Number, <Number as FromStr>::Err> 
     }
 
     Ok(value_as_number)
+}
+
+#[cfg(test)]
+mod tests {
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
+
+    use super::{parse_multi_row_csv, parse_single_row_csv};
+
+    #[rstest]
+    fn cellranger_count() {
+        let raw_content = include_bytes!("test-data/cellranger_count.csv");
+        let parsed_data = parse_single_row_csv(raw_content).unwrap();
+
+        assert_eq!(
+            parsed_data["estimated_number_of_cells"].as_i64().unwrap(),
+            65_558
+        );
+
+        assert!(0.378 - parsed_data["sequencing_saturation"].as_f64().unwrap() < 0.01);
+    }
+
+    #[rstest]
+    fn cellranger_arc_count() {
+        let raw_content = include_bytes!("test-data/cellranger-arc_count.csv");
+        let parsed_data = parse_single_row_csv(raw_content).unwrap();
+
+        assert_eq!(
+            parsed_data["estimated_number_of_cells"].as_i64().unwrap(),
+            11_673
+        );
+
+        assert_eq!(parsed_data["sample_id"].as_str().unwrap(), "Sample0");
+
+        assert_eq!(
+            parsed_data["atac_confidently_mapped_read_pairs"]
+                .as_f64()
+                .unwrap(),
+            0.8937
+        );
+    }
+
+    #[rstest]
+    fn cellranger_multi() {
+        let raw_content = include_bytes!("test-data/cellranger_multi.csv");
+        let parsed_data = parse_multi_row_csv(raw_content).unwrap();
+
+        let row = &parsed_data[0];
+        assert_eq!(row.metric_value.as_i64().unwrap(), 1866);
+
+        let row = &parsed_data[1];
+        assert_eq!(row.metric_value.as_f64().unwrap(), 0.9314);
+
+        let row = &parsed_data[13];
+        assert_eq!(
+            row.simple_fields.metric_name,
+            "Cells detected in this sample"
+        );
+
+        assert_eq!(row.metric_value.as_i64().unwrap(), 1866);
+    }
 }

@@ -1,7 +1,10 @@
 use axum::{Json, http::StatusCode, response::IntoResponse};
 use schemars::JsonSchema;
 
-use crate::db;
+use crate::{
+    api::error::{ApiError, ApiErrorResponse},
+    db,
+};
 
 #[derive(Debug, thiserror::Error, serde::Serialize, JsonSchema)]
 #[serde(rename_all = "snake_case", tag = "type")]
@@ -83,6 +86,10 @@ impl IntoResponse for Error {
             _ => self,
         };
 
-        (StatusCode::from_u16(status_code).unwrap(), Json(err)).into_response()
+        let response = ApiErrorResponse {
+            error: ApiError::Auth(err),
+        };
+
+        (StatusCode::from_u16(status_code).unwrap(), Json(response)).into_response()
     }
 }

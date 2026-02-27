@@ -4,23 +4,23 @@ use serde_json::Value;
 #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
 pub struct SimpleFields {
     #[serde(alias = "Category")]
-    category: String,
+    pub category: String,
     #[serde(alias = "Library Type")]
-    library_type: String,
+    pub library_type: String,
     #[serde(alias = "Grouped By")]
-    grouped_by: String,
+    pub grouped_by: String,
     #[serde(alias = "Group Name")]
-    group_name: String,
+    pub group_name: String,
     #[serde(alias = "Metric Name")]
-    metric_name: String,
+    pub metric_name: String,
 }
 
 #[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize, Eq)]
 #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
 pub struct Row {
     #[serde(flatten)]
-    simple_fields: SimpleFields,
-    metric_value: Value,
+    pub simple_fields: SimpleFields,
+    pub metric_value: Value,
 }
 
 impl Row {

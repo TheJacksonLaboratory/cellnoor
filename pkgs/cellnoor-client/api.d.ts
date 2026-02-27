@@ -35,7 +35,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -67,7 +67,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -109,7 +109,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -155,7 +155,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -199,7 +199,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -239,7 +239,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -281,7 +281,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -327,7 +327,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -365,7 +365,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -397,7 +397,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -439,7 +439,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -485,7 +485,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -522,7 +522,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -559,7 +559,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -599,7 +599,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -645,7 +645,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -689,7 +689,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -721,7 +721,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -763,7 +763,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -807,7 +807,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -847,7 +847,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -891,7 +891,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -935,7 +935,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -983,7 +983,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1030,7 +1030,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1070,7 +1070,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1114,7 +1114,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1146,7 +1146,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1188,7 +1188,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1232,7 +1232,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1272,7 +1272,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1314,7 +1314,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1346,7 +1346,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1388,7 +1388,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1434,7 +1434,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1478,7 +1478,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1518,7 +1518,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1560,7 +1560,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1592,7 +1592,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1634,7 +1634,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1678,7 +1678,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1722,7 +1722,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1766,7 +1766,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1798,7 +1798,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1840,7 +1840,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1884,7 +1884,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1939,7 +1939,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -1981,7 +1981,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -2013,7 +2013,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -2055,7 +2055,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -2099,7 +2099,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -2154,7 +2154,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -2196,7 +2196,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -2228,7 +2228,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -2270,7 +2270,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -2314,7 +2314,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -2358,7 +2358,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiError"];
+                        "application/json": components["schemas"]["ApiErrorResponse"];
                     };
                 };
             };
@@ -2375,7 +2375,9 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        ApiError: components["schemas"]["AuthError"] | components["schemas"]["DatabaseError"];
+        ApiErrorResponse: {
+            error: components["schemas"]["AuthError"] | components["schemas"]["DatabaseError"];
+        };
         AuthError: ({
             /** @constant */
             type: "database";
@@ -2493,6 +2495,8 @@ export interface components {
             project_id: string;
             readable_id: string;
         };
+        /** @enum {string} */
+        CellPelletThermalPreservation: "flash_freezing";
         ChromiumDataset: {
             assay: components["schemas"]["TenxAssay"];
             /** Format: date-time */
@@ -2718,7 +2722,7 @@ export interface components {
             readable_id: string;
             single_index_set_name?: string | null;
             /** Format: int64 */
-            target_reads_per_cell: number;
+            target_reads_per_cell?: number | null;
         };
         LibraryFilter: {
             ids?: string[] | null;
@@ -2806,7 +2810,7 @@ export interface components {
             readable_id: string;
             single_index_set_name?: string | null;
             /** Format: int64 */
-            target_reads_per_cell: number;
+            target_reads_per_cell?: number | null;
         };
         /** @enum {string} */
         LibraryType: "antibody_capture" | "antigen_capture" | "chromatin_accessibility" | "crispr_guide_capture" | "custom" | "gene_expression" | "multiplexing_capture" | "vdj" | "vdj_b" | "vdj_t" | "vdj_t_gd";
@@ -2838,7 +2842,7 @@ export interface components {
             type_: components["schemas"]["MultiplexingTagType"];
         };
         /** @enum {string} */
-        MultiplexingTagType: "flex_barcode" | "on_chip_multiplexing" | "TotalSeq-A" | "TotalSeq-B" | "TotalSeq-C";
+        MultiplexingTagType: "flex_barcode" | "flex_oligonucleotide_barcode" | "on_chip_multiplexing" | "TotalSeq-A" | "TotalSeq-B" | "TotalSeq-C";
         /** @enum {string} */
         Nanogram: "nanogram";
         NewBlock: {
@@ -2916,6 +2920,25 @@ export interface components {
             /** Format: uint8 */
             "volume_\u00B5l": number;
         };
+        NewCellPellet: {
+            additional_data?: unknown;
+            host_species?: components["schemas"]["Species"] | null;
+            name: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            thermal_preservation_method: components["schemas"]["CellPelletThermalPreservation"];
+            tissue: string;
+        };
         NewChromiumDataset: {
             cmdline: components["schemas"]["ChromiumDatasetCmdline"];
             /** Format: date-time */
@@ -2981,7 +3004,7 @@ export interface components {
             readable_id: string;
             single_index_set_name?: string | null;
             /** Format: uint32 */
-            target_reads_per_cell: number;
+            target_reads_per_cell?: number | null;
             /** Format: uint8 */
             "volume_\u00B5l": number;
         };
@@ -3014,48 +3037,11 @@ export interface components {
             type: "block";
         } & components["schemas"]["NewBlock"]) | ({
             /** @constant */
+            type: "cell_pellet";
+        } & components["schemas"]["NewCellPellet"]) | ({
+            /** @constant */
             type: "suspension";
-        } & components["schemas"]["NewSuspensionSpecimen"]) | ({
-            /** @constant */
-            type: "tissue";
-        } & components["schemas"]["NewTissue"]);
-        NewSuspension: {
-            additional_data?: unknown;
-            /** @constant */
-            content: "cells";
-            /** Format: date-time */
-            created_at?: string | null;
-            /** Format: uuid */
-            parent_specimen_id: string;
-            preparer_ids: string[];
-            readable_id: string;
-            /** Format: uint32 */
-            target_cell_recovery?: number | null;
-        } | {
-            additional_data?: unknown;
-            /** @constant */
-            content: "nuclei";
-            /** Format: date-time */
-            created_at?: string | null;
-            /** Format: uint32 */
-            lysis_duration_minutes: number;
-            /** Format: uuid */
-            parent_specimen_id: string;
-            preparer_ids: string[];
-            readable_id: string;
-            /** Format: uint32 */
-            target_cell_recovery?: number | null;
-        };
-        NewSuspensionPool: {
-            additional_data?: unknown;
-            name: string;
-            /** Format: date-time */
-            pooled_at: string;
-            preparer_ids: string[];
-            readable_id: string;
-            suspensions: components["schemas"]["SuspensionTagging"][];
-        };
-        NewSuspensionSpecimen: {
+        } & ({
             additional_data?: unknown;
             fixative: components["schemas"]["Fixative"];
             host_species?: components["schemas"]["Species"] | null;
@@ -3114,6 +3100,45 @@ export interface components {
             submitted_by: string;
             thermal_preservation_method: components["schemas"]["SuspensionThermalPreservation"];
             tissue: string;
+        })) | ({
+            /** @constant */
+            type: "tissue";
+        } & components["schemas"]["NewTissue"]);
+        NewSuspension: {
+            additional_data?: unknown;
+            /** @constant */
+            content: "cells";
+            /** Format: date-time */
+            created_at?: string | null;
+            /** Format: uuid */
+            parent_specimen_id: string;
+            preparer_ids: string[];
+            readable_id: string;
+            /** Format: uint32 */
+            target_cell_recovery?: number | null;
+        } | {
+            additional_data?: unknown;
+            /** @constant */
+            content: "nuclei";
+            /** Format: date-time */
+            created_at?: string | null;
+            /** Format: uint32 */
+            lysis_duration_minutes?: number | null;
+            /** Format: uuid */
+            parent_specimen_id: string;
+            preparer_ids: string[];
+            readable_id: string;
+            /** Format: uint32 */
+            target_cell_recovery?: number | null;
+        };
+        NewSuspensionPool: {
+            additional_data?: unknown;
+            name: string;
+            /** Format: date-time */
+            pooled_at: string;
+            preparer_ids: string[];
+            readable_id: string;
+            suspensions: components["schemas"]["SuspensionTagging"][];
         };
         NewTissue: {
             additional_data?: unknown;
@@ -3533,7 +3558,7 @@ export interface components {
             type_: components["schemas"]["SpecimenType"];
         };
         /** @enum {string} */
-        SpecimenType: "block" | "suspension" | "tissue";
+        SpecimenType: "block" | "cell_pellet" | "suspension" | "tissue";
         Suspension: {
             additional_data?: unknown;
             content: components["schemas"]["SuspensionContent"];
@@ -3787,7 +3812,7 @@ export interface components {
     headers: never;
     pathItems: never;
 }
-export type ApiError = components['schemas']['ApiError'];
+export type ApiErrorResponse = components['schemas']['ApiErrorResponse'];
 export type AuthError = components['schemas']['AuthError'];
 export type BlockEmbeddingMatrix = components['schemas']['BlockEmbeddingMatrix'];
 export type BlockFixative = components['schemas']['BlockFixative'];
@@ -3796,6 +3821,7 @@ export type CdnaFilter = components['schemas']['CdnaFilter'];
 export type CdnaMeasurement = components['schemas']['CdnaMeasurement'];
 export type CdnaOrderBy = components['schemas']['CdnaOrderBy'];
 export type CdnaSummary = components['schemas']['CdnaSummary'];
+export type CellPelletThermalPreservation = components['schemas']['CellPelletThermalPreservation'];
 export type ChromiumDataset = components['schemas']['ChromiumDataset'];
 export type ChromiumDatasetCmdline = components['schemas']['ChromiumDatasetCmdline'];
 export type ChromiumDatasetFilter = components['schemas']['ChromiumDatasetFilter'];
@@ -3835,6 +3861,7 @@ export type MultiplexingTagType = components['schemas']['MultiplexingTagType'];
 export type Nanogram = components['schemas']['Nanogram'];
 export type NewBlock = components['schemas']['NewBlock'];
 export type NewCdna = components['schemas']['NewCdna'];
+export type NewCellPellet = components['schemas']['NewCellPellet'];
 export type NewChromiumDataset = components['schemas']['NewChromiumDataset'];
 export type NewChromiumRun = components['schemas']['NewChromiumRun'];
 export type NewInstitution = components['schemas']['NewInstitution'];
@@ -3845,7 +3872,6 @@ export type NewSequencingRun = components['schemas']['NewSequencingRun'];
 export type NewSpecimen = components['schemas']['NewSpecimen'];
 export type NewSuspension = components['schemas']['NewSuspension'];
 export type NewSuspensionPool = components['schemas']['NewSuspensionPool'];
-export type NewSuspensionSpecimen = components['schemas']['NewSuspensionSpecimen'];
 export type NewTissue = components['schemas']['NewTissue'];
 export type NucleicAcidConcentrationNanogram = components['schemas']['NucleicAcidConcentrationNanogram'];
 export type NucleicAcidConcentrationPicogram = components['schemas']['NucleicAcidConcentrationPicogram'];

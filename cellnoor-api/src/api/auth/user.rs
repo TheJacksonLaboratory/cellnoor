@@ -1,7 +1,4 @@
-use std::{
-    collections::HashSet,
-    sync::{Arc, RwLockReadGuard},
-};
+use std::{collections::HashSet, sync::Arc};
 
 use axum_extra::{
     TypedHeader,
@@ -10,6 +7,7 @@ use axum_extra::{
 use headers::{Authorization, authorization::Bearer};
 use jsonwebtoken::{TokenData, Validation};
 use serde::{Deserialize, de::DeserializeOwned};
+use tokio::sync::MutexGuard;
 use uuid::Uuid;
 
 use crate::{
@@ -142,7 +140,7 @@ fn extract_jwt_from_header_or_cookies<'a>(
 trait FromEncodedJwt: DeserializeOwned {
     fn from_encoded_jwt(
         encoded_jwt: &[u8],
-        decoding_key: RwLockReadGuard<Option<JwtDecodingKey>>,
+        decoding_key: MutexGuard<Option<JwtDecodingKey>>,
         validation: &Validation,
     ) -> Result<Self, super::Error> {
         let TokenData { header: _, claims } = jsonwebtoken::decode(

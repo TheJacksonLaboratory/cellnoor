@@ -379,6 +379,1542 @@
       "type_": "flex_barcode"
     },
     {
+      "tag_id": "A-A01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-B01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-C01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-D01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-E01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-F01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-G01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-H01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-A02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-B02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-C02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-D02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-E02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-F02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-G02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-H02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-A03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-B03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-C03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-D03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-E03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-F03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-G03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-H03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-A04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-B04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-C04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-D04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-E04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-F04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-G04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-H04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-A05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-B05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-C05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-D05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-E05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-F05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-G05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-H05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-A06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-B06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-C06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-D06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-E06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-F06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-G06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-H06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-A07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-B07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-C07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-D07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-E07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-F07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-G07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-H07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-A08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-B08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-C08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-D08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-E08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-F08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-G08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-H08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-A09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-B09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-C09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-D09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-E09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-F09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-G09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-H09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-A10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-B10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-C10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-D10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-E10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-F10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-G10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-H10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-A11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-B11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-C11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-D11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-E11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-F11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-G11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-H11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-A12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-B12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-C12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-D12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-E12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-F12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-G12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "A-H12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-A01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-B01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-C01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-D01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-E01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-F01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-G01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-H01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-A02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-B02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-C02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-D02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-E02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-F02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-G02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-H02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-A03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-B03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-C03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-D03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-E03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-F03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-G03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-H03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-A04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-B04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-C04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-D04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-E04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-F04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-G04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-H04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-A05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-B05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-C05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-D05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-E05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-F05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-G05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-H05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-A06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-B06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-C06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-D06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-E06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-F06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-G06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-H06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-A07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-B07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-C07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-D07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-E07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-F07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-G07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-H07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-A08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-B08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-C08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-D08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-E08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-F08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-G08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-H08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-A09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-B09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-C09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-D09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-E09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-F09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-G09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-H09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-A10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-B10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-C10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-D10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-E10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-F10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-G10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-H10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-A11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-B11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-C11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-D11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-E11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-F11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-G11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-H11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-A12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-B12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-C12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-D12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-E12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-F12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-G12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "B-H12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-A01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-B01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-C01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-D01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-E01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-F01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-G01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-H01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-A02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-B02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-C02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-D02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-E02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-F02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-G02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-H02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-A03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-B03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-C03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-D03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-E03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-F03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-G03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-H03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-A04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-B04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-C04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-D04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-E04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-F04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-G04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-H04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-A05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-B05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-C05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-D05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-E05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-F05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-G05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-H05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-A06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-B06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-C06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-D06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-E06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-F06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-G06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-H06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-A07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-B07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-C07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-D07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-E07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-F07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-G07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-H07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-A08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-B08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-C08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-D08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-E08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-F08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-G08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-H08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-A09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-B09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-C09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-D09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-E09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-F09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-G09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-H09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-A10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-B10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-C10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-D10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-E10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-F10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-G10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-H10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-A11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-B11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-C11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-D11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-E11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-F11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-G11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-H11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-A12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-B12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-C12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-D12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-E12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-F12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-G12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "C-H12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-A01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-B01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-C01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-D01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-E01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-F01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-G01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-H01",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-A02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-B02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-C02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-D02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-E02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-F02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-G02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-H02",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-A03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-B03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-C03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-D03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-E03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-F03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-G03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-H03",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-A04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-B04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-C04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-D04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-E04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-F04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-G04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-H04",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-A05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-B05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-C05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-D05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-E05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-F05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-G05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-H05",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-A06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-B06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-C06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-D06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-E06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-F06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-G06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-H06",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-A07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-B07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-C07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-D07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-E07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-F07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-G07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-H07",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-A08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-B08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-C08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-D08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-E08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-F08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-G08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-H08",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-A09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-B09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-C09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-D09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-E09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-F09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-G09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-H09",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-A10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-B10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-C10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-D10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-E10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-F10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-G10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-H10",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-A11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-B11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-C11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-D11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-E11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-F11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-G11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-H11",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-A12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-B12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-C12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-D12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-E12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-F12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-G12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
+      "tag_id": "D-H12",
+      "type_": "flex_oligonucleotide_barcode"
+    },
+    {
       "tag_id": "A0001",
       "type_": "TotalSeq-A"
     },

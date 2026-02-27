@@ -175,7 +175,7 @@ diesel::table! {
         single_index_set_name -> Nullable<Text>,
         dual_index_set_name -> Nullable<Text>,
         number_of_sample_index_pcr_cycles -> Int4,
-        target_reads_per_cell -> Int8,
+        target_reads_per_cell -> Nullable<Int8>,
         prepared_at -> Timestamptz,
         additional_data -> Nullable<Jsonb>,
     }

@@ -4,6 +4,8 @@ use jiff::Timestamp;
 use schemars::JsonSchema;
 use serde::Serialize;
 
+use crate::api::error::{ApiError, ApiErrorResponse};
+
 #[derive(Debug, thiserror::Error, Serialize, JsonSchema, OperationIo)]
 #[serde(rename_all = "snake_case", tag = "type")]
 pub enum DataError {
@@ -184,6 +186,10 @@ impl IntoResponse for Error {
             _ => self,
         };
 
-        (StatusCode::from_u16(status_code).unwrap(), Json(err)).into_response()
+        let response = ApiErrorResponse {
+            error: ApiError::Database(err),
+        };
+
+        (StatusCode::from_u16(status_code).unwrap(), Json(response)).into_response()
     }
 }

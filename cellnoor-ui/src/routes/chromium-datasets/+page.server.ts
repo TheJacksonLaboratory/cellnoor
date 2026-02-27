@@ -1,6 +1,6 @@
 import { getApiClient } from "$lib/server/cellnoor-client";
 import type {
-  ApiError,
+  ApiErrorResponse,
   ChromiumDatasetSummary,
   Project,
   TenxAssay,
@@ -14,7 +14,7 @@ type ReturnType =
     assays: TenxAssay[];
     projects: Project[];
   }
-  | { error: ApiError };
+  | { error: ApiErrorResponse };
 
 export async function load({ url }) {
   return await loadData(url.searchParams.get("q") || `{"limit": 50}`);
@@ -45,7 +45,9 @@ async function loadData(q?: string): Promise<ReturnType> {
   if (!chromiumDatasets.data || !assays.data || !projects.data) {
     return {
       error: chromiumDatasets.error ||
-        assays.error || { type: "other", message: "something went wrong :(" },
+        assays.error || {
+        error: { type: "other", message: "something went wrong :(" },
+      },
     };
   }
 

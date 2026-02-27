@@ -70,11 +70,7 @@ pub async fn insert_suspension(
         NewSuspension::Nuclei {
             common,
             lysis_duration_minutes,
-        } => (
-            common,
-            SuspensionContent::Nuclei,
-            Some(lysis_duration_minutes),
-        ),
+        } => (common, SuspensionContent::Nuclei, lysis_duration_minutes),
     };
 
     Ok(diesel::insert_into(suspensions::table)
