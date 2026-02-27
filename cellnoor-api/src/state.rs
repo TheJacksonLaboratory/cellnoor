@@ -1,4 +1,4 @@
-use std::sync::{Arc, RwLock, RwLockReadGuard};
+use std::sync::Arc;
 
 use anyhow::{Context, anyhow};
 use cellnoor_schema::json_web_keys;
@@ -11,6 +11,7 @@ use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
 use jiff_diesel::ToDiesel;
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
 use secrecy::{ExposeSecret, SecretString};
+use tokio::sync::{Mutex, MutexGuard};
 
 use crate::{
     config::{AppMode, Config},
@@ -27,6 +28,7 @@ pub struct JwtDecodingKey {
     expires_at: jiff::Timestamp,
     public_key: DecodingKey,
 }
+
 impl JwtDecodingKey {
     fn is_expired(&self) -> bool {
         self.expires_at < jiff::Timestamp::now()
@@ -40,7 +42,7 @@ impl JwtDecodingKey {
 #[derive(Clone)]
 pub struct ProductionState {
     db_pool: DbConnectionPool,
-    jwt_decoding_key: Arc<RwLock<Option<JwtDecodingKey>>>,
+    jwt_decoding_key: Arc<Mutex<Option<JwtDecodingKey>>>,
     jwt_validation: Arc<Validation>,
 }
 
@@ -51,6 +53,7 @@ impl ProductionState {
         let (expires_at, public_key): (jiff_diesel::Timestamp, String) = json_web_keys::table
             .select((json_web_keys::expires_at, json_web_keys::public_key))
             .filter(json_web_keys::expires_at.gt(jiff::Timestamp::now().to_diesel()))
+            .order_by(json_web_keys::expires_at.desc())
             .first(&mut db_conn)
             .await?;
 
@@ -62,32 +65,22 @@ impl ProductionState {
 
     pub async fn jwt_decoding_key(
         &self,
-    ) -> Result<RwLockReadGuard<'_, Option<JwtDecodingKey>>, db::Error> {
+    ) -> Result<MutexGuard<'_, Option<JwtDecodingKey>>, db::Error> {
         let Self {
             jwt_decoding_key, ..
         } = self;
 
-        let need_new_jwk = {
-            let maybe_jwk = jwt_decoding_key
-                .read()
-                .expect("should be able to acquire read-lock on JWK");
+        let mut maybe_jwk = jwt_decoding_key.lock().await;
 
-            maybe_jwk.as_ref().is_none_or(JwtDecodingKey::is_expired)
-        };
-
-        if need_new_jwk {
-            let new_jwk = self.new_jwk().await?;
-            let mut writelock = jwt_decoding_key
-                .write()
-                .expect("should be able to acquire write-lock on JWK");
-
-            *writelock = Some(new_jwk);
+        if maybe_jwk.as_ref().is_some_and(|key| !key.is_expired()) {
+            return Ok(maybe_jwk);
         }
 
-        Ok(self
-            .jwt_decoding_key
-            .read()
-            .expect("should be able to acquire read-lock on JWK"))
+        let new_jwk = self.new_jwk().await?;
+
+        *maybe_jwk = Some(new_jwk);
+
+        Ok(maybe_jwk)
     }
 
     pub fn jwt_validation(&self) -> &Validation {
@@ -193,7 +186,7 @@ impl AppState {
 
                 Self::Production(ProductionState {
                     db_pool,
-                    jwt_decoding_key: Arc::new(RwLock::new(None)),
+                    jwt_decoding_key: Arc::new(Mutex::new(None)),
                     jwt_validation: Arc::new(jwt_validation),
                 })
             }
