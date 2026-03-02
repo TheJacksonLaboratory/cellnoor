@@ -8,7 +8,8 @@ import {
   getUserRoles,
   upsertPersonIntoDb,
 } from "$lib/server/auth/db";
-import { createAuthMiddleware, jwt } from "better-auth/plugins";
+import { jwt } from "better-auth/plugins";
+import { createAuthMiddleware } from "better-auth/api";
 import { API_TOKEN_COOKIE_NAME } from "./server/cellnoor-client";
 
 export const auth = betterAuth({
