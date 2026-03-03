@@ -18,9 +18,13 @@ jobs:
         working-directory: cellnoor-ui
         run: bun install
 
-      - name: Lint and check format
+      - name: Check svelte code
         working-directory: cellnoor-ui
         run: bun run --bun check
+
+      - name: Lint and format
+        working-directory: cellnoor-ui
+        run: bun run --bun lint
 
       - name: Test
         working-directory: cellnoor-ui
