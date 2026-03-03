@@ -1,19 +1,14 @@
 import { getApiClient } from "$lib/server/cellnoor-client";
-import type {
-  ApiErrorResponse,
-  ChromiumDatasetSummary,
-  Project,
-  TenxAssay,
-} from "cellnoor-client";
+import type { ApiErrorResponse, ChromiumDatasetSummary, Project, TenxAssay } from "cellnoor-client";
 
 type ReturnType =
   | {
-    chromiumDatasets: (ChromiumDatasetSummary & {
-      files: Map<string, string[]>;
-    })[];
-    assays: TenxAssay[];
-    projects: Project[];
-  }
+      chromiumDatasets: (ChromiumDatasetSummary & {
+        files: Map<string, string[]>;
+      })[];
+      assays: TenxAssay[];
+      projects: Project[];
+    }
   | { error: ApiErrorResponse };
 
 export async function load({ url }) {
@@ -46,21 +41,18 @@ async function loadData(q?: string): Promise<ReturnType> {
     return {
       error: chromiumDatasets.error ||
         assays.error || {
-        error: { type: "other", message: "something went wrong :(" },
-      },
+          error: { type: "other", message: "something went wrong :(" },
+        },
     };
   }
 
   for (const ds of chromiumDatasets.data) {
-    // @ts-ignore
-    ds.files = createFileTree(
-      ds.links.web_summaries as string[],
-      ds.links.metrics as string[],
-    );
+    // @ts-expect-error I hate this language
+    ds.files = createFileTree(ds.links.web_summaries as string[], ds.links.metrics as string[]);
   }
 
   return {
-    // @ts-ignore
+    // @ts-expect-error I hate this language
     chromiumDatasets: chromiumDatasets.data,
     assays: assays.data,
     projects: projects.data,

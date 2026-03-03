@@ -21,15 +21,11 @@ export async function upsertPersonIntoDb(
     // Anyone else with this email should have it removed
     await tx`update people set email = ${null}, email_verified = ${false} where email = ${newPerson.email}`;
 
-    const result = await tx`insert into people ${
-      tx(
-        newPerson,
-      )
-    } on conflict (microsoft_entra_oid) do update set ${
-      tx(
-        newPerson,
-      )
-    } returning id, is_admin, is_biology_staff, is_computational_staff`;
+    const result = await tx`insert into people ${tx(
+      newPerson,
+    )} on conflict (microsoft_entra_oid) do update set ${tx(
+      newPerson,
+    )} returning id, is_admin, is_biology_staff, is_computational_staff`;
 
     // Note that we don't need the user's name and email because better-auth already has that
     return result[0];
@@ -76,10 +72,9 @@ export async function deleteApiTokenFromDb(
 
 export async function getUserProjects(userId: string, dbClient: Bun.SQL) {
   const projects =
-    await dbClient`select project_id from project_people where person_id = ${userId}`
-      .then(
-        (rows: { project_id: string }[]) => rows.map((r) => r.project_id),
-      );
+    await dbClient`select project_id from project_people where person_id = ${userId}`.then(
+      (rows: { project_id: string }[]) => rows.map((r) => r.project_id),
+    );
 
   return {
     projects,

@@ -1,4 +1,4 @@
-import type { SpecimenFilter, TenxAssayFilter } from "cellnoor-client";
+import type { LibraryType, SpecimenFilter, TenxAssayFilter } from "cellnoor-client";
 
 const whitespaceRegex = /\s|_|-/g;
 
@@ -13,9 +13,24 @@ function subWhitespaceWithPercent(s: unknown) {
 const DO_NOT_REPLACE = [
   "species",
   "host_species",
-  "library_type",
+  "library_types",
   "type",
   "project_ids",
+  "sample_multiplexing",
+];
+
+const libraryTypes: LibraryType[] = [
+  "antibody_capture",
+  "antigen_capture",
+  "chromatin_accessibility",
+  "crispr_guide_capture",
+  "custom",
+  "gene_expression",
+  "multiplexing_capture",
+  "vdj",
+  "vdj_b",
+  "vdj_t",
+  "vdj_t_gd",
 ];
 
 function jsonReplacer(key: string | number, value: unknown) {
@@ -27,7 +42,10 @@ function jsonReplacer(key: string | number, value: unknown) {
     return undefined;
   }
 
+  // This is a bit of a hack because the backend expects a very rigid set of enumerated items for some keys
   if (typeof key === "string" && DO_NOT_REPLACE.includes(key)) {
+    return value;
+  } else if (libraryTypes.includes(value[0])) {
     return value;
   }
 
@@ -41,16 +59,12 @@ type PrimitiveFields<T> = {
 };
 
 type ObjectFields<T> = {
-  [K in keyof T as NonNullable<T[K]> extends object ? K : never]-?: Filter<
-    NonNullable<T[K]>
-  >;
+  [K in keyof T as NonNullable<T[K]> extends object ? K : never]-?: Filter<NonNullable<T[K]>>;
 };
 
 type ArrayFields<T> = {
-  [
-    K in keyof T as NonNullable<T[K]> extends (infer _)[] ? K
-      : never
-  ]-?: NonNullable<T[K]>;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  [K in keyof T as NonNullable<T[K]> extends (infer _)[] ? K : never]-?: NonNullable<T[K]>;
 };
 
 type Filter<T> = PrimitiveFields<T> & ObjectFields<T> & ArrayFields<T>;
@@ -70,12 +84,13 @@ export const emptyAssayFilter: Filter<TenxAssayFilter> = {
   ids: [],
   names: [],
   library_types: [],
+  library_types_flat: [],
   chromium_chips: [],
   chemistry_versions: [],
   sample_multiplexing: [],
 };
 
-// @ts-expect-error
+// @ts-expect-error I don't want the `additional_data`
 export const emptySpecimenFilter: Filter<SpecimenFilter> = {
   ids: [],
   names: [],

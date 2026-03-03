@@ -3,10 +3,7 @@
   import "../app.css";
   import { authClient } from "$lib/auth-client";
   import { goto } from "$app/navigation";
-  import type {
-    ChromiumDatasetFilter,
-    ChromiumDatasetOrderBy,
-  } from "cellnoor-client";
+  import type { ChromiumDatasetFilter, ChromiumDatasetOrderBy } from "cellnoor-client";
   import {
     emptyAssayFilter,
     emptySpecimenFilter,
@@ -17,20 +14,19 @@
   const { userName }: { userName: string } = $props();
   const links = [[resolve("/chromium-datasets"), "Chromium Datasets"]];
 
-  const query: Query<ChromiumDatasetFilter, ChromiumDatasetOrderBy> =
-    $state({
-      filter: {
-        ids: [],
-        names: [],
-        project_ids: [],
-        assay: emptyAssayFilter,
-        specimen: {
-          ...emptySpecimenFilter,
-          names: [""],
-        },
+  const query: Query<ChromiumDatasetFilter, ChromiumDatasetOrderBy> = $state({
+    filter: {
+      ids: [],
+      names: [],
+      project_ids: [],
+      assay: emptyAssayFilter,
+      specimen: {
+        ...emptySpecimenFilter,
+        names: [""],
       },
-      limit: 50,
-    });
+    },
+    limit: 50,
+  });
   let stringifiedQuery = $derived(toQueryString(query));
 </script>
 
@@ -40,11 +36,7 @@
       class="flex flex-row shrink items-center text-2xl font-comfortaa font-bold"
       href={resolve("/")}
     >
-      <img
-        class="h-12 w-25 object-cover"
-        src="/jax-logo.png"
-        alt="The Jackson Laboratory Logo"
-      />
+      <img class="h-12 w-25 object-cover" src="/jax-logo.png" alt="The Jackson Laboratory Logo" />
       cellnoor
     </a>
   </div>
@@ -75,8 +67,9 @@
       </form>
     </label>
     <ul class="menu menu-horizontal">
-      {#each links as [link, buttonText]}
+      {#each links as [link, buttonText] (link)}
         <li>
+          <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
           <a class="font-semibold" href={link}>
             {buttonText}
           </a>

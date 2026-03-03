@@ -64,9 +64,7 @@ export async function readSecrets() {
     dbName: await readSecret("db_name"),
     authSecret: await readSecret("auth_secret"),
     microsoftEntraClientId: await readSecret("microsoft_entra_client_id"),
-    microsoftEntraClientSecret: await readSecret(
-      "microsoft_entra_client_secret",
-    ),
+    microsoftEntraClientSecret: await readSecret("microsoft_entra_client_secret"),
     microsoftEntraTenant: await readSecret("microsoft_entra_tenant"),
   };
 
@@ -91,9 +89,7 @@ export async function readConfig() {
     return appConfig;
   }
 
-  const [publicUrl, apiUrl] = await Promise.all(
-    ["public_url", "api_url"].map(readRequiredEnvVar),
-  );
+  const [publicUrl, apiUrl] = await Promise.all(["public_url", "api_url"].map(readRequiredEnvVar));
 
   const [jwtAudience, jwtIssuer] = await Promise.all(
     ["jwt_audience", "jwt_issuer"].map(readRequiredEnvVar),

@@ -13,12 +13,11 @@ export const libraryTypeMap: Map<LibraryType, string> = new Map([
   ["vdj_t_gd", "VDJ-T-GD"],
 ]);
 
-export const multiplexingTypeMap: Map<SampleMultiplexing | undefined, string> =
-  new Map([
-    ["cellplex", "CellPlex"],
-    ["flex_barcode", "Flex Barcode"],
-    ["hashtag", "Hashtagging"],
-    ["on_chip_multiplexing", "On Chip Multiplexing"],
-    ["singleplex", ""],
-    [undefined, ""],
-  ]);
+export const multiplexingTypeMap: Map<SampleMultiplexing | undefined, string> = new Map([
+  ["cellplex", "CellPlex"],
+  ["flex_barcode", "Flex Barcode"],
+  ["hashtag", "Hashtagging"],
+  ["on_chip_multiplexing", "On Chip Multiplexing"],
+  ["singleplex", ""],
+  [undefined, ""],
+]);

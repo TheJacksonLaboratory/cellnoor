@@ -54,6 +54,7 @@ where
             ids,
             names,
             library_types: library_types_query,
+            library_types_flat,
             sample_multiplexing: sample_multiplexing_query,
             chemistry_versions,
             chromium_chips,
@@ -81,6 +82,11 @@ where
             }
 
             filter = filter.and_condition(condition);
+        }
+
+        if let Some(library_types_flat) = library_types_flat {
+            filter =
+                filter.and_condition(library_types.assume_not_null().contains(library_types_flat));
         }
 
         if let Some(sample_multiplexing_query) = sample_multiplexing_query {

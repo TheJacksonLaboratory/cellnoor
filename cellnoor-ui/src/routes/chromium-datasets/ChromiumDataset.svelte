@@ -1,3 +1,4 @@
+<!-- I cannot believe how shitty this is -->
 <script lang="ts">
   import { DATE_FORMATTER } from "$lib/date";
   import type { ChromiumDatasetSummary } from "cellnoor-client";
@@ -10,19 +11,13 @@
       files: Map<string, string[]>;
     };
   } = $props();
-  const { links, name, assay, delivered_at, files } = $derived(
-    chromiumDataset,
-  );
+  const { links, name, assay, delivered_at, files } = $derived(chromiumDataset);
 </script>
 
-<div
-  class="flex flex-row p-4 mb-4 border border-neutral rounded-box place-content-between"
->
+<div class="flex flex-row p-4 mb-4 border border-neutral rounded-box place-content-between">
   <div class="flex flex-col gap-1">
-    <a
-      class="link link-primary link-hover text-xl font-semibold max-w-fit"
-      href={links.self as string}
-    >{name}</a>
+    <!-- prettier-ignore -->
+    <a class="link link-primary link-hover text-xl font-semibold max-w-fit" href={links.self as string}>{name}</a><!-- eslint-disable-line svelte/no-navigation-without-resolve -->
     <p>
       {assay.name}
       <span class="font-extralight">({assay.chemistry_version})</span>
@@ -30,12 +25,10 @@
     {#if assay.library_types}
       <LibraryTypeBadges libraryTypes={assay.library_types} />
     {/if}
-    <span class="text-sm mt-2">Delivered on {
-        DATE_FORMATTER.format(new Date(delivered_at))
-      }</span>
+    <span class="text-sm mt-2">Delivered on {DATE_FORMATTER.format(new Date(delivered_at))}</span>
   </div>
   <div class="menu flex-row flex-wrap gap-2">
-    {#each files.entries() as [directory, links]}
+    {#each files.entries() as [directory, links] (`${directory}/${links}`)}
       <li>
         <details class="dropdown">
           <summary>
@@ -58,8 +51,9 @@
             </div>
           </summary>
           <ul>
-            {#each links as link}
+            {#each links as link (link)}
               <li>
+                <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
                 <a target="_blank" href={link}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

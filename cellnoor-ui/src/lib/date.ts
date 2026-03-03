@@ -1,9 +1,9 @@
 const dateOptions = { day: "2-digit", month: "long", year: "numeric" };
 
-// @ts-ignore
+// @ts-expect-error I hate this language
 export const DATE_FORMATTER = Intl.DateTimeFormat("en-GB", dateOptions);
 
-// @ts-ignore
+// @ts-expect-error I hate this language
 export const DATETIME_FORMATTER = Intl.DateTimeFormat("en-GB", {
   ...dateOptions,
   hour: "numeric",

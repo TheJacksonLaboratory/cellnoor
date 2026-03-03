@@ -3,15 +3,9 @@
 </script>
 
 <div class="flex flex-col place-items-center place-content-center h-screen">
-  <div
-    class="flex flex-col place-items-center place-content-between border rounded-box h-1/6 p-4"
-  >
+  <div class="flex flex-col place-items-center place-content-between border rounded-box h-1/6 p-4">
     <div class="flex flex-row items-center">
-      <img
-        class="h-12 w-25 object-cover"
-        src="/jax-logo.png"
-        alt="The Jackson Laboratory Logo"
-      />
+      <img class="h-12 w-25 object-cover" src="/jax-logo.png" alt="The Jackson Laboratory Logo" />
       <h1 class="font-comfortaa text-6xl">cellnoor</h1>
     </div>
     <button

@@ -12,6 +12,7 @@ pub struct TenxAssayFilter {
     pub ids: Option<Vec<Uuid>>,
     pub names: Option<Vec<String>>,
     pub library_types: Option<Vec<Vec<LibraryType>>>,
+    pub library_types_flat: Option<Vec<LibraryType>>,
     pub sample_multiplexing: Option<Vec<SampleMultiplexing>>,
     pub chemistry_versions: Option<Vec<String>>,
     pub chromium_chips: Option<Vec<String>>,
