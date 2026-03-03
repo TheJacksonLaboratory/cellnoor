@@ -5,7 +5,7 @@ import { getRequestEvent } from "$app/server";
 import { type CellnoorClient, createCellnoorClient } from "cellnoor-client";
 import type { Middleware } from "openapi-fetch";
 
-let apiClient: CellnoorClient | null = null;
+const apiClient: CellnoorClient | null = null;
 
 export async function getApiClient() {
   if (apiClient !== null) {
@@ -40,7 +40,7 @@ const middleware: Middleware = {
 };
 
 export async function reauthenticate() {
-  let apiToken = await getApiTokenFromCookies();
+  const apiToken = await getApiTokenFromCookies();
 
   if (!apiToken) {
     await setNewApiToken();

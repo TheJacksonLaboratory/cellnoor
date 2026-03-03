@@ -29,7 +29,8 @@
     "eslint-plugin-svelte": "catalog:",
     "prettier": "catalog:",
     "prettier-plugin-svelte": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript-eslint": "catalog:",
+    "globals": "catalog:"
   },
   "dependencies": {
     "@fontsource-variable/comfortaa": "catalog:",

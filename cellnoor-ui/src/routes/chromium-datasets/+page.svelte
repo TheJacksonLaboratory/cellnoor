@@ -78,7 +78,7 @@
     <label for="filter-drawer" class="btn mx-2 drawer-button lg:hidden"> Filter and sort </label>
     {#if chromiumDatasets && chromiumDatasets.length != 0}
       <p class="mb-2 text-lg">{chromiumDatasets.length} results</p>
-      {#each chromiumDatasets as cd}
+      {#each chromiumDatasets as cd (cd.id)}
         <ChromiumDataset chromiumDataset={cd} />
       {/each}
     {:else if error}

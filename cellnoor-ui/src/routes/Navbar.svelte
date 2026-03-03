@@ -67,8 +67,9 @@
       </form>
     </label>
     <ul class="menu menu-horizontal">
-      {#each links as [link, buttonText]}
+      {#each links as [link, buttonText] (link)}
         <li>
+          <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
           <a class="font-semibold" href={link}>
             {buttonText}
           </a>

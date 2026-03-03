@@ -28,7 +28,8 @@
       "eslint-plugin-svelte": "^3.14.0",
       "prettier": "^3.8.1",
       "prettier-plugin-svelte": "^3.5.0",
-      "typescript-eslint": "^8.56.1"
+      "typescript-eslint": "^8.56.1",
+      "globals": "17.4.0"
     }
   }
 }

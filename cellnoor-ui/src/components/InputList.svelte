@@ -1,6 +1,7 @@
 <script lang="ts">
   import { tick } from "svelte";
   import Badge from "./Badge.svelte";
+  import { SvelteSet } from "svelte/reactivity";
 
   let {
     parentForm,
@@ -40,7 +41,7 @@
   }
 
   function toSorted(choices: { label: string; value: string }[]) {
-    const seen = new Set();
+    const seen = new SvelteSet();
     const unique: { label: string; value: string }[] = [];
 
     for (const choice of choices) {
@@ -70,7 +71,7 @@
     class="input join-item grow"
   />
   <datalist id={`${fieldName}-options`}>
-    {#each toSorted(choices) as { label, value }}
+    {#each toSorted(choices) as { label, value } (`${label}${value}`)}
       <option {value}>{label}</option>
     {/each}
   </datalist>
@@ -85,6 +86,7 @@
   </button>
 </div>
 <div class="flex flex-row flex-wrap gap-1">
+  <!-- eslint-disable-next-line svelte/require-each-key -->
   {#each badgesToDisplay as item, i}
     <Badge badgeText={item}>
       <button

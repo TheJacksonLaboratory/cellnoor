@@ -47,12 +47,12 @@ async function loadData(q?: string): Promise<ReturnType> {
   }
 
   for (const ds of chromiumDatasets.data) {
-    // @ts-ignore
+    // @ts-expect-error I hate this language
     ds.files = createFileTree(ds.links.web_summaries as string[], ds.links.metrics as string[]);
   }
 
   return {
-    // @ts-ignore
+    // @ts-expect-error I hate this language
     chromiumDatasets: chromiumDatasets.data,
     assays: assays.data,
     projects: projects.data,

@@ -11,7 +11,7 @@
 
 <div class="flex flex-row flex-wrap gap-1">
   {#if libraryTypes !== undefined}
-    {#each libraryTypes.filter((libType) => libType !== null) as libraryType}
+    {#each libraryTypes.filter((libType) => libType !== null) as libraryType (libraryType)}
       <span class="badge badge-secondary font-bold badge-sm h-auto"
         >{libraryTypeMap.get(libraryType)}</span
       >

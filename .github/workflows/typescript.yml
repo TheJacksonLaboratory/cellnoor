@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - cellnoor-ui/**
+      - pkgs/*
 
 jobs:
   lint-format-and-test:

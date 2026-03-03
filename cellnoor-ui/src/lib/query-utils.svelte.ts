@@ -63,6 +63,7 @@ type ObjectFields<T> = {
 };
 
 type ArrayFields<T> = {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   [K in keyof T as NonNullable<T[K]> extends (infer _)[] ? K : never]-?: NonNullable<T[K]>;
 };
 
@@ -89,7 +90,7 @@ export const emptyAssayFilter: Filter<TenxAssayFilter> = {
   sample_multiplexing: [],
 };
 
-// @ts-expect-error
+// @ts-expect-error I don't want the `additional_data`
 export const emptySpecimenFilter: Filter<SpecimenFilter> = {
   ids: [],
   names: [],

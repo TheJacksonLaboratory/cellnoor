@@ -43,7 +43,7 @@
             </tr>
           </thead>
           <tbody>
-            {#each apiTokens as { jti, name, description, iat, exp }}
+            {#each apiTokens as { jti, name, description, iat, exp } (jti)}
               <tr>
                 <td>
                   {name}
