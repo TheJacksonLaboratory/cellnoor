@@ -16,10 +16,7 @@ const config: Config = {
         "base-uri": ["self"],
         "default-src": ["self"],
         "img-src": ["self", "data:"],
-        "style-src": [
-          "self",
-          "unsafe-inline",
-        ],
+        "style-src": ["self", "unsafe-inline"],
         "frame-ancestors": ["none"],
         "form-action": ["self"],
       },

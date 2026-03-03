@@ -3,11 +3,7 @@ import { sveltekitCookies } from "better-auth/svelte-kit";
 import { getRequestEvent } from "$app/server";
 import { readConfig, readSecrets } from "$lib/server/config";
 import { getDbClient } from "$lib/server/db-client";
-import {
-  getUserProjects,
-  getUserRoles,
-  upsertPersonIntoDb,
-} from "$lib/server/auth/db";
+import { getUserProjects, getUserRoles, upsertPersonIntoDb } from "$lib/server/auth/db";
 import { jwt } from "better-auth/plugins";
 import { createAuthMiddleware } from "better-auth/api";
 import { API_TOKEN_COOKIE_NAME } from "./server/cellnoor-client";
@@ -31,15 +27,11 @@ export const auth = betterAuth({
   },
   socialProviders: {
     microsoft: {
-      clientId: await readSecrets().then(
-        ({ microsoftEntraClientId }) => microsoftEntraClientId,
-      ),
+      clientId: await readSecrets().then(({ microsoftEntraClientId }) => microsoftEntraClientId),
       clientSecret: await readSecrets().then(
         ({ microsoftEntraClientSecret }) => microsoftEntraClientSecret,
       ),
-      tenantId: await readSecrets().then(
-        ({ microsoftEntraTenant }) => microsoftEntraTenant,
-      ),
+      tenantId: await readSecrets().then(({ microsoftEntraTenant }) => microsoftEntraTenant),
       mapProfileToUser: async (profile) => {
         // It's useful to have the user's roles in the JWT assigned by better-auth in order to display certain UI
         // elements according to the user's roles. However, it's not great that this function only runs on a fresh
@@ -47,8 +39,10 @@ export const auth = betterAuth({
         // to see changes reflected in the UI. However, in practice, I don't think this will happen often enough that
         // it's a problem.
         const dbClient = await getDbClient();
-        const { id, is_admin, is_biology_staff, is_computational_staff } =
-          await upsertPersonIntoDb(profile, dbClient);
+        const { id, is_admin, is_biology_staff, is_computational_staff } = await upsertPersonIntoDb(
+          profile,
+          dbClient,
+        );
 
         return {
           id,
@@ -79,11 +73,7 @@ export const auth = betterAuth({
             public_key: webKey.publicKey,
             private_key: webKey.privateKey,
           };
-          const result = await dbClient`insert into json_web_keys ${
-            dbClient(
-              data,
-            )
-          } returning id`;
+          const result = await dbClient`insert into json_web_keys ${dbClient(data)} returning id`;
           const id: string = result[0].id;
 
           return { id, ...webKey };
@@ -98,17 +88,15 @@ export const auth = betterAuth({
             private_key: string;
           }[] = await dbClient`select * from json_web_keys`;
 
-          return results.map(
-            ({ id, created_at, expires_at, public_key, private_key }) => {
-              return {
-                id,
-                createdAt: created_at,
-                expiresAt: expires_at,
-                publicKey: public_key,
-                privateKey: private_key,
-              };
-            },
-          );
+          return results.map(({ id, created_at, expires_at, public_key, private_key }) => {
+            return {
+              id,
+              createdAt: created_at,
+              expiresAt: expires_at,
+              publicKey: public_key,
+              privateKey: private_key,
+            };
+          });
         },
       },
       jwks: {
@@ -125,17 +113,18 @@ export const auth = betterAuth({
         async definePayload({ user: { user_id } }) {
           const dbClient = await getDbClient();
 
-          const { is_admin, is_biology_staff, is_computational_staff } =
-            await getUserRoles(user_id, dbClient);
+          const { is_admin, is_biology_staff, is_computational_staff } = await getUserRoles(
+            user_id,
+            dbClient,
+          );
 
-          const isStaff = is_admin || is_biology_staff ||
-            is_computational_staff;
+          const isStaff = is_admin || is_biology_staff || is_computational_staff;
 
           const projects = isStaff
             ? { quantity: "all" }
             : await getUserProjects(user_id, dbClient).then(({ projects }) => {
-              return { quantity: "some", project_ids: projects };
-            });
+                return { quantity: "some", project_ids: projects };
+              });
 
           return {
             jti: Bun.randomUUIDv7(),

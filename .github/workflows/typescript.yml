@@ -5,7 +5,7 @@ on:
       - cellnoor-ui/**
 
 jobs:
-  lint-and-test:
+  lint-format-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
@@ -18,22 +18,10 @@ jobs:
         working-directory: cellnoor-ui
         run: bun install
 
-      - name: Lint
+      - name: Lint and check format
         working-directory: cellnoor-ui
         run: bun run --bun check
 
       - name: Test
         working-directory: cellnoor-ui
         run: bun test
-
-  format:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
-
-      - name: Install Deno
-        uses: denoland/setup-deno@v2
-
-      - name: Format
-        run: deno fmt --check --unstable-component cellnoor-ui

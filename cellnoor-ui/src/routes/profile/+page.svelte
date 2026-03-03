@@ -15,11 +15,7 @@
 <div class="min-h-1/2 mx-auto flex flex-col items-center w-fit">
   {#if image}
     <div class="avatar">
-      <img
-        class="rounded-full"
-        src={image}
-        alt="profile"
-      />
+      <img class="rounded-full" src={image} alt="profile" />
     </div>
   {/if}
   <h1 class="text-4xl font-bold">{userName}</h1>
@@ -56,11 +52,7 @@
                   {description}
                 </td>
                 <td>
-                  {
-                    DATETIME_FORMATTER.format(
-                      iat,
-                    )
-                  }
+                  {DATETIME_FORMATTER.format(iat)}
                 </td>
                 <td>
                   {DATETIME_FORMATTER.format(exp)}
@@ -75,12 +67,7 @@
             {/each}
           </tbody>
         </table>
-        <form
-          class="flex flex-col grow gap-2"
-          method="post"
-          use:enhance
-          action="?/createApiToken"
-        >
+        <form class="flex flex-col grow gap-2" method="post" use:enhance action="?/createApiToken">
           <!-- TODO: use svelte's snippet's and rendering -->
           <fieldset class="fieldset">
             <legend class="fieldset-legend">API token name</legend>
@@ -101,18 +88,15 @@
               required
             />
           </fieldset>
-          <button class="btn btn-success max-w-3/4">
-            Create new API token
-          </button>
+          <button class="btn btn-success max-w-3/4"> Create new API token </button>
         </form>
       </div>
       {#if form}
         <div class="wrap-anywhere py-1 text-left">
           {#if form?.apiToken}
-            Your new API token is <code class="font-bold">{
-              form?.apiToken
-            }</code>. You will not be able to view this token after leaving or
-            refreshing this page. Store this token securely.
+            Your new API token is <code class="font-bold">{form?.apiToken}</code>. You will not be
+            able to view this token after leaving or refreshing this page. Store this token
+            securely.
           {:else if form?.error}
             {form.error}
           {/if}

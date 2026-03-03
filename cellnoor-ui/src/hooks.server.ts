@@ -16,7 +16,10 @@ function requiresAuth(path: string) {
 }
 
 export async function handle({ event, resolve }) {
-  const { url: { pathname }, request: { headers } } = event;
+  const {
+    url: { pathname },
+    request: { headers },
+  } = event;
   if (!requiresAuth(pathname)) {
     return svelteKitHandler({ event, resolve, auth, building });
   }

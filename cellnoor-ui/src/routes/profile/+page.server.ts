@@ -36,7 +36,7 @@ function validateFormData(data: FormData) {
   const description = data.get("description");
   const expiresOnStr = data.get("expiresOn");
 
-  if ((!expiresOnStr) || (!name)) {
+  if (!expiresOnStr || !name) {
     return { error: "API token name and expiration date must be set" };
   }
 
@@ -55,10 +55,13 @@ function validateFormData(data: FormData) {
 }
 
 export const actions = {
-  createApiToken: async ({ request, locals: { user: { user_id } } }) => {
-    const { name, description, expiresOn, error } = validateFormData(
-      await request.formData(),
-    );
+  createApiToken: async ({
+    request,
+    locals: {
+      user: { user_id },
+    },
+  }) => {
+    const { name, description, expiresOn, error } = validateFormData(await request.formData());
 
     if (error) {
       return { error };
@@ -80,7 +83,12 @@ export const actions = {
 
     return { apiToken };
   },
-  deleteApiToken: async ({ request, locals: { user: { user_id } } }) => {
+  deleteApiToken: async ({
+    request,
+    locals: {
+      user: { user_id },
+    },
+  }) => {
     const data = await request.formData();
     const jti = data.get("jti");
 
@@ -88,22 +96,21 @@ export const actions = {
       return;
     }
 
-    await deleteApiTokenFromDb(
-      { user_id, jti: jti.toString() },
-      await getDbClient(),
-    );
+    await deleteApiTokenFromDb({ user_id, jti: jti.toString() }, await getDbClient());
   },
 };
 
-export async function load({ locals: { user: { user_id } } }) {
+export async function load({
+  locals: {
+    user: { user_id },
+  },
+}) {
   const dbClient = await getDbClient();
   const apiTokens = await getUserJsonWebTokens(user_id, dbClient);
 
   return {
     apiTokens,
     today: justGetTheDamnDateAsAStringIHateThisLanguage(new Date()),
-    sixMonthsFromNow: justGetTheDamnDateAsAStringIHateThisLanguage(
-      sixMonthsFromNow(),
-    ),
+    sixMonthsFromNow: justGetTheDamnDateAsAStringIHateThisLanguage(sixMonthsFromNow()),
   };
 }

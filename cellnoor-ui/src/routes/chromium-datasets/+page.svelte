@@ -20,17 +20,16 @@
   const { assays, chromiumDatasets, projects, error } = $derived(data);
 
   let filterForm: HTMLFormElement | undefined = $state();
-  const query: Query<ChromiumDatasetFilter, ChromiumDatasetOrderBy> =
-    $state({
-      filter: {
-        ids: [],
-        names: [],
-        project_ids: [],
-        assay: emptyAssayFilter,
-        specimen: emptySpecimenFilter,
-      },
-      limit: 50,
-    });
+  const query: Query<ChromiumDatasetFilter, ChromiumDatasetOrderBy> = $state({
+    filter: {
+      ids: [],
+      names: [],
+      project_ids: [],
+      assay: emptyAssayFilter,
+      specimen: emptySpecimenFilter,
+    },
+    limit: 50,
+  });
 
   let stringifiedQuery = $derived(toQueryString(query));
 
@@ -76,9 +75,7 @@
 <div class="drawer lg:drawer-open">
   <input id="filter-drawer" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content mt-4 px-4 flex flex-col items-stretch">
-    <label for="filter-drawer" class="btn mx-2 drawer-button lg:hidden">
-      Filter and sort
-    </label>
+    <label for="filter-drawer" class="btn mx-2 drawer-button lg:hidden"> Filter and sort </label>
     {#if chromiumDatasets && chromiumDatasets.length != 0}
       <p class="mb-2 text-lg">{chromiumDatasets.length} results</p>
       {#each chromiumDatasets as cd}
@@ -92,11 +89,7 @@
   </div>
   <div class="drawer-side bg-base px-4 pt-4 border-r">
     <div class="w-80">
-      <label
-        for="filter-drawer"
-        aria-label="close sidebar"
-        class="drawer-overlay"
-      ></label>
+      <label for="filter-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
       <p class="font-bold text-lg px-2">Filter</p>
       <form bind:this={filterForm} action="?/search">
         <Fieldset name="Specimen Information">

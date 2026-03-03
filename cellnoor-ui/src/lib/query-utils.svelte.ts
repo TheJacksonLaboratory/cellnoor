@@ -1,8 +1,4 @@
-import type {
-  LibraryType,
-  SpecimenFilter,
-  TenxAssayFilter,
-} from "cellnoor-client";
+import type { LibraryType, SpecimenFilter, TenxAssayFilter } from "cellnoor-client";
 
 const whitespaceRegex = /\s|_|-/g;
 
@@ -63,16 +59,11 @@ type PrimitiveFields<T> = {
 };
 
 type ObjectFields<T> = {
-  [K in keyof T as NonNullable<T[K]> extends object ? K : never]-?: Filter<
-    NonNullable<T[K]>
-  >;
+  [K in keyof T as NonNullable<T[K]> extends object ? K : never]-?: Filter<NonNullable<T[K]>>;
 };
 
 type ArrayFields<T> = {
-  [
-    K in keyof T as NonNullable<T[K]> extends (infer _)[] ? K
-      : never
-  ]-?: NonNullable<T[K]>;
+  [K in keyof T as NonNullable<T[K]> extends (infer _)[] ? K : never]-?: NonNullable<T[K]>;
 };
 
 type Filter<T> = PrimitiveFields<T> & ObjectFields<T> & ArrayFields<T>;
