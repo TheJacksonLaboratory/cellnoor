@@ -1,4 +1,3 @@
-<!-- TODO: this is extremely repetetive and IDK how to consolidate it with the other `InputList` component -->
 <script lang="ts">
   import { tick } from "svelte";
   import Badge from "./Badge.svelte";
@@ -6,17 +5,30 @@
   let {
     parentForm,
     fieldName,
-    targetArray = $bindable(),
+    choices = [],
+    values = $bindable(),
   }: {
     parentForm: HTMLFormElement;
     fieldName: string;
-    targetArray: string[];
+    choices?: { label: string; value: string }[];
+    values: string[];
   } = $props();
   let value = $state("");
 
+  let badgesToDisplay: string[] = $state([]);
+
   function handleAddition() {
     if (value !== "") {
-      targetArray.push(value);
+      values.push(value);
+
+      // This could be wired-up to be slicker but I don't care right now
+      const toDisplay = choices.filter((c) => c.value === value);
+      if (toDisplay[0] !== undefined) {
+        badgesToDisplay.push(toDisplay[0].label);
+      } else {
+        badgesToDisplay.push(value);
+      }
+
       value = "";
     }
   }
@@ -26,6 +38,26 @@
       handleAddition();
     }
   }
+
+  function toSorted(choices: { label: string; value: string }[]) {
+    const seen = new Set();
+    const unique: { label: string; value: string }[] = [];
+
+    for (const choice of choices) {
+      const key = `${choice.label}${choice.value}`;
+
+      if (!seen.has(key)) {
+        seen.add(key);
+        unique.push(choice);
+      }
+    }
+
+    unique.sort((a, b) =>
+      a.label.toLowerCase().localeCompare(b.label.toLowerCase())
+    );
+
+    return unique;
+  }
 </script>
 
 <label class="label text-base-content font-bold" for={fieldName}>{
@@ -33,6 +65,7 @@
 }</label>
 <div class="join">
   <input
+    list={`${fieldName}-options`}
     autocomplete="off"
     id={fieldName}
     bind:value
@@ -40,6 +73,11 @@
     type="text"
     class="input join-item grow"
   />
+  <datalist id={`${fieldName}-options`}>
+    {#each toSorted(choices) as { label, value }}
+      <option {value}>{label}</option>
+    {/each}
+  </datalist>
   <button
     aria-label="add item"
     onclick={handleAddition}
@@ -60,26 +98,29 @@
   </button>
 </div>
 <div class="flex flex-row flex-wrap gap-1">
-  {#each targetArray as item, i}
+  {#each badgesToDisplay as item, i}
     <Badge badgeText={item}>
       <button
         aria-label="remove item"
         onclick={async () => {
-          targetArray.splice(i, 1);
+          values.splice(i, 1);
+          badgesToDisplay.splice(i, 1);
           await tick();
           parentForm.requestSubmit();
         }}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 16 16"
-          fill="currentColor"
-          class="size-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="size-6"
         >
           <path
-            fill-rule="evenodd"
-            d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm2.78-4.22a.75.75 0 0 1-1.06 0L8 9.06l-1.72 1.72a.75.75 0 1 1-1.06-1.06L6.94 8 5.22 6.28a.75.75 0 0 1 1.06-1.06L8 6.94l1.72-1.72a.75.75 0 1 1 1.06 1.06L9.06 8l1.72 1.72a.75.75 0 0 1 0 1.06Z"
-            clip-rule="evenodd"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
           />
         </svg>
       </button>

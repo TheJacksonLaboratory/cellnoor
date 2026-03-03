@@ -5,17 +5,19 @@
     type Query,
     toQueryString,
   } from "$lib/query-utils.svelte";
-  import InputList from "../InputList.svelte";
+  import InputList from "../../components/InputList.svelte";
   import type {
     ChromiumDatasetFilter,
     ChromiumDatasetOrderBy,
+    LibraryType,
+    SampleMultiplexing,
     Species,
   } from "cellnoor-client";
   import ChromiumDataset from "./ChromiumDataset.svelte";
-  import InputListWithChoices from "../InputListWithChoices.svelte";
+  import Fieldset from "../../components/Fieldset.svelte";
 
   const { data } = $props();
-  const { chromiumDatasets, projects, error } = $derived(data);
+  const { assays, chromiumDatasets, projects, error } = $derived(data);
 
   let filterForm: HTMLFormElement | undefined = $state();
   const query: Query<ChromiumDatasetFilter, ChromiumDatasetOrderBy> =
@@ -29,7 +31,12 @@
       },
       limit: 50,
     });
+
   let stringifiedQuery = $derived(toQueryString(query));
+
+  function toLowercaseChoice(s: string) {
+    return { label: s.replaceAll("_", " "), value: s };
+  }
 
   const species: Species[] = [
     "ambystoma_mexicanum",
@@ -42,9 +49,28 @@
     "rattus_norvegicus",
     "sminthopsis_crassicaudata",
   ];
-  const speciesOptions = species.map((s) => {
-    return { optValue: s, displayText: s.replaceAll("_", " ") };
-  });
+  const speciesChoices = species.map(toLowercaseChoice);
+
+  const plexy: SampleMultiplexing[] = [
+    "cellplex",
+    "flex_barcode",
+    "hashtag",
+    "on_chip_multiplexing",
+    "singleplex",
+  ];
+  const plexyChoices = plexy.map(toLowercaseChoice);
+
+  const libraryTypes: LibraryType[] = [
+    "antibody_capture",
+    "antigen_capture",
+    "chromatin_accessibility",
+    "crispr_guide_capture",
+    "custom",
+    "gene_expression",
+    "multiplexing_capture",
+    "vdj",
+  ];
+  const libraryTypeChoices = libraryTypes.map(toLowercaseChoice);
 </script>
 
 <div class="drawer lg:drawer-open">
@@ -71,36 +97,53 @@
         aria-label="close sidebar"
         class="drawer-overlay"
       ></label>
+      <p class="font-bold text-lg px-2">Filter</p>
       <form bind:this={filterForm} action="?/search">
-        <fieldset class="fieldset bg-base-200 border rounded-box p-2">
-          <legend class="fieldset-legend font-bold text-lg">
-            Specimen Information
-          </legend>
+        <Fieldset name="Specimen Information">
           <InputList
             parentForm={filterForm}
             fieldName="Specimen Name"
-            bind:targetArray={query.filter.specimen.names}
+            bind:values={query.filter.specimen.names}
           />
-          <InputListWithChoices
+          <InputList
             parentForm={filterForm}
             fieldName="Species"
-            options={speciesOptions}
-            bind:targetArray={query.filter.specimen.species}
+            choices={speciesChoices}
+            bind:values={query.filter.specimen.species}
           />
-        </fieldset>
-        <fieldset class="fieldset bg-base-200 border rounded-box p-2">
-          <legend class="fieldset-legend font-bold text-lg">
-            Lab Information
-          </legend>
-          <InputListWithChoices
+        </Fieldset>
+        <Fieldset name="Lab Information">
+          <InputList
             parentForm={filterForm}
             fieldName="Lab Name"
-            options={(projects ?? []).map((p) => {
-              return { optValue: p.id, displayText: p.name };
+            choices={(projects || []).map((p) => {
+              return { label: p.name, value: p.id };
             })}
-            bind:targetArray={query.filter.project_ids}
+            bind:values={query.filter.project_ids}
           />
-        </fieldset>
+        </Fieldset>
+        <Fieldset name="Assay Information">
+          <InputList
+            parentForm={filterForm}
+            fieldName="Assay Name"
+            choices={assays!.map((a) => {
+              return { label: a.name, value: a.name };
+            })}
+            bind:values={query.filter.assay.names}
+          />
+          <InputList
+            parentForm={filterForm}
+            fieldName="Multiplexing"
+            choices={plexyChoices}
+            bind:values={query.filter.assay.sample_multiplexing}
+          />
+          <InputList
+            parentForm={filterForm}
+            fieldName="Library Types"
+            choices={libraryTypeChoices}
+            bind:values={query.filter.assay.library_types_flat}
+          />
+        </Fieldset>
         <input name="q" hidden bind:value={stringifiedQuery} />
         <button class="btn btn-primary mt-4">Apply</button>
       </form>

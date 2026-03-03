@@ -3763,6 +3763,7 @@ export interface components {
             chromium_chips?: string[] | null;
             ids?: string[] | null;
             library_types?: components["schemas"]["LibraryType"][][] | null;
+            library_types_flat?: components["schemas"]["LibraryType"][] | null;
             names?: string[] | null;
             sample_multiplexing?: components["schemas"]["SampleMultiplexing"][] | null;
         };
