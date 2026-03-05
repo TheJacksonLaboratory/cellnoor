@@ -2963,22 +2963,9 @@ export interface components {
             additional_data?: unknown;
             /** Format: uuid */
             assay_id: string;
-            gem_pools: components["schemas"]["PoolMultiplexGemPool"][];
+            gem_pools: components["schemas"]["StandardGemPool"][];
             /** @constant */
-            plexy: "pool_multiplex";
-            readable_id: string;
-            /** Format: date-time */
-            run_at: string;
-            /** Format: uuid */
-            run_by: string;
-            succeeded: boolean;
-        } | {
-            additional_data?: unknown;
-            /** Format: uuid */
-            assay_id: string;
-            gem_pools: components["schemas"]["SingleplexGemPool"][];
-            /** @constant */
-            plexy: "singleplex";
+            plexy: "standard";
             readable_id: string;
             /** Format: date-time */
             run_at: string;
@@ -3133,12 +3120,24 @@ export interface components {
         };
         NewSuspensionPool: {
             additional_data?: unknown;
+            /** @constant */
+            multiplexing_type: "exogenous_tag";
             name: string;
             /** Format: date-time */
             pooled_at: string;
             preparer_ids: string[];
             readable_id: string;
             suspensions: components["schemas"]["SuspensionTagging"][];
+        } | {
+            additional_data?: unknown;
+            /** @constant */
+            multiplexing_type: "genetic";
+            name: string;
+            /** Format: date-time */
+            pooled_at: string;
+            preparer_ids: string[];
+            readable_id: string;
+            suspensions: string[];
         };
         NewTissue: {
             additional_data?: unknown;
@@ -3323,17 +3322,6 @@ export interface components {
         };
         /** @enum {string} */
         Picogram: "picogram";
-        PoolMultiplexChipLoading: {
-            additional_data?: unknown;
-            buffer_volume_loaded: components["schemas"]["LoadingVolume"];
-            /** Format: uuid */
-            suspension_pool_id: string;
-            suspension_volume_loaded: components["schemas"]["LoadingVolume"];
-        };
-        PoolMultiplexGemPool: {
-            loading: components["schemas"]["PoolMultiplexChipLoading"];
-            readable_id: string;
-        };
         Project: {
             /** Format: date-time */
             ended_at: string;
@@ -3383,17 +3371,6 @@ export interface components {
             finished_at?: string | null;
             /** Format: uuid */
             id: string;
-            readable_id: string;
-        };
-        SingleplexChipLoading: {
-            additional_data?: unknown;
-            buffer_volume_loaded: components["schemas"]["LoadingVolume"];
-            /** Format: uuid */
-            suspension_id: string;
-            suspension_volume_loaded: components["schemas"]["LoadingVolume"];
-        };
-        SingleplexGemPool: {
-            loading: components["schemas"]["SingleplexChipLoading"];
             readable_id: string;
         };
         /** @enum {string} */
@@ -3559,6 +3536,19 @@ export interface components {
         };
         /** @enum {string} */
         SpecimenType: "block" | "cell_pellet" | "suspension" | "tissue";
+        StandardChipLoading: {
+            additional_data?: unknown;
+            buffer_volume_loaded: components["schemas"]["LoadingVolume"];
+            /** Format: uuid */
+            suspension_id?: string | null;
+            /** Format: uuid */
+            suspension_pool_id?: string | null;
+            suspension_volume_loaded: components["schemas"]["LoadingVolume"];
+        };
+        StandardGemPool: {
+            loading: components["schemas"]["StandardChipLoading"];
+            readable_id: string;
+        };
         Suspension: {
             additional_data?: unknown;
             content: components["schemas"]["SuspensionContent"];
@@ -3887,15 +3877,11 @@ export type PersonSummary = components['schemas']['PersonSummary'];
 export type PersonSummaryStaff = components['schemas']['PersonSummaryStaff'];
 export type PersonUpdate = components['schemas']['PersonUpdate'];
 export type Picogram = components['schemas']['Picogram'];
-export type PoolMultiplexChipLoading = components['schemas']['PoolMultiplexChipLoading'];
-export type PoolMultiplexGemPool = components['schemas']['PoolMultiplexGemPool'];
 export type Project = components['schemas']['Project'];
 export type ProjectFilter = components['schemas']['ProjectFilter'];
 export type ProjectOrderBy = components['schemas']['ProjectOrderBy'];
 export type SampleMultiplexing = components['schemas']['SampleMultiplexing'];
 export type SequencingRun = components['schemas']['SequencingRun'];
-export type SingleplexChipLoading = components['schemas']['SingleplexChipLoading'];
-export type SingleplexGemPool = components['schemas']['SingleplexGemPool'];
 export type Species = components['schemas']['Species'];
 export type Specimen = components['schemas']['Specimen'];
 export type SpecimenFilter = components['schemas']['SpecimenFilter'];
@@ -3904,6 +3890,8 @@ export type SpecimenMeasurementData = components['schemas']['SpecimenMeasurement
 export type SpecimenOrderBy = components['schemas']['SpecimenOrderBy'];
 export type SpecimenSummary = components['schemas']['SpecimenSummary'];
 export type SpecimenType = components['schemas']['SpecimenType'];
+export type StandardChipLoading = components['schemas']['StandardChipLoading'];
+export type StandardGemPool = components['schemas']['StandardGemPool'];
 export type Suspension = components['schemas']['Suspension'];
 export type SuspensionConcentration = components['schemas']['SuspensionConcentration'];
 export type SuspensionContent = components['schemas']['SuspensionContent'];
