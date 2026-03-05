@@ -247,8 +247,7 @@ async fn validate_loaded_suspensions_and_suspension_pools(
         (Some(p1), Some(p2)) if p1 != p2 => Err(db::DataError::new_other(
             "cannot load suspensions from different project in same Chromium run",
         ))?,
-        (Some(p1), Some(_)) => Ok(p1),
-        (Some(p1), None) => Ok(p1),
+        (Some(p1), _) => Ok(p1),
         (None, Some(p2)) => Ok(p2),
         (None, None) => Err(db::DataError::new_other(
             "either suspension or suspension pool is required for Chromium run",
