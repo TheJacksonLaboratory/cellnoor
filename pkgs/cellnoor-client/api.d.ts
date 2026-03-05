@@ -3220,6 +3220,13 @@ export interface components {
             /** Format: uuid */
             suspension_id: string;
             suspension_volume_loaded: components["schemas"]["LoadingVolume"];
+        } | {
+            additional_data?: unknown;
+            buffer_volume_loaded: components["schemas"]["LoadingVolume"];
+            ocm_barcode_id: components["schemas"]["OcmBarcodeId"];
+            /** Format: uuid */
+            suspension_pool_id: string;
+            suspension_volume_loaded: components["schemas"]["LoadingVolume"];
         };
         OcmGemPool: {
             loading: components["schemas"]["OcmChipLoading"][];
@@ -3540,9 +3547,13 @@ export interface components {
             additional_data?: unknown;
             buffer_volume_loaded: components["schemas"]["LoadingVolume"];
             /** Format: uuid */
-            suspension_id?: string | null;
+            suspension_id: string;
+            suspension_volume_loaded: components["schemas"]["LoadingVolume"];
+        } | {
+            additional_data?: unknown;
+            buffer_volume_loaded: components["schemas"]["LoadingVolume"];
             /** Format: uuid */
-            suspension_pool_id?: string | null;
+            suspension_pool_id: string;
             suspension_volume_loaded: components["schemas"]["LoadingVolume"];
         };
         StandardGemPool: {

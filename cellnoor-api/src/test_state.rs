@@ -7,7 +7,7 @@ use cellnoor_models::{
         ChipLoadingFields, ChromiumRunFields, ChromiumRunSummary, GemPoolFields, GemPoolSummary,
         MAX_GEM_POOLS_PER_NON_OCM_RUN, MAX_GEM_POOLS_PER_OCM_RUN, MAX_SUSPENSIONS_PER_OCM_GEM_POOL,
         NewChromiumRun, OcmBarcodeId, OcmChipLoading, OcmGemPool, StandardChipLoading,
-        StandardGemPool, Volume,
+        StandardGemPool, Volume, ocm, standard,
     },
     generic_query::{self},
     institution::{Institution, NewInstitution},
@@ -429,10 +429,12 @@ impl TestState {
                     .map(SuspensionSummary::id)
                     .map(|suspension_id| StandardGemPool {
                         inner: random_gem_pool_fields(),
-                        loading: StandardChipLoading::builder()
-                            .inner(random_chip_loading_fields())
-                            .suspension_id(suspension_id)
-                            .build(),
+                        loading: StandardChipLoading::Suspension(
+                            standard::SuspensionLoading::builder()
+                                .inner(random_chip_loading_fields())
+                                .suspension_id(suspension_id)
+                                .build(),
+                        ),
                     })
                     .collect(),
             )
@@ -505,12 +507,13 @@ impl TestState {
                 .map(SuspensionSummary::id)
                 .enumerate()
                 .map(|(j, id)| {
-                    OcmChipLoading::builder()
+                    ocm::SuspensionLoading::builder()
                         .inner(random_chip_loading_fields())
                         .suspension_id(id)
                         .ocm_barcode_id(OcmBarcodeId::VARIANTS[j])
                         .build()
                 })
+                .map(OcmChipLoading::Suspension)
                 .collect();
 
             gem_pools.push(OcmGemPool {
@@ -584,10 +587,12 @@ impl TestState {
                     .map(SuspensionPool::id)
                     .map(|pool_id| StandardGemPool {
                         inner: random_gem_pool_fields(),
-                        loading: StandardChipLoading::builder()
-                            .inner(random_chip_loading_fields())
-                            .suspension_pool_id(pool_id)
-                            .build(),
+                        loading: StandardChipLoading::SuspensionPool(
+                            standard::SuspensionPoolLoading::builder()
+                                .inner(random_chip_loading_fields())
+                                .suspension_pool_id(pool_id)
+                                .build(),
+                        ),
                     })
                     .collect(),
             )

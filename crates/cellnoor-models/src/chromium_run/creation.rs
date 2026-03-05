@@ -6,11 +6,18 @@ use schemars::JsonSchema;
 
 use crate::chromium_run::common::ChromiumRunFields;
 
+#[cfg(feature = "builder")]
+pub mod ocm;
+#[cfg(feature = "builder")]
+pub mod standard;
+
+#[cfg(not(feature = "builder"))]
 mod ocm;
-mod singleplex;
+#[cfg(not(feature = "builder"))]
+mod standard;
 
 pub use ocm::{MAX_SUSPENSIONS_PER_OCM_GEM_POOL, OcmBarcodeId, OcmChipLoading, OcmGemPool};
-pub use singleplex::{StandardChipLoading, StandardGemPool};
+pub use standard::{StandardChipLoading, StandardGemPool};
 
 pub const MAX_GEM_POOLS_PER_OCM_RUN: usize = 2;
 pub const MAX_GEM_POOLS_PER_NON_OCM_RUN: usize = 8;

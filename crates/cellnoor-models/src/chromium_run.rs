@@ -4,6 +4,10 @@ mod query;
 mod read;
 
 pub use common::{ChipLoadingFields, ChromiumRunFields, GemPoolFields, Volume};
+#[cfg(feature = "builder")]
+pub use creation::ocm;
+#[cfg(feature = "builder")]
+pub use creation::standard;
 pub use creation::{
     MAX_GEM_POOLS_PER_NON_OCM_RUN, MAX_GEM_POOLS_PER_OCM_RUN, MAX_SUSPENSIONS_PER_OCM_GEM_POOL,
     NewChromiumRun, OcmBarcodeId, OcmChipLoading, OcmGemPool, StandardChipLoading, StandardGemPool,
