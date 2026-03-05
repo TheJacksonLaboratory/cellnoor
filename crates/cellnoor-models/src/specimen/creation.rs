@@ -8,6 +8,7 @@ use crate::specimen::{
         block::NewBlock, cell_pellet::NewCellPellet, suspension::NewSuspensionSpecimen,
         tissue::NewTissue,
     },
+    variable::SpecimenVariableFields,
 };
 
 pub mod block;
@@ -25,6 +26,8 @@ pub enum NewSpecimen {
     Suspension(NewSuspensionSpecimen),
     Tissue(NewTissue),
 }
+
+type SpecimenInsertion = (SpecimenCommonFields, SpecimenVariableFields);
 
 impl NewSpecimen {
     fn inner(&self) -> &SpecimenCommonFields {

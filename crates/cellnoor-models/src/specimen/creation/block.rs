@@ -3,6 +3,7 @@ use macros::{impl_enum_from_sql, impl_enum_to_sql};
 
 use crate::specimen::{
     common::SpecimenCommonFields,
+    creation::SpecimenInsertion,
     variable::{Fixative, SpecimenType, SpecimenVariableFields, ThermalPreservationMethod},
 };
 #[cfg(feature = "app")]
@@ -102,7 +103,7 @@ impl NewBlock {
         }
     }
 
-    pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
+    pub fn split_for_insertion(self) -> SpecimenInsertion {
         let fixative = self.fixative();
         let embedded_in = Some(self.embedding_matrix());
         let thermal_preservation_method = self.thermal_preservation_method();

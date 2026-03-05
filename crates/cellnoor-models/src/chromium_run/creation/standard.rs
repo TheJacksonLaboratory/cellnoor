@@ -62,7 +62,7 @@ impl StandardGemPool {
     pub fn suspension_id(&self) -> Option<Uuid> {
         match &self.loading {
             StandardChipLoading::Suspension(s) => Some(s.suspension_id()),
-            _ => None,
+            StandardChipLoading::SuspensionPool(_) => None,
         }
     }
 
@@ -70,7 +70,7 @@ impl StandardGemPool {
     pub fn suspension_pool_id(&self) -> Option<Uuid> {
         match &self.loading {
             StandardChipLoading::SuspensionPool(p) => Some(p.suspension_pool_id()),
-            _ => None,
+            StandardChipLoading::Suspension(_) => None,
         }
     }
 }

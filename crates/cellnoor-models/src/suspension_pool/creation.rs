@@ -42,16 +42,16 @@ pub enum NewSuspensionPool {
     },
 }
 
+type SuspensionPoolInsertion = (
+    SuspensionPoolFields,
+    NonEmptyVec<Uuid, { usize::MAX }>,
+    Option<NonEmptyVec<SuspensionTagging, { usize::MAX }>>,
+    Option<NonEmptyVec<Uuid, { usize::MAX }>>,
+);
+
 impl NewSuspensionPool {
     #[must_use]
-    pub fn split_for_insertion(
-        self,
-    ) -> (
-        SuspensionPoolFields,
-        NonEmptyVec<Uuid, { usize::MAX }>,
-        Option<NonEmptyVec<SuspensionTagging, { usize::MAX }>>,
-        Option<NonEmptyVec<Uuid, { usize::MAX }>>,
-    ) {
+    pub fn split_for_insertion(self) -> SuspensionPoolInsertion {
         match self {
             Self::ExogenousTag {
                 inner,

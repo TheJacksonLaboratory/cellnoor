@@ -88,7 +88,7 @@ impl OcmGemPool {
             .iter()
             .filter_map(|l| match l {
                 OcmChipLoading::Suspension(s) => Some(s),
-                _ => None,
+                OcmChipLoading::SuspensionPool(_) => None,
             })
             .map(SuspensionLoading::suspension_id)
             .collect()
@@ -99,7 +99,7 @@ impl OcmGemPool {
             .iter()
             .filter_map(|l| match l {
                 OcmChipLoading::SuspensionPool(p) => Some(p),
-                _ => None,
+                OcmChipLoading::Suspension(_) => None,
             })
             .map(SuspensionPoolLoading::suspension_pool_id)
             .collect()
