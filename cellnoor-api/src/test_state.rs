@@ -6,8 +6,8 @@ use cellnoor_models::{
     chromium_run::{
         ChipLoadingFields, ChromiumRunFields, ChromiumRunSummary, GemPoolFields, GemPoolSummary,
         MAX_GEM_POOLS_PER_NON_OCM_RUN, MAX_GEM_POOLS_PER_OCM_RUN, MAX_SUSPENSIONS_PER_OCM_GEM_POOL,
-        NewChromiumRun, OcmBarcodeId, OcmChipLoading, OcmGemPool, PoolMultiplexChipLoading,
-        PoolMultiplexGemPool, SingleplexChipLoading, SingleplexGemPool, Volume,
+        NewChromiumRun, OcmBarcodeId, OcmChipLoading, OcmGemPool, StandardChipLoading,
+        StandardGemPool, Volume, ocm, standard,
     },
     generic_query::{self},
     institution::{Institution, NewInstitution},
@@ -20,7 +20,7 @@ use cellnoor_models::{
         ThermalPreservationMethod,
     },
     suspension::{NewSuspension, NewSuspensionCommonFields, SuspensionFields, SuspensionSummary},
-    suspension_pool::{SuspensionPool, SuspensionPoolFields, SuspensionTagging},
+    suspension_pool::{NewSuspensionPool, SuspensionPool, SuspensionPoolFields, SuspensionTagging},
     tenx_assay::{LibraryType, SampleMultiplexing, TenxAssayFilter, TenxAssayQuery},
 };
 use diesel::prelude::*;
@@ -61,7 +61,7 @@ use crate::{
             projects::{create::insert_project, index::select_projects},
             specimens::{create::insert_specimen, index::select_specimens},
             suspension_pools::{
-                create::insert_suspension_pool_and_preparers_and_tags,
+                create::insert_suspension_pool_and_preparers_and_pool_mapping,
                 index::select_suspension_pools,
             },
             suspensions::{create::insert_suspension, index::select_suspensions},
@@ -357,25 +357,21 @@ impl TestState {
         preparer_id: Uuid,
         db_conn: &AsyncPgConnection,
     ) {
-        let suspension_pool = SuspensionPoolFields::builder()
+        let inner = SuspensionPoolFields::builder()
             .name(random_non_empty_string())
             .readable_id(random_non_empty_string())
             .pooled_at(random_time())
             .build();
 
-        let preparer_ids = preparer_id.into();
+        let suspension_pool = NewSuspensionPool::ExogenousTag {
+            inner,
+            preparer_ids: preparer_id.into(),
+            suspensions: NonEmptyVec::new(suspensions).unwrap(),
+        };
 
-        let pooled_suspensions = NonEmptyVec::new(suspensions).unwrap();
-
-        insert_suspension_pool_and_preparers_and_tags(
-            project_id,
-            suspension_pool,
-            preparer_ids,
-            pooled_suspensions,
-            db_conn,
-        )
-        .await
-        .unwrap();
+        insert_suspension_pool_and_preparers_and_pool_mapping(project_id, suspension_pool, db_conn)
+            .await
+            .unwrap();
     }
 
     async fn insert_singleplex_chromium_runs(&'static self, db_conn: &AsyncPgConnection) {
@@ -425,18 +421,20 @@ impl TestState {
         db_conn: &AsyncPgConnection,
     ) {
         let project_id = suspensions[0].project_id();
-        let chromium_run = NewChromiumRun::Singleplex {
+        let chromium_run = NewChromiumRun::Standard {
             inner: random_chromium_run_fields(assay_id, run_by),
             gem_pools: NonEmptyVec::new(
                 suspensions
                     .iter()
                     .map(SuspensionSummary::id)
-                    .map(|suspension_id| SingleplexGemPool {
+                    .map(|suspension_id| StandardGemPool {
                         inner: random_gem_pool_fields(),
-                        loading: SingleplexChipLoading::builder()
-                            .inner(random_chip_loading_fields())
-                            .suspension_id(suspension_id)
-                            .build(),
+                        loading: StandardChipLoading::Suspension(
+                            standard::SuspensionLoading::builder()
+                                .inner(random_chip_loading_fields())
+                                .suspension_id(suspension_id)
+                                .build(),
+                        ),
                     })
                     .collect(),
             )
@@ -509,12 +507,13 @@ impl TestState {
                 .map(SuspensionSummary::id)
                 .enumerate()
                 .map(|(j, id)| {
-                    OcmChipLoading::builder()
+                    ocm::SuspensionLoading::builder()
                         .inner(random_chip_loading_fields())
                         .suspension_id(id)
                         .ocm_barcode_id(OcmBarcodeId::VARIANTS[j])
                         .build()
                 })
+                .map(OcmChipLoading::Suspension)
                 .collect();
 
             gem_pools.push(OcmGemPool {
@@ -580,18 +579,20 @@ impl TestState {
         db_conn: &AsyncPgConnection,
     ) {
         let project_id = suspension_pools[0].project_id();
-        let chromium_run = NewChromiumRun::PoolMultiplex {
+        let chromium_run = NewChromiumRun::Standard {
             inner: random_chromium_run_fields(assay_id, run_by),
             gem_pools: NonEmptyVec::new(
                 suspension_pools
                     .iter()
                     .map(SuspensionPool::id)
-                    .map(|pool_id| PoolMultiplexGemPool {
+                    .map(|pool_id| StandardGemPool {
                         inner: random_gem_pool_fields(),
-                        loading: PoolMultiplexChipLoading::builder()
-                            .inner(random_chip_loading_fields())
-                            .suspension_pool_id(pool_id)
-                            .build(),
+                        loading: StandardChipLoading::SuspensionPool(
+                            standard::SuspensionPoolLoading::builder()
+                                .inner(random_chip_loading_fields())
+                                .suspension_pool_id(pool_id)
+                                .build(),
+                        ),
                     })
                     .collect(),
             )

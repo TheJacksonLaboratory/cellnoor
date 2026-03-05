@@ -27,8 +27,8 @@ impl EnumToSql for OcmBarcodeId {}
 impl_enum_to_sql!(OcmBarcodeId);
 
 #[insert]
-#[cfg_attr(feature = "app", diesel(table_name = chip_loadings))]
-pub struct OcmChipLoading {
+#[cfg_attr(feature = "app", diesel(table_name = chip_loadings), schemars(inline))]
+pub struct SuspensionLoading {
     suspension_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
@@ -36,11 +36,37 @@ pub struct OcmChipLoading {
     ocm_barcode_id: OcmBarcodeId,
 }
 
-impl OcmChipLoading {
+impl SuspensionLoading {
     #[must_use]
     pub fn suspension_id(&self) -> Uuid {
         self.suspension_id
     }
+}
+
+#[insert]
+#[cfg_attr(feature = "app", diesel(table_name = chip_loadings), schemars(inline))]
+pub struct SuspensionPoolLoading {
+    suspension_pool_id: Uuid,
+    #[serde(flatten)]
+    #[cfg_attr(feature = "app", diesel(embed))]
+    inner: ChipLoadingFields,
+    ocm_barcode_id: OcmBarcodeId,
+}
+
+impl SuspensionPoolLoading {
+    #[must_use]
+    pub fn suspension_pool_id(&self) -> Uuid {
+        self.suspension_pool_id
+    }
+}
+
+#[base_model]
+#[derive(serde::Deserialize)]
+#[cfg_attr(feature = "app", derive(JsonSchema))]
+#[serde(untagged, rename_all = "snake_case")]
+pub enum OcmChipLoading {
+    Suspension(SuspensionLoading),
+    SuspensionPool(SuspensionPoolLoading),
 }
 
 #[base_model]
@@ -50,4 +76,32 @@ pub struct OcmGemPool {
     #[serde(flatten)]
     pub inner: GemPoolFields,
     pub loading: NonEmptyVec<OcmChipLoading, MAX_SUSPENSIONS_PER_OCM_GEM_POOL>,
+}
+
+impl OcmGemPool {
+    fn loading(&self) -> &[OcmChipLoading] {
+        self.loading.as_ref()
+    }
+
+    pub fn suspension_ids(&self) -> Vec<Uuid> {
+        self.loading()
+            .iter()
+            .filter_map(|l| match l {
+                OcmChipLoading::Suspension(s) => Some(s),
+                OcmChipLoading::SuspensionPool(_) => None,
+            })
+            .map(SuspensionLoading::suspension_id)
+            .collect()
+    }
+
+    pub fn suspension_pool_ids(&self) -> Vec<Uuid> {
+        self.loading()
+            .iter()
+            .filter_map(|l| match l {
+                OcmChipLoading::SuspensionPool(p) => Some(p),
+                OcmChipLoading::Suspension(_) => None,
+            })
+            .map(SuspensionPoolLoading::suspension_pool_id)
+            .collect()
+    }
 }

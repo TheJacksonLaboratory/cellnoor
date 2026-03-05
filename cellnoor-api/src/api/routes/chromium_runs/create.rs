@@ -1,7 +1,7 @@
 use axum::{Extension, Json, extract::State};
 use cellnoor_models::chromium_run::{
     ChromiumRun, ChromiumRunFields, GemPoolFields, NewChromiumRun, OcmChipLoading, OcmGemPool,
-    PoolMultiplexGemPool, SingleplexGemPool,
+    StandardChipLoading, StandardGemPool,
 };
 use cellnoor_schema::{chip_loadings, chromium_runs, specimens, suspension_pools, suspensions};
 use diesel::prelude::*;
@@ -54,18 +54,7 @@ pub async fn insert_chromium_run_and_associated_data(
 
             run_id
         }
-        NewChromiumRun::PoolMultiplex { inner, gem_pools } => {
-            let run_id = insert_chromium_run(project_id, inner, db_conn).await?;
-
-            let gem_pool_ids =
-                insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)
-                    .await?;
-
-            insert_pool_multiplex_chip_loadings(&gem_pool_ids, gem_pools.as_ref(), db_conn).await?;
-
-            run_id
-        }
-        NewChromiumRun::Singleplex { inner, gem_pools } => {
+        NewChromiumRun::Standard { inner, gem_pools } => {
             let run_id = insert_chromium_run(project_id, inner, db_conn).await?;
 
             let gem_pool_ids =
@@ -119,66 +108,59 @@ async fn insert_ocm_chip_loadings(
     gem_pools: &[OcmGemPool],
     mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), db::Error> {
-    let mut chip_loading_insertions = Vec::with_capacity(gem_pool_ids.len() * 4);
+    let mut suspension_chip_loading_insertions = Vec::with_capacity(gem_pool_ids.len() * 4);
+    let mut suspension_pool_chip_loading_insertions = Vec::with_capacity(gem_pool_ids.len() * 4);
 
-    for (gem_pool_id, gem_pool) in gem_pool_ids.iter().zip(gem_pools.as_ref()) {
+    for (gem_pool_id, gem_pool) in gem_pool_ids.iter().zip(gem_pools) {
         for loading in gem_pool.loading.as_ref() {
-            chip_loading_insertions.push((chip_loadings::gem_pool_id.eq(gem_pool_id), loading));
+            match loading {
+                OcmChipLoading::Suspension(s) => suspension_chip_loading_insertions
+                    .push((chip_loadings::gem_pool_id.eq(gem_pool_id), s)),
+                OcmChipLoading::SuspensionPool(p) => suspension_pool_chip_loading_insertions
+                    .push((chip_loadings::gem_pool_id.eq(gem_pool_id), p)),
+            }
         }
     }
 
-    diesel::insert_into(chip_loadings::table)
-        .values(chip_loading_insertions)
-        .execute(&mut db_conn)
-        .await?;
+    let insertion1 = diesel::insert_into(chip_loadings::table)
+        .values(suspension_chip_loading_insertions)
+        .execute(&mut db_conn);
 
-    Ok(())
-}
+    let insertion2 = diesel::insert_into(chip_loadings::table)
+        .values(suspension_pool_chip_loading_insertions)
+        .execute(&mut db_conn);
 
-async fn insert_pool_multiplex_chip_loadings(
-    gem_pool_ids: &[Uuid],
-    gem_pools: &[PoolMultiplexGemPool],
-    mut db_conn: &diesel_async::AsyncPgConnection,
-) -> Result<(), db::Error> {
-    let chip_loading_insertions: Vec<_> = gem_pool_ids
-        .iter()
-        .zip(gem_pools.as_ref())
-        .map(|(gem_pool_id, gem_pool)| {
-            (
-                chip_loadings::gem_pool_id.eq(gem_pool_id),
-                &gem_pool.loading,
-            )
-        })
-        .collect();
-
-    diesel::insert_into(chip_loadings::table)
-        .values(chip_loading_insertions)
-        .execute(&mut db_conn)
-        .await?;
+    tokio::try_join!(insertion1, insertion2)?;
 
     Ok(())
 }
 
 async fn insert_singleplex_chip_loadings(
     gem_pool_ids: &[Uuid],
-    gem_pools: &[SingleplexGemPool],
+    gem_pools: &[StandardGemPool],
     mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), db::Error> {
-    let chip_loading_insertions: Vec<_> = gem_pool_ids
-        .iter()
-        .zip(gem_pools.as_ref())
-        .map(|(gem_pool_id, gem_pool)| {
-            (
-                chip_loadings::gem_pool_id.eq(gem_pool_id),
-                &gem_pool.loading,
-            )
-        })
-        .collect();
+    let mut suspension_chip_loading_insertions = Vec::with_capacity(gem_pool_ids.len() * 8);
+    let mut suspension_pool_chip_loading_insertions = Vec::with_capacity(gem_pool_ids.len() * 8);
 
-    diesel::insert_into(chip_loadings::table)
-        .values(chip_loading_insertions)
-        .execute(&mut db_conn)
-        .await?;
+    for (gem_pool_id, gem_pool) in gem_pool_ids.iter().zip(gem_pools) {
+        match &gem_pool.loading {
+            StandardChipLoading::Suspension(s) => suspension_chip_loading_insertions
+                .push((chip_loadings::gem_pool_id.eq(gem_pool_id), s)),
+            StandardChipLoading::SuspensionPool(p) => suspension_pool_chip_loading_insertions
+                .push((chip_loadings::gem_pool_id.eq(gem_pool_id), p)),
+        }
+    }
+
+    let insertion1 = diesel::insert_into(chip_loadings::table)
+        .values(suspension_chip_loading_insertions)
+        .execute(&mut db_conn);
+
+    let insertion2 = diesel::insert_into(chip_loadings::table)
+        .values(suspension_pool_chip_loading_insertions)
+        .execute(&mut db_conn);
+
+    tokio::try_join!(insertion1, insertion2)?;
 
     Ok(())
 }
@@ -189,46 +171,96 @@ pub(super) async fn validate_chromium_run(
 ) -> Result<Uuid, db::Error> {
     let run_at = chromium_run.run_at();
 
-    let suspension_ids: Vec<Uuid> = match chromium_run {
+    match chromium_run {
         NewChromiumRun::OnChipMultiplexing {
             inner: _,
             gem_pools,
-        } => gem_pools
-            .as_ref()
-            .iter()
-            .flat_map(|p| p.loading.as_ref().iter().map(OcmChipLoading::suspension_id))
-            .collect(),
-        NewChromiumRun::PoolMultiplex {
+        } => {
+            let suspension_ids: Vec<_> = gem_pools
+                .as_ref()
+                .iter()
+                .flat_map(OcmGemPool::suspension_ids)
+                .collect();
+            let suspension_pool_ids: Vec<_> = gem_pools
+                .as_ref()
+                .iter()
+                .flat_map(OcmGemPool::suspension_pool_ids)
+                .collect();
+
+            validate_loaded_suspensions_and_suspension_pools(
+                &suspension_ids,
+                &suspension_pool_ids,
+                run_at,
+                db_conn,
+            )
+            .await
+        }
+        NewChromiumRun::Standard {
             inner: _,
             gem_pools,
         } => {
-            let suspension_pool_ids = gem_pools
-                .as_ref()
+            let gem_pools = gem_pools.as_ref();
+
+            let suspension_ids: Vec<_> = gem_pools
                 .iter()
-                .map(|p| p.loading.suspension_pool_id())
+                .filter_map(StandardGemPool::suspension_id)
                 .collect();
 
-            return validate_loaded_suspension_pools(suspension_pool_ids, run_at, db_conn).await;
-        }
-        NewChromiumRun::Singleplex {
-            inner: _,
-            gem_pools,
-        } => gem_pools
-            .as_ref()
-            .iter()
-            .map(|p| p.loading.suspension_id())
-            .collect(),
-    };
+            let suspension_pool_ids: Vec<_> = gem_pools
+                .iter()
+                .filter_map(StandardGemPool::suspension_pool_id)
+                .collect();
 
-    validate_loaded_suspensions(&suspension_ids, run_at, db_conn).await
+            validate_loaded_suspensions_and_suspension_pools(
+                &suspension_ids,
+                &suspension_pool_ids,
+                run_at,
+                db_conn,
+            )
+            .await
+        }
+    }
 }
 
-async fn validate_loaded_suspension_pools(
-    pool_ids: Vec<Uuid>,
+async fn validate_loaded_suspensions_and_suspension_pools(
+    suspension_ids: &[Uuid],
+    suspension_pool_ids: &[Uuid],
     chromium_run_at: Timestamp,
     db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Uuid, db::Error> {
-    let project_ids_and_pooling_times = suspension_pools_info(&pool_ids, db_conn).await?;
+    let mut maybe_project_id1 = None;
+    let mut maybe_project_id2 = None;
+
+    if !suspension_ids.is_empty() {
+        maybe_project_id1 = validate_loaded_suspensions(suspension_ids, chromium_run_at, db_conn)
+            .await
+            .map(Some)?;
+    }
+    if !suspension_pool_ids.is_empty() {
+        maybe_project_id2 =
+            validate_loaded_suspension_pools(suspension_pool_ids, chromium_run_at, db_conn)
+                .await
+                .map(Some)?;
+    }
+
+    match (maybe_project_id1, maybe_project_id2) {
+        (Some(p1), Some(p2)) if p1 != p2 => Err(db::DataError::new_other(
+            "cannot load suspensions from different project in same Chromium run",
+        ))?,
+        (Some(p1), _) => Ok(p1),
+        (None, Some(p2)) => Ok(p2),
+        (None, None) => Err(db::DataError::new_other(
+            "either suspension or suspension pool is required for Chromium run",
+        ))?,
+    }
+}
+
+async fn validate_loaded_suspension_pools(
+    pool_ids: &[Uuid],
+    chromium_run_at: Timestamp,
+    db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<Uuid, db::Error> {
+    let project_ids_and_pooling_times = suspension_pools_info(pool_ids, db_conn).await?;
 
     for (_, pooled_at) in &project_ids_and_pooling_times {
         validate_timestamps(

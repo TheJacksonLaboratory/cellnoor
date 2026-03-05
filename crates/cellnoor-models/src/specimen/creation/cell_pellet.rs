@@ -2,6 +2,7 @@ use macro_attributes::{base_model, simple_enum};
 
 use crate::specimen::{
     common::SpecimenCommonFields,
+    creation::SpecimenInsertion,
     variable::{SpecimenType, SpecimenVariableFields, ThermalPreservationMethod},
 };
 
@@ -37,7 +38,7 @@ impl NewCellPellet {
         self.inner
     }
 
-    pub fn split_for_insertion(self) -> (SpecimenCommonFields, SpecimenVariableFields) {
+    pub fn split_for_insertion(self) -> SpecimenInsertion {
         let thermal_preservation_method = self.thermal_preservation_method.into();
 
         (

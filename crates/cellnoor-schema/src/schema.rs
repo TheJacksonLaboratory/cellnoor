@@ -352,6 +352,7 @@ diesel::table! {
         name -> Text,
         pooled_at -> Timestamptz,
         additional_data -> Nullable<Jsonb>,
+        multiplexing_type -> Text,
     }
 }
 
@@ -399,6 +400,13 @@ diesel::table! {
         protocol_url -> Text,
         chromium_chip -> Nullable<Text>,
         cmdlines -> Nullable<Array<Nullable<CaseInsensitiveText>>>,
+    }
+}
+
+diesel::table! {
+    untagged_suspension_pooling (suspension_id, pool_id) {
+        suspension_id -> Uuid,
+        pool_id -> Uuid,
     }
 }
 
@@ -457,6 +465,8 @@ diesel::joinable!(suspension_tagging -> suspension_pools (pool_id));
 diesel::joinable!(suspension_tagging -> suspensions (suspension_id));
 diesel::joinable!(suspensions -> projects (project_id));
 diesel::joinable!(suspensions -> specimens (parent_specimen_id));
+diesel::joinable!(untagged_suspension_pooling -> suspension_pools (pool_id));
+diesel::joinable!(untagged_suspension_pooling -> suspensions (suspension_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     cdna,
@@ -496,4 +506,5 @@ diesel::allow_tables_to_appear_in_same_query!(
     suspension_tagging,
     suspensions,
     tenx_assays,
+    untagged_suspension_pooling,
 );
