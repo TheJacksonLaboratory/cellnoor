@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: cargo
     directory: .
     schedule:
-      interval: weekly
+      interval: daily
     groups:
       all-rust-dependencies:
         patterns:
@@ -12,7 +12,7 @@ updates:
   - package-ecosystem: bun
     directory: .
     schedule:
-      interval: weekly
+      interval: daily
     groups:
       all-typescript-dependencies:
         patterns:
