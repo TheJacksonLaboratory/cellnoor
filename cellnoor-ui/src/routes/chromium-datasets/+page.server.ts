@@ -12,7 +12,7 @@ type ReturnType =
   | { error: ApiErrorResponse };
 
 export async function load({ url }) {
-  return await loadData(url.searchParams.get("q") || `{"limit": 50}`);
+  return await loadData(url.searchParams.get("q") || `{"limit": 5000}`);
 }
 
 export const actions = {

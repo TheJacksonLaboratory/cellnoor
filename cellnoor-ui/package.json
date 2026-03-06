@@ -39,6 +39,7 @@
     "cellnoor-client": "workspace:*",
     "daisyui": "catalog:",
     "jose": "catalog:",
-    "tailwindcss": "catalog:"
+    "tailwindcss": "catalog:",
+    "@lucide/svelte": "catalog:"
   }
 }

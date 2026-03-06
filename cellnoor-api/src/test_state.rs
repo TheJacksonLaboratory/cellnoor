@@ -895,8 +895,9 @@ fn random_non_empty_string() -> NonEmptyString {
     NonEmptyString::new(random_string()).unwrap()
 }
 
-// These numbers correspond to the first second of the year -4000 and the last second of the year 4000 (https://www.postgresql.org/docs/current/datatype-datetime.html)
-const TIME: Range<i64> = -188_395_009_438..64_092_229_199;
+// These numbers correspond to the first second of the year 1970 and the last
+// second of the year 3000
+const TIME: Range<i64> = 0..32_535_176_399;
 
 fn random_time() -> Timestamp {
     let mut rng = rand::rng();

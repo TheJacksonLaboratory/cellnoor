@@ -15,6 +15,7 @@
   } from "cellnoor-client";
   import ChromiumDataset from "./ChromiumDataset.svelte";
   import Fieldset from "../../components/Fieldset.svelte";
+  import SortAndLimit from "../../components/SortAndLimit.svelte";
 
   const { data } = $props();
   const { assays, chromiumDatasets, projects, error } = $derived(data);
@@ -28,7 +29,8 @@
       assay: emptyAssayFilter,
       specimen: emptySpecimenFilter,
     },
-    limit: 50,
+    limit: 10_000,
+    order_by: [{ field: "delivered_at", descending: true }],
   });
 
   let stringifiedQuery = $derived(toQueryString(query));
@@ -70,14 +72,25 @@
     "vdj",
   ];
   const libraryTypeChoices = libraryTypes.map(toLowercaseChoice);
+
+  const orderByValues: ChromiumDatasetOrderBy[] = [{ field: "delivered_at" }, { field: "name" }];
+  const orderByChoices = orderByValues.map(({ field }) => field).map(toLowercaseChoice);
 </script>
 
 <div class="drawer lg:drawer-open">
   <input id="filter-drawer" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content mt-4 px-4 flex flex-col items-stretch">
-    <label for="filter-drawer" class="btn mx-2 drawer-button lg:hidden"> Filter and sort </label>
+    <label for="filter-drawer" class="btn mx-2 drawer-button lg:hidden">Filter and sort</label>
     {#if chromiumDatasets && chromiumDatasets.length != 0}
-      <p class="mb-2 text-lg">{chromiumDatasets.length} results</p>
+      <div class="mb-2 flex flex-row justify-between align-middle">
+        <p class="text-lg">{chromiumDatasets.length} results</p>
+        <SortAndLimit
+          bind:orderByField={query.order_by![0]!.field}
+          bind:orderByDescending={query.order_by![0]!.descending!}
+          choices={orderByChoices}
+          parentForm={filterForm!}
+        />
+      </div>
       {#each chromiumDatasets as cd (cd.id)}
         <ChromiumDataset chromiumDataset={cd} />
       {/each}
