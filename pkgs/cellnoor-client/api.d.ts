@@ -2419,7 +2419,18 @@ export interface components {
             readable_id: string;
         };
         CdnaFilter: {
+            additional_data?: unknown;
+            gem_pool_ids?: string[] | null;
             ids?: string[] | null;
+            library_types?: components["schemas"]["LibraryType"][] | null;
+            /** Format: int32 */
+            n_amplification_cycles_less_than?: number | null;
+            /** Format: int32 */
+            n_amplification_cycles_more_than?: number | null;
+            /** Format: date-time */
+            prepared_after?: string | null;
+            /** Format: date-time */
+            prepared_before?: string | null;
             project_ids?: string[] | null;
             readable_ids?: string[] | null;
         };
@@ -2474,6 +2485,10 @@ export interface components {
             descending?: boolean | null;
             /** @constant */
             field: "gem_pool_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "project_id";
         } | {
             descending?: boolean | null;
             /** @constant */
@@ -2567,8 +2582,17 @@ export interface components {
             succeeded: boolean;
         };
         ChromiumRunFilter: {
+            additional_data?: unknown;
+            assay_ids?: string[] | null;
             ids?: string[] | null;
             project_ids?: string[] | null;
+            readable_ids?: string[] | null;
+            /** Format: date-time */
+            run_after?: string | null;
+            /** Format: date-time */
+            run_before?: string | null;
+            run_by?: string[] | null;
+            succeeded?: boolean | null;
         };
         ChromiumRunOrderBy: {
             descending?: boolean | null;
@@ -2594,6 +2618,10 @@ export interface components {
             descending?: boolean | null;
             /** @constant */
             field: "succeeded";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "project_id";
         };
         ChromiumRunSummary: {
             additional_data?: unknown;
@@ -2666,8 +2694,10 @@ export interface components {
             readable_id: string;
         };
         GemPoolFilter: {
+            chromium_run_ids?: string[] | null;
             ids?: string[] | null;
             project_ids?: string[] | null;
+            readable_ids?: string[] | null;
         };
         GemPoolOrderBy: {
             descending?: boolean | null;
@@ -2677,6 +2707,10 @@ export interface components {
             descending?: boolean | null;
             /** @constant */
             field: "readable_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "chromium_run_id";
         };
         GemPoolSummary: {
             /** Format: uuid */
@@ -2725,9 +2759,26 @@ export interface components {
             target_reads_per_cell?: number | null;
         };
         LibraryFilter: {
+            additional_data?: unknown;
+            cdna_ids?: string[] | null;
+            dual_index_set_names?: string[] | null;
             ids?: string[] | null;
+            library_types?: components["schemas"]["LibraryType"][] | null;
+            /** Format: int32 */
+            number_of_sample_index_pcr_cycles_less_than?: number | null;
+            /** Format: int32 */
+            number_of_sample_index_pcr_cycles_more_than?: number | null;
+            /** Format: date-time */
+            prepared_after?: string | null;
+            /** Format: date-time */
+            prepared_before?: string | null;
             project_ids?: string[] | null;
             readable_ids?: string[] | null;
+            single_index_set_names?: string[] | null;
+            /** Format: int64 */
+            target_reads_per_cell_less_than?: number | null;
+            /** Format: int64 */
+            target_reads_per_cell_more_than?: number | null;
         };
         LibraryMeasurement: {
             concentration?: unknown;
@@ -2772,6 +2823,10 @@ export interface components {
             descending?: boolean | null;
             /** @constant */
             field: "cdna_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "project_id";
         } | {
             descending?: boolean | null;
             /** @constant */
@@ -3276,19 +3331,11 @@ export interface components {
         } | {
             descending?: boolean | null;
             /** @constant */
-            field: "email_verified";
-        } | {
-            descending?: boolean | null;
-            /** @constant */
             field: "institution_id";
         } | {
             descending?: boolean | null;
             /** @constant */
             field: "orcid";
-        } | {
-            descending?: boolean | null;
-            /** @constant */
-            field: "microsoft_entra_oid";
         };
         PersonSummary: {
             email?: string | null;
@@ -3416,6 +3463,7 @@ export interface components {
             ids?: string[] | null;
             names?: string[] | null;
             project_ids?: string[] | null;
+            readable_ids?: string[] | null;
             /** Format: date-time */
             received_after?: string | null;
             /** Format: date-time */
@@ -3589,8 +3637,24 @@ export interface components {
         /** @enum {string} */
         SuspensionContent: "cells" | "nuclei";
         SuspensionFilter: {
+            additional_data?: unknown;
+            contents?: components["schemas"]["SuspensionContent"][] | null;
+            /** Format: date-time */
+            created_after?: string | null;
+            /** Format: date-time */
+            created_before?: string | null;
             ids?: string[] | null;
+            /** Format: float */
+            lysis_duration_less_than?: number | null;
+            /** Format: float */
+            lysis_duration_more_than?: number | null;
+            parent_specimen_ids?: string[] | null;
             project_ids?: string[] | null;
+            readable_ids?: string[] | null;
+            /** Format: int64 */
+            target_cell_recovery_less_than?: number | null;
+            /** Format: int64 */
+            target_cell_recovery_more_than?: number | null;
         };
         SuspensionMeasurement: {
             data: components["schemas"]["SuspensionMeasurementData"];
@@ -3649,6 +3713,14 @@ export interface components {
         } | {
             descending?: boolean | null;
             /** @constant */
+            field: "project_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "content";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
             field: "created_at";
         } | {
             descending?: boolean | null;
@@ -3664,6 +3736,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             links: components["schemas"]["Links"];
+            multiplexing_type: string;
             name: string;
             /** Format: date-time */
             pooled_at: string;
@@ -3672,8 +3745,16 @@ export interface components {
             readable_id: string;
         };
         SuspensionPoolFilter: {
+            additional_data?: unknown;
             ids?: string[] | null;
+            multiplexing_types?: string[] | null;
+            names?: string[] | null;
+            /** Format: date-time */
+            pooled_after?: string | null;
+            /** Format: date-time */
+            pooled_before?: string | null;
             project_ids?: string[] | null;
+            readable_ids?: string[] | null;
         };
         SuspensionPoolMeasurement: {
             data: components["schemas"]["SuspensionPoolMeasurementData"];
@@ -3710,11 +3791,19 @@ export interface components {
         } | {
             descending?: boolean | null;
             /** @constant */
+            field: "project_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
             field: "name";
         } | {
             descending?: boolean | null;
             /** @constant */
             field: "pooled_at";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "multiplexing_type";
         };
         SuspensionSummary: {
             additional_data?: unknown;

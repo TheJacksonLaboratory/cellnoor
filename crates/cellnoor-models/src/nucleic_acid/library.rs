@@ -1,11 +1,11 @@
 mod common;
-mod create;
+mod creation;
 pub mod measurement;
 mod query;
 mod read;
 
 pub use common::LibraryFields;
-pub use create::NewLibrary;
+pub use creation::NewLibrary;
 #[cfg(feature = "app")]
 pub use query::LibraryQuery;
 pub use query::{LibraryFilter, LibraryOrderBy};

@@ -96,6 +96,7 @@ where
     id: SelectableExpression<QS>,
     name: SelectableExpression<QS>,
     AssumeNotNull<specimens::id>: SelectableExpression<QS>,
+    AssumeNotNull<specimens::readable_id>: SelectableExpression<QS>,
     AssumeNotNull<specimens::name>: SelectableExpression<QS>,
     AssumeNotNull<specimens::submitted_by>: SelectableExpression<QS>,
     AssumeNotNull<specimens::project_id>: SelectableExpression<QS>,
@@ -116,6 +117,7 @@ where
     AssumeNotNull<tenx_assays::sample_multiplexing>: SelectableExpression<QS>,
     tenx_assays::chemistry_version: SelectableExpression<QS>,
     AssumeNotNull<tenx_assays::chromium_chip>: SelectableExpression<QS>,
+    AssumeNotNull<tenx_assays::cmdlines>: SelectableExpression<QS>,
     project_id: SelectableExpression<QS>,
     delivered_at: SelectableExpression<QS>,
 {

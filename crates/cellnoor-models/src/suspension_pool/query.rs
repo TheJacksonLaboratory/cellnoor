@@ -1,5 +1,6 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::suspension_pools;
+use jiff::Timestamp;
 use macro_attributes::{filter, order_by};
 use uuid::Uuid;
 
@@ -9,7 +10,13 @@ use crate::generic_query;
 #[filter]
 pub struct SuspensionPoolFilter {
     pub ids: Option<Vec<Uuid>>,
+    pub readable_ids: Option<Vec<String>>,
     pub project_ids: Option<Vec<Uuid>>,
+    pub names: Option<Vec<String>>,
+    pub pooled_before: Option<Timestamp>,
+    pub pooled_after: Option<Timestamp>,
+    pub multiplexing_types: Option<Vec<String>>,
+    pub additional_data: Option<serde_json::Value>,
 }
 
 #[order_by(suspension_pools)]
@@ -17,8 +24,10 @@ pub struct SuspensionPoolFilter {
 pub enum SuspensionPoolOrderBy {
     id { descending: Option<bool> },
     readable_id { descending: Option<bool> },
+    project_id { descending: Option<bool> },
     name { descending: Option<bool> },
     pooled_at { descending: Option<bool> },
+    multiplexing_type { descending: Option<bool> },
 }
 
 impl Default for SuspensionPoolOrderBy {

@@ -1,11 +1,11 @@
 mod common;
-mod create;
+mod creation;
 mod query;
 mod read;
 mod update;
 
 pub use common::PersonFields;
-pub use create::NewPerson;
+pub use creation::NewPerson;
 pub use query::{PersonFilter, PersonFilterStaff, PersonOrderBy};
 #[cfg(feature = "app")]
 pub use query::{PersonQuery, PersonQueryStaff};

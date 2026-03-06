@@ -14,6 +14,7 @@ pub struct SuspensionPool {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: SuspensionPoolFields,
+    multiplexing_type: String,
     links: Links,
 }
 impl SuspensionPool {

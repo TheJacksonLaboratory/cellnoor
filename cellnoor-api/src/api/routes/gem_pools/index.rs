@@ -46,14 +46,29 @@ pub async fn select_gem_pools(
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for GemPoolFilter
 where
     gem_pools::id: SelectableExpression<QS>,
+    gem_pools::readable_id: SelectableExpression<QS>,
+    gem_pools::chromium_run_id: SelectableExpression<QS>,
     chromium_runs::project_id: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
-        let Self { ids, project_ids } = self;
+        let Self {
+            ids,
+            readable_ids,
+            chromium_run_ids,
+            project_ids,
+        } = self;
         let mut filter = BoxedFilter::new_true();
 
         if let Some(ids) = ids {
             filter = filter.and_condition(gem_pools::id.eq_any(ids));
+        }
+
+        if let Some(readable_ids) = readable_ids {
+            filter = filter.and_condition(gem_pools::readable_id.eq_any(readable_ids));
+        }
+
+        if let Some(chromium_run_ids) = chromium_run_ids {
+            filter = filter.and_condition(gem_pools::chromium_run_id.eq_any(chromium_run_ids));
         }
 
         if let Some(project_ids) = project_ids {
