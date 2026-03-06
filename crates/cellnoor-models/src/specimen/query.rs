@@ -16,11 +16,11 @@ use crate::specimen::{
 #[filter]
 pub struct SpecimenFilter {
     pub ids: Option<Vec<Uuid>>,
+    pub readable_ids: Option<Vec<String>>,
     pub names: Option<Vec<String>>,
     pub submitted_by: Option<Vec<Uuid>>,
     pub project_ids: Option<Vec<Uuid>>,
     pub received_before: Option<Timestamp>,
-
     pub received_after: Option<Timestamp>,
     pub species: Option<Vec<Species>>,
     pub host_species: Option<Vec<Species>>,
@@ -30,9 +30,7 @@ pub struct SpecimenFilter {
     pub thermal_preservation_methods: Option<Vec<ThermalPreservationMethod>>,
     pub fresh: Option<bool>,
     pub tissues: Option<Vec<String>>,
-
     pub returned_before: Option<Timestamp>,
-
     pub returned_after: Option<Timestamp>,
     pub returned_by: Option<Vec<Uuid>>,
     pub additional_data: Option<Value>,

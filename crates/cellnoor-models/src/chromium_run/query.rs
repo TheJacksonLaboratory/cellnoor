@@ -1,5 +1,6 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::{chromium_runs, gem_pools};
+use jiff::Timestamp;
 use macro_attributes::{filter, order_by};
 use uuid::Uuid;
 
@@ -9,7 +10,14 @@ use crate::generic_query;
 #[filter]
 pub struct ChromiumRunFilter {
     pub ids: Option<Vec<Uuid>>,
+    pub readable_ids: Option<Vec<String>>,
+    pub assay_ids: Option<Vec<Uuid>>,
     pub project_ids: Option<Vec<Uuid>>,
+    pub run_by: Option<Vec<Uuid>>,
+    pub run_before: Option<Timestamp>,
+    pub run_after: Option<Timestamp>,
+    pub succeeded: Option<bool>,
+    pub additional_data: Option<serde_json::Value>,
 }
 
 #[order_by(chromium_runs)]

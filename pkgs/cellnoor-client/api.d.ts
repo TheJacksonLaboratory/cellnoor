@@ -2419,7 +2419,10 @@ export interface components {
             readable_id: string;
         };
         CdnaFilter: {
+            additional_data?: unknown;
+            gem_pool_ids?: string[] | null;
             ids?: string[] | null;
+            library_types?: components["schemas"]["LibraryType"][] | null;
             project_ids?: string[] | null;
             readable_ids?: string[] | null;
         };
@@ -2567,8 +2570,17 @@ export interface components {
             succeeded: boolean;
         };
         ChromiumRunFilter: {
+            additional_data?: unknown;
+            assay_ids?: string[] | null;
             ids?: string[] | null;
             project_ids?: string[] | null;
+            readable_ids?: string[] | null;
+            /** Format: date-time */
+            run_after?: string | null;
+            /** Format: date-time */
+            run_before?: string | null;
+            run_by?: string[] | null;
+            succeeded?: boolean | null;
         };
         ChromiumRunOrderBy: {
             descending?: boolean | null;
@@ -2725,7 +2737,14 @@ export interface components {
             target_reads_per_cell?: number | null;
         };
         LibraryFilter: {
+            additional_data?: unknown;
+            cdna_ids?: string[] | null;
             ids?: string[] | null;
+            library_types?: components["schemas"]["LibraryType"][] | null;
+            /** Format: date-time */
+            prepared_after?: string | null;
+            /** Format: date-time */
+            prepared_before?: string | null;
             project_ids?: string[] | null;
             readable_ids?: string[] | null;
         };
@@ -3416,6 +3435,7 @@ export interface components {
             ids?: string[] | null;
             names?: string[] | null;
             project_ids?: string[] | null;
+            readable_ids?: string[] | null;
             /** Format: date-time */
             received_after?: string | null;
             /** Format: date-time */
@@ -3589,8 +3609,24 @@ export interface components {
         /** @enum {string} */
         SuspensionContent: "cells" | "nuclei";
         SuspensionFilter: {
+            additional_data?: unknown;
+            contents?: components["schemas"]["SuspensionContent"][] | null;
+            /** Format: date-time */
+            created_after?: string | null;
+            /** Format: date-time */
+            created_before?: string | null;
             ids?: string[] | null;
+            /** Format: float */
+            lysis_duration_less_than?: number | null;
+            /** Format: float */
+            lysis_duration_more_than?: number | null;
+            parent_specimen_ids?: string[] | null;
             project_ids?: string[] | null;
+            readable_ids?: string[] | null;
+            /** Format: int64 */
+            target_cell_recovery_less_than?: number | null;
+            /** Format: int64 */
+            target_cell_recovery_more_than?: number | null;
         };
         SuspensionMeasurement: {
             data: components["schemas"]["SuspensionMeasurementData"];
@@ -3674,7 +3710,13 @@ export interface components {
         };
         SuspensionPoolFilter: {
             ids?: string[] | null;
+            names?: string[] | null;
+            /** Format: date-time */
+            pooled_after?: string | null;
+            /** Format: date-time */
+            pooled_before?: string | null;
             project_ids?: string[] | null;
+            readable_ids?: string[] | null;
         };
         SuspensionPoolMeasurement: {
             data: components["schemas"]["SuspensionPoolMeasurementData"];

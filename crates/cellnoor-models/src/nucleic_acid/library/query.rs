@@ -1,16 +1,23 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::libraries;
+use jiff::Timestamp;
 use macro_attributes::{filter, order_by};
 use uuid::Uuid;
 
 #[cfg(feature = "app")]
 use crate::generic_query;
+use crate::tenx_assay::LibraryType;
 
 #[filter]
 pub struct LibraryFilter {
     pub ids: Option<Vec<Uuid>>,
     pub readable_ids: Option<Vec<String>>,
+    pub cdna_ids: Option<Vec<Uuid>>,
     pub project_ids: Option<Vec<Uuid>>,
+    pub prepared_before: Option<Timestamp>,
+    pub prepared_after: Option<Timestamp>,
+    pub library_types: Option<Vec<LibraryType>>,
+    pub additional_data: Option<serde_json::Value>,
 }
 
 #[order_by(libraries)]

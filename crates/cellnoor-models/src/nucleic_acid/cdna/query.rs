@@ -5,12 +5,16 @@ use uuid::Uuid;
 
 #[cfg(feature = "app")]
 use crate::generic_query;
+use crate::tenx_assay::LibraryType;
 
 #[filter]
 pub struct CdnaFilter {
     pub ids: Option<Vec<Uuid>>,
     pub readable_ids: Option<Vec<String>>,
+    pub gem_pool_ids: Option<Vec<Uuid>>,
     pub project_ids: Option<Vec<Uuid>>,
+    pub library_types: Option<Vec<LibraryType>>,
+    pub additional_data: Option<serde_json::Value>,
 }
 
 #[order_by(cdna)]

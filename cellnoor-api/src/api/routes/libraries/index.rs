@@ -1,8 +1,12 @@
 use axum::{Json, extract::State};
 use cellnoor_models::library::{LibraryFilter, LibraryQuery, LibrarySummary};
-use cellnoor_schema::libraries::{id, project_id, readable_id};
-use diesel::{SelectableExpression, prelude::*};
+use cellnoor_schema::{
+    cdna,
+    libraries::{additional_data, cdna_id, id, prepared_at, project_id, readable_id},
+};
+use diesel::{SelectableExpression, dsl::AssumeNotNull, prelude::*};
 use diesel_async::RunQueryDsl;
+use jiff_diesel::ToDiesel;
 
 use crate::{
     api::{
@@ -47,13 +51,22 @@ impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for LibraryFilter
 where
     id: SelectableExpression<QS>,
     readable_id: SelectableExpression<QS>,
+    cdna_id: SelectableExpression<QS>,
     project_id: SelectableExpression<QS>,
+    prepared_at: SelectableExpression<QS>,
+    cdna::library_type: SelectableExpression<QS>,
+    AssumeNotNull<additional_data>: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
         let Self {
             ids,
             readable_ids,
+            cdna_ids,
             project_ids,
+            prepared_before,
+            prepared_after,
+            library_types,
+            additional_data: additional_data_filter,
         } = self;
         let mut filter = BoxedFilter::new_true();
 
@@ -65,8 +78,32 @@ where
             filter = filter.and_condition(like_any(readable_id, readable_ids));
         }
 
+        if let Some(cdna_ids) = cdna_ids {
+            filter = filter.and_condition(cdna_id.eq_any(cdna_ids));
+        }
+
         if let Some(project_ids) = project_ids {
             filter = filter.and_condition(project_id.eq_any(project_ids));
+        }
+
+        if let Some(prepared_before) = prepared_before.map(ToDiesel::to_diesel) {
+            filter = filter.and_condition(prepared_at.lt(prepared_before));
+        }
+
+        if let Some(prepared_after) = prepared_after.map(ToDiesel::to_diesel) {
+            filter = filter.and_condition(prepared_at.gt(prepared_after));
+        }
+
+        if let Some(library_types) = library_types {
+            filter = filter.and_condition(cdna::library_type.eq_any(library_types));
+        }
+
+        if let Some(additional_data_filter) = additional_data_filter {
+            filter = filter.and_condition(
+                additional_data
+                    .assume_not_null()
+                    .contains(additional_data_filter),
+            );
         }
 
         filter

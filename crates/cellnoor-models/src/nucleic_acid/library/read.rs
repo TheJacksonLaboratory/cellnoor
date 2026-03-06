@@ -9,7 +9,7 @@ use uuid::Uuid;
 use crate::{cdna::CdnaSummary, library::common::LibraryFields, links::Links};
 
 #[select]
-#[cfg_attr(feature = "app", diesel(table_name = libraries))]
+#[cfg_attr(feature = "app", diesel(table_name = libraries, base_query = libraries::table.inner_join(cdna::table)))]
 pub struct LibrarySummary {
     id: Uuid,
     project_id: Uuid,

@@ -53,9 +53,9 @@ where
         let Self {
             ids,
             names,
-            library_types: library_types_query,
+            library_types: library_types_filter,
             library_types_flat,
-            sample_multiplexing: sample_multiplexing_query,
+            sample_multiplexing: sample_multiplexing_filter,
             chemistry_versions,
             chromium_chips,
         } = self;
@@ -70,10 +70,10 @@ where
             filter = filter.and_condition(like_any(name, names));
         }
 
-        if let Some(library_types_query) = library_types_query {
+        if let Some(library_types_filter) = library_types_filter {
             let mut condition = BoxedFilter::new_false();
             let lib_type_field = library_types.assume_not_null();
-            for query in library_types_query {
+            for query in library_types_filter {
                 condition = condition.or_condition(
                     lib_type_field
                         .contains(query)
@@ -89,11 +89,11 @@ where
                 filter.and_condition(library_types.assume_not_null().contains(library_types_flat));
         }
 
-        if let Some(sample_multiplexing_query) = sample_multiplexing_query {
+        if let Some(sample_multiplexing_filter) = sample_multiplexing_filter {
             filter = filter.and_condition(
                 sample_multiplexing
                     .assume_not_null()
-                    .eq_any(sample_multiplexing_query),
+                    .eq_any(sample_multiplexing_filter),
             );
         }
 

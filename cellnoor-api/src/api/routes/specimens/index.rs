@@ -49,6 +49,7 @@ pub async fn select_specimens(
 impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for SpecimenFilter
 where
     AssumeNotNull<t::id>: SelectableExpression<QS>,
+    AssumeNotNull<t::readable_id>: SelectableExpression<QS>,
     AssumeNotNull<t::name>: SelectableExpression<QS>,
     AssumeNotNull<t::submitted_by>: SelectableExpression<QS>,
     AssumeNotNull<t::project_id>: SelectableExpression<QS>,
@@ -69,6 +70,7 @@ where
 
         let Self {
             ids,
+            readable_ids,
             names,
             submitted_by,
             project_ids,
@@ -90,6 +92,10 @@ where
 
         if let Some(ids) = ids {
             filter = filter.and_condition(t::id.assume_not_null().eq_any(ids));
+        }
+
+        if let Some(readable_ids) = readable_ids {
+            filter = filter.and_condition(t::readable_id.assume_not_null().eq_any(readable_ids));
         }
 
         if let Some(names) = names {

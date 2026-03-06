@@ -1,7 +1,7 @@
 use axum::{Json, extract::State};
 use cellnoor_models::cdna::{CdnaFilter, CdnaQuery, CdnaSummary};
-use cellnoor_schema::cdna::{id, project_id, readable_id};
-use diesel::{SelectableExpression, prelude::*};
+use cellnoor_schema::cdna::{self, gem_pool_id, id, library_type, project_id, readable_id};
+use diesel::{SelectableExpression, dsl::AssumeNotNull, prelude::*};
 use diesel_async::RunQueryDsl;
 
 use crate::{
@@ -47,13 +47,19 @@ impl<'a, QS: 'a> ToBoxedFilter<'a, QS> for CdnaFilter
 where
     id: SelectableExpression<QS>,
     readable_id: SelectableExpression<QS>,
+    AssumeNotNull<gem_pool_id>: SelectableExpression<QS>,
     project_id: SelectableExpression<QS>,
+    library_type: SelectableExpression<QS>,
+    AssumeNotNull<cdna::additional_data>: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
         let Self {
             ids,
             readable_ids,
+            gem_pool_ids,
             project_ids,
+            library_types,
+            additional_data,
         } = self;
         let mut filter = BoxedFilter::new_true();
 
@@ -65,8 +71,24 @@ where
             filter = filter.and_condition(readable_id.eq_any(readable_ids));
         }
 
+        if let Some(gem_pool_ids) = gem_pool_ids {
+            filter = filter.and_condition(gem_pool_id.assume_not_null().eq_any(gem_pool_ids));
+        }
+
         if let Some(project_ids) = project_ids {
             filter = filter.and_condition(project_id.eq_any(project_ids));
+        }
+
+        if let Some(library_types) = library_types {
+            filter = filter.and_condition(library_type.eq_any(library_types));
+        }
+
+        if let Some(additional_data) = additional_data {
+            filter = filter.and_condition(
+                cdna::additional_data
+                    .assume_not_null()
+                    .contains(additional_data),
+            );
         }
 
         filter

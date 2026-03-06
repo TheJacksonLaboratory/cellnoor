@@ -1,9 +1,9 @@
-mod schema;
-
 use diesel::{deserialize::FromSql, pg::Pg, sql_types::Text};
 pub use schema::*;
 
 use crate::schema::sql_types::CaseInsensitiveText;
+
+mod schema;
 
 impl FromSql<CaseInsensitiveText, Pg> for String {
     fn from_sql(
