@@ -3664,6 +3664,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             links: components["schemas"]["Links"];
+            multiplexing_type: string;
             name: string;
             /** Format: date-time */
             pooled_at: string;
