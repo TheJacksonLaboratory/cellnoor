@@ -24,8 +24,10 @@ pub struct SuspensionPoolFilter {
 pub enum SuspensionPoolOrderBy {
     id { descending: Option<bool> },
     readable_id { descending: Option<bool> },
+    project_id { descending: Option<bool> },
     name { descending: Option<bool> },
     pooled_at { descending: Option<bool> },
+    multiplexing_type { descending: Option<bool> },
 }
 
 impl Default for SuspensionPoolOrderBy {

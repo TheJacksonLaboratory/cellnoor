@@ -2488,6 +2488,10 @@ export interface components {
         } | {
             descending?: boolean | null;
             /** @constant */
+            field: "project_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
             field: "n_amplification_cycles";
         };
         CdnaSummary: {
@@ -2614,6 +2618,10 @@ export interface components {
             descending?: boolean | null;
             /** @constant */
             field: "succeeded";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "project_id";
         };
         ChromiumRunSummary: {
             additional_data?: unknown;
@@ -2699,6 +2707,10 @@ export interface components {
             descending?: boolean | null;
             /** @constant */
             field: "readable_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "chromium_run_id";
         };
         GemPoolSummary: {
             /** Format: uuid */
@@ -2811,6 +2823,10 @@ export interface components {
             descending?: boolean | null;
             /** @constant */
             field: "cdna_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "project_id";
         } | {
             descending?: boolean | null;
             /** @constant */
@@ -3315,19 +3331,11 @@ export interface components {
         } | {
             descending?: boolean | null;
             /** @constant */
-            field: "email_verified";
-        } | {
-            descending?: boolean | null;
-            /** @constant */
             field: "institution_id";
         } | {
             descending?: boolean | null;
             /** @constant */
             field: "orcid";
-        } | {
-            descending?: boolean | null;
-            /** @constant */
-            field: "microsoft_entra_oid";
         };
         PersonSummary: {
             email?: string | null;
@@ -3705,6 +3713,14 @@ export interface components {
         } | {
             descending?: boolean | null;
             /** @constant */
+            field: "project_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "content";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
             field: "created_at";
         } | {
             descending?: boolean | null;
@@ -3775,11 +3791,19 @@ export interface components {
         } | {
             descending?: boolean | null;
             /** @constant */
+            field: "project_id";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
             field: "name";
         } | {
             descending?: boolean | null;
             /** @constant */
             field: "pooled_at";
+        } | {
+            descending?: boolean | null;
+            /** @constant */
+            field: "multiplexing_type";
         };
         SuspensionSummary: {
             additional_data?: unknown;

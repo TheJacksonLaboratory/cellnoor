@@ -32,6 +32,7 @@ pub enum LibraryOrderBy {
     id { descending: Option<bool> },
     readable_id { descending: Option<bool> },
     cdna_id { descending: Option<bool> },
+    project_id { descending: Option<bool> },
     single_index_set_name { descending: Option<bool> },
     dual_index_set_name { descending: Option<bool> },
     number_of_sample_index_pcr_cycles { descending: Option<bool> },

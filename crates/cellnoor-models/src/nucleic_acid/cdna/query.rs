@@ -30,6 +30,7 @@ pub enum CdnaOrderBy {
     library_type { descending: Option<bool> },
     prepared_at { descending: Option<bool> },
     gem_pool_id { descending: Option<bool> },
+    project_id { descending: Option<bool> },
     n_amplification_cycles { descending: Option<bool> },
 }
 

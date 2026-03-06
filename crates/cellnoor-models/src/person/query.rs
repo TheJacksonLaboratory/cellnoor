@@ -9,10 +9,8 @@ pub enum PersonOrderBy {
     id { descending: Option<bool> },
     name { descending: Option<bool> },
     email { descending: Option<bool> },
-    email_verified { descending: Option<bool> },
     institution_id { descending: Option<bool> },
     orcid { descending: Option<bool> },
-    microsoft_entra_oid { descending: Option<bool> },
 }
 
 impl Default for PersonOrderBy {

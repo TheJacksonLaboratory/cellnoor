@@ -29,6 +29,7 @@ pub enum ChromiumRunOrderBy {
     run_at { descending: Option<bool> },
     run_by { descending: Option<bool> },
     succeeded { descending: Option<bool> },
+    project_id { descending: Option<bool> },
 }
 
 impl Default for ChromiumRunOrderBy {
@@ -54,6 +55,7 @@ pub struct GemPoolFilter {
 pub enum GemPoolOrderBy {
     id { descending: Option<bool> },
     readable_id { descending: Option<bool> },
+    chromium_run_id { descending: Option<bool> },
 }
 
 impl Default for GemPoolOrderBy {

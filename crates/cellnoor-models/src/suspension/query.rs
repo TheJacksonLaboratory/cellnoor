@@ -30,6 +30,8 @@ pub enum SuspensionOrderBy {
     id { descending: Option<bool> },
     readable_id { descending: Option<bool> },
     parent_specimen_id { descending: Option<bool> },
+    project_id { descending: Option<bool> },
+    content { descending: Option<bool> },
     created_at { descending: Option<bool> },
     lysis_duration_minutes { descending: Option<bool> },
     target_cell_recovery { descending: Option<bool> },
