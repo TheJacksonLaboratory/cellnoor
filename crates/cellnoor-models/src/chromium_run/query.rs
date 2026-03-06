@@ -44,6 +44,8 @@ pub type ChromiumRunQuery = generic_query::Query<ChromiumRunFilter, ChromiumRunO
 #[filter]
 pub struct GemPoolFilter {
     pub ids: Option<Vec<Uuid>>,
+    pub readable_ids: Option<Vec<String>>,
+    pub chromium_run_ids: Option<Vec<Uuid>>,
     pub project_ids: Option<Vec<Uuid>>,
 }
 

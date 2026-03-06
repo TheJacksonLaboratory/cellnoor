@@ -2423,6 +2423,14 @@ export interface components {
             gem_pool_ids?: string[] | null;
             ids?: string[] | null;
             library_types?: components["schemas"]["LibraryType"][] | null;
+            /** Format: int32 */
+            n_amplification_cycles_less_than?: number | null;
+            /** Format: int32 */
+            n_amplification_cycles_more_than?: number | null;
+            /** Format: date-time */
+            prepared_after?: string | null;
+            /** Format: date-time */
+            prepared_before?: string | null;
             project_ids?: string[] | null;
             readable_ids?: string[] | null;
         };
@@ -2678,8 +2686,10 @@ export interface components {
             readable_id: string;
         };
         GemPoolFilter: {
+            chromium_run_ids?: string[] | null;
             ids?: string[] | null;
             project_ids?: string[] | null;
+            readable_ids?: string[] | null;
         };
         GemPoolOrderBy: {
             descending?: boolean | null;
@@ -2739,14 +2749,24 @@ export interface components {
         LibraryFilter: {
             additional_data?: unknown;
             cdna_ids?: string[] | null;
+            dual_index_set_names?: string[] | null;
             ids?: string[] | null;
             library_types?: components["schemas"]["LibraryType"][] | null;
+            /** Format: int32 */
+            number_of_sample_index_pcr_cycles_less_than?: number | null;
+            /** Format: int32 */
+            number_of_sample_index_pcr_cycles_more_than?: number | null;
             /** Format: date-time */
             prepared_after?: string | null;
             /** Format: date-time */
             prepared_before?: string | null;
             project_ids?: string[] | null;
             readable_ids?: string[] | null;
+            single_index_set_names?: string[] | null;
+            /** Format: int64 */
+            target_reads_per_cell_less_than?: number | null;
+            /** Format: int64 */
+            target_reads_per_cell_more_than?: number | null;
         };
         LibraryMeasurement: {
             concentration?: unknown;
@@ -3709,7 +3729,9 @@ export interface components {
             readable_id: string;
         };
         SuspensionPoolFilter: {
+            additional_data?: unknown;
             ids?: string[] | null;
+            multiplexing_types?: string[] | null;
             names?: string[] | null;
             /** Format: date-time */
             pooled_after?: string | null;

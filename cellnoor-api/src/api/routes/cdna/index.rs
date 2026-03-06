@@ -1,8 +1,12 @@
 use axum::{Json, extract::State};
 use cellnoor_models::cdna::{CdnaFilter, CdnaQuery, CdnaSummary};
-use cellnoor_schema::cdna::{self, gem_pool_id, id, library_type, project_id, readable_id};
+use cellnoor_schema::cdna::{
+    self, gem_pool_id, id, library_type, n_amplification_cycles, prepared_at, project_id,
+    readable_id,
+};
 use diesel::{SelectableExpression, dsl::AssumeNotNull, prelude::*};
 use diesel_async::RunQueryDsl;
+use jiff_diesel::ToDiesel;
 
 use crate::{
     api::{
@@ -50,6 +54,8 @@ where
     AssumeNotNull<gem_pool_id>: SelectableExpression<QS>,
     project_id: SelectableExpression<QS>,
     library_type: SelectableExpression<QS>,
+    prepared_at: SelectableExpression<QS>,
+    n_amplification_cycles: SelectableExpression<QS>,
     AssumeNotNull<cdna::additional_data>: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
@@ -59,6 +65,10 @@ where
             gem_pool_ids,
             project_ids,
             library_types,
+            prepared_before,
+            prepared_after,
+            n_amplification_cycles_less_than,
+            n_amplification_cycles_more_than,
             additional_data,
         } = self;
         let mut filter = BoxedFilter::new_true();
@@ -81,6 +91,24 @@ where
 
         if let Some(library_types) = library_types {
             filter = filter.and_condition(library_type.eq_any(library_types));
+        }
+
+        if let Some(prepared_before) = prepared_before.map(ToDiesel::to_diesel) {
+            filter = filter.and_condition(prepared_at.lt(prepared_before));
+        }
+
+        if let Some(prepared_after) = prepared_after.map(ToDiesel::to_diesel) {
+            filter = filter.and_condition(prepared_at.gt(prepared_after));
+        }
+
+        if let Some(n_amplification_cycles_less_than) = n_amplification_cycles_less_than {
+            filter =
+                filter.and_condition(n_amplification_cycles.lt(*n_amplification_cycles_less_than));
+        }
+
+        if let Some(n_amplification_cycles_more_than) = n_amplification_cycles_more_than {
+            filter =
+                filter.and_condition(n_amplification_cycles.gt(*n_amplification_cycles_more_than));
         }
 
         if let Some(additional_data) = additional_data {

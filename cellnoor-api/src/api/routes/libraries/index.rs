@@ -2,7 +2,10 @@ use axum::{Json, extract::State};
 use cellnoor_models::library::{LibraryFilter, LibraryQuery, LibrarySummary};
 use cellnoor_schema::{
     cdna,
-    libraries::{additional_data, cdna_id, id, prepared_at, project_id, readable_id},
+    libraries::{
+        additional_data, cdna_id, dual_index_set_name, id, number_of_sample_index_pcr_cycles,
+        prepared_at, project_id, readable_id, single_index_set_name, target_reads_per_cell,
+    },
 };
 use diesel::{SelectableExpression, dsl::AssumeNotNull, prelude::*};
 use diesel_async::RunQueryDsl;
@@ -53,6 +56,10 @@ where
     readable_id: SelectableExpression<QS>,
     cdna_id: SelectableExpression<QS>,
     project_id: SelectableExpression<QS>,
+    AssumeNotNull<single_index_set_name>: SelectableExpression<QS>,
+    AssumeNotNull<dual_index_set_name>: SelectableExpression<QS>,
+    number_of_sample_index_pcr_cycles: SelectableExpression<QS>,
+    AssumeNotNull<target_reads_per_cell>: SelectableExpression<QS>,
     prepared_at: SelectableExpression<QS>,
     cdna::library_type: SelectableExpression<QS>,
     AssumeNotNull<additional_data>: SelectableExpression<QS>,
@@ -63,6 +70,12 @@ where
             readable_ids,
             cdna_ids,
             project_ids,
+            single_index_set_names,
+            dual_index_set_names,
+            number_of_sample_index_pcr_cycles_less_than,
+            number_of_sample_index_pcr_cycles_more_than,
+            target_reads_per_cell_less_than,
+            target_reads_per_cell_more_than,
             prepared_before,
             prepared_after,
             library_types,
@@ -84,6 +97,54 @@ where
 
         if let Some(project_ids) = project_ids {
             filter = filter.and_condition(project_id.eq_any(project_ids));
+        }
+
+        if let Some(single_index_set_names) = single_index_set_names {
+            filter = filter.and_condition(
+                single_index_set_name
+                    .assume_not_null()
+                    .eq_any(single_index_set_names),
+            );
+        }
+
+        if let Some(dual_index_set_names) = dual_index_set_names {
+            filter = filter.and_condition(
+                dual_index_set_name
+                    .assume_not_null()
+                    .eq_any(dual_index_set_names),
+            );
+        }
+
+        if let Some(number_of_sample_index_pcr_cycles_less_than) =
+            number_of_sample_index_pcr_cycles_less_than
+        {
+            filter = filter.and_condition(
+                number_of_sample_index_pcr_cycles.lt(*number_of_sample_index_pcr_cycles_less_than),
+            );
+        }
+
+        if let Some(number_of_sample_index_pcr_cycles_more_than) =
+            number_of_sample_index_pcr_cycles_more_than
+        {
+            filter = filter.and_condition(
+                number_of_sample_index_pcr_cycles.gt(*number_of_sample_index_pcr_cycles_more_than),
+            );
+        }
+
+        if let Some(target_reads_per_cell_less_than) = target_reads_per_cell_less_than {
+            filter = filter.and_condition(
+                target_reads_per_cell
+                    .assume_not_null()
+                    .lt(*target_reads_per_cell_less_than),
+            );
+        }
+
+        if let Some(target_reads_per_cell_more_than) = target_reads_per_cell_more_than {
+            filter = filter.and_condition(
+                target_reads_per_cell
+                    .assume_not_null()
+                    .gt(*target_reads_per_cell_more_than),
+            );
         }
 
         if let Some(prepared_before) = prepared_before.map(ToDiesel::to_diesel) {

@@ -1,7 +1,9 @@
 use axum::{Json, extract::State};
 use cellnoor_models::suspension_pool::{SuspensionPool, SuspensionPoolFilter, SuspensionPoolQuery};
-use cellnoor_schema::suspension_pools::{id, name, pooled_at, project_id, readable_id};
-use diesel::prelude::*;
+use cellnoor_schema::suspension_pools::{
+    additional_data, id, multiplexing_type, name, pooled_at, project_id, readable_id,
+};
+use diesel::{dsl::AssumeNotNull, prelude::*};
 use diesel_async::RunQueryDsl;
 use jiff_diesel::ToDiesel;
 
@@ -51,6 +53,8 @@ where
     project_id: SelectableExpression<QS>,
     name: SelectableExpression<QS>,
     pooled_at: SelectableExpression<QS>,
+    multiplexing_type: SelectableExpression<QS>,
+    AssumeNotNull<additional_data>: SelectableExpression<QS>,
 {
     fn to_boxed_filter(&'a self) -> BoxedFilter<'a, QS> {
         let Self {
@@ -60,6 +64,8 @@ where
             names,
             pooled_before,
             pooled_after,
+            multiplexing_types,
+            additional_data: additional_data_filter,
         } = self;
         let mut filter = BoxedFilter::new_true();
 
@@ -85,6 +91,18 @@ where
 
         if let Some(pooled_after) = pooled_after.map(ToDiesel::to_diesel) {
             filter = filter.and_condition(pooled_at.gt(pooled_after));
+        }
+
+        if let Some(multiplexing_types) = multiplexing_types {
+            filter = filter.and_condition(multiplexing_type.eq_any(multiplexing_types));
+        }
+
+        if let Some(additional_data_filter) = additional_data_filter {
+            filter = filter.and_condition(
+                additional_data
+                    .assume_not_null()
+                    .contains(additional_data_filter),
+            );
         }
 
         filter

@@ -15,6 +15,8 @@ pub struct SuspensionPoolFilter {
     pub names: Option<Vec<String>>,
     pub pooled_before: Option<Timestamp>,
     pub pooled_after: Option<Timestamp>,
+    pub multiplexing_types: Option<Vec<String>>,
+    pub additional_data: Option<serde_json::Value>,
 }
 
 #[order_by(suspension_pools)]
