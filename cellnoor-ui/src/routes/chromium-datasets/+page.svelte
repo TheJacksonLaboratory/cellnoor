@@ -33,7 +33,72 @@
     order_by: [{ field: "delivered_at", descending: true }],
   });
 
-  let stringifiedQuery = $derived(toQueryString(query));
+  let advancedQuery = $state("");
+  let advancedQueryError = $derived.by(() => {
+    if (!advancedQuery) {
+      return "";
+    }
+    try {
+      JSON.parse(advancedQuery);
+      return "";
+    } catch (error) {
+      return error;
+    }
+  });
+
+  let stringifiedSimpleQuery = $derived(toQueryString(query));
+
+  let stringifiedQuery = $derived.by(() => advancedQuery || stringifiedSimpleQuery);
+
+  const exampleAdvancedQuery = JSON.stringify(
+    {
+      filter: {
+        names: ["super scientific science"],
+        delivered_before: "3000-12-31T00:00Z",
+        delivered_after: "1999-01-01T00:00Z",
+        assay: {
+          names: ["Universal 3' Gene Expression"],
+          chemistry_versions: ["v4 - GEM-X"],
+          sample_multiplexing: [
+            "singleplex",
+            "on_chip_multiplexing",
+            "cellplex",
+            "flex_barcode",
+            "hashtag",
+          ],
+          chromium_chips: ["GEM-X FX"],
+          library_types_flat: ["gene_expression", "chromatin_accessibility"],
+          library_types: [["gene_expression", "chromatin_accessibility"], ["gene_expression"]],
+        },
+        specimen: {
+          names: ["some cool sample", "another cool sample"],
+          species: ["mus_musculus", "homo_sapiens"],
+          host_species: ["mus_musculus"],
+          fixatives: ["formaldehyde_derivative", "dithiobis_succinimidylpropionate"],
+          embedded_in: [
+            "paraffin",
+            "optimal_cutting_temperature_compound",
+            "carboxymethyl_cellulose",
+          ],
+          tissues: ["kleenex"],
+          fresh: false,
+          received_before: "3000-12-31T00:00Z",
+          received_after: "1999-01-01T00:00Z",
+          returned_before: "3000-12-31T00:00Z",
+          returned_after: "1999-01-01T00:00Z",
+          types: ["block", "cell_pellet", "suspension", "tissue"],
+          thermal_preservation_methods: ["controlled_rate_freezing", "flash_freezing"],
+        },
+      },
+    },
+    null,
+    2,
+  );
+  const advancedQueryPlaceholder = `{
+    "filter": {
+      "names": []
+    }
+}`;
 
   function toLowercaseChoice(s: string) {
     return { label: s.replaceAll("_", " "), value: s };
@@ -101,7 +166,7 @@
     {/if}
   </div>
   <div class="drawer-side bg-base px-4 pt-4 border-r">
-    <div class="w-80">
+    <div class="w-120">
       <label for="filter-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
       <p class="font-bold text-lg px-2">Filter</p>
       <form bind:this={filterForm} action="?/search">
@@ -150,8 +215,24 @@
             bind:values={query.filter.assay.library_types_flat}
           />
         </Fieldset>
+        <Fieldset name="Advanced">
+          <div class="collapse">
+            <input type="checkbox" />
+            <div class="collapse-title font-semibold btn btn-success mb-2">Example</div>
+            <div class="collapse-content mockup-code bg-base-200 text-base-content border">
+              <pre><code>{exampleAdvancedQuery}</code></pre>
+            </div>
+          </div>
+          <textarea
+            bind:value={advancedQuery}
+            class="textarea w-full"
+            rows="6"
+            placeholder={advancedQueryPlaceholder}
+          ></textarea>
+          <p>{advancedQueryError}</p>
+        </Fieldset>
         <input name="q" hidden bind:value={stringifiedQuery} />
-        <button class="btn btn-primary mt-4">Apply</button>
+        <button type="submit" class="btn btn-primary mt-4">Apply</button>
       </form>
     </div>
   </div>
