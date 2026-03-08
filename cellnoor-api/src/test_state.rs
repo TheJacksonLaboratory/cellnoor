@@ -762,8 +762,9 @@ impl TestState {
             .unwrap();
 
         let values = |name| {
-            let raw_content =
-                format!("ds_id, some_metric,another_metric,n\n{dataset_id}100,42,name");
+            let raw_content = format!(
+                "ds_id, some_metric,another_metric,specimen_name\n{dataset_id},100,42,{name}"
+            );
             let parsed_data = serde_json::json!({"ds_id": dataset_id, "some_metric": 100, "another_metric": 42, "specimen_name": name});
             (
                 mf::dataset_id.eq(dataset_id),
