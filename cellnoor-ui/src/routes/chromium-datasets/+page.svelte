@@ -142,10 +142,9 @@
   const orderByChoices = orderByValues.map(({ field }) => field).map(toLowercaseChoice);
 </script>
 
-<div class="drawer lg:drawer-open">
+<div class="drawer drawer-open">
   <input id="filter-drawer" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content mt-4 px-4 flex flex-col items-stretch">
-    <label for="filter-drawer" class="btn mx-2 drawer-button lg:hidden">Filter and sort</label>
     {#if chromiumDatasets && chromiumDatasets.length != 0}
       <div class="mb-2 flex flex-row justify-between align-middle">
         <p class="text-lg">{chromiumDatasets.length} results</p>
@@ -166,8 +165,7 @@
     {/if}
   </div>
   <div class="drawer-side bg-base px-4 pt-4 border-r">
-    <div class="w-120">
-      <label for="filter-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+    <div class="lg:w-120 sm:w-80">
       <p class="font-bold text-lg px-2">Filter</p>
       <form bind:this={filterForm} action="?/search">
         <Fieldset name="Specimen Information">
