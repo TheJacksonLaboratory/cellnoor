@@ -63,7 +63,7 @@
           placeholder="Search Chromium datasets by specimen name"
         />
         <input hidden name="q" bind:value={stringifiedQuery} />
-        <button hidden class="join-item">Search</button>
+        <button hidden>Search</button>
       </form>
     </label>
     <ul class="menu menu-horizontal">
