@@ -46,4 +46,9 @@ impl ChromiumDataset {
     pub fn name(&self) -> &str {
         self.inner.name.as_ref()
     }
+
+    #[must_use]
+    pub fn project_id(&self) -> Uuid {
+        self.project.id()
+    }
 }

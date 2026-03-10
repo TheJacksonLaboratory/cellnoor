@@ -14,7 +14,7 @@ use uuid::Uuid;
 use crate::{
     api::{
         auth::{AuthProjects, AuthUser},
-        routes::chromium_datasets::index::chromium_datasets_joined_to_projects,
+        routes::chromium_datasets::index::chromium_datasets_to_projects,
     },
     db::{self, DbConnection},
     state::AppState,
@@ -55,7 +55,7 @@ pub(super) async fn select_chromium_dataset_by_id(
 
 #[diesel::dsl::auto_type]
 fn chromium_datasets_to_assay() -> _ {
-    chromium_datasets_joined_to_projects().inner_join(chromium_dataset_libraries::table.inner_join(
+    chromium_datasets_to_projects().inner_join(chromium_dataset_libraries::table.inner_join(
         libraries::table.inner_join(cdna::table.inner_join(
             gem_pools::table.inner_join(chromium_runs::table.inner_join(tenx_assays::table)),
         )),
