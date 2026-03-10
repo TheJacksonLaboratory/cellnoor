@@ -11,7 +11,7 @@
       "@sveltejs/vite-plugin-svelte": "^6.2.4",
       "@types/bun": "latest",
       "openapi-fetch": "^0.17.0",
-      "svelte": "^5.53.8",
+      "svelte": "^5.53.9",
       "svelte-check": "^4.4.5",
       "typescript": "^5.9.3",
       "vite": "^7.3.1",
@@ -26,10 +26,10 @@
       "@eslint/js": "^10.0.1",
       "eslint": "^10.0.3",
       "eslint-config-prettier": "^10.1.8",
-      "eslint-plugin-svelte": "^3.15.1",
+      "eslint-plugin-svelte": "^3.15.2",
       "prettier": "^3.8.1",
       "prettier-plugin-svelte": "^3.5.1",
-      "typescript-eslint": "^8.56.1",
+      "typescript-eslint": "^8.57.0",
       "globals": "17.4.0"
     }
   }

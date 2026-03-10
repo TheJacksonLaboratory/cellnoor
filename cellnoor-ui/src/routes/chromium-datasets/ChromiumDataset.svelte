@@ -1,13 +1,13 @@
 <!-- I cannot believe how shitty this is -->
 <script lang="ts">
   import { DATE_FORMATTER } from "$lib/date";
-  import type { ChromiumDatasetSummary } from "cellnoor-client";
+  import type { ChromiumDataset } from "cellnoor-client";
   import LibraryTypeBadges from "../LibraryTypeBadges.svelte";
 
   const {
     chromiumDataset,
   }: {
-    chromiumDataset: ChromiumDatasetSummary & {
+    chromiumDataset: ChromiumDataset & {
       files: Map<string, string[]>;
     };
   } = $props();

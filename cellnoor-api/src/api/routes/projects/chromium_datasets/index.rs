@@ -4,7 +4,7 @@ use axum::{
 };
 use cellnoor_models::{
     IdParameter,
-    chromium_dataset::{ChromiumDatasetQuery, ChromiumDatasetSummary},
+    chromium_dataset::{ChromiumDataset, ChromiumDatasetQuery},
 };
 
 use crate::{
@@ -18,7 +18,7 @@ pub async fn index_project_chromium_datasets(
     db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
     AuthJsonQuery { mut q }: AuthJsonQuery<ChromiumDatasetQuery>,
-) -> Result<Json<Vec<ChromiumDatasetSummary>>, db::Error> {
+) -> Result<Json<Vec<ChromiumDataset>>, db::Error> {
     q.filter.project_ids = Some(vec![id]);
 
     select_chromium_datasets(q, &db_conn).await.map(Json)

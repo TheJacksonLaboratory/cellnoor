@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use cellnoor_models::{
     cdna::{CdnaFields, CdnaSummary, NewCdna},
-    chromium_dataset::{ChromiumDatasetSummary, NewChromiumDataset},
+    chromium_dataset::{ChromiumDataset, NewChromiumDataset},
     chromium_run::{
         ChipLoadingFields, ChromiumRunFields, ChromiumRunSummary, GemPoolFields, GemPoolSummary,
         MAX_GEM_POOLS_PER_NON_OCM_RUN, MAX_GEM_POOLS_PER_OCM_RUN, MAX_SUSPENSIONS_PER_OCM_GEM_POOL,
@@ -841,7 +841,7 @@ pub struct Database {
     pub gem_pools: Vec<GemPoolSummary>,
     pub cdna: Vec<CdnaSummary>,
     pub libraries: Vec<LibrarySummary>,
-    pub chromium_datasets: Vec<ChromiumDatasetSummary>,
+    pub chromium_datasets: Vec<ChromiumDataset>,
 }
 
 impl Database {

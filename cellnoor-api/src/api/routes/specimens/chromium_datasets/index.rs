@@ -4,7 +4,7 @@ use axum::{
 };
 use cellnoor_models::{
     IdParameter,
-    chromium_dataset::{ChromiumDatasetQuery, ChromiumDatasetSummary},
+    chromium_dataset::{ChromiumDataset, ChromiumDatasetQuery},
     specimen::SpecimenFilter,
 };
 
@@ -19,7 +19,7 @@ pub async fn index_specimen_chromium_datasets(
     db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
     AuthJsonQuery { mut q }: AuthJsonQuery<ChromiumDatasetQuery>,
-) -> Result<Json<Vec<ChromiumDatasetSummary>>, db::Error> {
+) -> Result<Json<Vec<ChromiumDataset>>, db::Error> {
     q.filter.specimen = Some(SpecimenFilter {
         ids: Some(vec![id]),
         ..Default::default()

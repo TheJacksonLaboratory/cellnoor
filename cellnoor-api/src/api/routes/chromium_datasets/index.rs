@@ -1,6 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_models::chromium_dataset::{
-    ChromiumDatasetFilter, ChromiumDatasetQuery, ChromiumDatasetSummary,
+    ChromiumDataset, ChromiumDatasetFilter, ChromiumDatasetQuery,
 };
 use cellnoor_schema::{
     cdna::dsl::cdna,
@@ -10,6 +10,7 @@ use cellnoor_schema::{
     chromium_runs::dsl::chromium_runs,
     gem_pools::dsl::gem_pools,
     libraries::dsl::libraries,
+    projects,
     specimens::{self, table as specimens_table},
     suspension_pools::dsl::suspension_pools,
     suspension_tagging::dsl::suspension_tagging,
@@ -35,7 +36,7 @@ pub async fn index_chromium_datasets(
     _: State<AppState>,
     db_conn: DbConnection,
     AuthJsonQuery { q }: AuthJsonQuery<ChromiumDatasetQuery>,
-) -> Result<Json<Vec<ChromiumDatasetSummary>>, db::Error> {
+) -> Result<Json<Vec<ChromiumDataset>>, db::Error> {
     select_chromium_datasets(q, &db_conn).await.map(Json)
 }
 
@@ -47,9 +48,9 @@ pub async fn select_chromium_datasets(
         order_by,
     }: ChromiumDatasetQuery,
     mut db_conn: &diesel_async::AsyncPgConnection,
-) -> Result<Vec<ChromiumDatasetSummary>, db::Error> {
+) -> Result<Vec<ChromiumDataset>, db::Error> {
     let mut stmt = chromium_datasets_to_all_specimens()
-        .select(ChromiumDatasetSummary::as_select())
+        .select(ChromiumDataset::as_select())
         .limit(limit)
         .offset(offset)
         .filter(filter.to_boxed_filter())
@@ -67,8 +68,14 @@ diesel::alias!(suspensions as pooled_suspensions: PooledSuspensions);
 
 #[must_use]
 #[diesel::dsl::auto_type]
+pub fn chromium_datasets_joined_to_projects() -> _ {
+    chromium_datasets.inner_join(projects::table)
+}
+
+#[must_use]
+#[diesel::dsl::auto_type]
 pub fn chromium_datasets_to_all_specimens() -> _ {
-    chromium_datasets
+    chromium_datasets_joined_to_projects()
         .inner_join(
             chromium_dataset_libraries.inner_join(
                 libraries.inner_join(
@@ -201,14 +208,11 @@ mod tests {
         test_util::test_query,
     };
 
-    fn sort_by_delivered_at(
-        i1: &&ChromiumDatasetSummary,
-        i2: &&ChromiumDatasetSummary,
-    ) -> Ordering {
+    fn sort_by_delivered_at(i1: &&ChromiumDataset, i2: &&ChromiumDataset) -> Ordering {
         i1.delivered_at().cmp(&i2.delivered_at())
     }
 
-    fn sort_by_name(i1: &&ChromiumDatasetSummary, i2: &&ChromiumDatasetSummary) -> Ordering {
+    fn sort_by_name(i1: &&ChromiumDataset, i2: &&ChromiumDataset) -> Ordering {
         i1.name().to_lowercase().cmp(&i2.name().to_lowercase())
     }
 
@@ -290,13 +294,9 @@ mod tests {
         )
         .unwrap();
 
-        let specimens_from_datasets =
-            datasets
-                .iter()
-                .map(ChromiumDatasetSummary::id)
-                .map(|ds_id| {
-                    select_chromium_dataset_specimens(&AuthProjects::All, ds_id, &root_db_conn)
-                });
+        let specimens_from_datasets = datasets.iter().map(ChromiumDataset::id).map(|ds_id| {
+            select_chromium_dataset_specimens(&AuthProjects::All, ds_id, &root_db_conn)
+        });
         let mut specimens_from_datasets: Vec<_> =
             futures::future::try_join_all(specimens_from_datasets)
                 .await

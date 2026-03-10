@@ -9,4 +9,4 @@ pub use creation::{ChromiumDatasetCmdline, NewChromiumDataset, metrics};
 #[cfg(feature = "app")]
 pub use query::ChromiumDatasetQuery;
 pub use query::{ChromiumDatasetFilter, ChromiumDatasetOrderBy};
-pub use read::{ChromiumDataset, ChromiumDatasetSummary};
+pub use read::ChromiumDataset;
