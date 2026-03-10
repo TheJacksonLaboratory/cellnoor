@@ -3,17 +3,20 @@ use axum::{
     extract::{Path, State},
 };
 use cellnoor_models::{IdParameter, specimen::SpecimenSummary};
-use cellnoor_schema::{
-    cdna, chip_loadings, chromium_dataset_libraries, gem_pools, libraries, specimens,
-    suspension_pools, suspension_tagging, suspensions,
-};
+use cellnoor_schema::{chromium_datasets, libraries, specimens};
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use uuid::Uuid;
 
 use crate::{
-    api::auth::{AuthProjects, AuthUser},
-    db::{self, DbConnection},
+    api::{
+        auth::{AuthProjects, AuthUser},
+        routes::chromium_datasets::index::{
+            chromium_datasets_to_tagged_pooled_specimens, chromium_datasets_to_unpooled_specimens,
+            chromium_datasets_to_untagged_pooled_specimens,
+        },
+    },
+    db::{self, BoxedFilter, BoxedFilterExt, DbConnection},
     state::AppState,
 };
 
@@ -28,75 +31,64 @@ pub async fn index_chromium_dataset_specimens(
         .map(Json)
 }
 
+// Technically, we don't need `chromium_datasets::id`, and can get away with
+// `chromium_dataset_libraries::dataset_id`. However, our join clauses actually
+// include `chromium_datasets` because they reuse the query that gets datasets.
+// As such, we filter on `chromium_datasets::id` for clarity
+fn filter<'a, QS: 'a>(
+    dataset_id: Uuid,
+    authorized_projects: &'a AuthProjects,
+) -> BoxedFilter<'a, QS>
+where
+    chromium_datasets::id: SelectableExpression<QS>,
+    libraries::project_id: SelectableExpression<QS>,
+{
+    let mut filter = BoxedFilter::new_true();
+    filter = filter.and_condition(chromium_datasets::id.eq(dataset_id));
+
+    if let AuthProjects::Some { project_ids } = authorized_projects {
+        filter = filter.and_condition(libraries::project_id.eq_any(project_ids.iter()));
+    }
+
+    filter
+}
+
 pub async fn select_chromium_dataset_specimens(
     authorized_projects: &AuthProjects,
     dataset_id: Uuid,
     mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<SpecimenSummary>, db::Error> {
-    let filter = chromium_dataset_libraries::dataset_id.eq(dataset_id);
     let ordering = specimens::received_at.desc();
 
-    let query = chromium_datasets_to_pooled_specimens()
-        .select(SpecimenSummary::as_select())
-        .filter(filter)
-        .order_by(ordering);
+    let select_clause = SpecimenSummary::as_select();
 
-    let mut specimens = match authorized_projects {
-        AuthProjects::All => query.load(&mut db_conn).await?,
-        AuthProjects::Some { project_ids } => {
-            query
-                .filter(libraries::project_id.eq_any(project_ids.iter()))
-                .load(&mut db_conn)
-                .await?
-        }
-    };
+    let (unpooled_specimens, tagged_pooled_specimens, untagged_pooled_specimens): (
+        Vec<_>,
+        Vec<_>,
+        Vec<_>,
+    ) = tokio::try_join!(
+        chromium_datasets_to_unpooled_specimens()
+            .select(select_clause)
+            .filter(filter(dataset_id, authorized_projects))
+            .order_by(ordering)
+            .load(&mut db_conn),
+        chromium_datasets_to_tagged_pooled_specimens()
+            .select(select_clause)
+            .filter(filter(dataset_id, authorized_projects))
+            .order_by(ordering)
+            .load(&mut db_conn),
+        chromium_datasets_to_untagged_pooled_specimens()
+            .select(select_clause)
+            .filter(filter(dataset_id, authorized_projects))
+            .order_by(ordering)
+            .load(&mut db_conn),
+    )?;
 
-    // If we couldn't find pooled specimens, then we know they weren't pooled
-    if specimens.is_empty() {
-        let query = chromium_datasets_to_unpooled_specimens()
-            .select(SpecimenSummary::as_select())
-            .filter(filter)
-            .order_by(ordering);
-
-        specimens = match authorized_projects {
-            AuthProjects::All => query.load(&mut db_conn).await?,
-            AuthProjects::Some { project_ids } => {
-                query
-                    .filter(libraries::project_id.eq_any(project_ids.iter()))
-                    .load(&mut db_conn)
-                    .await?
-            }
-        };
-    }
-
-    Ok(specimens)
-}
-
-#[diesel::dsl::auto_type]
-fn chromium_datasets_to_unpooled_specimens() -> _ {
-    chromium_dataset_libraries::table.inner_join(libraries::table.inner_join(
-        cdna::table.inner_join(gem_pools::table.inner_join(
-            chip_loadings::table.inner_join(suspensions::table.inner_join(specimens::table)),
-        )),
-    ))
-}
-
-#[diesel::dsl::auto_type]
-fn chromium_datasets_to_pooled_specimens() -> _ {
-    chromium_dataset_libraries::table.inner_join(
-        libraries::table.inner_join(
-            cdna::table.inner_join(
-                gem_pools::table.inner_join(
-                    chip_loadings::table.inner_join(
-                        suspension_pools::table.inner_join(
-                            suspension_tagging::table
-                                .inner_join(suspensions::table.inner_join(specimens::table)),
-                        ),
-                    ),
-                ),
-            ),
-        ),
-    )
+    Ok(unpooled_specimens
+        .into_iter()
+        .chain(tagged_pooled_specimens)
+        .chain(untagged_pooled_specimens)
+        .collect())
 }
 
 #[cfg(test)]
@@ -121,34 +113,6 @@ mod tests {
         test_state::{Database, N_SUSPENSIONS_PER_POOL, database, root_db_conn},
     };
 
-    async fn n_specimens(
-        sample_multiplexing: SampleMultiplexing,
-        db_conn: &AsyncPgConnection,
-    ) -> usize {
-        let q = ChromiumDatasetQuery::builder()
-            .filter(
-                ChromiumDatasetFilter::builder()
-                    .assay(
-                        TenxAssayFilter::builder()
-                            .sample_multiplexing(vec![sample_multiplexing])
-                            .build(),
-                    )
-                    .build(),
-            )
-            .build();
-
-        let ds = select_chromium_datasets(q, db_conn)
-            .await
-            .unwrap()
-            .swap_remove(0);
-
-        let specimens = select_chromium_dataset_specimens(&AuthProjects::All, ds.id(), db_conn)
-            .await
-            .unwrap();
-
-        specimens.len()
-    }
-
     #[rstest]
     #[awt]
     #[tokio::test]
@@ -170,5 +134,31 @@ mod tests {
             n_specimens(SampleMultiplexing::FlexBarcode, &root_db_conn).await,
             N_SUSPENSIONS_PER_POOL
         );
+    }
+
+    async fn n_specimens(
+        sample_multiplexing: SampleMultiplexing,
+        db_conn: &AsyncPgConnection,
+    ) -> usize {
+        let q = ChromiumDatasetQuery::builder()
+            .filter(
+                ChromiumDatasetFilter::builder()
+                    .assay(
+                        TenxAssayFilter::builder()
+                            .sample_multiplexing(vec![sample_multiplexing])
+                            .build(),
+                    )
+                    .build(),
+            )
+            .build();
+
+        let ds = &select_chromium_datasets(q, db_conn).await.unwrap()[0];
+        dbg!(ds.id());
+
+        let specimens = select_chromium_dataset_specimens(&AuthProjects::All, ds.id(), db_conn)
+            .await
+            .unwrap();
+
+        specimens.len()
     }
 }

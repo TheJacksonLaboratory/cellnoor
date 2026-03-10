@@ -1,9 +1,9 @@
 import { getApiClient } from "$lib/server/cellnoor-client";
-import type { ApiErrorResponse, ChromiumDatasetSummary, Project, TenxAssay } from "cellnoor-client";
+import type { ApiErrorResponse, ChromiumDataset, Project, TenxAssay } from "cellnoor-client";
 
 type ReturnType =
   | {
-      chromiumDatasets: (ChromiumDatasetSummary & {
+      chromiumDatasets: (ChromiumDataset & {
         files: Map<string, string[]>;
       })[];
       assays: TenxAssay[];

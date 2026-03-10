@@ -1,6 +1,8 @@
+use std::cmp::Ordering;
+
 use axum::{Json, extract::State};
 use cellnoor_models::chromium_dataset::{
-    ChromiumDatasetFilter, ChromiumDatasetQuery, ChromiumDatasetSummary,
+    ChromiumDataset, ChromiumDatasetFilter, ChromiumDatasetOrderBy, ChromiumDatasetQuery,
 };
 use cellnoor_schema::{
     cdna::dsl::cdna,
@@ -10,11 +12,13 @@ use cellnoor_schema::{
     chromium_runs::dsl::chromium_runs,
     gem_pools::dsl::gem_pools,
     libraries::dsl::libraries,
+    projects::dsl::projects,
     specimens::{self, table as specimens_table},
     suspension_pools::dsl::suspension_pools,
     suspension_tagging::dsl::suspension_tagging,
     suspensions::{self, table as suspensions_table},
     tenx_assays::{self, table as tenx_assays_table},
+    untagged_suspension_pooling::dsl::untagged_suspension_pooling,
 };
 use diesel::{dsl::AssumeNotNull, prelude::*};
 use diesel_async::RunQueryDsl;
@@ -35,7 +39,7 @@ pub async fn index_chromium_datasets(
     _: State<AppState>,
     db_conn: DbConnection,
     AuthJsonQuery { q }: AuthJsonQuery<ChromiumDatasetQuery>,
-) -> Result<Json<Vec<ChromiumDatasetSummary>>, db::Error> {
+) -> Result<Json<Vec<ChromiumDataset>>, db::Error> {
     select_chromium_datasets(q, &db_conn).await.map(Json)
 }
 
@@ -47,43 +51,159 @@ pub async fn select_chromium_datasets(
         order_by,
     }: ChromiumDatasetQuery,
     mut db_conn: &diesel_async::AsyncPgConnection,
-) -> Result<Vec<ChromiumDatasetSummary>, db::Error> {
-    let mut stmt = chromium_datasets_to_all_specimens()
-        .select(ChromiumDatasetSummary::as_select())
+) -> Result<Vec<ChromiumDataset>, db::Error> {
+    let mut stmt1 = chromium_datasets_to_unpooled_specimens()
+        .select(ChromiumDataset::as_select())
         .limit(limit)
         .offset(offset)
         .filter(filter.to_boxed_filter())
         .into_boxed();
 
-    for ordering in order_by {
-        stmt = stmt.then_order_by(ordering);
+    let mut stmt2 = chromium_datasets_to_tagged_pooled_specimens()
+        .select(ChromiumDataset::as_select())
+        .limit(limit)
+        .offset(offset)
+        .filter(filter.to_boxed_filter())
+        .into_boxed();
+
+    let mut stmt3 = chromium_datasets_to_untagged_pooled_specimens()
+        .select(ChromiumDataset::as_select())
+        .limit(limit)
+        .offset(offset)
+        .filter(filter.to_boxed_filter())
+        .into_boxed();
+
+    for ordering in order_by.as_ref() {
+        stmt1 = stmt1.then_order_by(ordering);
+        stmt2 = stmt2.then_order_by(ordering);
+        stmt3 = stmt3.then_order_by(ordering);
     }
 
-    Ok(stmt.load(&mut db_conn).await?)
+    let (unpooled_datasets, pooled_datasets, untagged_pooled_datasets): (Vec<_>, Vec<_>, Vec<_>) =
+        tokio::try_join!(
+            stmt1.load(&mut db_conn),
+            stmt2.load(&mut db_conn),
+            stmt3.load(&mut db_conn)
+        )?;
+
+    let mut all_datasets: Vec<_> = unpooled_datasets
+        .into_iter()
+        .chain(pooled_datasets)
+        .chain(untagged_pooled_datasets)
+        .collect();
+
+    let sort_fn = |ds1: &ChromiumDataset, ds2: &ChromiumDataset| {
+        let mut comparison = Ordering::Equal;
+
+        for ordering in order_by.as_ref() {
+            let (mut next_comparison, descending) = match ordering {
+                ChromiumDatasetOrderBy::delivered_at { descending } => {
+                    (ds1.delivered_at().cmp(&ds2.delivered_at()), descending)
+                }
+                ChromiumDatasetOrderBy::id { descending } => (ds1.id().cmp(&ds2.id()), descending),
+                ChromiumDatasetOrderBy::name { descending } => {
+                    (ds1.name().cmp(ds2.name()), descending)
+                }
+                ChromiumDatasetOrderBy::project_id { descending } => {
+                    (ds1.project_id().cmp(&ds2.project_id()), descending)
+                }
+            };
+
+            if let Some(true) = descending {
+                next_comparison = next_comparison.reverse();
+            }
+
+            comparison = comparison.then(next_comparison);
+        }
+
+        comparison
+    };
+
+    all_datasets.sort_by(sort_fn);
+
+    Ok(all_datasets)
 }
 
-diesel::alias!(specimens as pooled_specimens: PooledSpecimens);
-diesel::alias!(suspensions as pooled_suspensions: PooledSuspensions);
+diesel::alias!(specimens as pooled_tagged_specimens: PooledTaggedSpecimens);
+diesel::alias!(suspensions as pooled_tagged_suspensions: PooledTaggedSuspensions);
+
+diesel::alias!(specimens as pooled_untagged_specimens: PooledUntaggedSpecimens);
+diesel::alias!(suspensions as pooled_untagged_suspensions: PooledUntaggedSuspensions);
 
 #[must_use]
 #[diesel::dsl::auto_type]
-pub fn chromium_datasets_to_all_specimens() -> _ {
-    chromium_datasets
+pub fn chromium_datasets_to_projects() -> _ {
+    chromium_datasets.inner_join(projects)
+}
+
+// These 3 functions do not follow DRY because I think pulling out the common
+// piece would make the trait bounds would be nightmarish to write
+#[must_use]
+#[diesel::dsl::auto_type]
+pub fn chromium_datasets_to_unpooled_specimens() -> _ {
+    chromium_datasets_to_projects()
         .inner_join(
             chromium_dataset_libraries.inner_join(
                 libraries.inner_join(
                     cdna.inner_join(
                         gem_pools
+                            .inner_join(chromium_runs.inner_join(tenx_assays_table))
                             .inner_join(
                                 chip_loadings
-                                    .left_join(suspensions_table.inner_join(specimens_table))
-                                    .left_join(suspension_pools.inner_join(
+                                    .inner_join(suspensions_table.inner_join(specimens_table)),
+                            ),
+                    ),
+                ),
+            ),
+        )
+        .distinct()
+}
+
+#[must_use]
+#[diesel::dsl::auto_type]
+pub fn chromium_datasets_to_tagged_pooled_specimens() -> _ {
+    chromium_datasets_to_projects()
+        .inner_join(
+            chromium_dataset_libraries.inner_join(
+                libraries.inner_join(
+                    cdna.inner_join(
+                        gem_pools
+                            .inner_join(chromium_runs.inner_join(tenx_assays_table))
+                            .inner_join(
+                                chip_loadings.inner_join(
+                                    suspension_pools.inner_join(
                                         suspension_tagging.inner_join(
-                                            pooled_suspensions.inner_join(pooled_specimens),
+                                            suspensions_table.inner_join(specimens_table),
                                         ),
-                                    )),
-                            )
-                            .inner_join(chromium_runs.inner_join(tenx_assays_table)),
+                                    ),
+                                ),
+                            ),
+                    ),
+                ),
+            ),
+        )
+        .distinct()
+}
+
+#[must_use]
+#[diesel::dsl::auto_type]
+pub fn chromium_datasets_to_untagged_pooled_specimens() -> _ {
+    chromium_datasets_to_projects()
+        .inner_join(
+            chromium_dataset_libraries.inner_join(
+                libraries.inner_join(
+                    cdna.inner_join(
+                        gem_pools
+                            .inner_join(chromium_runs.inner_join(tenx_assays_table))
+                            .inner_join(
+                                chip_loadings.inner_join(
+                                    suspension_pools.inner_join(
+                                        untagged_suspension_pooling.inner_join(
+                                            suspensions_table.inner_join(specimens_table),
+                                        ),
+                                    ),
+                                ),
+                            ),
                     ),
                 ),
             ),
@@ -201,14 +321,11 @@ mod tests {
         test_util::test_query,
     };
 
-    fn sort_by_delivered_at(
-        i1: &&ChromiumDatasetSummary,
-        i2: &&ChromiumDatasetSummary,
-    ) -> Ordering {
+    fn sort_by_delivered_at(i1: &&ChromiumDataset, i2: &&ChromiumDataset) -> Ordering {
         i1.delivered_at().cmp(&i2.delivered_at())
     }
 
-    fn sort_by_name(i1: &&ChromiumDatasetSummary, i2: &&ChromiumDatasetSummary) -> Ordering {
+    fn sort_by_name(i1: &&ChromiumDataset, i2: &&ChromiumDataset) -> Ordering {
         i1.name().to_lowercase().cmp(&i2.name().to_lowercase())
     }
 
@@ -290,13 +407,9 @@ mod tests {
         )
         .unwrap();
 
-        let specimens_from_datasets =
-            datasets
-                .iter()
-                .map(ChromiumDatasetSummary::id)
-                .map(|ds_id| {
-                    select_chromium_dataset_specimens(&AuthProjects::All, ds_id, &root_db_conn)
-                });
+        let specimens_from_datasets = datasets.iter().map(ChromiumDataset::id).map(|ds_id| {
+            select_chromium_dataset_specimens(&AuthProjects::All, ds_id, &root_db_conn)
+        });
         let mut specimens_from_datasets: Vec<_> =
             futures::future::try_join_all(specimens_from_datasets)
                 .await

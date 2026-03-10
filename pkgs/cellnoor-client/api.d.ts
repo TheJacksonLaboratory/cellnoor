@@ -637,7 +637,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ChromiumDatasetSummary"][];
+                        "application/json": components["schemas"]["ChromiumDataset"][];
                     };
                 };
                 default: {
@@ -883,7 +883,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ChromiumDatasetSummary"][];
+                        "application/json": components["schemas"]["ChromiumDataset"][];
                     };
                 };
                 default: {
@@ -2188,7 +2188,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ChromiumDatasetSummary"][];
+                        "application/json": components["schemas"]["ChromiumDataset"][];
                     };
                 };
                 default: {
@@ -2521,8 +2521,6 @@ export interface components {
             links: components["schemas"]["Links"];
             name: string;
             project: components["schemas"]["Project"];
-            /** Format: uuid */
-            project_id: string;
         };
         /** @enum {string} */
         ChromiumDatasetCmdline: "cellranger-arc count" | "cellranger-atac count" | "cellranger count" | "cellranger multi" | "cellranger vdj";
@@ -2553,17 +2551,6 @@ export interface components {
             descending?: boolean | null;
             /** @constant */
             field: "delivered_at";
-        };
-        ChromiumDatasetSummary: {
-            assay: components["schemas"]["TenxAssay"];
-            /** Format: date-time */
-            delivered_at: string;
-            /** Format: uuid */
-            id: string;
-            links: components["schemas"]["Links"];
-            name: string;
-            /** Format: uuid */
-            project_id: string;
         };
         ChromiumRun: {
             additional_data?: unknown;
@@ -3917,7 +3904,6 @@ export type ChromiumDataset = components['schemas']['ChromiumDataset'];
 export type ChromiumDatasetCmdline = components['schemas']['ChromiumDatasetCmdline'];
 export type ChromiumDatasetFilter = components['schemas']['ChromiumDatasetFilter'];
 export type ChromiumDatasetOrderBy = components['schemas']['ChromiumDatasetOrderBy'];
-export type ChromiumDatasetSummary = components['schemas']['ChromiumDatasetSummary'];
 export type ChromiumRun = components['schemas']['ChromiumRun'];
 export type ChromiumRunFilter = components['schemas']['ChromiumRunFilter'];
 export type ChromiumRunOrderBy = components['schemas']['ChromiumRunOrderBy'];

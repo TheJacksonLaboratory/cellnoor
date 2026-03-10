@@ -17,20 +17,21 @@ use crate::{
     derive(diesel::Selectable, diesel::Queryable, schemars::JsonSchema)
 )]
 #[cfg_attr(feature = "app", diesel(table_name = chromium_datasets, check_for_backend(Pg)))]
-pub struct ChromiumDatasetSummary {
+pub struct ChromiumDataset {
     id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: ChromiumDatasetFields,
-    project_id: Uuid,
     links: Links,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
     delivered_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(embed))]
     assay: TenxAssay,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    project: Project,
 }
 
-impl ChromiumDatasetSummary {
+impl ChromiumDataset {
     #[must_use]
     pub fn id(&self) -> Uuid {
         self.id
@@ -45,26 +46,9 @@ impl ChromiumDatasetSummary {
     pub fn name(&self) -> &str {
         self.inner.name.as_ref()
     }
-}
 
-// Manually derive everything because the query is too complicated to write here
-#[derive(Clone, Debug, PartialEq, serde::Serialize)]
-#[cfg_attr(
-    feature = "app",
-    derive(diesel::Selectable, diesel::Queryable, schemars::JsonSchema)
-)]
-#[cfg_attr(feature = "app", diesel(table_name = chromium_datasets, check_for_backend(Pg)))]
-pub struct ChromiumDataset {
-    #[serde(flatten)]
-    #[cfg_attr(feature = "app", diesel(embed))]
-    summary: ChromiumDatasetSummary,
-    #[cfg_attr(feature = "app", diesel(embed))]
-    project: Project,
-}
-
-impl ChromiumDataset {
     #[must_use]
-    pub fn id(&self) -> Uuid {
-        self.summary.id()
+    pub fn project_id(&self) -> Uuid {
+        self.project.id()
     }
 }

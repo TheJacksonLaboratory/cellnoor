@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use cellnoor_models::{
     cdna::{CdnaFields, CdnaSummary, NewCdna},
-    chromium_dataset::{ChromiumDatasetSummary, NewChromiumDataset},
+    chromium_dataset::{ChromiumDataset, NewChromiumDataset},
     chromium_run::{
         ChipLoadingFields, ChromiumRunFields, ChromiumRunSummary, GemPoolFields, GemPoolSummary,
         MAX_GEM_POOLS_PER_NON_OCM_RUN, MAX_GEM_POOLS_PER_OCM_RUN, MAX_SUSPENSIONS_PER_OCM_GEM_POOL,
@@ -12,6 +12,7 @@ use cellnoor_models::{
     generic_query::{self},
     institution::{Institution, NewInstitution},
     library::{LibraryFields, LibrarySummary, NewLibrary},
+    multiplexing_tag::MultiplexingTag,
     person::{NewPerson, PersonFields, PersonSummary},
     project::{NewProject, Project, ProjectFields},
     specimen::{
@@ -317,14 +318,18 @@ impl TestState {
 
     async fn insert_suspension_pools(&'static self, db_conn: &AsyncPgConnection) {
         let suspensions = self.all(select_suspensions);
-        let multiplexing_tags = select_multiplexing_tags(db_conn)
-            .map(Result::unwrap)
-            .map(Vec::into_iter)
-            .map(|tags| tags.map(|t| t.id()).collect());
+        let multiplexing_tags = select_multiplexing_tags(db_conn);
         let people_ids = self.all_people_ids();
 
-        let (mut suspensions, mut multiplexing_tags, people_ids): (_, Vec<_>, _) =
+        let (suspensions, multiplexing_tags, people_ids): (_, _, _) =
             tokio::join!(suspensions, multiplexing_tags, people_ids);
+
+        let mut suspension_ids: Vec<_> = suspensions.iter().map(SuspensionSummary::id).collect();
+        let mut multiplexing_tag_ids: Vec<_> = multiplexing_tags
+            .unwrap()
+            .iter()
+            .map(MultiplexingTag::id)
+            .collect();
 
         let mut insertions = Vec::with_capacity(N_SUSPENSION_POOLS);
         for _ in 0..N_SUSPENSION_POOLS {
@@ -332,8 +337,8 @@ impl TestState {
             let mut suspension_tags = Vec::with_capacity(N_SUSPENSIONS_PER_POOL);
             for _ in 0..N_SUSPENSIONS_PER_POOL {
                 let suspension_tag = SuspensionTagging::builder()
-                    .suspension_id(suspensions.swap_remove(0).id())
-                    .tag_id(multiplexing_tags.swap_remove(0))
+                    .suspension_id(suspension_ids.swap_remove(0))
+                    .tag_id(multiplexing_tag_ids.swap_remove(0))
                     .build();
 
                 suspension_tags.push(suspension_tag);
@@ -841,7 +846,7 @@ pub struct Database {
     pub gem_pools: Vec<GemPoolSummary>,
     pub cdna: Vec<CdnaSummary>,
     pub libraries: Vec<LibrarySummary>,
-    pub chromium_datasets: Vec<ChromiumDatasetSummary>,
+    pub chromium_datasets: Vec<ChromiumDataset>,
 }
 
 impl Database {

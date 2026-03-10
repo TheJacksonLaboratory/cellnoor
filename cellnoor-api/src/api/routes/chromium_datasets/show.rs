@@ -5,14 +5,17 @@ use axum::{
 use cellnoor_models::{IdParameter, chromium_dataset::ChromiumDataset};
 use cellnoor_schema::{
     cdna, chromium_dataset_libraries, chromium_datasets, chromium_runs, gem_pools, libraries,
-    projects, tenx_assays,
+    tenx_assays,
 };
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use uuid::Uuid;
 
 use crate::{
-    api::auth::{AuthProjects, AuthUser},
+    api::{
+        auth::{AuthProjects, AuthUser},
+        routes::chromium_datasets::index::chromium_datasets_to_projects,
+    },
     db::{self, DbConnection},
     state::AppState,
 };
@@ -52,16 +55,9 @@ pub(super) async fn select_chromium_dataset_by_id(
 
 #[diesel::dsl::auto_type]
 fn chromium_datasets_to_assay() -> _ {
-    chromium_datasets::table
-        .inner_join(projects::table)
-        .inner_join(
-            chromium_dataset_libraries::table.inner_join(
-                libraries::table.inner_join(
-                    cdna::table.inner_join(
-                        gem_pools::table
-                            .inner_join(chromium_runs::table.inner_join(tenx_assays::table)),
-                    ),
-                ),
-            ),
-        )
+    chromium_datasets_to_projects().inner_join(chromium_dataset_libraries::table.inner_join(
+        libraries::table.inner_join(cdna::table.inner_join(
+            gem_pools::table.inner_join(chromium_runs::table.inner_join(tenx_assays::table)),
+        )),
+    ))
 }
