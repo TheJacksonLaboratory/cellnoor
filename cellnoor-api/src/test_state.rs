@@ -325,11 +325,8 @@ impl TestState {
             tokio::join!(suspensions, multiplexing_tags, people_ids);
 
         let mut suspension_ids: Vec<_> = suspensions.iter().map(SuspensionSummary::id).collect();
-        let mut multiplexing_tag_ids: Vec<_> = multiplexing_tags
-            .unwrap()
-            .iter()
-            .map(MultiplexingTag::id)
-            .collect();
+        let multiplexing_tags = multiplexing_tags.unwrap();
+        let mut multiplexing_tag_ids = multiplexing_tags.iter().map(MultiplexingTag::id).cycle();
 
         let mut insertions = Vec::with_capacity(N_SUSPENSION_POOLS);
         for _ in 0..N_SUSPENSION_POOLS {
@@ -338,7 +335,7 @@ impl TestState {
             for _ in 0..N_SUSPENSIONS_PER_POOL {
                 let suspension_tag = SuspensionTagging::builder()
                     .suspension_id(suspension_ids.swap_remove(0))
-                    .tag_id(multiplexing_tag_ids.swap_remove(0))
+                    .tag_id(multiplexing_tag_ids.next().unwrap())
                     .build();
 
                 suspension_tags.push(suspension_tag);
@@ -938,7 +935,7 @@ fn random_chip_loading_fields() -> ChipLoadingFields {
         .build()
 }
 
-const N_INSTITUTIONS: usize = 4;
+const N_INSTITUTIONS: usize = 8;
 const N_PEOPLE_PER_INSTITUTION: usize = 16;
 const N_PEOPLE: usize = N_INSTITUTIONS * N_PEOPLE_PER_INSTITUTION;
 
