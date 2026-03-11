@@ -750,8 +750,7 @@ impl TestState {
             );
             (
                 ws::dataset_id.eq(dataset_id),
-                ws::directory.eq(name),
-                ws::filename.eq("web_summary.html"),
+                ws::path.eq(format!("{name}/web_summary.html")),
                 ws::content.eq(content.into_bytes()),
             )
         };
@@ -770,8 +769,7 @@ impl TestState {
             let parsed_data = serde_json::json!({"ds_id": dataset_id, "some_metric": 100, "another_metric": 42, "specimen_name": name});
             (
                 mf::dataset_id.eq(dataset_id),
-                mf::directory.eq(name),
-                mf::filename.eq("metrics_summary.csv"),
+                mf::path.eq(format!("{name}/metrics_summary.csv")),
                 mf::raw_content.eq(raw_content.into_bytes()),
                 mf::content_type.eq("text/csv"),
                 mf::parsed_data.eq(parsed_data),

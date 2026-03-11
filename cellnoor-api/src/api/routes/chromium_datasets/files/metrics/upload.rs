@@ -63,8 +63,7 @@ async fn insert_file(
         .map(|(form_field, parsed)| {
             (
                 dataset_id.eq(chromium_dataset_id),
-                directory.eq(form_field.directory()),
-                filename.eq(form_field.filename()),
+                path.eq(form_field.path()),
                 content_type.eq(form_field.content_type()),
                 raw_content.eq(form_field.content()),
                 parsed_data.eq(parsed),

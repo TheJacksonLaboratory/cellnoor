@@ -2523,7 +2523,6 @@ export interface components {
             delivered_at: string;
             /** Format: uuid */
             id: string;
-            links: components["schemas"]["Links"];
             name: string;
             project: components["schemas"]["Project"];
         };
@@ -2881,10 +2880,6 @@ export interface components {
         };
         /** @enum {string} */
         LibraryType: "antibody_capture" | "antigen_capture" | "chromatin_accessibility" | "crispr_guide_capture" | "custom" | "gene_expression" | "multiplexing_capture" | "vdj" | "vdj_b" | "vdj_t" | "vdj_t_gd";
-        Link: string | string[];
-        Links: {
-            [key: string]: components["schemas"]["Link"];
-        };
         LoadingVolume: {
             unit: components["schemas"]["Microliter"];
             /** Format: float */
@@ -3990,8 +3985,6 @@ export type LibraryMeasurement = components['schemas']['LibraryMeasurement'];
 export type LibraryOrderBy = components['schemas']['LibraryOrderBy'];
 export type LibrarySummary = components['schemas']['LibrarySummary'];
 export type LibraryType = components['schemas']['LibraryType'];
-export type Link = components['schemas']['Link'];
-export type Links = components['schemas']['Links'];
 export type LoadingVolume = components['schemas']['LoadingVolume'];
 export type MeanDiameter = components['schemas']['MeanDiameter'];
 export type Microliter = components['schemas']['Microliter'];

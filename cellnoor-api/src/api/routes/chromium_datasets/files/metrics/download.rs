@@ -30,10 +30,9 @@ pub async fn download_metrics_file(
     request: axum::extract::Request,
 ) -> Result<Response<Body>, db::Error> {
     tracing::info!(
-        "fetching Chromium dataset metrics file {}/{}/{}",
+        "fetching Chromium dataset metrics file {}/{:?}",
         file_path.id,
-        file_path.directory,
-        file_path.filename
+        file_path.path
     );
 
     let headers = request.headers();
@@ -52,17 +51,12 @@ pub async fn download_metrics_file(
 async fn select_chromium_dataset_metrics_by_id(
     authorized_projects: &AuthProjects,
     content_type: &[u8],
-    FilePath {
-        id,
-        directory,
-        filename,
-    }: &FilePath,
+    FilePath { id, path }: &FilePath,
     mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Response<Body>, db::Error> {
     let query = chromium_dataset_metrics_files::table
         .filter(chromium_dataset_metrics_files::dataset_id.eq(id))
-        .filter(chromium_dataset_metrics_files::directory.eq(directory))
-        .filter(chromium_dataset_metrics_files::filename.eq(filename));
+        .filter(chromium_dataset_metrics_files::path.eq(path.join("/")));
 
     let response = if content_type == CSV_CONTENT_TYPE.as_bytes() {
         let query = query

@@ -23,9 +23,8 @@ pub async fn download_web_summary(
     Path(web_summary_path): Path<FilePath>,
 ) -> Result<Html<Vec<u8>>, db::Error> {
     tracing::info!(
-        "fetching web summary {}/{} for Chromium dataset {}",
-        web_summary_path.directory,
-        web_summary_path.filename,
+        "fetching web summary {:?} for Chromium dataset {}",
+        web_summary_path.path,
         web_summary_path.id
     );
 
@@ -37,18 +36,13 @@ pub async fn download_web_summary(
 
 async fn select_chromium_dataset_web_summaries(
     authorized_projects: &AuthProjects,
-    FilePath {
-        id,
-        directory,
-        filename,
-    }: &FilePath,
+    FilePath { id, path }: &FilePath,
     mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Vec<u8>, db::Error> {
     let query = chromium_dataset_web_summaries::table
         .select(chromium_dataset_web_summaries::content)
         .filter(chromium_dataset_web_summaries::dataset_id.eq(id))
-        .filter(chromium_dataset_web_summaries::directory.eq(directory))
-        .filter(chromium_dataset_web_summaries::filename.eq(filename));
+        .filter(chromium_dataset_web_summaries::path.eq(path.join("/")));
 
     let web_summary = match authorized_projects {
         AuthProjects::All => query.first(&mut db_conn).await?,

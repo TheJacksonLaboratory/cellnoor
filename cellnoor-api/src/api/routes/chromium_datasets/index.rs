@@ -16,7 +16,7 @@ use cellnoor_schema::{
     specimens::{self, table as specimens_table},
     suspension_pools::dsl::suspension_pools,
     suspension_tagging::dsl::suspension_tagging,
-    suspensions::{self, table as suspensions_table},
+    suspensions::table as suspensions_table,
     tenx_assays::{self, table as tenx_assays_table},
     untagged_suspension_pooling::dsl::untagged_suspension_pooling,
 };
@@ -123,12 +123,6 @@ pub async fn select_chromium_datasets(
 
     Ok(all_datasets)
 }
-
-diesel::alias!(specimens as pooled_tagged_specimens: PooledTaggedSpecimens);
-diesel::alias!(suspensions as pooled_tagged_suspensions: PooledTaggedSuspensions);
-
-diesel::alias!(specimens as pooled_untagged_specimens: PooledUntaggedSpecimens);
-diesel::alias!(suspensions as pooled_untagged_suspensions: PooledUntaggedSuspensions);
 
 #[must_use]
 #[diesel::dsl::auto_type]

@@ -6,8 +6,7 @@ use jiff::Timestamp;
 use uuid::Uuid;
 
 use crate::{
-    chromium_dataset::common::ChromiumDatasetFields, links::Links, project::Project,
-    tenx_assay::TenxAssay,
+    chromium_dataset::common::ChromiumDatasetFields, project::Project, tenx_assay::TenxAssay,
 };
 
 // Manually derive everything because the query is too complicated to write here
@@ -22,7 +21,6 @@ pub struct ChromiumDataset {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: ChromiumDatasetFields,
-    links: Links,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
     delivered_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(embed))]

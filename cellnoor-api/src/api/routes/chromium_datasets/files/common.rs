@@ -11,15 +11,13 @@ use crate::db;
 #[schemars(inline)]
 pub struct FilePath {
     pub id: Uuid,
-    pub directory: String,
-    pub filename: String,
+    pub path: Vec<String>,
 }
 
 #[derive(Debug)]
 pub struct ParsedMultipartFormField {
     content_type: String,
-    directory: String,
-    filename: String,
+    path: String,
     content: axum::body::Bytes,
 }
 
@@ -28,12 +26,8 @@ impl ParsedMultipartFormField {
         &self.content_type
     }
 
-    pub fn directory(&self) -> &str {
-        &self.directory
-    }
-
-    pub fn filename(&self) -> &str {
-        &self.filename
+    pub fn path(&self) -> &str {
+        &self.path
     }
 
     pub fn content(&self) -> &[u8] {
@@ -55,12 +49,11 @@ impl<'a> FieldExt<'a> for Field<'a> {
     ) -> Result<ParsedMultipartFormField, db::DataError> {
         let content_type = extract_content_type(self.content_type(), allowed_content_types)?;
 
-        let (directory, filename) = extract_path(self.file_name())?;
+        let path = extract_path(self.file_name())?;
 
         Ok(ParsedMultipartFormField {
             content_type,
-            directory: directory.to_owned(),
-            filename: filename.to_owned(),
+            path: path.to_owned(),
             content: self
                 .bytes()
                 .await
@@ -88,28 +81,22 @@ fn extract_content_type(
     Ok(content_type.to_owned())
 }
 
-fn extract_path(filename: Option<&str>) -> Result<(&str, &str), db::DataError> {
+fn extract_path(filename: Option<&str>) -> Result<&str, db::DataError> {
+    if filename.is_some_and(str::is_empty) {
+        return Err(db::DataError::new_other("filename cannot be empty"));
+    }
+
     let Some(path) = filename.map(Utf8Path::new) else {
         return Err(db::DataError::new_other("uploaded file must have filename"));
     };
 
-    let (directory, filename) = {
-        let mut ancestors = path.ancestors();
-        ancestors.next().unwrap();
-        let (Some(directory), Some(filename), Some("")) = (
-            ancestors.next().map(Utf8Path::as_str),
-            path.file_name(),
-            ancestors.next().map(Utf8Path::as_str),
-        ) else {
-            return Err(db::DataError::new_other(
-                "filename must be of the form 'directory/filename'",
-            ));
-        };
+    if path.is_absolute() {
+        return Err(db::DataError::new_other(
+            "file cannot be in the root directory",
+        ));
+    }
 
-        (directory, filename)
-    };
-
-    Ok((directory, filename))
+    Ok(path.as_str())
 }
 
 #[cfg(test)]
@@ -125,24 +112,18 @@ mod tests {
     }
 
     #[rstest]
-    fn filename_with_no_parent() {
-        assert!(extract_path(Some("file")).is_err());
-    }
-
-    #[rstest]
-    fn filename_with_too_many_parents() {
-        assert!(extract_path(Some("grandparent/parent/file")).is_err());
-    }
-
-    #[rstest]
     fn root_filename() {
         assert!(extract_path(Some("/file")).is_err());
     }
 
     #[rstest]
     fn correct_filename() {
-        let (directory, filename) = extract_path(Some("parent/file")).unwrap();
+        let path = extract_path(Some("parent/file")).unwrap();
 
-        assert_eq!((directory, filename), ("parent", "file"));
+        assert_eq!(path, "parent/file");
+
+        let path = extract_path(Some("grandparent/parent/file")).unwrap();
+
+        assert_eq!(path, "grandparent/parent/file");
     }
 }

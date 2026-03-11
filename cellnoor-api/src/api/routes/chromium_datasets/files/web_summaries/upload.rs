@@ -44,8 +44,7 @@ async fn insert_chromium_dataset_web_summaries(
         .map(|d| {
             (
                 dataset_id.eq(chromium_dataset_id),
-                directory.eq(d.directory()),
-                filename.eq(d.filename()),
+                path.eq(d.path()),
                 content.eq(d.content()),
             )
         })
