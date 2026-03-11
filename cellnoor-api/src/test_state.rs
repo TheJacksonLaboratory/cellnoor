@@ -935,7 +935,7 @@ fn random_chip_loading_fields() -> ChipLoadingFields {
         .build()
 }
 
-const N_INSTITUTIONS: usize = 8;
+const N_INSTITUTIONS: usize = 4;
 const N_PEOPLE_PER_INSTITUTION: usize = 16;
 const N_PEOPLE: usize = N_INSTITUTIONS * N_PEOPLE_PER_INSTITUTION;
 

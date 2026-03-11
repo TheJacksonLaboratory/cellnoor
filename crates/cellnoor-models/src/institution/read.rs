@@ -3,15 +3,21 @@ use cellnoor_schema::institutions;
 use macro_attributes::select;
 use uuid::Uuid;
 
-use crate::{institution::common::InstitutionFields, links::Links};
+use crate::institution::common::InstitutionFields;
 
 #[select]
-#[cfg_attr(feature = "app", diesel(table_name = institutions))]
 pub struct Institution {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: InstitutionFields,
-    links: Links,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    links: InstitutionLinks,
+}
+
+#[select]
+#[cfg_attr(feature = "app", diesel(table_name = institutions))]
+pub struct InstitutionLinks {
+    members: String,
 }
 
 impl Institution {

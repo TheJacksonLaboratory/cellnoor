@@ -10,13 +10,14 @@ diesel::table! {
     cdna (id) {
         id -> Uuid,
         readable_id -> Text,
-        links -> Jsonb,
         library_type -> Text,
         prepared_at -> Timestamptz,
         gem_pool_id -> Nullable<Uuid>,
         project_id -> Uuid,
         n_amplification_cycles -> Int4,
         additional_data -> Nullable<Jsonb>,
+        measurements -> Text,
+        libraries -> Text,
     }
 }
 
@@ -91,7 +92,6 @@ diesel::table! {
     chromium_runs (id) {
         id -> Uuid,
         readable_id -> Text,
-        links -> Jsonb,
         assay_id -> Uuid,
         project_id -> Uuid,
         run_at -> Timestamptz,
@@ -124,7 +124,6 @@ diesel::table! {
 diesel::table! {
     gem_pools (id) {
         id -> Uuid,
-        links -> Jsonb,
         readable_id -> Text,
         chromium_run_id -> Uuid,
     }
@@ -139,8 +138,8 @@ diesel::table! {
 diesel::table! {
     institutions (id) {
         id -> Uuid,
-        links -> Jsonb,
         name -> Text,
+        members -> Text,
     }
 }
 
@@ -168,7 +167,6 @@ diesel::table! {
 diesel::table! {
     libraries (id) {
         id -> Uuid,
-        links -> Jsonb,
         readable_id -> Text,
         cdna_id -> Uuid,
         project_id -> Uuid,
@@ -178,6 +176,9 @@ diesel::table! {
         target_reads_per_cell -> Nullable<Int8>,
         prepared_at -> Timestamptz,
         additional_data -> Nullable<Jsonb>,
+        measurements -> Text,
+        sequencing_runs -> Text,
+        chromium_datasets -> Text,
     }
 }
 
@@ -222,7 +223,6 @@ diesel::table! {
 diesel::table! {
     people (id) {
         id -> Uuid,
-        links -> Jsonb,
         name -> Text,
         email -> Nullable<Text>,
         email_verified -> Bool,
@@ -232,6 +232,8 @@ diesel::table! {
         is_admin -> Bool,
         is_biology_staff -> Bool,
         is_computational_staff -> Bool,
+        projects -> Text,
+        specimens -> Text,
     }
 }
 
@@ -245,21 +247,23 @@ diesel::table! {
 diesel::table! {
     projects (id) {
         id -> Uuid,
-        links -> Jsonb,
         name -> Text,
         started_at -> Timestamptz,
         ended_at -> Timestamptz,
+        people -> Text,
+        specimens -> Text,
+        chromium_datasets -> Text,
     }
 }
 
 diesel::table! {
     sequencing_runs (id) {
         id -> Uuid,
-        links -> Jsonb,
         readable_id -> Text,
         begun_at -> Timestamptz,
         finished_at -> Nullable<Timestamptz>,
         additional_data -> Nullable<Jsonb>,
+        libraries -> Text,
     }
 }
 
@@ -297,7 +301,6 @@ diesel::table! {
     specimens (id) {
         id -> Uuid,
         readable_id -> Text,
-        links -> Jsonb,
         name -> Text,
         submitted_by -> Uuid,
         project_id -> Uuid,
@@ -313,6 +316,9 @@ diesel::table! {
         thermal_preservation_method -> Nullable<Text>,
         tissue -> Text,
         additional_data -> Nullable<Jsonb>,
+        measurements -> Text,
+        suspensions -> Text,
+        chromium_datasets -> Text,
     }
 }
 
@@ -346,13 +352,14 @@ diesel::table! {
 diesel::table! {
     suspension_pools (id) {
         id -> Uuid,
-        links -> Jsonb,
         readable_id -> Text,
         project_id -> Uuid,
         name -> Text,
         pooled_at -> Timestamptz,
         additional_data -> Nullable<Jsonb>,
         multiplexing_type -> Text,
+        measurements -> Text,
+        suspensions -> Text,
     }
 }
 
@@ -374,7 +381,6 @@ diesel::table! {
 diesel::table! {
     suspensions (id) {
         id -> Uuid,
-        links -> Jsonb,
         readable_id -> Text,
         parent_specimen_id -> Uuid,
         project_id -> Uuid,
@@ -383,6 +389,7 @@ diesel::table! {
         lysis_duration_minutes -> Nullable<Float4>,
         target_cell_recovery -> Nullable<Int8>,
         additional_data -> Nullable<Jsonb>,
+        measurements -> Text,
     }
 }
 
@@ -392,7 +399,6 @@ diesel::table! {
 
     tenx_assays (id) {
         id -> Uuid,
-        links -> Jsonb,
         name -> Text,
         library_types -> Nullable<Array<Nullable<CaseInsensitiveText>>>,
         sample_multiplexing -> Nullable<Text>,

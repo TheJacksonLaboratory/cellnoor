@@ -4,7 +4,7 @@ use jiff::Timestamp;
 use macro_attributes::select;
 use uuid::Uuid;
 
-use crate::{links::Links, suspension_pool::SuspensionPoolFields};
+use crate::suspension_pool::SuspensionPoolFields;
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = suspension_pools))]
@@ -15,7 +15,15 @@ pub struct SuspensionPool {
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: SuspensionPoolFields,
     multiplexing_type: String,
-    links: Links,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    links: SuspensionPoolLinks,
+}
+
+#[select]
+#[cfg_attr(feature = "app", diesel(table_name = suspension_pools))]
+pub struct SuspensionPoolLinks {
+    measurements: String,
+    suspensions: String,
 }
 impl SuspensionPool {
     #[must_use]
