@@ -2437,6 +2437,7 @@ export interface components {
         CdnaLinks: {
             libraries: string;
             measurements: string;
+            self: string;
         };
         CdnaMeasurement: {
             /** Format: uuid */
@@ -2563,6 +2564,7 @@ export interface components {
             assay_id: string;
             /** Format: uuid */
             id: string;
+            links: components["schemas"]["ChromiumRunLinks"];
             /** Format: uuid */
             project_id: string;
             readable_id: string;
@@ -2584,6 +2586,9 @@ export interface components {
             run_before?: string | null;
             run_by?: string[] | null;
             succeeded?: boolean | null;
+        };
+        ChromiumRunLinks: {
+            self: string;
         };
         ChromiumRunOrderBy: {
             descending?: boolean | null;
@@ -2620,6 +2625,7 @@ export interface components {
             assay_id: string;
             /** Format: uuid */
             id: string;
+            links: components["schemas"]["ChromiumRunLinks"];
             /** Format: uuid */
             project_id: string;
             readable_id: string;
@@ -2682,6 +2688,7 @@ export interface components {
             chromium_run_id: string;
             /** Format: uuid */
             id: string;
+            links: components["schemas"]["GemPoolLinks"];
             readable_id: string;
         };
         GemPoolFilter: {
@@ -2689,6 +2696,9 @@ export interface components {
             ids?: string[] | null;
             project_ids?: string[] | null;
             readable_ids?: string[] | null;
+        };
+        GemPoolLinks: {
+            self: string;
         };
         GemPoolOrderBy: {
             descending?: boolean | null;
@@ -2708,6 +2718,7 @@ export interface components {
             chromium_run_id: string;
             /** Format: uuid */
             id: string;
+            links: components["schemas"]["GemPoolLinks"];
             readable_id: string;
         };
         Institution: {
@@ -2722,6 +2733,7 @@ export interface components {
         };
         InstitutionLinks: {
             members: string;
+            self: string;
         };
         InstitutionOrderBy: {
             descending?: boolean | null;
@@ -2777,6 +2789,7 @@ export interface components {
         LibraryLinks: {
             chromium_datasets: string;
             measurements: string;
+            self: string;
             sequencing_runs: string;
         };
         LibraryMeasurement: {
@@ -3317,6 +3330,7 @@ export interface components {
         };
         PersonLinks: {
             projects: string;
+            self: string;
             specimens: string;
         };
         PersonOrderBy: {
@@ -3404,6 +3418,7 @@ export interface components {
         ProjectLinks: {
             chromium_datasets: string;
             people: string;
+            self: string;
             specimens: string;
         };
         ProjectOrderBy: {
@@ -3433,7 +3448,12 @@ export interface components {
             finished_at?: string | null;
             /** Format: uuid */
             id: string;
+            links: components["schemas"]["SequencingRunLinks"];
             readable_id: string;
+        };
+        SequencingRunLinks: {
+            libraries: string;
+            self: string;
         };
         /** @enum {string} */
         Species: "ambystoma_mexicanum" | "canis_familiaris" | "callithrix_jacchus" | "drosophila_melanogaster" | "gasterosteus_aculeatus" | "homo_sapiens" | "mus_musculus" | "rattus_norvegicus" | "sminthopsis_crassicaudata";
@@ -3490,6 +3510,7 @@ export interface components {
         SpecimenLinks: {
             chromium_datasets: string;
             measurements: string;
+            self: string;
             suspensions: string;
         };
         SpecimenMeasurement: {
@@ -3671,6 +3692,7 @@ export interface components {
         };
         SuspensionLinks: {
             measurements: string;
+            self: string;
         };
         SuspensionMeasurement: {
             data: components["schemas"]["SuspensionMeasurementData"];
@@ -3774,6 +3796,7 @@ export interface components {
         };
         SuspensionPoolLinks: {
             measurements: string;
+            self: string;
             suspensions: string;
         };
         SuspensionPoolMeasurement: {
@@ -3863,6 +3886,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             library_types?: (components["schemas"]["LibraryType"] | null)[] | null;
+            links: components["schemas"]["TenxAssayLinks"];
             name: string;
             protocol_url: string;
             sample_multiplexing?: components["schemas"]["SampleMultiplexing"] | null;
@@ -3875,6 +3899,9 @@ export interface components {
             library_types_flat?: components["schemas"]["LibraryType"][] | null;
             names?: string[] | null;
             sample_multiplexing?: components["schemas"]["SampleMultiplexing"][] | null;
+        };
+        TenxAssayLinks: {
+            self: string;
         };
         TenxAssayOrderBy: {
             descending?: boolean | null;
@@ -3939,6 +3966,7 @@ export type ChromiumDatasetFilter = components['schemas']['ChromiumDatasetFilter
 export type ChromiumDatasetOrderBy = components['schemas']['ChromiumDatasetOrderBy'];
 export type ChromiumRun = components['schemas']['ChromiumRun'];
 export type ChromiumRunFilter = components['schemas']['ChromiumRunFilter'];
+export type ChromiumRunLinks = components['schemas']['ChromiumRunLinks'];
 export type ChromiumRunOrderBy = components['schemas']['ChromiumRunOrderBy'];
 export type ChromiumRunSummary = components['schemas']['ChromiumRunSummary'];
 export type CountingMethod = components['schemas']['CountingMethod'];
@@ -3948,6 +3976,7 @@ export type DatabaseError = components['schemas']['DatabaseError'];
 export type Fixative = components['schemas']['Fixative'];
 export type GemPool = components['schemas']['GemPool'];
 export type GemPoolFilter = components['schemas']['GemPoolFilter'];
+export type GemPoolLinks = components['schemas']['GemPoolLinks'];
 export type GemPoolOrderBy = components['schemas']['GemPoolOrderBy'];
 export type GemPoolSummary = components['schemas']['GemPoolSummary'];
 export type Institution = components['schemas']['Institution'];
@@ -4005,6 +4034,7 @@ export type ProjectLinks = components['schemas']['ProjectLinks'];
 export type ProjectOrderBy = components['schemas']['ProjectOrderBy'];
 export type SampleMultiplexing = components['schemas']['SampleMultiplexing'];
 export type SequencingRun = components['schemas']['SequencingRun'];
+export type SequencingRunLinks = components['schemas']['SequencingRunLinks'];
 export type Species = components['schemas']['Species'];
 export type Specimen = components['schemas']['Specimen'];
 export type SpecimenFilter = components['schemas']['SpecimenFilter'];
@@ -4036,6 +4066,7 @@ export type SuspensionThermalPreservation = components['schemas']['SuspensionThe
 export type SuspensionVolume = components['schemas']['SuspensionVolume'];
 export type TenxAssay = components['schemas']['TenxAssay'];
 export type TenxAssayFilter = components['schemas']['TenxAssayFilter'];
+export type TenxAssayLinks = components['schemas']['TenxAssayLinks'];
 export type TenxAssayOrderBy = components['schemas']['TenxAssayOrderBy'];
 export type ThermalPreservationMethod = components['schemas']['ThermalPreservationMethod'];
 export type Viability = components['schemas']['Viability'];

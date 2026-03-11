@@ -27,9 +27,14 @@ pub struct LibrarySummary {
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = libraries))]
 pub struct LibraryLinks {
-    measurements: String,
-    sequencing_runs: String,
-    chromium_datasets: String,
+    #[serde(rename = "self")]
+    self_link: String,
+    #[serde(rename = "measurements")]
+    measurements_link: String,
+    #[serde(rename = "sequencing_runs")]
+    sequencing_runs_link: String,
+    #[serde(rename = "chromium_datasets")]
+    chromium_datasets_link: String,
 }
 
 impl LibrarySummary {

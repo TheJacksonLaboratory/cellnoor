@@ -22,8 +22,12 @@ pub struct PersonSummary {
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = people))]
 pub struct PersonLinks {
-    projects: String,
-    specimens: String,
+    #[serde(rename = "self")]
+    self_link: String,
+    #[serde(rename = "projects")]
+    projects_link: String,
+    #[serde(rename = "specimens")]
+    specimens_link: String,
 }
 
 impl PersonSummary {

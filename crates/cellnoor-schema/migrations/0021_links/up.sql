@@ -1,65 +1,79 @@
-alter table institutions add column members text generated always as (
+alter table institutions drop column links;
+alter table institutions add column self_link text generated always as ('/institutions/' || id) not null; -- noqa
+alter table institutions add column members_link text generated always as (
     '/institutions/' || id || '/members'
 ) stored not null;
-alter table institutions drop column links;
 
-alter table people add column projects text generated always as ('/people/' || id || '/projects') stored not null;
-alter table people add column specimens text generated always as ('/people/' || id || '/specimens') stored not null;
 alter table people drop column links;
+alter table people add column self_link text generated always as ('/people/' || id) not null;
+alter table people add column projects_link text generated always as ('/people/' || id || '/projects') stored not null;
+alter table people add column specimens_link text generated always as ('/people/' || id || '/specimens') stored not null;
 
-alter table projects add column people text generated always as ('/projects/' || id || '/people') stored not null;
-alter table projects add column specimens text generated always as ('/projects/' || id || '/specimens') stored not null;
-alter table projects add column chromium_datasets text generated always as (
-    '/projects/' || id || '/chromium_datasets'
-) stored not null;
 alter table projects drop column links;
+alter table projects add column self_link text generated always as ('/projects/' || id) not null;
+alter table projects add column people_link text generated always as ('/projects/' || id || '/people') stored not null;
+alter table projects add column specimens_link text generated always as ('/projects/' || id || '/specimens') stored not null;
+alter table projects add column chromium_datasets_link text generated always as (
+    '/projects/' || id || '/chromium-datasets'
+) stored not null;
 
-alter table specimens add column measurements text generated always as (
+alter table specimens drop column links;
+alter table specimens add column self_link text generated always as ('/specimens/' || id) not null;
+alter table specimens add column measurements_link text generated always as (
     '/specimens/' || id || '/measurements'
 ) stored not null;
-alter table specimens add column suspensions text generated always as (
+alter table specimens add column suspensions_link text generated always as (
     '/specimens/' || id || '/suspensions'
 ) stored not null;
-alter table specimens add column chromium_datasets text generated always as (
+alter table specimens add column chromium_datasets_link text generated always as (
     '/specimens/' || id || '/chromium_datasets'
 ) stored not null;
-alter table specimens drop column links;
 
 alter table tenx_assays drop column links;
+alter table tenx_assays add column self_link text generated always as ('/10x-assays/' || id) not null;
 
-alter table sequencing_runs add column libraries text generated always as (
+alter table sequencing_runs drop column links;
+alter table sequencing_runs add column self_link text generated always as ('/sequencing-runs/' || id) not null;
+alter table sequencing_runs add column libraries_link text generated always as (
     '/sequencing-runs/' || id || '/libraries'
 ) stored not null;
-alter table sequencing_runs drop column links;
 
-alter table suspension_pools add column measurements text generated always as (
+alter table suspension_pools drop column links;
+alter table suspension_pools add column self_link text generated always as ('/suspension-pools/' || id) not null;
+alter table suspension_pools add column measurements_link text generated always as (
     '/suspension-pools/' || id || '/measurements'
 ) stored not null;
-alter table suspension_pools add column suspensions text generated always as (
+alter table suspension_pools add column suspensions_link text generated always as (
     '/suspension-pools/' || id || '/suspensions'
 ) stored not null;
-alter table suspension_pools drop column links;
 
-alter table suspensions add column measurements text generated always as (
+alter table suspensions drop column links;
+alter table suspensions add column self_link text generated always as ('/suspensions/' || id) not null;
+alter table suspensions add column measurements_link text generated always as (
     '/suspensions/' || id || '/measurements'
 ) stored not null;
-alter table suspensions drop column links;
 
 alter table chromium_runs drop column links;
+alter table chromium_runs add column self_link text generated always as ('/chromium-runs/' || id) not null;
 
 alter table gem_pools drop column links;
+alter table gem_pools add column self_link text generated always as ('/gem-pools/' || id) not null;
 
-alter table cdna add column measurements text generated always as ('/cdna/' || id || '/measurements') stored not null;
-alter table cdna add column libraries text generated always as ('/cdna/' || id || '/libraries') stored not null;
 alter table cdna drop column links;
+alter table cdna add column self_link text generated always as ('/cdna/' || id) not null;
+alter table cdna add column measurements_link text generated always as ('/cdna/' || id || '/measurements') stored not null;
+alter table cdna add column libraries_link text generated always as ('/cdna/' || id || '/libraries') stored not null;
 
-alter table libraries add column measurements text generated always as (
+alter table libraries drop column links;
+alter table libraries add column self_link text generated always as ('/libraries/' || id) not null;
+alter table libraries add column measurements_link text generated always as (
     '/libraries/' || id || '/measurements'
 ) stored not null;
-alter table libraries add column sequencing_runs text generated always as (
-    '/libraries/' || id || '/sequencing_runs'
+alter table libraries add column sequencing_runs_link text generated always as (
+    '/libraries/' || id || '/sequencing-runs'
 ) stored not null;
-alter table libraries add column chromium_datasets text generated always as (
-    '/libraries/' || id || '/chromium_datasets'
+alter table libraries add column chromium_datasets_link text generated always as (
+    '/libraries/' || id || '/chromium-datasets'
 ) stored not null;
-alter table libraries drop column links;
+
+drop function construct_links;

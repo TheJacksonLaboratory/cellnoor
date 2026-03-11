@@ -22,8 +22,12 @@ pub struct SuspensionPool {
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = suspension_pools))]
 pub struct SuspensionPoolLinks {
-    measurements: String,
-    suspensions: String,
+    #[serde(rename = "self")]
+    self_link: String,
+    #[serde(rename = "measurements")]
+    measurements_link: String,
+    #[serde(rename = "suspensions")]
+    suspensions_link: String,
 }
 impl SuspensionPool {
     #[must_use]

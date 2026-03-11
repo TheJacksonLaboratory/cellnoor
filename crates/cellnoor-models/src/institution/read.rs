@@ -17,7 +17,10 @@ pub struct Institution {
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = institutions))]
 pub struct InstitutionLinks {
-    members: String,
+    #[serde(rename = "self")]
+    self_link: String,
+    #[serde(rename = "members")]
+    members_link: String,
 }
 
 impl Institution {

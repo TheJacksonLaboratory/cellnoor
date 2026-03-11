@@ -26,8 +26,12 @@ pub struct CdnaSummary {
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = cdna))]
 pub struct CdnaLinks {
-    measurements: String,
-    libraries: String,
+    #[serde(rename = "self")]
+    self_link: String,
+    #[serde(rename = "measurements")]
+    measurements_link: String,
+    #[serde(rename = "libraries")]
+    libraries_link: String,
 }
 
 impl CdnaSummary {

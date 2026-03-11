@@ -15,6 +15,15 @@ pub struct TenxAssay {
     protocol_url: String,
     chromium_chip: Option<String>,
     cmdlines: Option<Vec<Option<String>>>,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    links: TenxAssayLinks,
+}
+
+#[select]
+#[cfg_attr(feature = "app", diesel(table_name = tenx_assays))]
+pub struct TenxAssayLinks {
+    #[serde(rename = "self")]
+    self_link: String,
 }
 
 impl TenxAssay {

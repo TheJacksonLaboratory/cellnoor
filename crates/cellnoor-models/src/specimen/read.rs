@@ -32,9 +32,14 @@ pub struct SpecimenSummary {
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = specimens))]
 pub struct SpecimenLinks {
-    measurements: String,
-    suspensions: String,
-    chromium_datasets: String,
+    #[serde(rename = "self")]
+    self_link: String,
+    #[serde(rename = "measurements")]
+    measurements_link: String,
+    #[serde(rename = "suspensions")]
+    suspensions_link: String,
+    #[serde(rename = "chromium_datasets")]
+    chromium_datasets_link: String,
 }
 
 impl SpecimenSummary {

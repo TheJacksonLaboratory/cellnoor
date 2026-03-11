@@ -31,7 +31,10 @@ pub struct SuspensionSummary {
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = suspensions))]
 pub struct SuspensionLinks {
-    measurements: String,
+    #[serde(rename = "self")]
+    self_link: String,
+    #[serde(rename = "measurements")]
+    measurements_link: String,
 }
 
 impl SuspensionSummary {

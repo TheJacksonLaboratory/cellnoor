@@ -16,8 +16,9 @@ diesel::table! {
         project_id -> Uuid,
         n_amplification_cycles -> Int4,
         additional_data -> Nullable<Jsonb>,
-        measurements -> Text,
-        libraries -> Text,
+        self_link -> Text,
+        measurements_link -> Text,
+        libraries_link -> Text,
     }
 }
 
@@ -98,6 +99,7 @@ diesel::table! {
         run_by -> Uuid,
         succeeded -> Bool,
         additional_data -> Nullable<Jsonb>,
+        self_link -> Text,
     }
 }
 
@@ -126,6 +128,7 @@ diesel::table! {
         id -> Uuid,
         readable_id -> Text,
         chromium_run_id -> Uuid,
+        self_link -> Text,
     }
 }
 
@@ -139,7 +142,8 @@ diesel::table! {
     institutions (id) {
         id -> Uuid,
         name -> Text,
-        members -> Text,
+        self_link -> Text,
+        members_link -> Text,
     }
 }
 
@@ -176,9 +180,10 @@ diesel::table! {
         target_reads_per_cell -> Nullable<Int8>,
         prepared_at -> Timestamptz,
         additional_data -> Nullable<Jsonb>,
-        measurements -> Text,
-        sequencing_runs -> Text,
-        chromium_datasets -> Text,
+        self_link -> Text,
+        measurements_link -> Text,
+        sequencing_runs_link -> Text,
+        chromium_datasets_link -> Text,
     }
 }
 
@@ -232,8 +237,9 @@ diesel::table! {
         is_admin -> Bool,
         is_biology_staff -> Bool,
         is_computational_staff -> Bool,
-        projects -> Text,
-        specimens -> Text,
+        self_link -> Text,
+        projects_link -> Text,
+        specimens_link -> Text,
     }
 }
 
@@ -250,9 +256,10 @@ diesel::table! {
         name -> Text,
         started_at -> Timestamptz,
         ended_at -> Timestamptz,
-        people -> Text,
-        specimens -> Text,
-        chromium_datasets -> Text,
+        self_link -> Text,
+        people_link -> Text,
+        specimens_link -> Text,
+        chromium_datasets_link -> Text,
     }
 }
 
@@ -263,7 +270,8 @@ diesel::table! {
         begun_at -> Timestamptz,
         finished_at -> Nullable<Timestamptz>,
         additional_data -> Nullable<Jsonb>,
-        libraries -> Text,
+        self_link -> Text,
+        libraries_link -> Text,
     }
 }
 
@@ -316,9 +324,10 @@ diesel::table! {
         thermal_preservation_method -> Nullable<Text>,
         tissue -> Text,
         additional_data -> Nullable<Jsonb>,
-        measurements -> Text,
-        suspensions -> Text,
-        chromium_datasets -> Text,
+        self_link -> Text,
+        measurements_link -> Text,
+        suspensions_link -> Text,
+        chromium_datasets_link -> Text,
     }
 }
 
@@ -358,8 +367,9 @@ diesel::table! {
         pooled_at -> Timestamptz,
         additional_data -> Nullable<Jsonb>,
         multiplexing_type -> Text,
-        measurements -> Text,
-        suspensions -> Text,
+        self_link -> Text,
+        measurements_link -> Text,
+        suspensions_link -> Text,
     }
 }
 
@@ -389,7 +399,8 @@ diesel::table! {
         lysis_duration_minutes -> Nullable<Float4>,
         target_cell_recovery -> Nullable<Int8>,
         additional_data -> Nullable<Jsonb>,
-        measurements -> Text,
+        self_link -> Text,
+        measurements_link -> Text,
     }
 }
 
@@ -406,6 +417,7 @@ diesel::table! {
         protocol_url -> Text,
         chromium_chip -> Nullable<Text>,
         cmdlines -> Nullable<Array<Nullable<CaseInsensitiveText>>>,
+        self_link -> Text,
     }
 }
 

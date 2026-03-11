@@ -23,9 +23,14 @@ pub struct Project {
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = projects))]
 pub struct ProjectLinks {
-    people: String,
-    specimens: String,
-    chromium_datasets: String,
+    #[serde(rename = "self")]
+    self_link: String,
+    #[serde(rename = "people")]
+    people_link: String,
+    #[serde(rename = "specimens")]
+    specimens_link: String,
+    #[serde(rename = "chromium_datasets")]
+    chromium_datasets_link: String,
 }
 
 impl Project {
