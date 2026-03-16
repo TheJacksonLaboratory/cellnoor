@@ -31,12 +31,12 @@ axum = { version = "0.8.8", default-features = false, features = [
   "tokio",
 ] }
 axum-extra = { version = "0.12.5", features = ["cookie", "typed-header"] }
-bon = { version = "3.9.0" }
+bon = { version = "3.9.1" }
 camino = { version = "1.2.2", features = ["serde1"] }
-clap = { version = "4.5.60", features = ["derive", "env"] }
+clap = { version = "4.6.0", features = ["derive", "env"] }
 csv = { version = "1.4.0" }
 deranged = { version = "0.5.8" }
-diesel = { version = "2.3.6", default-features = false }
+diesel = { version = "2.3.7", default-features = false }
 diesel-async = { version = "0.7.4", features = [
   "deadpool",
   "migrations",
@@ -75,7 +75,7 @@ tower = { version = "0.5.3" }
 tower-http = { version = "0.6.8", features = ["trace"] }
 tracing = { version = "0.1.44" }
 tracing-appender = "0.2.4"
-tracing-subscriber = { version = "0.3.22", features = ["json"] }
+tracing-subscriber = { version = "0.3.23", features = ["json"] }
 url = { version = "2.5.8", features = ["serde"] }
 uuid = { version = "1.22.0", features = ["serde", "v7"] }
 
