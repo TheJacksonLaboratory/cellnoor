@@ -3,6 +3,7 @@ use cellnoor_schema::chromium_datasets;
 #[cfg(feature = "app")]
 use diesel::pg::Pg;
 use jiff::Timestamp;
+use macro_attributes::select;
 use uuid::Uuid;
 
 use crate::{
@@ -27,6 +28,8 @@ pub struct ChromiumDataset {
     assay: TenxAssay,
     #[cfg_attr(feature = "app", diesel(embed))]
     project: Project,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    links: ChromiumDatasetLinks,
 }
 
 impl ChromiumDataset {
@@ -49,4 +52,17 @@ impl ChromiumDataset {
     pub fn project_id(&self) -> Uuid {
         self.project.id()
     }
+}
+
+#[select]
+#[cfg_attr(feature = "app", diesel(table_name = chromium_datasets))]
+pub struct ChromiumDatasetLinks {
+    #[serde(rename = "self")]
+    self_link: String,
+    #[serde(rename = "specimens")]
+    specimens_link: String,
+    #[serde(rename = "libraries")]
+    libraries_link: String,
+    #[serde(rename = "files")]
+    file_links: Vec<Option<String>>,
 }

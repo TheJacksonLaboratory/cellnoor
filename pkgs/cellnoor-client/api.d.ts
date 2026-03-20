@@ -2523,6 +2523,7 @@ export interface components {
             delivered_at: string;
             /** Format: uuid */
             id: string;
+            links: components["schemas"]["ChromiumDatasetLinks"];
             name: string;
             project: components["schemas"]["Project"];
         };
@@ -2538,6 +2539,12 @@ export interface components {
             names?: string[] | null;
             project_ids?: string[] | null;
             specimen?: components["schemas"]["SpecimenFilter"] | null;
+        };
+        ChromiumDatasetLinks: {
+            files: (string | null)[];
+            libraries: string;
+            self: string;
+            specimens: string;
         };
         ChromiumDatasetOrderBy: {
             descending?: boolean | null;
@@ -3958,6 +3965,7 @@ export type CellPelletThermalPreservation = components['schemas']['CellPelletThe
 export type ChromiumDataset = components['schemas']['ChromiumDataset'];
 export type ChromiumDatasetCmdline = components['schemas']['ChromiumDatasetCmdline'];
 export type ChromiumDatasetFilter = components['schemas']['ChromiumDatasetFilter'];
+export type ChromiumDatasetLinks = components['schemas']['ChromiumDatasetLinks'];
 export type ChromiumDatasetOrderBy = components['schemas']['ChromiumDatasetOrderBy'];
 export type ChromiumRun = components['schemas']['ChromiumRun'];
 export type ChromiumRunFilter = components['schemas']['ChromiumRunFilter'];

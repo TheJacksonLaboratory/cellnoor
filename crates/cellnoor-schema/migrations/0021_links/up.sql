@@ -7,12 +7,16 @@ alter table institutions add column members_link text generated always as (
 alter table people drop column links;
 alter table people add column self_link text generated always as ('/people/' || id) stored not null;
 alter table people add column projects_link text generated always as ('/people/' || id || '/projects') stored not null;
-alter table people add column specimens_link text generated always as ('/people/' || id || '/specimens') stored not null;
+alter table people add column specimens_link text generated always as (
+    '/people/' || id || '/specimens'
+) stored not null;
 
 alter table projects drop column links;
 alter table projects add column self_link text generated always as ('/projects/' || id) stored not null;
 alter table projects add column people_link text generated always as ('/projects/' || id || '/people') stored not null;
-alter table projects add column specimens_link text generated always as ('/projects/' || id || '/specimens') stored not null;
+alter table projects add column specimens_link text generated always as (
+    '/projects/' || id || '/specimens'
+) stored not null;
 alter table projects add column chromium_datasets_link text generated always as (
     '/projects/' || id || '/chromium-datasets'
 ) stored not null;
@@ -61,7 +65,9 @@ alter table gem_pools add column self_link text generated always as ('/gem-pools
 
 alter table cdna drop column links;
 alter table cdna add column self_link text generated always as ('/cdna/' || id) stored not null;
-alter table cdna add column measurements_link text generated always as ('/cdna/' || id || '/measurements') stored not null;
+alter table cdna add column measurements_link text generated always as (
+    '/cdna/' || id || '/measurements'
+) stored not null;
 alter table cdna add column libraries_link text generated always as ('/cdna/' || id || '/libraries') stored not null;
 
 alter table libraries drop column links;
@@ -79,30 +85,13 @@ alter table libraries add column chromium_datasets_link text generated always as
 drop function construct_links;
 
 alter table chromium_datasets drop column links;
-alter table chromium_datasets add column self_link text generated always as ('/chromium-datasets/' || id);
-alter table chromium_datasets add column specimen_link text generated always as ('/chromium-datasets/' || id || '/specimens');
-alter table chromium_datasets add column libraries_link text generated always as ('/chromium-datasets/' || id || '/libraries');
-alter table chromium_datasets add column file_links text[] default '{}' not null;
-
-alter table chromium_dataset_metrics_files add path text;
-update chromium_dataset_metrics_files set path = directory || '/' || filename;
-alter table chromium_dataset_metrics_files alter path set not null;
-alter table chromium_dataset_metrics_files drop constraint chromium_dataset_metrics_files_pkey, add constraint chromium_dataset_metrics_files_pkey primary key (dataset_id, path);
-alter table chromium_dataset_metrics_files drop directory, drop filename;
-
-alter table chromium_dataset_web_summaries add path text;
-update chromium_dataset_web_summaries set path = directory || '/' || filename;
-alter table chromium_dataset_web_summaries alter path set not null;
-alter table chromium_dataset_web_summaries drop constraint chromium_dataset_web_summaries_pkey, add constraint chromium_dataset_web_summaries_pkey primary key (dataset_id, path);
-alter table chromium_dataset_web_summaries drop directory, drop filename;
-
-drop function initialize_chromium_dataset_links cascade;
-drop function update_web_summaries_links cascade;
-drop function update_metrics_files_links cascade;
-
-create function update_chromium_dataset_file_links() returns trigger language plpgsql volatile strict as $$
-    begin
-        update chromium_datasets set file_links = array_append('/chromium-datasets/' || id || new.path) where id = new.dataset_id;
-        return new;
-    end;
-$$;
+alter table chromium_datasets add column self_link text generated always as (
+    '/chromium-datasets/' || id
+) stored not null;
+alter table chromium_datasets add column specimens_link text generated always as (
+    '/chromium-datasets/' || id || '/specimens'
+) stored not null;
+alter table chromium_datasets add column libraries_link text generated always as (
+    '/chromium-datasets/' || id || '/libraries'
+) stored not null;
+alter table chromium_datasets add column file_links text [] default '{}' not null;
