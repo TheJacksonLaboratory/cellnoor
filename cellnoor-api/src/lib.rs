@@ -1,5 +1,4 @@
 #![allow(uncommon_codepoints)]
-#![allow(clippy::struct_field_names)]
 
 pub mod api;
 pub mod config;
