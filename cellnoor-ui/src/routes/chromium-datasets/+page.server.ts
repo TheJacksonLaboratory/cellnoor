@@ -47,7 +47,7 @@ async function loadData(q?: string): Promise<ReturnType> {
   }
 
   // In theory, mutating each dataset and just adding the `files` property would be more performant, as this probably
-  // involves a copy, but I don't think it matters
+  // involves a copy, but I don't think it matters.
   return {
     chromiumDatasets: chromiumDatasets.data.map((ds) => {
       return { files: createFileTree(ds.links.files), ...ds };

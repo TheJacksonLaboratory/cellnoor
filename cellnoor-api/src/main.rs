@@ -1,4 +1,3 @@
-// CI comment
 use anyhow::Context;
 use cellnoor_api::{api, config::Config};
 
