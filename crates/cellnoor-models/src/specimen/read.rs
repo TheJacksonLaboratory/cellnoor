@@ -7,7 +7,6 @@ use macro_attributes::select;
 use uuid::Uuid;
 
 use crate::{
-    links::Links,
     person::PersonSummary,
     project::Project,
     specimen::{
@@ -20,13 +19,27 @@ use crate::{
 #[cfg_attr(feature = "app", diesel(table_name = specimens))]
 pub struct SpecimenSummary {
     id: Uuid,
-    links: Links,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    links: SpecimenLinks,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     common: SpecimenCommonFields,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     variable: SpecimenVariableFields,
+}
+
+#[select]
+#[cfg_attr(feature = "app", diesel(table_name = specimens))]
+pub struct SpecimenLinks {
+    #[serde(rename = "self")]
+    self_link: String,
+    #[serde(rename = "measurements")]
+    measurements_link: String,
+    #[serde(rename = "suspensions")]
+    suspensions_link: String,
+    #[serde(rename = "chromium_datasets")]
+    chromium_datasets_link: String,
 }
 
 impl SpecimenSummary {

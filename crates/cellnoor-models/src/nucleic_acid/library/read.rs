@@ -6,7 +6,7 @@ use jiff::Timestamp;
 use macro_attributes::select;
 use uuid::Uuid;
 
-use crate::{cdna::CdnaSummary, library::common::LibraryFields, links::Links};
+use crate::{cdna::CdnaSummary, library::common::LibraryFields};
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = libraries, base_query = libraries::table.inner_join(cdna::table)))]
@@ -16,11 +16,25 @@ pub struct LibrarySummary {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: LibraryFields,
-    links: Links,
     number_of_sample_index_pcr_cycles: i32,
     target_reads_per_cell: Option<i64>,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
     prepared_at: Timestamp,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    links: LibraryLinks,
+}
+
+#[select]
+#[cfg_attr(feature = "app", diesel(table_name = libraries))]
+pub struct LibraryLinks {
+    #[serde(rename = "self")]
+    self_link: String,
+    #[serde(rename = "measurements")]
+    measurements_link: String,
+    #[serde(rename = "sequencing_runs")]
+    sequencing_runs_link: String,
+    #[serde(rename = "chromium_datasets")]
+    chromium_datasets_link: String,
 }
 
 impl LibrarySummary {

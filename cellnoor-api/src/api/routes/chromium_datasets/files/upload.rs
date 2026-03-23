@@ -1,6 +1,7 @@
 use std::{collections::HashMap, str::FromStr};
 
-use axum::extract::{Multipart, Path, State};
+use axum::extract::{Multipart, Path, State, multipart::Field};
+use camino::Utf8Path;
 use cellnoor_models::{
     IdParameter,
     chromium_dataset::metrics::{
@@ -8,6 +9,7 @@ use cellnoor_models::{
         multi_row_csv::{self},
     },
 };
+use cellnoor_schema::chromium_dataset_files;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use heck::ToSnekCase;
@@ -15,69 +17,88 @@ use serde_json::{Number, Value};
 use uuid::Uuid;
 
 use crate::{
-    api::routes::chromium_datasets::files::common::{FieldExt, ParsedMultipartFormField},
+    api::routes::chromium_datasets::files::MAX_N_SAMPLES,
     db::{self, DbConnection},
     state::AppState,
 };
 
-static ALLOWED_CONTENT_TYPES: &[&str] = &["application/json", "text/csv"];
-
-#[axum::debug_handler]
-pub async fn upload_metrics_file(
+pub async fn upload_file(
     _: State<AppState>,
     db_conn: DbConnection,
     Path(IdParameter { id }): Path<IdParameter>,
-    mut request: Multipart,
+    mut multipart_form: Multipart,
 ) -> Result<(), db::Error> {
-    let mut extracted_metrics_files = Vec::with_capacity(16);
-    while let Some(field) = request
+    let mut extracted_files = Vec::with_capacity(MAX_N_SAMPLES);
+
+    while let Some(field) = multipart_form
         .next_field()
         .await
         .map_err(|e| db::DataError::new_other(&e.body_text()))?
     {
-        let extracted = field.parse(ALLOWED_CONTENT_TYPES).await?;
-        let content = extracted.content();
-        let parsed_content = if extracted.content_type() == "application/json" {
-            serde_json::from_slice(content).map_err(|e| db::DataError::new_other(&e.to_string()))?
-        } else {
-            parse_single_row_csv(content)
-                .map(ParsedMetricsData::KeyValue)
-                .or_else(|_| parse_multi_row_csv(content).map(ParsedMetricsData::Tabular))?
-        };
-
-        extracted_metrics_files.push((extracted, parsed_content));
+        let new_file = NewFile::from_multipart_form_field(id, field).await?;
+        extracted_files.push(new_file);
     }
 
-    insert_file(id, &extracted_metrics_files, &db_conn).await
+    insert_files(&extracted_files, &db_conn).await?;
+
+    Ok(())
 }
 
-async fn insert_file(
-    chromium_dataset_id: Uuid,
-    data: &[(ParsedMultipartFormField, ParsedMetricsData)],
+async fn insert_files(
+    files: &[NewFile],
     mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), db::Error> {
-    use cellnoor_schema::chromium_dataset_metrics_files::dsl::*;
+    use cellnoor_schema::chromium_dataset_files::dsl::*;
 
-    let insertables: Vec<_> = data
-        .iter()
-        .map(|(form_field, parsed)| {
-            (
-                dataset_id.eq(chromium_dataset_id),
-                directory.eq(form_field.directory()),
-                filename.eq(form_field.filename()),
-                content_type.eq(form_field.content_type()),
-                raw_content.eq(form_field.content()),
-                parsed_data.eq(parsed),
-            )
-        })
-        .collect();
-
-    diesel::insert_into(chromium_dataset_metrics_files)
-        .values(&insertables)
+    diesel::insert_into(chromium_dataset_files)
+        .values(files)
         .execute(&mut db_conn)
         .await?;
 
     Ok(())
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = chromium_dataset_files, check_for_backend(Pg))]
+struct NewFile {
+    dataset_id: Uuid,
+    path: String,
+    content_type: &'static str,
+    raw_content: Vec<u8>,
+    parsed_data: Option<ParsedMetricsData>,
+}
+
+impl NewFile {
+    async fn from_multipart_form_field(
+        dataset_id: Uuid,
+        field: Field<'_>,
+    ) -> Result<Self, db::DataError> {
+        let content_type = AllowedContentType::from_multipart_form_field(&field)?;
+        let path = extract_path(field.file_name()).map(str::to_owned)?;
+        let raw_content = field
+            .bytes()
+            .await
+            .map_err(|e| db::DataError::new_other(&e.body_text()))?;
+
+        let parsed_data = match content_type {
+            AllowedContentType::Csv => parse_single_row_csv(&raw_content)
+                .map(ParsedMetricsData::KeyValue)
+                .or_else(|_| parse_multi_row_csv(&raw_content).map(ParsedMetricsData::Tabular))
+                .map(Some)?,
+            AllowedContentType::Html => None,
+            AllowedContentType::Json => serde_json::from_slice(&raw_content)
+                .map_err(|e| db::DataError::new_other(&e.to_string()))?,
+        };
+
+        Ok(Self {
+            dataset_id,
+            path,
+            content_type: content_type.into(),
+            // Prefer `into` over `to_vec` because the latter requires copying data
+            raw_content: raw_content.into(),
+            parsed_data,
+        })
+    }
 }
 
 fn parse_single_row_csv(raw_content: &[u8]) -> Result<HashMap<String, Value>, db::DataError> {
@@ -179,12 +200,113 @@ fn parse_str_as_number(value: &str) -> Result<Number, <Number as FromStr>::Err> 
     Ok(value_as_number)
 }
 
+#[derive(Debug, Clone, Copy, strum::EnumString, strum::IntoStaticStr)]
+enum AllowedContentType {
+    #[strum(serialize = "text/csv")]
+    Csv,
+    #[strum(serialize = "text/html")]
+    Html,
+    #[strum(serialize = "application/json")]
+    Json,
+}
+
+impl AllowedContentType {
+    fn from_multipart_form_field(field: &Field<'_>) -> Result<Self, db::DataError> {
+        field
+            .content_type()
+            .map(AllowedContentType::from_str)
+            .ok_or(db::DataError::new_other(
+                "file-upload must have content type",
+            ))?
+            .map_err(|e| db::DataError::new_other(&e.to_string()))
+    }
+}
+
+fn extract_path(filename: Option<&str>) -> Result<&str, db::DataError> {
+    const ALLOWED_FILENAMES: [&str; 7] = [
+        "metrics_summary.csv",
+        "qc_library_metrics.csv",
+        "qc_report.html",
+        "qc_sample_metrics.csv",
+        "summary.csv",
+        "summary.json",
+        "web_summary.html",
+    ];
+
+    let Some(path) = filename.map(Utf8Path::new) else {
+        return Err(db::DataError::new_other("uploaded file must have filename"));
+    };
+
+    if path
+        .file_name()
+        .is_none_or(|f| !ALLOWED_FILENAMES.contains(&f))
+    {
+        return Err(db::DataError::new_other(&format!(
+            "invalid filename: {path}"
+        )));
+    }
+
+    if path.is_absolute() {
+        return Err(db::DataError::new_other(
+            "file cannot be in the root directory",
+        ));
+    }
+
+    let path_as_str = path.as_str();
+
+    let parent = match path.parent() {
+        None => {
+            return Ok(path_as_str);
+        }
+        Some(p) if p.file_name().is_none() => {
+            return Ok(path_as_str);
+        }
+        Some(p) => p,
+    };
+
+    let per_sample_outs_error = Err(db::DataError::new_other(
+        "files nested into a directory must be nested into a 'per_sample_outs/sample_name/' \
+         directory",
+    ));
+
+    let Some(parent) = parent.parent() else {
+        return per_sample_outs_error;
+    };
+
+    if parent != "per_sample_outs" {
+        return per_sample_outs_error;
+    }
+
+    Ok(path_as_str)
+}
+
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
     use rstest::rstest;
 
-    use super::{parse_multi_row_csv, parse_single_row_csv};
+    use super::{extract_path, parse_multi_row_csv, parse_single_row_csv};
+
+    #[rstest]
+    fn empty_filename() {
+        assert!(extract_path(Some("")).is_err());
+    }
+
+    #[rstest]
+    fn root_filename() {
+        assert!(extract_path(Some("/file")).is_err());
+    }
+
+    #[rstest]
+    fn correct_filenames() {
+        let path = extract_path(Some("metrics_summary.csv")).unwrap();
+
+        assert_eq!(path, "metrics_summary.csv");
+
+        let path = extract_path(Some("per_sample_outs/sample_name/metrics_summary.csv")).unwrap();
+
+        assert_eq!(path, "per_sample_outs/sample_name/metrics_summary.csv");
+    }
 
     #[rstest]
     fn cellranger_count() {

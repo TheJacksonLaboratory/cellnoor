@@ -10,13 +10,15 @@ diesel::table! {
     cdna (id) {
         id -> Uuid,
         readable_id -> Text,
-        links -> Jsonb,
         library_type -> Text,
         prepared_at -> Timestamptz,
         gem_pool_id -> Nullable<Uuid>,
         project_id -> Uuid,
         n_amplification_cycles -> Int4,
         additional_data -> Nullable<Jsonb>,
+        self_link -> Text,
+        measurements_link -> Text,
+        libraries_link -> Text,
     }
 }
 
@@ -51,6 +53,16 @@ diesel::table! {
 }
 
 diesel::table! {
+    chromium_dataset_files (dataset_id, path) {
+        dataset_id -> Uuid,
+        path -> Text,
+        content_type -> Text,
+        raw_content -> Bytea,
+        parsed_data -> Nullable<Jsonb>,
+    }
+}
+
+diesel::table! {
     chromium_dataset_libraries (dataset_id, library_id) {
         dataset_id -> Uuid,
         library_id -> Uuid,
@@ -58,32 +70,15 @@ diesel::table! {
 }
 
 diesel::table! {
-    chromium_dataset_metrics_files (dataset_id, directory, filename) {
-        dataset_id -> Uuid,
-        directory -> Text,
-        filename -> Text,
-        content_type -> Text,
-        raw_content -> Bytea,
-        parsed_data -> Jsonb,
-    }
-}
-
-diesel::table! {
-    chromium_dataset_web_summaries (dataset_id, directory, filename) {
-        dataset_id -> Uuid,
-        directory -> Text,
-        filename -> Text,
-        content -> Bytea,
-    }
-}
-
-diesel::table! {
     chromium_datasets (id) {
         id -> Uuid,
-        links -> Jsonb,
         name -> Text,
         project_id -> Uuid,
         delivered_at -> Timestamptz,
+        self_link -> Text,
+        specimens_link -> Text,
+        libraries_link -> Text,
+        file_links -> Array<Nullable<Text>>,
     }
 }
 
@@ -91,13 +86,13 @@ diesel::table! {
     chromium_runs (id) {
         id -> Uuid,
         readable_id -> Text,
-        links -> Jsonb,
         assay_id -> Uuid,
         project_id -> Uuid,
         run_at -> Timestamptz,
         run_by -> Uuid,
         succeeded -> Bool,
         additional_data -> Nullable<Jsonb>,
+        self_link -> Text,
     }
 }
 
@@ -124,9 +119,9 @@ diesel::table! {
 diesel::table! {
     gem_pools (id) {
         id -> Uuid,
-        links -> Jsonb,
         readable_id -> Text,
         chromium_run_id -> Uuid,
+        self_link -> Text,
     }
 }
 
@@ -139,8 +134,9 @@ diesel::table! {
 diesel::table! {
     institutions (id) {
         id -> Uuid,
-        links -> Jsonb,
         name -> Text,
+        self_link -> Text,
+        members_link -> Text,
     }
 }
 
@@ -168,7 +164,6 @@ diesel::table! {
 diesel::table! {
     libraries (id) {
         id -> Uuid,
-        links -> Jsonb,
         readable_id -> Text,
         cdna_id -> Uuid,
         project_id -> Uuid,
@@ -178,6 +173,10 @@ diesel::table! {
         target_reads_per_cell -> Nullable<Int8>,
         prepared_at -> Timestamptz,
         additional_data -> Nullable<Jsonb>,
+        self_link -> Text,
+        measurements_link -> Text,
+        sequencing_runs_link -> Text,
+        chromium_datasets_link -> Text,
     }
 }
 
@@ -222,7 +221,6 @@ diesel::table! {
 diesel::table! {
     people (id) {
         id -> Uuid,
-        links -> Jsonb,
         name -> Text,
         email -> Nullable<Text>,
         email_verified -> Bool,
@@ -232,6 +230,9 @@ diesel::table! {
         is_admin -> Bool,
         is_biology_staff -> Bool,
         is_computational_staff -> Bool,
+        self_link -> Text,
+        projects_link -> Text,
+        specimens_link -> Text,
     }
 }
 
@@ -245,21 +246,25 @@ diesel::table! {
 diesel::table! {
     projects (id) {
         id -> Uuid,
-        links -> Jsonb,
         name -> Text,
         started_at -> Timestamptz,
         ended_at -> Timestamptz,
+        self_link -> Text,
+        people_link -> Text,
+        specimens_link -> Text,
+        chromium_datasets_link -> Text,
     }
 }
 
 diesel::table! {
     sequencing_runs (id) {
         id -> Uuid,
-        links -> Jsonb,
         readable_id -> Text,
         begun_at -> Timestamptz,
         finished_at -> Nullable<Timestamptz>,
         additional_data -> Nullable<Jsonb>,
+        self_link -> Text,
+        libraries_link -> Text,
     }
 }
 
@@ -297,7 +302,6 @@ diesel::table! {
     specimens (id) {
         id -> Uuid,
         readable_id -> Text,
-        links -> Jsonb,
         name -> Text,
         submitted_by -> Uuid,
         project_id -> Uuid,
@@ -313,6 +317,10 @@ diesel::table! {
         thermal_preservation_method -> Nullable<Text>,
         tissue -> Text,
         additional_data -> Nullable<Jsonb>,
+        self_link -> Text,
+        measurements_link -> Text,
+        suspensions_link -> Text,
+        chromium_datasets_link -> Text,
     }
 }
 
@@ -346,13 +354,15 @@ diesel::table! {
 diesel::table! {
     suspension_pools (id) {
         id -> Uuid,
-        links -> Jsonb,
         readable_id -> Text,
         project_id -> Uuid,
         name -> Text,
         pooled_at -> Timestamptz,
         additional_data -> Nullable<Jsonb>,
         multiplexing_type -> Text,
+        self_link -> Text,
+        measurements_link -> Text,
+        suspensions_link -> Text,
     }
 }
 
@@ -374,7 +384,6 @@ diesel::table! {
 diesel::table! {
     suspensions (id) {
         id -> Uuid,
-        links -> Jsonb,
         readable_id -> Text,
         parent_specimen_id -> Uuid,
         project_id -> Uuid,
@@ -383,6 +392,8 @@ diesel::table! {
         lysis_duration_minutes -> Nullable<Float4>,
         target_cell_recovery -> Nullable<Int8>,
         additional_data -> Nullable<Jsonb>,
+        self_link -> Text,
+        measurements_link -> Text,
     }
 }
 
@@ -392,7 +403,6 @@ diesel::table! {
 
     tenx_assays (id) {
         id -> Uuid,
-        links -> Jsonb,
         name -> Text,
         library_types -> Nullable<Array<Nullable<CaseInsensitiveText>>>,
         sample_multiplexing -> Nullable<Text>,
@@ -400,6 +410,7 @@ diesel::table! {
         protocol_url -> Text,
         chromium_chip -> Nullable<Text>,
         cmdlines -> Nullable<Array<Nullable<CaseInsensitiveText>>>,
+        self_link -> Text,
     }
 }
 
@@ -419,10 +430,9 @@ diesel::joinable!(cdna_preparers -> people (prepared_by));
 diesel::joinable!(chip_loadings -> gem_pools (gem_pool_id));
 diesel::joinable!(chip_loadings -> suspension_pools (suspension_pool_id));
 diesel::joinable!(chip_loadings -> suspensions (suspension_id));
+diesel::joinable!(chromium_dataset_files -> chromium_datasets (dataset_id));
 diesel::joinable!(chromium_dataset_libraries -> chromium_datasets (dataset_id));
 diesel::joinable!(chromium_dataset_libraries -> libraries (library_id));
-diesel::joinable!(chromium_dataset_metrics_files -> chromium_datasets (dataset_id));
-diesel::joinable!(chromium_dataset_web_summaries -> chromium_datasets (dataset_id));
 diesel::joinable!(chromium_datasets -> projects (project_id));
 diesel::joinable!(chromium_runs -> people (run_by));
 diesel::joinable!(chromium_runs -> projects (project_id));
@@ -473,9 +483,8 @@ diesel::allow_tables_to_appear_in_same_query!(
     cdna_measurements,
     cdna_preparers,
     chip_loadings,
+    chromium_dataset_files,
     chromium_dataset_libraries,
-    chromium_dataset_metrics_files,
-    chromium_dataset_web_summaries,
     chromium_datasets,
     chromium_runs,
     committee_approval,

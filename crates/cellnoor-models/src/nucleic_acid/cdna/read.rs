@@ -6,13 +6,12 @@ use jiff::Timestamp;
 use macro_attributes::select;
 use uuid::Uuid;
 
-use crate::{chromium_run::GemPoolSummary, links::Links, nucleic_acid::cdna::common::CdnaFields};
+use crate::{chromium_run::GemPoolSummary, nucleic_acid::cdna::common::CdnaFields};
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = cdna))]
 pub struct CdnaSummary {
     id: Uuid,
-    links: Links,
     project_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
@@ -20,6 +19,19 @@ pub struct CdnaSummary {
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
     prepared_at: Timestamp,
     n_amplification_cycles: i32,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    links: CdnaLinks,
+}
+
+#[select]
+#[cfg_attr(feature = "app", diesel(table_name = cdna))]
+pub struct CdnaLinks {
+    #[serde(rename = "self")]
+    self_link: String,
+    #[serde(rename = "measurements")]
+    measurements_link: String,
+    #[serde(rename = "libraries")]
+    libraries_link: String,
 }
 
 impl CdnaSummary {

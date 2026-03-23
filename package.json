@@ -5,6 +5,7 @@
       "pkgs/cellnoor-client"
     ],
     "catalog": {
+      "bits-ui": "2.16.3",
       "@lucide/svelte": "0.577.0",
       "@sveltejs/adapter-node": "^5.5.4",
       "@sveltejs/kit": "^2.53.4",

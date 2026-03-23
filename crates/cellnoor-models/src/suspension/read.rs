@@ -7,7 +7,6 @@ use macro_attributes::select;
 use uuid::Uuid;
 
 use crate::{
-    links::Links,
     specimen::SpecimenSummary,
     suspension::common::{SuspensionContent, SuspensionFields},
 };
@@ -25,7 +24,17 @@ pub struct SuspensionSummary {
     target_cell_recovery: Option<i64>,
     lysis_duration_minutes: Option<f32>,
     content: SuspensionContent,
-    links: Links,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    links: SuspensionLinks,
+}
+
+#[select]
+#[cfg_attr(feature = "app", diesel(table_name = suspensions))]
+pub struct SuspensionLinks {
+    #[serde(rename = "self")]
+    self_link: String,
+    #[serde(rename = "measurements")]
+    measurements_link: String,
 }
 
 impl SuspensionSummary {

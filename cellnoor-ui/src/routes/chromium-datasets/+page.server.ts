@@ -46,23 +46,25 @@ async function loadData(q?: string): Promise<ReturnType> {
     };
   }
 
-  for (const ds of chromiumDatasets.data) {
-    // @ts-expect-error I hate this language
-    ds.files = createFileTree(ds.links.web_summaries as string[], ds.links.metrics as string[]);
-  }
-
+  // In theory, mutating each dataset and just adding the `files` property would be more performant, as this probably
+  // involves a copy, but I don't think it matters
   return {
-    // @ts-expect-error I hate this language
-    chromiumDatasets: chromiumDatasets.data,
+    chromiumDatasets: chromiumDatasets.data.map((ds) => {
+      return { files: createFileTree(ds.links.files), ...ds };
+    }),
     assays: assays.data,
     projects: projects.data,
   };
 }
 
-function createFileTree(webSummaries: string[], metricsFiles: string[]) {
+function createFileTree(fileLinks: (string | null)[]) {
   const linkMap: Map<string, string[]> = new Map();
 
-  for (const link of webSummaries.concat(metricsFiles)) {
+  for (const link of fileLinks) {
+    if (link === null) {
+      continue;
+    }
+
     const parts = link.split("/");
 
     const directoryName = parts.at(-2) as string;

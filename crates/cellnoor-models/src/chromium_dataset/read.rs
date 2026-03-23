@@ -3,11 +3,11 @@ use cellnoor_schema::chromium_datasets;
 #[cfg(feature = "app")]
 use diesel::pg::Pg;
 use jiff::Timestamp;
+use macro_attributes::select;
 use uuid::Uuid;
 
 use crate::{
-    chromium_dataset::common::ChromiumDatasetFields, links::Links, project::Project,
-    tenx_assay::TenxAssay,
+    chromium_dataset::common::ChromiumDatasetFields, project::Project, tenx_assay::TenxAssay,
 };
 
 // Manually derive everything because the query is too complicated to write here
@@ -22,13 +22,14 @@ pub struct ChromiumDataset {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: ChromiumDatasetFields,
-    links: Links,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
     delivered_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(embed))]
     assay: TenxAssay,
     #[cfg_attr(feature = "app", diesel(embed))]
     project: Project,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    links: ChromiumDatasetLinks,
 }
 
 impl ChromiumDataset {
@@ -51,4 +52,17 @@ impl ChromiumDataset {
     pub fn project_id(&self) -> Uuid {
         self.project.id()
     }
+}
+
+#[select]
+#[cfg_attr(feature = "app", diesel(table_name = chromium_datasets))]
+pub struct ChromiumDatasetLinks {
+    #[serde(rename = "self")]
+    self_link: String,
+    #[serde(rename = "specimens")]
+    specimens_link: String,
+    #[serde(rename = "libraries")]
+    libraries_link: String,
+    #[serde(rename = "files")]
+    file_links: Vec<Option<String>>,
 }

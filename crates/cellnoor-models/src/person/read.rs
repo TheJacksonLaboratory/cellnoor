@@ -5,7 +5,7 @@ use diesel::prelude::*;
 use macro_attributes::select;
 use uuid::Uuid;
 
-use crate::{institution::Institution, links::Links, person::common::PersonFields};
+use crate::{institution::Institution, person::common::PersonFields};
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = people))]
@@ -15,7 +15,19 @@ pub struct PersonSummary {
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: PersonFields,
     email: Option<String>,
-    links: Links,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    links: PersonLinks,
+}
+
+#[select]
+#[cfg_attr(feature = "app", diesel(table_name = people))]
+pub struct PersonLinks {
+    #[serde(rename = "self")]
+    self_link: String,
+    #[serde(rename = "projects")]
+    projects_link: String,
+    #[serde(rename = "specimens")]
+    specimens_link: String,
 }
 
 impl PersonSummary {

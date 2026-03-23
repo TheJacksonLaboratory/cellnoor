@@ -325,11 +325,8 @@ impl TestState {
             tokio::join!(suspensions, multiplexing_tags, people_ids);
 
         let mut suspension_ids: Vec<_> = suspensions.iter().map(SuspensionSummary::id).collect();
-        let mut multiplexing_tag_ids: Vec<_> = multiplexing_tags
-            .unwrap()
-            .iter()
-            .map(MultiplexingTag::id)
-            .collect();
+        let multiplexing_tags = multiplexing_tags.unwrap();
+        let mut multiplexing_tag_ids = multiplexing_tags.iter().map(MultiplexingTag::id).cycle();
 
         let mut insertions = Vec::with_capacity(N_SUSPENSION_POOLS);
         for _ in 0..N_SUSPENSION_POOLS {
@@ -338,7 +335,7 @@ impl TestState {
             for _ in 0..N_SUSPENSIONS_PER_POOL {
                 let suspension_tag = SuspensionTagging::builder()
                     .suspension_id(suspension_ids.swap_remove(0))
-                    .tag_id(multiplexing_tag_ids.swap_remove(0))
+                    .tag_id(multiplexing_tag_ids.next().unwrap())
                     .build();
 
                 suspension_tags.push(suspension_tag);
@@ -718,9 +715,7 @@ impl TestState {
         library: LibrarySummary,
         mut db_conn: &AsyncPgConnection,
     ) {
-        use cellnoor_schema::{
-            chromium_dataset_metrics_files as mf, chromium_dataset_web_summaries as ws,
-        };
+        use cellnoor_schema::chromium_dataset_files as cdf;
 
         // It's easier to construct this as JSON
         let dataset = json!(
@@ -751,16 +746,17 @@ impl TestState {
                 "<!DOCTYPE html><html><head><title>Web summary</title></head><body>web summary \
                  {name} - {dataset_id}</body></html>"
             );
+
             (
-                ws::dataset_id.eq(dataset_id),
-                ws::directory.eq(name),
-                ws::filename.eq("web_summary.html"),
-                ws::content.eq(content.into_bytes()),
+                cdf::dataset_id.eq(dataset_id),
+                cdf::content_type.eq("text/html"),
+                cdf::path.eq(format!("{name}/web_summary.html")),
+                cdf::raw_content.eq(content.into_bytes()),
             )
         };
         let values: Vec<_> = specimens.iter().map(values).collect();
 
-        diesel::insert_into(ws::table)
+        diesel::insert_into(cdf::table)
             .values(values)
             .execute(&mut db_conn)
             .await
@@ -772,17 +768,16 @@ impl TestState {
             );
             let parsed_data = serde_json::json!({"ds_id": dataset_id, "some_metric": 100, "another_metric": 42, "specimen_name": name});
             (
-                mf::dataset_id.eq(dataset_id),
-                mf::directory.eq(name),
-                mf::filename.eq("metrics_summary.csv"),
-                mf::raw_content.eq(raw_content.into_bytes()),
-                mf::content_type.eq("text/csv"),
-                mf::parsed_data.eq(parsed_data),
+                cdf::dataset_id.eq(dataset_id),
+                cdf::path.eq(format!("{name}/metrics_summary.csv")),
+                cdf::raw_content.eq(raw_content.into_bytes()),
+                cdf::content_type.eq("text/csv"),
+                cdf::parsed_data.eq(parsed_data),
             )
         };
         let values: Vec<_> = specimens.iter().map(values).collect();
 
-        diesel::insert_into(mf::table)
+        diesel::insert_into(cdf::table)
             .values(values)
             .execute(&mut db_conn)
             .await

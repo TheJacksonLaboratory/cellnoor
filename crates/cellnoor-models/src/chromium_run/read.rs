@@ -20,6 +20,15 @@ pub struct GemPoolSummary {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: GemPoolFields,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    links: GemPoolLinks,
+}
+
+#[select]
+#[cfg_attr(feature = "app", diesel(table_name = gem_pools))]
+pub struct GemPoolLinks {
+    #[serde(rename = "self")]
+    self_link: String,
 }
 
 impl GemPoolSummary {
@@ -42,6 +51,15 @@ pub struct ChromiumRunSummary {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
     inner: ChromiumRunFields,
+    #[cfg_attr(feature = "app", diesel(embed))]
+    links: ChromiumRunLinks,
+}
+
+#[select]
+#[cfg_attr(feature = "app", diesel(table_name = chromium_runs))]
+pub struct ChromiumRunLinks {
+    #[serde(rename = "self")]
+    self_link: String,
 }
 
 impl ChromiumRunSummary {
