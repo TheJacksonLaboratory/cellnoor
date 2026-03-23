@@ -17,6 +17,7 @@ use serde_json::{Number, Value};
 use uuid::Uuid;
 
 use crate::{
+    api::routes::chromium_datasets::files::MAX_N_SAMPLES,
     db::{self, DbConnection},
     state::AppState,
 };
@@ -27,7 +28,7 @@ pub async fn upload_file(
     Path(IdParameter { id }): Path<IdParameter>,
     mut multipart_form: Multipart,
 ) -> Result<(), db::Error> {
-    let mut extracted_files = Vec::with_capacity(32);
+    let mut extracted_files = Vec::with_capacity(MAX_N_SAMPLES);
 
     while let Some(field) = multipart_form
         .next_field()
@@ -93,9 +94,8 @@ impl NewFile {
             dataset_id,
             path,
             content_type: content_type.into(),
-            // It should be possible to just get the underlying slice as `&[u8]` but it causes
-            // lifetime issues and I don't feel like dealing with those
-            raw_content: raw_content.to_vec(),
+            // Prefer `into` over `to_vec` because the latter requires copying data
+            raw_content: raw_content.into(),
             parsed_data,
         })
     }
@@ -241,7 +241,9 @@ fn extract_path(filename: Option<&str>) -> Result<&str, db::DataError> {
         .file_name()
         .is_none_or(|f| !ALLOWED_FILENAMES.contains(&f))
     {
-        return Err(db::DataError::new_other("invalid filename"));
+        return Err(db::DataError::new_other(&format!(
+            "invalid filename: {path}"
+        )));
     }
 
     if path.is_absolute() {
@@ -250,8 +252,16 @@ fn extract_path(filename: Option<&str>) -> Result<&str, db::DataError> {
         ));
     }
 
-    let Some(parent) = path.parent() else {
-        return Ok(path.as_str());
+    let path_as_str = path.as_str();
+
+    let parent = match path.parent() {
+        None => {
+            return Ok(path_as_str);
+        }
+        Some(p) if p.file_name().is_none() => {
+            return Ok(path_as_str);
+        }
+        Some(p) => p,
     };
 
     let per_sample_outs_error = Err(db::DataError::new_other(
@@ -267,7 +277,7 @@ fn extract_path(filename: Option<&str>) -> Result<&str, db::DataError> {
         return per_sample_outs_error;
     }
 
-    Ok(path.as_str())
+    Ok(path_as_str)
 }
 
 #[cfg(test)]
@@ -288,14 +298,14 @@ mod tests {
     }
 
     #[rstest]
-    fn correct_filename() {
-        let path = extract_path(Some("parent/file")).unwrap();
+    fn correct_filenames() {
+        let path = extract_path(Some("metrics_summary.csv")).unwrap();
 
-        assert_eq!(path, "parent/file");
+        assert_eq!(path, "metrics_summary.csv");
 
-        let path = extract_path(Some("grandparent/parent/file")).unwrap();
+        let path = extract_path(Some("per_sample_outs/sample_name/metrics_summary.csv")).unwrap();
 
-        assert_eq!(path, "grandparent/parent/file");
+        assert_eq!(path, "per_sample_outs/sample_name/metrics_summary.csv");
     }
 
     #[rstest]
