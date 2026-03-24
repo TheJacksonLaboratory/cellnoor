@@ -4,6 +4,7 @@ on:
     paths:
       - cellnoor-ui/**
       - pkgs/*
+      - "**/package.json"
 
 jobs:
   lint-format-and-test:

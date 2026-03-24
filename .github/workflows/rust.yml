@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - "**/*.rs"
+      - "**/Cargo.toml"
 
 jobs:
   lint:
