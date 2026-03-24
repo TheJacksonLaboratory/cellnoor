@@ -62,6 +62,33 @@ export interface paths {
                         "application/json": components["schemas"]["Institution"];
                     };
                 };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
                 default: {
                     headers: {
                         [name: string]: unknown;
@@ -226,6 +253,24 @@ export interface paths {
                         "application/json": components["schemas"]["Person"];
                     };
                 };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
                 422: {
                     headers: {
                         [name: string]: unknown;
@@ -314,6 +359,24 @@ export interface paths {
                         "application/json": components["schemas"]["Person"];
                     };
                 };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
                 422: {
                     headers: {
                         [name: string]: unknown;
@@ -390,6 +453,33 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["Project"];
+                    };
+                };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
                     };
                 };
                 default: {
@@ -517,6 +607,33 @@ export interface paths {
                     };
                     content?: never;
                 };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
                 default: {
                     headers: {
                         [name: string]: unknown;
@@ -553,6 +670,33 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
                 };
                 default: {
                     headers: {
@@ -716,6 +860,33 @@ export interface paths {
                         "application/json": components["schemas"]["Specimen"];
                     };
                 };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
                 default: {
                     headers: {
                         [name: string]: unknown;
@@ -840,6 +1011,33 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["SpecimenMeasurement"];
+                    };
+                };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
                     };
                 };
                 default: {
@@ -978,6 +1176,33 @@ export interface paths {
                         "application/json": components["schemas"]["SequencingRun"];
                     };
                 };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
                 default: {
                     headers: {
                         [name: string]: unknown;
@@ -1024,6 +1249,33 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
                 };
                 default: {
                     headers: {
@@ -1139,6 +1391,33 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["Suspension"];
+                    };
+                };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
                     };
                 };
                 default: {
@@ -1267,6 +1546,33 @@ export interface paths {
                         "application/json": components["schemas"]["SuspensionMeasurement"];
                     };
                 };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
                 default: {
                     headers: {
                         [name: string]: unknown;
@@ -1339,6 +1645,33 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["SuspensionPool"];
+                    };
+                };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
                     };
                 };
                 default: {
@@ -1513,6 +1846,33 @@ export interface paths {
                         "application/json": components["schemas"]["SuspensionPoolMeasurement"];
                     };
                 };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
                 default: {
                     headers: {
                         [name: string]: unknown;
@@ -1585,6 +1945,33 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["ChromiumRun"];
+                    };
+                };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
                     };
                 };
                 default: {
@@ -1793,6 +2180,33 @@ export interface paths {
                         "application/json": components["schemas"]["Cdna"];
                     };
                 };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
                 default: {
                     headers: {
                         [name: string]: unknown;
@@ -1934,6 +2348,33 @@ export interface paths {
                         "application/json": components["schemas"]["CdnaMeasurement"];
                     };
                 };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
                 default: {
                     headers: {
                         [name: string]: unknown;
@@ -2006,6 +2447,33 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["Library"];
+                    };
+                };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
                     };
                 };
                 default: {
@@ -2149,6 +2617,33 @@ export interface paths {
                         "application/json": components["schemas"]["LibraryMeasurement"];
                     };
                 };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
                 default: {
                     headers: {
                         [name: string]: unknown;
@@ -2221,6 +2716,33 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["ChromiumDataset"];
+                    };
+                };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
                     };
                 };
                 default: {
