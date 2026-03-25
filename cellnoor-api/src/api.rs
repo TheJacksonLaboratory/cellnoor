@@ -27,6 +27,7 @@ pub async fn serve(config: Config) -> anyhow::Result<()> {
     #[cfg(feature = "dummy-data")]
     {
         // This populates the database with dummy-data
+        #[allow(clippy::large_futures)]
         database().await;
     }
     serve_inner(config).await
