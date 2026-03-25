@@ -3,6 +3,7 @@ use cellnoor_api::{api, config::Config};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    #[allow(clippy::large_futures)]
     api::serve(Config::read().context(
         "failed to read configuration from command-line, environment, and configuration directory",
     )?)
