@@ -1,3 +1,4 @@
+#![allow(clippy::large_futures)]
 use std::ops::Range;
 
 use cellnoor_models::{

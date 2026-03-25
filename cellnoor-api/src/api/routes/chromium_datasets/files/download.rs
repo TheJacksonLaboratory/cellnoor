@@ -1,14 +1,16 @@
+use std::str::FromStr;
+
 use axum::{
-    Extension, Json,
-    body::Body,
+    Extension,
     extract::{Path, State},
-    http::{HeaderValue, Response},
-    response::IntoResponse,
+    http::HeaderValue,
 };
+use axum_extra::TypedHeader;
 use cellnoor_models::chromium_dataset::metrics::ParsedMetricsData;
 use cellnoor_schema::{chromium_dataset_files, chromium_datasets};
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
+use headers::ContentType;
 use schemars::JsonSchema;
 use serde::Deserialize;
 use uuid::Uuid;
@@ -19,6 +21,7 @@ use crate::{
     state::AppState,
 };
 
+pub const ANY_CONTENT_TYPE: &str = "*/*";
 pub const CSV_CONTENT_TYPE: &str = "text/csv";
 pub const HTML_CONTENT_TYPE: &str = "text/html";
 pub const JSON_CONTENT_TYPE: &str = "application/json";
@@ -32,13 +35,16 @@ pub struct FilePath {
     pub path: String,
 }
 
+type Response = (TypedHeader<ContentType>, Vec<u8>);
+
+#[axum::debug_handler]
 pub async fn download_chromium_dataset_file(
     _: State<AppState>,
     db_conn: DbConnection,
     Extension(user): Extension<AuthUser>,
     Path(file_path): Path<FilePath>,
     request: axum::extract::Request,
-) -> Result<Response<Body>, db::Error> {
+) -> Result<Response, db::Error> {
     tracing::info!(
         "fetching Chromium dataset file with path {}",
         file_path.path
@@ -62,7 +68,7 @@ async fn select_chromium_dataset_file(
     authorized_projects: &AuthProjects,
     accept: Option<&str>,
     mut db_conn: &diesel_async::AsyncPgConnection,
-) -> Result<Response<Body>, db::Error> {
+) -> Result<Response, db::Error> {
     let filter = chromium_dataset_files_filter(file_path, authorized_projects, accept);
 
     let query = chromium_dataset_files::table
@@ -70,19 +76,26 @@ async fn select_chromium_dataset_file(
         .filter(filter);
 
     let response = if return_raw_content(accept) {
-        query
-            .select(chromium_dataset_files::raw_content)
-            .first::<Vec<u8>>(&mut db_conn)
-            .await
-            .map(Body::from)
-            .map(Response::new)?
+        let (content_type, raw_content) = query
+            .select((
+                chromium_dataset_files::content_type,
+                chromium_dataset_files::raw_content,
+            ))
+            .first::<(String, Vec<u8>)>(&mut db_conn)
+            .await?;
+
+        let content_type = TypedHeader(ContentType::from_str(&content_type).unwrap());
+
+        (content_type, raw_content)
     } else {
-        query
+        let content = query
             .select(chromium_dataset_files::parsed_data)
             .first::<Option<ParsedMetricsData>>(&mut db_conn)
             .await
-            .map(Json)
-            .map(Json::into_response)?
+            .map(|d| serde_json::to_vec(&d))?
+            .unwrap();
+
+        (TypedHeader(ContentType::json()), content)
     };
 
     Ok(response)
@@ -111,7 +124,7 @@ where
         return filter;
     };
 
-    if content_type.contains("*/*") {
+    if content_type.contains(ANY_CONTENT_TYPE) {
         return filter;
     }
 
@@ -139,13 +152,11 @@ where
 }
 
 fn return_raw_content(maybe_content_type: Option<&str>) -> bool {
-    if maybe_content_type.is_none() {
-        true
-    } else if let Some(content_type) = maybe_content_type
-        && (content_type.contains(CSV_CONTENT_TYPE) || content_type.contains(HTML_CONTENT_TYPE))
-    {
-        true
-    } else {
-        false
+    // This is a terrible, standards-noncompliant implementation, but for our
+    // purposes its fine
+    match maybe_content_type {
+        None => true,
+        Some(content_type) if content_type.contains(JSON_CONTENT_TYPE) => false,
+        Some(_) => true,
     }
 }
