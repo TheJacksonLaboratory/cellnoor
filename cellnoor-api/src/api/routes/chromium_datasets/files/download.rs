@@ -154,8 +154,5 @@ where
 fn return_raw_content(maybe_content_type: Option<&str>) -> bool {
     // This is a terrible, standards-noncompliant implementation, but for our
     // purposes its fine
-    match maybe_content_type {
-        Some(content_type) if content_type.contains(JSON_CONTENT_TYPE) => false,
-        _ => true,
-    }
+    !maybe_content_type.is_some_and(|ct| ct.contains(JSON_CONTENT_TYPE))
 }
