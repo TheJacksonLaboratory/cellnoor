@@ -29,27 +29,35 @@ export async function load({ params: { id } }) {
 
 const FILE_LINK_PREFIX = "/chromium-datasets/00000000-0000-0000-0000-000000000000/files/";
 
-interface DownloadedFile extends FileNode {
+interface ParsedData extends FileNode {
   name: string;
-  content: Record<string, unknown> | Record<string, unknown>[] | Blob;
-  type: "json" | "html" | "unknown";
+  content: Record<string, unknown> | Record<string, unknown>[];
+  type: "json";
 }
 
-async function downloadParsedFile(link: string): Promise<DownloadedFile> {
-  // If it's not an HTML file, we know the backend (written by a virtuoso) has a JSON representation of the file, which we want for a nice (shitty) data display
-  const downloadHtml = link.endsWith(".html");
-  const accept = downloadHtml ? "text/html" : "application/json";
+interface RawHtmlFile extends FileNode {
+  link: string;
+  content: null;
+  name: string;
+  type: "html";
+}
 
-  const response = await downloadFile({ link, accept });
-
+async function downloadParsedFile(link: string): Promise<ParsedData | RawHtmlFile> {
+  const isHtml = link.endsWith(".html");
   const name = link.slice(FILE_LINK_PREFIX.length);
-  const contentType = response.headers.get("Content-Type");
 
-  if (contentType === "application/json") {
-    return { name, content: await response.json(), type: "json" };
-  } else if (contentType === "text/html") {
-    return { name, content: await response.blob(), type: "html" };
-  } else {
-    return { name, content: await response.blob(), type: "unknown" };
+  // The HTML files are 10x Genomics web summaries, which are relatively large, so we download them on-demand in the browser
+  if (isHtml) {
+    return {
+      name,
+      content: null,
+      link,
+      type: "html",
+    };
   }
+
+  // At this point, we know that the file isn't HTML, so the backend can represent it as JSON
+  const content = await downloadFile({ link, accept: "application/json" }).then((r) => r.json());
+
+  return { name, content, type: "json" };
 }

@@ -1,6 +1,6 @@
 export interface FileNode {
   name: string;
-  content: any;
+  content: unknown;
   type: string;
 }
 
