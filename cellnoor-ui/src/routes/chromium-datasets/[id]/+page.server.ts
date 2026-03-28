@@ -29,20 +29,7 @@ export async function load({ params: { id } }) {
 
 const FILE_LINK_PREFIX = "/chromium-datasets/00000000-0000-0000-0000-000000000000/files/";
 
-interface ParsedData extends FileNode {
-  name: string;
-  content: Record<string, unknown> | Record<string, unknown>[];
-  type: "json";
-}
-
-interface RawHtmlFile extends FileNode {
-  link: string;
-  content: null;
-  name: string;
-  type: "html";
-}
-
-async function downloadParsedFile(link: string): Promise<ParsedData | RawHtmlFile> {
+async function downloadParsedFile(link: string): Promise<FileNode> {
   const isHtml = link.endsWith(".html");
   const name = link.slice(FILE_LINK_PREFIX.length);
 
@@ -50,8 +37,7 @@ async function downloadParsedFile(link: string): Promise<ParsedData | RawHtmlFil
   if (isHtml) {
     return {
       name,
-      content: null,
-      link,
+      src: link,
       type: "html",
     };
   }

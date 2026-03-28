@@ -1,12 +1,28 @@
-export interface FileNode {
+export interface HtmlFile {
   name: string;
-  content: unknown;
-  type: string;
+  src: string;
+  type: "html";
+}
+
+export interface JsonFile {
+  name: string;
+  content: Record<string, unknown> | Record<string, unknown>[];
+  type: "json";
+}
+
+export type FileNode = HtmlFile | JsonFile;
+
+export function isHtmlFile(file: FileNode): file is HtmlFile {
+  return file.type === "html";
 }
 
 export interface DirectoryNode {
   name: string;
   children: (DirectoryNode | FileNode)[];
+}
+
+export function isDirectory(node: FileNode | DirectoryNode): node is DirectoryNode {
+  return (node as DirectoryNode).children !== undefined;
 }
 
 export function createFileTree(files: FileNode[]): (DirectoryNode | FileNode)[] {

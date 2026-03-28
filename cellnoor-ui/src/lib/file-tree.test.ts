@@ -5,27 +5,27 @@ test("file-tree nesting", () => {
   const files: FileNode[] = [
     {
       name: "per_sample_outs/sample1/metrics_summary.csv",
-      content: null,
+      content: {},
       type: "json",
     },
     {
       name: "per_sample_outs/sample1/web_summary.html",
-      content: null,
+      src: "per_sample_outs/sample1/web_summary.html",
       type: "html",
     },
     {
       name: "per_sample_outs/sample2/metrics_summary.csv",
-      content: null,
+      content: {},
       type: "json",
     },
     {
       name: "per_sample_outs/sample2/web_summary.html",
-      content: null,
+      src: "per_sample_outs/sample2/web_summary.html",
       type: "html",
     },
     {
       name: "qc_report.html",
-      content: null,
+      src: "qc_report.html",
       type: "html",
     },
   ];
@@ -39,20 +39,28 @@ test("file-tree nesting", () => {
         {
           name: "sample1",
           children: [
-            { name: "metrics_summary.csv", content: null, type: "json" },
-            { name: "web_summary.html", content: null, type: "html" },
+            { name: "metrics_summary.csv", content: {}, type: "json" },
+            {
+              name: "web_summary.html",
+              src: "per_sample_outs/sample1/web_summary.html",
+              type: "html",
+            },
           ],
         },
         {
           name: "sample2",
           children: [
-            { name: "metrics_summary.csv", content: null, type: "json" },
-            { name: "web_summary.html", content: null, type: "html" },
+            { name: "metrics_summary.csv", content: {}, type: "json" },
+            {
+              name: "web_summary.html",
+              src: "per_sample_outs/sample2/web_summary.html",
+              type: "html",
+            },
           ],
         },
       ],
     },
-    { name: "qc_report.html", content: null, type: "html" },
+    { name: "qc_report.html", src: "qc_report.html", type: "html" },
   ];
 
   expect(createdFileTree).toStrictEqual(expectedFileTree);
