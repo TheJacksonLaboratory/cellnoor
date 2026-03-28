@@ -17,7 +17,7 @@
 <div class="flex flex-row p-4 mb-4 border border-neutral rounded-box place-content-between">
   <div class="flex flex-col gap-1">
     <!-- prettier-ignore -->
-    <a class="link link-primary link-hover text-xl font-semibold max-w-fit" href={links.self as string}>{name}</a><!-- eslint-disable-line svelte/no-navigation-without-resolve -->
+    <a class="link link-primary link-hover text-xl font-semibold max-w-fit" href={links.self}>{name}</a><!-- eslint-disable-line svelte/no-navigation-without-resolve -->
     <p>
       {assay.name}
       <span class="font-extralight">({assay.chemistry_version})</span>

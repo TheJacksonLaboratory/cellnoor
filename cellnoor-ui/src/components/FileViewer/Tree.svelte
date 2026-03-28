@@ -6,18 +6,23 @@
   const {
     fileTree,
     onselect,
-  }: { fileTree: (DirectoryNode | FileNode)[]; onselect: (node: FileNode) => void } = $props();
+  }: {
+    fileTree: (DirectoryNode | FileNode)[];
+    onselect: (node: FileNode) => void;
+  } = $props();
 </script>
 
 <ul class="menu">
   {#each fileTree as node (node.name)}
     {#if isDirectory(node)}
       <li>
-        <div>
-          <Folder />
-          {node.name}
-        </div>
-        <Tree fileTree={node.children} {onselect} />
+        <details open>
+          <summary>
+            <Folder />
+            {node.name}</summary
+          >
+          <Tree fileTree={node.children} {onselect} />
+        </details>
       </li>
     {:else}
       <li>
