@@ -33,7 +33,6 @@
     "globals": "catalog:"
   },
   "dependencies": {
-    "bits-ui": "catalog:",
     "@fontsource-variable/comfortaa": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "better-auth": "catalog:",
