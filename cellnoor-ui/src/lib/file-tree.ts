@@ -6,6 +6,7 @@ export interface HtmlFile {
 
 export interface JsonFile {
   name: string;
+  src: string;
   content: Record<string, unknown> | Record<string, unknown>[];
   type: "json";
 }

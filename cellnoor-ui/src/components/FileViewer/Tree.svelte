@@ -3,12 +3,14 @@
   import { File, Folder } from "@lucide/svelte";
   import Tree from "./Tree.svelte";
 
-  const {
+  let {
     fileTree,
     onselect,
+    selected = $bindable<FileNode | null>(null),
   }: {
     fileTree: (DirectoryNode | FileNode)[];
     onselect: (node: FileNode) => void;
+    selected?: FileNode | null;
   } = $props();
 </script>
 
@@ -21,15 +23,15 @@
             <Folder />
             {node.name}</summary
           >
-          <Tree fileTree={node.children} {onselect} />
+          <Tree fileTree={node.children} {onselect} bind:selected />
         </details>
       </li>
     {:else}
       <li>
         <button
-          onblur={({ currentTarget }) => currentTarget.removeAttribute("class")}
-          onclick={({ currentTarget }) => {
-            currentTarget.setAttribute("class", "border border-success");
+          class={selected?.src === node.src ? "menu-active" : ""}
+          onclick={() => {
+            selected = node;
             onselect(node);
           }}
         >

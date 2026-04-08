@@ -5,6 +5,7 @@ test("file-tree nesting", () => {
   const files: FileNode[] = [
     {
       name: "per_sample_outs/sample1/metrics_summary.csv",
+      src: "per_sample_outs/sample1/metrics_summary.csv",
       content: {},
       type: "json",
     },
@@ -15,6 +16,7 @@ test("file-tree nesting", () => {
     },
     {
       name: "per_sample_outs/sample2/metrics_summary.csv",
+      src: "per_sample_outs/sample2/metrics_summary.csv",
       content: {},
       type: "json",
     },
@@ -39,7 +41,12 @@ test("file-tree nesting", () => {
         {
           name: "sample1",
           children: [
-            { name: "metrics_summary.csv", content: {}, type: "json" },
+            {
+              name: "metrics_summary.csv",
+              src: "per_sample_outs/sample1/metrics_summary.csv",
+              content: {},
+              type: "json",
+            },
             {
               name: "web_summary.html",
               src: "per_sample_outs/sample1/web_summary.html",
@@ -50,7 +57,12 @@ test("file-tree nesting", () => {
         {
           name: "sample2",
           children: [
-            { name: "metrics_summary.csv", content: {}, type: "json" },
+            {
+              name: "metrics_summary.csv",
+              src: "per_sample_outs/sample2/metrics_summary.csv",
+              content: {},
+              type: "json",
+            },
             {
               name: "web_summary.html",
               src: "per_sample_outs/sample2/web_summary.html",

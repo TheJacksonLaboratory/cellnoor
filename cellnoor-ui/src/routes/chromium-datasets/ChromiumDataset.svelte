@@ -7,11 +7,9 @@
   const {
     chromiumDataset,
   }: {
-    chromiumDataset: ChromiumDataset & {
-      files: Map<string, string[]>;
-    };
+    chromiumDataset: ChromiumDataset;
   } = $props();
-  const { links, name, assay, delivered_at, files } = $derived(chromiumDataset);
+  const { links, name, assay, delivered_at } = $derived(chromiumDataset);
 </script>
 
 <div class="flex flex-row p-4 mb-4 border border-neutral rounded-box place-content-between">

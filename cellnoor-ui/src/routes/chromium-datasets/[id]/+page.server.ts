@@ -48,5 +48,5 @@ async function downloadParsedFile(link: string): Promise<FileNode> {
   // At this point, we know that the file isn't HTML, so the backend can represent it as JSON
   const content = await downloadFile({ link, accept: "application/json" }).then((r) => r.json());
 
-  return { name, content, type: "json" };
+  return { name, src: link, content, type: "json" };
 }
