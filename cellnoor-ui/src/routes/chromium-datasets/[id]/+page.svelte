@@ -4,7 +4,6 @@
   import type { SpecimenSummary } from "cellnoor-client";
   import * as FileViewer from "../../../components/FileViewer";
   import NiceTable from "../../../components/NiceTable.svelte";
-  import LibraryTypeBadges from "../../LibraryTypeBadges.svelte";
 
   const { data } = $props();
 
@@ -66,17 +65,17 @@
         {data.dataset.assay.name}
         <span class="font-extralight">({data.dataset.assay.chemistry_version})</span>
       </p>
-
       <p class="text-sm">
         Delivered on {DATE_FORMATTER.format(new Date(data.dataset.delivered_at))}
       </p>
+      <div class="divider m-0"></div>
+      <h1 class="text-lg font-bold">Specimens in this dataset</h1>
       <NiceTable
         data={data.specimens!}
         fieldNames={specimenTableFieldNames}
         extractDatum={extractSpecimenDatum}
       />
       <div class="divider m-0"></div>
-
       <FileViewer.View file={activeFile} />
     </div>
   </div>

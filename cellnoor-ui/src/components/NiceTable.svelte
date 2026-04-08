@@ -1,12 +1,14 @@
-<script lang="ts">
+<script lang="ts" generics="T">
+  type ExtractDatum = (fieldName: string, row: T) => unknown;
+
   const {
     fieldNames,
     data,
     extractDatum,
   }: {
     fieldNames: string[];
-    data: Record<string, unknown>[];
-    extractDatum: (fieldName: string, row: Record<string, unknown>) => unknown;
+    data: T[];
+    extractDatum: ExtractDatum;
   } = $props();
 </script>
 
