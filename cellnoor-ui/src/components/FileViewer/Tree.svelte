@@ -26,7 +26,13 @@
       </li>
     {:else}
       <li>
-        <button onclick={() => onselect(node)}>
+        <button
+          onblur={({ currentTarget }) => currentTarget.removeAttribute("class")}
+          onclick={({ currentTarget }) => {
+            currentTarget.setAttribute("class", "border border-success");
+            onselect(node);
+          }}
+        >
           <File />
           {node.name}
         </button>
