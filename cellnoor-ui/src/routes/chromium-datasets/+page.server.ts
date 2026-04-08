@@ -3,9 +3,7 @@ import type { ApiErrorResponse, ChromiumDataset, Project, TenxAssay } from "cell
 
 type ReturnType =
   | {
-      chromiumDatasets: (ChromiumDataset & {
-        files: Map<string, string[]>;
-      })[];
+      chromiumDatasets: ChromiumDataset[];
       assays: TenxAssay[];
       projects: Project[];
     }
@@ -49,33 +47,8 @@ async function loadData(q?: string): Promise<ReturnType> {
   // In theory, mutating each dataset and just adding the `files` property would be more performant, as this probably
   // involves a copy, but I don't think it matters.
   return {
-    chromiumDatasets: chromiumDatasets.data.map((ds) => {
-      return { files: createFileTree(ds.links.files), ...ds };
-    }),
+    chromiumDatasets: chromiumDatasets.data,
     assays: assays.data,
     projects: projects.data,
   };
-}
-
-function createFileTree(fileLinks: (string | null)[]) {
-  const linkMap: Map<string, string[]> = new Map();
-
-  for (const link of fileLinks) {
-    if (link === null) {
-      continue;
-    }
-
-    const parts = link.split("/");
-
-    const directoryName = parts.at(-2) as string;
-
-    const existingLinks = linkMap.get(directoryName);
-    if (existingLinks) {
-      existingLinks.push(link);
-    } else {
-      linkMap.set(directoryName, [link]);
-    }
-  }
-
-  return linkMap;
 }
