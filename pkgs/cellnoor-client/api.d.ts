@@ -2122,6 +2122,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/chip-loadings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChipLoading"][];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/cdna": {
         parameters: {
             query?: never;
@@ -3039,6 +3081,20 @@ export interface components {
         };
         /** @enum {string} */
         CellPelletThermalPreservation: "flash_freezing";
+        ChipLoading: {
+            additional_data?: unknown;
+            buffer_volume_loaded: components["schemas"]["LoadingVolume"];
+            /** Format: uuid */
+            gem_pool_id: string;
+            /** Format: uuid */
+            id: string;
+            ocm_barcode_id?: string | null;
+            /** Format: uuid */
+            suspension_id?: string | null;
+            /** Format: uuid */
+            suspension_pool_id?: string | null;
+            suspension_volume_loaded: components["schemas"]["LoadingVolume"];
+        };
         ChromiumDataset: {
             assay: components["schemas"]["TenxAssay"];
             /** Format: date-time */
@@ -4484,6 +4540,7 @@ export type CdnaMeasurement = components['schemas']['CdnaMeasurement'];
 export type CdnaOrderBy = components['schemas']['CdnaOrderBy'];
 export type CdnaSummary = components['schemas']['CdnaSummary'];
 export type CellPelletThermalPreservation = components['schemas']['CellPelletThermalPreservation'];
+export type ChipLoading = components['schemas']['ChipLoading'];
 export type ChromiumDataset = components['schemas']['ChromiumDataset'];
 export type ChromiumDatasetCmdline = components['schemas']['ChromiumDatasetCmdline'];
 export type ChromiumDatasetFilter = components['schemas']['ChromiumDatasetFilter'];

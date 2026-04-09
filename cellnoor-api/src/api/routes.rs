@@ -12,6 +12,7 @@ use tower_http::trace::TraceLayer;
 use crate::{api::middleware::authenticate_request, state::AppState};
 
 pub mod cdna;
+pub mod chip_loadings;
 pub mod chromium_datasets;
 pub mod chromium_runs;
 pub mod gem_pools;
@@ -68,6 +69,7 @@ pub fn router() -> (Router<AppState>, OpenApi) {
         .nest("/suspension-pools", suspension_pools::router())
         .nest("/chromium-runs", chromium_runs::router())
         .nest("/gem-pools", gem_pools::router())
+        .nest("/chip-loadings", chip_loadings::router())
         .nest("/cdna", cdna::router())
         .nest("/libraries", libraries::router())
         .nest("/chromium-datasets", chromium_datasets::router());
