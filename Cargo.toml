@@ -28,6 +28,7 @@ axum = { version = "0.8.8", default-features = false, features = [
   "json",
   "macros",
   "multipart",
+  "query",
   "tokio",
 ] }
 axum-extra = { version = "0.12.5", features = ["cookie", "typed-header"] }
@@ -78,6 +79,7 @@ tracing-appender = "0.2.4"
 tracing-subscriber = { version = "0.3.23", features = ["json"] }
 url = { version = "2.5.8", features = ["serde"] }
 uuid = { version = "1.23.0", features = ["serde", "v7"] }
+zstd = { version = "0.13.3" }
 
 [workspace.lints.clippy]
 cast_precision_loss = "allow"

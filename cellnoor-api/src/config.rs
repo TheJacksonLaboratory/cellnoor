@@ -106,6 +106,11 @@ impl Config {
     }
 
     #[must_use]
+    pub fn db_root_password(&self) -> &SecretString {
+        &self.db_root_password
+    }
+
+    #[must_use]
     pub fn db_root_url(&self) -> SecretString {
         self.db_url(DatabaseUser::Root)
     }

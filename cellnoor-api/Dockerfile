@@ -27,7 +27,7 @@ RUN --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
 FROM debian:trixie AS final
 
 RUN apt update && \
-    apt install adduser ca-certificates curl --yes
+    apt install adduser ca-certificates curl postgresql-client --yes
 
 RUN mkdir app
 
