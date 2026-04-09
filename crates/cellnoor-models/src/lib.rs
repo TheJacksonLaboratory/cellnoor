@@ -1,6 +1,7 @@
 #![allow(uncommon_codepoints)]
 #![allow(clippy::struct_field_names)]
 
+pub mod chip_loading;
 pub mod chromium_dataset;
 pub mod chromium_run;
 mod generic_id;
