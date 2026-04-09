@@ -18,7 +18,7 @@ fn map_err(e: impl std::error::Error) -> serde_json::Value {
 }
 
 #[axum::debug_handler]
-pub(super) async fn fetch_db_backup(
+pub(super) async fn dump_database(
     axum::extract::Query(DbBackupQuery { data_only }): axum::extract::Query<DbBackupQuery>,
 ) -> Result<(TypedHeader<ContentEncoding>, Vec<u8>), Json<serde_json::Value>> {
     // Rather than pass around the configuration in `AppState`, we can just read it
@@ -38,11 +38,21 @@ pub(super) async fn fetch_db_backup(
         cmd.arg("--data-only");
     }
 
-    let dump = cmd.output().map_err(map_err)?.stdout;
+    let std::process::Output {
+        status,
+        stdout,
+        stderr,
+    } = cmd.output().map_err(map_err)?;
 
-    let output_buffer = Vec::with_capacity(dump.len());
+    if !status.success() {
+        return Err(Json(
+            serde_json::json!({"error": {"message": "failed to dump database", "reason": String::from_utf8(stderr).unwrap()}}),
+        ));
+    }
+
+    let output_buffer = Vec::with_capacity(stdout.len());
     let mut encoder = zstd::Encoder::new(output_buffer, 22).unwrap();
-    encoder.write_all(&dump).map_err(map_err)?;
+    encoder.write_all(&stdout).map_err(map_err)?;
 
     let output = encoder.finish().map_err(map_err)?;
 

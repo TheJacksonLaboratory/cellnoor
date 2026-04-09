@@ -1,13 +1,13 @@
 use axum::{Router, handler::Handler, routing::get};
-use backup::fetch_db_backup;
+use dump::dump_database;
 
 use crate::{api::middleware::admin_required, state::AppState};
 
-pub mod backup;
+pub mod dump;
 
 pub(super) fn router() -> Router<AppState> {
     Router::new().route(
-        "/backup",
-        get(fetch_db_backup.layer(axum::middleware::from_fn(admin_required))),
+        "/dump",
+        get(dump_database.layer(axum::middleware::from_fn(admin_required))),
     )
 }

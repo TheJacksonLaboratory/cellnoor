@@ -7,8 +7,6 @@ FROM rust:${RUST_VERSION}-trixie AS build
 ARG BUILD_PROFILE
 WORKDIR /app
 
-RUN apt update
-
 # Build the app, bind-mounting all the workspace crates and cache-mounting useful directories
 RUN --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
@@ -27,7 +25,14 @@ RUN --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
 FROM debian:trixie AS final
 
 RUN apt update && \
-    apt install adduser ca-certificates curl postgresql-client --yes
+    apt install adduser ca-certificates curl zstd postgresql-common --yes
+
+# cellnoor requires `pg_dumpall`, which is in the `postgresql-client-18` package. It takes a little special setup to
+# get it (https://www.postgresql.org/download/linux/debian/)
+RUN /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y && \
+    apt update && \
+    apt install postgresql-client-18 --yes
+
 
 RUN mkdir app
 
