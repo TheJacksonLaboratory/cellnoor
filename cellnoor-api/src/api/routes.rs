@@ -15,6 +15,7 @@ pub mod cdna;
 pub mod chip_loadings;
 pub mod chromium_datasets;
 pub mod chromium_runs;
+pub mod database;
 pub mod gem_pools;
 pub mod institutions;
 pub mod libraries;
@@ -76,7 +77,7 @@ pub fn router() -> (Router<AppState>, OpenApi) {
 
     let mut api_docs = OpenApi::default();
 
-    let router = router.finish_api_with(&mut api_docs, |api_docs| {
+    let mut router = router.finish_api_with(&mut api_docs, |api_docs| {
         api_docs
             .title("cellnoor REST API")
             .version("0.1.0")
@@ -93,6 +94,8 @@ pub fn router() -> (Router<AppState>, OpenApi) {
             .security_requirement("api_token")
             .default_response::<Json<super::error::ApiErrorResponse>>()
     });
+
+    router = router.nest("/database", database::router());
 
     (router, api_docs)
 }
