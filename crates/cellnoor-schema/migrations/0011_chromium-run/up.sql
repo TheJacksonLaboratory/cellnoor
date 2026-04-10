@@ -29,7 +29,6 @@ create table chip_loadings (
 
     -- In theory, someone could insert two rows with the same `gem_pool_id` and `suspension_id` - one with an
     -- `ocm_barcode_id` and another without one, but the application prevents this
-    unique nulls not distinct (gem_pool_id, suspension_id, ocm_barcode_id),
-    unique nulls not distinct (gem_pool_id, suspension_pool_id, ocm_barcode_id),
+    unique nulls not distinct (gem_pool_id, suspension_id, ocm_barcode_id, suspension_pool_id),
     constraint has_suspension check ((suspension_id is null) != (suspension_pool_id is null))
 );

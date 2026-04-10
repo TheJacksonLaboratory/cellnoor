@@ -7,15 +7,20 @@ use schemars::JsonSchema;
 use crate::chromium_run::common::ChromiumRunFields;
 
 #[cfg(feature = "builder")]
+pub mod mixed;
+#[cfg(feature = "builder")]
 pub mod ocm;
 #[cfg(feature = "builder")]
 pub mod standard;
 
 #[cfg(not(feature = "builder"))]
+mod mixed;
+#[cfg(not(feature = "builder"))]
 mod ocm;
 #[cfg(not(feature = "builder"))]
 mod standard;
 
+pub use mixed::{MixedChipLoading, MixedGemPool};
 pub use ocm::{MAX_SUSPENSIONS_PER_OCM_GEM_POOL, OcmBarcodeId, OcmChipLoading, OcmGemPool};
 pub use standard::{StandardChipLoading, StandardGemPool};
 
@@ -27,6 +32,11 @@ pub const MAX_GEM_POOLS_PER_NON_OCM_RUN: usize = 8;
 #[cfg_attr(feature = "app", derive(JsonSchema))]
 #[serde(tag = "plexy", rename_all = "snake_case")]
 pub enum NewChromiumRun {
+    Mixed {
+        #[serde(flatten)]
+        inner: ChromiumRunFields,
+        gem_pools: NonEmptyVec<MixedGemPool, MAX_GEM_POOLS_PER_OCM_RUN>,
+    },
     OnChipMultiplexing {
         #[serde(flatten)]
         inner: ChromiumRunFields,
@@ -42,7 +52,9 @@ pub enum NewChromiumRun {
 impl NewChromiumRun {
     #[must_use]
     pub fn run_at(&self) -> Timestamp {
-        let (Self::OnChipMultiplexing { inner, .. } | Self::Standard { inner, .. }) = self;
+        let (Self::Mixed { inner, .. }
+        | Self::OnChipMultiplexing { inner, .. }
+        | Self::Standard { inner, .. }) = self;
 
         inner.run_at
     }

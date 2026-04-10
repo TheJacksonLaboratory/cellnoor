@@ -106,6 +106,21 @@ impl Config {
     }
 
     #[must_use]
+    pub fn db_host(&self) -> &str {
+        &self.db_host
+    }
+
+    #[must_use]
+    pub fn db_port(&self) -> u16 {
+        self.db_port
+    }
+
+    #[must_use]
+    pub fn db_root_user(&self) -> &str {
+        &self.db_root_user
+    }
+
+    #[must_use]
     pub fn db_root_password(&self) -> &SecretString {
         &self.db_root_password
     }

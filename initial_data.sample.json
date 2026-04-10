@@ -83,7 +83,7 @@
       "chemistry_version": "v1 - GEM-X",
       "protocol_url": "https://www.10xgenomics.com/support/flex-gene-expression/documentation/steps/library-prep/gem-x-flex-gene-expression-reagent-kit-for-singleplex-samples",
       "sample_multiplexing": "singleplex",
-      "cmdlines": ["cellranger multi"],
+      "cmdlines": ["cellranger multi", "cellranger count"],
       "chromium_chip": "GEM-X FX",
       "platform": "chromium",
       "library_type_specifications": [
@@ -117,8 +117,42 @@
       "chemistry_version": "v1 - Next GEM",
       "protocol_url": "https://www.10xgenomics.com/support/flex-gene-expression/documentation/steps/library-prep/chromium-fixed-rna-profiling-reagent-kits-for-singleplexed-samples",
       "sample_multiplexing": "singleplex",
-      "cmdlines": ["cellranger multi"],
+      "cmdlines": ["cellranger multi", "cellranger count"],
       "chromium_chip": "Q",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TS",
+          "cdna_volume_µl": 100,
+          "library_volume_µl": 40
+        }
+      ]
+    },
+    {
+      "name": "Flex Gene Expression",
+      "chemistry_version": "v2 - GEM-X",
+      "protocol_url": "https://www.10xgenomics.com/support/flex-gene-expression/documentation/steps/library-prep/gem-x-flex-v2-for-multiplexed-samples",
+      "sample_multiplexing": "flex_oligonucleotide_barcode",
+      "cmdlines": ["cellranger multi"],
+      "chromium_chip": "GEM-X FX",
+      "platform": "chromium",
+      "library_type_specifications": [
+        {
+          "library_type": "gene_expression",
+          "index_kit": "TS",
+          "cdna_volume_µl": 100,
+          "library_volume_µl": 40
+        }
+      ]
+    },
+    {
+      "name": "Flex Gene Expression",
+      "chemistry_version": "v2 - GEM-X",
+      "protocol_url": "https://www.10xgenomics.com/support/flex-gene-expression/documentation/steps/library-prep/gem-x-flex-v2-for-singleplexed-samples-with-optional-feature-barcode-technology-for-protein",
+      "sample_multiplexing": "singleplex",
+      "cmdlines": ["cellranger multi", "cellranger count"],
+      "chromium_chip": "GEM-X FX",
       "platform": "chromium",
       "library_type_specifications": [
         {
