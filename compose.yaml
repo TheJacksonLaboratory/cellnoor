@@ -20,6 +20,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    volumes:
+      - database:/var/lib/postgresql
   &api_host cellnoor-api:
     build:
       context: .
@@ -117,6 +119,7 @@ volumes:
   logs:
   caddy-data:
   caddy-config:
+  database:
 secrets:
   db_root_password:
     environment: CELLNOOR_DB_ROOT_PASSWORD
