@@ -39,6 +39,7 @@ impl_enum_to_sql!(LibraryType);
 pub enum SampleMultiplexing {
     Cellplex,
     FlexBarcode,
+    FlexOligonucleotideBarcode,
     Hashtag,
     OnChipMultiplexing,
     Singleplex,

@@ -4019,7 +4019,7 @@ export interface components {
             field: "ended_at";
         };
         /** @enum {string} */
-        SampleMultiplexing: "cellplex" | "flex_barcode" | "hashtag" | "on_chip_multiplexing" | "singleplex";
+        SampleMultiplexing: "cellplex" | "flex_barcode" | "flex_oligonucleotide_barcode" | "hashtag" | "on_chip_multiplexing" | "singleplex";
         SequencingRun: {
             additional_data?: unknown;
             /** Format: date-time */
