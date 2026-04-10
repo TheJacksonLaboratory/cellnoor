@@ -10,7 +10,8 @@ pub use creation::ocm;
 pub use creation::standard;
 pub use creation::{
     MAX_GEM_POOLS_PER_NON_OCM_RUN, MAX_GEM_POOLS_PER_OCM_RUN, MAX_SUSPENSIONS_PER_OCM_GEM_POOL,
-    NewChromiumRun, OcmBarcodeId, OcmChipLoading, OcmGemPool, StandardChipLoading, StandardGemPool,
+    MixedChipLoading, MixedGemPool, NewChromiumRun, OcmBarcodeId, OcmChipLoading, OcmGemPool,
+    StandardChipLoading, StandardGemPool,
 };
 pub use query::{ChromiumRunFilter, ChromiumRunOrderBy, GemPoolFilter, GemPoolOrderBy};
 #[cfg(feature = "app")]

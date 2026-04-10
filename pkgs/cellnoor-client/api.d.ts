@@ -3482,6 +3482,11 @@ export interface components {
         Micrometer: "micrometer";
         /** @enum {string} */
         Milliliter: "milliliter";
+        MixedChipLoading: components["schemas"]["OcmChipLoading"] | components["schemas"]["StandardChipLoading"];
+        MixedGemPool: {
+            loading: components["schemas"]["MixedChipLoading"][];
+            readable_id: string;
+        };
         MultiplexingTag: {
             /** Format: uuid */
             id: string;
@@ -3594,6 +3599,19 @@ export interface components {
             name: string;
         };
         NewChromiumRun: {
+            additional_data?: unknown;
+            /** Format: uuid */
+            assay_id: string;
+            gem_pools: components["schemas"]["MixedGemPool"][];
+            /** @constant */
+            plexy: "mixed";
+            readable_id: string;
+            /** Format: date-time */
+            run_at: string;
+            /** Format: uuid */
+            run_by: string;
+            succeeded: boolean;
+        } | {
             additional_data?: unknown;
             /** Format: uuid */
             assay_id: string;
@@ -4577,6 +4595,8 @@ export type MeanDiameter = components['schemas']['MeanDiameter'];
 export type Microliter = components['schemas']['Microliter'];
 export type Micrometer = components['schemas']['Micrometer'];
 export type Milliliter = components['schemas']['Milliliter'];
+export type MixedChipLoading = components['schemas']['MixedChipLoading'];
+export type MixedGemPool = components['schemas']['MixedGemPool'];
 export type MultiplexingTag = components['schemas']['MultiplexingTag'];
 export type MultiplexingTagType = components['schemas']['MultiplexingTagType'];
 export type Nanogram = components['schemas']['Nanogram'];

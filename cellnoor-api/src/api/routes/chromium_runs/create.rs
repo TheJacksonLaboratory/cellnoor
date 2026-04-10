@@ -1,7 +1,7 @@
 use axum::{Extension, Json, extract::State};
 use cellnoor_models::chromium_run::{
-    ChromiumRun, ChromiumRunFields, GemPoolFields, NewChromiumRun, OcmChipLoading, OcmGemPool,
-    StandardChipLoading, StandardGemPool,
+    ChromiumRun, ChromiumRunFields, GemPoolFields, MixedChipLoading, MixedGemPool, NewChromiumRun,
+    OcmChipLoading, OcmGemPool, StandardChipLoading, StandardGemPool,
 };
 use cellnoor_schema::{chip_loadings, chromium_runs, specimens, suspension_pools, suspensions};
 use diesel::prelude::*;
@@ -43,6 +43,17 @@ pub async fn insert_chromium_run_and_associated_data(
     db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Uuid, db::Error> {
     let run_id = match chromium_run {
+        NewChromiumRun::Mixed { inner, gem_pools } => {
+            let run_id = insert_chromium_run(project_id, inner, db_conn).await?;
+
+            let gem_pool_ids =
+                insert_gem_pools(run_id, gem_pools.as_ref().iter().map(|p| &p.inner), db_conn)
+                    .await?;
+
+            insert_mixed_chip_loadings(&gem_pool_ids, gem_pools.into(), db_conn).await?;
+
+            run_id
+        }
         NewChromiumRun::OnChipMultiplexing { inner, gem_pools } => {
             let run_id = insert_chromium_run(project_id, inner, db_conn).await?;
 
@@ -101,6 +112,63 @@ where
         .returning(gem_pools::id)
         .get_results(&mut db_conn)
         .await?)
+}
+
+async fn insert_mixed_chip_loadings(
+    gem_pool_ids: &[Uuid],
+    gem_pools: Vec<MixedGemPool>,
+    db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<(), db::Error> {
+    let mut ocm_gem_pool_ids = Vec::with_capacity(gem_pool_ids.len());
+    let mut ocm_gem_pools = Vec::with_capacity(gem_pools.len());
+    let mut standard_gem_pool_ids = Vec::with_capacity(gem_pool_ids.len());
+    let mut standard_gem_pools = Vec::with_capacity(gem_pools.len());
+
+    for (gem_pool_id, gem_pool) in gem_pool_ids.iter().zip(gem_pools) {
+        let MixedGemPool {
+            inner,
+            loading: loadings,
+        } = gem_pool;
+
+        let mut ocm_loadings = Vec::with_capacity(loadings.as_ref().len());
+        let mut standard_loadings = Vec::with_capacity(loadings.as_ref().len());
+
+        for loading in loadings {
+            match loading {
+                MixedChipLoading::Ocm(l) => {
+                    ocm_gem_pool_ids.push(*gem_pool_id);
+                    ocm_loadings.push(l);
+                }
+                MixedChipLoading::Standard(l) => {
+                    standard_gem_pool_ids.push(*gem_pool_id);
+                    standard_loadings.push(l);
+                }
+            }
+        }
+
+        if !ocm_loadings.is_empty() {
+            ocm_gem_pools.push(OcmGemPool {
+                inner: inner.clone(),
+                loading: non_empty::NonEmptyVec::new(ocm_loadings).unwrap(),
+            });
+        }
+
+        for standard_loading in standard_loadings {
+            standard_gem_pools.push(StandardGemPool {
+                inner: inner.clone(),
+                loading: standard_loading,
+            });
+        }
+    }
+
+    let insertion1 = insert_ocm_chip_loadings(&ocm_gem_pool_ids, &ocm_gem_pools, db_conn);
+
+    let insertion2 =
+        insert_singleplex_chip_loadings(&standard_gem_pool_ids, &standard_gem_pools, db_conn);
+
+    tokio::try_join!(insertion1, insertion2)?;
+
+    Ok(())
 }
 
 async fn insert_ocm_chip_loadings(
@@ -172,6 +240,29 @@ pub(super) async fn validate_chromium_run(
     let run_at = chromium_run.run_at();
 
     match chromium_run {
+        NewChromiumRun::Mixed {
+            inner: _,
+            gem_pools,
+        } => {
+            let suspension_ids: Vec<_> = gem_pools
+                .as_ref()
+                .iter()
+                .flat_map(MixedGemPool::suspension_ids)
+                .collect();
+            let suspension_pool_ids: Vec<_> = gem_pools
+                .as_ref()
+                .iter()
+                .flat_map(MixedGemPool::suspension_pool_ids)
+                .collect();
+
+            validate_loaded_suspensions_and_suspension_pools(
+                &suspension_ids,
+                &suspension_pool_ids,
+                run_at,
+                db_conn,
+            )
+            .await
+        }
         NewChromiumRun::OnChipMultiplexing {
             inner: _,
             gem_pools,

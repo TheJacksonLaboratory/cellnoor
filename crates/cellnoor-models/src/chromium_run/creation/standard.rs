@@ -48,6 +48,26 @@ pub enum StandardChipLoading {
     SuspensionPool(SuspensionPoolLoading),
 }
 
+impl StandardChipLoading {
+    #[must_use]
+    pub fn suspension_id(&self) -> Option<Uuid> {
+        let Self::Suspension(l) = self else {
+            return None;
+        };
+
+        Some(l.suspension_id())
+    }
+
+    #[must_use]
+    pub fn suspension_pool_id(&self) -> Option<Uuid> {
+        let Self::SuspensionPool(l) = self else {
+            return None;
+        };
+
+        Some(l.suspension_pool_id())
+    }
+}
+
 #[base_model]
 #[derive(serde::Deserialize)]
 #[cfg_attr(feature = "app", derive(JsonSchema))]

@@ -69,6 +69,26 @@ pub enum OcmChipLoading {
     SuspensionPool(SuspensionPoolLoading),
 }
 
+impl OcmChipLoading {
+    #[must_use]
+    pub fn suspension_id(&self) -> Option<Uuid> {
+        let Self::Suspension(l) = self else {
+            return None;
+        };
+
+        Some(l.suspension_id())
+    }
+
+    #[must_use]
+    pub fn suspension_pool_id(&self) -> Option<Uuid> {
+        let Self::SuspensionPool(l) = self else {
+            return None;
+        };
+
+        Some(l.suspension_pool_id())
+    }
+}
+
 #[base_model]
 #[derive(serde::Deserialize)]
 #[cfg_attr(feature = "app", derive(JsonSchema))]
@@ -86,22 +106,14 @@ impl OcmGemPool {
     pub fn suspension_ids(&self) -> Vec<Uuid> {
         self.loading()
             .iter()
-            .filter_map(|l| match l {
-                OcmChipLoading::Suspension(s) => Some(s),
-                OcmChipLoading::SuspensionPool(_) => None,
-            })
-            .map(SuspensionLoading::suspension_id)
+            .filter_map(OcmChipLoading::suspension_id)
             .collect()
     }
 
     pub fn suspension_pool_ids(&self) -> Vec<Uuid> {
         self.loading()
             .iter()
-            .filter_map(|l| match l {
-                OcmChipLoading::SuspensionPool(p) => Some(p),
-                OcmChipLoading::Suspension(_) => None,
-            })
-            .map(SuspensionPoolLoading::suspension_pool_id)
+            .filter_map(OcmChipLoading::suspension_pool_id)
             .collect()
     }
 }
