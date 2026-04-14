@@ -1,4 +1,7 @@
 services:
+  postgres:
+    ports:
+      - "5432:5432"
   cellnoor-api:
     build:
       args:
@@ -7,6 +10,7 @@ services:
     environment:
       JWT_ISSUER: &ui_url http://cellnoor-ui
       JWT_AUDIENCE: &api_url http://cellnoor-api/api
+      MODE: ${CELLNOOR_API_MODE}
     secrets:
       - source: initial_data
         uid: "10001"

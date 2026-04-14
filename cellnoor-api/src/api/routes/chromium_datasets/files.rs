@@ -3,7 +3,7 @@ use axum::{
     extract::DefaultBodyLimit,
     routing::{get, post},
 };
-use upload::upload_file;
+use upload::upload_files;
 
 use crate::{
     admin_required_creation,
@@ -27,6 +27,6 @@ pub(super) fn router() -> Router<AppState> {
         admin_required_creation!().layer(DefaultBodyLimit::max(BODY_SIZE_LIMIT));
 
     Router::new()
-        .route("/files", post(upload_file).layer(file_upload_layer))
+        .route("/files", post(upload_files).layer(file_upload_layer))
         .route("/files/{*path}", get(download_chromium_dataset_file))
 }

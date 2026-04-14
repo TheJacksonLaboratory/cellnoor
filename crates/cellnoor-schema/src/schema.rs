@@ -59,6 +59,7 @@ diesel::table! {
         content_type -> Text,
         raw_content -> Bytea,
         parsed_data -> Nullable<Jsonb>,
+        content_encoding -> Nullable<Text>,
     }
 }
 

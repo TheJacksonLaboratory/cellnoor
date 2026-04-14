@@ -10,7 +10,7 @@ use cellnoor_models::chromium_dataset::metrics::ParsedMetricsData;
 use cellnoor_schema::{chromium_dataset_files, chromium_datasets};
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
-use headers::ContentType;
+use headers::{ContentEncoding, ContentType};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use uuid::Uuid;
@@ -35,7 +35,11 @@ pub struct FilePath {
     pub path: String,
 }
 
-type Response = (TypedHeader<ContentType>, Vec<u8>);
+type Response = (
+    TypedHeader<ContentType>,
+    Option<TypedHeader<ContentEncoding>>,
+    Vec<u8>,
+);
 
 #[axum::debug_handler]
 pub async fn download_chromium_dataset_file(
@@ -76,17 +80,21 @@ async fn select_chromium_dataset_file(
         .filter(filter);
 
     let response = if return_raw_content(accept) {
-        let (content_type, raw_content) = query
+        let (content_type, content_encoding, raw_content) = query
             .select((
                 chromium_dataset_files::content_type,
+                chromium_dataset_files::content_encoding,
                 chromium_dataset_files::raw_content,
             ))
-            .first::<(String, Vec<u8>)>(&mut db_conn)
+            .first::<(String, Option<String>, Vec<u8>)>(&mut db_conn)
             .await?;
 
         let content_type = TypedHeader(ContentType::from_str(&content_type).unwrap());
 
-        (content_type, raw_content)
+        // This is subpar but whatever
+        let content_encoding = content_encoding.map(|_| TypedHeader(ContentEncoding::zstd()));
+
+        (content_type, content_encoding, raw_content)
     } else {
         let content = query
             .select(chromium_dataset_files::parsed_data)
@@ -95,7 +103,7 @@ async fn select_chromium_dataset_file(
             .map(|d| serde_json::to_vec(&d))?
             .unwrap();
 
-        (TypedHeader(ContentType::json()), content)
+        (TypedHeader(ContentType::json()), None, content)
     };
 
     Ok(response)

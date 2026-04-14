@@ -1,6 +1,7 @@
 use std::{collections::HashMap, str::FromStr};
 
 use axum::extract::{Multipart, Path, State, multipart::Field};
+use axum_extra::TypedHeader;
 use camino::Utf8Path;
 use cellnoor_models::{
     IdParameter,
@@ -12,20 +13,20 @@ use cellnoor_models::{
 use cellnoor_schema::chromium_dataset_files;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
-use heck::ToSnekCase;
+use headers::ContentEncoding;
 use serde_json::{Number, Value};
 use uuid::Uuid;
 
 use crate::{
     api::routes::chromium_datasets::files::MAX_N_SAMPLES,
-    db::{self, DbConnection},
+    db::{self},
     state::AppState,
 };
 
-pub async fn upload_file(
-    _: State<AppState>,
-    db_conn: DbConnection,
+pub async fn upload_files(
+    state: State<AppState>,
     Path(IdParameter { id }): Path<IdParameter>,
+    TypedHeader(encoding): TypedHeader<ContentEncoding>,
     mut multipart_form: Multipart,
 ) -> Result<(), db::Error> {
     let mut extracted_files = Vec::with_capacity(MAX_N_SAMPLES);
@@ -35,14 +36,94 @@ pub async fn upload_file(
         .await
         .map_err(|e| db::DataError::new_other(&e.body_text()))?
     {
-        let new_file = NewFile::from_multipart_form_field(id, field).await?;
+        let content_type = AllowedContentType::from_multipart_form_field(&field)?;
+        let path = extract_path(field.file_name()).map(str::to_owned)?;
+        let raw_content = field
+            .bytes()
+            .await
+            .map_err(|e| db::DataError::Other {
+                message: format!("failed to read data from multipart/form-data: {e}"),
+            })?
+            .into();
+
+        let new_file = match content_type {
+            AllowedContentType::Csv => NewFile::from_csv(id, path, raw_content)?,
+            AllowedContentType::Html => {
+                if !encoding.contains("zstd") {
+                    return Err(db::DataError::new_other(
+                        "content-encoding must be 'zstd' for HTML files",
+                    ))?;
+                }
+
+                NewFile::from_html(id, path, raw_content)?
+            }
+            AllowedContentType::Json => NewFile::from_json(id, path, raw_content)?,
+        };
+
         extracted_files.push(new_file);
     }
 
+    // It's important that we grab the database connection HERE rather than as an axum extractor because this allows all the data to be read from the HTTP stream before we actually need a db connection, preventing a deadlock (I actually experienced this)
+    let db_conn = state.db_conn().await?;
     insert_files(&extracted_files, &db_conn).await?;
 
     Ok(())
 }
+
+// async fn insert_html_file(
+//     dataset_id: Uuid,
+//     mut multipart_form_field: Field<'_>,
+//     mut db_conn: &diesel_async::AsyncPgConnection,
+// ) -> Result<(), db::Error> {
+//     let path = extract_path(multipart_form_field.file_name()).map(str::to_owned)?;
+
+//     // First, just insert the file with no data
+//     let file = NewFile {
+//         dataset_id,
+//         path: path.clone(),
+//         content_type: AllowedContentType::Html.into(),
+//         raw_content: Vec::new(),
+//         content_encoding: "zstd",
+//         parsed_data: None,
+//     };
+
+//     diesel::insert_into(chromium_dataset_files::table)
+//         .values(&file)
+//         .on_conflict((
+//             chromium_dataset_files::dataset_id,
+//             chromium_dataset_files::path,
+//         ))
+//         .do_update()
+//         .set(&file)
+//         .execute(&mut db_conn)
+//         .await?;
+
+//     // To avoid reading the whole file into memory, we read it over in chunks and just insert each chunk sequentially. We could probably speed this up by extracting an async function and pipelining
+//     while let Some(chunk) =
+//         multipart_form_field
+//             .chunk()
+//             .await
+//             .map_err(|e| db::DataError::Other {
+//                 message: format!("failed to read file chunk of {path}: {e}"),
+//             })?
+//     {
+//         diesel::update(
+//             chromium_dataset_files::table.filter(
+//                 chromium_dataset_files::dataset_id
+//                     .eq(dataset_id)
+//                     .and(chromium_dataset_files::path.eq(&path)),
+//             ),
+//         )
+//         .set(
+//             chromium_dataset_files::raw_content
+//                 .eq(chromium_dataset_files::raw_content.concat(chunk.as_ref())),
+//         )
+//         .execute(&mut db_conn)
+//         .await?;
+//     }
+
+//     Ok(())
+// }
 
 async fn insert_files(
     files: &[NewFile],
@@ -50,52 +131,104 @@ async fn insert_files(
 ) -> Result<(), db::Error> {
     use cellnoor_schema::chromium_dataset_files::dsl::*;
 
-    diesel::insert_into(chromium_dataset_files)
+    let n_files_inserted = diesel::insert_into(chromium_dataset_files)
         .values(files)
+        .on_conflict((dataset_id, path))
+        .do_nothing()
+        .execute(&mut db_conn)
+        .await?;
+
+    if n_files_inserted != files.len() {
+        let mut upserts = Vec::with_capacity(files.len());
+        for f in files {
+            upserts.push(upsert_file(f, db_conn))
+        }
+
+        futures::future::try_join_all(upserts).await?;
+    }
+
+    Ok(())
+}
+
+async fn upsert_file(
+    file: &NewFile,
+    mut db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<(), db::Error> {
+    use cellnoor_schema::chromium_dataset_files::dsl::*;
+
+    diesel::insert_into(chromium_dataset_files)
+        .values(file)
+        .on_conflict((dataset_id, path))
+        .do_update()
+        .set(file)
         .execute(&mut db_conn)
         .await?;
 
     Ok(())
 }
 
-#[derive(Insertable)]
-#[diesel(table_name = chromium_dataset_files, check_for_backend(Pg))]
+#[derive(Insertable, AsChangeset, Identifiable)]
+#[diesel(table_name = chromium_dataset_files, check_for_backend(Pg), primary_key(dataset_id, path))]
 struct NewFile {
     dataset_id: Uuid,
     path: String,
     content_type: &'static str,
     raw_content: Vec<u8>,
+    content_encoding: Option<&'static str>,
     parsed_data: Option<ParsedMetricsData>,
 }
 
 impl NewFile {
-    async fn from_multipart_form_field(
+    fn from_csv(
         dataset_id: Uuid,
-        field: Field<'_>,
+        path: String,
+        raw_content: Vec<u8>,
     ) -> Result<Self, db::DataError> {
-        let content_type = AllowedContentType::from_multipart_form_field(&field)?;
-        let path = extract_path(field.file_name()).map(str::to_owned)?;
-        let raw_content = field
-            .bytes()
-            .await
-            .map_err(|e| db::DataError::new_other(&e.body_text()))?;
-
-        let parsed_data = match content_type {
-            AllowedContentType::Csv => parse_single_row_csv(&raw_content)
-                .map(ParsedMetricsData::KeyValue)
-                .or_else(|_| parse_multi_row_csv(&raw_content).map(ParsedMetricsData::Tabular))
-                .map(Some)?,
-            AllowedContentType::Html => None,
-            AllowedContentType::Json => serde_json::from_slice(&raw_content)
-                .map_err(|e| db::DataError::new_other(&e.to_string()))?,
-        };
+        let parsed_data = parse_single_row_csv(&raw_content)
+            .map(ParsedMetricsData::KeyValue)
+            .or_else(|_| parse_multi_row_csv(&raw_content).map(ParsedMetricsData::Tabular))
+            .map(Some)?;
 
         Ok(Self {
             dataset_id,
             path,
-            content_type: content_type.into(),
-            // Prefer `into` over `to_vec` because the latter requires copying data
-            raw_content: raw_content.into(),
+            content_type: AllowedContentType::Csv.into(),
+            raw_content,
+            content_encoding: None,
+            parsed_data,
+        })
+    }
+
+    fn from_html(
+        dataset_id: Uuid,
+        path: String,
+        raw_content: Vec<u8>,
+    ) -> Result<Self, db::DataError> {
+        Ok(Self {
+            dataset_id,
+            path,
+            content_type: AllowedContentType::Html.into(),
+            raw_content,
+            content_encoding: Some("zstd"),
+            parsed_data: None,
+        })
+    }
+
+    fn from_json(
+        dataset_id: Uuid,
+        path: String,
+        raw_content: Vec<u8>,
+    ) -> Result<Self, db::DataError> {
+        let parsed_data = serde_json::from_slice(&raw_content)
+            .map_err(|e| db::DataError::new_other(&format!("failed to parse JSON: {e}")))
+            .map(Some)?;
+
+        Ok(Self {
+            dataset_id,
+            path,
+            content_type: AllowedContentType::Json.into(),
+            raw_content,
+            content_encoding: None,
             parsed_data,
         })
     }
@@ -104,11 +237,13 @@ impl NewFile {
 fn parse_single_row_csv(raw_content: &[u8]) -> Result<HashMap<String, Value>, db::DataError> {
     let mut csv = csv::Reader::from_reader(raw_content);
 
-    let header = csv
+    let header: Vec<_> = csv
         .headers()
-        .map_err(|e| db::DataError::new_other(&format!("failed to parse CSV headers: {e}")))?;
+        .map_err(|e| db::DataError::new_other(&format!("failed to parse CSV headers: {e}")))?
+        .into_iter()
+        .map(str::to_owned)
+        .collect();
     let header_len = header.len();
-    let snake_case_header: Vec<String> = header.iter().map(snake_case_field_name).collect();
     let mut records = csv.records();
 
     let n_rows_err = Err(db::DataError::new_other("expected exactly one row in CSV"));
@@ -131,7 +266,7 @@ fn parse_single_row_csv(raw_content: &[u8]) -> Result<HashMap<String, Value>, db
     // Manual insertion into the map is preferred over `collect` because the latter
     // would require an extra iteration to transform `Vec<Result<_>>` to
     // `Result<Vec<_>>` before constructing the two-tuple
-    for (field_name, field_value) in snake_case_header.into_iter().zip(first_record.iter()) {
+    for (field_name, field_value) in header.into_iter().zip(first_record.iter()) {
         // Some of the fields of these CSVs have strings instead of numbers. If that's
         // the case, then we just insert the original string
         parsed_data.insert(
@@ -178,11 +313,6 @@ fn parse_multi_row_csv(raw_content: &[u8]) -> Result<Vec<multi_row_csv::Row>, db
     Ok(parsed_data)
 }
 
-fn snake_case_field_name(field_name: &str) -> String {
-    let field_name = field_name.replace("UMIs", "umis");
-    field_name.to_snek_case()
-}
-
 fn parse_str_as_number(value: &str) -> Result<Number, <Number as FromStr>::Err> {
     if let Ok(value) = value.parse() {
         return Ok(value);
@@ -200,7 +330,7 @@ fn parse_str_as_number(value: &str) -> Result<Number, <Number as FromStr>::Err> 
     Ok(value_as_number)
 }
 
-#[derive(Debug, Clone, Copy, strum::EnumString, strum::IntoStaticStr)]
+#[derive(Debug, Clone, Copy, strum::EnumString, strum::IntoStaticStr, PartialEq)]
 enum AllowedContentType {
     #[strum(serialize = "text/csv")]
     Csv,
@@ -218,7 +348,7 @@ impl AllowedContentType {
             .ok_or(db::DataError::new_other(
                 "file-upload must have content type",
             ))?
-            .map_err(|e| db::DataError::new_other(&e.to_string()))
+            .map_err(|e| db::DataError::new_other(&format!("failed to parse content-type: {e}")))
     }
 }
 

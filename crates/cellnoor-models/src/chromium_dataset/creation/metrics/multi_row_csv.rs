@@ -3,15 +3,15 @@ use serde_json::Value;
 #[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize, Eq)]
 #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
 pub struct SimpleFields {
-    #[serde(alias = "Category")]
+    #[serde(rename = "Category")]
     pub category: String,
-    #[serde(alias = "Library Type")]
+    #[serde(rename = "Library Type")]
     pub library_type: String,
-    #[serde(alias = "Grouped By")]
+    #[serde(rename = "Grouped By")]
     pub grouped_by: String,
-    #[serde(alias = "Group Name")]
+    #[serde(rename = "Group Name")]
     pub group_name: String,
-    #[serde(alias = "Metric Name")]
+    #[serde(rename = "Metric Name")]
     pub metric_name: String,
 }
 
