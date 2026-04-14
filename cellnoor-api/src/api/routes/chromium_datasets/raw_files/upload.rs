@@ -457,11 +457,11 @@ mod tests {
         let parsed_data = parse_single_row_csv(raw_content).unwrap();
 
         assert_eq!(
-            parsed_data["estimated_number_of_cells"].as_i64().unwrap(),
+            parsed_data["Estimated Number of Cells"].as_i64().unwrap(),
             65_558
         );
 
-        assert!(0.378 - parsed_data["sequencing_saturation"].as_f64().unwrap() < 0.01);
+        assert!(0.378 - parsed_data["Sequencing Saturation"].as_f64().unwrap() < 0.01);
     }
 
     #[rstest]
@@ -470,14 +470,14 @@ mod tests {
         let parsed_data = parse_single_row_csv(raw_content).unwrap();
 
         assert_eq!(
-            parsed_data["estimated_number_of_cells"].as_i64().unwrap(),
+            parsed_data["Estimated number of cells"].as_i64().unwrap(),
             11_673
         );
 
-        assert_eq!(parsed_data["sample_id"].as_str().unwrap(), "Sample0");
+        assert_eq!(parsed_data["Sample ID"].as_str().unwrap(), "Sample0");
 
         assert_eq!(
-            parsed_data["atac_confidently_mapped_read_pairs"]
+            parsed_data["ATAC Confidently mapped read pairs"]
                 .as_f64()
                 .unwrap(),
             0.8937
