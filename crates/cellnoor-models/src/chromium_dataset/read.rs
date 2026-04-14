@@ -63,6 +63,8 @@ pub struct ChromiumDatasetLinks {
     specimens_link: String,
     #[serde(rename = "libraries")]
     libraries_link: String,
-    #[serde(rename = "files")]
-    file_links: Vec<Option<String>>,
+    #[serde(rename = "raw_files")]
+    raw_file_links: Vec<Option<String>>,
+    #[serde(rename = "parsed_files")]
+    parsed_file_links: Vec<Option<String>>,
 }

@@ -46,6 +46,7 @@ pub async fn insert_specimen(
     let split = match specimen {
         NewSpecimen::Block(s) => s.split_for_insertion(),
         NewSpecimen::CellPellet(s) => s.split_for_insertion(),
+        NewSpecimen::RnaExtract(s) => s.split_for_insertion(),
         NewSpecimen::Suspension(s) => s.split_for_insertion(),
         NewSpecimen::Tissue(s) => s.split_for_insertion(),
     };

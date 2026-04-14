@@ -15,8 +15,18 @@ export async function load({ params: { id } }) {
     // apiClient.GET("/chromium-datasets/{id}/libraries", { params }),
   ]);
 
-  // @ts-expect-error we know that there are no null links
-  const downloadedFiles = await Promise.all(dataset.data!.links.files.map(downloadParsedFile));
+  // This is ugly because TypeScript's type-inference is shit
+  const downloadedFiles = await Promise.all(
+    dataset
+      .data!.links.parsed_files.filter((link) => link !== null)
+      .map(downloadParsedFile)
+      .concat(
+        dataset
+          .data!.links.raw_files.filter((link) => link !== null)
+          .filter((link) => link.endsWith(".html"))
+          .map(createRawFileNode),
+      ),
+  );
   const fileTree = createFileTree(downloadedFiles);
 
   if (!dataset.data) {
@@ -30,23 +40,27 @@ export async function load({ params: { id } }) {
   };
 }
 
-const FILE_LINK_PREFIX = "/chromium-datasets/00000000-0000-0000-0000-000000000000/files/";
+const RAW_FILE_LINK_PREFIX_LENGTH =
+  "/chromium-datasets/00000000-0000-0000-0000-000000000000/raw-files/".length;
+const PARSED_FILE_LINK_PREFIX_LENGTH =
+  "/chromium-datasets/00000000-0000-0000-0000-000000000000/parsed-files/".length;
 
 async function downloadParsedFile(link: string): Promise<FileNode> {
-  const isHtml = link.endsWith(".html");
-  const name = link.slice(FILE_LINK_PREFIX.length);
+  const name = link.slice(PARSED_FILE_LINK_PREFIX_LENGTH);
 
-  // The HTML files are 10x Genomics web summaries, which are relatively large, so we download them on-demand in the browser
-  if (isHtml) {
-    return {
-      name,
-      src: link,
-      type: "html",
-    };
-  }
+  const content = await downloadFile({ link, accept: "application/json", acceptEncoding: "" }).then(
+    (r) => r.json(),
+  );
 
-  // At this point, we know that the file isn't HTML, so the backend can represent it as JSON
-  const content = await downloadFile({ link, accept: "application/json" }).then((r) => r.json());
+  return { name, src: link, content: content.data, type: "json" };
+}
 
-  return { name, src: link, content, type: "json" };
+async function createRawFileNode(link: string): Promise<FileNode> {
+  const name = link.slice(RAW_FILE_LINK_PREFIX_LENGTH);
+
+  return {
+    name,
+    src: link,
+    type: "html",
+  };
 }

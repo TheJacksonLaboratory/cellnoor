@@ -5,14 +5,15 @@ use uuid::Uuid;
 use crate::specimen::{
     common::{Species, SpecimenCommonFields},
     creation::{
-        block::NewBlock, cell_pellet::NewCellPellet, suspension::NewSuspensionSpecimen,
-        tissue::NewTissue,
+        block::NewBlock, cell_pellet::NewCellPellet, rna_extract::NewRnaExtract,
+        suspension::NewSuspensionSpecimen, tissue::NewTissue,
     },
     variable::SpecimenVariableFields,
 };
 
 pub mod block;
 pub mod cell_pellet;
+pub mod rna_extract;
 pub mod suspension;
 pub mod tissue;
 
@@ -23,6 +24,7 @@ pub mod tissue;
 pub enum NewSpecimen {
     Block(NewBlock),
     CellPellet(NewCellPellet),
+    RnaExtract(NewRnaExtract),
     Suspension(NewSuspensionSpecimen),
     Tissue(NewTissue),
 }
@@ -31,11 +33,12 @@ type SpecimenInsertion = (SpecimenCommonFields, SpecimenVariableFields);
 
 impl NewSpecimen {
     fn inner(&self) -> &SpecimenCommonFields {
-        use NewSpecimen::{Block, CellPellet, Suspension, Tissue};
+        use NewSpecimen::{Block, CellPellet, RnaExtract, Suspension, Tissue};
 
         match self {
             Block(s) => s.common(),
             CellPellet(s) => s.common(),
+            RnaExtract(s) => s.common(),
             Suspension(s) => s.common(),
             Tissue(s) => s.common(),
         }
