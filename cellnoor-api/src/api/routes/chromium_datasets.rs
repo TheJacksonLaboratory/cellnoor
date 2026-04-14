@@ -16,14 +16,14 @@ use uuid::Uuid;
 use crate::{admin_required_creation, state::AppState};
 
 pub mod create;
-pub mod files;
 pub mod index;
 pub mod libraries;
 pub mod parsed_files;
+pub mod raw_files;
 pub mod show;
 pub mod specimens;
 
-// We put these two structs here so that both `parsed_files` and `files` can
+// We put these two structs here so that both `parsed_files` and `raw_files` can
 // access them
 #[derive(Deserialize, JsonSchema)]
 #[schemars(inline)]
@@ -57,6 +57,6 @@ fn id_router() -> ApiRouter<AppState> {
         .api_route("/", get(show_chromium_dataset))
         .nest("/specimens", specimens::router())
         .nest("/libraries", libraries::router())
-        .merge(files::router())
+        .merge(raw_files::router())
         .merge(parsed_files::router())
 }

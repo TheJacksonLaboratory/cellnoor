@@ -3677,6 +3677,24 @@ export interface components {
             /** Format: date-time */
             started_at: string;
         };
+        NewRnaExtract: {
+            additional_data?: unknown;
+            host_species?: components["schemas"]["Species"] | null;
+            name: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            tissue: string;
+        };
         NewSequencingRun: {
             additional_data?: unknown;
             /** Format: date-time */
@@ -3692,6 +3710,9 @@ export interface components {
             /** @constant */
             type: "cell_pellet";
         } & components["schemas"]["NewCellPellet"]) | ({
+            /** @constant */
+            type: "rna_extract";
+        } & components["schemas"]["NewRnaExtract"]) | ({
             /** @constant */
             type: "suspension";
         } & ({
@@ -4052,7 +4073,7 @@ export interface components {
             "Grouped By": string;
             "Library Type": string;
             "Metric Name": string;
-            metric_value: unknown;
+            "Metric Value": unknown;
         };
         /** @enum {string} */
         SampleMultiplexing: "cellplex" | "flex_barcode" | "flex_oligonucleotide_barcode" | "hashtag" | "on_chip_multiplexing" | "singleplex";
@@ -4240,7 +4261,7 @@ export interface components {
             type_: components["schemas"]["SpecimenType"];
         };
         /** @enum {string} */
-        SpecimenType: "block" | "cell_pellet" | "suspension" | "tissue";
+        SpecimenType: "block" | "cell_pellet" | "rna_extract" | "suspension" | "tissue";
         StandardChipLoading: {
             additional_data?: unknown;
             buffer_volume_loaded: components["schemas"]["LoadingVolume"];
@@ -4627,6 +4648,7 @@ export type NewInstitution = components['schemas']['NewInstitution'];
 export type NewLibrary = components['schemas']['NewLibrary'];
 export type NewPerson = components['schemas']['NewPerson'];
 export type NewProject = components['schemas']['NewProject'];
+export type NewRnaExtract = components['schemas']['NewRnaExtract'];
 export type NewSequencingRun = components['schemas']['NewSequencingRun'];
 export type NewSpecimen = components['schemas']['NewSpecimen'];
 export type NewSuspension = components['schemas']['NewSuspension'];

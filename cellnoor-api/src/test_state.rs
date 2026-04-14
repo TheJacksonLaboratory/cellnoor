@@ -717,7 +717,7 @@ impl TestState {
         mut db_conn: &AsyncPgConnection,
     ) {
         use cellnoor_schema::{
-            chromium_dataset_files as cdf, chromium_dataset_parsed_files as cdpf,
+            chromium_dataset_parsed_files as cdpf, chromium_dataset_raw_files as cdf,
         };
 
         // It's easier to construct this as JSON

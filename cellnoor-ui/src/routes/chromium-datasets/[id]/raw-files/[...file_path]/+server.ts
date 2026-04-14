@@ -6,9 +6,7 @@ import { downloadFile } from "$lib/server/download-chromium-dataset-file.js";
 // I don't trust myself in this infernal language.
 
 export async function GET({ params: { id, file_path } }) {
-  const link = `/chromium-datasets/${id}/files/${file_path}`;
+  const link = `/chromium-datasets/${id}/raw-files/${file_path}`;
 
-  const accept = file_path.endsWith(".csv") ? "text/csv" : "*/*";
-
-  return downloadFile({ link, accept });
+  return downloadFile({ link, accept: "*/*", acceptEncoding: "zstd" });
 }

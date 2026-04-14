@@ -3,13 +3,10 @@ use axum::{
     extract::DefaultBodyLimit,
     routing::{get, post},
 };
+use download::download_chromium_dataset_file;
 use upload::upload_files;
 
-use crate::{
-    admin_required_creation,
-    api::routes::chromium_datasets::files::download::download_chromium_dataset_file,
-    state::AppState,
-};
+use crate::{admin_required_creation, state::AppState};
 
 mod download;
 mod upload;

@@ -36,7 +36,7 @@ async fn select_parsed_chromium_dataset_file(
     authorized_projects: &AuthProjects,
     mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<ParsedChromiumDatasetFile, db::Error> {
-    let filter = chromium_dataset_files_filter(file_path, authorized_projects);
+    let filter = chromium_dataset_raw_files_filter(file_path, authorized_projects);
 
     Ok(ParsedChromiumDatasetFile::query()
         .inner_join(chromium_datasets::table)
@@ -45,7 +45,7 @@ async fn select_parsed_chromium_dataset_file(
         .await?)
 }
 
-fn chromium_dataset_files_filter<'a, QS: 'a>(
+fn chromium_dataset_raw_files_filter<'a, QS: 'a>(
     FilePath { id, path }: &'a FilePath,
     authorized_projects: &'a AuthProjects,
 ) -> BoxedFilter<'a, QS>

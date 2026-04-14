@@ -10,7 +10,7 @@ use cellnoor_models::{
         multi_row_csv::{self},
     },
 };
-use cellnoor_schema::chromium_dataset_files;
+use cellnoor_schema::chromium_dataset_raw_files;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use headers::ContentEncoding;
@@ -18,7 +18,7 @@ use serde_json::{Number, Value};
 use uuid::Uuid;
 
 use crate::{
-    api::routes::chromium_datasets::{ParsedChromiumDatasetFile, files::MAX_N_SAMPLES},
+    api::routes::chromium_datasets::{ParsedChromiumDatasetFile, raw_files::MAX_N_SAMPLES},
     db::{self},
     state::AppState,
 };
@@ -53,7 +53,7 @@ pub async fn upload_files(
         let (parsed_file, raw_file) = match content_type {
             AllowedContentType::Csv => (
                 ParsedChromiumDatasetFile::from_csv(id, path.clone(), &raw_content).map(Some)?,
-                NewRawFile::from_csv(id, path, raw_content)?,
+                NewRawFile::new_uncompressed(id, path, content_type, raw_content),
             ),
             AllowedContentType::Html => {
                 if !encoding.contains("zstd") {
@@ -64,12 +64,12 @@ pub async fn upload_files(
 
                 (
                     None,
-                    NewRawFile::from_html(id, path, Some("zstd"), raw_content),
+                    NewRawFile::new_html(id, path, Some("zstd"), raw_content),
                 )
             }
             AllowedContentType::Json => (
                 ParsedChromiumDatasetFile::from_json(id, path.clone(), &raw_content).map(Some)?,
-                NewRawFile::from_json(id, path, raw_content)?,
+                NewRawFile::new_uncompressed(id, path, content_type, raw_content),
             ),
         };
 
@@ -97,9 +97,9 @@ async fn insert_raw_files(
     files: &[NewRawFile],
     mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), db::Error> {
-    use cellnoor_schema::chromium_dataset_files::dsl::*;
+    use cellnoor_schema::chromium_dataset_raw_files::dsl::*;
 
-    let n_files_inserted = diesel::insert_into(chromium_dataset_files)
+    let n_files_inserted = diesel::insert_into(chromium_dataset_raw_files)
         .values(files)
         .on_conflict((dataset_id, path))
         .do_nothing()
@@ -122,9 +122,9 @@ async fn upsert_raw_file(
     file: &NewRawFile,
     mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), db::Error> {
-    use cellnoor_schema::chromium_dataset_files::dsl::*;
+    use cellnoor_schema::chromium_dataset_raw_files::dsl::*;
 
-    diesel::insert_into(chromium_dataset_files)
+    diesel::insert_into(chromium_dataset_raw_files)
         .values(file)
         .on_conflict((dataset_id, path))
         .do_update()
@@ -178,7 +178,7 @@ async fn upsert_parsed_file(
 }
 
 #[derive(Insertable, AsChangeset, Identifiable)]
-#[diesel(table_name = chromium_dataset_files, check_for_backend(Pg), primary_key(dataset_id, path))]
+#[diesel(table_name = chromium_dataset_raw_files, check_for_backend(Pg), primary_key(dataset_id, path))]
 struct NewRawFile {
     dataset_id: Uuid,
     path: String,
@@ -188,21 +188,22 @@ struct NewRawFile {
 }
 
 impl NewRawFile {
-    fn from_csv(
+    fn new_uncompressed(
         dataset_id: Uuid,
         path: String,
+        content_type: AllowedContentType,
         raw_content: Vec<u8>,
-    ) -> Result<Self, db::DataError> {
-        Ok(Self {
+    ) -> Self {
+        Self {
             dataset_id,
             path,
-            content_type: AllowedContentType::Csv.into(),
+            content_type: content_type.into(),
             raw_content,
             content_encoding: None,
-        })
+        }
     }
 
-    fn from_html(
+    fn new_html(
         dataset_id: Uuid,
         path: String,
         content_encoding: Option<&'static str>,
@@ -215,20 +216,6 @@ impl NewRawFile {
             raw_content,
             content_encoding,
         }
-    }
-
-    fn from_json(
-        dataset_id: Uuid,
-        path: String,
-        raw_content: Vec<u8>,
-    ) -> Result<Self, db::DataError> {
-        Ok(Self {
-            dataset_id,
-            path,
-            content_type: AllowedContentType::Json.into(),
-            raw_content,
-            content_encoding: None,
-        })
     }
 }
 

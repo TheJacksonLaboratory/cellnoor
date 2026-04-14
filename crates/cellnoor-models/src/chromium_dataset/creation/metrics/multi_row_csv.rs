@@ -20,6 +20,7 @@ pub struct SimpleFields {
 pub struct Row {
     #[serde(flatten)]
     pub simple_fields: SimpleFields,
+    #[serde(rename = "Metric Value")]
     pub metric_value: Value,
 }
 

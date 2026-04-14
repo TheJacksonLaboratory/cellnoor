@@ -53,16 +53,6 @@ diesel::table! {
 }
 
 diesel::table! {
-    chromium_dataset_files (dataset_id, path) {
-        dataset_id -> Uuid,
-        path -> Text,
-        content_type -> Text,
-        raw_content -> Bytea,
-        content_encoding -> Nullable<Text>,
-    }
-}
-
-diesel::table! {
     chromium_dataset_libraries (dataset_id, library_id) {
         dataset_id -> Uuid,
         library_id -> Uuid,
@@ -74,6 +64,16 @@ diesel::table! {
         dataset_id -> Uuid,
         path -> Text,
         data -> Jsonb,
+    }
+}
+
+diesel::table! {
+    chromium_dataset_raw_files (dataset_id, path) {
+        dataset_id -> Uuid,
+        path -> Text,
+        content_type -> Text,
+        raw_content -> Bytea,
+        content_encoding -> Nullable<Text>,
     }
 }
 
@@ -439,10 +439,10 @@ diesel::joinable!(cdna_preparers -> people (prepared_by));
 diesel::joinable!(chip_loadings -> gem_pools (gem_pool_id));
 diesel::joinable!(chip_loadings -> suspension_pools (suspension_pool_id));
 diesel::joinable!(chip_loadings -> suspensions (suspension_id));
-diesel::joinable!(chromium_dataset_files -> chromium_datasets (dataset_id));
 diesel::joinable!(chromium_dataset_libraries -> chromium_datasets (dataset_id));
 diesel::joinable!(chromium_dataset_libraries -> libraries (library_id));
 diesel::joinable!(chromium_dataset_parsed_files -> chromium_datasets (dataset_id));
+diesel::joinable!(chromium_dataset_raw_files -> chromium_datasets (dataset_id));
 diesel::joinable!(chromium_datasets -> projects (project_id));
 diesel::joinable!(chromium_runs -> people (run_by));
 diesel::joinable!(chromium_runs -> projects (project_id));
@@ -493,9 +493,9 @@ diesel::allow_tables_to_appear_in_same_query!(
     cdna_measurements,
     cdna_preparers,
     chip_loadings,
-    chromium_dataset_files,
     chromium_dataset_libraries,
     chromium_dataset_parsed_files,
+    chromium_dataset_raw_files,
     chromium_datasets,
     chromium_runs,
     committee_approval,
