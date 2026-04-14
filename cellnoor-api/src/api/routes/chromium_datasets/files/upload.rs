@@ -18,7 +18,7 @@ use serde_json::{Number, Value};
 use uuid::Uuid;
 
 use crate::{
-    api::routes::chromium_datasets::files::MAX_N_SAMPLES,
+    api::routes::chromium_datasets::{ParsedChromiumDatasetFile, files::MAX_N_SAMPLES},
     db::{self},
     state::AppState,
 };
@@ -29,7 +29,11 @@ pub async fn upload_files(
     TypedHeader(encoding): TypedHeader<ContentEncoding>,
     mut multipart_form: Multipart,
 ) -> Result<(), db::Error> {
-    let mut extracted_files = Vec::with_capacity(MAX_N_SAMPLES);
+    // Every sample has a web_summary.html and a metrics_summary.csv (only the
+    // latter of which is parsed), and cellranger outputs some dataset-level files
+    // as well
+    let mut extracted_raw_files = Vec::with_capacity((MAX_N_SAMPLES * 2) + 4);
+    let mut extracted_parsed_files = Vec::with_capacity(MAX_N_SAMPLES + 4);
 
     while let Some(field) = multipart_form
         .next_field()
@@ -38,7 +42,7 @@ pub async fn upload_files(
     {
         let content_type = AllowedContentType::from_multipart_form_field(&field)?;
         let path = extract_path(field.file_name()).map(str::to_owned)?;
-        let raw_content = field
+        let raw_content: Vec<_> = field
             .bytes()
             .await
             .map_err(|e| db::DataError::Other {
@@ -46,8 +50,11 @@ pub async fn upload_files(
             })?
             .into();
 
-        let new_file = match content_type {
-            AllowedContentType::Csv => NewFile::from_csv(id, path, raw_content)?,
+        let (parsed_file, raw_file) = match content_type {
+            AllowedContentType::Csv => (
+                ParsedChromiumDatasetFile::from_csv(id, path.clone(), &raw_content).map(Some)?,
+                NewRawFile::from_csv(id, path, raw_content)?,
+            ),
             AllowedContentType::Html => {
                 if !encoding.contains("zstd") {
                     return Err(db::DataError::new_other(
@@ -55,78 +62,39 @@ pub async fn upload_files(
                     ))?;
                 }
 
-                NewFile::from_html(id, path, raw_content)?
+                (
+                    None,
+                    NewRawFile::from_html(id, path, Some("zstd"), raw_content),
+                )
             }
-            AllowedContentType::Json => NewFile::from_json(id, path, raw_content)?,
+            AllowedContentType::Json => (
+                ParsedChromiumDatasetFile::from_json(id, path.clone(), &raw_content).map(Some)?,
+                NewRawFile::from_json(id, path, raw_content)?,
+            ),
         };
 
-        extracted_files.push(new_file);
+        extracted_raw_files.push(raw_file);
+        if let Some(parsed_file) = parsed_file {
+            extracted_parsed_files.push(parsed_file);
+        }
     }
 
-    // It's important that we grab the database connection HERE rather than as an axum extractor because this allows all the data to be read from the HTTP stream before we actually need a db connection, preventing a deadlock (I actually experienced this)
+    // It's important that we grab the database connection HERE rather than as an
+    // axum extractor because this allows all the data to be read from the HTTP
+    // stream before we actually need a db connection, preventing a deadlock (I
+    // actually experienced this)
     let db_conn = state.db_conn().await?;
-    insert_files(&extracted_files, &db_conn).await?;
+
+    tokio::try_join!(
+        insert_raw_files(&extracted_raw_files, &db_conn),
+        insert_parsed_files(&extracted_parsed_files, &db_conn)
+    )?;
 
     Ok(())
 }
 
-// async fn insert_html_file(
-//     dataset_id: Uuid,
-//     mut multipart_form_field: Field<'_>,
-//     mut db_conn: &diesel_async::AsyncPgConnection,
-// ) -> Result<(), db::Error> {
-//     let path = extract_path(multipart_form_field.file_name()).map(str::to_owned)?;
-
-//     // First, just insert the file with no data
-//     let file = NewFile {
-//         dataset_id,
-//         path: path.clone(),
-//         content_type: AllowedContentType::Html.into(),
-//         raw_content: Vec::new(),
-//         content_encoding: "zstd",
-//         parsed_data: None,
-//     };
-
-//     diesel::insert_into(chromium_dataset_files::table)
-//         .values(&file)
-//         .on_conflict((
-//             chromium_dataset_files::dataset_id,
-//             chromium_dataset_files::path,
-//         ))
-//         .do_update()
-//         .set(&file)
-//         .execute(&mut db_conn)
-//         .await?;
-
-//     // To avoid reading the whole file into memory, we read it over in chunks and just insert each chunk sequentially. We could probably speed this up by extracting an async function and pipelining
-//     while let Some(chunk) =
-//         multipart_form_field
-//             .chunk()
-//             .await
-//             .map_err(|e| db::DataError::Other {
-//                 message: format!("failed to read file chunk of {path}: {e}"),
-//             })?
-//     {
-//         diesel::update(
-//             chromium_dataset_files::table.filter(
-//                 chromium_dataset_files::dataset_id
-//                     .eq(dataset_id)
-//                     .and(chromium_dataset_files::path.eq(&path)),
-//             ),
-//         )
-//         .set(
-//             chromium_dataset_files::raw_content
-//                 .eq(chromium_dataset_files::raw_content.concat(chunk.as_ref())),
-//         )
-//         .execute(&mut db_conn)
-//         .await?;
-//     }
-
-//     Ok(())
-// }
-
-async fn insert_files(
-    files: &[NewFile],
+async fn insert_raw_files(
+    files: &[NewRawFile],
     mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), db::Error> {
     use cellnoor_schema::chromium_dataset_files::dsl::*;
@@ -141,7 +109,7 @@ async fn insert_files(
     if n_files_inserted != files.len() {
         let mut upserts = Vec::with_capacity(files.len());
         for f in files {
-            upserts.push(upsert_file(f, db_conn))
+            upserts.push(upsert_raw_file(f, db_conn));
         }
 
         futures::future::try_join_all(upserts).await?;
@@ -150,8 +118,8 @@ async fn insert_files(
     Ok(())
 }
 
-async fn upsert_file(
-    file: &NewFile,
+async fn upsert_raw_file(
+    file: &NewRawFile,
     mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<(), db::Error> {
     use cellnoor_schema::chromium_dataset_files::dsl::*;
@@ -167,51 +135,86 @@ async fn upsert_file(
     Ok(())
 }
 
+async fn insert_parsed_files(
+    files: &[ParsedChromiumDatasetFile],
+    mut db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<(), db::Error> {
+    use cellnoor_schema::chromium_dataset_parsed_files::dsl::*;
+
+    let n_files_inserted = diesel::insert_into(chromium_dataset_parsed_files)
+        .values(files)
+        .on_conflict((dataset_id, path))
+        .do_nothing()
+        .execute(&mut db_conn)
+        .await?;
+
+    if n_files_inserted != files.len() {
+        let mut upserts = Vec::with_capacity(files.len());
+        for f in files {
+            upserts.push(upsert_parsed_file(f, db_conn));
+        }
+
+        futures::future::try_join_all(upserts).await?;
+    }
+
+    Ok(())
+}
+
+async fn upsert_parsed_file(
+    file: &ParsedChromiumDatasetFile,
+    mut db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<(), db::Error> {
+    use cellnoor_schema::chromium_dataset_parsed_files::dsl::*;
+
+    diesel::insert_into(chromium_dataset_parsed_files)
+        .values(file)
+        .on_conflict((dataset_id, path))
+        .do_update()
+        .set(file)
+        .execute(&mut db_conn)
+        .await?;
+
+    Ok(())
+}
+
 #[derive(Insertable, AsChangeset, Identifiable)]
 #[diesel(table_name = chromium_dataset_files, check_for_backend(Pg), primary_key(dataset_id, path))]
-struct NewFile {
+struct NewRawFile {
     dataset_id: Uuid,
     path: String,
     content_type: &'static str,
     raw_content: Vec<u8>,
     content_encoding: Option<&'static str>,
-    parsed_data: Option<ParsedMetricsData>,
 }
 
-impl NewFile {
+impl NewRawFile {
     fn from_csv(
         dataset_id: Uuid,
         path: String,
         raw_content: Vec<u8>,
     ) -> Result<Self, db::DataError> {
-        let parsed_data = parse_single_row_csv(&raw_content)
-            .map(ParsedMetricsData::KeyValue)
-            .or_else(|_| parse_multi_row_csv(&raw_content).map(ParsedMetricsData::Tabular))
-            .map(Some)?;
-
         Ok(Self {
             dataset_id,
             path,
             content_type: AllowedContentType::Csv.into(),
             raw_content,
             content_encoding: None,
-            parsed_data,
         })
     }
 
     fn from_html(
         dataset_id: Uuid,
         path: String,
+        content_encoding: Option<&'static str>,
         raw_content: Vec<u8>,
-    ) -> Result<Self, db::DataError> {
-        Ok(Self {
+    ) -> Self {
+        Self {
             dataset_id,
             path,
             content_type: AllowedContentType::Html.into(),
             raw_content,
-            content_encoding: Some("zstd"),
-            parsed_data: None,
-        })
+            content_encoding,
+        }
     }
 
     fn from_json(
@@ -219,18 +222,41 @@ impl NewFile {
         path: String,
         raw_content: Vec<u8>,
     ) -> Result<Self, db::DataError> {
-        let parsed_data = serde_json::from_slice(&raw_content)
-            .map_err(|e| db::DataError::new_other(&format!("failed to parse JSON: {e}")))
-            .map(Some)?;
-
         Ok(Self {
             dataset_id,
             path,
             content_type: AllowedContentType::Json.into(),
             raw_content,
             content_encoding: None,
-            parsed_data,
         })
+    }
+}
+
+impl ParsedChromiumDatasetFile {
+    fn from_csv(dataset_id: Uuid, path: String, raw_content: &[u8]) -> Result<Self, db::DataError> {
+        parse_single_row_csv(raw_content)
+            .map(ParsedMetricsData::KeyValue)
+            .or_else(|_| parse_multi_row_csv(raw_content).map(ParsedMetricsData::Tabular))
+            .map(|data| Self {
+                dataset_id,
+                path,
+                data,
+            })
+    }
+
+    fn from_json(
+        dataset_id: Uuid,
+        path: String,
+        raw_content: &[u8],
+    ) -> Result<Self, db::DataError> {
+        serde_json::from_slice(raw_content)
+            .map_err(|e| db::DataError::new_other(&format!("failed to parse JSON: {e}")))
+            .map(ParsedMetricsData::KeyValue)
+            .map(|data| Self {
+                dataset_id,
+                path,
+                data,
+            })
     }
 }
 

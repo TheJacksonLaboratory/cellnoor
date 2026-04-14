@@ -6,11 +6,11 @@ use axum::{
     http::HeaderValue,
 };
 use axum_extra::TypedHeader;
-use cellnoor_models::chromium_dataset::metrics::ParsedMetricsData;
 use cellnoor_schema::{chromium_dataset_files, chromium_datasets};
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use headers::{ContentEncoding, ContentType};
+use reqwest::header::ACCEPT_ENCODING;
 use schemars::JsonSchema;
 use serde::Deserialize;
 use uuid::Uuid;
@@ -55,14 +55,14 @@ pub async fn download_chromium_dataset_file(
     );
 
     let headers = request.headers();
-    let accept = headers
-        .get("Accept")
-        .or(headers.get("accept"))
+    let accept_encoding = headers
+        .get(ACCEPT_ENCODING)
         .map(HeaderValue::to_str)
         .and_then(Result::ok);
 
     let response =
-        select_chromium_dataset_file(&file_path, user.projects(), accept, &db_conn).await?;
+        select_chromium_dataset_file(&file_path, user.projects(), accept_encoding, &db_conn)
+            .await?;
 
     Ok(response)
 }
@@ -70,43 +70,49 @@ pub async fn download_chromium_dataset_file(
 async fn select_chromium_dataset_file(
     file_path: &FilePath,
     authorized_projects: &AuthProjects,
-    accept: Option<&str>,
+    accept_encoding: Option<&str>,
     mut db_conn: &diesel_async::AsyncPgConnection,
 ) -> Result<Response, db::Error> {
-    let filter = chromium_dataset_files_filter(file_path, authorized_projects, accept);
+    let filter = chromium_dataset_files_filter(file_path, authorized_projects, accept_encoding);
 
     let query = chromium_dataset_files::table
         .inner_join(chromium_datasets::table)
         .filter(filter);
 
-    let response = if return_raw_content(accept) {
-        let (content_type, content_encoding, raw_content) = query
-            .select((
-                chromium_dataset_files::content_type,
-                chromium_dataset_files::content_encoding,
-                chromium_dataset_files::raw_content,
-            ))
-            .first::<(String, Option<String>, Vec<u8>)>(&mut db_conn)
-            .await?;
+    let (content_type, content_encoding, raw_content) = query
+        .select((
+            chromium_dataset_files::content_type,
+            chromium_dataset_files::content_encoding,
+            chromium_dataset_files::raw_content,
+        ))
+        .first::<(String, Option<String>, Vec<u8>)>(&mut db_conn)
+        .await?;
 
-        let content_type = TypedHeader(ContentType::from_str(&content_type).unwrap());
-
-        // This is subpar but whatever
-        let content_encoding = content_encoding.map(|_| TypedHeader(ContentEncoding::zstd()));
-
-        (content_type, content_encoding, raw_content)
-    } else {
-        let content = query
-            .select(chromium_dataset_files::parsed_data)
-            .first::<Option<ParsedMetricsData>>(&mut db_conn)
-            .await
-            .map(|d| serde_json::to_vec(&d))?
-            .unwrap();
-
-        (TypedHeader(ContentType::json()), None, content)
+    let content_type = TypedHeader(ContentType::from_str(&content_type).unwrap());
+    let Some(content_encoding) = content_encoding else {
+        return Ok((content_type, None, raw_content));
     };
 
-    Ok(response)
+    if content_encoding != "zstd" {
+        return Err(db::Error::Other {
+            message: "something went wrong".to_owned(),
+        });
+    }
+
+    if let Some(accept_encoding) = accept_encoding
+        && accept_encoding.contains(&content_encoding)
+    {
+        let content_encoding = Some(TypedHeader(ContentEncoding::zstd()));
+        return Ok((content_type, content_encoding, raw_content));
+    }
+
+    // If we reach here, it means we have a compressed file in the database but the
+    // client doesn't accept the compression algorithm, so we have to decompress it
+    let raw_content = zstd::decode_all(raw_content.as_slice()).map_err(|_| db::Error::Other {
+        message: "something went wrong".to_owned(),
+    })?;
+
+    Ok((content_type, None, raw_content))
 }
 
 fn chromium_dataset_files_filter<'a, QS: 'a>(
@@ -157,10 +163,4 @@ where
     }
 
     filter.and_condition(content_type_filter)
-}
-
-fn return_raw_content(maybe_content_type: Option<&str>) -> bool {
-    // This is a terrible, standards-noncompliant implementation, but for our
-    // purposes its fine
-    !maybe_content_type.is_some_and(|ct| ct.contains(JSON_CONTENT_TYPE))
 }

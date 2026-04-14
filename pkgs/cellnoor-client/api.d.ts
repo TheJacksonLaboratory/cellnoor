@@ -3119,8 +3119,9 @@ export interface components {
             specimen?: components["schemas"]["SpecimenFilter"] | null;
         };
         ChromiumDatasetLinks: {
-            files: (string | null)[];
             libraries: string;
+            parsed_files: (string | null)[];
+            raw_files: (string | null)[];
             self: string;
             specimens: string;
         };
@@ -3897,6 +3898,15 @@ export interface components {
             loading: components["schemas"]["OcmChipLoading"][];
             readable_id: string;
         };
+        ParsedChromiumDatasetFile: {
+            data: components["schemas"]["ParsedMetricsData"];
+            /** Format: uuid */
+            dataset_id: string;
+            path: string;
+        };
+        ParsedMetricsData: {
+            [key: string]: unknown;
+        } | components["schemas"]["Row"][];
         Person: {
             email?: string | null;
             /** Format: uuid */
@@ -4035,6 +4045,14 @@ export interface components {
             descending?: boolean | null;
             /** @constant */
             field: "ended_at";
+        };
+        Row: {
+            Category: string;
+            "Group Name": string;
+            "Grouped By": string;
+            "Library Type": string;
+            "Metric Name": string;
+            metric_value: unknown;
         };
         /** @enum {string} */
         SampleMultiplexing: "cellplex" | "flex_barcode" | "flex_oligonucleotide_barcode" | "hashtag" | "on_chip_multiplexing" | "singleplex";
@@ -4619,6 +4637,8 @@ export type NucleicAcidConcentrationPicogram = components['schemas']['NucleicAci
 export type OcmBarcodeId = components['schemas']['OcmBarcodeId'];
 export type OcmChipLoading = components['schemas']['OcmChipLoading'];
 export type OcmGemPool = components['schemas']['OcmGemPool'];
+export type ParsedChromiumDatasetFile = components['schemas']['ParsedChromiumDatasetFile'];
+export type ParsedMetricsData = components['schemas']['ParsedMetricsData'];
 export type Person = components['schemas']['Person'];
 export type PersonFilter = components['schemas']['PersonFilter'];
 export type PersonFilterStaff = components['schemas']['PersonFilterStaff'];
@@ -4632,6 +4652,7 @@ export type Project = components['schemas']['Project'];
 export type ProjectFilter = components['schemas']['ProjectFilter'];
 export type ProjectLinks = components['schemas']['ProjectLinks'];
 export type ProjectOrderBy = components['schemas']['ProjectOrderBy'];
+export type Row = components['schemas']['Row'];
 export type SampleMultiplexing = components['schemas']['SampleMultiplexing'];
 export type SequencingRun = components['schemas']['SequencingRun'];
 export type SequencingRunLinks = components['schemas']['SequencingRunLinks'];

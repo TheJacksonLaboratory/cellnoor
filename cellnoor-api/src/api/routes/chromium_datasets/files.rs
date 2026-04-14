@@ -27,6 +27,6 @@ pub(super) fn router() -> Router<AppState> {
         admin_required_creation!().layer(DefaultBodyLimit::max(BODY_SIZE_LIMIT));
 
     Router::new()
-        .route("/files", post(upload_files).layer(file_upload_layer))
-        .route("/files/{*path}", get(download_chromium_dataset_file))
+        .route("/raw-files", post(upload_files).layer(file_upload_layer))
+        .route("/raw-files/{*path}", get(download_chromium_dataset_file))
 }

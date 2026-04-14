@@ -716,7 +716,9 @@ impl TestState {
         library: LibrarySummary,
         mut db_conn: &AsyncPgConnection,
     ) {
-        use cellnoor_schema::chromium_dataset_files as cdf;
+        use cellnoor_schema::{
+            chromium_dataset_files as cdf, chromium_dataset_parsed_files as cdpf,
+        };
 
         // It's easier to construct this as JSON
         let dataset = json!(
@@ -742,7 +744,7 @@ impl TestState {
                 .map(str::to_owned)
                 .collect();
 
-        let values = |name| {
+        let make_raw_file = |name| {
             let content = format!(
                 "<!DOCTYPE html><html><head><title>Web summary</title></head><body>web summary \
                  {name} - {dataset_id}</body></html>"
@@ -755,7 +757,7 @@ impl TestState {
                 cdf::raw_content.eq(content.into_bytes()),
             )
         };
-        let values: Vec<_> = specimens.iter().map(values).collect();
+        let values: Vec<_> = specimens.iter().map(make_raw_file).collect();
 
         diesel::insert_into(cdf::table)
             .values(values)
@@ -763,22 +765,37 @@ impl TestState {
             .await
             .unwrap();
 
-        let values = |name| {
+        let make_raw_file = |name| {
             let raw_content = format!(
                 "ds_id, some_metric,another_metric,specimen_name\n{dataset_id},100,42,{name}"
             );
-            let parsed_data = serde_json::json!({"ds_id": dataset_id, "some_metric": 100, "another_metric": 42, "specimen_name": name});
+            let _parsed_data = serde_json::json!({"ds_id": dataset_id, "some_metric": 100, "another_metric": 42, "specimen_name": name});
             (
                 cdf::dataset_id.eq(dataset_id),
                 cdf::path.eq(format!("{name}/metrics_summary.csv")),
                 cdf::raw_content.eq(raw_content.into_bytes()),
                 cdf::content_type.eq("text/csv"),
-                cdf::parsed_data.eq(parsed_data),
             )
         };
-        let values: Vec<_> = specimens.iter().map(values).collect();
+        let values: Vec<_> = specimens.iter().map(make_raw_file).collect();
 
         diesel::insert_into(cdf::table)
+            .values(values)
+            .execute(&mut db_conn)
+            .await
+            .unwrap();
+
+        let make_parsed_file = |name| {
+            let parsed_data = serde_json::json!({"ds_id": dataset_id, "some_metric": 100, "another_metric": 42, "specimen_name": name});
+            (
+                cdpf::dataset_id.eq(dataset_id),
+                cdpf::path.eq(format!("{name}/metrics_summary.csv")),
+                cdpf::data.eq(parsed_data),
+            )
+        };
+        let values: Vec<_> = specimens.iter().map(make_parsed_file).collect();
+
+        diesel::insert_into(cdpf::table)
             .values(values)
             .execute(&mut db_conn)
             .await
