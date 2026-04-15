@@ -1,34 +1,34 @@
 services:
-  postgres:
+  db:
     ports:
       - "5432:5432"
-  cellnoor-api:
-    build:
-      args:
-        BUILD_PROFILE: "dev"
-      tags: !reset null
-    environment:
-      JWT_ISSUER: &ui_url http://cellnoor-ui
-      JWT_AUDIENCE: &api_url http://cellnoor-api/api
-      MODE: ${CELLNOOR_API_MODE}
-    secrets:
-      - source: initial_data
-        uid: "10001"
-  caddy:
-    environment:
-      # https is necessary here for better-auth
-      PUBLIC_URL: &public_url https://localhost
-  cellnoor-ui:
-    build:
-      tags: !reset null
-    develop:
-      watch:
-        - action: rebuild
-          path: ./cellnoor-ui
-    environment:
-      JWT_ISSUER: *ui_url
-      JWT_AUDIENCE: *api_url
-      PUBLIC_URL: *public_url
-secrets:
-  initial_data:
-    file: initial_data
+#   cellnoor-api:
+#     build:
+#       args:
+#         BUILD_PROFILE: "dev"
+#       tags: !reset null
+#     environment:
+#       JWT_ISSUER: &ui_url http://cellnoor-ui
+#       JWT_AUDIENCE: &api_url http://cellnoor-api/api
+#       MODE: ${CELLNOOR_API_MODE}
+#     secrets:
+#       - source: initial_data
+#         uid: "10001"
+#   caddy:
+#     environment:
+#       # https is necessary here for better-auth
+#       PUBLIC_URL: &public_url https://localhost
+#   cellnoor-ui:
+#     build:
+#       tags: !reset null
+#     develop:
+#       watch:
+#         - action: rebuild
+#           path: ./cellnoor-ui
+#     environment:
+#       JWT_ISSUER: *ui_url
+#       JWT_AUDIENCE: *api_url
+#       PUBLIC_URL: *public_url
+# secrets:
+#   initial_data:
+#     file: initial_data
