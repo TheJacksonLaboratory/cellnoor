@@ -6,10 +6,10 @@ services:
     image: postgres:18-alpine
     restart: always
     user: &db_root_user postgres
-    secrets: ["db_root_password"]
+    secrets: ["db_root_user_password"]
     environment:
       POSTGRES_USER: *db_root_user
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_root_password
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_root_user_password
       POSTGRES_DB: &db_name cellnoor
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
     pull_policy: always
@@ -21,23 +21,24 @@ services:
     volumes: ["db-data:/var/lib/postgresql", "db-socket:/var/run/postgresql"]
   migrate:
     image: migrate/migrate
-    secrets: ["db_root_password"]
     depends_on:
       db:
         condition: service_healthy
-    entrypoint:
+    command:
       [
-        "/bin/sh",
-        "-c",
-        "migrate -path /migrations -database 'postgres://postgres:'$(cat /run/secrets/db_root_password)'@db/cellnoor?sslmode=disable' up",
+        "-path",
+        "/migrations",
+        "-database",
+        "postgresql://postgres@/cellnoor?host=/var/run/postgresql",
+        "up",
       ]
-    volumes: ["./db/migrations:/migrations"]
+    volumes: ["./db/migrations:/migrations", "db-socket:/var/run/postgresql"]
 volumes:
   db-data:
   db-socket:
 secrets:
-  db_root_password:
-    environment: CELLNOOR_DB_ROOT_PASSWORD
+  db_root_user_password:
+    environment: CELLNOOR_DB_ROOT_USER_PASSWORD
   # cellnoor_api_db_password:
   #   environment: CELLNOOR_API_DB_PASSWORD
   # cellnoor_ui_db_password:
