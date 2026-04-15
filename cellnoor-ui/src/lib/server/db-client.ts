@@ -14,6 +14,7 @@ export async function getDbClient() {
     hostname: dbHost,
     port: dbPort,
     database: dbName,
+    max: 2, // This app doesn't really need to connect to the db much, and even when it acts as a full-fledged auth-server, the operations should be very quick
   });
 
   return dbClient;

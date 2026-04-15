@@ -18,6 +18,7 @@ pub struct Config {
     db_host: String,
     db_port: u16,
     db_name: String,
+    max_db_pool_size: Option<usize>,
     jwt_audience: String,
     jwt_issuer: String,
     host: String,
@@ -40,6 +41,7 @@ impl Config {
             db_host,
             db_port,
             db_name,
+            max_db_pool_size,
             jwt_audience,
             jwt_issuer,
             host,
@@ -58,6 +60,7 @@ impl Config {
             db_host: db_host.or_load(config_dir.join("db_host"))?,
             db_port: db_port.or_load(config_dir.join("db_port"))?,
             db_name: db_name.or_load(config_dir.join("db_name"))?,
+            max_db_pool_size,
             jwt_audience: jwt_audience.or_load(config_dir.join("jwt_audience"))?,
             jwt_issuer: jwt_issuer.or_load(config_dir.join("jwt_issuer"))?,
             host: host.or_load(config_dir.join("host"))?,
@@ -136,6 +139,11 @@ impl Config {
     }
 
     #[must_use]
+    pub fn max_db_pool_size(&self) -> Option<usize> {
+        self.max_db_pool_size
+    }
+
+    #[must_use]
     pub fn jwt_audience(&self) -> &str {
         &self.jwt_audience
     }
@@ -194,6 +202,8 @@ struct Cli {
     db_port: Option<u16>,
     #[arg(long, env = "CELLNOOR_DB_NAME")]
     db_name: Option<String>,
+    #[arg(long, env = "CELLNOOR_API_MAX_DB_POOL_SIZE")]
+    max_db_pool_size: Option<usize>,
     #[arg(long, env = "CELLNOOR_JWT_ISSUER")]
     jwt_issuer: Option<String>,
     #[arg(long, env = "CELLNOOR_JWT_AUDIENCE")]

@@ -174,7 +174,7 @@ impl AppState {
             AppMode::Production => config.cellnoor_api_db_url(),
         };
 
-        let db_pool = create_db_pool(&db_url, None)?;
+        let db_pool = create_db_pool(&db_url, config.max_db_pool_size())?;
 
         let state = match config.mode() {
             AppMode::Development => Self::Development(DevelopmentState { db_pool }),

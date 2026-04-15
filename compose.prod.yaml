@@ -1,9 +1,12 @@
 services:
+  postgres:
+    command: -c max_connections=24 -c shared_buffers=4GB
   cellnoor-api:
     build: !reset null
     image: ghcr.io/thejacksonlaboratory/cellnoor-api:latest
     pull_policy: always
     environment:
+      CELLNOOR_API_MAX_DB_POOL_SIZE: "4"
       JWT_ISSUER: &public_url https://cellnoor.jax.org
       JWT_AUDIENCE: &jwt_audience https://cellnoor.jax.org/api
       CELLNOOR_LOG_DIR: logs
