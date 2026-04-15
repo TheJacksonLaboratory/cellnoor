@@ -15,7 +15,7 @@ resolver = "3"
 edition = "2024"
 
 [workspace.dependencies]
-aide = { version = "0.16.0-alpha.3", features = [
+aide = { version = "0.16.0-alpha.4", features = [
   "axum",
   "axum-json",
   "macros",
@@ -70,7 +70,7 @@ syn = { version = "2.0.117", default-features = false, features = [
   "parsing",
 ] }
 thiserror = "2.0.18"
-tokio = { version = "1.51.1", features = ["macros", "net", "rt-multi-thread"] }
+tokio = { version = "1.52.0", features = ["macros", "net", "rt-multi-thread"] }
 tokio-stream = { version = "0.1.18", default-features = false }
 tower = { version = "0.5.3" }
 tower-http = { version = "0.6.8", features = ["trace"] }
