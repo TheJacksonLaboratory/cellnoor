@@ -6,5 +6,5 @@ use non_empty::NonEmptyString;
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = chromium_datasets))]
 pub struct ChromiumDatasetFields {
-    pub(super) name: NonEmptyString,
+    pub name: NonEmptyString,
 }

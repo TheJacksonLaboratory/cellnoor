@@ -10,8 +10,8 @@ use crate::tenx_assay::LibraryType;
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = cdna))]
 pub struct CdnaFields {
-    pub(super) library_type: LibraryType,
-    pub(super) readable_id: NonEmptyString,
-    pub(super) gem_pool_id: Option<Uuid>,
-    pub(super) additional_data: Option<Value>,
+    pub library_type: LibraryType,
+    pub readable_id: NonEmptyString,
+    pub gem_pool_id: Option<Uuid>,
+    pub additional_data: Option<Value>,
 }

@@ -16,12 +16,12 @@ use crate::suspension::common::SuspensionFields;
 pub struct NewSuspensionCommonFields {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: SuspensionFields,
-    target_cell_recovery: Option<RangedU32<0, { u32::MAX }>>,
+    pub inner: SuspensionFields,
+    pub target_cell_recovery: Option<RangedU32<0, { u32::MAX }>>,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
-    preparer_ids: NonEmptyVec<Uuid, { usize::MAX }>,
+    pub preparer_ids: NonEmptyVec<Uuid, { usize::MAX }>,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::NullableTimestamp))]
-    created_at: Option<Timestamp>,
+    pub created_at: Option<Timestamp>,
 }
 
 impl NewSuspensionCommonFields {

@@ -9,25 +9,25 @@ use crate::suspension_pool::SuspensionPoolFields;
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = suspension_pools))]
 pub struct SuspensionPool {
-    id: Uuid,
-    project_id: Uuid,
+    pub id: Uuid,
+    pub project_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: SuspensionPoolFields,
-    multiplexing_type: String,
+    pub inner: SuspensionPoolFields,
+    pub multiplexing_type: String,
     #[cfg_attr(feature = "app", diesel(embed))]
-    links: SuspensionPoolLinks,
+    pub links: SuspensionPoolLinks,
 }
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = suspension_pools))]
 pub struct SuspensionPoolLinks {
     #[serde(rename = "self")]
-    self_link: String,
+    pub self_link: String,
     #[serde(rename = "measurements")]
-    measurements_link: String,
+    pub measurements_link: String,
     #[serde(rename = "suspensions")]
-    suspensions_link: String,
+    pub suspensions_link: String,
 }
 impl SuspensionPool {
     #[must_use]

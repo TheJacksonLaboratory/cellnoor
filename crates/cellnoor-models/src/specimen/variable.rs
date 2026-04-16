@@ -57,8 +57,8 @@ impl_enum_to_sql!(ThermalPreservationMethod);
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = specimens))]
 pub struct SpecimenVariableFields {
-    pub(crate) type_: SpecimenType,
-    pub(crate) embedded_in: Option<BlockEmbeddingMatrix>,
-    pub(crate) fixative: Option<Fixative>,
-    pub(crate) thermal_preservation_method: Option<ThermalPreservationMethod>,
+    pub type_: SpecimenType,
+    pub embedded_in: Option<BlockEmbeddingMatrix>,
+    pub fixative: Option<Fixative>,
+    pub thermal_preservation_method: Option<ThermalPreservationMethod>,
 }

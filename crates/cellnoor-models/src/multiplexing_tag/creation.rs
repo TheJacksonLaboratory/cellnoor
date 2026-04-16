@@ -12,5 +12,5 @@ use crate::multiplexing_tag::common::MultiplexingTagFields;
 pub struct NewMultiplexingTag {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: MultiplexingTagFields,
+    pub inner: MultiplexingTagFields,
 }

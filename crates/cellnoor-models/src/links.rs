@@ -10,7 +10,7 @@ enum Link {
 }
 
 #[json]
-pub struct Links(HashMap<String, Link>);
+pub struct Links(pub HashMap<String, Link>);
 
 #[cfg(feature = "app")]
 mod diesel_impls {

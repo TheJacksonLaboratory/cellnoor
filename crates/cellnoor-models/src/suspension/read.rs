@@ -14,27 +14,27 @@ use crate::{
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = suspensions))]
 pub struct SuspensionSummary {
-    id: Uuid,
-    project_id: Uuid,
+    pub id: Uuid,
+    pub project_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: SuspensionFields,
+    pub inner: SuspensionFields,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::NullableTimestamp))]
-    created_at: Option<Timestamp>,
-    target_cell_recovery: Option<i64>,
-    lysis_duration_minutes: Option<f32>,
-    content: SuspensionContent,
+    pub created_at: Option<Timestamp>,
+    pub target_cell_recovery: Option<i64>,
+    pub lysis_duration_minutes: Option<f32>,
+    pub content: SuspensionContent,
     #[cfg_attr(feature = "app", diesel(embed))]
-    links: SuspensionLinks,
+    pub links: SuspensionLinks,
 }
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = suspensions))]
 pub struct SuspensionLinks {
     #[serde(rename = "self")]
-    self_link: String,
+    pub self_link: String,
     #[serde(rename = "measurements")]
-    measurements_link: String,
+    pub measurements_link: String,
 }
 
 impl SuspensionSummary {
@@ -59,9 +59,9 @@ impl SuspensionSummary {
 pub struct Suspension {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    summary: SuspensionSummary,
+    pub summary: SuspensionSummary,
     #[cfg_attr(feature = "app", diesel(embed))]
-    parent_specimen: SpecimenSummary,
+    pub parent_specimen: SpecimenSummary,
 }
 
 impl Suspension {

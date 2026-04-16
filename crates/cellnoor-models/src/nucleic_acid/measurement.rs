@@ -9,9 +9,9 @@ use crate::utils::{JsonFromSql, JsonToSql};
 #[json]
 #[cfg_attr(feature = "app", schemars(rename = "NucleicAcidConcentration{N}"))]
 pub struct Concentration<N> {
-    value: u32,
-    numerator_unit: N,
-    denominator_unit: Microliter,
+    pub value: u32,
+    pub numerator_unit: N,
+    pub denominator_unit: Microliter,
 }
 
 #[json]

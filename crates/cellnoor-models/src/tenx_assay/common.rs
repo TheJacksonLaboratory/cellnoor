@@ -56,12 +56,12 @@ impl_enum_to_sql!(SampleMultiplexing);
 #[insert]
 #[cfg_attr(feature = "app", derive(AsChangeset, HasQuery))]
 pub struct LibraryTypeSpecification {
-    library_type: LibraryType,
-    index_kit: String,
+    pub library_type: LibraryType,
+    pub index_kit: String,
     #[cfg_attr(feature = "app", diesel(column_name = cdna_volume_l))]
-    cdna_volume_µl: RangedU16<0, { u16::MAX }>,
+    pub cdna_volume_µl: RangedU16<0, { u16::MAX }>,
     #[cfg_attr(feature = "app", diesel(column_name = library_volume_l))]
-    library_volume_µl: RangedU16<0, { u16::MAX }>,
+    pub library_volume_µl: RangedU16<0, { u16::MAX }>,
 }
 
 impl LibraryTypeSpecification {
@@ -90,9 +90,9 @@ impl LibraryTypeSpecification {
 #[cfg_attr(feature = "app", derive(AsChangeset))]
 #[cfg_attr(feature = "app", diesel(table_name = tenx_assays))]
 pub struct TenxAssayFields {
-    name: NonEmptyString,
-    chemistry_version: NonEmptyString,
-    protocol_url: NonEmptyString,
+    pub name: NonEmptyString,
+    pub chemistry_version: NonEmptyString,
+    pub protocol_url: NonEmptyString,
 }
 
 impl TenxAssayFields {

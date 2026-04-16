@@ -18,28 +18,28 @@ use crate::{
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = specimens))]
 pub struct SpecimenSummary {
-    id: Uuid,
+    pub id: Uuid,
     #[cfg_attr(feature = "app", diesel(embed))]
-    links: SpecimenLinks,
+    pub links: SpecimenLinks,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    common: SpecimenCommonFields,
+    pub common: SpecimenCommonFields,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    variable: SpecimenVariableFields,
+    pub variable: SpecimenVariableFields,
 }
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = specimens))]
 pub struct SpecimenLinks {
     #[serde(rename = "self")]
-    self_link: String,
+    pub self_link: String,
     #[serde(rename = "measurements")]
-    measurements_link: String,
+    pub measurements_link: String,
     #[serde(rename = "suspensions")]
-    suspensions_link: String,
+    pub suspensions_link: String,
     #[serde(rename = "chromium_datasets")]
-    chromium_datasets_link: String,
+    pub chromium_datasets_link: String,
 }
 
 impl SpecimenSummary {
@@ -89,11 +89,11 @@ impl SpecimenSummary {
 pub struct Specimen {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    summary: SpecimenSummary,
+    pub summary: SpecimenSummary,
     #[cfg_attr(feature = "app", diesel(embed))]
-    project: Project,
+    pub project: Project,
     #[cfg_attr(feature = "app", diesel(embed))]
-    submitted_by: PersonSummary,
+    pub submitted_by: PersonSummary,
 }
 
 impl Specimen {

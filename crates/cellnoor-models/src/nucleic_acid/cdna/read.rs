@@ -11,27 +11,27 @@ use crate::{chromium_run::GemPoolSummary, nucleic_acid::cdna::common::CdnaFields
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = cdna))]
 pub struct CdnaSummary {
-    id: Uuid,
-    project_id: Uuid,
+    pub id: Uuid,
+    pub project_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: CdnaFields,
+    pub inner: CdnaFields,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
-    prepared_at: Timestamp,
-    n_amplification_cycles: i32,
+    pub prepared_at: Timestamp,
+    pub n_amplification_cycles: i32,
     #[cfg_attr(feature = "app", diesel(embed))]
-    links: CdnaLinks,
+    pub links: CdnaLinks,
 }
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = cdna))]
 pub struct CdnaLinks {
     #[serde(rename = "self")]
-    self_link: String,
+    pub self_link: String,
     #[serde(rename = "measurements")]
-    measurements_link: String,
+    pub measurements_link: String,
     #[serde(rename = "libraries")]
-    libraries_link: String,
+    pub libraries_link: String,
 }
 
 impl CdnaSummary {
@@ -51,9 +51,9 @@ impl CdnaSummary {
 pub struct Cdna {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    summary: CdnaSummary,
+    pub summary: CdnaSummary,
     #[cfg_attr(feature = "app", diesel(embed))]
-    gem_pool: GemPoolSummary,
+    pub gem_pool: GemPoolSummary,
 }
 
 impl Cdna {

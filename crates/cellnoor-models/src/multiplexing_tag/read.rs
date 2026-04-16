@@ -8,10 +8,10 @@ use crate::multiplexing_tag::common::MultiplexingTagFields;
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = multiplexing_tags))]
 pub struct MultiplexingTag {
-    id: Uuid,
+    pub id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: MultiplexingTagFields,
+    pub inner: MultiplexingTagFields,
 }
 
 impl MultiplexingTag {

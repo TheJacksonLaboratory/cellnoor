@@ -9,25 +9,25 @@ use crate::sequencing_run::common::SequencingRunFields;
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = sequencing_runs))]
 pub struct SequencingRun {
-    id: Uuid,
+    pub id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: SequencingRunFields,
+    pub inner: SequencingRunFields,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
-    begun_at: Timestamp,
+    pub begun_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::NullableTimestamp))]
-    finished_at: Option<Timestamp>,
+    pub finished_at: Option<Timestamp>,
     #[cfg_attr(feature = "app", diesel(embed))]
-    links: SequencingRunLinks,
+    pub links: SequencingRunLinks,
 }
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = sequencing_runs))]
 pub struct SequencingRunLinks {
     #[serde(rename = "self")]
-    self_link: String,
+    pub self_link: String,
     #[serde(rename = "libraries")]
-    libraries_link: String,
+    pub libraries_link: String,
 }
 
 impl SequencingRun {

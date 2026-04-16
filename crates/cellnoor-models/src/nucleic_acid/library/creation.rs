@@ -13,15 +13,15 @@ use crate::nucleic_acid::library::common::LibraryFields;
 pub struct NewLibrary {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: LibraryFields,
-    number_of_sample_index_pcr_cycles: RangedU16<0, { u16::MAX }>,
+    pub inner: LibraryFields,
+    pub number_of_sample_index_pcr_cycles: RangedU16<0, { u16::MAX }>,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
-    volume_µl: u8,
-    target_reads_per_cell: Option<RangedU32<0, { u32::MAX }>>,
+    pub volume_µl: u8,
+    pub target_reads_per_cell: Option<RangedU32<0, { u32::MAX }>>,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp))]
-    prepared_at: Timestamp,
+    pub prepared_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
-    preparer_ids: NonEmptyVec<Uuid, { usize::MAX }>,
+    pub preparer_ids: NonEmptyVec<Uuid, { usize::MAX }>,
 }
 
 impl NewLibrary {

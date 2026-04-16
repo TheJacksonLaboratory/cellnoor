@@ -12,9 +12,9 @@ use crate::person::common::PersonFields;
 pub struct NewPerson {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: PersonFields,
-    email: NonEmptyString,
-    microsoft_entra_oid: Option<Uuid>,
+    pub inner: PersonFields,
+    pub email: NonEmptyString,
+    pub microsoft_entra_oid: Option<Uuid>,
 }
 
 impl NewPerson {

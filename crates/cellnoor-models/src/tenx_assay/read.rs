@@ -7,23 +7,23 @@ use crate::tenx_assay::common::{LibraryType, SampleMultiplexing};
 
 #[select]
 pub struct TenxAssay {
-    id: Uuid,
-    name: String,
-    library_types: Option<Vec<Option<LibraryType>>>,
-    sample_multiplexing: Option<SampleMultiplexing>,
-    chemistry_version: String,
-    protocol_url: String,
-    chromium_chip: Option<String>,
-    cmdlines: Option<Vec<Option<String>>>,
+    pub id: Uuid,
+    pub name: String,
+    pub library_types: Option<Vec<Option<LibraryType>>>,
+    pub sample_multiplexing: Option<SampleMultiplexing>,
+    pub chemistry_version: String,
+    pub protocol_url: String,
+    pub chromium_chip: Option<String>,
+    pub cmdlines: Option<Vec<Option<String>>>,
     #[cfg_attr(feature = "app", diesel(embed))]
-    links: TenxAssayLinks,
+    pub links: TenxAssayLinks,
 }
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = tenx_assays))]
 pub struct TenxAssayLinks {
     #[serde(rename = "self")]
-    self_link: String,
+    pub self_link: String,
 }
 
 impl TenxAssay {

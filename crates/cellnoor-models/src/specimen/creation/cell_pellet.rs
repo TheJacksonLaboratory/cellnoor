@@ -25,8 +25,8 @@ impl From<CellPelletThermalPreservation> for ThermalPreservationMethod {
 #[cfg_attr(feature = "app", derive(schemars::JsonSchema))]
 pub struct NewCellPellet {
     #[serde(flatten)]
-    inner: SpecimenCommonFields,
-    thermal_preservation_method: CellPelletThermalPreservation,
+    pub inner: SpecimenCommonFields,
+    pub thermal_preservation_method: CellPelletThermalPreservation,
 }
 
 impl NewCellPellet {

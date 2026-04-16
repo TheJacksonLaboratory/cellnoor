@@ -29,11 +29,11 @@ impl_enum_to_sql!(OcmBarcodeId);
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = chip_loadings), schemars(inline))]
 pub struct SuspensionLoading {
-    suspension_id: Uuid,
+    pub suspension_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: ChipLoadingFields,
-    ocm_barcode_id: OcmBarcodeId,
+    pub inner: ChipLoadingFields,
+    pub ocm_barcode_id: OcmBarcodeId,
 }
 
 impl SuspensionLoading {
@@ -46,11 +46,11 @@ impl SuspensionLoading {
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = chip_loadings), schemars(inline))]
 pub struct SuspensionPoolLoading {
-    suspension_pool_id: Uuid,
+    pub suspension_pool_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: ChipLoadingFields,
-    ocm_barcode_id: OcmBarcodeId,
+    pub inner: ChipLoadingFields,
+    pub ocm_barcode_id: OcmBarcodeId,
 }
 
 impl SuspensionPoolLoading {

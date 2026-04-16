@@ -8,6 +8,6 @@ use uuid::Uuid;
 #[cfg_attr(feature = "app", derive(diesel::AsChangeset))]
 #[cfg_attr(feature = "app", diesel(table_name = institutions))]
 pub struct InstitutionFields {
-    pub(super) id: Uuid,
-    pub(super) name: NonEmptyString,
+    pub id: Uuid,
+    pub name: NonEmptyString,
 }

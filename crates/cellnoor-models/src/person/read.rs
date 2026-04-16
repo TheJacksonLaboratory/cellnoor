@@ -10,24 +10,24 @@ use crate::{institution::Institution, person::common::PersonFields};
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = people))]
 pub struct PersonSummary {
-    id: Uuid,
+    pub id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: PersonFields,
-    email: Option<String>,
+    pub inner: PersonFields,
+    pub email: Option<String>,
     #[cfg_attr(feature = "app", diesel(embed))]
-    links: PersonLinks,
+    pub links: PersonLinks,
 }
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = people))]
 pub struct PersonLinks {
     #[serde(rename = "self")]
-    self_link: String,
+    pub self_link: String,
     #[serde(rename = "projects")]
-    projects_link: String,
+    pub projects_link: String,
     #[serde(rename = "specimens")]
-    specimens_link: String,
+    pub specimens_link: String,
 }
 
 impl PersonSummary {
@@ -52,11 +52,11 @@ impl PersonSummary {
 pub struct PersonSummaryStaff {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: PersonSummary,
-    microsoft_entra_oid: Option<Uuid>,
-    is_admin: bool,
-    is_biology_staff: bool,
-    is_computational_staff: bool,
+    pub inner: PersonSummary,
+    pub microsoft_entra_oid: Option<Uuid>,
+    pub is_admin: bool,
+    pub is_biology_staff: bool,
+    pub is_computational_staff: bool,
 }
 
 #[select]
@@ -64,9 +64,9 @@ pub struct PersonSummaryStaff {
 pub struct Person {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    summary: PersonSummary,
+    pub summary: PersonSummary,
     #[cfg_attr(feature = "app", diesel(embed))]
-    institution: Institution,
+    pub institution: Institution,
 }
 
 impl Person {

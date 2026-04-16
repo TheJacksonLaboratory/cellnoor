@@ -11,8 +11,8 @@ use crate::suspension_pool::common::SuspensionPoolFields;
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = suspension_tagging))]
 pub struct SuspensionTagging {
-    suspension_id: Uuid,
-    tag_id: Uuid,
+    pub suspension_id: Uuid,
+    pub tag_id: Uuid,
 }
 
 impl SuspensionTagging {

@@ -7,9 +7,9 @@ use crate::nucleic_acid::cdna::measurement::common::CdnaMeasurementFields;
 
 #[select]
 pub struct CdnaMeasurement {
-    id: Uuid,
-    cdna_id: Uuid,
+    pub id: Uuid,
+    pub cdna_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: CdnaMeasurementFields,
+    pub inner: CdnaMeasurementFields,
 }

@@ -27,7 +27,7 @@ impl_enum_to_sql!(SuspensionContent);
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = suspensions))]
 pub struct SuspensionFields {
-    pub(super) readable_id: NonEmptyString,
-    pub(super) parent_specimen_id: Uuid,
-    pub(super) additional_data: Option<Value>,
+    pub readable_id: NonEmptyString,
+    pub parent_specimen_id: Uuid,
+    pub additional_data: Option<Value>,
 }

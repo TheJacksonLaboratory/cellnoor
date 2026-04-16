@@ -10,11 +10,11 @@ use crate::project::common::ProjectFields;
 pub struct NewProject {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: ProjectFields,
+    pub inner: ProjectFields,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp))]
-    started_at: jiff::Timestamp,
+    pub started_at: jiff::Timestamp,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp))]
-    ended_at: jiff::Timestamp,
+    pub ended_at: jiff::Timestamp,
 }
 impl NewProject {
     #[must_use]

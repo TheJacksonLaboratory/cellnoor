@@ -10,10 +10,10 @@ use crate::chromium_run::common::{ChipLoadingFields, GemPoolFields};
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = chip_loadings), schemars(inline))]
 pub struct SuspensionLoading {
-    suspension_id: Uuid,
+    pub suspension_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: ChipLoadingFields,
+    pub inner: ChipLoadingFields,
 }
 
 impl SuspensionLoading {
@@ -26,10 +26,10 @@ impl SuspensionLoading {
 #[insert]
 #[cfg_attr(feature = "app", diesel(table_name = chip_loadings), schemars(inline))]
 pub struct SuspensionPoolLoading {
-    suspension_pool_id: Uuid,
+    pub suspension_pool_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: ChipLoadingFields,
+    pub inner: ChipLoadingFields,
 }
 
 impl SuspensionPoolLoading {

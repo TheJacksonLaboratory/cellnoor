@@ -7,9 +7,9 @@ use crate::suspension_pool::measurement::SuspensionPoolMeasurementFields;
 
 #[select]
 pub struct SuspensionPoolMeasurement {
-    id: Uuid,
-    pool_id: Uuid,
+    pub id: Uuid,
+    pub pool_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: SuspensionPoolMeasurementFields,
+    pub inner: SuspensionPoolMeasurementFields,
 }

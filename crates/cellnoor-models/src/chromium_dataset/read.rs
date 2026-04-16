@@ -18,18 +18,18 @@ use crate::{
 )]
 #[cfg_attr(feature = "app", diesel(table_name = chromium_datasets, check_for_backend(Pg)))]
 pub struct ChromiumDataset {
-    id: Uuid,
+    pub id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: ChromiumDatasetFields,
+    pub inner: ChromiumDatasetFields,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
-    delivered_at: Timestamp,
+    pub delivered_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(embed))]
-    assay: TenxAssay,
+    pub assay: TenxAssay,
     #[cfg_attr(feature = "app", diesel(embed))]
-    project: Project,
+    pub project: Project,
     #[cfg_attr(feature = "app", diesel(embed))]
-    links: ChromiumDatasetLinks,
+    pub links: ChromiumDatasetLinks,
 }
 
 impl ChromiumDataset {
@@ -58,13 +58,13 @@ impl ChromiumDataset {
 #[cfg_attr(feature = "app", diesel(table_name = chromium_datasets))]
 pub struct ChromiumDatasetLinks {
     #[serde(rename = "self")]
-    self_link: String,
+    pub self_link: String,
     #[serde(rename = "specimens")]
-    specimens_link: String,
+    pub specimens_link: String,
     #[serde(rename = "libraries")]
-    libraries_link: String,
+    pub libraries_link: String,
     #[serde(rename = "raw_files")]
-    raw_file_links: Vec<Option<String>>,
+    pub raw_file_links: Vec<Option<String>>,
     #[serde(rename = "parsed_files")]
-    parsed_file_links: Vec<Option<String>>,
+    pub parsed_file_links: Vec<Option<String>>,
 }

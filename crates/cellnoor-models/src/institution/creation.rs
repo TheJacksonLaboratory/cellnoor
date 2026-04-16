@@ -12,7 +12,7 @@ use crate::institution::common::InstitutionFields;
 pub struct NewInstitution {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: InstitutionFields,
+    pub inner: InstitutionFields,
 }
 
 impl NewInstitution {
