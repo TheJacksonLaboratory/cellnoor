@@ -116,7 +116,7 @@ impl MeanDiameter {
 }
 
 #[simple_enum]
-enum CountingMethod {
+pub enum CountingMethod {
     BrightField,
     AcridineOrangePropidiumIodide,
     TrypanBlue,
