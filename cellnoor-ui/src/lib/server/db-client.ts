@@ -8,14 +8,22 @@ export async function getDbClient() {
   }
 
   const { cellnoorUiDbPassword, dbHost, dbPort, dbName } = await readSecrets();
-  dbClient = new Bun.SQL({
+
+  const options: Bun.SQL.Options = {
     username: "cellnoor_ui",
     password: cellnoorUiDbPassword,
-    hostname: dbHost,
     port: dbPort,
     database: dbName,
-    max: 2, // This app doesn't really need to connect to the db much, and even when it acts as a full-fledged auth-server, the operations should be very quick
-  });
+    max: 2,
+  };
+
+  if (dbHost.startsWith("/")) {
+    options.path = dbHost;
+  } else {
+    options.hostname = dbHost;
+  }
+
+  dbClient = new Bun.SQL(options);
 
   return dbClient;
 }
