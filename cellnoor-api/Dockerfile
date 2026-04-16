@@ -39,6 +39,7 @@ RUN mkdir app
 COPY --from=build /bin/cellnoor-api /bin/
 
 ARG UID=10001
+ARG ADDRESS
 RUN adduser \
     --disabled-password \
     --gecos "" \
@@ -47,7 +48,7 @@ RUN adduser \
     --no-create-home \
     --uid "${UID}" \
     appuser
-RUN mkdir logs && chown appuser logs
+RUN mkdir -p logs "$(dirname ${ADDRESS})" && chown appuser logs "$(dirname ${ADDRESS})"
 USER appuser
 
-CMD /bin/cellnoor-api --mode ${MODE:-production} --db-host ${DB_HOST} --db-port ${DB_PORT} --jwt-issuer ${JWT_ISSUER} --jwt-audience ${JWT_AUDIENCE} --host 0.0.0.0 --port ${PORT} --db-root-user ${DB_ROOT_USER} --config-dir /run/secrets
+CMD /bin/cellnoor-api --mode ${MODE:-production} --db-host ${DB_HOST} --db-port ${DB_PORT} --jwt-issuer ${JWT_ISSUER} --jwt-audience ${JWT_AUDIENCE} --address ${ADDRESS} --db-root-user ${DB_ROOT_USER} --config-dir /run/secrets

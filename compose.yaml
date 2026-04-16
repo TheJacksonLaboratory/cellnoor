@@ -30,13 +30,14 @@ services:
       target: final
       args:
         UID: &uid "10001"
+        ADDRESS: &api_socket /run/cellnoor-api/cellnoor-api.sock
       tags:
         - ghcr.io/thejacksonlaboratory/cellnoor-api:latest
     environment:
       DB_ROOT_USER: *db_root_user
       DB_HOST: &db_host /var/run/postgresql
       DB_PORT: &db_port 5432
-      PORT: &api_port 80
+      ADDRESS: *api_socket
     secrets:
       - source: db_root_password
         uid: *uid
@@ -48,12 +49,13 @@ services:
         uid: *uid
     volumes:
       - logs:/logs
-      - database-socket:/var/run/postgresql
+      - &database_socket_volume database-socket:/var/run/postgresql
+      - &api_socket_volume cellnoor-api-socket:/run/cellnoor-api
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: curl --fail http://localhost/api/health || exit 1
+      test: curl --fail --unix-socket /run/cellnoor-api/cellnoor-api.sock http://localhost/api/health || exit 1
       interval: 1s
       start_period: 10s
       start_interval: 1s
@@ -64,19 +66,25 @@ services:
       context: .
       dockerfile: cellnoor-ui/Dockerfile
       target: final
+      args:
+        UID: *uid
+        SOCKET_PATH: &ui_socket /run/cellnoor-ui/cellnoor-ui.sock
       tags:
         - ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
     environment:
       IN_DOCKER: "true"
       DB_HOST: *db_host
       DB_PORT: *db_port
-      PORT: &ui_port 80
+      # https://svelte.dev/docs/kit/adapter-node#Environment-variables-PORT-HOST-and-SOCKET_PATH
+      HOST: ""
+      SOCKET_PATH: *ui_socket
       API_URL: http://cellnoor-api/api
+      API_SOCKET: *api_socket
     depends_on:
       cellnoor-api:
         condition: service_healthy
     healthcheck:
-      test: curl --fail http://localhost/health || exit 1
+      test: curl --fail --unix-socket /run/cellnoor-ui/cellnoor-ui.sock http://localhost/health || exit 1
       interval: 1s
       start_period: 5s
       start_interval: 1s
@@ -96,14 +104,14 @@ services:
       - source: auth_secret
         uid: *uid
     volumes:
-      - database-socket:/var/run/postgresql
+      - *database_socket_volume
+      - *api_socket_volume
+      - &ui_socket_volume cellnoor-ui-socket:/run/cellnoor-ui
   caddy:
     image: caddy:2-alpine
     environment:
-      API_HOST: *api_host
-      API_PORT: *api_port
-      UI_HOST: *ui_host
-      UI_PORT: *ui_port
+      API_SOCKET: *api_socket
+      UI_SOCKET: *ui_socket
     restart: always
     cap_add:
       - NET_ADMIN
@@ -115,6 +123,8 @@ services:
       - ./caddy:/etc/caddy
       - caddy-data:/data
       - caddy-config:/config
+      - *api_socket_volume
+      - *ui_socket_volume
     pull_policy: always
     depends_on:
       cellnoor-ui:
@@ -125,6 +135,8 @@ volumes:
   caddy-config:
   database:
   database-socket:
+  cellnoor-api-socket:
+  cellnoor-ui-socket:
 secrets:
   db_root_password:
     environment: CELLNOOR_DB_ROOT_PASSWORD

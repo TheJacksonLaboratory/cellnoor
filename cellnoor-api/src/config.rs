@@ -21,8 +21,7 @@ pub struct Config {
     max_db_pool_size: Option<usize>,
     jwt_audience: String,
     jwt_issuer: String,
-    host: String,
-    port: u16,
+    address: String,
     initial_data: InitialData,
     log_dir: Option<Utf8PathBuf>,
 }
@@ -44,8 +43,7 @@ impl Config {
             max_db_pool_size,
             jwt_audience,
             jwt_issuer,
-            host,
-            port,
+            address,
             log_dir,
         } = Cli::parse();
 
@@ -63,8 +61,7 @@ impl Config {
             max_db_pool_size,
             jwt_audience: jwt_audience.or_load(config_dir.join("jwt_audience"))?,
             jwt_issuer: jwt_issuer.or_load(config_dir.join("jwt_issuer"))?,
-            host: host.or_load(config_dir.join("host"))?,
-            port: port.or_load(config_dir.join("port"))?,
+            address: address.or_load(config_dir.join("address"))?,
             initial_data: None::<InitialData>.or_load(config_dir.join("initial_data"))?,
             log_dir: log_dir.or_load(config_dir.join("log_dir")).ok(),
         })
@@ -169,10 +166,10 @@ impl Config {
     }
 
     #[must_use]
-    pub fn address(&self) -> String {
-        let Self { host, port, .. } = self;
+    pub fn address(&self) -> &str {
+        let Self { address, .. } = self;
 
-        format!("{host}:{port}")
+        address
     }
 }
 
@@ -208,10 +205,8 @@ struct Cli {
     jwt_issuer: Option<String>,
     #[arg(long, env = "CELLNOOR_JWT_AUDIENCE")]
     jwt_audience: Option<String>,
-    #[arg(long, env = "CELLNOOR_API_HOST")]
-    host: Option<String>,
-    #[arg(long, env = "CELLNOOR_API_PORT")]
-    port: Option<u16>,
+    #[arg(long, env = "CELLNOOR_API_ADDRESS")]
+    address: Option<String>,
     #[arg(long, env = "CELLNOOR_LOG_DIR")]
     log_dir: Option<Utf8PathBuf>,
 }
