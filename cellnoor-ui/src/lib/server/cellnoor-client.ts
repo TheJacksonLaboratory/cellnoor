@@ -12,10 +12,12 @@ export async function getApiClient() {
     return apiClient;
   }
 
-  const baseUrl = await readConfig().then(({ apiUrl }) => apiUrl);
+  const { apiUrl, apiSocket } = await readConfig();
   const client = createCellnoorClient({
-    baseUrl,
-    fetch: getRequestEvent().fetch,
+    baseUrl: apiUrl,
+    fetch: async (request) => {
+      return fetch(request, { unix: apiSocket });
+    },
   });
 
   client.use(middleware);

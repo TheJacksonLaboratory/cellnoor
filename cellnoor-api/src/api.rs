@@ -1,9 +1,9 @@
 use anyhow::Context;
 #[cfg(any(feature = "dummy-data", test))]
 pub use auth::AuthProjects;
-use axum::Router;
+use axum::{Router, serve::Listener};
 use camino::Utf8Path;
-use tokio::net::TcpListener;
+use tokio::net::{TcpListener, UnixListener};
 
 use crate::{config::Config, state::AppState};
 
@@ -34,7 +34,7 @@ pub async fn serve(config: Config) -> anyhow::Result<()> {
 }
 
 async fn serve_inner(config: Config) -> anyhow::Result<()> {
-    let app_addr = config.address();
+    let app_addr = config.address().to_owned();
 
     let app_state = AppState::initialize(config)
         .await
@@ -43,10 +43,29 @@ async fn serve_inner(config: Config) -> anyhow::Result<()> {
 
     let app = app(app_state.clone());
 
-    let listener = TcpListener::bind(&app_addr)
-        .await
-        .context(format!("failed to listen on {app_addr}"))?;
-    tracing::info!("cellnoor listening on {}", listener.local_addr()?);
+    if app_addr.starts_with('/') {
+        if let Err(e) = std::fs::remove_file(&app_addr)
+            && !matches!(e.kind(), std::io::ErrorKind::NotFound)
+        {
+            return Err(e)?;
+        }
+
+        let listener =
+            UnixListener::bind(&app_addr).context(format!("failed to listen on {app_addr}"))?;
+        serve_with_listener(listener, app).await
+    } else {
+        let listener = TcpListener::bind(&app_addr)
+            .await
+            .context(format!("failed to listen on {app_addr}"))?;
+        serve_with_listener(listener, app).await
+    }
+}
+
+async fn serve_with_listener<L: Listener>(listener: L, app: Router) -> anyhow::Result<()>
+where
+    L::Addr: std::fmt::Debug,
+{
+    tracing::info!("cellnoor listening on {:?}", listener.local_addr()?);
 
     axum::serve(listener, app)
         .await

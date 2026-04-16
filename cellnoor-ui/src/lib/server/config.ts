@@ -74,6 +74,7 @@ export async function readSecrets() {
 interface Config {
   publicUrl: string;
   apiUrl: string;
+  apiSocket?: string;
   jwtAudience: string;
   jwtIssuer: string;
 }
@@ -90,6 +91,7 @@ export async function readConfig() {
   }
 
   const [publicUrl, apiUrl] = await Promise.all(["public_url", "api_url"].map(readRequiredEnvVar));
+  const apiSocket = await readEnvVar("api_socket");
 
   const [jwtAudience, jwtIssuer] = await Promise.all(
     ["jwt_audience", "jwt_issuer"].map(readRequiredEnvVar),
@@ -98,6 +100,7 @@ export async function readConfig() {
   appConfig = {
     publicUrl,
     apiUrl,
+    apiSocket,
     jwtAudience,
     jwtIssuer,
   } as Config;
