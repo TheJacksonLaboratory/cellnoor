@@ -15,20 +15,20 @@ use crate::{
 #[cfg_attr(feature = "app", derive(Identifiable))]
 #[cfg_attr(feature = "app", diesel(table_name = gem_pools, base_query = gem_pools::table.inner_join(chromium_runs::table)))]
 pub struct GemPoolSummary {
-    id: Uuid,
-    chromium_run_id: Uuid,
+    pub id: Uuid,
+    pub chromium_run_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: GemPoolFields,
+    pub inner: GemPoolFields,
     #[cfg_attr(feature = "app", diesel(embed))]
-    links: GemPoolLinks,
+    pub links: GemPoolLinks,
 }
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = gem_pools))]
 pub struct GemPoolLinks {
     #[serde(rename = "self")]
-    self_link: String,
+    pub self_link: String,
 }
 
 impl GemPoolSummary {
@@ -46,20 +46,20 @@ impl GemPoolSummary {
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = chromium_runs))]
 pub struct ChromiumRunSummary {
-    id: Uuid,
-    project_id: Uuid,
+    pub id: Uuid,
+    pub project_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: ChromiumRunFields,
+    pub inner: ChromiumRunFields,
     #[cfg_attr(feature = "app", diesel(embed))]
-    links: ChromiumRunLinks,
+    pub links: ChromiumRunLinks,
 }
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = chromium_runs))]
 pub struct ChromiumRunLinks {
     #[serde(rename = "self")]
-    self_link: String,
+    pub self_link: String,
 }
 
 impl ChromiumRunSummary {
@@ -79,9 +79,9 @@ impl ChromiumRunSummary {
 pub struct GemPool {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    summary: GemPoolSummary,
+    pub summary: GemPoolSummary,
     #[cfg_attr(feature = "app", diesel(embed))]
-    chromium_run: ChromiumRunSummary,
+    pub chromium_run: ChromiumRunSummary,
 }
 
 impl GemPool {
@@ -96,7 +96,7 @@ impl GemPool {
 pub struct ChromiumRun {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    summary: ChromiumRunSummary,
+    pub summary: ChromiumRunSummary,
     #[cfg_attr(feature = "app", diesel(embed))]
-    assay: TenxAssay,
+    pub assay: TenxAssay,
 }

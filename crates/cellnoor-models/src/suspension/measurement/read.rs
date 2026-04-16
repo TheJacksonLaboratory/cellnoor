@@ -7,9 +7,9 @@ use crate::suspension::measurement::common::SuspensionMeasurementFields;
 
 #[select]
 pub struct SuspensionMeasurement {
-    id: Uuid,
-    suspension_id: Uuid,
+    pub id: Uuid,
+    pub suspension_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: SuspensionMeasurementFields,
+    pub inner: SuspensionMeasurementFields,
 }

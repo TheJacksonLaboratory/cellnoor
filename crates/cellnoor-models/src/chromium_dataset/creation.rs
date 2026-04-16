@@ -43,13 +43,13 @@ impl_enum_to_sql!(ChromiumDatasetCmdline);
 pub struct NewChromiumDataset {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: ChromiumDatasetFields,
+    pub inner: ChromiumDatasetFields,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp))]
-    delivered_at: Timestamp,
+    pub delivered_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
-    library_ids: Vec<Uuid>,
+    pub library_ids: Vec<Uuid>,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
-    cmdline: ChromiumDatasetCmdline,
+    pub cmdline: ChromiumDatasetCmdline,
 }
 
 impl NewChromiumDataset {

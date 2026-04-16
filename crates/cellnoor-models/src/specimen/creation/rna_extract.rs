@@ -23,7 +23,7 @@ impl From<BlockFixative> for Fixative {
 #[cfg_attr(feature = "app", derive(schemars::JsonSchema))]
 pub struct NewRnaExtract {
     #[serde(flatten)]
-    inner: SpecimenCommonFields,
+    pub inner: SpecimenCommonFields,
 }
 
 impl NewRnaExtract {

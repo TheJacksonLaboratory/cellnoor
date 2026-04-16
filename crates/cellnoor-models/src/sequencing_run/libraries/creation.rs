@@ -6,9 +6,9 @@ use uuid::Uuid;
 
 #[insert]
 pub struct SequencingSubmission {
-    library_id: Uuid,
+    pub library_id: Uuid,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp))]
-    submitted_at: Timestamp,
+    pub submitted_at: Timestamp,
 }
 
 impl SequencingSubmission {

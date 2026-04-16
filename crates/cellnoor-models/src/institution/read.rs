@@ -9,18 +9,18 @@ use crate::institution::common::InstitutionFields;
 pub struct Institution {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: InstitutionFields,
+    pub inner: InstitutionFields,
     #[cfg_attr(feature = "app", diesel(embed))]
-    links: InstitutionLinks,
+    pub links: InstitutionLinks,
 }
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = institutions))]
 pub struct InstitutionLinks {
     #[serde(rename = "self")]
-    self_link: String,
+    pub self_link: String,
     #[serde(rename = "members")]
-    members_link: String,
+    pub members_link: String,
 }
 
 impl Institution {

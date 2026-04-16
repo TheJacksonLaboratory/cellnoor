@@ -12,15 +12,15 @@ use crate::{nucleic_acid::cdna::common::CdnaFields, tenx_assay::LibraryType};
 pub struct NewCdna {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: CdnaFields,
+    pub inner: CdnaFields,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp))]
-    prepared_at: Timestamp,
+    pub prepared_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(serialize_as = i32))]
-    n_amplification_cycles: u8,
+    pub n_amplification_cycles: u8,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
-    volume_µl: u8,
+    pub volume_µl: u8,
     #[cfg_attr(feature = "app", diesel(skip_insertion))]
-    preparer_ids: NonEmptyVec<Uuid, { usize::MAX }>,
+    pub preparer_ids: NonEmptyVec<Uuid, { usize::MAX }>,
 }
 
 impl NewCdna {

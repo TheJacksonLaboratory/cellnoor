@@ -8,7 +8,7 @@ use uuid::Uuid;
 #[cfg_attr(feature = "app", derive(diesel::AsChangeset))]
 #[cfg_attr(feature = "app", diesel(table_name = people))]
 pub struct PersonFields {
-    pub(super) name: NonEmptyString,
-    pub(super) orcid: Option<NonEmptyString>,
-    pub(super) institution_id: Uuid,
+    pub name: NonEmptyString,
+    pub orcid: Option<NonEmptyString>,
+    pub institution_id: Uuid,
 }

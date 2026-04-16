@@ -10,11 +10,11 @@ use crate::sequencing_run::common::SequencingRunFields;
 pub struct NewSequencingRun {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: SequencingRunFields,
+    pub inner: SequencingRunFields,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::Timestamp))]
-    begun_at: Timestamp,
+    pub begun_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(serialize_as = jiff_diesel::NullableTimestamp))]
-    finished_at: Option<Timestamp>,
+    pub finished_at: Option<Timestamp>,
 }
 
 impl NewSequencingRun {

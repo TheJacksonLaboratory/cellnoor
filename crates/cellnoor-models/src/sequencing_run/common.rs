@@ -7,6 +7,6 @@ use serde_json::Value;
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = sequencing_runs))]
 pub struct SequencingRunFields {
-    readable_id: NonEmptyString,
-    additional_data: Option<Value>,
+    pub readable_id: NonEmptyString,
+    pub additional_data: Option<Value>,
 }

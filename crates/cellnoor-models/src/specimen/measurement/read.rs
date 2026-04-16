@@ -7,9 +7,9 @@ use crate::specimen::measurement::common::SpecimenMeasurementFields;
 
 #[select]
 pub struct SpecimenMeasurement {
-    id: Uuid,
-    specimen_id: Uuid,
+    pub id: Uuid,
+    pub specimen_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: SpecimenMeasurementFields,
+    pub inner: SpecimenMeasurementFields,
 }

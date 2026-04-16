@@ -11,15 +11,15 @@ use uuid::Uuid;
 pub struct PersonUpdate {
     #[serde(skip)]
     #[cfg_attr(feature = "builder", builder(skip))]
-    id: Uuid,
-    name: Option<NonEmptyString>,
-    email: Option<NonEmptyString>,
-    microsoft_entra_oid: Option<Uuid>,
-    orcid: Option<NonEmptyString>,
-    institution_id: Option<Uuid>,
-    is_admin: Option<bool>,
-    is_biology_staff: Option<bool>,
-    is_computational_staff: Option<bool>,
+    pub id: Uuid,
+    pub name: Option<NonEmptyString>,
+    pub email: Option<NonEmptyString>,
+    pub microsoft_entra_oid: Option<Uuid>,
+    pub orcid: Option<NonEmptyString>,
+    pub institution_id: Option<Uuid>,
+    pub is_admin: Option<bool>,
+    pub is_biology_staff: Option<bool>,
+    pub is_computational_staff: Option<bool>,
 }
 impl PersonUpdate {
     pub fn set_id(&mut self, id: Uuid) {

@@ -12,7 +12,7 @@ use crate::library::LibrarySummary;
 pub struct SequencedLibrary {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    summary: LibrarySummary,
+    pub summary: LibrarySummary,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
-    submitted_at: Timestamp,
+    pub submitted_at: Timestamp,
 }

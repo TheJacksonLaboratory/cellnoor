@@ -62,8 +62,7 @@ jobs:
       CELLNOOR_DB_NAME: postgres
       CELLNOOR_JWT_ISSUER: ""
       CELLNOOR_JWT_AUDIENCE: ""
-      CELLNOOR_API_HOST: localhost
-      CELLNOOR_API_PORT: 8000
+      CELLNOOR_API_ADDRESS: "localhost:8000"
     services:
       postgres:
         image: postgres:18-alpine

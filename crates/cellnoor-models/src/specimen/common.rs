@@ -35,23 +35,23 @@ impl_enum_to_sql!(Species);
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = specimens))]
 pub struct SpecimenCommonFields {
-    pub(super) readable_id: NonEmptyString,
-    pub(super) name: NonEmptyString,
-    pub(super) submitted_by: Uuid,
+    pub readable_id: NonEmptyString,
+    pub name: NonEmptyString,
+    pub submitted_by: Uuid,
     #[cfg_attr(feature = "app", diesel(
         serialize_as = jiff_diesel::Timestamp,
         deserialize_as = jiff_diesel::Timestamp
     ))]
-    pub(super) received_at: Timestamp,
-    pub(super) project_id: Uuid,
-    pub(super) species: Species,
-    pub(super) host_species: Option<Species>,
-    pub(super) returned_by: Option<Uuid>,
+    pub received_at: Timestamp,
+    pub project_id: Uuid,
+    pub species: Species,
+    pub host_species: Option<Species>,
+    pub returned_by: Option<Uuid>,
     #[cfg_attr(feature = "app", diesel(
         serialize_as = jiff_diesel::NullableTimestamp,
         deserialize_as = jiff_diesel::NullableTimestamp
     ))]
-    pub(super) returned_at: Option<Timestamp>,
-    pub(super) tissue: NonEmptyString,
-    pub(super) additional_data: Option<Value>,
+    pub returned_at: Option<Timestamp>,
+    pub tissue: NonEmptyString,
+    pub additional_data: Option<Value>,
 }

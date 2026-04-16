@@ -6,5 +6,5 @@ use non_empty::NonEmptyString;
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = projects))]
 pub struct ProjectFields {
-    pub(super) name: NonEmptyString,
+    pub name: NonEmptyString,
 }

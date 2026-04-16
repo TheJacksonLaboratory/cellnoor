@@ -13,8 +13,8 @@ use crate::utils::{EnumFromSql, EnumToSql};
 #[cfg_attr(feature = "app", derive(AsChangeset))]
 #[cfg_attr(feature = "app", diesel(table_name = multiplexing_tags))]
 pub struct MultiplexingTagFields {
-    tag_id: NonEmptyString,
-    type_: MultiplexingTagType,
+    pub tag_id: NonEmptyString,
+    pub type_: MultiplexingTagType,
 }
 
 #[simple_enum]

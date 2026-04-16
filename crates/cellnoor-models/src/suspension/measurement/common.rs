@@ -15,13 +15,13 @@ use crate::utils::{EnumFromSql, EnumToSql, JsonFromSql, JsonToSql};
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = suspension_measurements), schemars(inline))]
 pub struct SuspensionMeasurementFields {
-    measured_by: Uuid,
+    pub measured_by: Uuid,
     #[cfg_attr(feature = "app", diesel(
         serialize_as = jiff_diesel::Timestamp,
         deserialize_as = jiff_diesel::Timestamp
     ))]
-    measured_at: Timestamp,
-    data: SuspensionMeasurementData,
+    pub measured_at: Timestamp,
+    pub data: SuspensionMeasurementData,
 }
 
 impl SuspensionMeasurementFields {
@@ -72,10 +72,10 @@ impl_json_to_sql!(SuspensionMeasurementData);
 #[json]
 #[cfg_attr(feature = "app", schemars(rename = "SuspensionConcentration"))]
 pub struct Concentration {
-    counting_method: Option<CountingMethod>,
-    value: u32,
-    numerator_unit: SuspensionContent,
-    denominator_unit: Milliliter,
+    pub counting_method: Option<CountingMethod>,
+    pub value: u32,
+    pub numerator_unit: SuspensionContent,
+    pub denominator_unit: Milliliter,
 }
 
 impl Concentration {
@@ -86,7 +86,7 @@ impl Concentration {
 
 #[json]
 pub struct Viability {
-    value: RangedF32<0, 1>,
+    pub value: RangedF32<0, 1>,
 }
 
 impl Viability {
@@ -98,15 +98,15 @@ impl Viability {
 #[json]
 #[cfg_attr(feature = "app", schemars(rename = "SuspensionVolume"))]
 pub struct Volume {
-    value: RangedF32<0, { u32::MAX }>,
-    unit: Microliter,
+    pub value: RangedF32<0, { u32::MAX }>,
+    pub unit: Microliter,
 }
 
 #[json]
 pub struct MeanDiameter {
-    value: RangedF32<0, { u32::MAX }>,
-    object: SuspensionContent,
-    unit: Micrometer,
+    pub value: RangedF32<0, { u32::MAX }>,
+    pub object: SuspensionContent,
+    pub unit: Micrometer,
 }
 
 impl MeanDiameter {
@@ -116,7 +116,7 @@ impl MeanDiameter {
 }
 
 #[simple_enum]
-enum CountingMethod {
+pub enum CountingMethod {
     BrightField,
     AcridineOrangePropidiumIodide,
     TrypanBlue,

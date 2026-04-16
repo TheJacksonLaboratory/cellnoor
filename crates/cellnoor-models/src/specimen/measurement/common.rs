@@ -13,13 +13,13 @@ use crate::utils::{JsonFromSql, JsonToSql};
 #[insert_select]
 #[cfg_attr(feature = "app", diesel(table_name = specimen_measurements), schemars(inline))]
 pub struct SpecimenMeasurementFields {
-    measured_by: Uuid,
+    pub measured_by: Uuid,
     #[cfg_attr(feature = "app", diesel(
         serialize_as = jiff_diesel::Timestamp,
         deserialize_as = jiff_diesel::Timestamp
     ))]
-    measured_at: Timestamp,
-    data: SpecimenMeasurementData,
+    pub measured_at: Timestamp,
+    pub data: SpecimenMeasurementData,
 }
 
 impl SpecimenMeasurementFields {

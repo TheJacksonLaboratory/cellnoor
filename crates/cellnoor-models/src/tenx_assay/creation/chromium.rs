@@ -15,13 +15,13 @@ use crate::tenx_assay::common::{
 pub struct NewChromiumAssay {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: TenxAssayFields,
-    sample_multiplexing: SampleMultiplexing,
-    chromium_chip: NonEmptyString,
+    pub inner: TenxAssayFields,
+    pub sample_multiplexing: SampleMultiplexing,
+    pub chromium_chip: NonEmptyString,
     #[cfg_attr(feature = "app", diesel(serialize_as = Vec<NonEmptyString>))]
-    cmdlines: NonEmptyVec<NonEmptyString, { usize::MAX }>,
+    pub cmdlines: NonEmptyVec<NonEmptyString, { usize::MAX }>,
     #[cfg_attr(feature = "app", diesel(skip_insertion, skip_update))]
-    library_type_specifications: NonEmptyVec<LibraryTypeSpecification, { usize::MAX }>,
+    pub library_type_specifications: NonEmptyVec<LibraryTypeSpecification, { usize::MAX }>,
 }
 
 impl NewChromiumAssay {

@@ -11,30 +11,30 @@ use crate::{cdna::CdnaSummary, library::common::LibraryFields};
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = libraries, base_query = libraries::table.inner_join(cdna::table)))]
 pub struct LibrarySummary {
-    id: Uuid,
-    project_id: Uuid,
+    pub id: Uuid,
+    pub project_id: Uuid,
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    inner: LibraryFields,
-    number_of_sample_index_pcr_cycles: i32,
-    target_reads_per_cell: Option<i64>,
+    pub inner: LibraryFields,
+    pub number_of_sample_index_pcr_cycles: i32,
+    pub target_reads_per_cell: Option<i64>,
     #[cfg_attr(feature = "app", diesel(deserialize_as = jiff_diesel::Timestamp))]
-    prepared_at: Timestamp,
+    pub prepared_at: Timestamp,
     #[cfg_attr(feature = "app", diesel(embed))]
-    links: LibraryLinks,
+    pub links: LibraryLinks,
 }
 
 #[select]
 #[cfg_attr(feature = "app", diesel(table_name = libraries))]
 pub struct LibraryLinks {
     #[serde(rename = "self")]
-    self_link: String,
+    pub self_link: String,
     #[serde(rename = "measurements")]
-    measurements_link: String,
+    pub measurements_link: String,
     #[serde(rename = "sequencing_runs")]
-    sequencing_runs_link: String,
+    pub sequencing_runs_link: String,
     #[serde(rename = "chromium_datasets")]
-    chromium_datasets_link: String,
+    pub chromium_datasets_link: String,
 }
 
 impl LibrarySummary {
@@ -59,9 +59,9 @@ impl LibrarySummary {
 pub struct Library {
     #[serde(flatten)]
     #[cfg_attr(feature = "app", diesel(embed))]
-    summary: LibrarySummary,
+    pub summary: LibrarySummary,
     #[cfg_attr(feature = "app", diesel(embed))]
-    cdna: CdnaSummary,
+    pub cdna: CdnaSummary,
 }
 
 impl Library {
