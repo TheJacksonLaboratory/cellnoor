@@ -92,7 +92,7 @@ impl Config {
         } = self;
 
         let base = "postgres://";
-        let db_spec = format!("{db_host}:{db_port}/{db_name}");
+        let db_spec = format!("/{db_name}?host={db_host}&port={db_port}");
 
         match database_user {
             DatabaseUser::Root => format!(
