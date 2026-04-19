@@ -1,44 +1,44 @@
 # This is the base compose file. Merge this with one of compose.dev.yaml of compose.prod.yaml to produce a running
 # application with the following command:
 # docker compose --file compose.yaml --file compose.dev.yaml
-services:
-  &db_host db:
-    image: postgres:18-alpine
-    restart: always
-    user: &db_root_user postgres
-    secrets: ["db_root_user_password"]
-    environment:
-      POSTGRES_USER: *db_root_user
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_root_user_password
-      POSTGRES_DB: &db_name cellnoor
-      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
-    pull_policy: always
-    healthcheck:
-      test: pg_isready --dbname cellnoor || exit 1
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    volumes: ["db-data:/var/lib/postgresql", "db-socket:/var/run/postgresql"]
-  migrate:
-    image: migrate/migrate
-    depends_on:
-      db:
-        condition: service_healthy
-    command:
-      [
-        "-path",
-        "/migrations",
-        "-database",
-        "postgresql://postgres@/cellnoor?host=/var/run/postgresql",
-        "up",
-      ]
-    volumes: ["./db/migrations:/migrations", "db-socket:/var/run/postgresql"]
+
+# Shared resources
 volumes:
   db-data:
   db-socket:
 secrets:
   db_root_user_password:
     environment: CELLNOOR_DB_ROOT_USER_PASSWORD
+  app_user_password:
+    environment: CELLNOOR_APP_USER_PASSWORD
+  auth_user_password:
+    environment: CELLNOOR_AUTH_USER_PASSWORD
+services:
+  db:
+    image: postgres:18-alpine
+    restart: always
+    secrets: [db_root_user_password, app_user_password, auth_user_password]
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_root_user_password
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_INITDB_ARGS: --auth=scram-sha-256
+    pull_policy: weekly
+    healthcheck:
+      test: pg_isready || exit 1
+      interval: 1s
+      timeout: 5s
+      retries: 30
+    volumes: [db-data:/var/lib/postgresql, db-socket:/var/run/postgresql]
+  migrate:
+    image: migrate/migrate
+    secrets: [db_root_user_password]
+    depends_on:
+      db:
+        condition: service_healthy
+    # We override the entrypoint to pass in the password file
+    entrypoint: /bin/sh -c 'migrate -path /migrations -database postgresql://postgres:$(cat /run/secrets/db_root_user_password)@/?host=/var/run/postgresql up'
+    volumes: [./db/migrations:/migrations, db-socket:/var/run/postgresql]
+    volumes_from: [db]
   # cellnoor_api_db_password:
   #   environment: CELLNOOR_API_DB_PASSWORD
   # cellnoor_ui_db_password:
