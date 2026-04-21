@@ -3006,17 +3006,12 @@ export interface components {
         CdnaMeasurement: {
             /** Format: uuid */
             cdna_id: string;
-            concentration?: unknown;
             /** Format: uuid */
             id: string;
-            instrument_name?: unknown;
-            mean_size_bp?: unknown;
             /** Format: date-time */
             measured_at: string;
             /** Format: uuid */
             measured_by: string;
-            sizing_range?: unknown;
-            type?: unknown;
         } & ({
             concentration: components["schemas"]["NucleicAcidConcentrationPicogram"];
             instrument_name: string;
@@ -3378,19 +3373,14 @@ export interface components {
             sequencing_runs: string;
         };
         LibraryMeasurement: {
-            concentration?: unknown;
             /** Format: uuid */
             id: string;
-            instrument_name?: unknown;
             /** Format: uuid */
             library_id: string;
-            mean_size_bp?: unknown;
             /** Format: date-time */
             measured_at: string;
             /** Format: uuid */
             measured_by: string;
-            sizing_range?: unknown;
-            type?: unknown;
         } & ({
             concentration: components["schemas"]["NucleicAcidConcentrationPicogram"];
             instrument_name: string;
@@ -3715,66 +3705,7 @@ export interface components {
         } & components["schemas"]["NewRnaExtract"]) | ({
             /** @constant */
             type: "suspension";
-        } & ({
-            additional_data?: unknown;
-            fixative: components["schemas"]["Fixative"];
-            host_species?: components["schemas"]["Species"] | null;
-            name: string;
-            /** @constant */
-            preservation_state: "fixed";
-            /** Format: uuid */
-            project_id: string;
-            readable_id: string;
-            /** Format: date-time */
-            received_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
-            species: components["schemas"]["Species"];
-            /** Format: uuid */
-            submitted_by: string;
-            tissue: string;
-        } | {
-            additional_data?: unknown;
-            host_species?: components["schemas"]["Species"] | null;
-            name: string;
-            /** @constant */
-            preservation_state: "fresh";
-            /** Format: uuid */
-            project_id: string;
-            readable_id: string;
-            /** Format: date-time */
-            received_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
-            species: components["schemas"]["Species"];
-            /** Format: uuid */
-            submitted_by: string;
-            tissue: string;
-        } | {
-            additional_data?: unknown;
-            host_species?: components["schemas"]["Species"] | null;
-            name: string;
-            /** @constant */
-            preservation_state: "thermally_preserved";
-            /** Format: uuid */
-            project_id: string;
-            readable_id: string;
-            /** Format: date-time */
-            received_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
-            species: components["schemas"]["Species"];
-            /** Format: uuid */
-            submitted_by: string;
-            thermal_preservation_method: components["schemas"]["SuspensionThermalPreservation"];
-            tissue: string;
-        })) | ({
+        } & components["schemas"]["NewSuspensionSpecimen"]) | ({
             /** @constant */
             type: "tissue";
         } & components["schemas"]["NewTissue"]);
@@ -3825,6 +3756,50 @@ export interface components {
             preparer_ids: string[];
             readable_id: string;
             suspensions: string[];
+        };
+        NewSuspensionSpecimen: {
+            additional_data?: unknown;
+            fixative: components["schemas"]["Fixative"];
+            host_species?: components["schemas"]["Species"] | null;
+            name: string;
+            /** @constant */
+            preservation_state: "fixed";
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            tissue: string;
+        } | ({
+            /** @constant */
+            preservation_state: "fresh";
+        } & components["schemas"]["SpecimenCommonFields"]) | {
+            additional_data?: unknown;
+            host_species?: components["schemas"]["Species"] | null;
+            name: string;
+            /** @constant */
+            preservation_state: "thermally_preserved";
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            thermal_preservation_method: components["schemas"]["SuspensionThermalPreservation"];
+            tissue: string;
         };
         NewTissue: {
             additional_data?: unknown;
@@ -4118,6 +4093,24 @@ export interface components {
             thermal_preservation_method?: components["schemas"]["ThermalPreservationMethod"] | null;
             tissue: string;
             type_: components["schemas"]["SpecimenType"];
+        };
+        SpecimenCommonFields: {
+            additional_data?: unknown;
+            host_species?: components["schemas"]["Species"] | null;
+            name: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            tissue: string;
         };
         SpecimenFilter: {
             additional_data?: unknown;
@@ -4653,6 +4646,7 @@ export type NewSequencingRun = components['schemas']['NewSequencingRun'];
 export type NewSpecimen = components['schemas']['NewSpecimen'];
 export type NewSuspension = components['schemas']['NewSuspension'];
 export type NewSuspensionPool = components['schemas']['NewSuspensionPool'];
+export type NewSuspensionSpecimen = components['schemas']['NewSuspensionSpecimen'];
 export type NewTissue = components['schemas']['NewTissue'];
 export type NucleicAcidConcentrationNanogram = components['schemas']['NucleicAcidConcentrationNanogram'];
 export type NucleicAcidConcentrationPicogram = components['schemas']['NucleicAcidConcentrationPicogram'];
@@ -4680,6 +4674,7 @@ export type SequencingRun = components['schemas']['SequencingRun'];
 export type SequencingRunLinks = components['schemas']['SequencingRunLinks'];
 export type Species = components['schemas']['Species'];
 export type Specimen = components['schemas']['Specimen'];
+export type SpecimenCommonFields = components['schemas']['SpecimenCommonFields'];
 export type SpecimenFilter = components['schemas']['SpecimenFilter'];
 export type SpecimenLinks = components['schemas']['SpecimenLinks'];
 export type SpecimenMeasurement = components['schemas']['SpecimenMeasurement'];
