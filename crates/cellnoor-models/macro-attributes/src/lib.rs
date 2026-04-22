@@ -79,7 +79,6 @@ pub fn insert_select(_attr: TokenStream, input: TokenStream) -> TokenStream {
         #base_derives
         #insertable
         #has_query
-        #[serde(deny_unknown_fields)]
         #check_for_backend
         #builder
         #input
@@ -101,7 +100,6 @@ pub fn insert(_attr: TokenStream, input: TokenStream) -> TokenStream {
         #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
         #base_derives
         #insertable
-        #[serde(deny_unknown_fields)]
         #check_for_backend
         #builder
         #input
@@ -140,7 +138,6 @@ pub fn select(_attr: TokenStream, input: TokenStream) -> TokenStream {
         #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
         #base_derives
         #has_query
-        #[serde(deny_unknown_fields)]
         #check_for_backend
         #input
     }
@@ -158,7 +155,6 @@ pub fn update(_attr: TokenStream, input: TokenStream) -> TokenStream {
         #[derive(::serde::Deserialize)]
         #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
         #base_derives
-        #[serde(deny_unknown_fields)]
         #[cfg_attr(feature = "app", derive(::diesel::AsChangeset, ::diesel::Identifiable))]
         #check_for_backend
         #input
