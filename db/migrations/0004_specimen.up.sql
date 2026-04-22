@@ -1,17 +1,15 @@
-create table specimens (
+create table specimen (
     id uuid primary key default uuidv7(),
     readable_id case_insensitive_text unique not null,
-    links jsonb generated always as (
-        construct_links('specimens', id, '{"measurements", "suspensions", "chromium_datasets"}')
-    ) stored not null,
+    links simple_links generated always as (row('/specimens/' || id)) stored not null,
     name case_insensitive_text not null,
-    submitted_by uuid references people on delete restrict on update restrict not null,
-    project_id uuid references projects on delete restrict on update restrict not null,
+    submitted_by uuid references person not null,
+    project_id uuid references project not null,
     received_at timestamptz not null,
     species case_insensitive_text not null,
     host_species case_insensitive_text,
     returned_at timestamptz,
-    returned_by uuid references people on delete restrict on update restrict,
+    returned_by uuid references person,
     type case_insensitive_text not null,
     embedded_in case_insensitive_text,
     fixative case_insensitive_text,
@@ -24,17 +22,17 @@ create table specimens (
 );
 
 create table committee_approval (
-    institution_id uuid references institutions on delete restrict on update restrict not null,
-    specimen_id uuid references specimens on delete restrict on update restrict not null,
+    organization_id uuid references organization on delete cascade not null,
+    specimen_id uuid references specimen on delete cascade not null,
     committee_type case_insensitive_text not null,
     compliance_identifier case_insensitive_text not null,
-    primary key (institution_id, committee_type, specimen_id)
+    primary key (organization_id, specimen_id, committee_type)
 );
 
-create table specimen_measurements (
+create table specimen_measurement (
     id uuid primary key default uuidv7(),
-    specimen_id uuid not null references specimens on delete restrict on update restrict,
-    measured_by uuid not null references people on delete restrict on update restrict,
+    specimen_id uuid references specimen on delete cascade not null,
+    measured_by uuid references person not null,
     measured_at timestamptz not null,
     data jsonb not null,
 

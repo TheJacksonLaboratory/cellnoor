@@ -1,11 +1,10 @@
 create table cdna (
     id uuid primary key default uuidv7(),
     readable_id case_insensitive_text unique not null,
-    links jsonb generated always as (construct_links('cdna', id, '{"measurements", "libraries"}')) stored not null,
+    links simple_links generated always as (row('/cdna/' || id)) stored not null,
     library_type case_insensitive_text not null,
     prepared_at timestamptz not null,
-    gem_pool_id uuid references gem_pools on delete restrict on update restrict,
-    project_id uuid references projects on delete restrict on update restrict not null,
+    gem_pool_id uuid references gem_pool,
     n_amplification_cycles integer not null,
     additional_data jsonb,
 
@@ -13,18 +12,18 @@ create table cdna (
     unique (gem_pool_id, library_type)
 );
 
-create table cdna_measurements (
+create table cdna_measurement (
     id uuid primary key default uuidv7(),
-    cdna_id uuid references cdna on delete restrict on update restrict not null,
-    measured_by uuid references people on delete restrict on update restrict not null,
+    cdna_id uuid references cdna on delete cascade not null,
+    measured_by uuid references person not null,
     measured_at timestamptz not null,
     data jsonb not null,
 
     unique (cdna_id, measured_by, measured_at, data)
 );
 
-create table cdna_preparers (
-    cdna_id uuid references cdna on delete restrict on update restrict not null,
-    prepared_by uuid references people on delete restrict on update restrict not null,
+create table cdna_preparer (
+    cdna_id uuid references cdna on delete cascade not null,
+    prepared_by uuid references person not null,
     primary key (cdna_id, prepared_by)
 );

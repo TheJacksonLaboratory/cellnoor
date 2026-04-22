@@ -35,8 +35,8 @@ create or replace function create_user_with_password_from_file(
     end;
 $$;
 
--- -- The app's connection pool is logged in as 'app_user'. Once the app grabs a connection and begins an operation, it
--- -- executed `set local role 'username'` to allow for permissions-checking
+-- The app's connection pool is logged in as 'app_user'. Once the app grabs a connection and begins an operation, it
+-- executes `set local role 'username'` to allow for permissions-checking
 select create_user_with_password_from_file('app_user', '/run/secrets/app_user_password');
 
 -- 'auth_user' creates users and API keys, but cannot do anything else
@@ -44,3 +44,8 @@ select create_user_with_password_from_file('auth_user', '/run/secrets/auth_user_
 
 create collation case_insensitive (provider = icu, deterministic = false, locale = 'en-u-ks-level1');
 create domain case_insensitive_text as text collate case_insensitive;
+
+-- Most resources only have need one link called self, so create a common type for them
+create type simple_links as (
+    self text
+);

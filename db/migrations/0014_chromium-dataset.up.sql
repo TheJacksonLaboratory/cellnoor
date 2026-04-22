@@ -1,69 +1,58 @@
-create table chromium_datasets (
-    id uuid primary key default uuidv7(),
-    links jsonb default '{}' not null,
-    name case_insensitive_text not null,
-    project_id uuid references projects on delete restrict on update restrict not null,
-    delivered_at timestamptz not null,
-
-    unique (name, project_id)
+create type chromium_dataset_links as (
+    self text,
+    raw_files text[],
+    parsed_files text[]
 );
 
-create table chromium_dataset_libraries (
-    dataset_id uuid references chromium_datasets on delete restrict on update restrict not null,
-    library_id uuid references libraries on delete restrict on update restrict not null,
+create table chromium_dataset (
+    id uuid primary key default uuidv7(),
+    -- You can't reference another column in a default expression, and you can't reference other tables in a generated column, so we just use triggers for this one
+    links chromium_dataset_links default (null, '{}', '{}') not null,
+    name case_insensitive_text not null,
+    delivered_at timestamptz not null
+);
+
+-- We don't actually store the content of the files in the database, just the path, so we can do permissions checks.
+-- The actual files are stored on the server and served statically by caddy :)
+create table chromium_dataset_raw_file (
+    dataset_id uuid references chromium_dataset on delete cascade not null,
+    path case_insensitive_text not null,
+    primary key (dataset_id, path)
+);
+
+create function update_chromium_dataset_raw_file_links() returns trigger language plpgsql volatile strict as $$
+    begin
+        update chromium_dataset set links.self = id, links.raw_files = array(select distinct unnest(links.raw_files || ('/chromium-datasets/' ||
+            id || '/raw-files/' || new.path)) order by 1) where id = new.dataset_id;
+        return new;
+    end;
+$$;
+
+create trigger append_raw_file_link after insert on chromium_dataset_raw_file for each row execute function
+update_chromium_dataset_raw_file_links();
+
+-- Some files can be parsed into JSON, so we store those
+create table chromium_dataset_parsed_file (
+    dataset_id uuid references chromium_dataset on delete cascade not null,
+    path case_insensitive_text not null,
+    data jsonb not null,
+    primary key (dataset_id, path),
+    foreign key (dataset_id, path) references chromium_dataset_raw_file on delete cascade
+);
+
+create function update_chromium_dataset_parsed_file_links() returns trigger language plpgsql volatile strict as $$
+    begin
+        update chromium_dataset set links.parsed_files = array(select distinct unnest(links.parsed_files || ('/chromium-datasets/' ||
+            id || '/parsed-files/' || new.path)) order by 1) where id = new.dataset_id;
+        return new;
+    end;
+$$;
+
+create trigger append_file_link after insert on chromium_dataset_parsed_file for each row execute function
+update_chromium_dataset_parsed_file_links();
+
+create table chromium_dataset_library (
+    dataset_id uuid references chromium_dataset on delete cascade not null,
+    library_id uuid references library not null,
     primary key (dataset_id, library_id)
 );
-
-create table chromium_dataset_metrics_files (
-    dataset_id uuid references chromium_datasets on delete restrict on update restrict not null,
-    directory case_insensitive_text not null,
-    filename case_insensitive_text not null,
-    content_type case_insensitive_text not null,
-    raw_content bytea not null,
-    parsed_data jsonb not null,
-    primary key (dataset_id, directory, filename)
-);
-
-create table chromium_dataset_web_summaries (
-    dataset_id uuid references chromium_datasets on delete restrict on update restrict not null,
-    directory case_insensitive_text not null,
-    filename case_insensitive_text not null,
-    content bytea not null,
-    primary key (dataset_id, directory, filename)
-);
-
-create function initialize_chromium_dataset_links() returns trigger language plpgsql volatile strict as $$
-    begin
-        new.links = json_object(
-            'self': '/chromium-datasets/' || new.id,
-            'specimens': '/chromium-datasets/' || new.id || '/specimens',
-            'libraries': '/chromium-datasets/' || new.id || '/libraries',
-            'web_summaries': jsonb_build_array(),
-            'metrics': jsonb_build_array()
-        );
-        return new;
-    end;
-$$;
-
-create function update_web_summaries_links() returns trigger language plpgsql volatile strict as $$
-    begin
-        update chromium_datasets set links = jsonb_set(links, '{web_summaries}', links -> 'web_summaries' || jsonb_build_array('/chromium-datasets/' || id || '/web-summaries/' || new.directory || '/' || new.filename)) where id = new.dataset_id;
-        return new;
-    end;
-$$;
-
-create function update_metrics_files_links() returns trigger language plpgsql volatile strict as $$
-    begin
-        update chromium_datasets set links = jsonb_set(links, '{metrics}', links -> 'metrics' || jsonb_build_array('/chromium-datasets/' || id || '/metrics/' || new.directory || '/' || new.filename)) where id = new.dataset_id;
-        return new;
-    end;
-$$;
-
-create trigger insert_links before insert on chromium_datasets for each row execute function
-initialize_chromium_dataset_links();
-
-create trigger append_web_summary_link after insert on chromium_dataset_web_summaries for each row execute function
-update_web_summaries_links();
-
-create trigger append_metrics_file_link after insert on chromium_dataset_metrics_files for each row execute function
-update_metrics_files_links();

@@ -1,28 +1,27 @@
-create table chromium_runs (
+create table chromium_run (
     id uuid primary key default uuidv7(),
     readable_id case_insensitive_text unique not null,
-    links jsonb generated always as (construct_links('chromium-runs', id)) stored not null,
-    assay_id uuid references tenx_assays on delete restrict on update restrict not null,
-    project_id uuid references projects on delete restrict on update restrict not null,
+    links simple_links generated always as (row('/chromium-runs/' || id)) stored not null,
+    assay_id uuid references tenx_assay not null,
     run_at timestamptz not null,
-    run_by uuid references people on delete restrict on update restrict not null,
+    run_by uuid references person not null,
     succeeded boolean not null,
     additional_data jsonb
 );
 
-create table gem_pools (
+create table gem_pool (
     id uuid primary key default uuidv7(),
-    links jsonb generated always as (construct_links('gem-pools', id)) stored not null,
     readable_id case_insensitive_text unique not null,
-    chromium_run_id uuid not null references chromium_runs on delete restrict on update restrict
+    chromium_run_id uuid references chromium_run on delete cascade not null
 );
 
-create table chip_loadings (
+create table chip_loading (
     id uuid primary key default uuidv7(),
-    gem_pool_id uuid references gem_pools on delete restrict on update restrict not null,
-    suspension_id uuid references suspensions on delete restrict on update restrict,
+    gem_pool_id uuid references gem_pool on delete cascade not null,
+    suspension_id uuid references suspension on delete cascade,
+    -- There are only 4 allowed OCM barcode IDs, but we let the application restrict this so there is only one source of truth
     ocm_barcode_id case_insensitive_text,
-    suspension_pool_id uuid references suspension_pools on delete restrict on update restrict,
+    suspension_pool_id uuid references suspension_pool on delete cascade,
     suspension_volume_loaded jsonb not null,
     buffer_volume_loaded jsonb not null,
     additional_data jsonb,

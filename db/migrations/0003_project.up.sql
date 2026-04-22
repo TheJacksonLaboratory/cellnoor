@@ -14,8 +14,11 @@ create table project (
     constraint starts_before_ends check (started_at < ended_at)
 );
 
-create table project_people (
-    project_id uuid references project on delete cascade on update cascade not null,
-    person_id uuid references people on delete cascade on update cascade not null,
-    primary key (project_id, person_id)
+create table project_access (
+    project_id uuid references project on delete cascade not null,
+    person_id uuid references person,
+    api_key_id uuid references api_key,
+    primary key (project_id, person_id, api_key_id),
+
+    constraint has_person_or_api_key check ((person_id is null) != (api_key_id is null))
 );

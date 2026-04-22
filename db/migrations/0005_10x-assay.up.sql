@@ -1,6 +1,6 @@
-create table tenx_assays (
+create table tenx_assay (
     id uuid primary key default uuidv7(),
-    links jsonb generated always as (construct_links('10x-assays', id)) stored not null,
+    links simple_links generated always as (row('/10x-assays/' || id)) stored not null,
     name case_insensitive_text not null,
     library_types case_insensitive_text [],
     sample_multiplexing case_insensitive_text,
@@ -26,8 +26,8 @@ create function sort_cmdlines() returns trigger language plpgsql volatile strict
     end;
 $$;
 
-create trigger sort_assay_library_types before insert or update on tenx_assays for each row execute function
+create trigger sort_assay_library_types before insert or update on tenx_assay for each row execute function
 sort_library_types();
 
-create trigger sort_assay_cmdlines before insert or update on tenx_assays for each row execute function
+create trigger sort_assay_cmdlines before insert or update on tenx_assay for each row execute function
 sort_cmdlines();
