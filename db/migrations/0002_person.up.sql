@@ -25,12 +25,15 @@ create table person (
     orcid case_insensitive_text unique
 );
 
--- better-auth infects everything, so this table has to comply with https://better-auth.com/docs/concepts/database#account. Notice that we don't include any of the sensitive fields
+-- better-auth infects everything, so this table has to comply with
+-- https://better-auth.com/docs/concepts/database#account. Notice that we don't include any of the sensitive fields,
+-- and manually delete them in our auth configuration
 create table person_account (
     id uuid primary key default uuidv7(),
 	person_id uuid references person on delete cascade not null,
-	auth_provider_id uuid not null,
-	auth_provider_user_id uuid not null,
+	auth_provider_id text not null,
+	auth_provider_user_id text not null,
+	scope text,
 	created_at timestamptz not null,
 	updated_at timestamptz not null
 );

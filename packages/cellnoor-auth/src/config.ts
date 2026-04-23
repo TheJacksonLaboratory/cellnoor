@@ -25,7 +25,8 @@ async function readSecret(name: string): Promise<string> {
 }
 
 interface Config {
-  publicUrl?: string;
+  publicAuthUrl: string;
+  publicAppUrl: string;
   unixDomainSocket?: string;
   dbPassword: string;
   dbHost: string;
@@ -58,12 +59,13 @@ export async function readConfig(): Promise<Config> {
   }
 
   return {
-    publicUrl: readEnvVar("public_url"),
+    publicAuthUrl: readRequiredEnvVar("public_auth_url"),
+    publicAppUrl: readRequiredEnvVar("public_app_url"),
     unixDomainSocket: readEnvVar("unix_domain_socket"),
     dbPassword: await readSecret("auth_db_password"),
     dbHost: readRequiredEnvVar("db_host"),
     dbPort,
-    dbName: readEnvVar("db_name"),
+    dbName: readRequiredEnvVar("db_name"),
     maxDbPoolSize,
     microsoftEntraTenantId: await readSecret("microsoft_entra_tenant_id"),
     authSecret: await readSecret("auth_secret"),

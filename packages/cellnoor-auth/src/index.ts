@@ -1,14 +1,15 @@
 import { auth } from "./auth";
 import { readConfig } from "./config";
-import signInPage from "./sign-in.html";
+import signIn from "./routes/sign-in/index.html";
 
-const { unixDomainSocket } = await readConfig();
+const { unixDomainSocket, publicAppUrl } = await readConfig();
 
 // We don't need to pass the host or port because Bun automatically picks them up from the environment if set
 Bun.serve({
   unix: unixDomainSocket,
   routes: {
-    "/sign-in": signInPage,
+    "/": signIn,
+    "/sign-in": signIn,
     "/api/auth/*": auth.handler,
   },
 });
