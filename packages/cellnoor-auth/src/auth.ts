@@ -73,9 +73,11 @@ export const auth = betterAuth({
   databaseHooks: {
     account: {
       create: {
+        // @ts-expect-error we're manually deleting fields we don't need
         before: deleteUnnecessaryAccountFields,
       },
       update: {
+        // @ts-expect-error we're manually deleting fields we don't need
         before: deleteUnnecessaryAccountFields,
       },
     },
