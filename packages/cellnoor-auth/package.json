@@ -1,0 +1,17 @@
+{
+  "name": "cellnoor-auth",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/pg": "^8.20.0"
+  },
+  "peerDependencies": {
+    "typescript": "latest"
+  },
+  "dependencies": {
+    "better-auth": "^1.6.8",
+    "pg": "^8.20.0"
+  }
+}

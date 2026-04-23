@@ -16,6 +16,7 @@ create or replace function create_role_if_not_exists(
     end;
 $$;
 
+-- We give the user a random, unguessable password so they could never sign in to the database directly
 create or replace function create_user_if_not_exists(
     user_id text
 ) returns void language plpgsql volatile strict as $$
@@ -35,12 +36,12 @@ create or replace function create_user_with_password_from_file(
     end;
 $$;
 
--- The app's connection pool is logged in as 'app_user'. Once the app grabs a connection and begins an operation, it
--- executes `set local role 'username'` to allow for permissions-checking
-select create_user_with_password_from_file('app_user', '/run/secrets/app_user_password');
+-- 'app' is the user as which the application connects. Before executing a statement, it switches to the database user representing the person
+select create_user_with_password_from_file('app', '/run/secrets/app_db_password');
 
--- 'auth_user' creates users and API keys, but cannot do anything else
-select create_user_with_password_from_file('auth_user', '/run/secrets/auth_user_password');
+
+-- 'auth_user' manages users and API keys, but cannot do anything else
+select create_user_with_password_from_file('auth', '/run/secrets/auth_db_password');
 
 create collation case_insensitive (provider = icu, deterministic = false, locale = 'en-u-ks-level1');
 create domain case_insensitive_text as text collate case_insensitive;
