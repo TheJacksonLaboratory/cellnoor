@@ -1,13 +1,30 @@
 -- We need an admin user who can populate the database, so we read this initial data from a JSON file
+-- noqa: disable=AL03
 with initial_data as (
-    select json(pg_read_file('/initial-data.json'))->'admin_organization' as admin_organization
+    select json(pg_read_file('/initial-data.json')) -> 'admin_organization' as admin_organization
 )
-insert into organization (id, name, microsoft_entra_tenant_id) select uuid_nil(), admin_organization->>'name', (admin_organization->>'microsoft_entra_tenant_id')::uuid from initial_data;
+
+insert into organization (id, name, microsoft_entra_tenant_id)
+select
+    uuid_nil(),
+    admin_organization ->> 'name',
+    (admin_organization ->> 'microsoft_entra_tenant_id')::uuid
+from initial_data;
+
 
 with initial_data as (
-    select json(pg_read_file('/initial-data.json'))->'admin' as admin_person
+    select json(pg_read_file('/initial-data.json')) -> 'admin' as admin_person
 )
-insert into person (id, name, email, organization_id, orcid) select uuid_nil(), admin_person->>'name', admin_person->>'email', uuid_nil(), admin_person->>'orcid' from initial_data;
+
+insert into person (id, name, email, organization_id, orcid)
+select
+    uuid_nil(),
+    admin_person ->> 'name',
+    admin_person ->> 'email',
+    uuid_nil(),
+    admin_person ->> 'orcid'
+from initial_data;
+-- noqa: enable=AL03
 
 -- We also need to grant permissions to the admin user
 select create_person_user_if_not_exists(uuid_nil()::text, true);

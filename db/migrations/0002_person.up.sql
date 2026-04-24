@@ -29,13 +29,14 @@ create table person (
 -- and we manually delete them in our auth configuration
 create table person_account (
     id uuid primary key default uuidv7(),
-	person_id uuid references person on delete cascade not null,
-	-- Technically, `auth_provider_id` and `auth_provider_user_id` should be 'not null', but we leave them nullable so we can insert the admin user without knowing these things
-	auth_provider_name text not null,
-	auth_provider_user_id text not null,
-	scope text,
-	created_at timestamptz not null default now(),
-	updated_at timestamptz not null default now()
+    person_id uuid references person on delete cascade not null,
+    -- Technically, `auth_provider_id` and `auth_provider_user_id` should be 'not null', but we leave them nullable so
+    -- we can insert the admin user without knowing these things
+    auth_provider_name text not null,
+    auth_provider_user_id text not null,
+    scope text,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
 );
 
 -- It would be nice to use better-auth's built-in utility for "organization-owned API keys", but it doesn't really work
@@ -45,7 +46,7 @@ create table service_account (
     name text not null,
     description text,
     owned_by uuid references person_account not null,
-   	created_at timestamptz not null
+    created_at timestamptz not null
 );
 
 create table service_account_access (

@@ -36,7 +36,8 @@ create or replace function create_user_with_password_from_file(
     end;
 $$;
 
--- 'app' is the user as which the main application connects. Before executing a statement, it switches to the database user representing the person (or API key)
+-- 'app' is the user as which the main application connects. Before executing a statement, it switches to the database
+-- user representing the person (or API key)
 select create_user_with_password_from_file('app', '/run/secrets/app_db_password');
 
 -- 'auth' manages users and API keys, but cannot do anything else
