@@ -6,7 +6,6 @@ create type project_links as (
 
 create table project (
     id uuid primary key default uuidv7(),
-    links project_links generated always as (('/projects/' || id, '/projects/' || id || '/specimens', '/projects/' || id || '/chromium-datasets')) stored not null,
     name case_insensitive_text unique not null,
     started_at timestamptz not null,
     ended_at timestamptz not null,

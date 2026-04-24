@@ -14,7 +14,6 @@ create type person_links as (
 -- anymore. The first John Doe's email becomes `null`, with john.doe@jax.org now belonging to the new John Doe
 create table person (
     id uuid primary key default uuidv7(),
-    links person_links generated always as (('/people/' || id, '/people/' || id || '/projects', '/people/' || id || '/specimens')) stored not null,
     name case_insensitive_text not null,
     email case_insensitive_text unique,
     email_verified boolean not null default false,

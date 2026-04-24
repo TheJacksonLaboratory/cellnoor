@@ -1,7 +1,6 @@
 create table specimen (
     id uuid primary key default uuidv7(),
     readable_id case_insensitive_text unique not null,
-    links simple_links generated always as (row('/specimens/' || id)) stored not null,
     name case_insensitive_text not null,
     submitted_by uuid references person not null,
     project_id uuid references project not null,

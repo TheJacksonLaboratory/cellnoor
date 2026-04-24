@@ -1,6 +1,5 @@
 create table library (
     id uuid primary key default uuidv7(),
-    links simple_links generated always as (row('/libraries/' || id)) stored not null,
     readable_id case_insensitive_text unique not null,
     cdna_id uuid references cdna not null,
     single_index_set_name case_insensitive_text references single_index_set,

@@ -3,7 +3,7 @@ import { createAuthClient } from "better-auth/client";
 const authClient = createAuthClient();
 
 const redirectTo = window.location.search
-  ? new URL(window.location.search).searchParams.get("redirect_to")
+  ? new URLSearchParams(window.location.search).get("redirect_to")
   : "/";
 
 async function signInWithMicrosoft() {

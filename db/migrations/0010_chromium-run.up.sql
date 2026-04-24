@@ -1,7 +1,6 @@
 create table chromium_run (
     id uuid primary key default uuidv7(),
     readable_id case_insensitive_text unique not null,
-    links simple_links generated always as (row('/chromium-runs/' || id)) stored not null,
     assay_id uuid references tenx_assay not null,
     run_at timestamptz not null,
     run_by uuid references person not null,

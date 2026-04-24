@@ -1,15 +1,14 @@
+create table chromium_dataset (
+    id uuid primary key default uuidv7(),
+    name case_insensitive_text not null,
+    delivered_at timestamptz not null
+);
+
+-- These are more complicated to compute, so we compute them on-demand in the view rather than storing them in the table
 create type chromium_dataset_links as (
     self text,
     raw_files text[],
     parsed_files text[]
-);
-
-create table chromium_dataset (
-    id uuid primary key default uuidv7(),
-    -- You can't reference another column in a default expression, and you can't reference other tables in a generated column, so we just use triggers for this one
-    links chromium_dataset_links default (null, '{}', '{}') not null,
-    name case_insensitive_text not null,
-    delivered_at timestamptz not null
 );
 
 -- We don't actually store the content of the files in the database, just the path, so we can do permissions checks.
@@ -33,7 +32,7 @@ update_chromium_dataset_raw_file_links();
 
 -- Some files can be parsed into JSON, so we store those
 create table chromium_dataset_parsed_file (
-    dataset_id uuid references chromium_dataset on delete cascade not null,
+    dataset_id uuid not null,
     path case_insensitive_text not null,
     data jsonb not null,
     primary key (dataset_id, path),

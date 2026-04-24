@@ -1,7 +1,6 @@
 create table cdna (
     id uuid primary key default uuidv7(),
     readable_id case_insensitive_text unique not null,
-    links simple_links generated always as (row('/cdna/' || id)) stored not null,
     library_type case_insensitive_text not null,
     prepared_at timestamptz not null,
     gem_pool_id uuid references gem_pool,

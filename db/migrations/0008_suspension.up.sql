@@ -1,6 +1,5 @@
 create table suspension (
     id uuid primary key default uuidv7(),
-    links simple_links generated always as (row('/suspensions/' || id)) stored not null,
     readable_id case_insensitive_text unique not null,
     specimen_id uuid references specimen not null,
     content case_insensitive_text not null,

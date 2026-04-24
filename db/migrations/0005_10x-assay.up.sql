@@ -1,6 +1,5 @@
 create table tenx_assay (
     id uuid primary key default uuidv7(),
-    links simple_links generated always as (row('/10x-assays/' || id)) stored not null,
     name case_insensitive_text not null,
     library_types case_insensitive_text [],
     sample_multiplexing case_insensitive_text,
