@@ -41,6 +41,7 @@ services:
       [
         &db_data_volume db-data:/var/lib/postgresql,
         &db_socket_volume db-socket:/var/run/postgresql,
+        ./initial-data.json:/initial-data.json,
       ]
   migrate:
     image: migrate/migrate

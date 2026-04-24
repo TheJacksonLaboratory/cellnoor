@@ -18,35 +18,55 @@ $$;
 
 -- We give the user a random, unguessable password so they could never sign in to the database directly
 create or replace function create_user_if_not_exists(
-    user_id text
+    username text
 ) returns void language plpgsql volatile strict as $$
     begin
-        perform create_role_if_not_exists(user_id);
-        execute format('alter role %I with login password %L', user_id, uuidv7());
+        perform create_role_if_not_exists(username);
+        execute format('alter role %I with login password %L', username, uuidv7());
     end;
 $$;
 
 
 create or replace function create_user_with_password_from_file(
-    user_id text, password_file_path text
+    username text, password_file_path text
 ) returns void language plpgsql volatile strict as $$
     begin
-        perform create_user_if_not_exists(user_id);
-        execute format('alter role %I with password %L', user_id, pg_read_file(password_file_path));
+        perform create_user_if_not_exists(username);
+        execute format('alter role %I with password %L', username, pg_read_file(password_file_path));
     end;
 $$;
 
--- 'app' is the user as which the application connects. Before executing a statement, it switches to the database user representing the person
+-- 'app' is the user as which the main application connects. Before executing a statement, it switches to the database user representing the person (or API key)
 select create_user_with_password_from_file('app', '/run/secrets/app_db_password');
 
-
--- 'auth_user' manages users and API keys, but cannot do anything else
+-- 'auth' manages users and API keys, but cannot do anything else
 select create_user_with_password_from_file('auth', '/run/secrets/auth_db_password');
+
+-- Create a user who's an actual person, meaning they need some privileges
+create or replace function create_person_user_if_not_exists(
+    username text, is_staff boolean
+) returns void language plpgsql volatile strict as $$
+    begin
+        perform create_user_if_not_exists(username);
+        -- The nice thing here is that if a user already exists in the db, their staff-privilege will be set correctly no matter what
+        if is_staff then
+            -- Staff should be able to see everything
+            execute format('alter user %I with bypassrls', username);
+        end if;
+        -- Row-level security prevents users from seeing anything they shouldn't
+        execute format('grant select on all tables in schema public to %I', username);
+        -- The db user 'app' needs to be able to do `set role username`, but it shouldn't inherit that user's privileges
+        execute format('grant %I to app with inherit false', username);
+    end;
+$$;
 
 create collation case_insensitive (provider = icu, deterministic = false, locale = 'en-u-ks-level1');
 create domain case_insensitive_text as text collate case_insensitive;
 
--- Most resources only have need one link called self, so create a common type for them
+-- Most resources only need one link called self, so create a common type for them
 create type simple_links as (
     self text
 );
+
+-- We want to insert nil UUIDs in a couple places, so we install this extension
+create extension "uuid-ossp";

@@ -15,8 +15,10 @@ target
 !.env.compose.sample
 
 # Initial data also useful for development
-initial_data
+initial_data*
+initial-data*
 !initial_data.sample.json
+!initial-data.sample.json
 !cellnoor-api/src/initial_data
 
 # Generated TypesScript code

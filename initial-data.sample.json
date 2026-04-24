@@ -1,0 +1,10 @@
+{
+  "admin_organization": {
+    "name": "Jackson Laboratory",
+    "microsoft_entra_tenant_id": "00000000-0000-0000-0000-000000000000"
+  },
+  "admin": {
+    "name": "Ahmed Said",
+    "email": ""
+  }
+}

@@ -17,24 +17,25 @@ create table person (
     name case_insensitive_text not null,
     email case_insensitive_text unique,
     email_verified boolean not null default false,
-    organization_id uuid references organization on delete cascade not null,
+    organization_id uuid references organization not null,
     image text,
-    created_at timestamptz not null,
-    updated_at timestamptz not null,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
     orcid case_insensitive_text unique
 );
 
 -- better-auth infects everything, so this table has to comply with
 -- https://better-auth.com/docs/concepts/database#account. Notice that we don't include any of the sensitive fields,
--- and manually delete them in our auth configuration
+-- and we manually delete them in our auth configuration
 create table person_account (
     id uuid primary key default uuidv7(),
 	person_id uuid references person on delete cascade not null,
-	auth_provider_id text not null,
+	-- Technically, `auth_provider_id` and `auth_provider_user_id` should be 'not null', but we leave them nullable so we can insert the admin user without knowing these things
+	auth_provider_name text not null,
 	auth_provider_user_id text not null,
 	scope text,
-	created_at timestamptz not null,
-	updated_at timestamptz not null
+	created_at timestamptz not null default now(),
+	updated_at timestamptz not null default now()
 );
 
 -- It would be nice to use better-auth's built-in utility for "organization-owned API keys", but it doesn't really work

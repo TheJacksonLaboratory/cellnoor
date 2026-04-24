@@ -62,13 +62,14 @@ export const auth = betterAuth({
     modelName: "person_account",
     fields: {
       userId: "person_id",
-      providerId: "auth_provider_id",
+      providerId: "auth_provider_name",
       accountId: "auth_provider_user_id",
       createdAt: "created_at",
       updatedAt: "updated_at",
     },
     storeStateStrategy: "cookie",
     storeAccountCookie: true,
+    accountLinking: { trustedProviders: ["microsoft"] },
   },
   databaseHooks: {
     account: {
@@ -79,6 +80,18 @@ export const auth = betterAuth({
       update: {
         // @ts-expect-error we're manually deleting fields we don't need
         before: deleteUnnecessaryAccountFields,
+      },
+    },
+    user: {
+      create: {
+        async after({ id }) {
+          // Create a db user for the new person too
+          const dbClient = await getDbClient();
+          await dbClient.query(
+            "select create_person_user_if_not_exists($1::text, false)",
+            [id],
+          );
+        },
       },
     },
   },
