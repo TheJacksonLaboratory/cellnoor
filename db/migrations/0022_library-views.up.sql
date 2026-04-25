@@ -9,7 +9,7 @@ create view library_brief as (
 create view chromium_library_full as (
     select
         lib as library,
-        cdna,
+        cdna_full as cdna,
         array(
             select mes from library_measurement as mes
             where mes.library_id = lib.id
@@ -19,5 +19,5 @@ create view chromium_library_full as (
             from library_preparer as prep
             where prep.library_id = lib.id
         ) as preparers
-    from library_brief as lib join chromium_cdna_full as cdna on lib.cdna_id = (cdna.cdna).id
+    from library_brief as lib join chromium_cdna_full as cdna_full on lib.cdna_id = (cdna_full.cdna).id
 );

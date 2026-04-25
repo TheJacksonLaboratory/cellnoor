@@ -21,9 +21,9 @@ create view chromium_dataset_full as (
     select
         cds as chromium_dataset,
         array(
-            select library
-            from chromium_library_full as library
-            join chromium_dataset_library as cdl on (library.library).id = cdl.library_id
+            select lib
+            from chromium_library_full as lib
+            join chromium_dataset_library as cdl on (lib.library).id = cdl.library_id
             where cdl.dataset_id = cds.id
         ) as libraries,
         array(
