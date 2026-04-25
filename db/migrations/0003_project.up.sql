@@ -1,9 +1,3 @@
-create type project_links as (
-    self text,
-    specimens text,
-    chromium_datasets text
-);
-
 create table project (
     id uuid primary key default uuidv7(),
     name case_insensitive_text unique not null,

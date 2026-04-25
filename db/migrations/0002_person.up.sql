@@ -1,9 +1,3 @@
-create type person_links as (
-    self text,
-    projects text,
-    specimens text
-);
-
 -- The `email` field is nullable for the following situation:
 
 -- John Doe signs up with email john.doe@jax.org
