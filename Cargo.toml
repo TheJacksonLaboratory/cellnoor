@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "cellnoor-api",
+  "cellnoor-api", "crates/cellnoor",
   "crates/cellnoor-models",
   "crates/cellnoor-models/macro-attributes",
   "crates/cellnoor-models/macros",
