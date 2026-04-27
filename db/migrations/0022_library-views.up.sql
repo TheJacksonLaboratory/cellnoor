@@ -1,23 +1,14 @@
-create view library_brief as (
+create view library_compact as (
     select
         *,
         row('/libraries/' || id)::simple_links as links
     from library
 );
 
--- Again, we are okay traversing the entire tree from library up to dataset because the utility of seeing the specimens that went into a library is very high
-create view chromium_library_full as (
+create view library_to_specimen as (
     select
         lib as library,
-        cdna_full as cdna,
-        array(
-            select mes from library_measurement as mes
-            where mes.library_id = lib.id
-        ) as measurements,
-        array(
-            select prep.prepared_by
-            from library_preparer as prep
-            where prep.library_id = lib.id
-        ) as preparers
-    from library_brief as lib join chromium_cdna_full as cdna_full on lib.cdna_id = (cdna_full.cdna).id
+        cdna.parent_specimen,
+        cdna
+    from library_compact as lib join cdna_to_specimen as cdna on lib.cdna_id = (cdna.cdna).id
 );

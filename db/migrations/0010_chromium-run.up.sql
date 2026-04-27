@@ -19,7 +19,7 @@ create table chip_loading (
     gem_pool_id uuid references gem_pool on delete cascade not null,
     suspension_id uuid references suspension on delete cascade,
     -- There are only 4 allowed OCM barcode IDs, but we let the application restrict this so there is only one source
-    -- of truth
+    -- of truth (and so that we don't need a database migration if things change)
     ocm_barcode_id case_insensitive_text,
     suspension_pool_id uuid references suspension_pool on delete cascade,
     suspension_volume_loaded jsonb not null,

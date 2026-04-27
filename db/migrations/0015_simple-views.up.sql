@@ -1,15 +1,12 @@
--- There are 3 things to note about this system of views:
--- 1. Every entity has a "brief" view and a "full" view. The former is for API requests like "/organizations", and the
--- latter is for API requests like "/organizations/{id}"
---
--- 2. The `_full` view should include relevant children entities, unless there are too many. For example, a
--- `chromium_dataset_full` should have an array of its libraries and its suspensions (complete with tagging) because
--- there aren't many libraries or suspensions/suspension pools in a Chromium dataset. However, a project may have many
--- Chromium datasets, so we stick that in a separate link.
---
--- 3. Generally, any aggregations of "people" (like a suspension's preparers) should just collect the people's IDs.
--- It's not necessary to join all the way up to a `person_brief`.
-create view organization_full as (
+-- Although this schema tracks lots of entities, they are all intermediate and ephemeral besides specimens, libraries,
+-- and Chromium datasets. As such, consumers of the REST API (us) will want to filter not only on the fields of a given
+-- leaf, but also on the fields of its parent specimen (or library, or Chromium dataset), so we create a system of views
+-- that ultimately allow us to easily filter on the fields of the starting specimen(s) from any node in the tree. See
+-- `0018_suspension-views.up.sql` for an example of the general form of these views. To be precise, the narrow function
+-- of these views is to collect the necessary data for filtering, whereas the eventual query decides what to include and
+-- how to shape it.
+
+create view organization_compact as (
     select
         *,
         row('/organizations/' || id)::simple_links as links
@@ -22,7 +19,7 @@ create type person_links as (
     specimens text
 );
 
-create view person_brief as (
+create view person_compact as (
     select
         id,
         name,
@@ -32,9 +29,9 @@ create view person_brief as (
     from person
 );
 
-create view person_full as (
+create view person_to_organization as (
     select
         pers as person,
         org as organization
-    from person_brief as pers join organization_full as org on pers.organization_id = org.id
+    from person_compact as pers join organization_compact as org on pers.organization_id = org.id
 );

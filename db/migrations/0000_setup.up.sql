@@ -54,8 +54,9 @@ create or replace function create_person_user_if_not_exists(
             -- Staff should be able to see everything
             execute format('alter user %I with bypassrls', username);
         end if;
-        -- Row-level security prevents users from seeing anything they shouldn't
-        execute format('grant select on all tables in schema public to %I', username);
+        -- These tables and views don't exist yet, but only these are granted to users so that a developer can't
+        -- accidentally query against underlying tables, only views that have row-security policies enabled
+        execute format('grant select on organization_compact, person_compact, person_to_organization, project, project_access, project_to_people, specimen, suspension_to_specimen, suspension_pool_to_specimen, gem_pool_to_specimen, cdna_to_specimen, library_to_specimen, chromium_dataset_to_specimen to %I', username);
         -- The db user 'app' needs to be able to do `set role username`, but it shouldn't inherit that user's privileges
         execute format('grant %I to app with inherit false', username);
     end;
@@ -65,7 +66,7 @@ create collation case_insensitive (provider = icu, deterministic = false, locale
 create domain case_insensitive_text as text collate case_insensitive;
 
 -- Most resources only need one link called self, so create a common type for them
-create type simple_links as (
+create type public.simple_links as (
     self text
 );
 

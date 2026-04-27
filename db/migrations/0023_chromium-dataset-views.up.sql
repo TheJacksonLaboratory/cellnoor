@@ -3,7 +3,7 @@ create type chromium_dataset_links as (
     raw_files text []
 );
 
-create view chromium_dataset_brief as (
+create view chromium_dataset_compact as (
     select
         *,
         row(
@@ -16,19 +16,12 @@ create view chromium_dataset_brief as (
     from chromium_dataset as cds
 );
 
--- Same deal, we traverse the entire tree because it's super useful
-create view chromium_dataset_full as (
+create view chromium_dataset_to_specimen as (
     select
         cds as chromium_dataset,
-        array(
-            select lib
-            from chromium_library_full as lib
-            join chromium_dataset_library as cdl on (lib.library).id = cdl.library_id
-            where cdl.dataset_id = cds.id
-        ) as libraries,
-        array(
-            select file from chromium_dataset_parsed_file as file
-            where file.dataset_id = cds.id
-        ) as parsed_files
-    from chromium_dataset_brief as cds
+        lib.parent_specimen,
+        lib as library
+    from chromium_dataset_compact as cds
+    join chromium_dataset_library as cds_lib on cds.id = cds_lib.dataset_id
+    join library_to_specimen as lib on cds_lib.library_id = (lib.library).id
 );

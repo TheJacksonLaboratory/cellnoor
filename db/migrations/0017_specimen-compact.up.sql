@@ -1,4 +1,4 @@
-create view specimen_brief as (
+create view specimen_compact with (security_invoker = true) as (
     select
         *,
         row('/specimens/' || id)::simple_links as links
