@@ -8,7 +8,7 @@ create view cdna_compact as (
 create view cdna_to_specimen as (
     select
         cdna,
-        gp.parent_specimen,
+        gp.specimen,
         gp as gem_pool
     from cdna_compact as cdna join gem_pool_to_specimen as gp on cdna.gem_pool_id = (gp.gem_pool).id
 );

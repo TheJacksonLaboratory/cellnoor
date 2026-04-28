@@ -8,7 +8,7 @@ create view library_compact as (
 create view library_to_specimen as (
     select
         lib as library,
-        cdna.parent_specimen,
+        cdna.specimen,
         cdna
     from library_compact as lib join cdna_to_specimen as cdna on lib.cdna_id = (cdna.cdna).id
 );

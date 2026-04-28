@@ -66,7 +66,7 @@ create collation case_insensitive (provider = icu, deterministic = false, locale
 create domain case_insensitive_text as text collate case_insensitive;
 
 -- Most resources only need one link called self, so create a common type for them
-create type public.simple_links as (
+create type simple_links as (
     self text
 );
 

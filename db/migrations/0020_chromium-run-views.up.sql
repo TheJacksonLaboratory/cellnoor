@@ -9,7 +9,7 @@ create view chromium_run_to_assay as (
     select
         chr as chromium_run,
         assay
-    from chromium_run as chr join tenx_assay as assay on chr.assay_id = assay.id
+    from chromium_run_compact as chr join tenx_assay as assay on chr.assay_id = assay.id
 );
 
 -- We don't use this type in the view, but we do in the application, so it makes sense to introduce it here
@@ -23,7 +23,7 @@ create type suspension_pool_compact_ocm_barcoded as (
 create view gem_pool_to_specimen as (
     select
         chip as chip_loading,
-        susp.parent_specimen,
+        susp.parent_specimen as specimen,
         gp as gem_pool,
         susp as suspension,
         null as suspension_pool
@@ -36,7 +36,7 @@ create view gem_pool_to_specimen as (
 
     select
         chip as chip_loading,
-        pool.parent_specimen,
+        pool.parent_specimen as specimen,
         gp as gem_pool,
         null as suspension,
         pool

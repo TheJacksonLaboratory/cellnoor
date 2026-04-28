@@ -19,7 +19,7 @@ create view chromium_dataset_compact as (
 create view chromium_dataset_to_specimen as (
     select
         cds as chromium_dataset,
-        lib.parent_specimen,
+        lib.specimen,
         lib as library
     from chromium_dataset_compact as cds
     join chromium_dataset_library as cds_lib on cds.id = cds_lib.dataset_id
