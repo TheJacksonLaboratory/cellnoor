@@ -421,6 +421,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "cellnoor-types"
+version = "0.1.0"
+dependencies = [
+ "schemars",
+ "serde",
+]
+
+[[package]]
 name = "cesu8"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

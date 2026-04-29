@@ -1,0 +1,15 @@
+[package]
+name = "cellnoor-types"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+schemars = { workspace = true, optional = true }
+serde = { workspace = true, features = ["derive"], optional = true }
+
+[lints]
+workspace = true
+
+[features]
+serde = ["dep:serde"]
+schemars = ["dep:schemars"]
