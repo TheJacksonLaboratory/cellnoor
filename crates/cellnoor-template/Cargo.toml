@@ -1,0 +1,21 @@
+[package]
+name = "cellnoor-template"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+cellnoor-types = {path = "../cellnoor-types", features = ["serde", "schemars", "postgres-types"]}
+axum.workspace = true
+axum-extra.workspace = true
+tokio.workspace = true
+anyhow.workspace = true
+camino.workspace = true
+clap.workspace = true
+secrecy.workspace = true
+dotenvy.workspace = true
+thiserror.workspace = true
+config.workspace = true
+
+[lints]
+workspace = true

@@ -67,10 +67,5 @@ $$;
 create collation case_insensitive (provider = icu, deterministic = false, locale = 'en-u-ks-level1');
 create domain case_insensitive_text as text collate case_insensitive;
 
--- Most resources only need one link called self, so create a common type for them
-create type simple_links as (
-    self text
-);
-
 -- We want to insert nil UUIDs in a couple places, so we install this extension
 create extension "uuid-ossp";

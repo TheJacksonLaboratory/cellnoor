@@ -1,21 +1,8 @@
-create view chromium_run_compact as (
-    select
-        *,
-        row('/chromium-runs/' || id)::simple_links as links
-    from chromium_run
-);
-
 create view chromium_run_to_assay as (
     select
         chr as chromium_run,
         assay
-    from chromium_run_compact as chr join tenx_assay as assay on chr.assay_id = assay.id
-);
-
--- We don't use this type in the view, but we do in the application, so it makes sense to introduce it here
-create type suspension_pool_compact_ocm_barcoded as (
-    pool suspension_pool_compact,
-    ocm_barcode_id text
+    from chromium_run as chr join tenx_assay as assay on chr.assay_id = assay.id
 );
 
 -- This view is complex because from a gem_pool, we can get to a specimen either from a suspension (query 1) or from a
