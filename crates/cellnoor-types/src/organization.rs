@@ -1,0 +1,15 @@
+use nonempty::NonemptyString;
+use uuid::Uuid;
+
+#[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+#[cfg_attr(
+    feature = "postgres-types",
+    derive(postgres_types::FromSql, postgres_types::ToSql)
+)]
+pub struct Organization {
+    pub id: Option<Uuid>,
+    pub name: NonemptyString,
+    pub microsoft_entra_tenant_id: Uuid,
+}

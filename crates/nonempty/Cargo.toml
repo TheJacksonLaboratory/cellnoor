@@ -1,10 +1,9 @@
 [package]
 edition.workspace = true
-name = "non-empty"
+name = "nonempty"
 
 [dependencies]
-cellnoor-schema = { path = "../cellnoor-schema", optional = true }
-diesel = { workspace = true, optional = true }
+postgres-types = { workspace = true, optional = true }
 schemars = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 thiserror.workspace = true
@@ -14,13 +13,11 @@ thiserror.workspace = true
 workspace = true
 
 [features]
-diesel = ["dep:cellnoor-schema", "dep:diesel"]
 schemars = ["dep:schemars"]
 serde = ["dep:serde"]
+postgres-types = ["dep:postgres-types"]
 
 
 [dev-dependencies]
-diesel = { workspace = true, features = ["sqlite"] }
 pretty_assertions.workspace = true
-rstest.workspace = true
 serde_json.workspace = true

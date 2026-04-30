@@ -62,6 +62,8 @@ create or replace function create_person_user_if_not_exists(
     end;
 $$;
 
+-- We might like to put a check-constraint here ensuring the string is non-empty, but our application has to do that
+-- anyways for values in JSONB properties, so we do it there to avoid duplicating code
 create collation case_insensitive (provider = icu, deterministic = false, locale = 'en-u-ks-level1');
 create domain case_insensitive_text as text collate case_insensitive;
 

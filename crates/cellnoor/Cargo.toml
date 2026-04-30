@@ -5,6 +5,9 @@ edition.workspace = true
 
 [dependencies]
 serde = { workspace = true, features = ["derive"] }
+cellnoor-types = {path = "../cellnoor-types", features = ["serde", "schemars", "postgres-types"]}
+axum.workspace = true
+axum-extra.workspace = true
 
 [lints]
 workspace = true
