@@ -8,6 +8,7 @@ use uuid::Uuid;
     feature = "postgres-types",
     derive(postgres_types::FromSql, postgres_types::ToSql)
 )]
+#[cfg_attr(feature = "postgres-types", postgres(name = "organization"))]
 pub struct Organization {
     pub id: Option<Uuid>,
     pub name: NonemptyString,
