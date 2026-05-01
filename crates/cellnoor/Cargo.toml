@@ -11,13 +11,19 @@ aide = {workspace = true, optional = true}
 jsonwebtoken = {workspace = true, optional = true}
 serde.workspace = true
 deadpool-postgres = {workspace = true, optional = true}
-cellnoor-types = {path = "../cellnoor-types", features = ["serde", "schemars", "postgres-types"]}
+cellnoor-types = {path = "../cellnoor-types", features = ["serde"]}
 axum = {workspace = true, optional = true}
 axum-extra= {workspace = true, optional = true}
 anyhow = {workspace = true, optional = true}
 camino = {workspace = true, optional = true}
 clap = {workspace = true, optional = true}
+uuid = {workspace = true, optional = true}
+schemars = {workspace = true, optional = true}
 secrecy = {workspace = true, optional = true}
+postgres-types = {workspace = true, optional = true}
+headers = {workspace = true, optional = true}
+argon2 = {workspace = true, optional = true}
+jiff = {workspace = true, optional = true}
 dotenvy = {workspace = true, optional = true}
 thiserror = {workspace = true, optional = true}
 config = {workspace = true, optional = true}
@@ -37,6 +43,7 @@ hydrate = [
 ]
 ssr = [
     "dep:anyhow",
+    "dep:argon2",
     "dep:deadpool-postgres",
     "dep:camino",
     "dep:clap",
@@ -50,6 +57,11 @@ ssr = [
     "leptos/ssr",
     "leptos_meta/ssr",
     "leptos_router/ssr",
+    "dep:uuid",
+    "dep:schemars",
+    "dep:headers",
+    "cellnoor-types/schemars",
+    "cellnoor-types/postgres-types"
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode

@@ -1,23 +1,43 @@
 use std::sync::Arc;
 
+use argon2::Argon2;
+use deadpool_postgres::PoolError;
 use secrecy::ExposeSecret;
+use uuid::Uuid;
 
-use crate::{db, settings::Settings};
+use crate::{
+    db::{self, User},
+    settings::Settings,
+};
 
 #[derive(Clone)]
 pub struct DevState {
-    db_pool: deadpool_postgres::Pool,
+    db_pool: db::Pool,
+}
+impl DevState {
+    pub async fn db_client(&self) -> Result<db::Client, PoolError> {
+        self.db_pool.get(User::Person(Uuid::nil())).await
+    }
 }
 
 #[derive(Clone)]
 pub struct ProdState {
-    db_pool: deadpool_postgres::Pool,
-    jwt_decoding_key: Arc<jsonwebtoken::DecodingKey>,
+    db_pool: db::Pool,
+    // Store these two things in one `Arc` instead of 2
+    auth: Arc<(jsonwebtoken::DecodingKey, Argon2<'static>)>,
 }
 
 impl ProdState {
-    fn jwt_decoding_key(&self) -> &jsonwebtoken::DecodingKey {
-        &self.jwt_decoding_key
+    pub async fn db_client(&self, user: User) -> Result<db::Client, PoolError> {
+        self.db_pool.get(user).await
+    }
+
+    pub fn jwt_decoding_key(&self) -> &jsonwebtoken::DecodingKey {
+        &self.auth.0
+    }
+
+    pub fn api_key_verifier(&self) -> &Argon2 {
+        &self.auth.1
     }
 }
 
@@ -29,7 +49,7 @@ pub enum AppState {
 
 impl AppState {
     pub async fn initialize(settings: Settings) -> anyhow::Result<Self> {
-        let db_pool = db::create_pool(
+        let db_pool = db::Pool::new(
             settings.db_url().expose_secret(),
             settings.max_db_pool_size(),
         )?;
@@ -37,8 +57,11 @@ impl AppState {
         let state = if settings.with_auth() {
             Self::Prod(ProdState {
                 db_pool,
-                jwt_decoding_key: Arc::new(jsonwebtoken::DecodingKey::from_secret(
-                    settings.auth_secret().expose_secret().as_bytes(),
+                auth: Arc::new((
+                    jsonwebtoken::DecodingKey::from_secret(
+                        settings.auth_secret().expose_secret().as_bytes(),
+                    ),
+                    Argon2::default(),
                 )),
             })
         } else {
@@ -48,11 +71,10 @@ impl AppState {
         Ok(state)
     }
 
-    pub async fn db_conn(&self) -> Result<deadpool_postgres::Object, deadpool_postgres::PoolError> {
+    pub async fn db_client(&self, user: User) -> Result<db::Client, deadpool_postgres::PoolError> {
         match self {
-            Self::Dev(DevState { db_pool }) | Self::Prod(ProdState { db_pool, .. }) => {
-                db_pool.get().await
-            }
+            Self::Dev(s) => s.db_client().await,
+            Self::Prod(s) => s.db_client(user).await,
         }
     }
 }

@@ -11,7 +11,7 @@ create table person (
     name case_insensitive_text not null,
     email case_insensitive_text unique,
     email_verified boolean not null default false,
-    organization_id uuid references organization not null,
+    institution_id uuid references institution not null,
     image text,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now(),
@@ -33,7 +33,7 @@ create table person_account (
     updated_at timestamptz not null default now()
 );
 
--- It would be nice to use better-auth's built-in utility for "organization-owned API keys", but it doesn't really work
+-- It would be nice to use better-auth's built-in utility for "institution-owned API keys", but it doesn't really work
 -- with Postgres's row-level security
 create table service_account (
     id uuid primary key default uuidv7(),
@@ -50,6 +50,14 @@ create table service_account_access (
     primary key (service_account_id, person_id)
 );
 
+create type hashed_api_key as (
+    id uuid,
+    person_id uuid,
+    service_account_id uuid,
+    hashed_key text,
+    expires_at text
+);
+
 -- Now, an API key can be owned by either a person or a service account. We don't use better-auth's system here because
 -- it's a bit clunky for our usecase
 create table api_key (
@@ -63,5 +71,6 @@ create table api_key (
     created_at timestamptz not null,
     expires_at timestamptz not null
 
-    constraint has_account check ((person_id is null) != (service_account_id is null))
+    constraint has_account check ((person_id is null) != (service_account_id is null)),
+    constraint created_before_expires check (created_at < expires_at)
 );

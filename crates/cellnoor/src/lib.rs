@@ -2,7 +2,11 @@
 pub mod api;
 pub mod app;
 #[cfg(feature = "ssr")]
+pub mod auth;
+#[cfg(feature = "ssr")]
 pub mod db;
+#[cfg(feature = "ssr")]
+pub mod error;
 #[cfg(feature = "ssr")]
 pub mod settings;
 #[cfg(feature = "ssr")]

@@ -43,7 +43,7 @@ export const auth = betterAuth({
       updatedAt: "updated_at",
     },
     additionalFields: {
-      organization_id: {
+      institution_id: {
         type: "string",
       },
     },
@@ -102,12 +102,12 @@ export const auth = betterAuth({
       clientSecret: microsoftEntraClientSecret,
       async mapProfileToUser({ tid }) {
         const dbClient = await getDbClient();
-        const { rows: [{ organization_id }] } = await dbClient.query(
-          "select id as organization_id from organization where microsoft_entra_tenant_id = $1::uuid",
+        const { rows: [{ institution_id }] } = await dbClient.query(
+          "select id as institution_id from institution where microsoft_entra_tenant_id = $1::uuid",
           [tid],
         );
 
-        return { organization_id };
+        return { institution_id };
       },
     },
   },

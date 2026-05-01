@@ -21,11 +21,11 @@ create table specimen (
 );
 
 create table committee_approval (
-    organization_id uuid references organization on delete cascade not null,
+    institution_id uuid references institution on delete cascade not null,
     specimen_id uuid references specimen on delete cascade not null,
     committee_type case_insensitive_text not null,
     compliance_identifier case_insensitive_text not null,
-    primary key (organization_id, specimen_id, committee_type)
+    primary key (institution_id, specimen_id, committee_type)
 );
 
 create table specimen_measurement (

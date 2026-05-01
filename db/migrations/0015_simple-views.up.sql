@@ -6,18 +6,18 @@
 -- of these views is to collect the necessary data for filtering, whereas the eventual query decides what to include and
 -- how to shape it.
 
-create view person_compact as (
+create view person_public as (
     select
         id,
         name,
-        organization_id,
+        institution_id,
         orcid
     from person
 );
 
-create view person_to_organization as (
+create view person_to_institution as (
     select
         pers as person,
-        org as organization
-    from person_compact as pers join organization as org on pers.organization_id = org.id
+        org as institution
+    from person_public as pers join institution as org on pers.institution_id = org.id
 );

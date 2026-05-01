@@ -50,7 +50,7 @@ where
 }
 
 fn api(app_state: AppState) -> Router {
-    let api_router = routes::app(app_state.clone()).with_state(app_state);
+    let api_router = routes::router().with_state(app_state);
 
     Router::new().nest("/api", api_router)
 }

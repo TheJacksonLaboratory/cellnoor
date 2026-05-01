@@ -1,14 +1,14 @@
 -- We need an admin user who can populate the database, so we read this initial data from a JSON file
 -- noqa: disable=AL03
 with initial_data as (
-    select json(pg_read_file('/initial-data.json')) -> 'admin_organization' as admin_organization
+    select json(pg_read_file('/initial-data.json')) -> 'admin_institution' as admin_institution
 )
 
-insert into organization (id, name, microsoft_entra_tenant_id)
+insert into institution (id, name, microsoft_entra_tenant_id)
 select
     uuid_nil(),
-    admin_organization ->> 'name',
-    (admin_organization ->> 'microsoft_entra_tenant_id')::uuid
+    admin_institution ->> 'name',
+    (admin_institution ->> 'microsoft_entra_tenant_id')::uuid
 from initial_data;
 
 
@@ -16,7 +16,7 @@ with initial_data as (
     select json(pg_read_file('/initial-data.json')) -> 'admin' as admin_person
 )
 
-insert into person (id, name, email, organization_id, orcid)
+insert into person (id, name, email, institution_id, orcid)
 select
     uuid_nil(),
     admin_person ->> 'name',
@@ -39,7 +39,7 @@ $$;
 
 -- 'auth' only needs to create and read people
 grant insert, select, update on person, person_account to auth;
-grant select on organization to auth;
+grant select on institution to auth;
 
 -- It also needs to create db users
 alter user auth with createrole;

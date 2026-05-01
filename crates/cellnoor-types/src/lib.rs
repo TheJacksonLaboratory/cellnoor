@@ -1,7 +1,7 @@
 mod cdna_library;
 pub mod chromium_dataset;
 pub mod chromium_run;
-pub mod organization;
+pub mod institution;
 pub mod person;
 pub mod project;
 mod query;
