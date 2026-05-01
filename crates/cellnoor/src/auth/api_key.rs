@@ -15,10 +15,9 @@ const API_KEY_LENGTH: usize = 32;
 
 #[derive(FromSql)]
 #[postgres(name = "hashed_api_key_stub")]
-struct HashedApiKey {
+pub struct HashedApiKey {
     id: Uuid,
     person_id: Option<Uuid>,
-    service_account_id: Option<Uuid>,
     hashed_key: String,
     expires_at: jiff::Timestamp,
 }

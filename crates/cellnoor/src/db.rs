@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+use aide::OperationIo;
 use deadpool_postgres::{
     GenericClient, Object as InnerClient, Pool as InnerPool, PoolError,
     Transaction as InnerTransaction,
@@ -18,7 +19,7 @@ pub struct Pool(InnerPool);
 /// This could represent a person using the UI, a person using the RESTful API,
 /// a service account using the RESTful API, or the app itself switching into
 /// one of the aforementioned users.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, OperationIo)]
 pub enum User {
     App,
     Person(Uuid),

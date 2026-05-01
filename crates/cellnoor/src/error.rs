@@ -5,7 +5,7 @@ use deadpool_postgres::{
     tokio_postgres::{Error as TokioPgError, error::SqlState},
 };
 
-#[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema)]
+#[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema, OperationIo)]
 #[error(transparent)]
 pub struct Error {
     error: ErrorInner,

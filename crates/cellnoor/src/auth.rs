@@ -1,5 +1,10 @@
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
-use axum::{RequestPartsExt, extract::FromRequestParts, http::HeaderValue, response::IntoResponse};
+use axum::{
+    RequestPartsExt,
+    extract::{FromRequest, FromRequestParts},
+    http::HeaderValue,
+    response::IntoResponse,
+};
 use axum_extra::TypedHeader;
 use postgres_types::FromSql;
 use uuid::Uuid;

@@ -1,18 +1,21 @@
 #[cfg(feature = "ssr")]
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
+    use camino::Utf8PathBuf;
     use cellnoor::api;
     use clap::Parser;
 
     #[derive(Debug, clap::Parser)]
     struct Cli {
         #[clap(short, long)]
-        config_path: Utf8PathBuf,
+        config_path: Option<Utf8PathBuf>,
     }
 
     let Cli { config_path } = Cli::parse();
 
-    api::serve()
+    api::serve(config_path.as_ref().map(|p| p.as_ref())).await?;
+
+    Ok(())
 }
 
 #[cfg(feature = "ssr")]
@@ -22,7 +25,7 @@ async fn leptos_main() {
     use cellnoor::app::*;
     use clap::Parser;
     use leptos::{logging::log, prelude::*};
-    use leptos_axum::{generate_route_list, LeptosRoutes};
+    use leptos_axum::{LeptosRoutes, generate_route_list};
 
     #[derive(Debug, Parser)]
     struct Cli {
