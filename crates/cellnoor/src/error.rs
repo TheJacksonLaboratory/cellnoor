@@ -1,3 +1,4 @@
+use aide::OperationIo;
 use axum::{Json, http::StatusCode, response::IntoResponse};
 use deadpool_postgres::{
     PoolError as DeadpoolPgError,
