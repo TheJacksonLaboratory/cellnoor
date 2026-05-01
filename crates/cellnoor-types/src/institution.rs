@@ -1,14 +1,7 @@
-use macro_attributes::{base_model, field_enum, select};
+use macro_attributes::{base_model, select};
 use nonempty::NonemptyString;
-#[cfg(feature = "postgres-types")]
-use postgres_types::ToSql;
+pub use query::InstitutionQuery;
 use uuid::Uuid;
-
-use crate::query::{
-    Query,
-    filter::{AsPredicate, Filter, StringOperator, UuidOperator},
-    order_by::{OrderDirection, OrderingField},
-};
 
 #[base_model]
 pub struct NewInstitution {
@@ -25,45 +18,58 @@ pub struct Institution {
     pub microsoft_entra_tenant_id: Uuid,
 }
 
-#[field_enum]
-#[strum(prefix = "institution.")]
-pub enum InstitutionField<U, S> {
-    Id(U),
-    Name(S),
-    MicrosoftEntraTenantId(U),
-}
+mod query {
+    use macro_attributes::field_enum;
+    #[cfg(feature = "postgres-types")]
+    use postgres_types::ToSql;
 
-pub type InstitutionPredicate = InstitutionField<UuidOperator, StringOperator>;
+    #[cfg(feature = "postgres-types")]
+    use crate::query::filter::AsPredicate;
+    use crate::query::{
+        Query,
+        filter::{Filter, StringOperator, UuidOperator},
+        order_by::{OrderDirection, OrderingField},
+    };
+    #[field_enum]
+    #[strum(prefix = "institution.")]
+    pub enum InstitutionField<U, S> {
+        Id(U),
+        Name(S),
+        MicrosoftEntraTenantId(U),
+    }
 
-#[cfg(feature = "postgres-types")]
-impl AsPredicate for InstitutionPredicate {
-    fn as_predicate(&self) -> (&'static str, &dyn ToSql) {
-        match self {
-            Self::Id(u) | Self::MicrosoftEntraTenantId(u) => u.as_predicate(),
-            Self::Name(s) => s.as_predicate(),
+    pub type InstitutionPredicate = InstitutionField<UuidOperator, StringOperator>;
+
+    #[cfg(feature = "postgres-types")]
+    impl AsPredicate for InstitutionPredicate {
+        fn as_predicate(&self) -> (&'static str, &dyn ToSql) {
+            match self {
+                Self::Id(u) | Self::MicrosoftEntraTenantId(u) => u.as_predicate(),
+                Self::Name(s) => s.as_predicate(),
+            }
         }
     }
-}
 
-pub type InstitutionFilter = Filter<InstitutionPredicate>;
+    pub type InstitutionFilter = Filter<InstitutionPredicate>;
 
-pub type InstitutionOrderBy = InstitutionField<OrderDirection, OrderDirection>;
+    pub type InstitutionOrderBy = InstitutionField<OrderDirection, OrderDirection>;
 
-impl OrderingField for InstitutionOrderBy {
-    fn direction(self) -> OrderDirection {
-        match self {
-            Self::Id(d) | Self::Name(d) | Self::MicrosoftEntraTenantId(d) => d,
+    impl OrderingField for InstitutionOrderBy {
+        fn direction(self) -> OrderDirection {
+            match self {
+                Self::Id(d) | Self::Name(d) | Self::MicrosoftEntraTenantId(d) => d,
+            }
         }
     }
-}
 
-impl Default for InstitutionOrderBy {
-    fn default() -> Self {
-        Self::Name(OrderDirection::Desc)
+    impl Default for InstitutionOrderBy {
+        fn default() -> Self {
+            Self::Name(OrderDirection::Desc)
+        }
     }
-}
 
-pub type InstitutionQuery = Query<InstitutionFilter, InstitutionOrderBy>;
+    pub type InstitutionQuery = Query<InstitutionFilter, InstitutionOrderBy>;
+}
 
 #[cfg(all(feature = "postgres-types", test))]
 mod tests {

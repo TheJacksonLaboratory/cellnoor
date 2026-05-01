@@ -12,6 +12,7 @@ pub use creation::{
 use jiff::Timestamp;
 use macro_attributes::{select, unit_enum};
 use nonempty::NonemptyString;
+pub use query::SpecimenQuery;
 use serde_json::Value;
 use uuid::Uuid;
 
