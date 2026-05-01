@@ -76,10 +76,8 @@ mod tests {
     use pretty_assertions::assert_str_eq;
     use uuid::Uuid;
 
-    use crate::{
-        institution::InstitutionPredicate,
-        query::filter::{Filter, ScalarOperator, UuidOperator},
-    };
+    use super::query::InstitutionPredicate;
+    use crate::query::filter::{Filter, ScalarOperator, UuidOperator};
 
     #[test]
     fn test_where_clause_construction() {
