@@ -1,6 +1,6 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::chip_loadings;
-use macro_attributes::{base_model, insert, simple_enum};
+use macro_attributes::{base_model, insert, unit_enum};
 use macros::impl_enum_to_sql;
 use non_empty::NonEmptyVec;
 #[cfg(feature = "app")]
@@ -13,7 +13,7 @@ use crate::utils::EnumToSql;
 
 pub const MAX_SUSPENSIONS_PER_OCM_GEM_POOL: usize = 4;
 
-#[simple_enum]
+#[unit_enum]
 #[derive(strum::VariantArray)]
 pub enum OcmBarcodeId {
     Ob1,

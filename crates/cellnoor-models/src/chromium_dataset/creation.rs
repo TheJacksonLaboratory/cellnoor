@@ -1,7 +1,7 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::chromium_datasets;
 use jiff::Timestamp;
-use macro_attributes::{insert, simple_enum};
+use macro_attributes::{insert, unit_enum};
 use macros::{impl_enum_from_sql, impl_enum_to_sql};
 use uuid::Uuid;
 
@@ -11,7 +11,7 @@ use crate::utils::{EnumFromSql, EnumToSql};
 
 pub mod metrics;
 
-#[simple_enum]
+#[unit_enum]
 pub enum ChromiumDatasetCmdline {
     #[serde(rename = "cellranger-arc count")]
     #[strum(serialize = "cellranger-arc count")]

@@ -1,10 +1,10 @@
-use macro_attributes::simple_enum;
+use macro_attributes::unit_enum;
 use macros::{impl_enum_from_sql, impl_enum_to_sql};
 
 #[cfg(feature = "app")]
 use crate::utils::{EnumFromSql, EnumToSql};
 
-#[simple_enum]
+#[unit_enum]
 pub enum Microliter {
     #[serde(alias = "µL")]
     Microliter,
@@ -18,7 +18,7 @@ impl_enum_from_sql!(Microliter);
 impl EnumToSql for Microliter {}
 impl_enum_to_sql!(Microliter);
 
-#[simple_enum]
+#[unit_enum]
 pub enum Milliliter {
     #[serde(alias = "mL")]
     Milliliter,
@@ -32,7 +32,7 @@ impl_enum_from_sql!(Milliliter);
 impl EnumToSql for Milliliter {}
 impl_enum_to_sql!(Milliliter);
 
-#[simple_enum]
+#[unit_enum]
 pub enum Micrometer {
     #[serde(alias = "µm")]
     Micrometer,
@@ -46,7 +46,7 @@ impl_enum_from_sql!(Micrometer);
 impl EnumToSql for Micrometer {}
 impl_enum_to_sql!(Micrometer);
 
-#[simple_enum]
+#[unit_enum]
 pub enum Picogram {
     #[serde(alias = "pg")]
     Picogram,
@@ -60,7 +60,7 @@ impl_enum_from_sql!(Picogram);
 impl EnumToSql for Picogram {}
 impl_enum_to_sql!(Picogram);
 
-#[simple_enum]
+#[unit_enum]
 pub enum Nanogram {
     #[serde(alias = "ng")]
     Nanogram,

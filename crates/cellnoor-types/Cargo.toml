@@ -10,11 +10,17 @@ schemars = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 uuid.workspace = true
 postgres-types = { workspace = true, optional = true }
+macro-attributes = {path = "macro-attributes"}
+strum.workspace = true
+serde_json.workspace = true
+positive = {path = "../positive"}
+bytes = { workspace = true, optional = true }
+pretty_assertions.workspace = true
 
 [lints]
 workspace = true
 
 [features]
-serde = ["dep:serde", "nonempty/serde"]
-schemars = ["dep:schemars", "nonempty/schemars"]
-postgres-types = ["dep:postgres-types", "nonempty/postgres-types"]
+serde = ["dep:serde", "nonempty/serde", "positive/serde"]
+schemars = ["dep:schemars", "nonempty/schemars", "positive/schemars"]
+postgres-types = ["dep:postgres-types", "nonempty/postgres-types", "dep:bytes", "positive/postgres-types"]

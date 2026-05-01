@@ -1,6 +1,6 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::suspensions;
-use macro_attributes::{insert_select, simple_enum};
+use macro_attributes::{insert_select, unit_enum};
 use macros::{impl_enum_from_sql, impl_enum_to_sql};
 use non_empty::NonEmptyString;
 use serde_json::Value;
@@ -9,7 +9,7 @@ use uuid::Uuid;
 #[cfg(feature = "app")]
 use crate::utils::{EnumFromSql, EnumToSql};
 
-#[simple_enum]
+#[unit_enum]
 #[derive(strum::VariantArray, strum::Display)]
 pub enum SuspensionContent {
     Cells,

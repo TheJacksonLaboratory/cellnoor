@@ -9,7 +9,7 @@ use create::create_institution;
 use crate::state::AppState;
 
 pub mod create;
-// pub mod index;
+pub mod index;
 // pub mod show;
 
 pub(super) fn router<'a>() -> ApiRouter<AppState> {

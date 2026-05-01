@@ -2,7 +2,7 @@
 use cellnoor_schema::multiplexing_tags;
 #[cfg(feature = "app")]
 use diesel::prelude::*;
-use macro_attributes::{insert_select, simple_enum};
+use macro_attributes::{insert_select, unit_enum};
 use macros::{impl_enum_from_sql, impl_enum_to_sql};
 use non_empty::NonEmptyString;
 
@@ -17,7 +17,7 @@ pub struct MultiplexingTagFields {
     type_: MultiplexingTagType,
 }
 
-#[simple_enum]
+#[unit_enum]
 pub enum MultiplexingTagType {
     FlexBarcode,
     FlexOligonucleotideBarcode,

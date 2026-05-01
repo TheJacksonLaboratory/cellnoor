@@ -1,7 +1,7 @@
 #[cfg(feature = "app")]
 use cellnoor_schema::suspension_measurements;
 use jiff::Timestamp;
-use macro_attributes::{insert_select, json, simple_enum};
+use macro_attributes::{insert_select, json, unit_enum};
 use macros::{impl_enum_from_sql, impl_enum_to_sql, impl_json_from_sql, impl_json_to_sql};
 use ranged::RangedF32;
 use uuid::Uuid;
@@ -115,7 +115,7 @@ impl MeanDiameter {
     }
 }
 
-#[simple_enum]
+#[unit_enum]
 enum CountingMethod {
     BrightField,
     AcridineOrangePropidiumIodide,

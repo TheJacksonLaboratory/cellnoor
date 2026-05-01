@@ -4,7 +4,7 @@ use cellnoor_schema::library_type_specifications;
 use cellnoor_schema::tenx_assays;
 #[cfg(feature = "app")]
 use diesel::prelude::*;
-use macro_attributes::{insert, insert_select, simple_enum};
+use macro_attributes::{insert, insert_select, unit_enum};
 use macros::{impl_enum_from_sql, impl_enum_to_sql};
 use non_empty::NonEmptyString;
 use ranged::RangedU16;
@@ -12,7 +12,7 @@ use ranged::RangedU16;
 #[cfg(feature = "app")]
 use crate::utils::{EnumFromSql, EnumToSql};
 
-#[simple_enum]
+#[unit_enum]
 pub enum LibraryType {
     AntibodyCapture,
     AntigenCapture,
@@ -35,7 +35,7 @@ impl_enum_from_sql!(LibraryType);
 impl EnumToSql for LibraryType {}
 impl_enum_to_sql!(LibraryType);
 
-#[simple_enum]
+#[unit_enum]
 pub enum SampleMultiplexing {
     Cellplex,
     FlexBarcode,

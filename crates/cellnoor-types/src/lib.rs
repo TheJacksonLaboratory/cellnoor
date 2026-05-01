@@ -4,7 +4,7 @@ pub mod chromium_run;
 pub mod institution;
 pub mod person;
 pub mod project;
-mod query;
+pub mod query;
 pub mod specimen;
 pub mod suspension;
 pub mod suspension_pool;

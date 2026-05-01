@@ -4,12 +4,14 @@ use aide::OperationIo;
 use deadpool_postgres::{
     GenericClient, Object as InnerClient, Pool as InnerPool, PoolError,
     Transaction as InnerTransaction,
-    tokio_postgres::{self, Error as TokioPgError, types::ToSql},
+    tokio_postgres::{Error as TokioPgError, Row, types::ToSql},
 };
-use postgres_types::{FromSql, FromSqlOwned};
+use postgres_types::FromSqlOwned;
 use uuid::Uuid;
 
-use crate::error::{self, Error};
+use crate::error::Error;
+
+pub mod institution;
 
 #[derive(Debug, Clone)]
 pub struct Pool(InnerPool);
@@ -68,12 +70,12 @@ pub struct Client {
 }
 
 impl Client {
-    pub async fn begin(&mut self) -> Result<Transaction, TokioPgError> {
+    pub async fn begin(&'_ mut self) -> Result<Transaction<'_>, TokioPgError> {
         let Self { user, inner } = self;
 
-        inner.transaction().await.map(|tx| Transaction {
+        Ok(Transaction {
             user: *user,
-            inner: tx,
+            inner: inner.transaction().await?,
         })
     }
 }
@@ -102,7 +104,7 @@ impl<'a> Transaction<'a> {
         &self,
         statement: &str,
         params: &[&(dyn ToSql + Sync)],
-    ) -> Result<Vec<tokio_postgres::Row>, TokioPgError> {
+    ) -> Result<Vec<Row>, TokioPgError> {
         self.execute_as_user(self.inner.query(statement, params))
             .await
     }
@@ -111,7 +113,7 @@ impl<'a> Transaction<'a> {
         &self,
         statement: &str,
         params: &[&(dyn ToSql + Sync)],
-    ) -> Result<tokio_postgres::Row, TokioPgError> {
+    ) -> Result<Row, TokioPgError> {
         self.execute_as_user(self.inner.query_one(statement, params))
             .await
     }

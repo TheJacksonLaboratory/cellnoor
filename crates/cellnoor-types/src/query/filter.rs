@@ -1,52 +1,130 @@
+#[cfg(feature = "postgres-types")]
+use postgres_types::ToSql;
+use uuid::Uuid;
+
 /// A recursive data-structure to store arbitrarily-combined boolean predicates.
 ///
-/// This structure can model arbitrarily complex expressions to filter database records. The type-parameter `P`
-/// represents the base case or "leaf" of the filter, so it should represent a single boolean predicate. Typically this
-/// is an `enum` of possible conditions.
+/// This structure can model arbitrarily complex expressions to filter database
+/// records. The type-parameter `P` represents the base case or "leaf" of the
+/// filter, so it should represent a single boolean predicate. Typically this is
+/// an `enum` of possible conditions.
 ///
-/// The following example would filter for people named "Ahmed" OR "Nicole" under the age of 30:
+/// The following example would filter for people named "Hamood" OR "Nikachka"
+/// under the age of 30:
 /// ```
+/// use cellnoor_types::query::filter::{Filter, ScalarOperator, StringOperator, i32Operator};
+///
 /// enum PersonField {
 ///     Name(StringOperator),
-///     Age(ScalarOperator<i32>)
+///     Age(i32Operator),
 /// }
 ///
 /// type PersonFilter = Filter<PersonField>;
 ///
-/// let age_filter = PersonField::Age(ScalarOperator::Lt(30));
-/// let age_filter = Filter::Leaf(age_filter);
+/// // Use `.into` to convert the predicate into a filter
+/// let age_filter = PersonField::Age(i32Operator::Lt(30)).into();
 ///
-/// // Use the `From` trait to convert a `ScalarOperator` into a `StringOperator`
-/// let name_filter = PersonField::Name(ScalarOperator::In(vec!["Ahmed".to_owned(), "Nicole".to_owned()]).into());
+/// // Use `.into` trait to convert a `ScalarOperator` into a `StringOperator`
+/// let name_filter = PersonField::Name(
+///     ScalarOperator::In(vec!["Hamood".to_owned(), "Nikachka".to_owned()]).into(),
+/// );
 /// let name_filter = Filter::Leaf(name_filter);
 ///
-/// let combined_filter = Filter::AllOf(vec![name_filter, age_filter]);
-/// ```
+/// let combined_filter1 = Filter::AllOf(vec![name_filter, age_filter]);
 ///
-/// This could also have been represented as:
-/// ```
-/// let age_filter = Filter::Leaf(PersonField::Age(ScalarOperator::Lt(30)));
+/// // This could also have been written as:
+/// let age_filter = PersonField::Age(i32Operator::Lt(30)).into();
 ///
-/// let ahmed_filter = Filter::Leaf(PersonField::Name(ScalarOperator::Eq("Ahmed".to_owned()).into()));
-/// let nicole_filter = Filter::Leaf(PersonField::Name(ScalarOperator::Eq("Nicole".to_owned()).into()));
+/// let ahmed_filter = PersonField::Name(ScalarOperator::Eq("Hamood".to_owned()).into()).into();
+/// let nicole_filter = PersonField::Name(ScalarOperator::Eq("Nikachka".to_owned()).into()).into();
 /// let name_filter = Filter::AnyOf(vec![ahmed_filter, nicole_filter]);
 ///
-/// let combined_filter = Filter::AllOf(vec![age_filter, name_filter]);
+/// let combined_filter2 = Filter::AllOf(vec![age_filter, name_filter]);
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
-pub(crate) enum Filter<P> {
-    /// Combines these conditions with logical `and`
+pub enum Filter<P> {
+    /// Combines these predicates with logical `and`
     AllOf(Vec<Filter<P>>),
-    /// Combines these conditions with logical `or`
+    /// Combines these predicates with logical `or`
     AnyOf(Vec<Filter<P>>),
-    /// Negates this condition with logical `not`
+    /// Negates this predicate with logical `not`
     Not(Box<Filter<P>>),
     #[cfg_attr(feature = "serde", serde(untagged))]
     /// Apply just one boolean predicate
     Leaf(P),
+}
+
+impl<P> From<P> for Filter<P> {
+    fn from(predicate: P) -> Self {
+        Self::Leaf(predicate)
+    }
+}
+
+#[cfg(feature = "postgres-types")]
+pub trait AsPredicate {
+    fn as_predicate(&self) -> (&'static str, &dyn ToSql);
+}
+
+#[cfg(feature = "postgres-types")]
+impl<P> Filter<P>
+where
+    P: AsRef<str> + AsPredicate,
+{
+    fn as_where_clause_inner<'a>(&'a self, bind_params: &mut Vec<&'a dyn ToSql>) -> String {
+        match self {
+            Self::Leaf(pred) => {
+                let (operator, bind_param) = pred.as_predicate();
+
+                bind_params.push(bind_param);
+                // This works because Postgres's indexing for bind parameters starts at 1
+                let query = format!("{} {} (${})", pred.as_ref(), operator, bind_params.len());
+
+                query
+            }
+            Self::AllOf(filters) | Self::AnyOf(filters) => {
+                let mut query = "".to_owned();
+
+                let (combinator, default) = if matches!(self, Self::AllOf(_)) {
+                    (" and ", "true")
+                } else {
+                    (" or ", "false")
+                };
+
+                if filters.is_empty() {
+                    return default.to_owned();
+                }
+
+                for (i, f) in filters.iter().enumerate() {
+                    let subquery = f.as_where_clause_inner(bind_params);
+                    query.push_str(&format!("({subquery})"));
+
+                    if i != filters.len() - 1 {
+                        query.push_str(combinator);
+                    }
+                }
+
+                query
+            }
+            Self::Not(filter) => {
+                let query = format!("not ({})", filter.as_where_clause_inner(bind_params));
+
+                query
+            }
+        }
+    }
+
+    pub fn as_where_clause(&self) -> (String, Vec<&dyn ToSql>) {
+        // 64 is arbitrary but it's not a lot and definitely more than anyone will be
+        // constructing
+        let mut bind_params = Vec::with_capacity(64);
+
+        let query = self.as_where_clause_inner(&mut bind_params);
+
+        (query, bind_params)
+    }
 }
 
 /// A comparison operator for any scalar value.
@@ -56,7 +134,7 @@ pub(crate) enum Filter<P> {
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
-pub(crate) enum ScalarOperator<T> {
+pub enum ScalarOperator<T> {
     /// equals (`=`)
     Eq(T),
     /// less than (`<`)
@@ -67,24 +145,58 @@ pub(crate) enum ScalarOperator<T> {
     Gt(T),
     /// greater than or equal to (`>=`)
     Gte(T),
-    /// is contained in (`in`)
+    /// is contained in (`= any($1)`)
     In(Vec<T>),
-    /// equals (`=`), but (de)serializes as `{"field": "value"}` instead of `{"field": {"eq": "value"}}`
+    /// equals (`=`), but (de)serializes as `{"field": "value"}` instead of
+    /// `{"field": {"eq": "value"}}`
     #[cfg(feature = "serde")]
     #[serde(untagged)]
     ImplicitEq(T),
 }
 
+#[cfg(feature = "postgres-types")]
+impl<T> AsPredicate for ScalarOperator<T>
+where
+    T: ToSql,
+{
+    fn as_predicate(&self) -> (&'static str, &dyn ToSql) {
+        match self {
+            Self::Eq(v) => ("=", v),
+            Self::Lt(v) => ("<", v),
+            Self::Lte(v) => ("<=", v),
+            Self::Gt(v) => (">", v),
+            Self::Gte(v) => (">=", v),
+            Self::In(v) => ("= any", v),
+            #[cfg(feature = "serde")]
+            Self::ImplicitEq(v) => ("=", v),
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+pub type boolOperator = ScalarOperator<bool>;
+
+#[allow(non_camel_case_types)]
+pub type i32Operator = ScalarOperator<i32>;
+
+#[allow(non_camel_case_types)]
+pub type i64Operator = ScalarOperator<i64>;
+
+pub type UuidOperator = ScalarOperator<Uuid>;
+
+pub type TimestampOperator = ScalarOperator<jiff::Timestamp>;
+
 /// A comparison operator for string values.
 ///
-/// This is a superset of [ScalarOperator] and adds two string-specific methods present in PostgreSQL:
+/// This is a superset of [ScalarOperator] and adds two string-specific methods
+/// present in PostgreSQL:
 /// 1. [`like`](https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE)
 /// 2. [Trigram similar](https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS)
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
-pub(crate) enum StringOperator {
+pub enum StringOperator {
     /// PostgreSQL `like`
     Like(String),
     /// PostgreSQL trigram similarity
@@ -92,6 +204,17 @@ pub(crate) enum StringOperator {
     /// All other operators
     #[cfg_attr(feature = "serde", serde(untagged))]
     Other(ScalarOperator<String>),
+}
+
+#[cfg(feature = "postgres-types")]
+impl AsPredicate for StringOperator {
+    fn as_predicate(&self) -> (&'static str, &dyn ToSql) {
+        match self {
+            Self::Like(s) => ("like", s),
+            Self::Trgm(s) => ("%", s),
+            Self::Other(op) => op.as_predicate(),
+        }
+    }
 }
 
 impl From<ScalarOperator<String>> for StringOperator {
