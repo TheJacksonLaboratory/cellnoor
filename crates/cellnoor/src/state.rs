@@ -43,7 +43,7 @@ pub enum AppState {
 }
 
 impl AppState {
-    pub async fn initialize(settings: Settings) -> anyhow::Result<Self> {
+    pub fn initialize(settings: Settings) -> anyhow::Result<Self> {
         let db_pool = db::Pool::new(
             settings.db_url().expose_secret(),
             settings.max_db_pool_size(),
@@ -64,7 +64,7 @@ impl AppState {
     }
 
     #[cfg(test)]
-    pub async fn initialize_for_test() -> anyhow::Result<Self> {
+    fn initialize_for_test() -> Self {
         use std::env;
 
         use anyhow::Context;
@@ -75,13 +75,14 @@ impl AppState {
             &env::var("CELLNOOR_TEST_DB_URL")
                 .context("environment variables 'CELLNOOR_TEST_DB_URL' required for test")?,
             None,
-        )?;
+        )
+        .unwrap();
 
         // Unit-tests don't use JSON web tokens, so we pass in an empty secret
-        Ok(Self::Prod(ProdState {
+        Self::Prod(ProdState {
             db_pool,
             jwt_decoding_key: Arc::new(jsonwebtoken::DecodingKey::from_secret(&[])),
-        }))
+        })
     }
 
     pub async fn db_client(
@@ -94,3 +95,7 @@ impl AppState {
         }
     }
 }
+
+#[cfg(test)]
+pub static TEST_STATE: std::sync::LazyLock<AppState> =
+    std::sync::LazyLock::new(AppState::initialize_for_test);
