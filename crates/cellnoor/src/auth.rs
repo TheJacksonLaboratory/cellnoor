@@ -1,4 +1,3 @@
-use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use axum::{
     RequestPartsExt,
     extract::{FromRequest, FromRequestParts},
@@ -10,7 +9,7 @@ use postgres_types::FromSql;
 use uuid::Uuid;
 
 use crate::{
-    auth::api_key::{fetch_user_id_by_api_key, verify_api_key},
+    auth::api_key::fetch_api_key_record,
     db,
     error::{self, Error},
     state::{AppState, ProdState},
@@ -36,17 +35,15 @@ impl FromRequestParts<AppState> for AuthUser {
         // Eventually, we'll also decode the JWT that better-auth sets, so we will have
         // both UI auth and API auth mechanisms consolidated here. For now, we don't
         // need that
-        let Some(Ok(api_key)) = parts.headers.get("x-api-key").map(HeaderValue::to_str) else {
+        let Some(api_key) = parts.headers.get("x-api-key").map(HeaderValue::as_bytes) else {
             return Err(Error::no_auth_found(
                 "API key must be located in header 'x-api-key'",
             ));
         };
 
-        let hashed_key =
-            fetch_user_id_by_api_key(api_key, state.db_client(db::User::App).await?).await?;
+        let api_key_record =
+            fetch_api_key_record(api_key, state.db_client(db::User::App).await?).await?;
 
-        verify_api_key(state.api_key_verifier(), api_key, &hashed_key)?;
-
-        Ok(hashed_key.to_user())
+        api_key_record.to_user()
     }
 }

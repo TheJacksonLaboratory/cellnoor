@@ -50,25 +50,15 @@ create table service_account_access (
     primary key (service_account_id, person_id)
 );
 
-create type hashed_api_key as (
-    id uuid,
-    person_id uuid,
-    service_account_id uuid,
-    hashed_key text,
-    expires_at text
-);
-
 -- Now, an API key can be owned by either a person or a service account. We don't use better-auth's system here because
 -- it's a bit clunky for our usecase
 create table api_key (
     id uuid primary key default uuidv7(),
-    name text,
     description text,
-    prefix text unique not null,
-    hashed_key text not null,
+    hashed_key bytea unique not null,
     person_id uuid references person on delete cascade,
     service_account_id uuid references service_account on delete cascade,
-    created_at timestamptz not null,
+    created_at timestamptz not null default now(),
     expires_at timestamptz not null
 
     constraint has_account check ((person_id is null) != (service_account_id is null)),

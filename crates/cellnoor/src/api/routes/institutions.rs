@@ -2,15 +2,8 @@ use aide::axum::{
     ApiRouter,
     routing::{get, post},
 };
-use create::create_institution;
 
-// use index::index_institutions;
-// use show::show_institution;
-use crate::state::AppState;
-
-pub mod create;
-pub mod index;
-// pub mod show;
+use crate::{handlers::institutions::create::create_institution, state::AppState};
 
 pub(super) fn router<'a>() -> ApiRouter<AppState> {
     ApiRouter::new().api_route("/", post(create_institution))

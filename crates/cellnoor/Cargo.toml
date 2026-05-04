@@ -23,7 +23,6 @@ schemars = {workspace = true, optional = true}
 secrecy = {workspace = true, optional = true}
 postgres-types = {workspace = true, optional = true}
 headers = {workspace = true, optional = true}
-argon2 = {workspace = true, optional = true}
 jiff = {workspace = true, optional = true}
 dotenvy = {workspace = true, optional = true}
 thiserror = {workspace = true, optional = true}
@@ -35,6 +34,8 @@ leptos_router.workspace = true
 console_error_panic_hook = {workspace = true, optional = true}
 tokio = { workspace = true, optional = true }
 wasm-bindgen = { workspace = true, optional = true }
+strum.workspace = true
+sha3.workspace = true
 
 [features]
 hydrate = [
@@ -46,7 +47,7 @@ ssr = [
     "dep:anyhow",
     "dep:postgres-types",
     "dep:aide",
-    "dep:argon2",
+
     "dep:deadpool-postgres",
     "dep:camino",
     "dep:clap",

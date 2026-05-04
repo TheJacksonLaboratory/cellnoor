@@ -174,13 +174,13 @@ where
 }
 
 #[allow(non_camel_case_types)]
-pub type boolOperator = ScalarOperator<bool>;
+pub type BoolOperator = ScalarOperator<bool>;
 
 #[allow(non_camel_case_types)]
-pub type i32Operator = ScalarOperator<i32>;
+pub type I32Operator = ScalarOperator<i32>;
 
 #[allow(non_camel_case_types)]
-pub type i64Operator = ScalarOperator<i64>;
+pub type I64Operator = ScalarOperator<i64>;
 
 pub type UuidOperator = ScalarOperator<Uuid>;
 

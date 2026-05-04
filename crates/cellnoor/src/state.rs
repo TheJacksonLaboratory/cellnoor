@@ -1,12 +1,11 @@
 use std::sync::Arc;
 
-use argon2::Argon2;
 use deadpool_postgres::PoolError;
 use secrecy::ExposeSecret;
 use uuid::Uuid;
 
 use crate::{
-    db::{self, User},
+    db::{self},
     settings::Settings,
 };
 
@@ -16,7 +15,7 @@ pub struct DevState {
 }
 impl DevState {
     pub async fn db_client(&self) -> Result<db::Client, PoolError> {
-        self.db_pool.get(User::Person(Uuid::nil())).await
+        self.db_pool.get(db::User::Person(Uuid::nil())).await
     }
 }
 
@@ -24,20 +23,16 @@ impl DevState {
 pub struct ProdState {
     db_pool: db::Pool,
     // Store these two things in one `Arc` instead of 2
-    auth: Arc<(jsonwebtoken::DecodingKey, Argon2<'static>)>,
+    jwt_decoding_key: Arc<jsonwebtoken::DecodingKey>,
 }
 
 impl ProdState {
-    pub async fn db_client(&self, user: User) -> Result<db::Client, PoolError> {
+    pub async fn db_client(&self, user: db::User) -> Result<db::Client, PoolError> {
         self.db_pool.get(user).await
     }
 
     pub fn jwt_decoding_key(&self) -> &jsonwebtoken::DecodingKey {
-        &self.auth.0
-    }
-
-    pub fn api_key_verifier(&self) -> &Argon2 {
-        &self.auth.1
+        &self.jwt_decoding_key
     }
 }
 
@@ -57,11 +52,8 @@ impl AppState {
         let state = if settings.with_auth() {
             Self::Prod(ProdState {
                 db_pool,
-                auth: Arc::new((
-                    jsonwebtoken::DecodingKey::from_secret(
-                        settings.auth_secret().expose_secret().as_bytes(),
-                    ),
-                    Argon2::default(),
+                jwt_decoding_key: Arc::new(jsonwebtoken::DecodingKey::from_secret(
+                    settings.auth_secret().expose_secret().as_bytes(),
                 )),
             })
         } else {
@@ -71,7 +63,31 @@ impl AppState {
         Ok(state)
     }
 
-    pub async fn db_client(&self, user: User) -> Result<db::Client, deadpool_postgres::PoolError> {
+    #[cfg(test)]
+    pub async fn initialize_for_test() -> anyhow::Result<Self> {
+        use std::env;
+
+        use anyhow::Context;
+
+        dotenvy::dotenv()?;
+
+        let db_pool = db::Pool::new(
+            &env::var("CELLNOOR_TEST_DB_URL")
+                .context("environment variables 'CELLNOOR_TEST_DB_URL' required for test")?,
+            None,
+        )?;
+
+        // Unit-tests don't use JSON web tokens, so we pass in an empty secret
+        Ok(Self::Prod(ProdState {
+            db_pool,
+            jwt_decoding_key: Arc::new(jsonwebtoken::DecodingKey::from_secret(&[])),
+        }))
+    }
+
+    pub async fn db_client(
+        &self,
+        user: db::User,
+    ) -> Result<db::Client, deadpool_postgres::PoolError> {
         match self {
             Self::Dev(s) => s.db_client().await,
             Self::Prod(s) => s.db_client(user).await,

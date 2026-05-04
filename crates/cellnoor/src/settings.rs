@@ -1,5 +1,5 @@
 use anyhow::Context;
-use camino::{Utf8Path, Utf8PathBuf};
+use camino::Utf8Path;
 use secrecy::SecretString;
 
 fn default_with_auth() -> bool {

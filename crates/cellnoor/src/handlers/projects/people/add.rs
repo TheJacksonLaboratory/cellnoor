@@ -1,0 +1,39 @@
+use axum::{
+    Json,
+    extract::{Path, State},
+};
+use cellnoor_models::IdParameter;
+use cellnoor_schema::project_people;
+use diesel::prelude::*;
+use diesel_async::RunQueryDsl;
+use uuid::Uuid;
+
+use crate::{
+    db::{self, DbConnection},
+    state::AppState,
+};
+
+pub async fn add_person_to_project(
+    _: State<AppState>,
+    db_conn: DbConnection,
+    Path(IdParameter { id: project_id }): Path<IdParameter>,
+    Json(IdParameter { id: person_id }): Json<IdParameter>,
+) -> Result<(), db::Error> {
+    insert_project_person_mapping(project_id, person_id, &db_conn).await
+}
+
+async fn insert_project_person_mapping(
+    project_id: Uuid,
+    person_id: Uuid,
+    mut db_conn: &diesel_async::AsyncPgConnection,
+) -> Result<(), db::Error> {
+    diesel::insert_into(project_people::table)
+        .values((
+            project_people::project_id.eq(project_id),
+            project_people::person_id.eq(person_id),
+        ))
+        .execute(&mut db_conn)
+        .await?;
+
+    Ok(())
+}
