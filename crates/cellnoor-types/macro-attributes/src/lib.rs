@@ -42,7 +42,7 @@ fn enum_derives() -> proc_macro2::TokenStream {
 
     quote! {
         #base_derives
-        #[derive(Copy, Eq, Hash, ::strum::IntoStaticStr, ::strum::AsRefStr)]
+        #[derive(Copy, Eq, Hash, ::strum::AsRefStr)]
         #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
         #[strum(serialize_all = "snake_case")]
     }
@@ -112,9 +112,7 @@ pub fn unit_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
                 where
                     Self: Sized,
                 {
-                    let s: &str = self.into();
-
-                    s.to_sql(ty, out)
+                    self.as_ref().to_sql(ty, out)
                 }
 
                 fn accepts(ty: &postgres_types::Type) -> bool
