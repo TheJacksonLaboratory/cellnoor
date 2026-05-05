@@ -1,8 +1,11 @@
 use macro_attributes::{base_model, select, unit_enum};
 use nonempty::NonemptyString;
+pub use query::{PersonFilter, PersonOrderBy, PersonPredicate, PersonQuery};
 use uuid::Uuid;
 
 use crate::simple_links::SimpleLinks;
+
+mod query;
 
 #[unit_enum]
 pub enum Action {
@@ -48,10 +51,11 @@ pub struct NewPerson {
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "person_public"))]
 pub struct PersonRecord {
-    pub name: String,
-    pub institution_id: String,
-    pub email: Option<String>,
-    pub orcid: Option<String>,
+    pub id: Uuid,
+    pub name: NonemptyString,
+    pub email: Option<NonemptyString>,
+    pub institution_id: Uuid,
+    pub orcid: Option<NonemptyString>,
 }
 
 #[base_model]

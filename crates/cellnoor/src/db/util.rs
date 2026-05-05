@@ -15,7 +15,7 @@ pub async fn select_one<P, O, T>(
 where
     O: Default,
 {
-    let mut records = select_fn(tx, &DbQuery::from_predicate(pred, true)).await?;
+    let mut records = select_fn(tx, &DbQuery::from_filter(pred, true)).await?;
 
     if records.len() != 1 {
         return Err(Error::resource_not_found());

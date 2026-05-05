@@ -58,7 +58,7 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let query = InstitutionQuery::from_predicate(
+        let query = InstitutionQuery::from_filter(
             InstitutionPredicate::Name(StringOperator::Like("Jackson%".to_owned())),
             false,
         );
@@ -68,7 +68,7 @@ pub mod test {
         assert_eq!(institutions.len(), 1);
         assert_eq!(institutions[0].record.id, Uuid::nil());
 
-        let query = InstitutionQuery::from_predicate(
+        let query = InstitutionQuery::from_filter(
             InstitutionPredicate::Name(SimpleStringOperator::In(vec!["".to_owned()]).into()),
             false,
         );

@@ -40,9 +40,10 @@ where
 
 impl<P, O> DbQuery<filter::Filter<P>, O>
 where
+    P: Into<filter::Filter<P>>,
     O: Default,
 {
-    pub fn from_predicate(predicate: P, detailed: bool) -> Self {
+    pub fn from_filter(predicate: P, detailed: bool) -> Self {
         Self {
             filter: Some(predicate.into()),
             detailed,
