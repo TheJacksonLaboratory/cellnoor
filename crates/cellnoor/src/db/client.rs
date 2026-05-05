@@ -1,12 +1,13 @@
-use std::fmt::Display;
+use std::{borrow::Borrow, fmt::Display, vec::IntoIter};
 
 use aide::OperationIo;
 use deadpool_postgres::{
     GenericClient, Object as InnerClient, Pool as InnerPool, PoolError,
     Transaction as InnerTransaction,
-    tokio_postgres::{Error as TokioPgError, Row, types::ToSql},
+    tokio_postgres::{Error as TokioPgError, Row, RowStream, types::ToSql},
 };
-use postgres_types::FromSqlOwned;
+use futures::{Stream, StreamExt};
+use postgres_types::{BorrowToSql, FromSql, FromSqlOwned};
 use uuid::Uuid;
 
 use crate::error::Error;
@@ -98,49 +99,81 @@ impl<'a> Transaction<'a> {
         Ok(result)
     }
 
-    pub async fn query(
+    pub async fn query_raw(
         &self,
         statement: &str,
+        params: Vec<&(dyn ToSql + Sync)>,
+    ) -> Result<RowStream, TokioPgError> {
+        self.execute_as_user(self.inner.query_raw(statement, params.into_iter()))
+            .await
+    }
+
+    pub async fn query_scalar_raw<T>(
+        &self,
+        statement: &str,
+        params: Vec<&(dyn ToSql + Sync)>,
+    ) -> Result<impl Stream<Item = T>, TokioPgError>
+    where
+        T: FromSqlOwned,
+    {
+        let stream = self.query_raw(statement, params).await?;
+
+        let map_row_result = |result: Result<Row, _>| result.unwrap().get(0);
+
+        Ok(stream.map(map_row_result))
+    }
+
+    pub async fn query(
+        &self,
+        query: &str,
         params: &[&(dyn ToSql + Sync)],
     ) -> Result<Vec<Row>, TokioPgError> {
-        self.execute_as_user(self.inner.query(statement, params))
+        self.execute_as_user(self.inner.query(query, params)).await
+    }
+
+    pub async fn query_scalar<T>(
+        &self,
+        query: &str,
+        params: &[&(dyn ToSql + Sync)],
+    ) -> Result<Vec<T>, TokioPgError>
+    where
+        T: FromSqlOwned,
+    {
+        let map_row = |row: Row| row.get(0);
+
+        self.query(query, params)
             .await
+            .map(|rows| rows.into_iter().map(map_row).collect())
     }
 
     pub async fn query_one(
         &self,
-        statement: &str,
+        query: &str,
         params: &[&(dyn ToSql + Sync)],
     ) -> Result<Row, TokioPgError> {
-        self.execute_as_user(self.inner.query_one(statement, params))
+        self.execute_as_user(self.inner.query_one(query, params))
             .await
     }
 
     pub async fn query_one_scalar<T>(
         &self,
-        statement: &str,
+        query: &str,
         params: &[&(dyn ToSql + Sync)],
     ) -> Result<T, Error>
     where
         T: FromSqlOwned,
     {
-        let row = self.query_one(statement, params).await?;
-
-        if row.len() != 1 {
-            return Err(Error::other(
-                "query returned more than one column".to_owned(),
-            ));
-        }
+        let row = self.query_one(query, params).await?;
 
         Ok(row.get(0))
     }
 
     pub async fn execute(
         &self,
-        statement: &str,
+        query: &str,
         params: &[&(dyn ToSql + Sync)],
     ) -> Result<u64, TokioPgError> {
-        self.execute_as_user(self.inner.execute(statement, params))
+        self.execute_as_user(self.inner.execute(query, params))
             .await
     }
 

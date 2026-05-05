@@ -13,8 +13,6 @@ pub mod handlers;
 pub mod settings;
 #[cfg(feature = "ssr")]
 pub mod state;
-#[cfg(all(feature = "ssr", test))]
-pub mod test_state;
 
 #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]

@@ -7,7 +7,7 @@
 #[cfg_attr(feature = "serde", serde(try_from = "String"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(with = "String"))]
-#[cfg_attr(feature = "postgres-types", postgres(transparent))]
+#[cfg_attr(feature = "postgres-types", postgres(name = "case_insensitive_text"))]
 pub struct NonemptyString(String);
 
 impl std::fmt::Debug for NonemptyString {

@@ -63,28 +63,6 @@ impl AppState {
         Ok(state)
     }
 
-    #[cfg(test)]
-    fn initialize_for_test() -> Self {
-        use std::env;
-
-        use anyhow::Context;
-
-        dotenvy::dotenv()?;
-
-        let db_pool = db::Pool::new(
-            &env::var("CELLNOOR_TEST_DB_URL")
-                .context("environment variables 'CELLNOOR_TEST_DB_URL' required for test")?,
-            None,
-        )
-        .unwrap();
-
-        // Unit-tests don't use JSON web tokens, so we pass in an empty secret
-        Self::Prod(ProdState {
-            db_pool,
-            jwt_decoding_key: Arc::new(jsonwebtoken::DecodingKey::from_secret(&[])),
-        })
-    }
-
     pub async fn db_client(
         &self,
         user: db::User,
@@ -96,6 +74,74 @@ impl AppState {
     }
 }
 
+// We put this module inside of `state.rs` so it has full access to `ProdState`
+/// A module of test utilities to reduce boilerplate for writing tests.
 #[cfg(test)]
-pub static TEST_STATE: std::sync::LazyLock<AppState> =
-    std::sync::LazyLock::new(AppState::initialize_for_test);
+pub mod test_util {
+    use std::sync::Arc;
+
+    use nonempty::NonemptyString;
+    #[cfg(test)]
+    use uuid::Uuid;
+
+    use crate::{db, state::ProdState};
+
+    fn test_state() -> ProdState {
+        use std::env;
+
+        dotenvy::dotenv().ok();
+
+        let db_pool = db::Pool::new(
+            &env::var("CELLNOOR_TEST_DB_URL")
+                .expect("environment variables 'CELLNOOR_TEST_DB_URL' required for test"),
+            None,
+        )
+        .unwrap();
+
+        // Unit-tests don't use JSON web tokens, so we pass in an empty secret
+        ProdState {
+            db_pool,
+            jwt_decoding_key: Arc::new(jsonwebtoken::DecodingKey::from_secret(&[])),
+        }
+    }
+
+    static TEST_STATE: std::sync::LazyLock<ProdState> = std::sync::LazyLock::new(test_state);
+
+    #[cfg(test)]
+    pub async fn db_client_as_app() -> db::Client {
+        TEST_STATE.db_client(db::User::App).await.unwrap()
+    }
+
+    #[cfg(test)]
+    pub async fn db_client_as_user(user: Uuid) -> db::Client {
+        TEST_STATE.db_client(db::User::Person(user)).await.unwrap()
+    }
+
+    #[cfg(test)]
+    pub async fn db_client_as_admin() -> db::Client {
+        TEST_STATE
+            .db_client(db::User::Person(Uuid::nil()))
+            .await
+            .unwrap()
+    }
+
+    #[cfg(test)]
+    pub async fn create_user() -> Uuid {
+        let client = db_client_as_admin().await;
+
+        todo!()
+    }
+
+    pub trait ToNonemptyString {
+        fn to_nonempty_string(&self) -> NonemptyString;
+    }
+
+    impl<T> ToNonemptyString for T
+    where
+        T: AsRef<str>,
+    {
+        fn to_nonempty_string(&self) -> NonemptyString {
+            NonemptyString::new(self.as_ref().to_owned()).unwrap()
+        }
+    }
+}

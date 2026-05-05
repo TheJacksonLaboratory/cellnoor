@@ -7,7 +7,7 @@
 pub mod institutions;
 // pub mod libraries;
 // pub mod multiplexing_tags;
-// pub mod people;
+pub mod people;
 // pub mod projects;
 // pub mod specimens;
 // pub mod suspension_pools;

@@ -1,5 +1,8 @@
 #[cfg(feature = "postgres-types")]
-use postgres_types::ToSql;
+use std::borrow::Borrow;
+
+#[cfg(feature = "postgres-types")]
+use postgres_types::{BorrowToSql, ToSql};
 use uuid::Uuid;
 
 /// A recursive data-structure to store arbitrarily-combined boolean predicates.
@@ -64,19 +67,22 @@ impl<P> From<P> for Filter<P> {
 }
 
 #[cfg(feature = "postgres-types")]
-pub trait AsPredicate {
-    fn as_predicate(&self) -> (&'static str, &dyn ToSql);
+pub trait ToPredicate {
+    fn to_predicate(&self) -> (&'static str, &(dyn ToSql + Sync));
 }
 
 #[cfg(feature = "postgres-types")]
 impl<P> Filter<P>
 where
-    P: AsRef<str> + AsPredicate,
+    P: AsRef<str> + ToPredicate,
 {
-    fn as_where_clause_inner<'a>(&'a self, bind_params: &mut Vec<&'a dyn ToSql>) -> String {
+    fn as_where_clause_inner<'a>(
+        &'a self,
+        bind_params: &mut Vec<&'a (dyn ToSql + Sync)>,
+    ) -> String {
         match self {
             Self::Leaf(pred) => {
-                let (operator, bind_param) = pred.as_predicate();
+                let (operator, bind_param) = pred.to_predicate();
 
                 bind_params.push(bind_param);
                 // This works because Postgres's indexing for bind parameters starts at 1
@@ -116,14 +122,14 @@ where
         }
     }
 
-    pub fn as_where_clause(&self) -> (String, Vec<&dyn ToSql>) {
+    pub(crate) fn to_where_clause(&self) -> (String, Vec<&(dyn ToSql + Sync)>) {
         // 64 is arbitrary but it's not a lot and definitely more than anyone will be
         // constructing
         let mut bind_params = Vec::with_capacity(64);
 
         let query = self.as_where_clause_inner(&mut bind_params);
 
-        (query, bind_params)
+        (format!("where {query}"), bind_params)
     }
 }
 
@@ -155,11 +161,11 @@ pub enum ScalarOperator<T> {
 }
 
 #[cfg(feature = "postgres-types")]
-impl<T> AsPredicate for ScalarOperator<T>
+impl<T> ToPredicate for ScalarOperator<T>
 where
-    T: ToSql,
+    T: ToSql + Sync,
 {
-    fn as_predicate(&self) -> (&'static str, &dyn ToSql) {
+    fn to_predicate(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Eq(v) => ("=", v),
             Self::Lt(v) => ("<", v),
@@ -207,12 +213,12 @@ pub enum StringOperator {
 }
 
 #[cfg(feature = "postgres-types")]
-impl AsPredicate for StringOperator {
-    fn as_predicate(&self) -> (&'static str, &dyn ToSql) {
+impl ToPredicate for StringOperator {
+    fn to_predicate(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Like(s) => ("like", s),
             Self::Trgm(s) => ("%", s),
-            Self::Other(op) => op.as_predicate(),
+            Self::Other(op) => op.to_predicate(),
         }
     }
 }

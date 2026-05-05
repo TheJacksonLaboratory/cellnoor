@@ -13,7 +13,7 @@ thiserror.workspace = true
 workspace = true
 
 [features]
-schemars = ["dep:schemars"]
+schemars = ["dep:schemars", "serde"]
 serde = ["dep:serde"]
 postgres-types = ["dep:postgres-types"]
 

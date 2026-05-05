@@ -1,12 +1,62 @@
 use axum::{Json, extract::State};
-use cellnoor_types::institution::{Institution, InstitutionQuery};
+use cellnoor_types::{
+    SimpleLinks,
+    institution::{Institution, InstitutionQuery, InstitutionRecord},
+};
+use futures::StreamExt;
+use serde_qs::web::QsQuery;
 
-use crate::{auth::AuthUser, error::Error, state::AppState};
+use crate::{auth::AuthUser, db, error::Error, state::AppState};
 
 pub async fn index_institutions(
     State(state): State<AppState>,
     user: AuthUser,
-    query: serde_qs::axum::QsQuery<InstitutionQuery>,
+    QsQuery(query): QsQuery<InstitutionQuery>,
 ) -> Result<Json<Vec<Institution>>, Error> {
-    todo!()
+    let mut client = state.db_client(user).await?;
+    let tx = client.begin().await?;
+
+    let response = select_institutions(&tx, &query).await.map(Json)?;
+
+    tx.commit().await?;
+
+    Ok(response)
+}
+
+async fn select_institutions(
+    tx: &db::Transaction<'_>,
+    query: &InstitutionQuery,
+) -> Result<Vec<Institution>, Error> {
+    let (sql, params) = query.to_sql_query();
+    let query = format!("select institution from institution {sql}");
+
+    Ok(tx
+        .query_scalar_raw(&query, params)
+        .await?
+        .map(Institution::from_record)
+        .collect()
+        .await)
+}
+
+#[cfg(test)]
+pub mod test {
+    use cellnoor_types::institution::{InstitutionQuery, NewInstitution};
+    use uuid::Uuid;
+
+    use crate::{
+        handlers::institutions::index::select_institutions,
+        state::test_util::{ToNonemptyString, db_client_as_admin},
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn default_select() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let institutions = select_institutions(&tx, &InstitutionQuery::default())
+            .await
+            .unwrap();
+
+        assert_eq!(institutions[0].record.id, Uuid::nil());
+    }
 }

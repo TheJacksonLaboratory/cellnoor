@@ -15,6 +15,10 @@ create view person_public as (
     from person
 );
 
+create view person_private as (
+    select id, name, institution_id, orcid from person
+);
+
 create view person_to_institution as (
     select
         pers as person,

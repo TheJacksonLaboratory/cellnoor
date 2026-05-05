@@ -22,5 +22,5 @@ workspace = true
 
 [features]
 serde = ["dep:serde", "nonempty/serde", "positive/serde"]
-schemars = ["dep:schemars", "nonempty/schemars", "positive/schemars"]
+schemars = ["serde", "dep:schemars", "nonempty/schemars", "positive/schemars"]
 postgres-types = ["dep:postgres-types", "nonempty/postgres-types", "dep:bytes", "positive/postgres-types"]

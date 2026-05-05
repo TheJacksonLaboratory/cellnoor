@@ -2,19 +2,15 @@ use std::sync::LazyLock;
 
 use aide::OperationIo;
 use axum::{Json, extract::State, http::status::StatusCode, response::IntoResponse};
-use cellnoor_models::person::{NewPerson, Person};
-use cellnoor_schema::people;
-use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use regex::Regex;
 use schemars::JsonSchema;
 use serde::Serialize;
 use uuid::Uuid;
 
-use crate::{db, db::DbConnection, state::AppState};
+use crate::{db, state::AppState};
 
 pub async fn create_person(
-    _: State<AppState>,
-    db_conn: DbConnection,
+    state: State<AppState>,
     Json(person): Json<NewPerson>,
 ) -> Result<Json<Person>, Error> {
     validate_email(person.email())?;

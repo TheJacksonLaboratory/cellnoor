@@ -1,10 +1,10 @@
 use macro_attributes::field_enum;
 #[cfg(feature = "postgres-types")]
-use postgres_types::ToSql;
+use postgres_types::{BorrowToSql, ToSql};
 use serde_json::Value;
 
 #[cfg(feature = "postgres-types")]
-use crate::query::filter::AsPredicate;
+use crate::query::filter::ToPredicate;
 use crate::{
     query::{
         Query,
@@ -55,19 +55,19 @@ pub type SpecimenPredicate = SpecimenField<
 >;
 
 #[cfg(feature = "postgres-types")]
-impl AsPredicate for SpecimenPredicate {
-    fn as_predicate(&self) -> (&'static str, &dyn ToSql) {
+impl ToPredicate for SpecimenPredicate {
+    fn to_predicate(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Id(u) | Self::SubmittedBy(u) | Self::ProjectId(u) | Self::ReturnedBy(u) => {
-                u.as_predicate()
+                u.to_predicate()
             }
-            Self::ReadableId(s) | Self::Name(s) | Self::Tissue(s) => s.as_predicate(),
-            Self::ReceivedAt(t) | Self::ReturnedAt(t) => t.as_predicate(),
-            Self::Species(sp) | Self::HostSpecies(sp) => sp.as_predicate(),
-            Self::Type(ty) => ty.as_predicate(),
-            Self::EmbeddedIn(e) => e.as_predicate(),
-            Self::Fixative(f) => f.as_predicate(),
-            Self::ThermalPreservationMethod(tp) => tp.as_predicate(),
+            Self::ReadableId(s) | Self::Name(s) | Self::Tissue(s) => s.to_predicate(),
+            Self::ReceivedAt(t) | Self::ReturnedAt(t) => t.to_predicate(),
+            Self::Species(sp) | Self::HostSpecies(sp) => sp.to_predicate(),
+            Self::Type(ty) => ty.to_predicate(),
+            Self::EmbeddedIn(e) => e.to_predicate(),
+            Self::Fixative(f) => f.to_predicate(),
+            Self::ThermalPreservationMethod(tp) => tp.to_predicate(),
         }
     }
 }

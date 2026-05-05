@@ -4,7 +4,7 @@ use macro_attributes::base_model;
 
 /// An enum representing sorting-direction, corresponding to
 /// [PostgreSQL's usage](https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS)
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::IntoStaticStr, strum::Display)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::AsRefStr, strum::Display)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
@@ -40,20 +40,25 @@ pub trait OrderingField {
 
 impl<T> OrderBy<T>
 where
-    T: Copy + Into<&'static str> + OrderingField,
+    T: Copy + AsRef<str> + OrderingField,
 {
     pub fn to_order_by_clause(&self) -> String {
         match self {
             Self::OneField(field) => {
-                let s: &str = (*field).into();
-                format!("{} {}", s, field.direction())
+                format!("order by {} {}", field.as_ref(), field.direction())
             }
             Self::ManyFields(fields) => {
+                if fields.is_empty() {
+                    return String::new();
+                }
+
                 let mut clause = String::with_capacity(fields.len() * 16);
+                clause.push_str("order by ");
+
                 for f in fields {
-                    clause.push_str((*f).into());
+                    clause.push_str(f.as_ref());
                     clause.push(' ');
-                    clause.push_str(f.direction().into());
+                    clause.push_str(f.direction().as_ref());
                     clause.push(' ');
                 }
 

@@ -36,6 +36,8 @@ tokio = { workspace = true, optional = true }
 wasm-bindgen = { workspace = true, optional = true }
 strum.workspace = true
 sha3.workspace = true
+regex.workspace = true
+futures.workspace = true
 
 [features]
 hydrate = [
@@ -70,6 +72,10 @@ ssr = [
     "cellnoor-types/schemars",
     "cellnoor-types/postgres-types"
 ]
+
+[dev-dependencies]
+nonempty = { path = "../nonempty", features = ["postgres-types"] }
+uuid = {workspace = true, features = ["v4"]}
 
 [package.metadata.leptos]
 # The name used by wasm-bindgen/cargo-leptos for the JS/WASM bundle. Defaults to the crate name

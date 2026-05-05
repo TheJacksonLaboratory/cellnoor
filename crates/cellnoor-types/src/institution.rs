@@ -3,6 +3,8 @@ use nonempty::NonemptyString;
 pub use query::InstitutionQuery;
 use uuid::Uuid;
 
+use crate::simple_links::SimpleLinks;
+
 #[base_model]
 pub struct NewInstitution {
     pub name: NonemptyString,
@@ -11,20 +13,41 @@ pub struct NewInstitution {
 
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "institution"))]
-pub struct Institution {
+#[cfg_attr(feature = "schemars", schemars(inline))]
+pub struct InstitutionRecord {
     pub id: Uuid,
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub name: NonemptyString,
     pub microsoft_entra_tenant_id: Uuid,
 }
 
+#[base_model]
+pub struct Institution {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: InstitutionRecord,
+    pub links: SimpleLinks,
+}
+
+impl Institution {
+    pub fn from_record(record: InstitutionRecord) -> Self {
+        let id = record.id;
+
+        Self {
+            record,
+            links: SimpleLinks {
+                self_: format!("/institutions/{id}"),
+            },
+        }
+    }
+}
+
 mod query {
     use macro_attributes::field_enum;
     #[cfg(feature = "postgres-types")]
-    use postgres_types::ToSql;
+    use postgres_types::{BorrowToSql, ToSql};
 
     #[cfg(feature = "postgres-types")]
-    use crate::query::filter::AsPredicate;
+    use crate::query::filter::ToPredicate;
     use crate::query::{
         Query,
         filter::{Filter, StringOperator, UuidOperator},
@@ -41,11 +64,11 @@ mod query {
     pub type InstitutionPredicate = InstitutionField<UuidOperator, StringOperator>;
 
     #[cfg(feature = "postgres-types")]
-    impl AsPredicate for InstitutionPredicate {
-        fn as_predicate(&self) -> (&'static str, &dyn ToSql) {
+    impl ToPredicate for InstitutionPredicate {
+        fn to_predicate(&self) -> (&'static str, &(dyn ToSql + Sync)) {
             match self {
-                Self::Id(u) | Self::MicrosoftEntraTenantId(u) => u.as_predicate(),
-                Self::Name(s) => s.as_predicate(),
+                Self::Id(u) | Self::MicrosoftEntraTenantId(u) => u.to_predicate(),
+                Self::Name(s) => s.to_predicate(),
             }
         }
     }
@@ -93,10 +116,10 @@ mod tests {
 
         let filter = Filter::AnyOf(vec![all_of, not, in_pred.into()]);
 
-        let expected_query = "((institution.name = ($1)) and (institution.id = ($2))) or (not \
-                              (institution.id > ($3))) or (institution.id = any ($4))";
+        let expected_query = "where ((institution.name = ($1)) and (institution.id = ($2))) or \
+                              (not (institution.id > ($3))) or (institution.id = any ($4))";
 
-        let (actual_query, _actual_bind_params) = filter.as_where_clause();
+        let (actual_query, _actual_bind_params) = filter.to_where_clause();
 
         assert_str_eq!(expected_query, actual_query);
     }
