@@ -1,5 +1,6 @@
-pub use inner::NonemptyBoundedVec;
 use std::fmt::Debug;
+
+pub use inner::NonemptyBoundedVec;
 
 #[must_use]
 #[derive(Clone, Debug, thiserror::Error, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -8,8 +9,9 @@ pub struct Error<T, const N: usize>(pub Vec<T>);
 
 #[cfg(feature = "postgres-types")]
 mod inner {
-    use super::Error;
     use postgres_types::{FromSql, ToSql};
+
+    use super::Error;
 
     #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd, FromSql, ToSql)]
     #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
