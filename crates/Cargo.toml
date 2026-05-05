@@ -15,6 +15,7 @@ regex = {version = "1.12.3"}
 aide = { version = "0.16.0-alpha.4", features = [
   "axum",
   "axum-json",
+  "serde_qs",
   "macros",
   "redoc",
   "skip_serializing_defaults",

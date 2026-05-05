@@ -2,9 +2,9 @@ use macro_attributes::base_model;
 #[cfg(feature = "postgres-types")]
 use postgres_types::ToSql;
 
+use crate::query::order_by::OrderBy;
 #[cfg(feature = "postgres-types")]
-use crate::query::order_by::OrderingField;
-use crate::query::{filter::ToPredicate, order_by::OrderBy};
+use crate::query::{filter::ToPredicate, order_by::OrderingField};
 
 pub mod filter;
 pub mod order_by;

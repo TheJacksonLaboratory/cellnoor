@@ -63,20 +63,19 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let filter =
-            Some(InstitutionPredicate::Name(StringOperator::Like("Jackson%".to_owned())).into());
-        let mut query = InstitutionQuery {
-            filter,
-            ..Default::default()
-        };
+        let query = InstitutionQuery::from_predicate(
+            InstitutionPredicate::Name(StringOperator::Like("Jackson%".to_owned())),
+            false,
+        );
 
         let institutions = select_institutions(&tx, &query).await.unwrap();
 
         assert_eq!(institutions.len(), 1);
         assert_eq!(institutions[0].record.id, Uuid::nil());
 
-        query.filter = Some(
-            InstitutionPredicate::Name(SimpleStringOperator::In(vec!["".to_owned()]).into()).into(),
+        let query = InstitutionQuery::from_predicate(
+            InstitutionPredicate::Name(SimpleStringOperator::In(vec!["".to_owned()]).into()),
+            false,
         );
 
         assert_eq!(select_institutions(&tx, &query).await.unwrap().len(), 0);

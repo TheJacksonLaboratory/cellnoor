@@ -1,9 +1,7 @@
 use macro_attributes::select;
 use uuid::Uuid;
 
-use crate::specimen::{
-    SpecimenCommonFields, SpecimenVariableFields, measurement::SpecimenMeasurement,
-};
+use crate::specimen::{SpecimenCommonFields, SpecimenVariableFields};
 
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "specimen"))]
