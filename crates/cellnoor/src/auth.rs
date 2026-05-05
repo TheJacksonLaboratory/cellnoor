@@ -1,19 +1,7 @@
-use axum::{
-    RequestPartsExt,
-    extract::{FromRequest, FromRequestParts},
-    http::HeaderValue,
-    response::IntoResponse,
-};
-use axum_extra::TypedHeader;
-use postgres_types::FromSql;
+use axum::{extract::FromRequestParts, http::HeaderValue};
 use uuid::Uuid;
 
-use crate::{
-    auth::api_key::fetch_api_key_record,
-    db,
-    error::{self, Error},
-    state::{AppState, ProdState},
-};
+use crate::{auth::api_key::fetch_api_key_record, db, error::Error, state::AppState};
 
 mod api_key;
 

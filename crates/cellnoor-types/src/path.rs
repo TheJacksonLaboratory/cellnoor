@@ -1,6 +1,4 @@
 use macro_attributes::base_model;
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[base_model]

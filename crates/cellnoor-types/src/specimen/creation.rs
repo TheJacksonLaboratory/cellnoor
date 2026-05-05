@@ -1,9 +1,7 @@
-use jiff::Timestamp;
 use macro_attributes::base_model;
-use uuid::Uuid;
 
 use crate::specimen::{
-    Species, SpecimenCommonFields, SpecimenVariableFields,
+    SpecimenCommonFields, SpecimenVariableFields,
     creation::{
         block::NewBlock, cell_pellet::NewCellPellet, rna_extract::NewRnaExtract,
         suspension::NewSuspensionSpecimen, tissue::NewTissue,

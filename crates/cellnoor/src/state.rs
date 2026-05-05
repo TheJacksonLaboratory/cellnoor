@@ -107,17 +107,14 @@ pub mod test_util {
 
     static TEST_STATE: std::sync::LazyLock<ProdState> = std::sync::LazyLock::new(test_state);
 
-    #[cfg(test)]
     pub async fn db_client_as_app() -> db::Client {
         TEST_STATE.db_client(db::User::App).await.unwrap()
     }
 
-    #[cfg(test)]
     pub async fn db_client_as_user(user: Uuid) -> db::Client {
         TEST_STATE.db_client(db::User::Person(user)).await.unwrap()
     }
 
-    #[cfg(test)]
     pub async fn db_client_as_admin() -> db::Client {
         TEST_STATE
             .db_client(db::User::Person(Uuid::nil()))
@@ -125,7 +122,6 @@ pub mod test_util {
             .unwrap()
     }
 
-    #[cfg(test)]
     pub async fn create_user() -> Uuid {
         let client = db_client_as_admin().await;
 

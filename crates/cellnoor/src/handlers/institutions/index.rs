@@ -1,9 +1,5 @@
 use axum::{Json, extract::State};
-use cellnoor_types::{
-    SimpleLinks,
-    institution::{Institution, InstitutionQuery, InstitutionRecord},
-};
-use futures::StreamExt;
+use cellnoor_types::institution::{Institution, InstitutionQuery};
 use serde_qs::web::QsQuery;
 
 use crate::{auth::AuthUser, db, error::Error, state::AppState};
@@ -37,13 +33,12 @@ pub(super) async fn select_institutions(
 pub mod test {
     use cellnoor_types::{
         SimpleStringOperator, StringOperator,
-        institution::{InstitutionPredicate, InstitutionQuery, NewInstitution},
+        institution::{InstitutionPredicate, InstitutionQuery},
     };
     use uuid::Uuid;
 
     use crate::{
-        handlers::institutions::index::select_institutions,
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        handlers::institutions::index::select_institutions, state::test_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

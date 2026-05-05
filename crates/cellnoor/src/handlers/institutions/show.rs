@@ -3,8 +3,8 @@ use axum::{
     extract::{Path, State},
 };
 use cellnoor_types::{
-    DbQuery, Filter, IdParam, UuidOperator,
-    institution::{Institution, InstitutionPredicate, InstitutionQuery},
+    IdParam, UuidOperator,
+    institution::{Institution, InstitutionPredicate},
 };
 use uuid::Uuid;
 

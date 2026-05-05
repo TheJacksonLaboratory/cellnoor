@@ -33,7 +33,7 @@ async fn leptos_main() {
         config_path: Utf8PathBuf,
     }
 
-    let Cli { config_path } = Cli::parse();
+    let Cli { config_path: _ } = Cli::parse();
 
     let conf = get_configuration(None).unwrap();
     let addr = conf.leptos_options.site_addr;

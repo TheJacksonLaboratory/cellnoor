@@ -1,5 +1,5 @@
 use axum::{Json, extract::State};
-use cellnoor_types::institution::{Institution, InstitutionRecord, NewInstitution};
+use cellnoor_types::institution::{Institution, NewInstitution};
 
 use crate::{auth::AuthUser, db, error::Error, state::AppState};
 

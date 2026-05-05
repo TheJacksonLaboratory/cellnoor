@@ -1,7 +1,6 @@
 use macro_attributes::field_enum;
 #[cfg(feature = "postgres-types")]
-use postgres_types::{BorrowToSql, ToSql};
-use serde_json::Value;
+use postgres_types::ToSql;
 
 #[cfg(feature = "postgres-types")]
 use crate::query::filter::ToPredicate;

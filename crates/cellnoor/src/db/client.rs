@@ -1,4 +1,4 @@
-use std::{borrow::Borrow, fmt::Display, vec::IntoIter};
+use std::fmt::Display;
 
 use aide::OperationIo;
 use deadpool_postgres::{
@@ -7,10 +7,10 @@ use deadpool_postgres::{
     tokio_postgres::{Error as TokioPgError, Row, RowStream, types::ToSql},
 };
 use futures::{Stream, StreamExt};
-use postgres_types::{BorrowToSql, FromSql, FromSqlOwned};
+use postgres_types::FromSqlOwned;
 use uuid::Uuid;
 
-use crate::{db::util::FromRecord, error::Error};
+use crate::db::util::FromRecord;
 
 #[derive(Debug, Clone)]
 pub struct Pool(InnerPool);

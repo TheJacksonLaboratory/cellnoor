@@ -1,15 +1,7 @@
-use axum::{RequestPartsExt, extract::FromRequestParts, http::HeaderValue, response::IntoResponse};
-use axum_extra::TypedHeader;
-use postgres_types::FromSql;
 use sha3::Digest;
 use uuid::Uuid;
 
-use crate::{
-    auth::AuthUser,
-    db,
-    error::{self, Error},
-    state::{AppState, ProdState},
-};
+use crate::{auth::AuthUser, db, error::Error};
 
 const API_KEY_LENGTH: usize = 22;
 
