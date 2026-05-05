@@ -52,8 +52,6 @@ pub struct PersonRecord {
 pub struct PersonLinks {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub simple: SimpleLinks,
-    pub specimens: String,
-    pub chromium_datasets: String,
     pub projects: String,
 }
 

@@ -23,10 +23,6 @@ pub struct NewRnaExtract {
 }
 
 impl NewRnaExtract {
-    pub(super) fn common(&self) -> &SpecimenCommonFields {
-        &self.inner
-    }
-
     fn into_common(self) -> SpecimenCommonFields {
         self.inner
     }

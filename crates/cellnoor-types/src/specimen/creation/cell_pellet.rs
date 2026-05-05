@@ -26,10 +26,6 @@ pub struct NewCellPellet {
 }
 
 impl NewCellPellet {
-    pub(super) fn common(&self) -> &SpecimenCommonFields {
-        &self.inner
-    }
-
     fn into_common(self) -> SpecimenCommonFields {
         self.inner
     }

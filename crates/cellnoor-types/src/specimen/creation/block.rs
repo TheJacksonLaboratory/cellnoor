@@ -49,14 +49,6 @@ pub enum BlockEmbeddingMatrix {
 }
 
 impl NewBlock {
-    pub(super) fn common(&self) -> &SpecimenCommonFields {
-        match self {
-            Self::CarboxymethylCellulose { inner, .. }
-            | Self::OptimalCuttingTemperatureCompound { inner, .. }
-            | Self::Paraffin { inner, .. } => inner,
-        }
-    }
-
     fn into_common(self) -> SpecimenCommonFields {
         match self {
             Self::CarboxymethylCellulose { inner, fixative: _ }

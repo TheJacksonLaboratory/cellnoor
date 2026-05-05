@@ -1,8 +1,3 @@
-mod creation;
-pub mod measurement;
-mod query;
-mod read;
-
 pub use creation::{
     NewSpecimen,
     block::{BlockEmbeddingMatrix, BlockFixative, NewBlock},
@@ -13,8 +8,14 @@ use jiff::Timestamp;
 use macro_attributes::{select, unit_enum};
 use nonempty::NonemptyString;
 pub use query::SpecimenQuery;
+pub use read::SpecimenRecord;
 use serde_json::Value;
 use uuid::Uuid;
+
+mod creation;
+pub mod measurement;
+mod query;
+mod read;
 
 #[unit_enum]
 pub enum Species {

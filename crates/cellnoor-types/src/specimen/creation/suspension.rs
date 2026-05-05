@@ -38,17 +38,6 @@ pub enum NewSuspensionSpecimen {
 }
 
 impl NewSuspensionSpecimen {
-    pub(super) fn common(&self) -> &SpecimenCommonFields {
-        match self {
-            Self::Fixed { inner, fixative: _ }
-            | Self::Fresh(inner)
-            | Self::ThermallyPreserved {
-                inner,
-                thermal_preservation_method: _,
-            } => inner,
-        }
-    }
-
     fn into_common(self) -> SpecimenCommonFields {
         match self {
             Self::Fixed { inner, fixative: _ }

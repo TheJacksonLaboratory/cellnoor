@@ -5,7 +5,7 @@ use crate::specimen::{SpecimenCommonFields, SpecimenVariableFields};
 
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "specimen"))]
-pub struct Specimen {
+pub struct SpecimenRecord {
     id: Uuid,
     #[cfg_attr(feature = "serde", serde(flatten))]
     common: SpecimenCommonFields,
