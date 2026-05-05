@@ -16,11 +16,11 @@ use crate::state::AppState;
 // pub mod chromium_runs;
 // pub mod database;
 // pub mod gem_pools;
-pub mod institutions;
+mod institutions;
 // pub mod libraries;
 // pub mod multiplexing_tags;
-// pub mod people;
-// pub mod projects;
+mod people;
+mod projects;
 // pub mod specimens;
 // pub mod suspension_pools;
 // pub mod suspensions;
@@ -39,8 +39,8 @@ pub(super) fn router<'a>() -> Router<AppState> {
                 .axum_handler()),
         )
         // .nest("/admin", admin::router())
-        .nest("/institutions", institutions::router());
-    // .nest("/people", people::router())
+        .nest("/institutions", institutions::router())
+        .nest("/people", people::router());
     // .nest("/projects", projects::router())
     // .nest("/specimens", specimens::router())
     // .nest("/10x-assays", tenx_assays::router())

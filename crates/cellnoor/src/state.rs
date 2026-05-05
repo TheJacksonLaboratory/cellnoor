@@ -122,12 +122,6 @@ pub mod test_util {
             .unwrap()
     }
 
-    pub async fn create_user() -> Uuid {
-        let client = db_client_as_admin().await;
-
-        todo!()
-    }
-
     pub trait ToNonemptyString {
         fn to_nonempty_string(&self) -> NonemptyString;
     }

@@ -1,5 +1,3 @@
-
-
 -- `security_invoker = true` means that the query's security checks will run as the "invoker" (`current_user`), not the
 -- owner of the view
 create view project_to_people with (security_invoker = true) as (
