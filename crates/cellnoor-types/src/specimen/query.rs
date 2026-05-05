@@ -7,7 +7,7 @@ use serde_json::Value;
 use crate::query::filter::ToPredicate;
 use crate::{
     query::{
-        Query,
+        DbQuery,
         filter::{Filter, ScalarOperator, StringOperator, TimestampOperator, UuidOperator},
         order_by::{OrderDirection, OrderingField},
     },
@@ -113,4 +113,4 @@ impl Default for SpecimenOrderBy {
     }
 }
 
-pub type SpecimenQuery = Query<SpecimenFilter, SpecimenOrderBy>;
+pub type SpecimenQuery = DbQuery<SpecimenFilter, SpecimenOrderBy>;

@@ -76,6 +76,7 @@ ssr = [
 [dev-dependencies]
 nonempty = { path = "../nonempty", features = ["postgres-types"] }
 uuid = {workspace = true, features = ["v4"]}
+pretty_assertions.workspace = true
 
 [package.metadata.leptos]
 # The name used by wasm-bindgen/cargo-leptos for the JS/WASM bundle. Defaults to the crate name

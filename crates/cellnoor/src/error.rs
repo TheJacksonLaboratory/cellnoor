@@ -12,6 +12,12 @@ pub struct Error {
 }
 
 impl Error {
+    pub fn resource_not_found() -> Self {
+        Self {
+            error: ErrorInner::ResourceNotFound,
+        }
+    }
+
     pub fn no_auth_found(message: &'static str) -> Self {
         Self {
             error: ErrorInner::NoAuthFound { message },
@@ -40,6 +46,8 @@ impl Error {
 #[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema)]
 #[serde(tag = "type", rename_all = "snake_case")]
 enum ErrorInner {
+    #[error("resource not found")]
+    ResourceNotFound,
     #[error("invalid API key")]
     InvalidApiKey,
     #[error("API key expired at {expired_at}")]
@@ -70,6 +78,7 @@ impl IntoResponse for Error {
         }
 
         let status = match &self.error {
+            ErrorInner::ResourceNotFound { .. } => StatusCode::NOT_FOUND,
             ErrorInner::DataConstraint { .. } => StatusCode::UNPROCESSABLE_ENTITY,
             ErrorInner::InvalidApiKey
             | ErrorInner::ExpiredApiKey { .. }

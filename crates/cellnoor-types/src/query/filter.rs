@@ -1,49 +1,7 @@
 #[cfg(feature = "postgres-types")]
-use std::borrow::Borrow;
-
-#[cfg(feature = "postgres-types")]
-use postgres_types::{BorrowToSql, ToSql};
+use postgres_types::ToSql;
 use uuid::Uuid;
 
-/// A recursive data-structure to store arbitrarily-combined boolean predicates.
-///
-/// This structure can model arbitrarily complex expressions to filter database
-/// records. The type-parameter `P` represents the base case or "leaf" of the
-/// filter, so it should represent a single boolean predicate. Typically this is
-/// an `enum` of possible conditions.
-///
-/// The following example would filter for people named "Hamood" OR "Nikachka"
-/// under the age of 30:
-/// ```
-/// use cellnoor_types::query::filter::{Filter, ScalarOperator, StringOperator, i32Operator};
-///
-/// enum PersonField {
-///     Name(StringOperator),
-///     Age(i32Operator),
-/// }
-///
-/// type PersonFilter = Filter<PersonField>;
-///
-/// // Use `.into` to convert the predicate into a filter
-/// let age_filter = PersonField::Age(i32Operator::Lt(30)).into();
-///
-/// // Use `.into` trait to convert a `ScalarOperator` into a `StringOperator`
-/// let name_filter = PersonField::Name(
-///     ScalarOperator::In(vec!["Hamood".to_owned(), "Nikachka".to_owned()]).into(),
-/// );
-/// let name_filter = Filter::Leaf(name_filter);
-///
-/// let combined_filter1 = Filter::AllOf(vec![name_filter, age_filter]);
-///
-/// // This could also have been written as:
-/// let age_filter = PersonField::Age(i32Operator::Lt(30)).into();
-///
-/// let ahmed_filter = PersonField::Name(ScalarOperator::Eq("Hamood".to_owned()).into()).into();
-/// let nicole_filter = PersonField::Name(ScalarOperator::Eq("Nikachka".to_owned()).into()).into();
-/// let name_filter = Filter::AnyOf(vec![ahmed_filter, nicole_filter]);
-///
-/// let combined_filter2 = Filter::AllOf(vec![age_filter, name_filter]);
-/// ```
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
@@ -179,14 +137,13 @@ where
     }
 }
 
-#[allow(non_camel_case_types)]
 pub type BoolOperator = ScalarOperator<bool>;
 
-#[allow(non_camel_case_types)]
 pub type I32Operator = ScalarOperator<i32>;
 
-#[allow(non_camel_case_types)]
 pub type I64Operator = ScalarOperator<i64>;
+
+pub type SimpleStringOperator = ScalarOperator<String>;
 
 pub type UuidOperator = ScalarOperator<Uuid>;
 
@@ -209,7 +166,7 @@ pub enum StringOperator {
     Trgm(String),
     /// All other operators
     #[cfg_attr(feature = "serde", serde(untagged))]
-    Other(ScalarOperator<String>),
+    Simple(ScalarOperator<String>),
 }
 
 #[cfg(feature = "postgres-types")]
@@ -218,13 +175,13 @@ impl ToPredicate for StringOperator {
         match self {
             Self::Like(s) => ("like", s),
             Self::Trgm(s) => ("%", s),
-            Self::Other(op) => op.to_predicate(),
+            Self::Simple(op) => op.to_predicate(),
         }
     }
 }
 
 impl From<ScalarOperator<String>> for StringOperator {
     fn from(value: ScalarOperator<String>) -> Self {
-        Self::Other(value)
+        Self::Simple(value)
     }
 }

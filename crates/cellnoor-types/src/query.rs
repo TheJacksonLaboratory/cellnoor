@@ -12,18 +12,18 @@ pub mod order_by;
 #[base_model]
 #[cfg_attr(feature = "serde", serde(default))]
 #[cfg_attr(feature = "schemars", schemars(inline))]
-pub struct Query<F, O>
+pub struct DbQuery<F, O>
 where
     O: Default,
 {
-    filter: Option<F>,
-    limit: Option<i32>,
-    offset: i32,
-    order_by: OrderBy<O>,
+    pub filter: Option<F>,
+    pub limit: Option<i32>,
+    pub offset: i32,
+    pub order_by: OrderBy<O>,
     pub detailed: bool,
 }
 
-impl<F, O> Default for Query<F, O>
+impl<F, O> Default for DbQuery<F, O>
 where
     O: Default,
 {
@@ -38,13 +38,26 @@ where
     }
 }
 
+impl<P, O> DbQuery<filter::Filter<P>, O>
+where
+    O: Default,
+{
+    pub fn from_predicate(predicate: P, detailed: bool) -> Self {
+        Self {
+            filter: Some(predicate.into()),
+            detailed,
+            ..Default::default()
+        }
+    }
+}
+
 #[cfg(feature = "postgres-types")]
-impl<P, O> Query<filter::Filter<P>, O>
+impl<P, O> DbQuery<filter::Filter<P>, O>
 where
     P: AsRef<str> + ToPredicate,
     O: Default + Copy + AsRef<str> + OrderingField,
 {
-    pub fn to_sql_query(&self) -> (String, Vec<&(dyn ToSql + Sync)>) {
+    pub fn to_sql_query_with_group_by(&self, group_by: &str) -> (String, Vec<&(dyn ToSql + Sync)>) {
         let Self {
             filter,
             limit,
@@ -64,6 +77,8 @@ where
 
         sql.push_str(&where_clause);
 
+        sql.push_str(group_by);
+
         sql.push_str(&order_by.to_order_by_clause());
 
         if let Some(limit) = limit {
@@ -74,5 +89,9 @@ where
         sql.push_str(&format!(" offset {offset} "));
 
         (sql, params)
+    }
+
+    pub fn to_sql_query(&self) -> (String, Vec<&(dyn ToSql + Sync)>) {
+        self.to_sql_query_with_group_by("")
     }
 }

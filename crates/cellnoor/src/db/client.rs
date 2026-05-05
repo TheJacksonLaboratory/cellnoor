@@ -10,7 +10,7 @@ use futures::{Stream, StreamExt};
 use postgres_types::{BorrowToSql, FromSql, FromSqlOwned};
 use uuid::Uuid;
 
-use crate::error::Error;
+use crate::{db::util::FromRecord, error::Error};
 
 #[derive(Debug, Clone)]
 pub struct Pool(InnerPool);
@@ -99,28 +99,53 @@ impl<'a> Transaction<'a> {
         Ok(result)
     }
 
-    pub async fn query_raw(
+    async fn query_stream(
         &self,
-        statement: &str,
+        query: &str,
         params: Vec<&(dyn ToSql + Sync)>,
     ) -> Result<RowStream, TokioPgError> {
-        self.execute_as_user(self.inner.query_raw(statement, params.into_iter()))
+        self.execute_as_user(self.inner.query_raw(query, params.into_iter()))
             .await
     }
 
-    pub async fn query_scalar_raw<T>(
+    async fn query_into_stream<T>(
         &self,
-        statement: &str,
+        query: &str,
         params: Vec<&(dyn ToSql + Sync)>,
     ) -> Result<impl Stream<Item = T>, TokioPgError>
     where
         T: FromSqlOwned,
     {
-        let stream = self.query_raw(statement, params).await?;
+        let stream = self.query_stream(query, params).await?;
 
-        let map_row_result = |result: Result<Row, _>| result.unwrap().get(0);
+        Ok(stream.map(|row| row.unwrap().get(0)))
+    }
 
-        Ok(stream.map(map_row_result))
+    pub async fn query_into<T>(
+        &self,
+        query: &str,
+        params: Vec<&(dyn ToSql + Sync)>,
+    ) -> Result<Vec<T>, TokioPgError>
+    where
+        T: FromSqlOwned,
+    {
+        let stream = self.query_into_stream(query, params).await?;
+
+        Ok(stream.collect().await)
+    }
+
+    pub async fn query_into_mapped<Record, Transformed>(
+        &self,
+        query: &str,
+        params: Vec<&(dyn ToSql + Sync)>,
+    ) -> Result<Vec<Transformed>, TokioPgError>
+    where
+        Record: FromSqlOwned,
+        Transformed: FromRecord<Record>,
+    {
+        let stream = self.query_into_stream(query, params).await?;
+
+        Ok(stream.map(Transformed::from_record).collect().await)
     }
 
     pub async fn query(
@@ -129,21 +154,6 @@ impl<'a> Transaction<'a> {
         params: &[&(dyn ToSql + Sync)],
     ) -> Result<Vec<Row>, TokioPgError> {
         self.execute_as_user(self.inner.query(query, params)).await
-    }
-
-    pub async fn query_scalar<T>(
-        &self,
-        query: &str,
-        params: &[&(dyn ToSql + Sync)],
-    ) -> Result<Vec<T>, TokioPgError>
-    where
-        T: FromSqlOwned,
-    {
-        let map_row = |row: Row| row.get(0);
-
-        self.query(query, params)
-            .await
-            .map(|rows| rows.into_iter().map(map_row).collect())
     }
 
     pub async fn query_one(
@@ -155,17 +165,31 @@ impl<'a> Transaction<'a> {
             .await
     }
 
-    pub async fn query_one_scalar<T>(
+    pub async fn query_one_into<T>(
         &self,
         query: &str,
         params: &[&(dyn ToSql + Sync)],
-    ) -> Result<T, Error>
+    ) -> Result<T, TokioPgError>
     where
         T: FromSqlOwned,
     {
         let row = self.query_one(query, params).await?;
 
         Ok(row.get(0))
+    }
+
+    pub async fn query_one_into_mapped<Record, Transformed>(
+        &self,
+        query: &str,
+        params: &[&(dyn ToSql + Sync)],
+    ) -> Result<Transformed, TokioPgError>
+    where
+        Record: FromSqlOwned,
+        Transformed: FromRecord<Record>,
+    {
+        self.query_one_into(query, params)
+            .await
+            .map(Transformed::from_record)
     }
 
     pub async fn execute(

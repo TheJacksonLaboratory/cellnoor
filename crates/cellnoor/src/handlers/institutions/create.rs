@@ -1,5 +1,5 @@
 use axum::{Json, extract::State};
-use cellnoor_types::institution::{InstitutionRecord, NewInstitution};
+use cellnoor_types::institution::{Institution, InstitutionRecord, NewInstitution};
 
 use crate::{auth::AuthUser, db, error::Error, state::AppState};
 
@@ -7,7 +7,7 @@ pub async fn create_institution(
     State(state): State<AppState>,
     user: AuthUser,
     Json(institution): Json<NewInstitution>,
-) -> Result<Json<InstitutionRecord>, Error> {
+) -> Result<Json<Institution>, Error> {
     let mut client = state.db_client(user).await?;
 
     let tx = client.begin().await?;
@@ -19,16 +19,16 @@ pub async fn create_institution(
     response
 }
 
-async fn insert_institution(
+pub(super) async fn insert_institution(
     tx: &db::Transaction<'_>,
     NewInstitution {
         name,
         microsoft_entra_tenant_id,
     }: &NewInstitution,
-) -> Result<InstitutionRecord, crate::error::Error> {
+) -> Result<Institution, crate::error::Error> {
     // Simple queries can be written inline
     let institution = tx
-        .query_one_scalar(
+        .query_one_into_mapped(
             "insert into institution (name, microsoft_entra_tenant_id) values ($1, $2) returning \
              institution",
             &[name, microsoft_entra_tenant_id],

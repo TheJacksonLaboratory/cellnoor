@@ -1,6 +1,6 @@
 use macro_attributes::{base_model, select};
 use nonempty::NonemptyString;
-pub use query::InstitutionQuery;
+pub use query::{InstitutionFilter, InstitutionOrderBy, InstitutionPredicate, InstitutionQuery};
 use uuid::Uuid;
 
 use crate::simple_links::SimpleLinks;
@@ -49,7 +49,7 @@ mod query {
     #[cfg(feature = "postgres-types")]
     use crate::query::filter::ToPredicate;
     use crate::query::{
-        Query,
+        DbQuery,
         filter::{Filter, StringOperator, UuidOperator},
         order_by::{OrderDirection, OrderingField},
     };
@@ -91,7 +91,7 @@ mod query {
         }
     }
 
-    pub type InstitutionQuery = Query<InstitutionFilter, InstitutionOrderBy>;
+    pub type InstitutionQuery = DbQuery<InstitutionFilter, InstitutionOrderBy>;
 }
 
 #[cfg(all(feature = "postgres-types", test))]

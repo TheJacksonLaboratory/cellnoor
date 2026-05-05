@@ -380,6 +380,7 @@ dependencies = [
  "leptos_router",
  "nonempty",
  "postgres-types",
+ "pretty_assertions",
  "regex",
  "schemars",
  "secrecy",

@@ -2,31 +2,43 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_models::{IdParameter, institution::Institution};
-use cellnoor_schema::institutions;
-use diesel::prelude::*;
-use diesel_async::RunQueryDsl;
+use cellnoor_types::{
+    DbQuery, Filter, IdParam, UuidOperator,
+    institution::{Institution, InstitutionPredicate, InstitutionQuery},
+};
 use uuid::Uuid;
 
 use crate::{
-    db::{self, DbConnection},
+    auth::AuthUser,
+    db::{self, util::select_one},
+    error::Error,
+    handlers::institutions::index::select_institutions,
     state::AppState,
 };
 
 pub async fn show_institution(
-    _: State<AppState>,
-    db_conn: DbConnection,
-    Path(IdParameter { id }): Path<IdParameter>,
-) -> Result<Json<Institution>, db::Error> {
-    select_institution_by_id(id, db_conn).await.map(Json)
+    State(state): State<AppState>,
+    user: AuthUser,
+    Path(IdParam { id }): Path<IdParam>,
+) -> Result<Json<Institution>, Error> {
+    let mut client = state.db_client(user).await?;
+    let tx = client.begin().await?;
+
+    let result = select_institution_by_id(&tx, id).await.map(Json);
+
+    tx.commit().await?;
+
+    result
 }
 
-pub async fn select_institution_by_id(
-    institution_id: Uuid,
-    mut db_conn: DbConnection,
-) -> Result<Institution, db::Error> {
-    Ok(Institution::query()
-        .filter(institutions::id.eq(institution_id))
-        .first(&mut db_conn)
-        .await?)
+pub(super) async fn select_institution_by_id(
+    tx: &db::Transaction<'_>,
+    id: Uuid,
+) -> Result<Institution, Error> {
+    select_one(
+        tx,
+        InstitutionPredicate::Id(UuidOperator::Eq(id)),
+        select_institutions,
+    )
+    .await
 }

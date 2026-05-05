@@ -1,9 +1,18 @@
+pub use path::IdParam;
+pub use query::{
+    DbQuery,
+    filter::{
+        BoolOperator, Filter, I32Operator, I64Operator, SimpleStringOperator, StringOperator,
+        TimestampOperator, UuidOperator,
+    },
+};
 pub use simple_links::SimpleLinks;
 
 mod cdna_library;
 pub mod chromium_dataset;
 pub mod chromium_run;
 pub mod institution;
+mod path;
 pub mod person;
 pub mod project;
 pub(crate) mod query;
