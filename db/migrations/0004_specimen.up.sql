@@ -91,6 +91,6 @@ create table specimen_measurement (
     unique (specimen_id, measured_by, measured_at, data)
 );
 
-create trigger specimen_before_measurement before insert or update on specimen for each row execute function check_timestamp_ordering(
+create trigger specimen_before_measurement before insert or update on specimen_measurement for each row execute function check_timestamp_ordering(
     'measured_at', 'specimen_id', 'specimen', 'received_at'
 );

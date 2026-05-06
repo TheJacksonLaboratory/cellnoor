@@ -11,7 +11,7 @@ use crate::{
         util::{JunctionTable, insert_many_to_many},
     },
     error::Error,
-    handlers::projects::show::select_project_by_id,
+    handlers::projects::{access::add_person::insert_project_accesses, show::select_project_by_id},
     state::AppState,
 };
 
@@ -47,13 +47,7 @@ pub async fn insert_project(
         )
         .await?;
 
-    insert_many_to_many(
-        tx,
-        JunctionTable::ProjectAccess,
-        ("project_id", id),
-        ("person_id", &people),
-    )
-    .await?;
+    insert_project_accesses(&tx, id, &people).await?;
 
     select_project_by_id(tx, id).await
 }
@@ -76,7 +70,7 @@ pub mod test {
 
     pub fn new_project() -> NewProject {
         NewProject {
-            name: "project".to_nonempty_string(),
+            name: Uuid::new_v4().to_string().to_nonempty_string(),
             started_at: Timestamp::now(),
             ended_at: Timestamp::now(),
             people: vec![],

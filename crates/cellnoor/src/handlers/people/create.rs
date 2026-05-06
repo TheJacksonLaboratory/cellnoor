@@ -55,12 +55,17 @@ pub async fn insert_person(
         )
         .await?;
 
-    let (_, _, _, person) = tokio::try_join!(
-        create_db_user(tx, person_id, *is_staff),
-        grant_permissions_to_db_user(tx, person_id, permissions_to_grant),
-        revoke_permissions_from_db_user(tx, person_id, permissions_to_revoke),
-        select_person_by_id(tx, person_id)
-    )?;
+    // These operations cannot be done concurrently
+    let user_operations = async || {
+        create_db_user(tx, person_id, *is_staff).await?;
+        grant_permissions_to_db_user(tx, person_id, permissions_to_grant).await?;
+        revoke_permissions_from_db_user(tx, person_id, permissions_to_revoke).await?;
+
+        Ok(())
+    };
+
+    // But they can be grouped and done concurrently with the select
+    let (_, person) = tokio::try_join!(user_operations(), select_person_by_id(tx, person_id))?;
 
     Ok(person)
 }
@@ -202,7 +207,7 @@ mod test {
         NewPerson {
             name: "hamood".to_nonempty_string(),
             institution_id: Uuid::nil(),
-            email: "hamood@jax.org".to_nonempty_string(),
+            email: format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string(),
             orcid: None,
             is_staff: false,
             grant_permissions: vec![ResourcePermission::Institution(vec![Action::Create])],
@@ -227,8 +232,7 @@ mod test {
         let accessible_project = insert_project(&tx, &p).await.unwrap();
 
         // And insert one the new user cannot
-        let mut p = new_project();
-        p.name = "project2".to_nonempty_string();
+        let p = new_project();
         let inaccessible_project = insert_project(&tx, &p).await.unwrap();
 
         // We have to commit this transaction so the change persists for the next part

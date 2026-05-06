@@ -68,8 +68,10 @@ pub async fn insert_many_to_many(
         current_param_number += 2;
     }
 
-    let stmt =
-        format!("insert into {table} ({parent_field}, {child_field}) values {values_clause}");
+    let stmt = format!(
+        "insert into {table} ({parent_field}, {child_field}) values {values_clause} on conflict \
+         do nothing"
+    );
 
     tx.execute(&stmt, &params).await?;
 
