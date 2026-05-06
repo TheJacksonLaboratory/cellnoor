@@ -5,7 +5,7 @@ pub use creation::{
     tissue::NewTissue,
 };
 use jiff::Timestamp;
-use macro_attributes::{select, unit_enum};
+use macro_attributes::{base_model, select, unit_enum};
 use nonempty::NonemptyString;
 pub use query::SpecimenQuery;
 pub use read::SpecimenRecord;
@@ -77,4 +77,13 @@ pub struct SpecimenVariableFields {
     pub embedded_in: Option<BlockEmbeddingMatrix>,
     pub fixative: Option<Fixative>,
     pub thermal_preservation_method: Option<ThermalPreservationMethod>,
+}
+
+#[base_model]
+pub struct Specimen {
+    pub id: Uuid,
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub common: SpecimenCommonFields,
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub variable: SpecimenVariableFields,
 }

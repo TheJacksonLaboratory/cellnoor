@@ -27,6 +27,12 @@ impl NonemptyString {
     }
 }
 
+impl AsRef<str> for NonemptyString {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
 impl From<NonemptyString> for String {
     fn from(value: NonemptyString) -> Self {
         value.0

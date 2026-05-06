@@ -90,14 +90,14 @@ pub fn unit_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
                     ty: &postgres_types::Type,
                     raw: &'a [u8],
                 ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
-                    Ok(<&str as FromSql>::from_sql(ty, raw)
-                        .map(Self::from_str)
+                    Ok(<nonempty::NonemptyString as FromSql>::from_sql(ty, raw)
+                        .map(|s| Self::from_str(s.as_ref()))
                         .unwrap()
                         .unwrap())
                 }
 
                 fn accepts(ty: &postgres_types::Type) -> bool {
-                    <&str as FromSql>::accepts(ty)
+                    <nonempty::NonemptyString as FromSql>::accepts(ty)
                 }
             }
 
@@ -112,14 +112,14 @@ pub fn unit_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
                 where
                     Self: Sized,
                 {
-                    self.as_ref().to_sql(ty, out)
+                    nonempty::NonemptyString::new(self.as_ref().to_owned()).unwrap().to_sql(ty, out)
                 }
 
                 fn accepts(ty: &postgres_types::Type) -> bool
                 where
                     Self: Sized,
                 {
-                    <&str as ToSql>::accepts(ty)
+                    <nonempty::NonemptyString as ToSql>::accepts(ty)
                 }
             }
         }

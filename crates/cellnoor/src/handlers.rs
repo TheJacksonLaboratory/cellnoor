@@ -9,7 +9,7 @@ pub mod institutions;
 // pub mod multiplexing_tags;
 pub mod people;
 pub mod projects;
-// pub mod specimens;
+pub mod specimens;
 // pub mod suspension_pools;
 // pub mod suspensions;
 // pub mod tenx_assays;
