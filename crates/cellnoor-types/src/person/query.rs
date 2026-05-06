@@ -9,6 +9,7 @@ use crate::{
 };
 
 #[field_enum]
+#[strum(prefix = "(person_public).")]
 pub enum PersonField<U, S> {
     Id(U),
     Name(S),

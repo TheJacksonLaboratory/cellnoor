@@ -56,7 +56,7 @@ create or replace function create_person_user_if_not_exists(
         end if;
         -- These tables and views don't exist yet, but only these are granted to users so that a developer can't
         -- accidentally query against underlying tables, only views that have row-security policies enabled
-        execute format('grant select on person_public, project, project_access, project_to_people, specimen, suspension_to_specimen, suspension_pool_to_specimen, gem_pool_to_specimen, cdna_to_specimen, library_to_specimen, chromium_dataset_to_specimen to %I', username);
+        execute format('grant select on institution, person_public, project, project_access, project_to_people, specimen, suspension_to_specimen, suspension_pool_to_specimen, gem_pool_to_specimen, cdna_to_specimen, library_to_specimen, chromium_dataset_to_specimen to %I', username);
         -- The db user 'app' needs to be able to do `set role username`, but it shouldn't inherit that user's privileges
         execute format('grant %I to app with inherit false', username);
     end;

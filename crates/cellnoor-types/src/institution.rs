@@ -30,6 +30,17 @@ pub struct Institution {
     pub links: SimpleLinks,
 }
 
+impl Institution {
+    pub fn from_record(record: InstitutionRecord) -> Self {
+        Self {
+            links: SimpleLinks {
+                self_: format!("/institutions/{}", record.id),
+            },
+            record,
+        }
+    }
+}
+
 #[cfg(all(feature = "postgres-types", feature = "serde", test))]
 mod tests {
     use pretty_assertions::{assert_eq, assert_str_eq};
@@ -59,9 +70,9 @@ mod tests {
 
     #[test]
     fn where_clause_construction() {
-        let expected_where_clause = "where ((institution.name = ($1)) and (institution.id = \
-                                     ($2))) or (not (institution.id > ($3))) or (institution.id = \
-                                     any ($4))";
+        let expected_where_clause = "where (((institution).name = ($1)) and ((institution).id = \
+                                     ($2))) or (not ((institution).id > ($3))) or \
+                                     ((institution).id = any ($4))";
 
         let (actual_where_clause, _actual_bind_params) = complex_filter().to_where_clause();
 

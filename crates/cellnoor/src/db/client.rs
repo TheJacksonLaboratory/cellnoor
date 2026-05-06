@@ -10,8 +10,6 @@ use futures::{Stream, StreamExt};
 use postgres_types::FromSqlOwned;
 use uuid::Uuid;
 
-use crate::db::util::FromRecord;
-
 #[derive(Debug, Clone)]
 pub struct Pool(InnerPool);
 
@@ -99,7 +97,7 @@ impl<'a> Transaction<'a> {
         Ok(result)
     }
 
-    async fn query_stream(
+    pub async fn query_stream(
         &self,
         query: &str,
         params: Vec<&(dyn ToSql + Sync)>,
@@ -108,7 +106,7 @@ impl<'a> Transaction<'a> {
             .await
     }
 
-    async fn query_into_stream<T>(
+    pub async fn query_into_stream<T>(
         &self,
         query: &str,
         params: Vec<&(dyn ToSql + Sync)>,
@@ -119,33 +117,6 @@ impl<'a> Transaction<'a> {
         let stream = self.query_stream(query, params).await?;
 
         Ok(stream.map(|row| row.unwrap().get(0)))
-    }
-
-    pub async fn query_into<T>(
-        &self,
-        query: &str,
-        params: Vec<&(dyn ToSql + Sync)>,
-    ) -> Result<Vec<T>, TokioPgError>
-    where
-        T: FromSqlOwned,
-    {
-        let stream = self.query_into_stream(query, params).await?;
-
-        Ok(stream.collect().await)
-    }
-
-    pub async fn query_into_mapped<Record, Transformed>(
-        &self,
-        query: &str,
-        params: Vec<&(dyn ToSql + Sync)>,
-    ) -> Result<Vec<Transformed>, TokioPgError>
-    where
-        Record: FromSqlOwned,
-        Transformed: FromRecord<Record>,
-    {
-        let stream = self.query_into_stream(query, params).await?;
-
-        Ok(stream.map(Transformed::from_record).collect().await)
     }
 
     pub async fn query(
@@ -176,20 +147,6 @@ impl<'a> Transaction<'a> {
         let row = self.query_one(query, params).await?;
 
         Ok(row.get(0))
-    }
-
-    pub async fn query_one_into_mapped<Record, Transformed>(
-        &self,
-        query: &str,
-        params: &[&(dyn ToSql + Sync)],
-    ) -> Result<Transformed, TokioPgError>
-    where
-        Record: FromSqlOwned,
-        Transformed: FromRecord<Record>,
-    {
-        self.query_one_into(query, params)
-            .await
-            .map(Transformed::from_record)
     }
 
     pub async fn execute(

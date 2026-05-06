@@ -32,7 +32,7 @@ select create_person_user_if_not_exists(uuid_nil()::text, true);
 -- Grant them permissions on everything
 do $$
     begin
-        execute format('grant all on all tables in schema public to %I', uuid_nil()::text);
+        execute format('grant all on all tables in schema public to %I with grant option', uuid_nil()::text);
         execute format('alter user %I with createrole', uuid_nil()::text);
     end;
 $$;

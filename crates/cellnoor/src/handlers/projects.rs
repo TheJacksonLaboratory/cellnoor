@@ -1,3 +1,3 @@
-mod create;
-mod index;
-mod show;
+pub mod create;
+pub mod index;
+pub mod show;

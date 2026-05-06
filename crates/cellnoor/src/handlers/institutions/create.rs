@@ -19,7 +19,7 @@ pub async fn create_institution(
     response
 }
 
-pub(super) async fn insert_institution(
+pub async fn insert_institution(
     tx: &db::Transaction<'_>,
     NewInstitution {
         name,
@@ -28,12 +28,13 @@ pub(super) async fn insert_institution(
 ) -> Result<Institution, crate::error::Error> {
     // Simple queries can be written inline
     let institution = tx
-        .query_one_into_mapped(
+        .query_one_into(
             "insert into institution (name, microsoft_entra_tenant_id) values ($1, $2) returning \
              institution",
             &[name, microsoft_entra_tenant_id],
         )
-        .await?;
+        .await
+        .map(Institution::from_record)?;
 
     Ok(institution)
 }

@@ -1,5 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::institution::{Institution, InstitutionQuery};
+use futures::StreamExt;
 use serde_qs::web::QsQuery;
 
 use crate::{auth::AuthUser, db, error::Error, state::AppState};
@@ -19,18 +20,22 @@ pub async fn index_institutions(
     Ok(response)
 }
 
-pub(super) async fn select_institutions(
+pub async fn select_institutions(
     tx: &db::Transaction<'_>,
     query: &InstitutionQuery,
 ) -> Result<Vec<Institution>, Error> {
     let (sql, params) = query.to_sql_query();
     let query = format!("select institution from institution {sql}");
 
-    Ok(tx.query_into_mapped(&query, params).await?)
+    Ok(tx
+        .query_into_stream(&query, params)
+        .await
+        .map(async |stream| stream.map(Institution::from_record).collect().await)?
+        .await)
 }
 
 #[cfg(test)]
-pub mod test {
+mod test {
     use cellnoor_types::{
         SimpleStringOperator, StringOperator,
         institution::{InstitutionPredicate, InstitutionQuery},

@@ -11,7 +11,7 @@ use crate::query::{
 };
 
 #[field_enum]
-#[strum(prefix = "institution.")]
+#[strum(prefix = "(institution).")]
 pub enum InstitutionField<U, S> {
     Id(U),
     Name(S),

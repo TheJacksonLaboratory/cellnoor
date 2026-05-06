@@ -31,7 +31,7 @@ pub async fn show_institution(
     result
 }
 
-pub(super) async fn select_institution_by_id(
+pub async fn select_institution_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<Institution, Error> {

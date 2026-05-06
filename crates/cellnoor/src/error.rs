@@ -5,10 +5,19 @@ use deadpool_postgres::{
     tokio_postgres::{Error as TokioPgError, error::SqlState},
 };
 
-#[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema, OperationIo)]
+#[derive(
+    Debug,
+    Clone,
+    thiserror::Error,
+    serde::Serialize,
+    schemars::JsonSchema,
+    OperationIo,
+    PartialEq,
+    Eq,
+)]
 #[error(transparent)]
 pub struct Error {
-    error: ErrorInner,
+    pub error: ErrorInner,
 }
 
 impl Error {
@@ -43,9 +52,9 @@ impl Error {
     }
 }
 
-#[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema)]
+#[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema, PartialEq, Eq)]
 #[serde(tag = "type", rename_all = "snake_case")]
-enum ErrorInner {
+pub enum ErrorInner {
     #[error("resource not found")]
     ResourceNotFound,
     #[error("invalid API key")]

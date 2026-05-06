@@ -25,7 +25,7 @@ pub async fn create_person(
     response
 }
 
-pub(super) async fn insert_person(
+pub async fn insert_person(
     tx: &db::Transaction<'_>,
     NewPerson {
         name,
@@ -33,51 +33,51 @@ pub(super) async fn insert_person(
         email,
         orcid,
         is_staff,
-        grant_permissions: permissions,
-        revoke_permissions: _, // we ignore `revoke_permissions` on a creation
+        grant_permissions: permissions_to_grant,
+        revoke_permissions: permissions_to_revoke,
     }: &NewPerson,
 ) -> Result<Person, crate::error::Error> {
     // Simple queries can be written inline
     let person_id = tx
         .query_one_into(
-            "insert into person (name, institution_id, email, orcid) values ($1, $2, $3) \
+            "insert into person (name, institution_id, email, orcid) values ($1, $2, $3, $4) \
              returning id",
             &[name, institution_id, email, orcid],
         )
         .await?;
 
-    tokio::try_join!(
-        create_user(tx, person_id, *is_staff),
-        grant_permissions_to_user(tx, person_id, permissions)
+    let (_, _, _, person) = tokio::try_join!(
+        create_db_user(tx, person_id, *is_staff),
+        grant_permissions_to_db_user(tx, person_id, permissions_to_grant),
+        revoke_permissions_from_db_user(tx, person_id, permissions_to_revoke),
+        select_person_by_id(tx, person_id)
     )?;
-
-    let person = select_person_by_id(tx, person_id).await?;
 
     Ok(person)
 }
 
-pub(super) async fn create_user(
+pub(super) async fn create_db_user(
     tx: &db::Transaction<'_>,
     user_id: Uuid,
     is_staff: bool,
 ) -> Result<(), Error> {
     tx.execute(
         "select create_person_user_if_not_exists($1, $2)",
-        &[&user_id, &is_staff],
+        &[&user_id.to_string(), &is_staff],
     )
     .await?;
 
     Ok(())
 }
 
-pub(super) async fn grant_permissions_to_user(
+pub async fn grant_permissions_to_db_user(
     tx: &db::Transaction<'_>,
     user_id: Uuid,
     permissions: &[ResourcePermission],
 ) -> Result<(), Error> {
     let grant_stmts: Vec<_> = permissions
         .iter()
-        .map(|p| construct_grant_statement(user_id, p))
+        .map(|p| construct_grant_or_revoke_statement(GrantOrRevoke::Grant, user_id, p))
         .collect();
 
     let grant_ops = grant_stmts.iter().map(|s| tx.execute(s, &[]));
@@ -86,7 +86,42 @@ pub(super) async fn grant_permissions_to_user(
     Ok(())
 }
 
-fn construct_grant_statement(user_id: Uuid, resource_permissions: &ResourcePermission) -> String {
+pub async fn revoke_permissions_from_db_user(
+    tx: &db::Transaction<'_>,
+    user_id: Uuid,
+    permissions: &[ResourcePermission],
+) -> Result<(), Error> {
+    let revoke_stmt: Vec<_> = permissions
+        .iter()
+        .map(|p| construct_grant_or_revoke_statement(GrantOrRevoke::Revoke, user_id, p))
+        .collect();
+
+    let revoke_ops = revoke_stmt.iter().map(|s| tx.execute(s, &[]));
+    futures::future::try_join_all(revoke_ops).await?;
+
+    Ok(())
+}
+
+#[derive(Clone, Copy, strum::Display)]
+#[strum(serialize_all = "snake_case")]
+enum GrantOrRevoke {
+    Grant,
+    Revoke,
+}
+impl GrantOrRevoke {
+    fn preposition(self) -> &'static str {
+        match self {
+            Self::Grant => "to",
+            Self::Revoke => "from",
+        }
+    }
+}
+
+fn construct_grant_or_revoke_statement(
+    grant_or_revoke: GrantOrRevoke,
+    user_id: Uuid,
+    resource_permissions: &ResourcePermission,
+) -> String {
     let resource_name = resource_permissions.as_ref();
     let actions = match resource_permissions {
         ResourcePermission::Institution(a)
@@ -100,8 +135,112 @@ fn construct_grant_statement(user_id: Uuid, resource_permissions: &ResourcePermi
     let actions: Vec<_> = actions.iter().map(|a| a.as_ref()).collect();
     let actions = actions.join(", ");
 
-    format!(r#"grant {actions} to "{user_id}" on {resource_name}"#)
+    format!(
+        r#"{grant_or_revoke} {actions} on {resource_name} {} "{user_id}""#,
+        grant_or_revoke.preposition()
+    )
 }
 
 #[cfg(test)]
-pub mod test {}
+mod test {
+    use cellnoor_types::{
+        institution::InstitutionQuery,
+        person::{Action, NewPerson, Person, PersonRecord, ResourcePermission},
+        project::{Project, ProjectQuery, ProjectRecord, ProjectRecordDetailed},
+    };
+    use pretty_assertions::assert_eq;
+    use uuid::Uuid;
+
+    use crate::{
+        error::{Error, ErrorInner},
+        handlers::{
+            institutions::{
+                create::{insert_institution, test::new_institution},
+                index::select_institutions,
+                show::select_institution_by_id,
+            },
+            people::create::insert_person,
+            projects::{
+                create::{insert_project, test::new_project},
+                index::select_projects,
+                show::select_project_by_id,
+            },
+        },
+        state::test_util::{ToNonemptyString, db_client_as_admin, db_client_as_user},
+    };
+
+    fn new_person() -> NewPerson {
+        NewPerson {
+            name: "hamood".to_nonempty_string(),
+            institution_id: Uuid::nil(),
+            email: "hamood@jax.org".to_nonempty_string(),
+            orcid: None,
+            is_staff: false,
+            grant_permissions: vec![ResourcePermission::Institution(vec![Action::Create])],
+            revoke_permissions: vec![],
+        }
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn insert_with_permissions() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        // Create a new person/db-user
+        let new_record = new_person();
+        let Person {
+            record: PersonRecord { id: user_id, .. },
+            ..
+        } = insert_person(&tx, &new_record).await.unwrap();
+
+        let mut p = new_project();
+        p.people.push(user_id);
+        let accessible_project = insert_project(&tx, &p).await.unwrap();
+
+        // And insert one the new user cannot
+        let mut p = new_project();
+        p.name = "project2".to_nonempty_string();
+        let inaccessible_project = insert_project(&tx, &p).await.unwrap();
+
+        // We have to commit this transaction so the change persists for the next part
+        // of the test
+        tx.commit().await.unwrap();
+
+        // Log in as the new user
+        let mut client = db_client_as_user(user_id).await;
+        let tx = client.begin().await.unwrap();
+
+        // Check that the user can do what they should be able to
+        select_institutions(&tx, &InstitutionQuery::default())
+            .await
+            .unwrap();
+        insert_institution(&tx, &new_institution()).await.unwrap();
+
+        // They should not be able to insert a project
+        let p = new_project();
+        let Error { error } = insert_project(&tx, &p).await.unwrap_err();
+        assert_eq!(error, ErrorInner::PermissionDenied);
+        // Commit the transaction because the error causes it to abort
+        tx.commit().await.unwrap();
+
+        let tx = client.begin().await.unwrap();
+        // Check that only one of the two projects is accessible
+        let projects = select_projects(
+            &tx,
+            &ProjectQuery {
+                detailed: true,
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+        assert_eq!(projects, vec![accessible_project]);
+
+        // Check that the inaccessible project causes a `ResourceNotFound`
+        let Error { error } = select_project_by_id(&tx, inaccessible_project.id())
+            .await
+            .unwrap_err();
+
+        assert_eq!(error, ErrorInner::ResourceNotFound);
+    }
+}

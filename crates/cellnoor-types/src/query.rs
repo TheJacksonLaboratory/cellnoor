@@ -78,7 +78,12 @@ where
 
         sql.push_str(&where_clause);
 
-        sql.push_str(group_by);
+        sql.push(' ');
+
+        if !group_by.is_empty() {
+            sql.push_str(group_by);
+            sql.push(' ');
+        }
 
         sql.push_str(&order_by.to_order_by_clause());
 

@@ -5,7 +5,7 @@ use axum::{
 use cellnoor_types::{
     IdParam, UuidOperator,
     institution::{Institution, InstitutionPredicate},
-    person::Person,
+    person::{Person, PersonPredicate},
 };
 use uuid::Uuid;
 
@@ -13,6 +13,7 @@ use crate::{
     auth::AuthUser,
     db::{self, util::select_one},
     error::Error,
+    handlers::people::index::select_people,
     state::AppState,
 };
 
@@ -31,9 +32,6 @@ pub async fn show_person(
     result
 }
 
-pub(super) async fn select_person_by_id(
-    tx: &db::Transaction<'_>,
-    id: Uuid,
-) -> Result<Person, Error> {
-    todo!()
+pub async fn select_person_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<Person, Error> {
+    select_one(tx, PersonPredicate::Id(UuidOperator::Eq(id)), select_people).await
 }

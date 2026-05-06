@@ -11,7 +11,7 @@ use crate::query::{
 };
 
 #[field_enum]
-#[strum(prefix = "project.")]
+#[strum(prefix = "(project).")]
 pub enum ProjectField<U, S, T> {
     Id(U),
     Name(S),
