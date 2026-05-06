@@ -1,4 +1,4 @@
-use cellnoor_types::{DbQuery, Filter, person::ResourcePermission};
+use cellnoor_types::{DbQuery, Filter};
 use postgres_types::ToSql;
 use uuid::Uuid;
 

@@ -1,9 +1,5 @@
 use axum::{Json, extract::State};
-use cellnoor_types::{
-    institution::{Institution, InstitutionQuery},
-    person::{Person, PersonQuery},
-    project::{Project, ProjectQuery, ProjectRecordDetailed},
-};
+use cellnoor_types::project::{Project, ProjectQuery};
 use futures::StreamExt;
 use serde_qs::web::QsQuery;
 

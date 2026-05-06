@@ -1,18 +1,12 @@
 use axum::{Json, extract::State};
-use cellnoor_types::{
-    institution::{Institution, NewInstitution},
-    project::{NewProject, Project},
-    specimen::{NewBlock, NewSpecimen, Specimen, SpecimenCommonFields, SpecimenVariableFields},
-};
+use cellnoor_types::specimen::{NewSpecimen, SpecimenCommonFields, SpecimenVariableFields};
 
 use crate::{
     auth::AuthUser,
     db::{
         self,
-        util::{JunctionTable, insert_many_to_many},
     },
     error::Error,
-    handlers::projects::show::select_project_by_id,
     state::AppState,
 };
 

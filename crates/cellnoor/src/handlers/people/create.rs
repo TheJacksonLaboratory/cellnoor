@@ -1,10 +1,7 @@
 use std::sync::LazyLock;
 
 use axum::{Json, extract::State};
-use cellnoor_types::{
-    institution::{Institution, NewInstitution},
-    person::{NewPerson, Person, ResourcePermission},
-};
+use cellnoor_types::person::{NewPerson, Person, ResourcePermission};
 use regex::Regex;
 use uuid::Uuid;
 

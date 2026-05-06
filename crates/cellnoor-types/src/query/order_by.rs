@@ -1,4 +1,3 @@
-use std::fmt::Display;
 
 use macro_attributes::base_model;
 

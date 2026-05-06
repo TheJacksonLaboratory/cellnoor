@@ -4,7 +4,6 @@ use axum::{
 };
 use cellnoor_types::{
     IdParam, UuidOperator,
-    institution::{Institution, InstitutionPredicate},
     person::{Person, PersonPredicate},
 };
 use uuid::Uuid;
