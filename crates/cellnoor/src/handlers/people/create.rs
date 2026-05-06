@@ -1,12 +1,19 @@
+use std::sync::LazyLock;
+
 use axum::{Json, extract::State};
 use cellnoor_types::{
     institution::{Institution, NewInstitution},
     person::{NewPerson, Person, ResourcePermission},
 };
+use regex::Regex;
 use uuid::Uuid;
 
 use crate::{
-    auth::AuthUser, db, error::Error, handlers::people::show::select_person_by_id, state::AppState,
+    auth::AuthUser,
+    db,
+    error::{Error, ErrorInner},
+    handlers::people::show::select_person_by_id,
+    state::AppState,
 };
 
 pub async fn create_person(
@@ -37,6 +44,8 @@ pub async fn insert_person(
         revoke_permissions: permissions_to_revoke,
     }: &NewPerson,
 ) -> Result<Person, crate::error::Error> {
+    validate_email(email.as_ref())?;
+
     // Simple queries can be written inline
     let person_id = tx
         .query_one_into(
@@ -54,6 +63,26 @@ pub async fn insert_person(
     )?;
 
     Ok(person)
+}
+
+// https://html.spec.whatwg.org/multipage/forms.html#valid-e-mail-address
+static EMAIL_REGEX: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$").unwrap()
+});
+
+pub(super) fn validate_email(email: &str) -> Result<(), Error> {
+    if !EMAIL_REGEX.is_match(email) {
+        return Err(Error {
+            error: ErrorInner::DataConstraint {
+                resource: Some("person".to_owned()),
+                field: Some("email".to_owned()),
+                message: "invalid email".to_owned(),
+                detail: None,
+            },
+        });
+    }
+
+    Ok(())
 }
 
 pub(super) async fn create_db_user(
