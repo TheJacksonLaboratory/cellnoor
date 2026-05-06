@@ -177,7 +177,7 @@ mod test {
     use cellnoor_types::{
         institution::InstitutionQuery,
         person::{Action, NewPerson, Person, PersonRecord, ResourcePermission},
-        project::{Project, ProjectQuery, ProjectRecord, ProjectRecordDetailed},
+        project::ProjectQuery,
     };
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
@@ -188,7 +188,6 @@ mod test {
             institutions::{
                 create::{insert_institution, test::new_institution},
                 index::select_institutions,
-                show::select_institution_by_id,
             },
             people::create::insert_person,
             projects::{

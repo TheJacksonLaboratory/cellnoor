@@ -119,13 +119,7 @@ async fn insert_specimen_inner(
 
 #[cfg(test)]
 pub mod test {
-    use cellnoor_types::{
-        SimpleStringOperator, StringOperator,
-        institution::{InstitutionPredicate, InstitutionQuery},
-        person::{PersonPredicate, PersonQuery},
-        project::{NewProject, Project, ProjectQuery, ProjectRecordDetailed},
-        specimen::{NewBlock, NewSpecimen, Species, SpecimenCommonFields},
-    };
+    use cellnoor_types::specimen::{NewBlock, NewSpecimen, Species, SpecimenCommonFields};
     use jiff::{SignedDuration, Timestamp};
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
@@ -133,10 +127,7 @@ pub mod test {
     use crate::{
         error::{Error, ErrorInner},
         handlers::{
-            projects::{
-                create::{insert_project, test::new_project},
-                index::select_projects,
-            },
+            projects::create::{insert_project, test::new_project},
             specimens::create::insert_specimen,
         },
         state::test_util::{ToNonemptyString, db_client_as_admin},
