@@ -1,14 +1,7 @@
 use axum::{Json, extract::State};
 use cellnoor_types::specimen::{NewSpecimen, SpecimenCommonFields, SpecimenVariableFields};
 
-use crate::{
-    auth::AuthUser,
-    db::{
-        self,
-    },
-    error::Error,
-    state::AppState,
-};
+use crate::{auth::AuthUser, db, error::Error, state::AppState};
 
 pub async fn create_specimen(
     State(state): State<AppState>,

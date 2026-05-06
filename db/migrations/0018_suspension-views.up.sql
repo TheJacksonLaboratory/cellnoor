@@ -6,6 +6,6 @@
 create view suspension_to_specimen with (security_invoker = true) as (
     select
         susp as suspension,
-        spec as parent_specimen
+        spec as specimen
     from suspension as susp join specimen as spec on susp.specimen_id = spec.id
 );

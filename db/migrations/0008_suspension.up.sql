@@ -9,6 +9,10 @@ create table suspension (
     additional_data jsonb
 );
 
+create trigger suspension_created_after_specimen_received before insert or update on suspension for each row execute function check_timestamp_ordering(
+    'created_at', 'specimen_id', 'specimen', 'received_at'
+);
+
 create table suspension_measurement (
     id uuid primary key default uuidv7(),
     suspension_id uuid references suspension on delete cascade not null,
@@ -17,6 +21,10 @@ create table suspension_measurement (
     data jsonb not null,
 
     unique (suspension_id, measured_by, measured_at, data)
+);
+
+create trigger measurement_made_after_suspension_created before insert or update on suspension_measurement for each row execute function check_timestamp_ordering(
+    'measured_at', 'suspension_id', 'suspension', 'created_at'
 );
 
 create table suspension_preparer (

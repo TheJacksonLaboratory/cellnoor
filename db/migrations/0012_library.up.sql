@@ -11,6 +11,10 @@ create table library (
     constraint has_index check ((single_index_set_name is null) != (dual_index_set_name is null))
 );
 
+create trigger library_prepared_after_cdna before insert or update on library for each row execute function check_timestamp_ordering(
+    'prepared_at', 'cdna_id', 'cdna', 'prepared_at'
+);
+
 create table library_measurement (
     id uuid primary key default uuidv7(),
     library_id uuid references library on delete cascade not null,
@@ -19,6 +23,10 @@ create table library_measurement (
     data jsonb not null,
 
     unique (library_id, measured_by, measured_at, data)
+);
+
+create trigger measurement_made_after_library_prepared before insert or update on library_measurement for each row execute function check_timestamp_ordering(
+    'measured_at', 'library_id', 'library', 'prepared_at'
 );
 
 create table library_preparer (
