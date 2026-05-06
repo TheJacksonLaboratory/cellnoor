@@ -40,8 +40,8 @@ pub(super) fn router<'a>() -> Router<AppState> {
         )
         // .nest("/admin", admin::router())
         .nest("/institutions", institutions::router())
-        .nest("/people", people::router());
-    // .nest("/projects", projects::router())
+        .nest("/people", people::router())
+        .nest("/projects", projects::router());
     // .nest("/specimens", specimens::router())
     // .nest("/10x-assays", tenx_assays::router())
     // .nest("/multiplexing-tags", multiplexing_tags::router())
