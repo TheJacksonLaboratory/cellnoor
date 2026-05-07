@@ -89,12 +89,10 @@ impl<'a> Transaction<'a> {
     ) -> Result<T, TokioPgError> {
         let Self { user, inner } = self;
 
-        let set_role = format!(r#"set local role "{user}" "#);
-        let set_role = inner.execute(&set_role, &[]);
+        let set_role_stmt = format!(r#"set local role "{user}" "#);
+        inner.execute(&set_role_stmt, &[]).await?;
 
-        let (_, result) = tokio::try_join!(set_role, operation)?;
-
-        Ok(result)
+        operation.await
     }
 
     pub async fn query_stream(

@@ -29,7 +29,7 @@ impl NewRnaExtract {
 
     pub fn split_for_insertion(self) -> SpecimenInsertion {
         (
-            self.into_common(),
+            self.into_common().split_for_insertion(),
             SpecimenVariableFields {
                 type_: SpecimenType::RnaExtract,
                 embedded_in: None,

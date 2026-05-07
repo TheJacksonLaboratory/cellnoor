@@ -7,7 +7,10 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db,
+    db::{
+        self,
+        util::{FieldValuePairs, ToFieldListPlaceholdersParams},
+    },
     error::{Error, ErrorInner},
     handlers::people::show::select_person_by_id,
     state::AppState,
@@ -43,12 +46,19 @@ pub async fn insert_person(
 ) -> Result<Person, crate::error::Error> {
     validate_email(email.as_ref())?;
 
+    let fields: FieldValuePairs<_> = [
+        ("name", name),
+        ("institution_id", institution_id),
+        ("email", email),
+        ("orcid", orcid),
+    ];
+    let (field_list, placeholders, params) = fields.to_field_list_placeholders_params();
+
     // Simple queries can be written inline
     let person_id = tx
         .query_one_into(
-            "insert into person (name, institution_id, email, orcid) values ($1, $2, $3, $4) \
-             returning id",
-            &[name, institution_id, email, orcid],
+            &format!("insert into person {field_list} values {placeholders} returning id"),
+            &params,
         )
         .await?;
 

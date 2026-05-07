@@ -18,7 +18,6 @@ pub struct NewInstitution {
 #[cfg_attr(feature = "schemars", schemars(inline))]
 pub struct InstitutionRecord {
     pub id: Uuid,
-    #[cfg_attr(feature = "serde", serde(flatten))]
     pub name: NonemptyString,
     pub microsoft_entra_tenant_id: Uuid,
 }

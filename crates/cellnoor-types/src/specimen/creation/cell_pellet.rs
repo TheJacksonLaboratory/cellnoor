@@ -34,7 +34,7 @@ impl NewCellPellet {
         let thermal_preservation_method = self.thermal_preservation_method.into();
 
         (
-            self.into_common(),
+            self.into_common().split_for_insertion(),
             SpecimenVariableFields {
                 type_: SpecimenType::CellPellet,
                 embedded_in: None,

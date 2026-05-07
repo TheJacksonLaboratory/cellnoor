@@ -1,7 +1,15 @@
 use axum::{Json, extract::State};
 use cellnoor_types::institution::{Institution, NewInstitution};
 
-use crate::{auth::AuthUser, db, error::Error, state::AppState};
+use crate::{
+    auth::AuthUser,
+    db::{
+        self,
+        util::{FieldValuePairs, ToFieldListPlaceholdersParams},
+    },
+    error::Error,
+    state::AppState,
+};
 
 pub async fn create_institution(
     State(state): State<AppState>,
@@ -26,12 +34,19 @@ pub async fn insert_institution(
         microsoft_entra_tenant_id,
     }: &NewInstitution,
 ) -> Result<Institution, crate::error::Error> {
+    let fields: FieldValuePairs<_> = [
+        ("name", name),
+        ("microsoft_entra_tenant_id", microsoft_entra_tenant_id),
+    ];
+    let (field_list, placeholders, params) = fields.to_field_list_placeholders_params();
+
     // Simple queries can be written inline
     let institution = tx
         .query_one_into(
-            "insert into institution (name, microsoft_entra_tenant_id) values ($1, $2) returning \
-             institution",
-            &[name, microsoft_entra_tenant_id],
+            &format!(
+                "insert into institution {field_list} values {placeholders} returning institution"
+            ),
+            &params,
         )
         .await
         .map(Institution::from_record)?;

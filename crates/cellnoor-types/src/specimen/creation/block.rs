@@ -91,7 +91,7 @@ impl NewBlock {
         let thermal_preservation_method = self.thermal_preservation_method();
 
         (
-            self.into_common(),
+            self.into_common().split_for_insertion(),
             SpecimenVariableFields {
                 type_: SpecimenType::Block,
                 embedded_in,

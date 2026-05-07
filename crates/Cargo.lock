@@ -385,6 +385,7 @@ dependencies = [
  "schemars",
  "secrecy",
  "serde",
+ "serde_json",
  "serde_qs 1.1.1",
  "sha3",
  "strum",

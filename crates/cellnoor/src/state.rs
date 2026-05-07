@@ -22,7 +22,6 @@ impl DevState {
 #[derive(Clone)]
 pub struct ProdState {
     db_pool: db::Pool,
-    // Store these two things in one `Arc` instead of 2
     jwt_decoding_key: Arc<jsonwebtoken::DecodingKey>,
 }
 

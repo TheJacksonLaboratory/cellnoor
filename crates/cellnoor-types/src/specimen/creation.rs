@@ -6,6 +6,7 @@ use crate::specimen::{
         block::NewBlock, cell_pellet::NewCellPellet, rna_extract::NewRnaExtract,
         suspension::NewSuspensionSpecimen, tissue::NewTissue,
     },
+    measurement::NewSpecimenMeasurement,
 };
 
 pub mod block;
@@ -24,7 +25,10 @@ pub enum NewSpecimen {
     Tissue(NewTissue),
 }
 
-pub type SpecimenInsertion = (SpecimenCommonFields, SpecimenVariableFields);
+pub type SpecimenInsertion = (
+    (SpecimenCommonFields, Vec<NewSpecimenMeasurement>),
+    SpecimenVariableFields,
+);
 
 impl NewSpecimen {
     pub fn split_for_insertion(self) -> SpecimenInsertion {

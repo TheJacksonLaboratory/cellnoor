@@ -51,6 +51,14 @@ pub struct SpecimenCommonFields {
     pub measurements: Vec<NewSpecimenMeasurement>,
 }
 
+impl SpecimenCommonFields {
+    fn split_for_insertion(mut self) -> (Self, Vec<NewSpecimenMeasurement>) {
+        let measurements = self.measurements.drain(..).collect();
+
+        (self, measurements)
+    }
+}
+
 #[unit_enum]
 pub enum SpecimenType {
     Block,

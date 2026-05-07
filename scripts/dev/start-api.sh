@@ -2,26 +2,23 @@
 
 set -euo pipefail
 
+docker_compose="docker compose --file compose.yaml --file compose.dev.yaml"
+
 function cleanup_docker() {
-    docker stop cellnoor-dev-db >/dev/null
-    docker rm cellnoor-dev-db --volumes >/dev/null
+    $docker_compose rm --force --stop --volumes
+    $docker_compose volumes --format json | jq '.[].Name' --slurp | xargs docker volume rm
 }
 trap cleanup_docker EXIT
 
-# Note that this database has port 5432 mapped to the host machine's port 5433, since we know the compilation database
-# (started in restart-compilation-db.sh) is using port 5432
-docker run --name cellnoor-dev-db --env POSTGRES_PASSWORD=p --publish 5433:5432 --detach postgres:18-alpine
-
-until diesel database setup --config-file crates/cellnoor-schema/diesel.toml --database-url postgres://postgres:p@localhost:5433/postgres --migration-dir crates/cellnoor-schema/migrations >/dev/null 2>&1; do
-    sleep 0.1
-done
+$docker_compose up db migrate --detach
 
 # The build script cellnoor-schema/build.rs calls the diesel-cli, which may need a connection to a database. We
 # provide the URL of the database spun up in restart-compilation-db.sh via an environment variable, which diesel picks
 # up automatically
-export DATABASE_URL="postgres://postgres@localhost:5432/cellnoor-compilation"
-export CELLNOOR_DB_ROOT_USER="postgres"
-export CELLNOOR_DB_ROOT_PASSWORD="p"
-export CELLNOOR_API_DB_PASSWORD="p"
+export CELLNOOR_DB_URL="postgres://app:p@localhost:5432/postgres"
+export CELLNOOR_AUTH_SECRET=""
+export CELLNOOR_AUTH_URL=""
+export CELLNOOR_ADDRESS="localhost:8000"
+export CELLNOOR_APP_URL="localhost:8000"
 
-cargo run --bin cellnoor-api $@
+cargo run --manifest-path crates/Cargo.toml --package cellnoor --features ssr $@

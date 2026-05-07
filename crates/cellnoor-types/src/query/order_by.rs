@@ -1,4 +1,3 @@
-
 use macro_attributes::base_model;
 
 /// An enum representing sorting-direction, corresponding to

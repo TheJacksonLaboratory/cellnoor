@@ -1,12 +1,17 @@
 use axum::{Json, extract::State};
 use cellnoor_types::specimen::{
     NewSpecimen, Specimen, SpecimenCommonFields, SpecimenVariableFields,
-    measurement::NewSpecimenMeasurement,
 };
-use uuid::Uuid;
+use postgres_types::ToSql;
 
 use crate::{
-    auth::AuthUser, db, error::Error, handlers::specimens::show::select_specimen_by_id,
+    auth::AuthUser,
+    db::{
+        self,
+        util::{FieldValuePairs, ToFieldListPlaceholdersParams},
+    },
+    error::Error,
+    handlers::specimens::show::select_specimen_by_id,
     state::AppState,
 };
 
@@ -30,10 +35,11 @@ pub async fn insert_specimen(
     tx: &db::Transaction<'_>,
     record: NewSpecimen,
 ) -> Result<Specimen, crate::error::Error> {
-    insert_specimen_inner(tx, &record.split_for_insertion()).await
+    let ((common_fields, measurements), variable_fields) = record.split_for_insertion();
+    insert_specimen_record(tx, &(common_fields, variable_fields)).await
 }
 
-async fn insert_specimen_inner(
+async fn insert_specimen_record(
     tx: &db::Transaction<'_>,
     (
         SpecimenCommonFields {
@@ -48,7 +54,7 @@ async fn insert_specimen_inner(
             returned_at,
             tissue,
             additional_data,
-            measurements,
+            ..
         },
         SpecimenVariableFields {
             type_,
@@ -58,58 +64,30 @@ async fn insert_specimen_inner(
         },
     ): &(SpecimenCommonFields, SpecimenVariableFields),
 ) -> Result<Specimen, Error> {
-    let fields = [
-        "readable_id",
-        "name",
-        "submitted_by",
-        "project_id",
-        "received_at",
-        "species",
-        "host_species",
-        "returned_at",
-        "returned_by",
-        "type",
-        "embedded_in",
-        "fixative",
-        "thermal_preservation_method",
-        "tissue",
-        "additional_data",
+    let fields: FieldValuePairs<_> = [
+        ("readable_id", readable_id),
+        ("name", name),
+        ("submitted_by", submitted_by),
+        ("received_at", received_at),
+        ("project_id", project_id),
+        ("species", species),
+        ("host_species", host_species),
+        ("returned_by", returned_by),
+        ("returned_at", returned_at),
+        ("tissue", tissue),
+        ("additional_data", additional_data),
+        ("type", type_),
+        ("embedded_in", embedded_in),
+        ("fixative", fixative),
+        ("thermal_preservation_method", thermal_preservation_method),
     ];
 
-    let mut param_expression = String::with_capacity(32);
-    param_expression.push('(');
-    for (i, _) in fields.iter().enumerate() {
-        param_expression.push_str(&format!("${}", i + 1));
-        if i != fields.len() - 1 {
-            param_expression.push(',');
-        }
-    }
-    param_expression.push(')');
-
-    let field_expression = format!("({})", fields.join(", "));
+    let (field_list, placeholders, params) = fields.to_field_list_placeholders_params();
 
     let id = tx
         .query_one_into(
-            &format!(
-                "insert into specimen {field_expression} values {param_expression} returning id"
-            ),
-            &[
-                readable_id,
-                name,
-                submitted_by,
-                project_id,
-                received_at,
-                species,
-                host_species,
-                returned_at,
-                returned_by,
-                type_,
-                embedded_in,
-                fixative,
-                thermal_preservation_method,
-                tissue,
-                additional_data,
-            ],
+            &format!("insert into specimen {field_list} values {placeholders} returning id"),
+            &params,
         )
         .await?;
 
@@ -144,7 +122,7 @@ pub mod test {
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 name: "specimen".to_nonempty_string(),
                 submitted_by: Uuid::nil(),
-                received_at: Timestamp::now() + SignedDuration::new(60 * 60 * 24, 0),
+                received_at: Timestamp::now() + SignedDuration::from_hours(24),
                 project_id,
                 species: Species::MusMusculus,
                 host_species: None,

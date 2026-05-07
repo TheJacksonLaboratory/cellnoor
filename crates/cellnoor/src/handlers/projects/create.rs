@@ -3,7 +3,10 @@ use cellnoor_types::project::{NewProject, Project};
 
 use crate::{
     auth::AuthUser,
-    db::{self},
+    db::{
+        self,
+        util::{FieldValuePairs, ToFieldListPlaceholdersParams},
+    },
     error::Error,
     handlers::projects::{access::add_person::insert_project_accesses, show::select_project_by_id},
     state::AppState,
@@ -34,10 +37,17 @@ pub async fn insert_project(
         people,
     }: &NewProject,
 ) -> Result<Project, crate::error::Error> {
+    let fields: FieldValuePairs<_> = [
+        ("name", name),
+        ("started_at", started_at),
+        ("ended_at", ended_at),
+    ];
+    let (field_list, placeholders, params) = fields.to_field_list_placeholders_params();
+
     let id = tx
         .query_one_into(
-            "insert into project (name, started_at, ended_at) values ($1, $2, $3) returning id",
-            &[name, started_at, ended_at],
+            &format!("insert into project {field_list} values {placeholders} returning id"),
+            &params,
         )
         .await?;
 

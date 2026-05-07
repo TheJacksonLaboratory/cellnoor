@@ -36,8 +36,8 @@ pub enum JunctionTable {
 pub async fn insert_many_to_many(
     tx: &db::Transaction<'_>,
     table: JunctionTable,
-    (parent_field, parent_id): (&str, Uuid),
-    (child_field, children_ids): (&str, &[Uuid]),
+    (parent_field, parent_id): (&'static str, Uuid),
+    (child_field, children_ids): (&'static str, &[Uuid]),
 ) -> Result<(), Error> {
     if children_ids.is_empty() {
         return Ok(());
@@ -76,4 +76,31 @@ pub async fn insert_many_to_many(
     tx.execute(&stmt, &params).await?;
 
     Ok(())
+}
+
+pub trait ToFieldListPlaceholdersParams<const N: usize> {
+    fn to_field_list_placeholders_params(&self) -> (String, String, [&(dyn ToSql + Sync); N]);
+}
+
+type FieldValuePair<'a> = (&'static str, &'a (dyn ToSql + Sync));
+
+pub type FieldValuePairs<'a, const N: usize> = [FieldValuePair<'a>; N];
+
+impl<'a, const N: usize> ToFieldListPlaceholdersParams<N> for FieldValuePairs<'a, N> {
+    fn to_field_list_placeholders_params(&self) -> (String, String, [&(dyn ToSql + Sync); N]) {
+        let fieldnames = self.map(|(field, _)| field).join(", ");
+
+        let fieldnames = format!("({fieldnames})");
+
+        let indices: [_; N] = std::array::from_fn(|i| format!("${}", i + 1));
+        let placeholders = indices.join(", ");
+        let placeholders = format!("({placeholders})");
+
+        let bind_params = self.map(|(_, p)| p);
+
+        dbg!(&fieldnames);
+        dbg!(&placeholders);
+
+        (fieldnames, placeholders, bind_params)
+    }
 }

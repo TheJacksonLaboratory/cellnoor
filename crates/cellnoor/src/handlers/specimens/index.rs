@@ -1,5 +1,5 @@
 use axum::{Json, extract::State};
-use cellnoor_types::specimen::{Specimen, SpecimenQuery, SpecimenRecord};
+use cellnoor_types::specimen::{Specimen, SpecimenQuery};
 use futures::StreamExt;
 use serde_qs::web::QsQuery;
 
@@ -18,10 +18,6 @@ pub async fn index_specimens(
     tx.commit().await?;
 
     Ok(response)
-}
-
-trait RowToStruct {
-    fn from_row(&self) -> Self;
 }
 
 pub async fn select_specimens(
