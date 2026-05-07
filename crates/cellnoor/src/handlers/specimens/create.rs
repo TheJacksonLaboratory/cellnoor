@@ -2,7 +2,6 @@ use axum::{Json, extract::State};
 use cellnoor_types::specimen::{
     NewSpecimen, Specimen, SpecimenCommonFields, SpecimenVariableFields,
 };
-use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
@@ -99,8 +98,7 @@ pub mod test {
     use cellnoor_types::{
         UuidOperator,
         specimen::{
-            NewBlock, NewSpecimen, Species, Specimen, SpecimenCommonFields, SpecimenPredicate,
-            SpecimenQuery,
+            NewBlock, NewSpecimen, Species, SpecimenCommonFields, SpecimenPredicate, SpecimenQuery,
         },
     };
     use jiff::{SignedDuration, Timestamp};

@@ -59,8 +59,8 @@ pub async fn insert_project(
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
-        SimpleStringOperator, UuidOperator,
-        project::{NewProject, Project, ProjectPredicate, ProjectQuery, ProjectRecordDetailed},
+        SimpleStringOperator,
+        project::{NewProject, ProjectPredicate, ProjectQuery},
     };
     use jiff::Timestamp;
     use uuid::Uuid;
