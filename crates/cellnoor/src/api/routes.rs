@@ -21,7 +21,7 @@ mod institutions;
 // pub mod multiplexing_tags;
 mod people;
 mod projects;
-// pub mod specimens;
+mod specimens;
 // pub mod suspension_pools;
 // pub mod suspensions;
 // pub mod tenx_assays;
@@ -41,8 +41,8 @@ pub(super) fn router<'a>() -> Router<AppState> {
         // .nest("/admin", admin::router())
         .nest("/institutions", institutions::router())
         .nest("/people", people::router())
-        .nest("/projects", projects::router());
-    // .nest("/specimens", specimens::router())
+        .nest("/projects", projects::router())
+        .nest("/specimens", specimens::router());
     // .nest("/10x-assays", tenx_assays::router())
     // .nest("/multiplexing-tags", multiplexing_tags::router())
     // .nest("/suspensions", suspensions::router())

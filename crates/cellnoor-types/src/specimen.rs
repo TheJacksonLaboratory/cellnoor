@@ -14,7 +14,7 @@ use uuid::Uuid;
 use crate::{
     SimpleLinks,
     project::{Project, ProjectRecord},
-    specimen::measurement::SpecimenMeasurement,
+    specimen::measurement::{NewSpecimenMeasurement, SpecimenMeasurement},
 };
 
 mod creation;
@@ -47,6 +47,8 @@ pub struct SpecimenCommonFields {
     pub returned_at: Option<Timestamp>,
     pub tissue: NonemptyString,
     pub additional_data: Option<Value>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub measurements: Vec<NewSpecimenMeasurement>,
 }
 
 #[unit_enum]

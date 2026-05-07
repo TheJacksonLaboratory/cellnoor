@@ -10,6 +10,12 @@
 #[cfg_attr(feature = "postgres-types", postgres(transparent))]
 pub struct PositiveF32(f32);
 
+impl From<PositiveF32> for f32 {
+    fn from(p: PositiveF32) -> Self {
+        p.0
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
@@ -35,7 +41,7 @@ mod serde_impls {
         {
             let num = f32::deserialize(deserializer)?;
 
-            if num < 0.0 {
+            if num <= 0.0 {
                 use serde::de;
 
                 return Err(de::Error::invalid_value(
