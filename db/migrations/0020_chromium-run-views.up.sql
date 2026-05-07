@@ -33,7 +33,9 @@ create view gem_pool_to_specimen as (
     from chip_loading
     join gem_pool on chip_loading.gem_pool_id = gem_pool.id
     join chromium_run_to_assay as chr on gem_pool.chromium_run_id = (chr.chromium_run).id
-    join suspension_pool_to_specimen as suspension_pool on chip_loading.suspension_pool_id = (suspension_pool.suspension_pool).id
+    join
+        suspension_pool_to_specimen as suspension_pool
+        on chip_loading.suspension_pool_id = (suspension_pool.suspension_pool).id
 );
 
 create function get_chromium_run_at_from_gem_pool_id(

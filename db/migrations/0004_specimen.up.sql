@@ -33,6 +33,10 @@ create function check_timestamp_ordering() returns trigger language plpgsql vola
         child_fk uuid = (new_json ->> child_fk_field)::uuid;
         n integer;
     begin
+        if (child_value is null) then
+            return new;
+        end if;
+
         execute format(
             'select count(*) from %I where id = $1 and %I <= $2',
             parent_table, parent_value_field

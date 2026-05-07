@@ -10,6 +10,16 @@
 #[cfg_attr(feature = "postgres-types", postgres(transparent))]
 pub struct PositiveF32(f32);
 
+impl PositiveF32 {
+    pub fn new(f: f32) -> Option<Self> {
+        if f <= 0.0 {
+            return None;
+        }
+
+        Some(Self(f))
+    }
+}
+
 impl PartialEq<f32> for PositiveF32 {
     fn eq(&self, other: &f32) -> bool {
         self.0.eq(other)
@@ -34,6 +44,16 @@ impl PartialOrd<f32> for PositiveF32 {
 #[cfg_attr(feature = "postgres-types", postgres(transparent))]
 pub struct PositiveI32(i32);
 
+impl PositiveI32 {
+    pub fn new(i: i32) -> Option<Self> {
+        if i <= 0 {
+            return None;
+        }
+
+        Some(Self(i))
+    }
+}
+
 #[cfg(feature = "serde")]
 mod serde_impls {
     use serde::Deserialize;
@@ -47,16 +67,16 @@ mod serde_impls {
         {
             let num = f32::deserialize(deserializer)?;
 
-            if num <= 0.0 {
+            let Some(positive) = Self::new(num) else {
                 use serde::de;
 
                 return Err(de::Error::invalid_value(
                     de::Unexpected::Float(f64::from(num)),
                     &format!("a positive float").as_str(),
                 ));
-            }
+            };
 
-            Ok(Self(num))
+            Ok(positive)
         }
     }
 
@@ -67,16 +87,16 @@ mod serde_impls {
         {
             let num = i32::deserialize(deserializer)?;
 
-            if num <= 0 {
+            let Some(positive) = Self::new(num) else {
                 use serde::de;
 
                 return Err(de::Error::invalid_value(
-                    de::Unexpected::Float(f64::from(num)),
+                    de::Unexpected::Signed(i64::from(num)),
                     &format!("a positive integer").as_str(),
                 ));
-            }
+            };
 
-            Ok(Self(num))
+            Ok(positive)
         }
     }
 }

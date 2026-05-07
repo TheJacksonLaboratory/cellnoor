@@ -1,7 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::specimen::{
     NewSpecimen, Specimen, SpecimenCommonFields, SpecimenVariableFields,
-    measurement::{NewSpecimenMeasurement, SpecimenMeasurementData},
 };
 use uuid::Uuid;
 
@@ -11,8 +10,10 @@ use crate::{
         self,
         util::{FieldValuePairs, ToFieldListPlaceholdersParams},
     },
-    error::{Error, ErrorInner},
-    handlers::specimens::{measurements::insert_specimen_measurement, show::select_specimen_by_id},
+    error::Error,
+    handlers::specimens::{
+        measurements::create::insert_specimen_measurement, show::select_specimen_by_id,
+    },
     state::AppState,
 };
 
@@ -65,7 +66,7 @@ async fn insert_specimen_record(
             returned_at,
             tissue,
             additional_data,
-            ..
+            measurements: _,
         },
         SpecimenVariableFields {
             type_,
@@ -111,9 +112,12 @@ pub mod test {
         UuidOperator,
         specimen::{
             NewBlock, NewSpecimen, Species, SpecimenCommonFields, SpecimenPredicate, SpecimenQuery,
+            measurement::{NewSpecimenMeasurement, SpecimenMeasurementData},
         },
     };
     use jiff::{SignedDuration, Timestamp};
+    use positive::PositiveF32;
+    use postgres_types::Json;
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
@@ -132,7 +136,7 @@ pub mod test {
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 name: "specimen".to_nonempty_string(),
                 submitted_by: Uuid::nil(),
-                received_at: Timestamp::now() + SignedDuration::from_hours(24),
+                received_at: Timestamp::now(),
                 project_id,
                 species: Species::MusMusculus,
                 host_species: None,
@@ -140,7 +144,14 @@ pub mod test {
                 returned_at: None,
                 tissue: "tissue".to_nonempty_string(),
                 additional_data: None,
-                measurements: vec![],
+                measurements: vec![NewSpecimenMeasurement {
+                    measured_by: Uuid::nil(),
+                    measured_at: Timestamp::now(),
+                    data: Json(SpecimenMeasurementData::Rin {
+                        instrument_name: None,
+                        value: PositiveF32::new(5.0).unwrap(),
+                    }),
+                }],
             },
             fixative: None,
         })

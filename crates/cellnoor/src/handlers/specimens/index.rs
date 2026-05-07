@@ -1,7 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::specimen::{Specimen, SpecimenQuery};
 use futures::StreamExt;
-use serde_qs::web::QsQuery;
 
 use crate::{auth::AuthUser, db, error::Error, state::AppState};
 

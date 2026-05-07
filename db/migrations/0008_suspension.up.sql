@@ -6,7 +6,9 @@ create table suspension (
     created_at timestamptz,
     lysis_duration_minutes real,
     target_cell_recovery bigint,
-    additional_data jsonb
+    additional_data jsonb,
+
+    constraint only_nuclei_suspension_was_lysed check (content = 'nuclei' or lysis_duration_minutes is null)
 );
 
 create trigger suspension_created_after_specimen_received before insert or update on suspension for each row execute function check_timestamp_ordering(

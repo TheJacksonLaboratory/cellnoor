@@ -157,6 +157,8 @@ pub type I32Operator = ScalarOperator<i32>;
 
 pub type I64Operator = ScalarOperator<i64>;
 
+pub type F32Operator = ScalarOperator<f32>;
+
 pub type SimpleStringOperator = ScalarOperator<String>;
 
 pub type UuidOperator = ScalarOperator<Uuid>;

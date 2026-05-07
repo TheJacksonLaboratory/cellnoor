@@ -98,9 +98,6 @@ impl<'a, const N: usize> ToFieldListPlaceholdersParams<N> for FieldValuePairs<'a
 
         let bind_params = self.map(|(_, p)| p);
 
-        dbg!(&fieldnames);
-        dbg!(&placeholders);
-
         (fieldnames, placeholders, bind_params)
     }
 }

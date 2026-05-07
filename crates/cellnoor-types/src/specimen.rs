@@ -137,8 +137,10 @@ pub enum Specimen {
     },
 }
 
-fn specimen_links(id: Uuid) -> SimpleLinks {
-    SimpleLinks::from_str_and_id("/specimens", id)
+impl SimpleLinks {
+    fn for_specimen(id: Uuid) -> Self {
+        Self::from_str_and_id("/specimens", id)
+    }
 }
 
 impl Specimen {
@@ -151,7 +153,7 @@ impl Specimen {
 
     pub fn from_record(record: SpecimenRecord) -> Self {
         Self::Compact {
-            links: specimen_links(record.id),
+            links: SimpleLinks::for_specimen(record.id),
             record,
         }
     }
@@ -164,7 +166,7 @@ impl Specimen {
         }: SpecimenRecordDetailed,
     ) -> Self {
         Self::Detailed {
-            links: specimen_links(specimen.id),
+            links: SimpleLinks::for_specimen(specimen.id),
             record: specimen,
             project: Project::from_record(project),
             measurements,

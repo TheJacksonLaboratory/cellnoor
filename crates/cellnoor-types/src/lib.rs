@@ -15,3 +15,5 @@ pub mod project;
 pub(crate) mod query;
 pub(crate) mod simple_links;
 pub mod specimen;
+pub mod suspension;
+pub mod units;

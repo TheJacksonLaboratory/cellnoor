@@ -4,7 +4,7 @@ use axum::{
 };
 use cellnoor_types::{
     IdParam,
-    specimen::measurement::{NewSpecimenMeasurement, SpecimenMeasurementData},
+    suspension::measurement::{NewSuspensionMeasurement, SuspensionMeasurementData},
 };
 use uuid::Uuid;
 
@@ -18,17 +18,17 @@ use crate::{
     state::AppState,
 };
 
-pub async fn create_specimen_measurement(
+pub async fn create_suspension_measurement(
     State(state): State<AppState>,
     user: AuthUser,
-    Path(IdParam { id: specimen_id }): Path<IdParam>,
-    Json(record): Json<NewSpecimenMeasurement>,
+    Path(IdParam { id: suspension_id }): Path<IdParam>,
+    Json(record): Json<NewSuspensionMeasurement>,
 ) -> Result<Json<()>, Error> {
     let mut client = state.db_client(user).await?;
 
     let tx = client.begin().await?;
 
-    let response = insert_specimen_measurement(&tx, specimen_id, &record)
+    let response = insert_suspension_measurement(&tx, suspension_id, &record)
         .await
         .map(Json);
 
@@ -37,19 +37,19 @@ pub async fn create_specimen_measurement(
     response
 }
 
-pub async fn insert_specimen_measurement(
+pub async fn insert_suspension_measurement(
     tx: &db::Transaction<'_>,
-    specimen_id: Uuid,
-    NewSpecimenMeasurement {
+    suspension_id: Uuid,
+    NewSuspensionMeasurement {
         measured_by,
         measured_at,
         data,
-    }: &NewSpecimenMeasurement,
+    }: &NewSuspensionMeasurement,
 ) -> Result<(), Error> {
-    validate_specimen_measurement_data(&data.0)?;
+    validate_suspension_measurement_data(&data.0)?;
 
     let fields: FieldValuePairs<_> = [
-        ("specimen_id", &specimen_id),
+        ("suspension_id", &suspension_id),
         ("measured_by", measured_by),
         ("measured_at", measured_at),
         ("data", data),
@@ -59,7 +59,7 @@ pub async fn insert_specimen_measurement(
 
     tx.execute(
         &format!(
-            "insert into specimen_measurement {field_list} values {placeholders} on conflict do \
+            "insert into suspension_measurement {field_list} values {placeholders} on conflict do \
              nothing"
         ),
         &params,
@@ -69,15 +69,17 @@ pub async fn insert_specimen_measurement(
     Ok(())
 }
 
-fn validate_specimen_measurement_data(data: &SpecimenMeasurementData) -> Result<(), ErrorInner> {
+fn validate_suspension_measurement_data(
+    data: &SuspensionMeasurementData,
+) -> Result<(), ErrorInner> {
     let (field, value, inclusive_max) = match data {
-        SpecimenMeasurementData::Rin { value, .. } => ("RIN", value, 10.0),
-        SpecimenMeasurementData::Dv200 { value, .. } => ("DV200", value, 1.0),
+        SuspensionMeasurementData::Viability { inner, .. } => ("Viability", &inner.value, 1.0),
+        _ => return Ok(()),
     };
 
     if *value > inclusive_max {
         return Err(ErrorInner::DataConstraint {
-            resource: Some("specimen_measurement".to_owned()),
+            resource: Some("suspension_measurement".to_owned()),
             field: Some(field.to_owned()),
             message: format!("invalid value for {field}"),
             detail: None,
