@@ -116,48 +116,6 @@ async fn insert_specimen_inner(
     select_specimen_by_id(tx, id).await
 }
 
-pub async fn insert_specimen_measurement(
-    tx: &db::Transaction<'_>,
-    specimen_id: Uuid,
-    NewSpecimenMeasurement {
-        measured_by,
-        measured_at,
-        data,
-    }: &NewSpecimenMeasurement,
-) -> Result<(), Error> {
-    validate_specimen_measurement_data(data)?;
-
-    let data_json = PgJson(data);
-    tx.execute(
-        "insert into specimen_measurement (specimen_id, measured_by, measured_at, data) values \
-         ($1, $2, $3, $4) returning id",
-        &[&specimen_id, measured_by, measured_at, &data_json],
-    )
-    .await?;
-
-    Ok(())
-}
-
-pub fn validate_specimen_measurement_data(data: &SpecimenMeasurementData) -> Result<(), Error> {
-    let (quantity, value, min, max) = match *data {
-        SpecimenMeasurementData::Dv200 { value, .. } => ("DV200", f32::from(value), 0.0, 1.0),
-        SpecimenMeasurementData::Rin { value, .. } => ("RIN", f32::from(value), 1.0, 10.0),
-    };
-
-    if value < min || value > max {
-        return Err(Error {
-            error: ErrorInner::DataConstraint {
-                resource: Some("specimen_measurement".to_owned()),
-                field: Some("data.value".to_owned()),
-                message: format!("{quantity} value must be between {min} and {max}"),
-                detail: None,
-            },
-        });
-    }
-
-    Ok(())
-}
-
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
@@ -194,6 +152,7 @@ pub mod test {
                 returned_at: None,
                 tissue: "tissue".to_nonempty_string(),
                 additional_data: None,
+                measurements: vec![],
             },
             fixative: None,
         })
