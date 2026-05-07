@@ -5,7 +5,7 @@ use postgres_types::ToSql;
 #[cfg(feature = "postgres-types")]
 use crate::query::filter::ToPredicate;
 use crate::query::{
-    DbQuery,
+    ComplexQuery,
     filter::{Filter, StringOperator, TimestampOperator, UuidOperator},
     order_by::{OrderDirection, OrderingField},
 };
@@ -34,9 +34,9 @@ impl ToPredicate for ProjectPredicate {
 
 pub type ProjectFilter = Filter<ProjectPredicate>;
 
-pub type ProjectOrderBy = ProjectField<OrderDirection, OrderDirection, OrderDirection>;
+pub type ProjectSortField = ProjectField<OrderDirection, OrderDirection, OrderDirection>;
 
-impl OrderingField for ProjectOrderBy {
+impl OrderingField for ProjectSortField {
     fn direction(self) -> OrderDirection {
         match self {
             Self::Id(d) | Self::Name(d) | Self::StartedAt(d) | Self::EndedAt(d) => d,
@@ -44,10 +44,10 @@ impl OrderingField for ProjectOrderBy {
     }
 }
 
-impl Default for ProjectOrderBy {
+impl Default for ProjectSortField {
     fn default() -> Self {
         Self::StartedAt(OrderDirection::Desc)
     }
 }
 
-pub type ProjectQuery = DbQuery<ProjectFilter, ProjectOrderBy>;
+pub type ProjectQuery = ComplexQuery<ProjectFilter, ProjectSortField>;

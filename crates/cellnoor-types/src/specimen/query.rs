@@ -6,7 +6,7 @@ use postgres_types::ToSql;
 use crate::query::filter::ToPredicate;
 use crate::{
     query::{
-        DbQuery,
+        ComplexQuery,
         filter::{Filter, ScalarOperator, StringOperator, TimestampOperator, UuidOperator},
         order_by::{OrderDirection, OrderingField},
     },
@@ -73,7 +73,7 @@ impl ToPredicate for SpecimenPredicate {
 
 pub type SpecimenFilter = Filter<SpecimenPredicate>;
 
-pub type SpecimenOrderBy = SpecimenField<
+pub type SpecimenSortField = SpecimenField<
     OrderDirection,
     OrderDirection,
     OrderDirection,
@@ -84,7 +84,7 @@ pub type SpecimenOrderBy = SpecimenField<
     OrderDirection,
 >;
 
-impl OrderingField for SpecimenOrderBy {
+impl OrderingField for SpecimenSortField {
     fn direction(self) -> OrderDirection {
         match self {
             Self::Id(d)
@@ -106,10 +106,10 @@ impl OrderingField for SpecimenOrderBy {
     }
 }
 
-impl Default for SpecimenOrderBy {
+impl Default for SpecimenSortField {
     fn default() -> Self {
         Self::ReceivedAt(OrderDirection::Desc)
     }
 }
 
-pub type SpecimenQuery = DbQuery<SpecimenFilter, SpecimenOrderBy>;
+pub type SpecimenQuery = ComplexQuery<SpecimenFilter, SpecimenSortField>;

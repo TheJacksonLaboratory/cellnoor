@@ -20,6 +20,12 @@ pub struct Error {
     pub error: ErrorInner,
 }
 
+impl From<ErrorInner> for Error {
+    fn from(error: ErrorInner) -> Self {
+        Self { error }
+    }
+}
+
 impl Error {
     pub fn resource_not_found() -> Self {
         Self {

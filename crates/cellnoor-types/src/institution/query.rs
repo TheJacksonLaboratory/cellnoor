@@ -5,7 +5,7 @@ use postgres_types::ToSql;
 #[cfg(feature = "postgres-types")]
 use crate::query::filter::ToPredicate;
 use crate::query::{
-    DbQuery,
+    ComplexQuery,
     filter::{Filter, StringOperator, UuidOperator},
     order_by::{OrderDirection, OrderingField},
 };
@@ -32,9 +32,9 @@ impl ToPredicate for InstitutionPredicate {
 
 pub type InstitutionFilter = Filter<InstitutionPredicate>;
 
-pub type InstitutionOrderBy = InstitutionField<OrderDirection, OrderDirection>;
+pub type InstitutionSortField = InstitutionField<OrderDirection, OrderDirection>;
 
-impl OrderingField for InstitutionOrderBy {
+impl OrderingField for InstitutionSortField {
     fn direction(self) -> OrderDirection {
         match self {
             Self::Id(d) | Self::Name(d) | Self::MicrosoftEntraTenantId(d) => d,
@@ -42,10 +42,10 @@ impl OrderingField for InstitutionOrderBy {
     }
 }
 
-impl Default for InstitutionOrderBy {
+impl Default for InstitutionSortField {
     fn default() -> Self {
         Self::Name(OrderDirection::Desc)
     }
 }
 
-pub type InstitutionQuery = DbQuery<InstitutionFilter, InstitutionOrderBy>;
+pub type InstitutionQuery = ComplexQuery<InstitutionFilter, InstitutionSortField>;

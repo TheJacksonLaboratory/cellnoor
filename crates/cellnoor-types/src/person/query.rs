@@ -1,7 +1,7 @@
 use macro_attributes::field_enum;
 
 use crate::{
-    DbQuery, Filter, StringOperator, UuidOperator,
+    ComplexQuery, Filter, StringOperator, UuidOperator,
     query::{
         filter::ToPredicate,
         order_by::{OrderDirection, OrderingField},
@@ -31,9 +31,9 @@ impl ToPredicate for PersonPredicate {
 
 pub type PersonFilter = Filter<PersonPredicate>;
 
-pub type PersonOrderBy = PersonField<OrderDirection, OrderDirection>;
+pub type PersonSortField = PersonField<OrderDirection, OrderDirection>;
 
-impl OrderingField for PersonOrderBy {
+impl OrderingField for PersonSortField {
     fn direction(self) -> OrderDirection {
         match self {
             Self::Id(d)
@@ -45,10 +45,10 @@ impl OrderingField for PersonOrderBy {
     }
 }
 
-impl Default for PersonOrderBy {
+impl Default for PersonSortField {
     fn default() -> Self {
         Self::Name(OrderDirection::Desc)
     }
 }
 
-pub type PersonQuery = DbQuery<PersonFilter, PersonOrderBy>;
+pub type PersonQuery = ComplexQuery<PersonFilter, PersonSortField>;

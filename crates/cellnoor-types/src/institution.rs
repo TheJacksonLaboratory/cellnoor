@@ -1,6 +1,6 @@
 use macro_attributes::{base_model, select};
 use nonempty::NonemptyString;
-pub use query::{InstitutionFilter, InstitutionOrderBy, InstitutionPredicate, InstitutionQuery};
+pub use query::{InstitutionFilter, InstitutionSortField, InstitutionPredicate, InstitutionQuery};
 use uuid::Uuid;
 
 use crate::simple_links::SimpleLinks;

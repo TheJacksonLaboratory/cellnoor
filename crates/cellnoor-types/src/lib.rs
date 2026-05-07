@@ -1,6 +1,6 @@
 pub use path::IdParam;
 pub use query::{
-    DbQuery,
+    ComplexQuery, SimpleQuery,
     filter::{
         BoolOperator, Filter, I32Operator, I64Operator, SimpleStringOperator, StringOperator,
         TimestampOperator, UuidOperator,

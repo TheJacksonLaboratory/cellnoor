@@ -10,9 +10,22 @@ pub mod filter;
 pub mod order_by;
 
 #[base_model]
+#[derive(Copy, Default)]
+#[cfg_attr(feature = "serde", serde(default))]
+pub struct SimpleQuery<O>
+where
+    O: Default,
+{
+    pub limit: Option<i32>,
+    pub offset: i32,
+    pub detailed: bool,
+    pub order_by: O,
+}
+
+#[base_model]
 #[cfg_attr(feature = "serde", serde(default))]
 #[cfg_attr(feature = "schemars", schemars(inline))]
-pub struct DbQuery<F, O>
+pub struct ComplexQuery<F, O>
 where
     O: Default,
 {
@@ -23,7 +36,7 @@ where
     pub detailed: bool,
 }
 
-impl<F, O> Default for DbQuery<F, O>
+impl<F, O> Default for ComplexQuery<F, O>
 where
     O: Default,
 {
@@ -38,7 +51,7 @@ where
     }
 }
 
-impl<P, O> DbQuery<filter::Filter<P>, O>
+impl<P, O> ComplexQuery<filter::Filter<P>, O>
 where
     P: Into<filter::Filter<P>>,
     O: Default,
@@ -50,10 +63,27 @@ where
             ..Default::default()
         }
     }
+
+    pub fn from_simple_query(
+        SimpleQuery {
+            limit,
+            offset,
+            detailed,
+            order_by,
+        }: SimpleQuery<O>,
+    ) -> Self {
+        Self {
+            limit,
+            offset,
+            detailed,
+            order_by: OrderBy::OneField(order_by),
+            ..Default::default()
+        }
+    }
 }
 
 #[cfg(feature = "postgres-types")]
-impl<P, O> DbQuery<filter::Filter<P>, O>
+impl<P, O> ComplexQuery<filter::Filter<P>, O>
 where
     P: AsRef<str> + ToPredicate,
     O: Default + Copy + AsRef<str> + OrderingField,

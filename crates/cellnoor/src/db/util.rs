@@ -1,4 +1,4 @@
-use cellnoor_types::{DbQuery, Filter};
+use cellnoor_types::{ComplexQuery, Filter};
 use postgres_types::ToSql;
 use uuid::Uuid;
 
@@ -8,12 +8,12 @@ use crate::error::Error;
 pub async fn select_one<P, O, T>(
     tx: &db::Transaction<'_>,
     pred: P,
-    select_fn: impl AsyncFn(&db::Transaction, &DbQuery<Filter<P>, O>) -> Result<Vec<T>, Error>,
+    select_fn: impl AsyncFn(&db::Transaction, &ComplexQuery<Filter<P>, O>) -> Result<Vec<T>, Error>,
 ) -> Result<T, Error>
 where
     O: Default,
 {
-    let mut records = select_fn(tx, &DbQuery::from_filter(pred, true)).await?;
+    let mut records = select_fn(tx, &ComplexQuery::from_filter(pred, true)).await?;
 
     if records.len() != 1 {
         return Err(Error::resource_not_found());

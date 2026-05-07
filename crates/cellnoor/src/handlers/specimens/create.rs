@@ -1,7 +1,7 @@
 use axum::{Json, extract::State};
 use cellnoor_types::specimen::{
     NewSpecimen, Specimen, SpecimenCommonFields, SpecimenVariableFields,
-    measurement::NewSpecimenMeasurement,
+    measurement::{NewSpecimenMeasurement, SpecimenMeasurementData},
 };
 use uuid::Uuid;
 
@@ -11,7 +11,7 @@ use crate::{
         self,
         util::{FieldValuePairs, ToFieldListPlaceholdersParams},
     },
-    error::Error,
+    error::{Error, ErrorInner},
     handlers::specimens::show::select_specimen_by_id,
     state::AppState,
 };
@@ -38,9 +38,37 @@ pub async fn insert_specimen(
 ) -> Result<Specimen, crate::error::Error> {
     let ((common_fields, measurements), variable_fields) = record.split_for_insertion();
 
+    validate_measurements(&measurements)?;
+
     let id = insert_specimen_record(tx, &(common_fields, variable_fields)).await?;
     insert_specimen_measurements(tx, id, &measurements).await?;
     select_specimen_by_id(tx, id).await
+}
+
+fn validate_measurements(measurements: &[NewSpecimenMeasurement]) -> Result<(), Error> {
+    for NewSpecimenMeasurement { data, .. } in measurements {}
+
+    Ok(())
+}
+
+fn validate_specimen_measurement_data(
+    postgres_types::Json(data): &postgres_types::Json<SpecimenMeasurementData>,
+) -> Result<(), ErrorInner> {
+    let (field, value, exclusive_max) = match data {
+        SpecimenMeasurementData::Rin { value, .. } => ("RIN", value, 10.0),
+        SpecimenMeasurementData::Dv200 { value, .. } => ("DV200", value, 1.0),
+    };
+
+    if *value > exclusive_max {
+        return Err(ErrorInner::DataConstraint {
+            resource: Some("specimen_measurement".to_owned()),
+            field: Some(field.to_owned()),
+            message: format!("invalid value for {field}"),
+            detail: None,
+        });
+    }
+
+    Ok(())
 }
 
 async fn insert_specimen_record(

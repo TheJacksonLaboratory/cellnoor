@@ -1,14 +1,13 @@
 use axum::{Json, extract::State};
 use cellnoor_types::project::{Project, ProjectQuery};
 use futures::StreamExt;
-use serde_qs::web::QsQuery;
 
 use crate::{auth::AuthUser, db, error::Error, state::AppState};
 
 pub async fn index_projects(
     State(state): State<AppState>,
     user: AuthUser,
-    QsQuery(query): QsQuery<ProjectQuery>,
+    Json(query): Json<ProjectQuery>,
 ) -> Result<Json<Vec<Project>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;

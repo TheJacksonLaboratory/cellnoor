@@ -7,7 +7,7 @@ pub use creation::{
 use jiff::Timestamp;
 use macro_attributes::{base_model, select, unit_enum};
 use nonempty::NonemptyString;
-pub use query::{SpecimenOrderBy, SpecimenPredicate, SpecimenQuery};
+pub use query::{SpecimenPredicate, SpecimenQuery, SpecimenSortField};
 use serde_json::Value;
 use uuid::Uuid;
 
@@ -126,6 +126,8 @@ pub enum Specimen {
         record: SpecimenRecord,
         links: SimpleLinks,
     },
+    // Rather than just wrapping the `SpecimenRecordDetailed`, we destructure its fields so that
+    // we have a `Project` rather than a `ProjectRecord`
     Detailed {
         #[cfg_attr(feature = "serde", serde(flatten))]
         record: SpecimenRecord,

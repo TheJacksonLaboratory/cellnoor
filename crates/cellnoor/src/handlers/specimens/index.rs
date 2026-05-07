@@ -8,7 +8,7 @@ use crate::{auth::AuthUser, db, error::Error, state::AppState};
 pub async fn index_specimens(
     State(state): State<AppState>,
     user: AuthUser,
-    QsQuery(query): QsQuery<SpecimenQuery>,
+    Json(query): Json<SpecimenQuery>,
 ) -> Result<Json<Vec<Specimen>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;

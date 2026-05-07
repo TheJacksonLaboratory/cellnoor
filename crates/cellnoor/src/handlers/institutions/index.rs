@@ -8,7 +8,7 @@ use crate::{auth::AuthUser, db, error::Error, state::AppState};
 pub async fn index_institutions(
     State(state): State<AppState>,
     user: AuthUser,
-    QsQuery(query): QsQuery<InstitutionQuery>,
+    Json(query): Json<InstitutionQuery>,
 ) -> Result<Json<Vec<Institution>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;

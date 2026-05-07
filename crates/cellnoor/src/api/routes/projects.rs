@@ -10,7 +10,8 @@ use crate::{
 
 pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new()
-        .api_route("/", post(create_project).get(index_projects))
+        .api_route("/", post(create_project).get(simple_index_projects))
+        .api_route("/search", post(index_projects))
         .nest("/{id}", id_router())
 }
 

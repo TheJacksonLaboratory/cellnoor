@@ -10,9 +10,15 @@
 #[cfg_attr(feature = "postgres-types", postgres(transparent))]
 pub struct PositiveF32(f32);
 
-impl From<PositiveF32> for f32 {
-    fn from(p: PositiveF32) -> Self {
-        p.0
+impl PartialEq<f32> for PositiveF32 {
+    fn eq(&self, other: &f32) -> bool {
+        self.0.eq(other)
+    }
+}
+
+impl PartialOrd<f32> for PositiveF32 {
+    fn partial_cmp(&self, other: &f32) -> Option<std::cmp::Ordering> {
+        self.0.partial_cmp(other)
     }
 }
 
