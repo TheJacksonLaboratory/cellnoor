@@ -1,7 +1,13 @@
-use axum::{Json, extract::State};
-use cellnoor_types::specimen::{
-    NewSpecimen, Specimen, SpecimenCommonFields, SpecimenVariableFields,
-    measurement::{NewSpecimenMeasurement, SpecimenMeasurementData},
+use axum::{
+    Json,
+    extract::{Path, State},
+};
+use cellnoor_types::{
+    IdParam,
+    specimen::{
+        NewSpecimen, Specimen, SpecimenCommonFields, SpecimenVariableFields,
+        measurement::{NewSpecimenMeasurement, SpecimenMeasurementData},
+    },
 };
 use uuid::Uuid;
 
@@ -16,32 +22,26 @@ use crate::{
     state::AppState,
 };
 
-pub fn create_specimen_measurement() {}
+pub async fn create_specimen_measurement(
+    State(state): State<AppState>,
+    user: AuthUser,
+    Path(IdParam { id: specimen_id }): Path<IdParam>,
+    Json(record): Json<NewSpecimenMeasurement>,
+) -> Result<Json<()>, Error> {
+    let mut client = state.db_client(user).await?;
 
-fn validate_specimen_measurement(
-    NewSpecimenMeasurement {
-        data: postgres_types::Json(data),
-        ..
-    }: &NewSpecimenMeasurement,
-) -> Result<(), ErrorInner> {
-    let (field, value, exclusive_max) = match data {
-        SpecimenMeasurementData::Rin { value, .. } => ("RIN", value, 10.0),
-        SpecimenMeasurementData::Dv200 { value, .. } => ("DV200", value, 1.0),
-    };
+    let tx = client.begin().await?;
 
-    if *value > exclusive_max {
-        return Err(ErrorInner::DataConstraint {
-            resource: Some("specimen_measurement".to_owned()),
-            field: Some(field.to_owned()),
-            message: format!("invalid value for {field}"),
-            detail: None,
-        });
-    }
+    let response = insert_specimen_measurement(&tx, specimen_id, &record)
+        .await
+        .map(Json);
 
-    Ok(())
+    tx.commit().await?;
+
+    response
 }
 
-async fn insert_specimen_measurement(
+pub async fn insert_specimen_measurement(
     tx: &db::Transaction<'_>,
     specimen_id: Uuid,
     NewSpecimenMeasurement {
@@ -50,6 +50,8 @@ async fn insert_specimen_measurement(
         data,
     }: &NewSpecimenMeasurement,
 ) -> Result<(), Error> {
+    validate_specimen_measurement_data(&data.0)?;
+
     let fields: FieldValuePairs<_> = [
         ("specimen_id", &specimen_id),
         ("measured_by", measured_by),
@@ -67,6 +69,24 @@ async fn insert_specimen_measurement(
         &params,
     )
     .await?;
+
+    Ok(())
+}
+
+fn validate_specimen_measurement_data(data: &SpecimenMeasurementData) -> Result<(), ErrorInner> {
+    let (field, value, exclusive_max) = match data {
+        SpecimenMeasurementData::Rin { value, .. } => ("RIN", value, 10.0),
+        SpecimenMeasurementData::Dv200 { value, .. } => ("DV200", value, 1.0),
+    };
+
+    if *value > exclusive_max {
+        return Err(ErrorInner::DataConstraint {
+            resource: Some("specimen_measurement".to_owned()),
+            field: Some(field.to_owned()),
+            message: format!("invalid value for {field}"),
+            detail: None,
+        });
+    }
 
     Ok(())
 }

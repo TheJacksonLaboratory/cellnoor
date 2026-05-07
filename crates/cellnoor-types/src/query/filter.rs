@@ -90,6 +90,18 @@ where
 
         (format!("where {query}"), bind_params)
     }
+
+    pub fn and(mut self, predicate: P) -> Self {
+        match &mut self {
+            Self::AllOf(filters) => {
+                filters.push(predicate.into());
+                self
+            }
+            Self::AnyOf(_) | Self::Not(_) | Self::Leaf(_) => {
+                Self::AllOf(vec![self, predicate.into()])
+            }
+        }
+    }
 }
 
 /// A comparison operator for any scalar value.

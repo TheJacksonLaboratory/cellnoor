@@ -20,7 +20,7 @@ use crate::{
 
 pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new()
-        .api_route("/", post(create_institution).get(simple_index_institutions))
+        .api_route("/", post(create_institution).get(index_institutions_simple))
         .api_route("/search", post(index_institutions))
         .nest("/{id}", id_router())
 }
@@ -29,7 +29,7 @@ fn id_router() -> ApiRouter<AppState> {
     ApiRouter::new().api_route("/", get(show_institution))
 }
 
-async fn simple_index_institutions(
+async fn index_institutions_simple(
     state: State<AppState>,
     user: AuthUser,
     QsQuery(q): QsQuery<SimpleQuery<InstitutionSortField>>,

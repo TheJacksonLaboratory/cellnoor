@@ -9,7 +9,7 @@ pub struct SimpleLinks {
 }
 
 impl SimpleLinks {
-    pub fn from_str_and_id(s: &str, id: Uuid) -> Self {
+    pub(crate) fn from_str_and_id(s: &str, id: Uuid) -> Self {
         Self {
             self_: format!("{s}/{id}"),
         }

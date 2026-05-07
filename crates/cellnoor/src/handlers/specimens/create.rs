@@ -12,7 +12,7 @@ use crate::{
         util::{FieldValuePairs, ToFieldListPlaceholdersParams},
     },
     error::{Error, ErrorInner},
-    handlers::specimens::show::select_specimen_by_id,
+    handlers::specimens::{measurements::insert_specimen_measurement, show::select_specimen_by_id},
     state::AppState,
 };
 
@@ -38,37 +38,16 @@ pub async fn insert_specimen(
 ) -> Result<Specimen, crate::error::Error> {
     let ((common_fields, measurements), variable_fields) = record.split_for_insertion();
 
-    validate_measurements(&measurements)?;
-
     let id = insert_specimen_record(tx, &(common_fields, variable_fields)).await?;
-    insert_specimen_measurements(tx, id, &measurements).await?;
+
+    futures::future::try_join_all(
+        measurements
+            .iter()
+            .map(|m| insert_specimen_measurement(tx, id, m)),
+    )
+    .await?;
+
     select_specimen_by_id(tx, id).await
-}
-
-fn validate_measurements(measurements: &[NewSpecimenMeasurement]) -> Result<(), Error> {
-    for NewSpecimenMeasurement { data, .. } in measurements {}
-
-    Ok(())
-}
-
-fn validate_specimen_measurement_data(
-    postgres_types::Json(data): &postgres_types::Json<SpecimenMeasurementData>,
-) -> Result<(), ErrorInner> {
-    let (field, value, exclusive_max) = match data {
-        SpecimenMeasurementData::Rin { value, .. } => ("RIN", value, 10.0),
-        SpecimenMeasurementData::Dv200 { value, .. } => ("DV200", value, 1.0),
-    };
-
-    if *value > exclusive_max {
-        return Err(ErrorInner::DataConstraint {
-            resource: Some("specimen_measurement".to_owned()),
-            field: Some(field.to_owned()),
-            message: format!("invalid value for {field}"),
-            detail: None,
-        });
-    }
-
-    Ok(())
 }
 
 async fn insert_specimen_record(
@@ -124,47 +103,6 @@ async fn insert_specimen_record(
         .await?;
 
     Ok(id)
-}
-
-async fn insert_specimen_measurements(
-    tx: &db::Transaction<'_>,
-    specimen_id: Uuid,
-    measurements: &[NewSpecimenMeasurement],
-) -> Result<(), Error> {
-    let inserts = measurements
-        .iter()
-        .map(|m| insert_specimen_measurement(tx, specimen_id, m));
-
-    futures::future::try_join_all(inserts).await?;
-
-    Ok(())
-}
-
-async fn insert_specimen_measurement(
-    tx: &db::Transaction<'_>,
-    specimen_id: Uuid,
-    NewSpecimenMeasurement {
-        measured_by,
-        measured_at,
-        data,
-    }: &NewSpecimenMeasurement,
-) -> Result<(), Error> {
-    let fields: FieldValuePairs<_> = [
-        ("specimen_id", &specimen_id),
-        ("measured_by", measured_by),
-        ("measured_at", measured_at),
-        ("data", data),
-    ];
-
-    let (field_list, placeholders, params) = fields.to_field_list_placeholders_params();
-
-    tx.execute(
-        &format!("insert into specimen_measurement {field_list} values {placeholders}"),
-        &params,
-    )
-    .await?;
-
-    Ok(())
 }
 
 #[cfg(test)]

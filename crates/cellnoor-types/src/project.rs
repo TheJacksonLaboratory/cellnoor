@@ -26,14 +26,6 @@ pub struct ProjectRecord {
     pub ended_at: Timestamp,
 }
 
-#[base_model]
-pub struct ProjectLinks {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub simple: SimpleLinks,
-    pub specimens: String,
-    pub chromium_datasets: String,
-}
-
 // We don't particularly need a "detailed" view of a project, but this is a good
 // exercise in implementing patterns we will use for libraries and Chromium
 // datasets
@@ -51,38 +43,32 @@ pub enum Project {
     Compact {
         #[cfg_attr(feature = "serde", serde(flatten))]
         record: ProjectRecord,
-        links: ProjectLinks,
+        links: SimpleLinks,
     },
     Detailed {
         #[cfg_attr(feature = "serde", serde(flatten))]
         record: ProjectRecordDetailed,
-        links: ProjectLinks,
+        links: SimpleLinks,
     },
 }
 
-impl ProjectLinks {
-    fn from_id(id: Uuid) -> Self {
-        let self_ = format!("/projects/{id}");
-
-        Self {
-            specimens: format!("{self_}/specimens"),
-            chromium_datasets: format!("{self_}/chromium-datasets"),
-            simple: SimpleLinks { self_ },
-        }
+impl SimpleLinks {
+    fn for_project(id: Uuid) -> Self {
+        SimpleLinks::from_str_and_id("/projects", id)
     }
 }
 
 impl Project {
     pub fn from_record(record: ProjectRecord) -> Self {
         Self::Compact {
-            links: ProjectLinks::from_id(record.id),
+            links: SimpleLinks::for_project(record.id),
             record,
         }
     }
 
     pub fn from_detailed_record(record: ProjectRecordDetailed) -> Self {
         Self::Detailed {
-            links: ProjectLinks::from_id(record.project.id),
+            links: SimpleLinks::for_project(record.project.id),
             record,
         }
     }
