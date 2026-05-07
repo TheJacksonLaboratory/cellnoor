@@ -5,7 +5,7 @@
 -- return those, so there's no reason to have them in this view.
 create view suspension_to_specimen with (security_invoker = true) as (
     select
-        susp as suspension,
-        spec as specimen
-    from suspension as susp join specimen as spec on susp.specimen_id = spec.id
+        suspension,
+        specimen
+    from suspension join specimen on suspension.specimen_id = specimen.id
 );

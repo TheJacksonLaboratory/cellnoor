@@ -23,7 +23,7 @@ pub type FixativeOperator = ScalarOperator<Fixative>;
 pub type ThermalPreservationMethodOperator = ScalarOperator<ThermalPreservationMethod>;
 
 #[field_enum]
-#[strum(prefix = "specimen.")]
+#[strum(prefix = "(specimen).")]
 pub enum SpecimenField<U, S, T, Sp, Ty, E, F, Tp> {
     Id(U),
     ReadableId(S),

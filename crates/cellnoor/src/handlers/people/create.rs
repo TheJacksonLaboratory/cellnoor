@@ -266,7 +266,7 @@ mod test {
         assert_eq!(projects, vec![accessible_project]);
 
         // Check that the inaccessible project causes a `ResourceNotFound`
-        let Error { error } = select_project_by_id(&tx, inaccessible_project.id())
+        let Error { error } = select_project_by_id(&tx, inaccessible_project.record().id)
             .await
             .unwrap_err();
 

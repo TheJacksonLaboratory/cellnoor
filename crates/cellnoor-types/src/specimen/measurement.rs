@@ -1,7 +1,9 @@
 use jiff::Timestamp;
-use macro_attributes::base_model;
+use macro_attributes::{base_model, select};
 use nonempty::NonemptyString;
 use positive::PositiveF32;
+#[cfg(feature = "postgres-types")]
+use postgres_types::Json;
 use uuid::Uuid;
 
 #[base_model]
@@ -11,12 +13,17 @@ pub struct NewSpecimenMeasurement {
     pub data: SpecimenMeasurementData,
 }
 
-#[base_model]
+#[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "specimen_measurement"))]
 pub struct SpecimenMeasurement {
     pub id: Uuid,
     pub specimen_id: Uuid,
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
+    #[cfg(feature = "postgres-types")]
+    #[cfg_attr(feature = "schemars", schemars(with = "SpecimenMeasurementData"))]
+    pub data: Json<SpecimenMeasurementData>,
+    #[cfg(not(feature = "postgres-types"))]
     pub data: SpecimenMeasurementData,
 }
 

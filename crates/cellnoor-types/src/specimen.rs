@@ -7,15 +7,19 @@ pub use creation::{
 use jiff::Timestamp;
 use macro_attributes::{base_model, select, unit_enum};
 use nonempty::NonemptyString;
-pub use query::SpecimenQuery;
-pub use read::SpecimenRecord;
+pub use query::{SpecimenOrderBy, SpecimenPredicate, SpecimenQuery};
 use serde_json::Value;
 use uuid::Uuid;
+
+use crate::{
+    SimpleLinks,
+    project::{Project, ProjectRecord},
+    specimen::measurement::SpecimenMeasurement,
+};
 
 mod creation;
 pub mod measurement;
 mod query;
-mod read;
 
 #[unit_enum]
 pub enum Species {
@@ -30,8 +34,7 @@ pub enum Species {
     SminthopsisCrassicaudata,
 }
 
-#[select]
-#[cfg_attr(feature = "postgres-types", postgres(name = "specimen_common_fields"))]
+#[base_model]
 pub struct SpecimenCommonFields {
     pub readable_id: NonemptyString,
     pub name: NonemptyString,
@@ -67,11 +70,7 @@ pub enum ThermalPreservationMethod {
     FlashFreezing,
 }
 
-#[select]
-#[cfg_attr(
-    feature = "postgres-types",
-    postgres(name = "specimen_variable_fields")
-)]
+#[base_model]
 pub struct SpecimenVariableFields {
     pub type_: SpecimenType,
     pub embedded_in: Option<BlockEmbeddingMatrix>,
@@ -79,11 +78,84 @@ pub struct SpecimenVariableFields {
     pub thermal_preservation_method: Option<ThermalPreservationMethod>,
 }
 
-#[base_model]
-pub struct Specimen {
+#[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "specimen"))]
+pub struct SpecimenRecord {
     pub id: Uuid,
+    pub readable_id: NonemptyString,
+    pub name: NonemptyString,
+    pub submitted_by: Uuid,
+    pub project_id: Uuid,
+    pub received_at: Timestamp,
+    pub species: Species,
+    pub host_species: Option<Species>,
+    pub returned_at: Option<Timestamp>,
+    pub returned_by: Option<Uuid>,
+    #[cfg_attr(feature = "postgres-types", postgres(name = "type"))]
+    pub type_: SpecimenType,
+    pub embedded_in: Option<BlockEmbeddingMatrix>,
+    pub fixative: Option<Fixative>,
+    pub thermal_preservation_method: Option<ThermalPreservationMethod>,
+    pub tissue: NonemptyString,
+    pub additional_data: Option<Value>,
+}
+
+#[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "specimen_detailed"))]
+pub struct SpecimenRecordDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub common: SpecimenCommonFields,
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub variable: SpecimenVariableFields,
+    pub specimen: SpecimenRecord,
+    pub project: ProjectRecord,
+    pub measurements: Vec<SpecimenMeasurement>,
+}
+
+#[base_model]
+pub enum Specimen {
+    Compact {
+        #[cfg_attr(feature = "serde", serde(flatten))]
+        record: SpecimenRecord,
+        links: SimpleLinks,
+    },
+    Detailed {
+        #[cfg_attr(feature = "serde", serde(flatten))]
+        record: SpecimenRecord,
+        links: SimpleLinks,
+        project: Project,
+        measurements: Vec<SpecimenMeasurement>,
+    },
+}
+
+fn specimen_links(id: Uuid) -> SimpleLinks {
+    SimpleLinks::from_str_and_id("/specimens", id)
+}
+
+impl Specimen {
+    pub fn record(&self) -> &SpecimenRecord {
+        match self {
+            Self::Compact { record, .. } => record,
+            Self::Detailed { record, .. } => record,
+        }
+    }
+
+    pub fn from_record(record: SpecimenRecord) -> Self {
+        Self::Compact {
+            links: specimen_links(record.id),
+            record,
+        }
+    }
+
+    pub fn from_detailed_record(
+        SpecimenRecordDetailed {
+            specimen,
+            project,
+            measurements,
+        }: SpecimenRecordDetailed,
+    ) -> Self {
+        Self::Detailed {
+            links: specimen_links(specimen.id),
+            record: specimen,
+            project: Project::from_record(project),
+            measurements,
+        }
+    }
 }

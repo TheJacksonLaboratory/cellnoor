@@ -18,8 +18,8 @@ create view person_public as (
 
 create view person_to_institution as (
     select
-        pers as person,
-        inst as institution
-    from person_public as pers
-    join institution as inst on pers.institution_id = inst.id
+        person_public as person,
+        institution
+    from person_public
+    join institution on person_public.institution_id = institution.id
 )

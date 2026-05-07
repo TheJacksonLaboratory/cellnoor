@@ -38,7 +38,7 @@ pub struct ProjectLinks {
 // exercise in implementing patterns we will use for libraries and Chromium
 // datasets
 #[select]
-#[cfg_attr(feature = "postgres-types", postgres(name = "project_to_people"))]
+#[cfg_attr(feature = "postgres-types", postgres(name = "project_detailed"))]
 pub struct ProjectRecordDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub project: ProjectRecord,
@@ -87,20 +87,13 @@ impl Project {
         }
     }
 
-    pub fn id(&self) -> Uuid {
+    pub fn record(&self) -> &ProjectRecord {
         match self {
-            Self::Compact {
-                record: ProjectRecord { id, .. },
-                ..
-            } => *id,
+            Self::Compact { record, .. } => record,
             Self::Detailed {
-                record:
-                    ProjectRecordDetailed {
-                        project: ProjectRecord { id, .. },
-                        ..
-                    },
+                record: ProjectRecordDetailed { project, .. },
                 ..
-            } => *id,
+            } => project,
         }
     }
 }

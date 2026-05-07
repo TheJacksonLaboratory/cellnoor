@@ -3,9 +3,7 @@ use cellnoor_types::project::{NewProject, Project};
 
 use crate::{
     auth::AuthUser,
-    db::{
-        self,
-    },
+    db::{self},
     error::Error,
     handlers::projects::{access::add_person::insert_project_accesses, show::select_project_by_id},
     state::AppState,
@@ -50,7 +48,10 @@ pub async fn insert_project(
 
 #[cfg(test)]
 pub mod test {
-    use cellnoor_types::project::{NewProject, Project, ProjectQuery, ProjectRecordDetailed};
+    use cellnoor_types::{
+        SimpleStringOperator, UuidOperator,
+        project::{NewProject, Project, ProjectPredicate, ProjectQuery, ProjectRecordDetailed},
+    };
     use jiff::Timestamp;
     use uuid::Uuid;
 
@@ -76,35 +77,15 @@ pub mod test {
         let new = new_project();
         let inserted = insert_project(&tx, &new).await.unwrap();
 
-        let mut query = ProjectQuery::default();
-        let records = select_projects(&tx, &query).await.unwrap();
+        // Apply a filter to make sure it works. Note that we fetch the compact
+        // representation because we already fetch the detailed one inside of
+        // `insert_project`
+        let query = ProjectQuery::from_filter(
+            ProjectPredicate::Name(SimpleStringOperator::Eq(new.name.into()).into()),
+            false,
+        );
+        let selected_records = select_projects(&tx, &query).await.unwrap();
 
-        let (
-            Project::Detailed {
-                record:
-                    ProjectRecordDetailed {
-                        project: inserted_record,
-                        ..
-                    },
-                ..
-            },
-            Project::Compact {
-                record: selected_record,
-                ..
-            },
-        ) = (&inserted, &records[0])
-        else {
-            unreachable!(
-                "a default select statement should return a `Project::Compact`, while an insert \
-                 should return a `Project::Detailed`"
-            );
-        };
-
-        assert_eq!(inserted_record, selected_record);
-
-        query.detailed = true;
-        let mut records = select_projects(&tx, &query).await.unwrap();
-
-        assert_eq!(inserted, records.swap_remove(0));
+        assert_eq!(inserted.record(), selected_records[0].record());
     }
 }

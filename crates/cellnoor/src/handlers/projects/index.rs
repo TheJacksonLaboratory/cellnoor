@@ -27,7 +27,7 @@ pub async fn select_projects(
     let (clause, params) = query.to_sql_query();
 
     let projects = if query.detailed {
-        let sql = format!("select project_to_people from project_to_people {clause}");
+        let sql = format!("select project_detailed from project_detailed {clause}");
         let stream = tx.query_into_stream(&sql, params).await?;
         stream.map(Project::from_detailed_record).collect().await
     } else {

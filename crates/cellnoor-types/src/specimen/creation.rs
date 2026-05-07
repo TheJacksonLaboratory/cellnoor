@@ -24,4 +24,16 @@ pub enum NewSpecimen {
     Tissue(NewTissue),
 }
 
-type SpecimenInsertion = (SpecimenCommonFields, SpecimenVariableFields);
+pub type SpecimenInsertion = (SpecimenCommonFields, SpecimenVariableFields);
+
+impl NewSpecimen {
+    pub fn split_for_insertion(self) -> SpecimenInsertion {
+        match self {
+            Self::Block(s) => s.split_for_insertion(),
+            Self::CellPellet(s) => s.split_for_insertion(),
+            Self::RnaExtract(s) => s.split_for_insertion(),
+            Self::Suspension(s) => s.split_for_insertion(),
+            Self::Tissue(s) => s.split_for_insertion(),
+        }
+    }
+}

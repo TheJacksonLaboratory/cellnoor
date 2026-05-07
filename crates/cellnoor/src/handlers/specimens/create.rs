@@ -1,13 +1,18 @@
 use axum::{Json, extract::State};
-use cellnoor_types::specimen::{NewSpecimen, SpecimenCommonFields, SpecimenVariableFields};
+use cellnoor_types::specimen::{
+    NewSpecimen, Specimen, SpecimenCommonFields, SpecimenVariableFields,
+};
 
-use crate::{auth::AuthUser, db, error::Error, state::AppState};
+use crate::{
+    auth::AuthUser, db, error::Error, handlers::specimens::show::select_specimen_by_id,
+    state::AppState,
+};
 
 pub async fn create_specimen(
     State(state): State<AppState>,
     user: AuthUser,
     Json(record): Json<NewSpecimen>,
-) -> Result<Json<()>, Error> {
+) -> Result<Json<Specimen>, Error> {
     let mut client = state.db_client(user).await?;
 
     let tx = client.begin().await?;
@@ -22,13 +27,8 @@ pub async fn create_specimen(
 pub async fn insert_specimen(
     tx: &db::Transaction<'_>,
     record: NewSpecimen,
-) -> Result<(), crate::error::Error> {
-    let NewSpecimen::Block(b) = record else {
-        unreachable!();
-    };
-    insert_specimen_inner(tx, &b.split_for_insertion()).await?;
-
-    Ok(())
+) -> Result<Specimen, crate::error::Error> {
+    insert_specimen_inner(tx, &record.split_for_insertion()).await
 }
 
 async fn insert_specimen_inner(
@@ -54,7 +54,7 @@ async fn insert_specimen_inner(
             thermal_preservation_method,
         },
     ): &(SpecimenCommonFields, SpecimenVariableFields),
-) -> Result<(), Error> {
+) -> Result<Specimen, Error> {
     let fields = [
         "readable_id",
         "name",
@@ -85,34 +85,43 @@ async fn insert_specimen_inner(
 
     let field_expression = format!("({})", fields.join(", "));
 
-    tx.execute(
-        &format!("insert into specimen {field_expression} values {param_expression}"),
-        &[
-            readable_id,
-            name,
-            submitted_by,
-            project_id,
-            received_at,
-            species,
-            host_species,
-            returned_at,
-            returned_by,
-            type_,
-            embedded_in,
-            fixative,
-            thermal_preservation_method,
-            tissue,
-            additional_data,
-        ],
-    )
-    .await?;
+    let id = tx
+        .query_one_into(
+            &format!(
+                "insert into specimen {field_expression} values {param_expression} returning id"
+            ),
+            &[
+                readable_id,
+                name,
+                submitted_by,
+                project_id,
+                received_at,
+                species,
+                host_species,
+                returned_at,
+                returned_by,
+                type_,
+                embedded_in,
+                fixative,
+                thermal_preservation_method,
+                tissue,
+                additional_data,
+            ],
+        )
+        .await?;
 
-    Ok(())
+    select_specimen_by_id(tx, id).await
 }
 
 #[cfg(test)]
 pub mod test {
-    use cellnoor_types::specimen::{NewBlock, NewSpecimen, Species, SpecimenCommonFields};
+    use cellnoor_types::{
+        UuidOperator,
+        specimen::{
+            NewBlock, NewSpecimen, Species, Specimen, SpecimenCommonFields, SpecimenPredicate,
+            SpecimenQuery,
+        },
+    };
     use jiff::{SignedDuration, Timestamp};
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
@@ -121,15 +130,15 @@ pub mod test {
         error::{Error, ErrorInner},
         handlers::{
             projects::create::{insert_project, test::new_project},
-            specimens::create::insert_specimen,
+            specimens::{create::insert_specimen, index::select_specimens},
         },
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
-    pub fn new_specimen(readable_id: &str, project_id: Uuid) -> NewSpecimen {
+    pub fn new_specimen(project_id: Uuid) -> NewSpecimen {
         NewSpecimen::Block(NewBlock::CarboxymethylCellulose {
             inner: SpecimenCommonFields {
-                readable_id: readable_id.to_nonempty_string(),
+                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 name: "specimen".to_nonempty_string(),
                 submitted_by: Uuid::nil(),
                 received_at: Timestamp::now() + SignedDuration::new(60 * 60 * 24, 0),
@@ -146,14 +155,29 @@ pub mod test {
     }
 
     #[tokio::test(flavor = "multi_thread")]
-    async fn insert() {
+    async fn insert_and_select() {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
         let project = insert_project(&tx, &new_project()).await.unwrap();
 
-        let new = new_specimen("SP1", project.id());
-        insert_specimen(&tx, new).await.unwrap();
+        let new = new_specimen(project.record().id);
+        let inserted = insert_specimen(&tx, new).await.unwrap();
+
+        // Apply a filter to make sure it works. Note that we fetch the compact
+        // representation because we already fetch the detailed one inside of
+        // `insert_project`
+        let specimens_from_query = select_specimens(
+            &tx,
+            &SpecimenQuery::from_filter(
+                SpecimenPredicate::Id(UuidOperator::Eq(inserted.record().id)),
+                false,
+            ),
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(specimens_from_query[0].record(), inserted.record());
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -163,7 +187,7 @@ pub mod test {
 
         let project = insert_project(&tx, &new_project()).await.unwrap();
 
-        let mut new = new_specimen("SP1", project.id());
+        let mut new = new_specimen(project.record().id);
         match &mut new {
             NewSpecimen::Block(NewBlock::CarboxymethylCellulose { inner, .. }) => {
                 inner.received_at = Timestamp::now() - SignedDuration::from_hours(48);

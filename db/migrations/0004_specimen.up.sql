@@ -20,28 +20,6 @@ create table specimen (
     constraint host_species_different_from_donor_species check (species != host_species)
 );
 
-create type specimen_common_fields as (
-    readable_id case_insensitive_text,
-    name case_insensitive_text,
-    submitted_by uuid,
-    project_id uuid,
-    received_at timestamptz,
-    species case_insensitive_text,
-    host_species case_insensitive_text,
-    returned_at timestamptz,
-    returned_by uuid,
-    additional_data jsonb
-);
-
-create type specimen_variable_fields as (
-    type case_insensitive_text,
-    embedded_in case_insensitive_text,
-    fixative case_insensitive_text,
-    thermal_preservation_method case_insensitive_text,
-    tissue case_insensitive_text
-);
-
-
 -- In order to ensure a timestamp on a child entity makes sense relative to its parent, we define a trigger function
 -- that works for any table
 create function check_timestamp_ordering() returns trigger language plpgsql volatile strict as $$
