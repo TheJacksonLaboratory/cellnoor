@@ -6,6 +6,7 @@ use uuid::Uuid;
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schemars", schemars(rename = "{P}Filter"))]
 pub enum Filter<P> {
     /// Combines these predicates with logical `and`
     AllOf(Vec<Filter<P>>),
@@ -98,6 +99,7 @@ where
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schemars", schemars(inline))]
 pub enum ScalarOperator<T> {
     /// equals (`=`)
     Eq(T),
@@ -159,6 +161,7 @@ pub type TimestampOperator = ScalarOperator<jiff::Timestamp>;
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schemars", schemars(inline))]
 pub enum StringOperator {
     /// PostgreSQL `like`
     Like(String),

@@ -56,6 +56,7 @@ pub fn field_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
     quote! {
         #enum_derives
+        #[cfg_attr(feature = "schemars", schemars(inline))]
         #input
     }
     .into()

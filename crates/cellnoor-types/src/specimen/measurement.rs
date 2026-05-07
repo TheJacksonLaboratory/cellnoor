@@ -10,6 +10,10 @@ use uuid::Uuid;
 pub struct NewSpecimenMeasurement {
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
+    #[cfg(feature = "postgres-types")]
+    #[cfg_attr(feature = "schemars", schemars(with = "SpecimenMeasurementData"))]
+    pub data: Json<SpecimenMeasurementData>,
+    #[cfg(not(feature = "postgres-types"))]
     pub data: SpecimenMeasurementData,
 }
 

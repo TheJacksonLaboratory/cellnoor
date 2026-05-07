@@ -1,7 +1,9 @@
 use axum::{Json, extract::State};
 use cellnoor_types::specimen::{
     NewSpecimen, Specimen, SpecimenCommonFields, SpecimenVariableFields,
+    measurement::NewSpecimenMeasurement,
 };
+use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
@@ -35,7 +37,10 @@ pub async fn insert_specimen(
     record: NewSpecimen,
 ) -> Result<Specimen, crate::error::Error> {
     let ((common_fields, measurements), variable_fields) = record.split_for_insertion();
-    insert_specimen_record(tx, &(common_fields, variable_fields)).await
+
+    let id = insert_specimen_record(tx, &(common_fields, variable_fields)).await?;
+    insert_specimen_measurements(tx, id, &measurements).await?;
+    select_specimen_by_id(tx, id).await
 }
 
 async fn insert_specimen_record(
@@ -62,7 +67,7 @@ async fn insert_specimen_record(
             thermal_preservation_method,
         },
     ): &(SpecimenCommonFields, SpecimenVariableFields),
-) -> Result<Specimen, Error> {
+) -> Result<Uuid, Error> {
     let fields: FieldValuePairs<_> = [
         ("readable_id", readable_id),
         ("name", name),
@@ -90,7 +95,48 @@ async fn insert_specimen_record(
         )
         .await?;
 
-    select_specimen_by_id(tx, id).await
+    Ok(id)
+}
+
+async fn insert_specimen_measurements(
+    tx: &db::Transaction<'_>,
+    specimen_id: Uuid,
+    measurements: &[NewSpecimenMeasurement],
+) -> Result<(), Error> {
+    let inserts = measurements
+        .iter()
+        .map(|m| insert_specimen_measurement(tx, specimen_id, m));
+
+    futures::future::try_join_all(inserts).await?;
+
+    Ok(())
+}
+
+async fn insert_specimen_measurement(
+    tx: &db::Transaction<'_>,
+    specimen_id: Uuid,
+    NewSpecimenMeasurement {
+        measured_by,
+        measured_at,
+        data,
+    }: &NewSpecimenMeasurement,
+) -> Result<(), Error> {
+    let fields: FieldValuePairs<_> = [
+        ("specimen_id", &specimen_id),
+        ("measured_by", measured_by),
+        ("measured_at", measured_at),
+        ("data", data),
+    ];
+
+    let (field_list, placeholders, params) = fields.to_field_list_placeholders_params();
+
+    tx.execute(
+        &format!("insert into specimen_measurement {field_list} values {placeholders}"),
+        &params,
+    )
+    .await?;
+
+    Ok(())
 }
 
 #[cfg(test)]
