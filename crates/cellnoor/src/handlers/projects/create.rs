@@ -63,10 +63,16 @@ pub mod test {
         project::{NewProject, ProjectPredicate, ProjectQuery},
     };
     use jiff::Timestamp;
+    use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
     use crate::{
-        handlers::projects::{create::insert_project, index::select_projects},
+        db,
+        error::{Error, ErrorInner},
+        handlers::projects::{
+            create::insert_project, delete::delete_project_by_id, index::select_projects,
+            show::select_project_by_id, update::update_project_by_id,
+        },
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
@@ -80,22 +86,62 @@ pub mod test {
     }
 
     #[tokio::test(flavor = "multi_thread")]
-    async fn insert_and_select() {
+    async fn insert_select_update_delete() {
         let mut client = db_client_as_admin().await;
-        let tx = client.begin().await.unwrap();
 
         let new = new_project();
-        let inserted = insert_project(&tx, &new).await.unwrap();
+        let id = insert(&mut client, &new).await;
+        select(&mut client, &new, id).await;
+        update(&mut client, id).await;
+        delete(&mut client, id).await;
+    }
+
+    async fn insert(client: &mut db::Client, new: &NewProject) -> Uuid {
+        let tx = client.begin().await.unwrap();
+
+        let inserted = insert_project(&tx, new).await.unwrap();
+        let id = inserted.record().id;
+
+        tx.commit().await.unwrap();
+
+        id
+    }
+
+    async fn select(client: &mut db::Client, new: &NewProject, id: Uuid) {
+        let tx = client.begin().await.unwrap();
 
         // Apply a filter to make sure it works. Note that we fetch the compact
         // representation because we already fetch the detailed one inside of
         // `insert_project`
         let query = ProjectQuery::from_filter(
-            ProjectPredicate::Name(SimpleStringOperator::Eq(new.name.into()).into()),
+            ProjectPredicate::Name(SimpleStringOperator::Eq(new.name.clone().into()).into()),
             false,
         );
-        let selected_records = select_projects(&tx, &query).await.unwrap();
+        let selected = select_projects(&tx, &query).await.unwrap();
 
-        assert_eq!(inserted.record(), selected_records[0].record());
+        assert_eq!(selected[0].record().id, id);
+    }
+
+    async fn update(client: &mut db::Client, id: Uuid) {
+        let tx = client.begin().await.unwrap();
+
+        let new_data = new_project();
+        let updated = update_project_by_id(&tx, id, &new_data).await.unwrap();
+
+        assert_eq!(updated.record().id, id);
+        assert_eq!(updated.record().name, new_data.name);
+
+        tx.commit().await.unwrap();
+    }
+
+    async fn delete(client: &mut db::Client, id: Uuid) {
+        let tx = client.begin().await.unwrap();
+        delete_project_by_id(&tx, id).await.unwrap();
+        tx.commit().await.unwrap();
+
+        // Verify the project no longer exists
+        let tx = client.begin().await.unwrap();
+        let Error { error } = select_project_by_id(&tx, id).await.unwrap_err();
+        assert_eq!(error, ErrorInner::ResourceNotFound);
     }
 }

@@ -39,13 +39,6 @@ pub async fn insert_suspension(
 ) -> Result<Suspension, Error> {
     let id = insert_suspension_record(tx, &record).await?;
 
-    let preparer_insertions = insert_many_to_many(
-        &tx,
-        JunctionTable::SuspensionPreparer,
-        ("suspension_id", id),
-        ("prepared_by", record.preparers.as_ref()),
-    );
-
     let measurement_insertions = futures::future::try_join_all(
         record
             .measurements
@@ -53,7 +46,10 @@ pub async fn insert_suspension(
             .map(|m| insert_suspension_measurement(tx, id, m)),
     );
 
-    tokio::try_join!(preparer_insertions, measurement_insertions)?;
+    tokio::try_join!(
+        insert_suspension_preparers(tx, id, record.preparers.as_ref()),
+        measurement_insertions
+    )?;
 
     select_suspension_by_id(tx, id).await
 }
@@ -92,6 +88,20 @@ async fn insert_suspension_record(
         .await?;
 
     Ok(id)
+}
+
+pub(super) async fn insert_suspension_preparers(
+    tx: &db::Transaction<'_>,
+    suspension_id: Uuid,
+    preparer_ids: &[Uuid],
+) -> Result<(), Error> {
+    insert_many_to_many(
+        &tx,
+        JunctionTable::SuspensionPreparer,
+        ("suspension_id", suspension_id),
+        ("prepared_by", preparer_ids),
+    )
+    .await
 }
 
 #[cfg(test)]

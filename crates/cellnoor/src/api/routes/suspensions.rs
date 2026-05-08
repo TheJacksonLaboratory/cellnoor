@@ -12,8 +12,9 @@ use crate::{
     auth::AuthUser,
     error::Error,
     handlers::suspensions::{
-        create::create_suspension, index::index_suspensions,
+        create::create_suspension, delete::delete_suspension, index::index_suspensions,
         measurements::create::create_suspension_measurement, show::show_suspension,
+        update::update_suspension,
     },
     state::AppState,
 };
@@ -27,7 +28,12 @@ pub(super) fn router() -> ApiRouter<AppState> {
 
 fn id_router() -> ApiRouter<AppState> {
     ApiRouter::new()
-        .api_route("/", get(show_suspension))
+        .api_route(
+            "/",
+            get(show_suspension)
+                .put(update_suspension)
+                .delete(delete_suspension),
+        )
         .api_route("/measurements", post(create_suspension_measurement))
 }
 

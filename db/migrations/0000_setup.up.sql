@@ -53,6 +53,9 @@ create or replace function create_person_user_if_not_exists(
         if is_staff then
             -- Staff should be able to see everything
             execute format('alter user %I with bypassrls', username);
+        else
+            -- Demote a user back to row-level-security if they were previously staff
+            execute format('alter user %I with nobypassrls', username);
         end if;
         -- These tables and views don't exist yet, but only these are granted to users so that a developer can't
         -- accidentally query against underlying tables, only views that have row-security policies enabled

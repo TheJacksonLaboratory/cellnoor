@@ -11,7 +11,10 @@ use cellnoor_types::project::{Project, ProjectQuery, SimpleProjectQuery};
 use crate::{
     auth::AuthUser,
     error::Error,
-    handlers::projects::{create::create_project, index::index_projects, show::show_project},
+    handlers::projects::{
+        create::create_project, delete::delete_project, index::index_projects, show::show_project,
+        update::update_project,
+    },
     state::AppState,
 };
 
@@ -23,7 +26,10 @@ pub(super) fn router() -> ApiRouter<AppState> {
 }
 
 fn id_router() -> ApiRouter<AppState> {
-    ApiRouter::new().api_route("/", get(show_project))
+    ApiRouter::new().api_route(
+        "/",
+        get(show_project).put(update_project).delete(delete_project),
+    )
 }
 
 async fn index_projects_simple(

@@ -12,8 +12,9 @@ use crate::{
     auth::AuthUser,
     error::Error,
     handlers::specimens::{
-        create::create_specimen, index::index_specimens,
+        create::create_specimen, delete::delete_specimen, index::index_specimens,
         measurements::create::create_specimen_measurement, show::show_specimen,
+        update::update_specimen,
     },
     state::AppState,
 };
@@ -27,7 +28,12 @@ pub(super) fn router() -> ApiRouter<AppState> {
 
 fn id_router() -> ApiRouter<AppState> {
     ApiRouter::new()
-        .api_route("/", get(show_specimen))
+        .api_route(
+            "/",
+            get(show_specimen)
+                .put(update_specimen)
+                .delete(delete_specimen),
+        )
         .api_route("/measurements", post(create_specimen_measurement))
 }
 

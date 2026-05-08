@@ -66,6 +66,9 @@ pub async fn insert_person(
     let user_operations = async || {
         create_db_user(tx, person_id, *is_staff).await?;
         grant_permissions_to_db_user(tx, person_id, permissions_to_grant).await?;
+        // It doesn't really make sense to grant permissions and then revoke them
+        // (especially if the user didn't actually have the revoked permissions to begin
+        // with), but it doesn't hurt
         revoke_permissions_from_db_user(tx, person_id, permissions_to_revoke).await?;
 
         Ok(())
@@ -183,7 +186,7 @@ fn construct_grant_or_revoke_statement(
 }
 
 #[cfg(test)]
-mod test {
+pub mod test {
     use cellnoor_types::{
         institution::InstitutionQuery,
         person::{Action, NewPerson, Person, PersonRecord, ResourcePermission},
@@ -209,7 +212,7 @@ mod test {
         state::test_util::{ToNonemptyString, db_client_as_admin, db_client_as_user},
     };
 
-    fn new_person() -> NewPerson {
+    pub fn new_person() -> NewPerson {
         NewPerson {
             name: "hamood".to_nonempty_string(),
             institution_id: Uuid::nil(),

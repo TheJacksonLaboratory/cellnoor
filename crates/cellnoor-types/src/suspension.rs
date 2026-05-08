@@ -1,6 +1,6 @@
 use jiff::Timestamp;
 use macro_attributes::{base_model, select, unit_enum};
-use nonempty::NonemptyString;
+use nonempty::{NonemptyString, NonemptyVec};
 pub use query::{
     SimpleSuspensionQuery, SuspensionPredicate, SuspensionPredicateInner, SuspensionQuery,
 };
@@ -10,7 +10,7 @@ use uuid::Uuid;
 use crate::{
     simple_links::SimpleLinks,
     specimen::{Specimen, SpecimenRecord},
-    suspension::measurement::{NewSuspensionMeasurement, SuspensionMeasurement},
+    suspension::measurement::SuspensionMeasurement,
 };
 
 pub mod measurement;
@@ -22,19 +22,33 @@ pub enum SuspensionContent {
     Nuclei,
 }
 
-#[base_model]
-pub struct NewSuspension {
-    pub readable_id: NonemptyString,
-    pub specimen_id: Uuid,
-    pub content: SuspensionContent,
-    pub created_at: Option<Timestamp>,
-    pub lysis_duration_minutes: Option<f32>,
-    pub target_cell_recovery: Option<i64>,
-    pub additional_data: Option<Value>,
-    #[cfg_attr(feature = "serde", serde(default))]
-    pub measurements: Vec<NewSuspensionMeasurement>,
-    pub preparers: nonempty::NonemptyVec<Uuid>,
+mod new_suspension {
+    use jiff::Timestamp;
+    use macro_attributes::base_model;
+    use nonempty::NonemptyString;
+    use serde_json::Value;
+    use uuid::Uuid;
+
+    use crate::suspension::{SuspensionContent, measurement::NewSuspensionMeasurement};
+
+    #[base_model]
+    pub struct NewSuspension<P> {
+        pub readable_id: NonemptyString,
+        pub specimen_id: Uuid,
+        pub content: SuspensionContent,
+        pub created_at: Option<Timestamp>,
+        pub lysis_duration_minutes: Option<f32>,
+        pub target_cell_recovery: Option<i64>,
+        pub additional_data: Option<Value>,
+        #[cfg_attr(feature = "serde", serde(default))]
+        pub measurements: Vec<NewSuspensionMeasurement>,
+        pub preparers: P,
+    }
 }
+
+pub type NewSuspension = new_suspension::NewSuspension<NonemptyVec<Uuid>>;
+
+pub type SuspensionUpdate = new_suspension::NewSuspension<Option<NonemptyVec<Uuid>>>;
 
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "suspension"))]

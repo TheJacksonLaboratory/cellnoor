@@ -11,7 +11,10 @@ use cellnoor_types::person::{Person, PersonQuery, SimplePersonQuery};
 use crate::{
     auth::AuthUser,
     error::Error,
-    handlers::people::{create::create_person, index::index_people, show::show_person},
+    handlers::people::{
+        create::create_person, delete::delete_person, index::index_people, show::show_person,
+        update::update_person,
+    },
     state::AppState,
 };
 
@@ -23,7 +26,10 @@ pub(super) fn router() -> ApiRouter<AppState> {
 }
 
 fn id_router() -> ApiRouter<AppState> {
-    ApiRouter::new().api_route("/", get(show_person))
+    ApiRouter::new().api_route(
+        "/",
+        get(show_person).put(update_person).delete(delete_person),
+    )
 }
 
 async fn index_people_simple(

@@ -62,18 +62,13 @@ pub async fn update_institution_by_id(
 
 #[cfg(test)]
 mod test {
-    use cellnoor_types::institution::{Institution, InstitutionRecord, NewInstitution};
+    use cellnoor_types::institution::{InstitutionRecord, NewInstitution};
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
     use crate::{
         error::{Error, ErrorInner},
-        handlers::institutions::{
-            create::{insert_institution, test::new_institution},
-            delete::delete_institution_by_id,
-            show::select_institution_by_id,
-            update::update_institution_by_id,
-        },
+        handlers::institutions::update::update_institution_by_id,
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
