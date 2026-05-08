@@ -1,24 +1,20 @@
-use macro_attributes::field_enum;
+use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
-    ComplexQuery, Filter, StringOperator, UuidOperator,
-    query::{
-        filter::ToPredicate,
-        order_by::{OrderDirection, OrderingField},
-    },
+    StringOperator, UuidOperator,
+    query::{ComplexQuery, SimpleQuery, filter::ToPredicate},
 };
 
-#[field_enum]
+#[predicate_enum]
 #[strum(prefix = "(person_public).")]
-pub enum PersonField<U, S> {
-    Id(U),
-    Name(S),
-    Email(S),
-    InstitutionId(U),
-    Orcid(S),
+#[strum_discriminants(name(PersonField), sort_field_enum, strum(prefix = "(person_public)."))]
+pub enum PersonPredicate {
+    Id(UuidOperator),
+    Name(StringOperator),
+    Email(StringOperator),
+    InstitutionId(UuidOperator),
+    Orcid(StringOperator),
 }
-
-pub type PersonPredicate = PersonField<UuidOperator, StringOperator>;
 
 impl ToPredicate for PersonPredicate {
     fn to_predicate(&self) -> (&'static str, &(dyn postgres_types::ToSql + Sync)) {
@@ -29,26 +25,12 @@ impl ToPredicate for PersonPredicate {
     }
 }
 
-pub type PersonFilter = Filter<PersonPredicate>;
-
-pub type PersonSortField = PersonField<OrderDirection, OrderDirection>;
-
-impl OrderingField for PersonSortField {
-    fn direction(self) -> OrderDirection {
-        match self {
-            Self::Id(d)
-            | Self::Name(d)
-            | Self::Email(d)
-            | Self::InstitutionId(d)
-            | Self::Orcid(d) => d,
-        }
-    }
-}
-
-impl Default for PersonSortField {
+impl Default for PersonField {
     fn default() -> Self {
-        Self::Name(OrderDirection::Desc)
+        Self::Name
     }
 }
 
-pub type PersonQuery = ComplexQuery<PersonFilter, PersonSortField>;
+pub type PersonQuery = ComplexQuery<PersonPredicate, PersonField>;
+
+pub type SimplePersonQuery = SimpleQuery<PersonField>;

@@ -7,13 +7,13 @@ pub use creation::{
 use jiff::Timestamp;
 use macro_attributes::{base_model, select, unit_enum};
 use nonempty::NonemptyString;
-pub use query::{SpecimenPredicate, SpecimenQuery, SpecimenSortField};
+pub use query::{SimpleSpecimenQuery, SpecimenPredicate, SpecimenQuery};
 use serde_json::Value;
 use uuid::Uuid;
 
 use crate::{
-    SimpleLinks,
     project::{Project, ProjectRecord},
+    simple_links::SimpleLinks,
     specimen::measurement::{NewSpecimenMeasurement, SpecimenMeasurement},
 };
 

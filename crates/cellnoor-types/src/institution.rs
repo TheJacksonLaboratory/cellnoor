@@ -1,6 +1,6 @@
 use macro_attributes::{base_model, select};
 use nonempty::NonemptyString;
-pub use query::{InstitutionFilter, InstitutionSortField, InstitutionPredicate, InstitutionQuery};
+pub use query::{InstitutionPredicate, InstitutionQuery, SimpleInstitutionQuery};
 use uuid::Uuid;
 
 use crate::simple_links::SimpleLinks;
@@ -48,9 +48,11 @@ mod tests {
     use super::query::InstitutionPredicate;
     use crate::{
         SimpleStringOperator,
-        institution::{InstitutionFilter, InstitutionQuery},
-        query::filter::UuidOperator,
+        institution::InstitutionQuery,
+        query::filter::{Filter, UuidOperator},
     };
+
+    type InstitutionFilter = Filter<InstitutionPredicate>;
 
     fn complex_filter() -> InstitutionFilter {
         let pred1 = InstitutionPredicate::Name(
@@ -80,13 +82,37 @@ mod tests {
 
     #[test]
     fn complex_query_serialization() {
-        let expected_query_string =
-            "filter[any_of][0][all_of][0][name]=Jackson+Laboratory&\
-             filter[any_of][0][all_of][1][id][eq]=00000000-0000-0000-0000-000000000000&\
-             filter[any_of][1][not][id][gt]=ffffffff-ffff-ffff-ffff-ffffffffffff&\
-             filter[any_of][2][id][in][0]=00000000-0000-0000-0000-000000000000&\
-             filter[any_of][2][id][in][1]=ffffffff-ffff-ffff-ffff-ffffffffffff&limit=10&offset=0&\
-             order_by[name]=desc&detailed=false";
+        let expected_query = serde_json::json!({
+            "filter": {
+                "any_of": [
+                    {
+                        "all_of": [
+                            {"name": "Jackson Laboratory"},
+                            {"id": {"eq": Uuid::nil()}}
+                        ]
+                    },
+                    {
+                        "not": {
+                            "id": {
+                                "gt": Uuid::max()
+                            }
+                        }
+                    },
+                    {
+                        "id": {
+                            "in": [
+                                Uuid::nil(),
+                                Uuid::max()
+                            ]
+                        }
+                    }
+                ]
+            },
+            "limit": 10,
+            "offset": 0,
+            "order_by": {"field": "name", "desc": true},
+            "detailed": false
+        });
 
         let filter = complex_filter();
         let query = InstitutionQuery {
@@ -96,14 +122,8 @@ mod tests {
             ..Default::default()
         };
 
-        let config = serde_qs::Config::new().max_depth(10);
+        let actual_query = serde_json::to_value(query).unwrap();
 
-        let actual_query_string = config.serialize_string(&query).unwrap();
-
-        assert_str_eq!(expected_query_string, actual_query_string);
-
-        let deserialized_query = config.deserialize_str(&expected_query_string).unwrap();
-
-        assert_eq!(query, deserialized_query);
+        assert_eq!(expected_query, actual_query);
     }
 }

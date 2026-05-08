@@ -1,57 +1,44 @@
-use macro_attributes::field_enum;
+use macro_attributes::{predicate_enum, sort_field_enum};
 #[cfg(feature = "postgres-types")]
 use postgres_types::ToSql;
 
 #[cfg(feature = "postgres-types")]
 use crate::query::filter::ToPredicate;
 use crate::{
-    query::{
-        ComplexQuery,
-        filter::{Filter, ScalarOperator, StringOperator, TimestampOperator, UuidOperator},
-        order_by::{OrderDirection, OrderingField},
-    },
+    StringOperator, TimestampOperator, UuidOperator,
+    query::{ComplexQuery, SimpleQuery, filter::Operator},
     specimen::{
         Fixative, Species, SpecimenType, ThermalPreservationMethod,
         creation::block::BlockEmbeddingMatrix,
     },
 };
 
-pub type SpeciesOperator = ScalarOperator<Species>;
-pub type SpecimenTypeOperator = ScalarOperator<SpecimenType>;
-pub type BlockEmbeddingMatrixOperator = ScalarOperator<BlockEmbeddingMatrix>;
-pub type FixativeOperator = ScalarOperator<Fixative>;
-pub type ThermalPreservationMethodOperator = ScalarOperator<ThermalPreservationMethod>;
+pub type SpeciesOperator = Operator<Species>;
+pub type SpecimenTypeOperator = Operator<SpecimenType>;
+pub type BlockEmbeddingMatrixOperator = Operator<BlockEmbeddingMatrix>;
+pub type FixativeOperator = Operator<Fixative>;
+pub type ThermalPreservationMethodOperator = Operator<ThermalPreservationMethod>;
 
-#[field_enum]
+#[predicate_enum]
 #[strum(prefix = "(specimen).")]
-pub enum SpecimenField<U, S, T, Sp, Ty, E, F, Tp> {
-    Id(U),
-    ReadableId(S),
-    Name(S),
-    SubmittedBy(U),
-    ProjectId(U),
-    ReceivedAt(T),
-    Species(Sp),
-    HostSpecies(Sp),
-    ReturnedAt(T),
-    ReturnedBy(U),
-    Type(Ty),
-    EmbeddedIn(E),
-    Fixative(F),
-    ThermalPreservationMethod(Tp),
-    Tissue(S),
+#[strum_discriminants(name(SpecimenField), sort_field_enum, strum(prefix = "(specimen)."))]
+pub enum SpecimenPredicate {
+    Id(UuidOperator),
+    ReadableId(StringOperator),
+    Name(StringOperator),
+    SubmittedBy(UuidOperator),
+    ProjectId(UuidOperator),
+    ReceivedAt(TimestampOperator),
+    Species(SpeciesOperator),
+    HostSpecies(SpeciesOperator),
+    ReturnedAt(TimestampOperator),
+    ReturnedBy(UuidOperator),
+    Type(SpecimenTypeOperator),
+    EmbeddedIn(BlockEmbeddingMatrixOperator),
+    Fixative(FixativeOperator),
+    ThermalPreservationMethod(ThermalPreservationMethodOperator),
+    Tissue(StringOperator),
 }
-
-pub type SpecimenPredicate = SpecimenField<
-    UuidOperator,
-    StringOperator,
-    TimestampOperator,
-    SpeciesOperator,
-    SpecimenTypeOperator,
-    BlockEmbeddingMatrixOperator,
-    FixativeOperator,
-    ThermalPreservationMethodOperator,
->;
 
 #[cfg(feature = "postgres-types")]
 impl ToPredicate for SpecimenPredicate {
@@ -71,45 +58,12 @@ impl ToPredicate for SpecimenPredicate {
     }
 }
 
-pub type SpecimenFilter = Filter<SpecimenPredicate>;
-
-pub type SpecimenSortField = SpecimenField<
-    OrderDirection,
-    OrderDirection,
-    OrderDirection,
-    OrderDirection,
-    OrderDirection,
-    OrderDirection,
-    OrderDirection,
-    OrderDirection,
->;
-
-impl OrderingField for SpecimenSortField {
-    fn direction(self) -> OrderDirection {
-        match self {
-            Self::Id(d)
-            | Self::ReadableId(d)
-            | Self::Name(d)
-            | Self::SubmittedBy(d)
-            | Self::ProjectId(d)
-            | Self::ReceivedAt(d)
-            | Self::Species(d)
-            | Self::HostSpecies(d)
-            | Self::ReturnedAt(d)
-            | Self::ReturnedBy(d)
-            | Self::Type(d)
-            | Self::EmbeddedIn(d)
-            | Self::Fixative(d)
-            | Self::ThermalPreservationMethod(d)
-            | Self::Tissue(d) => d,
-        }
-    }
-}
-
-impl Default for SpecimenSortField {
+impl Default for SpecimenField {
     fn default() -> Self {
-        Self::ReceivedAt(OrderDirection::Desc)
+        Self::ReceivedAt
     }
 }
 
-pub type SpecimenQuery = ComplexQuery<SpecimenFilter, SpecimenSortField>;
+pub type SpecimenQuery = ComplexQuery<SpecimenPredicate, SpecimenField>;
+
+pub type SimpleSpecimenQuery = SimpleQuery<SpecimenField>;

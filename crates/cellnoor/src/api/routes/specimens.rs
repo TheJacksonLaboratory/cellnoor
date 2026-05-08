@@ -2,12 +2,11 @@ use aide::axum::{
     ApiRouter,
     routing::{get, post},
 };
-use axum::{Json, extract::State};
-use cellnoor_types::{
-    SimpleQuery,
-    specimen::{Specimen, SpecimenQuery, SpecimenSortField},
+use axum::{
+    Json,
+    extract::{Query, State},
 };
-use serde_qs::web::QsQuery;
+use cellnoor_types::specimen::{SimpleSpecimenQuery, Specimen, SpecimenQuery};
 
 use crate::{
     auth::AuthUser,
@@ -35,7 +34,7 @@ fn id_router() -> ApiRouter<AppState> {
 async fn index_specimens_simple(
     state: State<AppState>,
     user: AuthUser,
-    QsQuery(q): QsQuery<SimpleQuery<SpecimenSortField>>,
+    Query(q): Query<SimpleSpecimenQuery>,
 ) -> Result<Json<Vec<Specimen>>, Error> {
     index_specimens(state, user, Json(SpecimenQuery::from_simple_query(q))).await
 }

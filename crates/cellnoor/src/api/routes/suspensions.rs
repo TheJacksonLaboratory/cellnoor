@@ -2,12 +2,11 @@ use aide::axum::{
     ApiRouter,
     routing::{get, post},
 };
-use axum::{Json, extract::State};
-use cellnoor_types::{
-    SimpleQuery,
-    suspension::{Suspension, SuspensionQuery, SuspensionSortField},
+use axum::{
+    Json,
+    extract::{Query, State},
 };
-use serde_qs::web::QsQuery;
+use cellnoor_types::suspension::{SimpleSuspensionQuery, Suspension, SuspensionQuery};
 
 use crate::{
     auth::AuthUser,
@@ -35,7 +34,7 @@ fn id_router() -> ApiRouter<AppState> {
 async fn index_suspensions_simple(
     state: State<AppState>,
     user: AuthUser,
-    QsQuery(q): QsQuery<SimpleQuery<SuspensionSortField>>,
+    Query(q): Query<SimpleSuspensionQuery>,
 ) -> Result<Json<Vec<Suspension>>, Error> {
     index_suspensions(state, user, Json(SuspensionQuery::from_simple_query(q))).await
 }

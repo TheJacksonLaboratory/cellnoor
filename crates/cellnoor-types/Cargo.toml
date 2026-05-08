@@ -24,6 +24,3 @@ workspace = true
 serde = ["dep:serde", "nonempty/serde", "positive/serde"]
 schemars = ["serde", "dep:schemars", "nonempty/schemars", "positive/schemars"]
 postgres-types = ["dep:postgres-types", "nonempty/postgres-types", "dep:bytes", "positive/postgres-types"]
-
-[dev-dependencies]
-serde_qs.workspace = true

@@ -42,21 +42,39 @@ fn enum_derives() -> proc_macro2::TokenStream {
 
     quote! {
         #base_derives
-        #[derive(Copy, Eq, Hash, ::strum::AsRefStr)]
+        #[derive(::strum::AsRefStr)]
         #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
         #[strum(serialize_all = "snake_case")]
     }
 }
 
 #[proc_macro_attribute]
-pub fn field_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
+pub fn predicate_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let enum_derives = enum_derives();
 
     let input: proc_macro2::TokenStream = input.into();
 
     quote! {
         #enum_derives
-        #[cfg_attr(feature = "schemars", schemars(inline))]
+        #[derive(::strum::EnumDiscriminants)]
+        #input
+    }
+    .into()
+}
+
+#[proc_macro_attribute]
+pub fn sort_field_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    // We can't use enum_derives because strum::EnumDiscriminants already derives
+    // most of those traits for us
+
+    let input: proc_macro2::TokenStream = input.into();
+
+    quote! {
+        #[derive(Hash, ::strum::AsRefStr)]
+        #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+        #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+        #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
+        #[strum(serialize_all = "snake_case")]
         #input
     }
     .into()
@@ -74,7 +92,7 @@ pub fn unit_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
     quote! {
         #enum_derives
-        #[derive(::strum::EnumString)]
+        #[derive(Copy, Eq, Hash, ::strum::EnumString)]
         #input
 
         #[cfg(feature = "postgres-types")]

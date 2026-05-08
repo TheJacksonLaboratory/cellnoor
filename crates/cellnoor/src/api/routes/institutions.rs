@@ -2,12 +2,11 @@ use aide::axum::{
     ApiRouter,
     routing::{get, post},
 };
-use axum::{Json, extract::State};
-use cellnoor_types::{
-    ComplexQuery, SimpleQuery,
-    institution::{Institution, InstitutionSortField},
+use axum::{
+    Json,
+    extract::{Query, State},
 };
-use serde_qs::web::QsQuery;
+use cellnoor_types::institution::{Institution, InstitutionQuery, SimpleInstitutionQuery};
 
 use crate::{
     auth::AuthUser,
@@ -32,7 +31,7 @@ fn id_router() -> ApiRouter<AppState> {
 async fn index_institutions_simple(
     state: State<AppState>,
     user: AuthUser,
-    QsQuery(q): QsQuery<SimpleQuery<InstitutionSortField>>,
+    Query(q): Query<SimpleInstitutionQuery>,
 ) -> Result<Json<Vec<Institution>>, Error> {
-    index_institutions(state, user, Json(ComplexQuery::from_simple_query(q))).await
+    index_institutions(state, user, Json(InstitutionQuery::from_simple_query(q))).await
 }

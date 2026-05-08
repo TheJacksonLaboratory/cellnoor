@@ -2,7 +2,6 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::IdParam;
 use uuid::Uuid;
 
 use crate::{
@@ -12,6 +11,7 @@ use crate::{
         util::{JunctionTable, insert_many_to_many},
     },
     error::Error,
+    handlers::path::IdParam,
     state::AppState,
 };
 

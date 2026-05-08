@@ -1,26 +1,15 @@
 use macro_attributes::base_model;
 
-/// An enum representing sorting-direction, corresponding to
-/// [PostgreSQL's usage](https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS)
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::AsRefStr, strum::Display)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
-#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
-#[cfg_attr(feature = "schemars", schemars(inline))]
-#[strum(serialize_all = "snake_case")]
-pub enum OrderDirection {
-    /// PostgreSQL `asc`
-    Asc,
-    /// PostgreSQL `desc`
-    Desc,
-}
-
 #[base_model]
-#[cfg_attr(feature = "serde", serde(untagged))]
+#[derive(Copy)]
+#[cfg_attr(feature = "serde", serde(default))]
 #[cfg_attr(feature = "schemars", schemars(inline))]
-pub enum OrderBy<T> {
-    OneField(T),
-    ManyFields(Vec<T>),
+pub struct OrderBy<T>
+where
+    T: Default,
+{
+    pub field: T,
+    pub desc: bool,
 }
 
 impl<T> Default for OrderBy<T>
@@ -28,24 +17,47 @@ where
     T: Default,
 {
     fn default() -> Self {
-        Self::OneField(T::default())
+        Self {
+            field: T::default(),
+            desc: true,
+        }
     }
 }
 
-pub trait OrderingField {
-    fn direction(self) -> OrderDirection;
+#[base_model]
+#[cfg_attr(feature = "serde", serde(untagged))]
+#[cfg_attr(feature = "schemars", schemars(inline))]
+pub enum OrderBySet<T>
+where
+    T: Default,
+{
+    One(OrderBy<T>),
+    Many(Vec<OrderBy<T>>),
 }
 
-impl<T> OrderBy<T>
+impl<T> Default for OrderBySet<T>
 where
-    T: Copy + AsRef<str> + OrderingField,
+    T: Default,
+{
+    fn default() -> Self {
+        Self::One(OrderBy::default())
+    }
+}
+
+impl<T> OrderBySet<T>
+where
+    T: Default + Copy + AsRef<str>,
 {
     pub fn to_order_by_clause(&self) -> String {
+        fn direction(desc: bool) -> &'static str {
+            if desc { "desc" } else { "asc" }
+        }
+
         match self {
-            Self::OneField(field) => {
-                format!("order by {} {}", field.as_ref(), field.direction())
+            Self::One(OrderBy { field, desc }) => {
+                format!("order by {} {}", field.as_ref(), direction(*desc))
             }
-            Self::ManyFields(fields) => {
+            Self::Many(fields) => {
                 if fields.is_empty() {
                     return String::new();
                 }
@@ -53,10 +65,11 @@ where
                 let mut clause = String::with_capacity(fields.len() * 16);
                 clause.push_str("order by ");
 
-                for f in fields {
-                    clause.push_str(f.as_ref());
+                for OrderBy { field, desc } in fields {
+                    clause.push_str(field.as_ref());
                     clause.push(' ');
-                    clause.push_str(f.direction().as_ref());
+
+                    clause.push_str(direction(*desc));
                     clause.push(' ');
                 }
 

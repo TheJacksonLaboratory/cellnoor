@@ -1,44 +1,34 @@
-use macro_attributes::{base_model, field_enum};
+use macro_attributes::{base_model, predicate_enum, sort_field_enum};
 #[cfg(feature = "postgres-types")]
 use postgres_types::ToSql;
 
 #[cfg(feature = "postgres-types")]
 use crate::query::filter::ToPredicate;
 use crate::{
-    query::{
-        ComplexQuery,
-        filter::{
-            F32Operator, Filter, I64Operator, ScalarOperator, StringOperator, TimestampOperator,
-            UuidOperator,
-        },
-        order_by::{OrderDirection, OrderingField},
-    },
+    F32Operator, I64Operator, StringOperator, TimestampOperator, UuidOperator,
+    query::{ComplexQuery, SimpleQuery, filter::Operator},
     specimen::SpecimenPredicate,
     suspension::SuspensionContent,
 };
 
-pub type SuspensionContentOperator = ScalarOperator<SuspensionContent>;
+pub type SuspensionContentOperator = Operator<SuspensionContent>;
 
-#[field_enum]
+#[predicate_enum]
 #[strum(prefix = "(suspension).")]
-pub enum SuspensionField<U, S, T, C, F, I> {
-    Id(U),
-    ReadableId(S),
-    SpecimenId(U),
-    Content(C),
-    CreatedAt(T),
-    LysisDurationMinutes(F),
-    TargetCellRecovery(I),
+#[strum_discriminants(
+    name(SuspensionField),
+    sort_field_enum,
+    strum(prefix = "(suspension).")
+)]
+pub enum SuspensionPredicateInner {
+    Id(UuidOperator),
+    ReadableId(StringOperator),
+    SpecimenId(UuidOperator),
+    Content(SuspensionContentOperator),
+    CreatedAt(TimestampOperator),
+    LysisDurationMinutes(F32Operator),
+    TargetCellRecovery(I64Operator),
 }
-
-pub type SuspensionPredicateInner = SuspensionField<
-    UuidOperator,
-    StringOperator,
-    TimestampOperator,
-    SuspensionContentOperator,
-    F32Operator,
-    I64Operator,
->;
 
 #[base_model]
 #[derive(strum::AsRefStr)]
@@ -68,46 +58,25 @@ impl ToPredicate for SuspensionPredicate {
         match self {
             Self::Specimen(p) => p.to_predicate(),
             Self::Suspension(field) => match field {
-                SuspensionField::Id(u) | SuspensionField::SpecimenId(u) => u.to_predicate(),
-                SuspensionField::ReadableId(s) => s.to_predicate(),
-                SuspensionField::Content(c) => c.to_predicate(),
-                SuspensionField::CreatedAt(t) => t.to_predicate(),
-                SuspensionField::LysisDurationMinutes(f) => f.to_predicate(),
-                SuspensionField::TargetCellRecovery(i) => i.to_predicate(),
+                SuspensionPredicateInner::Id(u) | SuspensionPredicateInner::SpecimenId(u) => {
+                    u.to_predicate()
+                }
+                SuspensionPredicateInner::ReadableId(s) => s.to_predicate(),
+                SuspensionPredicateInner::Content(c) => c.to_predicate(),
+                SuspensionPredicateInner::CreatedAt(t) => t.to_predicate(),
+                SuspensionPredicateInner::LysisDurationMinutes(f) => f.to_predicate(),
+                SuspensionPredicateInner::TargetCellRecovery(i) => i.to_predicate(),
             },
         }
     }
 }
 
-pub type SuspensionFilter = Filter<SuspensionPredicate>;
-
-pub type SuspensionSortField = SuspensionField<
-    OrderDirection,
-    OrderDirection,
-    OrderDirection,
-    OrderDirection,
-    OrderDirection,
-    OrderDirection,
->;
-
-impl OrderingField for SuspensionSortField {
-    fn direction(self) -> OrderDirection {
-        match self {
-            Self::Id(d)
-            | Self::ReadableId(d)
-            | Self::SpecimenId(d)
-            | Self::Content(d)
-            | Self::CreatedAt(d)
-            | Self::LysisDurationMinutes(d)
-            | Self::TargetCellRecovery(d) => d,
-        }
-    }
-}
-
-impl Default for SuspensionSortField {
+impl Default for SuspensionField {
     fn default() -> Self {
-        Self::CreatedAt(OrderDirection::Desc)
+        Self::CreatedAt
     }
 }
 
-pub type SuspensionQuery = ComplexQuery<SuspensionFilter, SuspensionSortField>;
+pub type SuspensionQuery = ComplexQuery<SuspensionPredicate, SuspensionField>;
+
+pub type SimpleSuspensionQuery = SimpleQuery<SuspensionField>;

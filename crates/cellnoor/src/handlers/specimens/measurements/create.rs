@@ -2,10 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::{
-    IdParam,
-    specimen::measurement::{NewSpecimenMeasurement, SpecimenMeasurementData},
-};
+use cellnoor_types::specimen::measurement::{NewSpecimenMeasurement, SpecimenMeasurementData};
 use uuid::Uuid;
 
 use crate::{
@@ -15,20 +12,21 @@ use crate::{
         util::{FieldValuePairs, ToFieldListPlaceholdersParams},
     },
     error::{Error, ErrorInner},
+    handlers::path::IdParam,
     state::AppState,
 };
 
 pub async fn create_specimen_measurement(
     State(state): State<AppState>,
     user: AuthUser,
-    Path(IdParam { id: specimen_id }): Path<IdParam>,
+    Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<NewSpecimenMeasurement>,
 ) -> Result<Json<()>, Error> {
     let mut client = state.db_client(user).await?;
 
     let tx = client.begin().await?;
 
-    let response = insert_specimen_measurement(&tx, specimen_id, &record)
+    let response = insert_specimen_measurement(&tx, id, &record)
         .await
         .map(Json);
 

@@ -2,14 +2,13 @@ use jiff::Timestamp;
 use macro_attributes::{base_model, select, unit_enum};
 use nonempty::NonemptyString;
 pub use query::{
-    SuspensionFilter, SuspensionPredicate, SuspensionPredicateInner, SuspensionQuery,
-    SuspensionSortField,
+    SimpleSuspensionQuery, SuspensionPredicate, SuspensionPredicateInner, SuspensionQuery,
 };
 use serde_json::Value;
 use uuid::Uuid;
 
 use crate::{
-    SimpleLinks,
+    simple_links::SimpleLinks,
     specimen::{Specimen, SpecimenRecord},
     suspension::measurement::{NewSuspensionMeasurement, SuspensionMeasurement},
 };

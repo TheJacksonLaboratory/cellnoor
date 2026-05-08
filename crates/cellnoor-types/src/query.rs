@@ -2,16 +2,20 @@ use macro_attributes::base_model;
 #[cfg(feature = "postgres-types")]
 use postgres_types::ToSql;
 
-use crate::query::order_by::OrderBy;
 #[cfg(feature = "postgres-types")]
-use crate::query::{filter::ToPredicate, order_by::OrderingField};
+use crate::query::filter::ToPredicate;
+use crate::query::{
+    filter::Filter,
+    order_by::{OrderBy, OrderBySet},
+};
 
-pub mod filter;
-pub mod order_by;
+pub(crate) mod filter;
+pub(crate) mod order_by;
 
 #[base_model]
 #[derive(Copy, Default)]
 #[cfg_attr(feature = "serde", serde(default))]
+#[cfg_attr(feature = "schemars", schemars(inline))]
 pub struct SimpleQuery<O>
 where
     O: Default,
@@ -19,20 +23,21 @@ where
     pub limit: Option<i32>,
     pub offset: i32,
     pub detailed: bool,
-    pub order_by: O,
+    pub order_by_field: O,
+    pub order_by_desc: bool,
 }
 
 #[base_model]
 #[cfg_attr(feature = "serde", serde(default))]
 #[cfg_attr(feature = "schemars", schemars(inline))]
-pub struct ComplexQuery<F, O>
+pub struct ComplexQuery<P, O>
 where
     O: Default,
 {
-    pub filter: Option<F>,
+    pub filter: Option<Filter<P>>,
     pub limit: Option<i32>,
     pub offset: i32,
-    pub order_by: OrderBy<O>,
+    pub order_by: OrderBySet<O>,
     pub detailed: bool,
 }
 
@@ -45,15 +50,14 @@ where
             filter: None,
             limit: None,
             offset: 0,
-            order_by: OrderBy::default(),
+            order_by: OrderBySet::default(),
             detailed: false,
         }
     }
 }
 
-impl<P, O> ComplexQuery<filter::Filter<P>, O>
+impl<P, O> ComplexQuery<P, O>
 where
-    P: Into<filter::Filter<P>>,
     O: Default,
 {
     pub fn from_filter(predicate: P, detailed: bool) -> Self {
@@ -69,24 +73,28 @@ where
             limit,
             offset,
             detailed,
-            order_by,
+            order_by_field,
+            order_by_desc,
         }: SimpleQuery<O>,
     ) -> Self {
         Self {
             limit,
             offset,
             detailed,
-            order_by: OrderBy::OneField(order_by),
+            order_by: OrderBySet::One(OrderBy {
+                field: order_by_field,
+                desc: order_by_desc,
+            }),
             ..Default::default()
         }
     }
 }
 
 #[cfg(feature = "postgres-types")]
-impl<P, O> ComplexQuery<filter::Filter<P>, O>
+impl<P, O> ComplexQuery<P, O>
 where
     P: AsRef<str> + ToPredicate,
-    O: Default + Copy + AsRef<str> + OrderingField,
+    O: Default + Copy + AsRef<str>,
 {
     pub fn to_sql_query_with_group_by(&self, group_by: &str) -> (String, Vec<&(dyn ToSql + Sync)>) {
         let Self {

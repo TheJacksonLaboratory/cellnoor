@@ -1,4 +1,4 @@
-use cellnoor_types::{ComplexQuery, Filter};
+use cellnoor_types::query::ComplexQuery;
 use postgres_types::ToSql;
 use uuid::Uuid;
 
@@ -8,7 +8,7 @@ use crate::error::Error;
 pub async fn select_one<P, O, T>(
     tx: &db::Transaction<'_>,
     pred: P,
-    select_fn: impl AsyncFn(&db::Transaction, &ComplexQuery<Filter<P>, O>) -> Result<Vec<T>, Error>,
+    select_fn: impl AsyncFn(&db::Transaction, &ComplexQuery<P, O>) -> Result<Vec<T>, Error>,
 ) -> Result<T, Error>
 where
     O: Default,

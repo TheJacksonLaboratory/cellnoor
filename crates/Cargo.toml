@@ -15,7 +15,7 @@ regex = {version = "1.12.3"}
 aide = { version = "0.16.0-alpha.4", features = [
   "axum",
   "axum-json",
-  "serde_qs",
+  "axum-query",
   "macros",
   "redoc",
   "skip_serializing_defaults",
@@ -43,7 +43,6 @@ syn = { version = "2.0.117", default-features = false, features = [
 strum = {version = "0.28.0", features = ["derive"]}
 bytes = { version = "1.11.1" }
 quote = { version = "1.0.45" }
-serde_qs = {version = "1.1.1", features = ["axum"]}
 jsonwebtoken = {version = "10.3.0", features = ["rust_crypto"]}
 leptos_axum = { version = "0.8.9" }
 leptos_meta = { version = "0.8.6" }

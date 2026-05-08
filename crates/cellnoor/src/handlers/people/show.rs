@@ -3,7 +3,7 @@ use axum::{
     extract::{Path, State},
 };
 use cellnoor_types::{
-    IdParam, UuidOperator,
+    UuidOperator,
     person::{Person, PersonPredicate},
 };
 use uuid::Uuid;
@@ -12,7 +12,7 @@ use crate::{
     auth::AuthUser,
     db::{self, util::select_one},
     error::Error,
-    handlers::people::index::select_people,
+    handlers::{path::IdParam, people::index::select_people},
     state::AppState,
 };
 

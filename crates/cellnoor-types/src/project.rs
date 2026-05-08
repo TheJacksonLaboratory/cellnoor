@@ -1,7 +1,7 @@
 use jiff::Timestamp;
 use macro_attributes::{base_model, select};
 use nonempty::NonemptyString;
-pub use query::{ProjectFilter, ProjectPredicate, ProjectQuery, ProjectSortField};
+pub use query::{ProjectPredicate, ProjectQuery, SimpleProjectQuery};
 use uuid::Uuid;
 
 use crate::simple_links::SimpleLinks;

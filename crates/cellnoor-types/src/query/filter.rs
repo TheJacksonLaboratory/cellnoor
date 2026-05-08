@@ -90,18 +90,6 @@ where
 
         (format!("where {query}"), bind_params)
     }
-
-    pub fn and(mut self, predicate: P) -> Self {
-        match &mut self {
-            Self::AllOf(filters) => {
-                filters.push(predicate.into());
-                self
-            }
-            Self::AnyOf(_) | Self::Not(_) | Self::Leaf(_) => {
-                Self::AllOf(vec![self, predicate.into()])
-            }
-        }
-    }
 }
 
 /// A comparison operator for any scalar value.
@@ -111,8 +99,8 @@ where
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
-#[cfg_attr(feature = "schemars", schemars(inline))]
-pub enum ScalarOperator<T> {
+#[cfg_attr(feature = "schemars", schemars(rename = "{T}Operator"))]
+pub enum Operator<T> {
     /// equals (`=`)
     Eq(T),
     /// less than (`<`)
@@ -133,7 +121,7 @@ pub enum ScalarOperator<T> {
 }
 
 #[cfg(feature = "postgres-types")]
-impl<T> ToPredicate for ScalarOperator<T>
+impl<T> ToPredicate for Operator<T>
 where
     T: ToSql + Sync,
 {
@@ -151,19 +139,19 @@ where
     }
 }
 
-pub type BoolOperator = ScalarOperator<bool>;
+pub type BoolOperator = Operator<bool>;
 
-pub type I32Operator = ScalarOperator<i32>;
+pub type I32Operator = Operator<i32>;
 
-pub type I64Operator = ScalarOperator<i64>;
+pub type I64Operator = Operator<i64>;
 
-pub type F32Operator = ScalarOperator<f32>;
+pub type F32Operator = Operator<f32>;
 
-pub type SimpleStringOperator = ScalarOperator<String>;
+pub type SimpleStringOperator = Operator<String>;
 
-pub type UuidOperator = ScalarOperator<Uuid>;
+pub type UuidOperator = Operator<Uuid>;
 
-pub type TimestampOperator = ScalarOperator<jiff::Timestamp>;
+pub type TimestampOperator = Operator<jiff::Timestamp>;
 
 /// A comparison operator for string values.
 ///
@@ -171,7 +159,7 @@ pub type TimestampOperator = ScalarOperator<jiff::Timestamp>;
 /// present in PostgreSQL:
 /// 1. [`like`](https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE)
 /// 2. [Trigram similar](https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS)
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
@@ -183,7 +171,7 @@ pub enum StringOperator {
     Trgm(String),
     /// All other operators
     #[cfg_attr(feature = "serde", serde(untagged))]
-    Simple(ScalarOperator<String>),
+    Simple(Operator<String>),
 }
 
 #[cfg(feature = "postgres-types")]
@@ -197,8 +185,8 @@ impl ToPredicate for StringOperator {
     }
 }
 
-impl From<ScalarOperator<String>> for StringOperator {
-    fn from(value: ScalarOperator<String>) -> Self {
+impl From<Operator<String>> for StringOperator {
+    fn from(value: Operator<String>) -> Self {
         Self::Simple(value)
     }
 }

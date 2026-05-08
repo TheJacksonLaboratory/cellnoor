@@ -1,25 +1,23 @@
-use macro_attributes::field_enum;
+use macro_attributes::{predicate_enum, sort_field_enum};
 #[cfg(feature = "postgres-types")]
 use postgres_types::ToSql;
 
 #[cfg(feature = "postgres-types")]
 use crate::query::filter::ToPredicate;
-use crate::query::{
-    ComplexQuery,
-    filter::{Filter, StringOperator, TimestampOperator, UuidOperator},
-    order_by::{OrderDirection, OrderingField},
+use crate::{
+    StringOperator, TimestampOperator, UuidOperator,
+    query::{ComplexQuery, SimpleQuery},
 };
 
-#[field_enum]
+#[predicate_enum]
 #[strum(prefix = "(project).")]
-pub enum ProjectField<U, S, T> {
-    Id(U),
-    Name(S),
-    StartedAt(T),
-    EndedAt(T),
+#[strum_discriminants(name(ProjectField), sort_field_enum, strum(prefix = "(project)."))]
+pub enum ProjectPredicate {
+    Id(UuidOperator),
+    Name(StringOperator),
+    StartedAt(TimestampOperator),
+    EndedAt(TimestampOperator),
 }
-
-pub type ProjectPredicate = ProjectField<UuidOperator, StringOperator, TimestampOperator>;
 
 #[cfg(feature = "postgres-types")]
 impl ToPredicate for ProjectPredicate {
@@ -32,22 +30,12 @@ impl ToPredicate for ProjectPredicate {
     }
 }
 
-pub type ProjectFilter = Filter<ProjectPredicate>;
-
-pub type ProjectSortField = ProjectField<OrderDirection, OrderDirection, OrderDirection>;
-
-impl OrderingField for ProjectSortField {
-    fn direction(self) -> OrderDirection {
-        match self {
-            Self::Id(d) | Self::Name(d) | Self::StartedAt(d) | Self::EndedAt(d) => d,
-        }
-    }
-}
-
-impl Default for ProjectSortField {
+impl Default for ProjectField {
     fn default() -> Self {
-        Self::StartedAt(OrderDirection::Desc)
+        Self::StartedAt
     }
 }
 
-pub type ProjectQuery = ComplexQuery<ProjectFilter, ProjectSortField>;
+pub type ProjectQuery = ComplexQuery<ProjectPredicate, ProjectField>;
+
+pub type SimpleProjectQuery = SimpleQuery<ProjectField>;

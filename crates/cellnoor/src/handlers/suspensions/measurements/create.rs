@@ -2,9 +2,8 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::{
-    IdParam,
-    suspension::measurement::{NewSuspensionMeasurement, SuspensionMeasurementData},
+use cellnoor_types::suspension::measurement::{
+    NewSuspensionMeasurement, SuspensionMeasurementData,
 };
 use uuid::Uuid;
 
@@ -15,6 +14,7 @@ use crate::{
         util::{FieldValuePairs, ToFieldListPlaceholdersParams},
     },
     error::{Error, ErrorInner},
+    handlers::path::IdParam,
     state::AppState,
 };
 

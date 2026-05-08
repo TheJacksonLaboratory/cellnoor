@@ -2,12 +2,11 @@ use aide::axum::{
     ApiRouter,
     routing::{get, post},
 };
-use axum::{Json, extract::State};
-use cellnoor_types::{
-    SimpleQuery,
-    project::{Project, ProjectQuery, ProjectSortField},
+use axum::{
+    Json,
+    extract::{Query, State},
 };
-use serde_qs::web::QsQuery;
+use cellnoor_types::project::{Project, ProjectQuery, SimpleProjectQuery};
 
 use crate::{
     auth::AuthUser,
@@ -30,7 +29,7 @@ fn id_router() -> ApiRouter<AppState> {
 async fn index_projects_simple(
     state: State<AppState>,
     user: AuthUser,
-    QsQuery(q): QsQuery<SimpleQuery<ProjectSortField>>,
+    Query(q): Query<SimpleProjectQuery>,
 ) -> Result<Json<Vec<Project>>, Error> {
     index_projects(state, user, Json(ProjectQuery::from_simple_query(q))).await
 }

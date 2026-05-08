@@ -1,6 +1,6 @@
 use macro_attributes::{base_model, select, unit_enum};
 use nonempty::NonemptyString;
-pub use query::{PersonFilter, PersonPredicate, PersonQuery, PersonSortField};
+pub use query::{PersonPredicate, PersonQuery, SimplePersonQuery};
 use uuid::Uuid;
 
 use crate::simple_links::SimpleLinks;
