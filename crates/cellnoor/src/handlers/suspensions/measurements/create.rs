@@ -55,7 +55,7 @@ pub async fn insert_suspension_measurement(
         ("data", data),
     ];
 
-    let (field_list, placeholders, params) = fields.to_field_list_placeholders_params();
+    let (field_list, placeholders, params) = fields.to_field_list_and_placeholders_and_params();
 
     tx.execute(
         &format!(

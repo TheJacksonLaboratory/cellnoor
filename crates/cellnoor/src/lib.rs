@@ -1,3 +1,5 @@
+#![feature(generic_const_exprs)]
+
 #[cfg(feature = "ssr")]
 pub mod api;
 pub mod app;

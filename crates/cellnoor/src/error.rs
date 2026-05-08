@@ -65,6 +65,11 @@ pub enum ErrorInner {
     ResourceNotFound,
     #[error("invalid API key")]
     InvalidApiKey,
+    #[error("invalid {referencing_field} for {referencing_resource}")]
+    InvalidReference {
+        referencing_resource: String,
+        referencing_field: String,
+    },
     #[error("API key expired at {expired_at}")]
     ExpiredApiKey { expired_at: jiff::Timestamp },
     #[error("invalid auth token")]
@@ -94,7 +99,9 @@ impl IntoResponse for Error {
 
         let status = match &self.error {
             ErrorInner::ResourceNotFound { .. } => StatusCode::NOT_FOUND,
-            ErrorInner::DataConstraint { .. } => StatusCode::UNPROCESSABLE_ENTITY,
+            ErrorInner::DataConstraint { .. } | ErrorInner::InvalidReference { .. } => {
+                StatusCode::UNPROCESSABLE_ENTITY
+            }
             ErrorInner::InvalidApiKey
             | ErrorInner::ExpiredApiKey { .. }
             | ErrorInner::NoAuthFound { .. }
@@ -116,7 +123,25 @@ impl From<TokioPgError> for Error {
         // TODO: complete this with the relevant SQL states
         let error = match *db_error.code() {
             SqlState::INSUFFICIENT_PRIVILEGE => ErrorInner::PermissionDenied,
-            SqlState::CHECK_VIOLATION => ErrorInner::DataConstraint {
+            SqlState::FOREIGN_KEY_VIOLATION => {
+                let referencing_resource = db_error.table().map(str::to_owned).unwrap();
+                let referencing_field_prefix = format!("{referencing_resource}_");
+
+                ErrorInner::InvalidReference {
+                    referencing_resource: db_error.table().map(str::to_owned).unwrap(),
+                    // This looks insane but it's just basically transforming something like
+                    // 'person_institution_id_fkey' to 'institution_id'
+                    referencing_field: db_error
+                        .constraint()
+                        .unwrap()
+                        .strip_prefix(&referencing_field_prefix)
+                        .unwrap()
+                        .strip_suffix("_fkey")
+                        .unwrap()
+                        .to_owned(),
+                }
+            }
+            SqlState::CHECK_VIOLATION | SqlState::UNIQUE_VIOLATION => ErrorInner::DataConstraint {
                 resource: db_error.table().map(str::to_owned),
                 field: db_error.column().map(str::to_owned),
                 message: db_error.message().to_owned(),

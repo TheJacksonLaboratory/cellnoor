@@ -42,7 +42,7 @@ pub async fn insert_project(
         ("started_at", started_at),
         ("ended_at", ended_at),
     ];
-    let (field_list, placeholders, params) = fields.to_field_list_placeholders_params();
+    let (field_list, placeholders, params) = fields.to_field_list_and_placeholders_and_params();
 
     let id = tx
         .query_one_into(

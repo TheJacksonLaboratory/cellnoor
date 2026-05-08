@@ -12,7 +12,8 @@ use crate::{
     auth::AuthUser,
     error::Error,
     handlers::institutions::{
-        create::create_institution, index::index_institutions, show::show_institution,
+        create::create_institution, delete::delete_institution, index::index_institutions,
+        show::show_institution, update::update_institution,
     },
     state::AppState,
 };
@@ -25,7 +26,12 @@ pub(super) fn router() -> ApiRouter<AppState> {
 }
 
 fn id_router() -> ApiRouter<AppState> {
-    ApiRouter::new().api_route("/", get(show_institution))
+    ApiRouter::new().api_route(
+        "/",
+        get(show_institution)
+            .put(update_institution)
+            .delete(delete_institution),
+    )
 }
 
 async fn index_institutions_simple(

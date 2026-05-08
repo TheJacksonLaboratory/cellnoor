@@ -78,16 +78,20 @@ pub async fn insert_many_to_many(
     Ok(())
 }
 
-pub trait ToFieldListPlaceholdersParams<const N: usize> {
-    fn to_field_list_placeholders_params(&self) -> (String, String, [&(dyn ToSql + Sync); N]);
-}
-
 type FieldValuePair<'a> = (&'static str, &'a (dyn ToSql + Sync));
 
 pub type FieldValuePairs<'a, const N: usize> = [FieldValuePair<'a>; N];
 
+pub trait ToFieldListPlaceholdersParams<const N: usize> {
+    fn to_field_list_and_placeholders_and_params(
+        &self,
+    ) -> (String, String, [&(dyn ToSql + Sync); N]);
+}
+
 impl<'a, const N: usize> ToFieldListPlaceholdersParams<N> for FieldValuePairs<'a, N> {
-    fn to_field_list_placeholders_params(&self) -> (String, String, [&(dyn ToSql + Sync); N]) {
+    fn to_field_list_and_placeholders_and_params(
+        &self,
+    ) -> (String, String, [&(dyn ToSql + Sync); N]) {
         let fieldnames = self.map(|(field, _)| field).join(", ");
 
         let fieldnames = format!("({fieldnames})");
@@ -99,5 +103,31 @@ impl<'a, const N: usize> ToFieldListPlaceholdersParams<N> for FieldValuePairs<'a
         let bind_params = self.map(|(_, p)| p);
 
         (fieldnames, placeholders, bind_params)
+    }
+}
+
+pub trait ToUpdateClause<'a, const N: usize> {
+    fn to_update_clause(&'a self, id: &'a Uuid) -> (String, [&'a (dyn ToSql + Sync); N + 1]);
+}
+
+impl<'a, const N: usize> ToUpdateClause<'a, N> for FieldValuePairs<'a, N> {
+    fn to_update_clause(&'a self, id: &'a Uuid) -> (String, [&'a (dyn ToSql + Sync); N + 1]) {
+        let mut update_clause = String::with_capacity(N * 32);
+
+        for (i, (fieldname, _)) in self.iter().enumerate() {
+            update_clause.push_str(fieldname);
+            update_clause.push_str(" = ");
+            update_clause.push_str(&format!("${}", i + 1));
+            if i != N - 1 {
+                update_clause.push_str(", ");
+            }
+        }
+
+        update_clause.push_str(&format!("where id = ${}", N + 1));
+
+        (
+            update_clause,
+            std::array::from_fn(|i| if i < N { self[i].1 } else { id }),
+        )
     }
 }

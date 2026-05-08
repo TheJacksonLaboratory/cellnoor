@@ -52,7 +52,7 @@ pub async fn insert_person(
         ("email", email),
         ("orcid", orcid),
     ];
-    let (field_list, placeholders, params) = fields.to_field_list_placeholders_params();
+    let (field_list, placeholders, params) = fields.to_field_list_and_placeholders_and_params();
 
     // Simple queries can be written inline
     let person_id = tx
@@ -281,5 +281,24 @@ mod test {
             .unwrap_err();
 
         assert_eq!(error, ErrorInner::ResourceNotFound);
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn invalid_reference_error() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let mut new_record = new_person();
+        new_record.institution_id = Uuid::new_v4();
+
+        let Error { error } = insert_person(&tx, &new_record).await.unwrap_err();
+
+        assert_eq!(
+            error,
+            ErrorInner::InvalidReference {
+                referencing_resource: "person".to_owned(),
+                referencing_field: "institution_id".to_owned(),
+            },
+        );
     }
 }

@@ -94,7 +94,7 @@ async fn insert_specimen_record(
         ("thermal_preservation_method", thermal_preservation_method),
     ];
 
-    let (field_list, placeholders, params) = fields.to_field_list_placeholders_params();
+    let (field_list, placeholders, params) = fields.to_field_list_and_placeholders_and_params();
 
     let id = tx
         .query_one_into(

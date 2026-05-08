@@ -38,7 +38,7 @@ pub async fn insert_institution(
         ("name", name),
         ("microsoft_entra_tenant_id", microsoft_entra_tenant_id),
     ];
-    let (field_list, placeholders, params) = fields.to_field_list_placeholders_params();
+    let (field_list, placeholders, params) = fields.to_field_list_and_placeholders_and_params();
 
     // Simple queries can be written inline
     let institution = tx
