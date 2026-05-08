@@ -59,3 +59,67 @@ pub async fn update_institution_by_id(
 
     select_institution_by_id(tx, id).await
 }
+
+#[cfg(test)]
+mod test {
+    use cellnoor_types::institution::{Institution, InstitutionRecord, NewInstitution};
+    use pretty_assertions::assert_eq;
+    use uuid::Uuid;
+
+    use crate::{
+        error::{Error, ErrorInner},
+        handlers::institutions::{
+            create::{insert_institution, test::new_institution},
+            delete::delete_institution_by_id,
+            show::select_institution_by_id,
+            update::update_institution_by_id,
+        },
+        state::test_util::{ToNonemptyString, db_client_as_admin},
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn update() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let name = "Not The Jackson Laboratory".to_nonempty_string();
+        let updated_institution = update_institution_by_id(
+            &tx,
+            Uuid::nil(),
+            &NewInstitution {
+                name: name.clone(),
+                microsoft_entra_tenant_id: Uuid::max(),
+            },
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            updated_institution.record,
+            InstitutionRecord {
+                id: Uuid::nil(),
+                name,
+                microsoft_entra_tenant_id: Uuid::max()
+            }
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn update_missing() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let Error { error } = update_institution_by_id(
+            &tx,
+            Uuid::new_v4(),
+            &NewInstitution {
+                name: "foo".to_nonempty_string(),
+                microsoft_entra_tenant_id: Uuid::new_v4(),
+            },
+        )
+        .await
+        .unwrap_err();
+
+        assert_eq!(error, ErrorInner::ResourceNotFound);
+    }
+}

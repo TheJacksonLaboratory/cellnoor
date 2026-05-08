@@ -118,7 +118,9 @@ impl<'a, const N: usize> ToUpdateClause<'a, N> for FieldValuePairs<'a, N> {
             update_clause.push_str(fieldname);
             update_clause.push_str(" = ");
             update_clause.push_str(&format!("${}", i + 1));
-            if i != N - 1 {
+            if i == N - 1 {
+                update_clause.push(' ');
+            } else {
                 update_clause.push_str(", ");
             }
         }
