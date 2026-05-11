@@ -10,7 +10,7 @@ use crate::{
             FieldValuePairs, JunctionTable, ToFieldListPlaceholdersParams, insert_many_to_many,
         },
     },
-    error::Error,
+    error::{Error, ErrorInner},
     handlers::suspensions::{
         measurements::create::insert_suspension_measurement, show::select_suspension_by_id,
     },
@@ -26,17 +26,17 @@ pub async fn create_suspension(
 
     let tx = client.begin().await?;
 
-    let response = insert_suspension(&tx, record).await.map(Json);
+    let response = insert_suspension(&tx, record).await.map(Json)?;
 
     tx.commit().await?;
 
-    response
+    Ok(response)
 }
 
 pub async fn insert_suspension(
     tx: &db::Transaction<'_>,
     record: NewSuspension,
-) -> Result<Suspension, Error> {
+) -> Result<Suspension, ErrorInner> {
     let id = insert_suspension_record(tx, &record).await?;
 
     let measurement_insertions = futures::future::try_join_all(
@@ -67,7 +67,7 @@ async fn insert_suspension_record(
         measurements: _,
         preparers: _,
     }: &NewSuspension,
-) -> Result<Uuid, Error> {
+) -> Result<Uuid, ErrorInner> {
     let fields: FieldValuePairs<_> = [
         ("readable_id", readable_id),
         ("specimen_id", specimen_id),
@@ -94,7 +94,7 @@ pub(super) async fn insert_suspension_preparers(
     tx: &db::Transaction<'_>,
     suspension_id: Uuid,
     preparer_ids: &[Uuid],
-) -> Result<(), Error> {
+) -> Result<(), ErrorInner> {
     insert_many_to_many(
         &tx,
         JunctionTable::SuspensionPreparer,

@@ -1,7 +1,12 @@
 use axum::{extract::FromRequestParts, http::HeaderValue};
 use uuid::Uuid;
 
-use crate::{auth::api_key::fetch_api_key_record, db, error::Error, state::AppState};
+use crate::{
+    auth::api_key::fetch_api_key_record,
+    db,
+    error::{Error, ErrorInner},
+    state::AppState,
+};
 
 mod api_key;
 
@@ -24,14 +29,15 @@ impl FromRequestParts<AppState> for AuthUser {
         // both UI auth and API auth mechanisms consolidated here. For now, we don't
         // need that
         let Some(api_key) = parts.headers.get("x-api-key").map(HeaderValue::as_bytes) else {
-            return Err(Error::no_auth_found(
-                "API key must be located in header 'x-api-key'",
-            ));
+            return Err(ErrorInner::NoAuthFound {
+                message: "API key must be located in header 'x-api-key'",
+            }
+            .into());
         };
 
         let api_key_record =
             fetch_api_key_record(api_key, state.db_client(db::User::App).await?).await?;
 
-        api_key_record.to_user()
+        api_key_record.to_user().map_err(Error::from)
     }
 }

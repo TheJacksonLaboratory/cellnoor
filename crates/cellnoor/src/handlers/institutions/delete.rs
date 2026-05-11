@@ -4,7 +4,13 @@ use axum::{
 };
 use uuid::Uuid;
 
-use crate::{auth::AuthUser, db, error::Error, handlers::path::IdParam, state::AppState};
+use crate::{
+    auth::AuthUser,
+    db,
+    error::{Error, ErrorInner},
+    handlers::path::IdParam,
+    state::AppState,
+};
 
 pub async fn delete_institution(
     State(state): State<AppState>,
@@ -14,20 +20,23 @@ pub async fn delete_institution(
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let result = delete_institution_by_id(&tx, id).await.map(Json);
+    let response = delete_institution_by_id(&tx, id).await.map(Json)?;
 
     tx.commit().await?;
 
-    result
+    Ok(response)
 }
 
-pub async fn delete_institution_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), Error> {
+pub async fn delete_institution_by_id(
+    tx: &db::Transaction<'_>,
+    id: Uuid,
+) -> Result<(), ErrorInner> {
     let n = tx
         .execute("delete from institution where id = $1", &[&id])
         .await?;
 
     if n == 0 {
-        return Err(Error::resource_not_found());
+        return Err(ErrorInner::ResourceNotFound);
     }
 
     Ok(())
@@ -63,7 +72,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let Error { error } = delete_institution_by_id(&tx, Uuid::new_v4())
+        let error = delete_institution_by_id(&tx, Uuid::new_v4())
             .await
             .unwrap_err();
 

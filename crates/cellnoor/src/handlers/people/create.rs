@@ -1,4 +1,4 @@
-use std::sync::LazyLock;
+use std::{sync::LazyLock, time::Duration};
 
 use axum::{Json, extract::State};
 use cellnoor_types::person::{NewPerson, Person, ResourcePermission};
@@ -25,11 +25,11 @@ pub async fn create_person(
 
     let tx = client.begin().await?;
 
-    let response = insert_person(&tx, &person).await.map(Json);
+    let response = insert_person(&tx, &person).await.map(Json)?;
 
     tx.commit().await?;
 
-    response
+    Ok(response)
 }
 
 pub async fn insert_person(
@@ -43,7 +43,7 @@ pub async fn insert_person(
         grant_permissions: permissions_to_grant,
         revoke_permissions: permissions_to_revoke,
     }: &NewPerson,
-) -> Result<Person, crate::error::Error> {
+) -> Result<Person, ErrorInner> {
     validate_email(email.as_ref())?;
 
     let fields: FieldValuePairs<_> = [
@@ -62,20 +62,22 @@ pub async fn insert_person(
         )
         .await?;
 
-    // These operations cannot be done concurrently
-    let user_operations = async || {
+    let db_user_operations = async || {
+        // In the unlikely event that this route is called in a crazily-concurrent
+        // fashion, we acquire a transaction-level lock to prevent the error "tuple
+        // concurrently updated"
+
+        tx.acquire_user_permisssions_lock().await?;
+
         create_db_user(tx, person_id, *is_staff).await?;
         grant_permissions_to_db_user(tx, person_id, permissions_to_grant).await?;
-        // It doesn't really make sense to grant permissions and then revoke them
-        // (especially if the user didn't actually have the revoked permissions to begin
-        // with), but it doesn't hurt
         revoke_permissions_from_db_user(tx, person_id, permissions_to_revoke).await?;
 
         Ok(())
     };
 
     // But they can be grouped and done concurrently with the select
-    let (_, person) = tokio::try_join!(user_operations(), select_person_by_id(tx, person_id))?;
+    let (_, person) = tokio::try_join!(db_user_operations(), select_person_by_id(tx, person_id))?;
 
     Ok(person)
 }
@@ -85,15 +87,13 @@ static EMAIL_REGEX: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$").unwrap()
 });
 
-pub(super) fn validate_email(email: &str) -> Result<(), Error> {
+pub(super) fn validate_email(email: &str) -> Result<(), ErrorInner> {
     if !EMAIL_REGEX.is_match(email) {
-        return Err(Error {
-            error: ErrorInner::DataConstraint {
-                resource: Some("person".to_owned()),
-                field: Some("email".to_owned()),
-                message: "invalid email".to_owned(),
-                detail: None,
-            },
+        return Err(ErrorInner::DataConstraint {
+            resource: Some("person".to_owned()),
+            field: Some("email".to_owned()),
+            message: "invalid email".to_owned(),
+            detail: None,
         });
     }
 
@@ -104,7 +104,7 @@ pub(super) async fn create_db_user(
     tx: &db::Transaction<'_>,
     user_id: Uuid,
     is_staff: bool,
-) -> Result<(), Error> {
+) -> Result<(), ErrorInner> {
     tx.execute(
         "select create_person_user_if_not_exists($1, $2)",
         &[&user_id.to_string(), &is_staff],
@@ -114,11 +114,11 @@ pub(super) async fn create_db_user(
     Ok(())
 }
 
-pub async fn grant_permissions_to_db_user(
+pub(super) async fn grant_permissions_to_db_user(
     tx: &db::Transaction<'_>,
     user_id: Uuid,
     permissions: &[ResourcePermission],
-) -> Result<(), Error> {
+) -> Result<(), ErrorInner> {
     let grant_stmts: Vec<_> = permissions
         .iter()
         .map(|p| construct_grant_or_revoke_statement(GrantOrRevoke::Grant, user_id, p))
@@ -130,11 +130,11 @@ pub async fn grant_permissions_to_db_user(
     Ok(())
 }
 
-pub async fn revoke_permissions_from_db_user(
+pub(super) async fn revoke_permissions_from_db_user(
     tx: &db::Transaction<'_>,
     user_id: Uuid,
     permissions: &[ResourcePermission],
-) -> Result<(), Error> {
+) -> Result<(), ErrorInner> {
     let revoke_stmt: Vec<_> = permissions
         .iter()
         .map(|p| construct_grant_or_revoke_statement(GrantOrRevoke::Revoke, user_id, p))
@@ -260,7 +260,7 @@ pub mod test {
 
         // They should not be able to insert a project
         let p = new_project();
-        let Error { error } = insert_project(&tx, &p).await.unwrap_err();
+        let error = insert_project(&tx, &p).await.unwrap_err();
         assert_eq!(error, ErrorInner::PermissionDenied);
         // Commit the transaction because the error causes it to abort
         tx.commit().await.unwrap();
@@ -279,7 +279,7 @@ pub mod test {
         assert_eq!(projects, vec![accessible_project]);
 
         // Check that the inaccessible project causes a `ResourceNotFound`
-        let Error { error } = select_project_by_id(&tx, inaccessible_project.record().id)
+        let error = select_project_by_id(&tx, inaccessible_project.record().id)
             .await
             .unwrap_err();
 
@@ -294,7 +294,7 @@ pub mod test {
         let mut new_record = new_person();
         new_record.institution_id = Uuid::new_v4();
 
-        let Error { error } = insert_person(&tx, &new_record).await.unwrap_err();
+        let error = insert_person(&tx, &new_record).await.unwrap_err();
 
         assert_eq!(
             error,

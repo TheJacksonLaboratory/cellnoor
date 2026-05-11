@@ -7,7 +7,7 @@ use crate::{
         self,
         util::{FieldValuePairs, ToFieldListPlaceholdersParams},
     },
-    error::Error,
+    error::{Error, ErrorInner},
     state::AppState,
 };
 
@@ -20,11 +20,11 @@ pub async fn create_institution(
 
     let tx = client.begin().await?;
 
-    let response = insert_institution(&tx, &institution).await.map(Json);
+    let response = insert_institution(&tx, &institution).await.map(Json)?;
 
     tx.commit().await?;
 
-    response
+    Ok(response)
 }
 
 pub async fn insert_institution(
@@ -33,7 +33,7 @@ pub async fn insert_institution(
         name,
         microsoft_entra_tenant_id,
     }: &NewInstitution,
-) -> Result<Institution, crate::error::Error> {
+) -> Result<Institution, ErrorInner> {
     let fields: FieldValuePairs<_> = [
         ("name", name),
         ("microsoft_entra_tenant_id", microsoft_entra_tenant_id),

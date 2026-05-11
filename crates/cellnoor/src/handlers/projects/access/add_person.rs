@@ -10,7 +10,7 @@ use crate::{
         self,
         util::{JunctionTable, insert_many_to_many},
     },
-    error::Error,
+    error::{Error, ErrorInner},
     handlers::path::IdParam,
     state::AppState,
 };
@@ -20,22 +20,24 @@ pub async fn add_people_to_project(
     user: AuthUser,
     Path(IdParam { id: project_id }): Path<IdParam>,
     Json(people): Json<Vec<Uuid>>,
-) -> Result<(), Error> {
+) -> Result<Json<()>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    insert_project_accesses(&tx, project_id, &people).await?;
+    let response = insert_project_accesses(&tx, project_id, &people)
+        .await
+        .map(Json)?;
 
     tx.commit().await?;
 
-    Ok(())
+    Ok(response)
 }
 
 pub async fn insert_project_accesses(
     tx: &db::Transaction<'_>,
     project_id: Uuid,
     people: &[Uuid],
-) -> Result<(), Error> {
+) -> Result<(), ErrorInner> {
     insert_many_to_many(
         &tx,
         JunctionTable::ProjectAccess,

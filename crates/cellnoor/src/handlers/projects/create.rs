@@ -7,7 +7,7 @@ use crate::{
         self,
         util::{FieldValuePairs, ToFieldListPlaceholdersParams},
     },
-    error::Error,
+    error::{Error, ErrorInner},
     handlers::projects::{access::add_person::insert_project_accesses, show::select_project_by_id},
     state::AppState,
 };
@@ -21,11 +21,11 @@ pub async fn create_project(
 
     let tx = client.begin().await?;
 
-    let response = insert_project(&tx, &project).await.map(Json);
+    let response = insert_project(&tx, &project).await.map(Json)?;
 
     tx.commit().await?;
 
-    response
+    Ok(response)
 }
 
 pub async fn insert_project(
@@ -36,7 +36,7 @@ pub async fn insert_project(
         ended_at,
         people,
     }: &NewProject,
-) -> Result<Project, crate::error::Error> {
+) -> Result<Project, ErrorInner> {
     let fields: FieldValuePairs<_> = [
         ("name", name),
         ("started_at", started_at),
@@ -88,31 +88,23 @@ pub mod test {
     #[tokio::test(flavor = "multi_thread")]
     async fn insert_select_update_delete() {
         let mut client = db_client_as_admin().await;
-
-        let new = new_project();
-        let id = insert(&mut client, &new).await;
-        select(&mut client, &new, id).await;
-        update(&mut client, id).await;
-        delete(&mut client, id).await;
-    }
-
-    async fn insert(client: &mut db::Client, new: &NewProject) -> Uuid {
         let tx = client.begin().await.unwrap();
 
+        let new = new_project();
+        let id = insert(&tx, &new).await;
+        select(&tx, &new, id).await;
+        update(&tx, id).await;
+        delete(&tx, id).await;
+    }
+
+    async fn insert(tx: &db::Transaction<'_>, new: &NewProject) -> Uuid {
         let inserted = insert_project(&tx, new).await.unwrap();
         let id = inserted.record().id;
-
-        tx.commit().await.unwrap();
 
         id
     }
 
-    async fn select(client: &mut db::Client, new: &NewProject, id: Uuid) {
-        let tx = client.begin().await.unwrap();
-
-        // Apply a filter to make sure it works. Note that we fetch the compact
-        // representation because we already fetch the detailed one inside of
-        // `insert_project`
+    async fn select(tx: &db::Transaction<'_>, new: &NewProject, id: Uuid) {
         let query = ProjectQuery::from_filter(
             ProjectPredicate::Name(SimpleStringOperator::Eq(new.name.clone().into()).into()),
             false,
@@ -122,26 +114,19 @@ pub mod test {
         assert_eq!(selected[0].record().id, id);
     }
 
-    async fn update(client: &mut db::Client, id: Uuid) {
-        let tx = client.begin().await.unwrap();
-
+    async fn update(tx: &db::Transaction<'_>, id: Uuid) {
         let new_data = new_project();
         let updated = update_project_by_id(&tx, id, &new_data).await.unwrap();
 
         assert_eq!(updated.record().id, id);
         assert_eq!(updated.record().name, new_data.name);
-
-        tx.commit().await.unwrap();
     }
 
-    async fn delete(client: &mut db::Client, id: Uuid) {
-        let tx = client.begin().await.unwrap();
+    async fn delete(tx: &db::Transaction<'_>, id: Uuid) {
         delete_project_by_id(&tx, id).await.unwrap();
-        tx.commit().await.unwrap();
 
         // Verify the project no longer exists
-        let tx = client.begin().await.unwrap();
-        let Error { error } = select_project_by_id(&tx, id).await.unwrap_err();
+        let error = select_project_by_id(&tx, id).await.unwrap_err();
         assert_eq!(error, ErrorInner::ResourceNotFound);
     }
 }

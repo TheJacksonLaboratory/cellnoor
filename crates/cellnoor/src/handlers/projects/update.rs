@@ -11,7 +11,7 @@ use crate::{
         self,
         util::{FieldValuePairs, ToUpdateClause},
     },
-    error::Error,
+    error::{Error, ErrorInner},
     handlers::{
         path::IdParam,
         projects::{access::add_person::insert_project_accesses, show::select_project_by_id},
@@ -28,11 +28,11 @@ pub async fn update_project(
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = update_project_by_id(&tx, id, &project).await.map(Json);
+    let response = update_project_by_id(&tx, id, &project).await.map(Json)?;
 
     tx.commit().await?;
 
-    response
+    Ok(response)
 }
 
 pub async fn update_project_by_id(
@@ -44,7 +44,7 @@ pub async fn update_project_by_id(
         ended_at,
         people,
     }: &NewProject,
-) -> Result<Project, Error> {
+) -> Result<Project, ErrorInner> {
     let fields: FieldValuePairs<_> = [
         ("name", name),
         ("started_at", started_at),
@@ -58,7 +58,7 @@ pub async fn update_project_by_id(
         .await?;
 
     if n == 0 {
-        return Err(Error::resource_not_found());
+        return Err(ErrorInner::ResourceNotFound);
     }
 
     insert_project_accesses(tx, id, people).await?;

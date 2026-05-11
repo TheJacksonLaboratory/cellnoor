@@ -2,7 +2,12 @@ use axum::{Json, extract::State};
 use cellnoor_types::specimen::{Specimen, SpecimenQuery};
 use futures::StreamExt;
 
-use crate::{auth::AuthUser, db, error::Error, state::AppState};
+use crate::{
+    auth::AuthUser,
+    db,
+    error::{Error, ErrorInner},
+    state::AppState,
+};
 
 pub async fn index_specimens(
     State(state): State<AppState>,
@@ -22,7 +27,7 @@ pub async fn index_specimens(
 pub async fn select_specimens(
     tx: &db::Transaction<'_>,
     query: &SpecimenQuery,
-) -> Result<Vec<Specimen>, Error> {
+) -> Result<Vec<Specimen>, ErrorInner> {
     let (clause, params) = query.to_sql_query();
 
     let specimens = if query.detailed {

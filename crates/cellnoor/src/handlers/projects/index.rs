@@ -2,7 +2,12 @@ use axum::{Json, extract::State};
 use cellnoor_types::project::{Project, ProjectQuery};
 use futures::StreamExt;
 
-use crate::{auth::AuthUser, db, error::Error, state::AppState};
+use crate::{
+    auth::AuthUser,
+    db,
+    error::{Error, ErrorInner},
+    state::AppState,
+};
 
 pub async fn index_projects(
     State(state): State<AppState>,
@@ -22,7 +27,7 @@ pub async fn index_projects(
 pub async fn select_projects(
     tx: &db::Transaction<'_>,
     query: &ProjectQuery,
-) -> Result<Vec<Project>, Error> {
+) -> Result<Vec<Project>, ErrorInner> {
     let (clause, params) = query.to_sql_query();
 
     let projects = if query.detailed {

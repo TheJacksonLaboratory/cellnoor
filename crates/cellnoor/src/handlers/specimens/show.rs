@@ -11,7 +11,7 @@ use uuid::Uuid;
 use crate::{
     auth::AuthUser,
     db::{self, util::select_one},
-    error::Error,
+    error::{Error, ErrorInner},
     handlers::{path::IdParam, specimens::index::select_specimens},
     state::AppState,
 };
@@ -24,14 +24,17 @@ pub async fn show_specimen(
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let result = select_specimen_by_id(&tx, id).await.map(Json);
+    let response = select_specimen_by_id(&tx, id).await.map(Json)?;
 
     tx.commit().await?;
 
-    result
+    Ok(response)
 }
 
-pub async fn select_specimen_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<Specimen, Error> {
+pub async fn select_specimen_by_id(
+    tx: &db::Transaction<'_>,
+    id: Uuid,
+) -> Result<Specimen, ErrorInner> {
     select_one(
         tx,
         SpecimenPredicate::Id(UuidOperator::Eq(id)),

@@ -11,7 +11,7 @@ use crate::{
         self,
         util::{FieldValuePairs, ToUpdateClause},
     },
-    error::Error,
+    error::{Error, ErrorInner},
     handlers::{
         path::IdParam,
         people::{
@@ -34,11 +34,11 @@ pub async fn update_person(
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = update_person_by_id(&tx, id, &person).await.map(Json);
+    let response = update_person_by_id(&tx, id, &person).await.map(Json)?;
 
     tx.commit().await?;
 
-    response
+    Ok(response)
 }
 
 pub async fn update_person_by_id(
@@ -53,7 +53,7 @@ pub async fn update_person_by_id(
         grant_permissions: permissions_to_grant,
         revoke_permissions: permissions_to_revoke,
     }: &NewPerson,
-) -> Result<Person, Error> {
+) -> Result<Person, ErrorInner> {
     validate_email(email.as_ref())?;
 
     let fields: FieldValuePairs<_> = [
@@ -70,7 +70,7 @@ pub async fn update_person_by_id(
         .await?;
 
     if n == 0 {
-        return Err(Error::resource_not_found());
+        return Err(ErrorInner::ResourceNotFound);
     }
 
     let user_operations = async || {
@@ -106,11 +106,12 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let person = insert_person(&tx, &new_person()).await.unwrap();
+        let to_insert = new_person();
+        let person = insert_person(&tx, &to_insert).await.unwrap();
 
         let new_data = NewPerson {
             name: "updated".to_nonempty_string(),
-            ..new_person()
+            ..to_insert
         };
 
         let updated = update_person_by_id(&tx, person.record.id, &new_data)
@@ -126,7 +127,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let Error { error } = update_person_by_id(&tx, Uuid::new_v4(), &new_person())
+        let error = update_person_by_id(&tx, Uuid::new_v4(), &new_person())
             .await
             .unwrap_err();
 

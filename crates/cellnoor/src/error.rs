@@ -26,38 +26,6 @@ impl From<ErrorInner> for Error {
     }
 }
 
-impl Error {
-    pub fn resource_not_found() -> Self {
-        Self {
-            error: ErrorInner::ResourceNotFound,
-        }
-    }
-
-    pub fn no_auth_found(message: &'static str) -> Self {
-        Self {
-            error: ErrorInner::NoAuthFound { message },
-        }
-    }
-
-    pub fn invalid_api_key() -> Self {
-        Self {
-            error: ErrorInner::InvalidApiKey,
-        }
-    }
-
-    pub fn expired_api_key(expired_at: jiff::Timestamp) -> Self {
-        Self {
-            error: ErrorInner::ExpiredApiKey { expired_at },
-        }
-    }
-
-    pub fn other(message: String) -> Self {
-        Self {
-            error: ErrorInner::Other { message },
-        }
-    }
-}
-
 #[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema, PartialEq, Eq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ErrorInner {
@@ -85,15 +53,41 @@ pub enum ErrorInner {
     },
     #[error("permission denied")]
     PermissionDenied,
-    #[error("{message}")]
-    Other { message: String },
+    #[error("{message} (SQL State - {})", sql_state.as_ref().map(|s| s.code()).unwrap_or_default())]
+    Other {
+        message: String,
+        #[serde(skip)]
+        sql_state: Option<SqlState>,
+    },
+}
+
+impl ErrorInner {
+    pub fn is_concurrency_error(&self) -> bool {
+        let ErrorInner::Other {
+            sql_state: Some(SqlState::INTERNAL_ERROR),
+            message,
+        } = self
+        else {
+            return false;
+        };
+
+        if message.contains("concurrent") {
+            return true;
+        }
+
+        false
+    }
 }
 
 impl IntoResponse for Error {
     fn into_response(mut self) -> axum::response::Response {
         leptos::logging::error!("error: {self}");
 
-        if let ErrorInner::Other { message } = &mut self.error {
+        if let ErrorInner::Other {
+            message,
+            sql_state: _,
+        } = &mut self.error
+        {
             *message = "something went wrong".to_owned();
         }
 
@@ -114,14 +108,18 @@ impl IntoResponse for Error {
     }
 }
 
-impl From<TokioPgError> for Error {
+impl From<TokioPgError> for ErrorInner {
     fn from(err: TokioPgError) -> Self {
         let Some(db_error) = err.as_db_error() else {
-            return Self::other(err.to_string());
+            return ErrorInner::Other {
+                message: err.to_string(),
+                sql_state: None,
+            }
+            .into();
         };
 
         // TODO: complete this with the relevant SQL states
-        let error = match *db_error.code() {
+        match db_error.code().clone() {
             SqlState::INSUFFICIENT_PRIVILEGE => ErrorInner::PermissionDenied,
             SqlState::FOREIGN_KEY_VIOLATION => {
                 let referencing_resource = db_error.table().map(str::to_owned).unwrap();
@@ -147,12 +145,17 @@ impl From<TokioPgError> for Error {
                 message: db_error.message().to_owned(),
                 detail: db_error.detail().map(str::to_owned),
             },
-            _ => ErrorInner::Other {
+            sql_state => ErrorInner::Other {
                 message: db_error.to_string(),
+                sql_state: Some(sql_state),
             },
-        };
+        }
+    }
+}
 
-        Self { error }
+impl From<TokioPgError> for Error {
+    fn from(err: TokioPgError) -> Self {
+        Self { error: err.into() }
     }
 }
 
@@ -161,6 +164,7 @@ impl From<DeadpoolPgError> for Error {
         Self {
             error: ErrorInner::Other {
                 message: err.to_string(),
+                sql_state: None,
             },
         }
     }

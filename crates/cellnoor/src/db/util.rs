@@ -3,20 +3,20 @@ use postgres_types::ToSql;
 use uuid::Uuid;
 
 use super as db;
-use crate::error::Error;
+use crate::error::{Error, ErrorInner};
 
 pub async fn select_one<P, O, T>(
     tx: &db::Transaction<'_>,
     pred: P,
-    select_fn: impl AsyncFn(&db::Transaction, &ComplexQuery<P, O>) -> Result<Vec<T>, Error>,
-) -> Result<T, Error>
+    select_fn: impl AsyncFn(&db::Transaction, &ComplexQuery<P, O>) -> Result<Vec<T>, ErrorInner>,
+) -> Result<T, ErrorInner>
 where
     O: Default,
 {
     let mut records = select_fn(tx, &ComplexQuery::from_filter(pred, true)).await?;
 
     if records.len() != 1 {
-        return Err(Error::resource_not_found());
+        return Err(ErrorInner::ResourceNotFound);
     }
 
     Ok(records.swap_remove(0))
@@ -38,7 +38,7 @@ pub async fn insert_many_to_many(
     table: JunctionTable,
     (parent_field, parent_id): (&'static str, Uuid),
     (child_field, children_ids): (&'static str, &[Uuid]),
-) -> Result<(), Error> {
+) -> Result<(), ErrorInner> {
     if children_ids.is_empty() {
         return Ok(());
     }

@@ -10,7 +10,7 @@ use crate::{
         self,
         util::{FieldValuePairs, ToFieldListPlaceholdersParams},
     },
-    error::Error,
+    error::{Error, ErrorInner},
     handlers::specimens::{
         measurements::create::insert_specimen_measurement, show::select_specimen_by_id,
     },
@@ -26,17 +26,17 @@ pub async fn create_specimen(
 
     let tx = client.begin().await?;
 
-    let response = insert_specimen(&tx, record).await.map(Json);
+    let response = insert_specimen(&tx, record).await.map(Json)?;
 
     tx.commit().await?;
 
-    response
+    Ok(response)
 }
 
 pub async fn insert_specimen(
     tx: &db::Transaction<'_>,
     record: NewSpecimen,
-) -> Result<Specimen, crate::error::Error> {
+) -> Result<Specimen, ErrorInner> {
     let ((common_fields, measurements), variable_fields) = record.split_for_insertion();
 
     let id = insert_specimen_record(tx, &(common_fields, variable_fields)).await?;
@@ -75,7 +75,7 @@ async fn insert_specimen_record(
             thermal_preservation_method,
         },
     ): &(SpecimenCommonFields, SpecimenVariableFields),
-) -> Result<Uuid, Error> {
+) -> Result<Uuid, ErrorInner> {
     let fields: FieldValuePairs<_> = [
         ("readable_id", readable_id),
         ("name", name),
@@ -198,7 +198,7 @@ pub mod test {
             _ => unreachable!(),
         }
 
-        let Error { error } = insert_specimen(&tx, new).await.unwrap_err();
+        let error = insert_specimen(&tx, new).await.unwrap_err();
 
         assert_eq!(
             error,

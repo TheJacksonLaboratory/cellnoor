@@ -2,9 +2,18 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use deadpool_postgres::tokio_postgres::error::SqlState;
+use futures::TryFutureExt;
+use postgres_types::ToSql;
 use uuid::Uuid;
 
-use crate::{auth::AuthUser, db, error::Error, handlers::path::IdParam, state::AppState};
+use crate::{
+    auth::AuthUser,
+    db,
+    error::{Error, ErrorInner},
+    handlers::path::IdParam,
+    state::AppState,
+};
 
 pub async fn delete_person(
     State(state): State<AppState>,
@@ -14,21 +23,48 @@ pub async fn delete_person(
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let result = delete_person_by_id(&tx, id).await.map(Json);
+    let response = delete_person_by_id(&tx, id).await.map(Json)?;
 
     tx.commit().await?;
 
-    result
+    Ok(response)
 }
 
-pub async fn delete_person_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), Error> {
-    let n = tx
-        .execute("delete from person where id = $1", &[&id])
-        .await?;
+pub async fn delete_person_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
+    let params: [&(dyn ToSql + Sync); _] = [&id];
+    let delete = tx
+        .execute("delete from person where id = $1", &params)
+        .map_err(ErrorInner::from);
+
+    let (n, _) = tokio::try_join!(delete, drop_db_user(tx, id))?;
 
     if n == 0 {
-        return Err(Error::resource_not_found());
+        return Err(ErrorInner::ResourceNotFound);
     }
+
+    Ok(())
+}
+
+async fn drop_db_user(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
+    tx.acquire_user_permisssions_lock().await?;
+
+    let revoke_result = tx
+        .execute(
+            &format!(r#"revoke all on all tables in schema public from "{id}""#),
+            &[],
+        )
+        .await;
+
+    if let Err(e) = revoke_result {
+        let Some(&SqlState::UNDEFINED_OBJECT) = e.as_db_error().map(|inner| inner.code()) else {
+            return Err(e.into());
+        };
+
+        return Err(ErrorInner::ResourceNotFound);
+    }
+
+    tx.execute(&format!(r#"drop user if exists "{}""#, id), &[])
+        .await?;
 
     Ok(())
 }
@@ -48,7 +84,7 @@ mod test {
     };
 
     #[tokio::test(flavor = "multi_thread")]
-    async fn delete_existing() {
+    async fn delete() {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
@@ -61,9 +97,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let Error { error } = delete_person_by_id(&tx, Uuid::new_v4())
-            .await
-            .unwrap_err();
+        let error = delete_person_by_id(&tx, Uuid::new_v4()).await.unwrap_err();
 
         assert_eq!(error, ErrorInner::ResourceNotFound);
     }

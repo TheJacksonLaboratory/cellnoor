@@ -30,11 +30,11 @@ pub async fn create_suspension_measurement(
 
     let response = insert_suspension_measurement(&tx, suspension_id, &record)
         .await
-        .map(Json);
+        .map(Json)?;
 
     tx.commit().await?;
 
-    response
+    Ok(response)
 }
 
 pub async fn insert_suspension_measurement(
@@ -45,7 +45,7 @@ pub async fn insert_suspension_measurement(
         measured_at,
         data,
     }: &NewSuspensionMeasurement,
-) -> Result<(), Error> {
+) -> Result<(), ErrorInner> {
     validate_suspension_measurement_data(&data.0)?;
 
     let fields: FieldValuePairs<_> = [

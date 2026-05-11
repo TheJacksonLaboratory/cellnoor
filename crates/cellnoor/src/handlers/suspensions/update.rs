@@ -11,7 +11,7 @@ use crate::{
         self,
         util::{FieldValuePairs, JunctionTable, ToUpdateClause, insert_many_to_many},
     },
-    error::Error,
+    error::{Error, ErrorInner},
     handlers::{
         path::IdParam,
         suspensions::{
@@ -31,18 +31,18 @@ pub async fn update_suspension(
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = update_suspension_by_id(&tx, id, record).await.map(Json);
+    let response = update_suspension_by_id(&tx, id, record).await.map(Json)?;
 
     tx.commit().await?;
 
-    response
+    Ok(response)
 }
 
 pub async fn update_suspension_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     record: SuspensionUpdate,
-) -> Result<Suspension, Error> {
+) -> Result<Suspension, ErrorInner> {
     update_suspension_record(tx, id, &record).await?;
 
     let preparer_insertions = async {
@@ -79,7 +79,7 @@ async fn update_suspension_record(
         measurements: _,
         preparers: _,
     }: &SuspensionUpdate,
-) -> Result<(), Error> {
+) -> Result<(), ErrorInner> {
     let fields: FieldValuePairs<_> = [
         ("readable_id", readable_id),
         ("specimen_id", specimen_id),
@@ -97,7 +97,7 @@ async fn update_suspension_record(
         .await?;
 
     if n == 0 {
-        return Err(Error::resource_not_found());
+        return Err(ErrorInner::ResourceNotFound.into());
     }
 
     Ok(())

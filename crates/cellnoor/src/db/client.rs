@@ -160,6 +160,16 @@ impl<'a> Transaction<'a> {
         self.inner.commit().await
     }
 
+    pub async fn acquire_user_permisssions_lock(&self) -> Result<(), TokioPgError> {
+        self.execute(
+            "select pg_advisory_xact_lock(hashtext($1))",
+            &[&"user_permissions"],
+        )
+        .await?;
+
+        Ok(())
+    }
+
     /// Begin a nested transaction, starting a PostgreSQL savepoint
     pub async fn begin(&'a mut self) -> Result<Transaction<'a>, TokioPgError> {
         let Self { user, inner } = self;

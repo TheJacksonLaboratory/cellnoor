@@ -28,11 +28,11 @@ pub async fn create_specimen_measurement(
 
     let response = insert_specimen_measurement(&tx, id, &record)
         .await
-        .map(Json);
+        .map(Json)?;
 
     tx.commit().await?;
 
-    response
+    Ok(response)
 }
 
 pub async fn insert_specimen_measurement(
@@ -43,7 +43,7 @@ pub async fn insert_specimen_measurement(
         measured_at,
         data,
     }: &NewSpecimenMeasurement,
-) -> Result<(), Error> {
+) -> Result<(), ErrorInner> {
     validate_specimen_measurement_data(&data.0)?;
 
     let fields: FieldValuePairs<_> = [

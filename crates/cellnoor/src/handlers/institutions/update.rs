@@ -11,7 +11,7 @@ use crate::{
         self,
         util::{FieldValuePairs, ToUpdateClause},
     },
-    error::Error,
+    error::{Error, ErrorInner},
     handlers::{institutions::show::select_institution_by_id, path::IdParam},
     state::AppState,
 };
@@ -27,11 +27,11 @@ pub async fn update_institution(
 
     let response = update_institution_by_id(&tx, id, &institution)
         .await
-        .map(Json);
+        .map(Json)?;
 
     tx.commit().await?;
 
-    response
+    Ok(response)
 }
 
 pub async fn update_institution_by_id(
@@ -41,7 +41,7 @@ pub async fn update_institution_by_id(
         name,
         microsoft_entra_tenant_id,
     }: &NewInstitution,
-) -> Result<Institution, Error> {
+) -> Result<Institution, ErrorInner> {
     let fields: FieldValuePairs<_> = [
         ("name", name),
         ("microsoft_entra_tenant_id", microsoft_entra_tenant_id),
@@ -54,7 +54,7 @@ pub async fn update_institution_by_id(
         .await?;
 
     if n == 0 {
-        return Err(Error::resource_not_found());
+        return Err(ErrorInner::ResourceNotFound);
     }
 
     select_institution_by_id(tx, id).await
@@ -104,7 +104,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let Error { error } = update_institution_by_id(
+        let error = update_institution_by_id(
             &tx,
             Uuid::new_v4(),
             &NewInstitution {

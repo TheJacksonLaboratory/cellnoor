@@ -2,7 +2,12 @@ use axum::{Json, extract::State};
 use cellnoor_types::institution::{Institution, InstitutionQuery};
 use futures::StreamExt;
 
-use crate::{auth::AuthUser, db, error::Error, state::AppState};
+use crate::{
+    auth::AuthUser,
+    db,
+    error::{Error, ErrorInner},
+    state::AppState,
+};
 
 pub async fn index_institutions(
     State(state): State<AppState>,
@@ -22,7 +27,7 @@ pub async fn index_institutions(
 pub async fn select_institutions(
     tx: &db::Transaction<'_>,
     query: &InstitutionQuery,
-) -> Result<Vec<Institution>, Error> {
+) -> Result<Vec<Institution>, ErrorInner> {
     let (sql, params) = query.to_sql_query();
     let query = format!("select institution from institution {sql}");
 

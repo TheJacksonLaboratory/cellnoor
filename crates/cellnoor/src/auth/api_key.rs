@@ -1,7 +1,11 @@
 use sha3::Digest;
 use uuid::Uuid;
 
-use crate::{auth::AuthUser, db, error::Error};
+use crate::{
+    auth::AuthUser,
+    db,
+    error::{Error, ErrorInner},
+};
 
 const API_KEY_LENGTH: usize = 22;
 
@@ -28,16 +32,19 @@ impl ApiKeyRecord {
 
     // Technically, the db ensures we don't have both a `person_id` and
     // `service_account_id`, but it's easy to be certain of that at compile time
-    fn api_key_type(&self) -> Result<ApiKeyUserType, Error> {
+    fn api_key_type(&self) -> Result<ApiKeyUserType, ErrorInner> {
         let user_type = if self.is_for_person() && !self.is_for_service() {
             ApiKeyUserType::Person
         } else if !self.is_for_person() && self.is_for_service() {
             ApiKeyUserType::Service
         } else {
-            return Err(Error::other(format!(
-                "API key {} is assigned both to a person and a service account",
-                self.id
-            )));
+            return Err(ErrorInner::Other {
+                message: format!(
+                    "API key {} is assigned both to a person and a service account",
+                    self.id
+                ),
+                sql_state: None,
+            });
         };
 
         Ok(user_type)
@@ -47,9 +54,11 @@ impl ApiKeyRecord {
         self.expires_at < jiff::Timestamp::now()
     }
 
-    pub fn to_user(&self) -> Result<AuthUser, Error> {
+    pub fn to_user(&self) -> Result<AuthUser, ErrorInner> {
         if self.is_expired() {
-            return Err(Error::expired_api_key(self.expires_at));
+            return Err(ErrorInner::ExpiredApiKey {
+                expired_at: self.expires_at,
+            });
         }
 
         let user = match self.api_key_type()? {
@@ -71,9 +80,9 @@ fn hash_api_key(api_key: &[u8]) -> [u8; 32] {
 pub async fn fetch_api_key_record(
     api_key: &[u8],
     mut db_client: db::Client,
-) -> Result<ApiKeyRecord, Error> {
+) -> Result<ApiKeyRecord, ErrorInner> {
     if api_key.len() != API_KEY_LENGTH {
-        return Err(Error::invalid_api_key());
+        return Err(ErrorInner::InvalidApiKey);
     }
 
     let hashed_key = hash_api_key(api_key);

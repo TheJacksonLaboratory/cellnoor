@@ -11,7 +11,7 @@ use uuid::Uuid;
 use crate::{
     auth::AuthUser,
     db::{self, util::select_one},
-    error::Error,
+    error::{Error, ErrorInner},
     handlers::{path::IdParam, suspensions::index::select_suspensions},
     state::AppState,
 };
@@ -24,17 +24,17 @@ pub async fn show_suspension(
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let result = select_suspension_by_id(&tx, id).await.map(Json);
+    let response = select_suspension_by_id(&tx, id).await.map(Json)?;
 
     tx.commit().await?;
 
-    result
+    Ok(response)
 }
 
 pub async fn select_suspension_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-) -> Result<Suspension, Error> {
+) -> Result<Suspension, ErrorInner> {
     select_one(
         tx,
         SuspensionPredicateInner::Id(UuidOperator::Eq(id)).into(),
