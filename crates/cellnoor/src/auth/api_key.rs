@@ -4,7 +4,7 @@ use uuid::Uuid;
 use crate::{
     auth::AuthUser,
     db,
-    error::{Error, ErrorInner},
+    error::ErrorInner,
 };
 
 const API_KEY_LENGTH: usize = 22;

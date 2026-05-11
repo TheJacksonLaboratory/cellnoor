@@ -9,7 +9,7 @@ use crate::{
     auth::AuthUser,
     db::{
         self,
-        util::{FieldValuePairs, JunctionTable, ToUpdateClause, insert_many_to_many},
+        util::{FieldValuePairs, ToUpdateClause},
     },
     error::{Error, ErrorInner},
     handlers::{

@@ -1,4 +1,4 @@
-use std::{sync::LazyLock, time::Duration};
+use std::sync::LazyLock;
 
 use axum::{Json, extract::State};
 use cellnoor_types::person::{NewPerson, Person, ResourcePermission};

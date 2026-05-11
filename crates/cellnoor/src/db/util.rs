@@ -3,7 +3,7 @@ use postgres_types::ToSql;
 use uuid::Uuid;
 
 use super as db;
-use crate::error::{Error, ErrorInner};
+use crate::error::ErrorInner;
 
 pub async fn select_one<P, O, T>(
     tx: &db::Transaction<'_>,
