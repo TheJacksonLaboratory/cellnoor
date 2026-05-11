@@ -48,7 +48,7 @@ mod test {
     use uuid::Uuid;
 
     use crate::{
-        error::{Error, ErrorInner},
+        error::ErrorInner,
         handlers::institutions::{
             create::{insert_institution, test::new_institution},
             delete::delete_institution_by_id,

@@ -68,7 +68,7 @@ pub mod test {
 
     use crate::{
         db,
-        error::{Error, ErrorInner},
+        error::ErrorInner,
         handlers::projects::{
             create::insert_project, delete::delete_project_by_id, index::select_projects,
             show::select_project_by_id, update::update_project_by_id,

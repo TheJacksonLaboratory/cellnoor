@@ -122,7 +122,7 @@ pub mod test {
     use uuid::Uuid;
 
     use crate::{
-        error::{Error, ErrorInner},
+        error::ErrorInner,
         handlers::{
             projects::create::{insert_project, test::new_project},
             specimens::{create::insert_specimen, index::select_specimens},

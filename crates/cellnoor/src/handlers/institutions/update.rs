@@ -67,7 +67,7 @@ mod test {
     use uuid::Uuid;
 
     use crate::{
-        error::{Error, ErrorInner},
+        error::ErrorInner,
         handlers::institutions::update::update_institution_by_id,
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };

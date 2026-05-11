@@ -1,11 +1,7 @@
 use sha3::Digest;
 use uuid::Uuid;
 
-use crate::{
-    auth::AuthUser,
-    db,
-    error::ErrorInner,
-};
+use crate::{auth::AuthUser, db, error::ErrorInner};
 
 const API_KEY_LENGTH: usize = 22;
 

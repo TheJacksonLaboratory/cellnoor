@@ -93,7 +93,7 @@ mod test {
     use uuid::Uuid;
 
     use crate::{
-        error::{Error, ErrorInner},
+        error::ErrorInner,
         handlers::people::{
             create::{insert_person, test::new_person},
             update::update_person_by_id,
