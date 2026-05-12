@@ -35,7 +35,7 @@ pub enum Species {
 }
 
 #[base_model]
-pub struct SpecimenCommonFields {
+pub struct NewSpecimenCommonFields {
     pub readable_id: NonemptyString,
     pub name: NonemptyString,
     pub submitted_by: Uuid,
@@ -51,7 +51,7 @@ pub struct SpecimenCommonFields {
     pub measurements: Vec<NewSpecimenMeasurement>,
 }
 
-impl SpecimenCommonFields {
+impl NewSpecimenCommonFields {
     fn split_for_insertion(mut self) -> (Self, Vec<NewSpecimenMeasurement>) {
         let measurements = self.measurements.drain(..).collect();
 
@@ -81,7 +81,7 @@ pub enum ThermalPreservationMethod {
 }
 
 #[base_model]
-pub struct SpecimenVariableFields {
+pub struct NewSpecimenVariableFields {
     pub type_: SpecimenType,
     pub embedded_in: Option<BlockEmbeddingMatrix>,
     pub fixative: Option<Fixative>,

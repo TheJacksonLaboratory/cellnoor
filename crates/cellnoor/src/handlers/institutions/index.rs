@@ -59,7 +59,7 @@ mod test {
             .await
             .unwrap();
 
-        assert_eq!(institutions[0].record.id, Uuid::nil());
+        assert_eq!(*institutions[0].record.id, Uuid::nil());
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -75,7 +75,7 @@ mod test {
         let institutions = select_institutions(&tx, &query).await.unwrap();
 
         assert_eq!(institutions.len(), 1);
-        assert_eq!(institutions[0].record.id, Uuid::nil());
+        assert_eq!(*institutions[0].record.id, Uuid::nil());
 
         let query = InstitutionQuery::from_filter(
             InstitutionPredicate::Name(SimpleStringOperator::In(vec!["".to_owned()]).into()),

@@ -1,7 +1,7 @@
 use macro_attributes::base_model;
 
 use crate::specimen::{
-    SpecimenCommonFields, SpecimenVariableFields,
+    NewSpecimenCommonFields, NewSpecimenVariableFields,
     creation::{
         block::NewBlock, cell_pellet::NewCellPellet, rna_extract::NewRnaExtract,
         suspension::NewSuspensionSpecimen, tissue::NewTissue,
@@ -26,8 +26,8 @@ pub enum NewSpecimen {
 }
 
 pub type SpecimenInsertion = (
-    (SpecimenCommonFields, Vec<NewSpecimenMeasurement>),
-    SpecimenVariableFields,
+    (NewSpecimenCommonFields, Vec<NewSpecimenMeasurement>),
+    NewSpecimenVariableFields,
 );
 
 impl NewSpecimen {

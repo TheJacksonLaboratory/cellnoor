@@ -62,7 +62,7 @@ mod test {
         let tx = client.begin().await.unwrap();
 
         let institution = insert_institution(&tx, &new_institution()).await.unwrap();
-        delete_institution_by_id(&tx, institution.record.id)
+        delete_institution_by_id(&tx, *institution.record.id)
             .await
             .unwrap();
     }

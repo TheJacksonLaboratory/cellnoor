@@ -1,7 +1,7 @@
 use macro_attributes::{base_model, unit_enum};
 
 use crate::specimen::{
-    Fixative, SpecimenCommonFields, SpecimenType, SpecimenVariableFields,
+    Fixative, NewSpecimenCommonFields, NewSpecimenVariableFields, SpecimenType,
     creation::SpecimenInsertion,
 };
 
@@ -19,18 +19,18 @@ impl From<BlockFixative> for Fixative {
 #[base_model]
 #[cfg_attr(feature = "serde", serde(transparent))]
 pub struct NewRnaExtract {
-    inner: SpecimenCommonFields,
+    inner: NewSpecimenCommonFields,
 }
 
 impl NewRnaExtract {
-    fn into_common(self) -> SpecimenCommonFields {
+    fn into_common(self) -> NewSpecimenCommonFields {
         self.inner
     }
 
     pub fn split_for_insertion(self) -> SpecimenInsertion {
         (
             self.into_common().split_for_insertion(),
-            SpecimenVariableFields {
+            NewSpecimenVariableFields {
                 type_: SpecimenType::RnaExtract,
                 embedded_in: None,
                 fixative: None,

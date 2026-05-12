@@ -30,6 +30,7 @@ pub async fn create_institution(
 pub async fn insert_institution(
     tx: &db::Transaction<'_>,
     NewInstitution {
+        id: _,
         name,
         microsoft_entra_tenant_id,
     }: &NewInstitution,
@@ -56,7 +57,7 @@ pub async fn insert_institution(
 
 #[cfg(test)]
 pub mod test {
-    use cellnoor_types::institution::NewInstitution;
+    use cellnoor_types::{id::NoId, institution::NewInstitution};
     use uuid::Uuid;
 
     use crate::{
@@ -66,6 +67,7 @@ pub mod test {
 
     pub fn new_institution() -> NewInstitution {
         NewInstitution {
+            id: NoId {},
             name: "institution".to_nonempty_string(),
             microsoft_entra_tenant_id: Uuid::new_v4(),
         }

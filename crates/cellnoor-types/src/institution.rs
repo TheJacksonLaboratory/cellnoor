@@ -1,36 +1,43 @@
 use macro_attributes::{base_model, select};
-use nonempty::NonemptyString;
 pub use query::{InstitutionPredicate, InstitutionQuery, SimpleInstitutionQuery};
-use uuid::Uuid;
 
-use crate::simple_links::SimpleLinks;
+use crate::{
+    id::{Id, NoId},
+    institution::record::InstitutionRecord,
+    simple_links::SimpleLinks,
+};
 
 mod query;
+mod record {
+    use macro_attributes::select;
+    use nonempty::NonemptyString;
+    use uuid::Uuid;
 
-#[base_model]
-pub struct NewInstitution {
-    pub name: NonemptyString,
-    pub microsoft_entra_tenant_id: Uuid,
+    #[select]
+    #[cfg_attr(feature = "postgres-types", postgres(name = "institution"))]
+    #[cfg_attr(feature = "schemars", schemars(inline))]
+    pub struct InstitutionRecord<T> {
+        #[cfg_attr(feature = "serde", serde(flatten))]
+        pub id: T,
+        pub name: NonemptyString,
+        pub microsoft_entra_tenant_id: Uuid,
+    }
 }
 
-#[select]
-#[cfg_attr(feature = "postgres-types", postgres(name = "institution"))]
-#[cfg_attr(feature = "schemars", schemars(inline))]
-pub struct InstitutionRecord {
-    pub id: Uuid,
-    pub name: NonemptyString,
-    pub microsoft_entra_tenant_id: Uuid,
-}
+pub type NewInstitution = InstitutionRecord<NoId>;
+
+pub type SavedInstitution = InstitutionRecord<Id>;
 
 #[base_model]
+#[cfg_attr(feature = "schemars", schemars(rename = "Institution"))]
 pub struct Institution {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: InstitutionRecord,
+    pub record: SavedInstitution,
     pub links: SimpleLinks,
 }
 
 impl Institution {
-    pub fn from_record(record: InstitutionRecord) -> Self {
+    pub fn from_record(record: SavedInstitution) -> Self {
         Self {
             links: SimpleLinks {
                 self_: format!("/institutions/{}", record.id),

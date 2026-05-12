@@ -1,7 +1,7 @@
 use macro_attributes::base_model;
 
 use crate::specimen::{
-    Fixative, SpecimenCommonFields, SpecimenType, SpecimenVariableFields,
+    Fixative, NewSpecimenCommonFields, NewSpecimenVariableFields, SpecimenType,
     ThermalPreservationMethod, creation::SpecimenInsertion,
 };
 
@@ -13,22 +13,22 @@ use crate::specimen::{
 pub enum NewTissue {
     Fixed {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: SpecimenCommonFields,
+        inner: NewSpecimenCommonFields,
         fixative: Fixative,
     },
     Fresh {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: SpecimenCommonFields,
+        inner: NewSpecimenCommonFields,
     },
     ThermallyPreserved {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: SpecimenCommonFields,
+        inner: NewSpecimenCommonFields,
         thermal_preservation_method: ThermalPreservationMethod,
     },
 }
 
 impl NewTissue {
-    fn into_common(self) -> SpecimenCommonFields {
+    fn into_common(self) -> NewSpecimenCommonFields {
         match self {
             Self::Fixed { inner, fixative: _ }
             | Self::Fresh { inner }
@@ -68,7 +68,7 @@ impl NewTissue {
 
         (
             self.into_common().split_for_insertion(),
-            SpecimenVariableFields {
+            NewSpecimenVariableFields {
                 type_: SpecimenType::Suspension,
                 embedded_in: None,
                 fixative,

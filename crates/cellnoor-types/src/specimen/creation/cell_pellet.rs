@@ -1,7 +1,7 @@
 use macro_attributes::{base_model, unit_enum};
 
 use crate::specimen::{
-    SpecimenCommonFields, SpecimenType, SpecimenVariableFields, ThermalPreservationMethod,
+    NewSpecimenCommonFields, NewSpecimenVariableFields, SpecimenType, ThermalPreservationMethod,
     creation::SpecimenInsertion,
 };
 
@@ -21,12 +21,12 @@ impl From<CellPelletThermalPreservation> for ThermalPreservationMethod {
 #[base_model]
 pub struct NewCellPellet {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    inner: SpecimenCommonFields,
+    inner: NewSpecimenCommonFields,
     thermal_preservation_method: CellPelletThermalPreservation,
 }
 
 impl NewCellPellet {
-    fn into_common(self) -> SpecimenCommonFields {
+    fn into_common(self) -> NewSpecimenCommonFields {
         self.inner
     }
 
@@ -35,7 +35,7 @@ impl NewCellPellet {
 
         (
             self.into_common().split_for_insertion(),
-            SpecimenVariableFields {
+            NewSpecimenVariableFields {
                 type_: SpecimenType::CellPellet,
                 embedded_in: None,
                 fixative: None,

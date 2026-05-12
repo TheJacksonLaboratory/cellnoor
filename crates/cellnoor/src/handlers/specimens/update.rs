@@ -3,7 +3,7 @@ use axum::{
     extract::{Path, State},
 };
 use cellnoor_types::specimen::{
-    NewSpecimen, Specimen, SpecimenCommonFields, SpecimenVariableFields,
+    NewSpecimen, NewSpecimenCommonFields, NewSpecimenVariableFields, Specimen,
 };
 use uuid::Uuid;
 
@@ -62,7 +62,7 @@ async fn update_specimen_record(
     tx: &db::Transaction<'_>,
     id: Uuid,
     (
-        SpecimenCommonFields {
+        NewSpecimenCommonFields {
             readable_id,
             name,
             submitted_by,
@@ -76,13 +76,13 @@ async fn update_specimen_record(
             additional_data,
             measurements: _,
         },
-        SpecimenVariableFields {
+        NewSpecimenVariableFields {
             type_,
             embedded_in,
             fixative,
             thermal_preservation_method,
         },
-    ): &(SpecimenCommonFields, SpecimenVariableFields),
+    ): &(NewSpecimenCommonFields, NewSpecimenVariableFields),
 ) -> Result<(), ErrorInner> {
     let fields: FieldValuePairs<_> = [
         ("readable_id", readable_id),

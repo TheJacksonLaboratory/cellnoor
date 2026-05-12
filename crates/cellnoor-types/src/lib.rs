@@ -3,6 +3,7 @@ pub use query::filter::{
     TimestampOperator, UuidOperator,
 };
 
+pub mod id;
 pub mod institution;
 pub mod person;
 pub mod project;

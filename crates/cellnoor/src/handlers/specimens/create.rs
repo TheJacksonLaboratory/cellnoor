@@ -1,6 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::specimen::{
-    NewSpecimen, Specimen, SpecimenCommonFields, SpecimenVariableFields,
+    NewSpecimen, NewSpecimenCommonFields, NewSpecimenVariableFields, Specimen,
 };
 use uuid::Uuid;
 
@@ -54,7 +54,7 @@ pub async fn insert_specimen(
 async fn insert_specimen_record(
     tx: &db::Transaction<'_>,
     (
-        SpecimenCommonFields {
+        NewSpecimenCommonFields {
             readable_id,
             name,
             submitted_by,
@@ -68,13 +68,13 @@ async fn insert_specimen_record(
             additional_data,
             measurements: _,
         },
-        SpecimenVariableFields {
+        NewSpecimenVariableFields {
             type_,
             embedded_in,
             fixative,
             thermal_preservation_method,
         },
-    ): &(SpecimenCommonFields, SpecimenVariableFields),
+    ): &(NewSpecimenCommonFields, NewSpecimenVariableFields),
 ) -> Result<Uuid, ErrorInner> {
     let fields: FieldValuePairs<_> = [
         ("readable_id", readable_id),
@@ -111,7 +111,8 @@ pub mod test {
     use cellnoor_types::{
         UuidOperator,
         specimen::{
-            NewBlock, NewSpecimen, Species, SpecimenCommonFields, SpecimenPredicate, SpecimenQuery,
+            NewBlock, NewSpecimen, NewSpecimenCommonFields, Species, SpecimenPredicate,
+            SpecimenQuery,
             measurement::{NewSpecimenMeasurement, SpecimenMeasurementData},
         },
     };
@@ -132,7 +133,7 @@ pub mod test {
 
     pub fn new_specimen(project_id: Uuid) -> NewSpecimen {
         NewSpecimen::Block(NewBlock::CarboxymethylCellulose {
-            inner: SpecimenCommonFields {
+            inner: NewSpecimenCommonFields {
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 name: "specimen".to_nonempty_string(),
                 submitted_by: Uuid::nil(),

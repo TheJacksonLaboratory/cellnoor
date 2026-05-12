@@ -38,6 +38,7 @@ pub async fn update_institution_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     NewInstitution {
+        id: _,
         name,
         microsoft_entra_tenant_id,
     }: &NewInstitution,
@@ -62,7 +63,10 @@ pub async fn update_institution_by_id(
 
 #[cfg(test)]
 mod test {
-    use cellnoor_types::institution::{InstitutionRecord, NewInstitution};
+    use cellnoor_types::{
+        id::NoId,
+        institution::{NewInstitution, SavedInstitution},
+    };
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
@@ -82,6 +86,7 @@ mod test {
             &tx,
             Uuid::nil(),
             &NewInstitution {
+                id: NoId {},
                 name: name.clone(),
                 microsoft_entra_tenant_id: Uuid::max(),
             },
@@ -91,8 +96,8 @@ mod test {
 
         assert_eq!(
             updated_institution.record,
-            InstitutionRecord {
-                id: Uuid::nil(),
+            SavedInstitution {
+                id: Uuid::nil().into(),
                 name,
                 microsoft_entra_tenant_id: Uuid::max()
             }
@@ -108,6 +113,7 @@ mod test {
             &tx,
             Uuid::new_v4(),
             &NewInstitution {
+                id: NoId {},
                 name: "foo".to_nonempty_string(),
                 microsoft_entra_tenant_id: Uuid::new_v4(),
             },

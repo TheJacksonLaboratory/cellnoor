@@ -1,7 +1,7 @@
 use macro_attributes::{base_model, unit_enum};
 
 use crate::specimen::{
-    Fixative, SpecimenCommonFields, SpecimenType, SpecimenVariableFields,
+    Fixative, NewSpecimenCommonFields, NewSpecimenVariableFields, SpecimenType,
     ThermalPreservationMethod, creation::SpecimenInsertion,
 };
 
@@ -26,17 +26,17 @@ impl From<BlockFixative> for Fixative {
 pub enum NewBlock {
     OptimalCuttingTemperatureCompound {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: SpecimenCommonFields,
+        inner: NewSpecimenCommonFields,
         fixative: Option<BlockFixative>,
     },
     CarboxymethylCellulose {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: SpecimenCommonFields,
+        inner: NewSpecimenCommonFields,
         fixative: Option<BlockFixative>,
     },
     Paraffin {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: SpecimenCommonFields,
+        inner: NewSpecimenCommonFields,
         fixative: BlockFixative,
     },
 }
@@ -49,7 +49,7 @@ pub enum BlockEmbeddingMatrix {
 }
 
 impl NewBlock {
-    fn into_common(self) -> SpecimenCommonFields {
+    fn into_common(self) -> NewSpecimenCommonFields {
         match self {
             Self::CarboxymethylCellulose { inner, fixative: _ }
             | Self::OptimalCuttingTemperatureCompound { inner, fixative: _ }
@@ -92,7 +92,7 @@ impl NewBlock {
 
         (
             self.into_common().split_for_insertion(),
-            SpecimenVariableFields {
+            NewSpecimenVariableFields {
                 type_: SpecimenType::Block,
                 embedded_in,
                 fixative: fixative.map(Into::into),
