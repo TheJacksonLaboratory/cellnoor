@@ -60,6 +60,6 @@ mod test {
         .await
         .unwrap();
 
-        assert_eq!(records[0].record.id, Uuid::nil());
+        assert_eq!(*records[0].record.id, Uuid::nil());
     }
 }

@@ -1,7 +1,8 @@
 use std::sync::LazyLock;
 
 use axum::{Json, extract::State};
-use cellnoor_types::person::{NewPerson, Person, ResourcePermission};
+use cellnoor_types::person::{NewPerson, Person, PersonRecord, ResourcePermission};
+use nonempty::NonemptyString;
 use regex::Regex;
 use uuid::Uuid;
 
@@ -35,16 +36,21 @@ pub async fn create_person(
 pub async fn insert_person(
     tx: &db::Transaction<'_>,
     NewPerson {
-        name,
-        institution_id,
-        email,
-        orcid,
+        record:
+            PersonRecord {
+                id: _,
+                name,
+                email,
+                institution_id,
+                orcid,
+            },
+
         is_staff,
         grant_permissions: permissions_to_grant,
         revoke_permissions: permissions_to_revoke,
     }: &NewPerson,
 ) -> Result<Person, ErrorInner> {
-    validate_email(email.as_ref())?;
+    validate_email(email.as_ref().map(NonemptyString::as_ref))?;
 
     let fields: FieldValuePairs<_> = [
         ("name", name),
@@ -87,14 +93,20 @@ static EMAIL_REGEX: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$").unwrap()
 });
 
-pub(super) fn validate_email(email: &str) -> Result<(), ErrorInner> {
+pub(super) fn validate_email(email: Option<&str>) -> Result<(), ErrorInner> {
+    let error = ErrorInner::DataConstraint {
+        resource: Some("person".to_owned()),
+        field: Some("email".to_owned()),
+        message: "invalid email".to_owned(),
+        detail: None,
+    };
+
+    let Some(email) = email else {
+        return Err(error);
+    };
+
     if !EMAIL_REGEX.is_match(email) {
-        return Err(ErrorInner::DataConstraint {
-            resource: Some("person".to_owned()),
-            field: Some("email".to_owned()),
-            message: "invalid email".to_owned(),
-            detail: None,
-        });
+        return Err(error);
     }
 
     Ok(())
@@ -188,6 +200,7 @@ fn construct_grant_or_revoke_statement(
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
+        id::NoId,
         institution::InstitutionQuery,
         person::{Action, NewPerson, Person, PersonRecord, ResourcePermission},
         project::ProjectQuery,
@@ -214,10 +227,13 @@ pub mod test {
 
     pub fn new_person() -> NewPerson {
         NewPerson {
-            name: "hamood".to_nonempty_string(),
-            institution_id: Uuid::nil(),
-            email: format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string(),
-            orcid: None,
+            record: PersonRecord {
+                id: NoId {},
+                name: "hamood".to_nonempty_string(),
+                institution_id: Uuid::nil(),
+                email: Some(format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string()),
+                orcid: None,
+            },
             is_staff: false,
             grant_permissions: vec![ResourcePermission::Institution(vec![Action::Create])],
             revoke_permissions: vec![],
@@ -237,7 +253,7 @@ pub mod test {
         } = insert_person(&tx, &new_record).await.unwrap();
 
         let mut p = new_project();
-        p.people.push(user_id);
+        p.people.push(*user_id);
         let accessible_project = insert_project(&tx, &p).await.unwrap();
 
         // And insert one the new user cannot
@@ -249,7 +265,7 @@ pub mod test {
         tx.commit().await.unwrap();
 
         // Log in as the new user
-        let mut client = db_client_as_user(user_id).await;
+        let mut client = db_client_as_user(*user_id).await;
         let tx = client.begin().await.unwrap();
 
         // Check that the user can do what they should be able to
@@ -279,7 +295,7 @@ pub mod test {
         assert_eq!(projects, vec![accessible_project]);
 
         // Check that the inaccessible project causes a `ResourceNotFound`
-        let error = select_project_by_id(&tx, inaccessible_project.record().id)
+        let error = select_project_by_id(&tx, *inaccessible_project.record().id)
             .await
             .unwrap_err();
 
@@ -292,7 +308,7 @@ pub mod test {
         let tx = client.begin().await.unwrap();
 
         let mut new_record = new_person();
-        new_record.institution_id = Uuid::new_v4();
+        new_record.record.institution_id = Uuid::new_v4();
 
         let error = insert_person(&tx, &new_record).await.unwrap_err();
 

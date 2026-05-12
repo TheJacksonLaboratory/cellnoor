@@ -3,7 +3,10 @@ use nonempty::NonemptyString;
 pub use query::{PersonPredicate, PersonQuery, SimplePersonQuery};
 use uuid::Uuid;
 
-use crate::simple_links::SimpleLinks;
+use crate::{
+    id::{Id, NoId},
+    simple_links::SimpleLinks,
+};
 
 mod query;
 
@@ -35,27 +38,25 @@ pub enum ResourcePermission {
     ChromiumDataset(Vec<Action>),
 }
 
+#[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "person_public"))]
+pub struct PersonRecord<T> {
+    pub id: T,
+    pub name: NonemptyString,
+    pub email: Option<NonemptyString>,
+    pub institution_id: Uuid,
+    pub orcid: Option<NonemptyString>,
+}
+
 #[base_model]
 pub struct NewPerson {
-    pub name: NonemptyString,
-    pub institution_id: Uuid,
-    pub email: NonemptyString,
-    pub orcid: Option<NonemptyString>,
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: PersonRecord<NoId>,
     pub is_staff: bool,
     #[cfg_attr(feature = "serde", serde(default))]
     pub grant_permissions: Vec<ResourcePermission>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub revoke_permissions: Vec<ResourcePermission>,
-}
-
-#[select]
-#[cfg_attr(feature = "postgres-types", postgres(name = "person_public"))]
-pub struct PersonRecord {
-    pub id: Uuid,
-    pub name: NonemptyString,
-    pub email: Option<NonemptyString>,
-    pub institution_id: Uuid,
-    pub orcid: Option<NonemptyString>,
 }
 
 #[base_model]
@@ -65,15 +66,17 @@ pub struct PersonLinks {
     pub projects: String,
 }
 
+pub type SavedPerson = PersonRecord<Id>;
+
 #[base_model]
 pub struct Person {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: PersonRecord,
+    pub record: SavedPerson,
     pub links: PersonLinks,
 }
 
 impl Person {
-    pub fn from_record(record: PersonRecord) -> Self {
+    pub fn from_record(record: SavedPerson) -> Self {
         let self_ = format!("/people/{}", record.id);
 
         Self {

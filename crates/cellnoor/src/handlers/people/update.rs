@@ -2,7 +2,8 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::person::{NewPerson, Person};
+use cellnoor_types::person::{NewPerson, Person, PersonRecord};
+use nonempty::NonemptyString;
 use uuid::Uuid;
 
 use crate::{
@@ -45,16 +46,20 @@ pub async fn update_person_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     NewPerson {
-        name,
-        institution_id,
-        email,
-        orcid,
+        record:
+            PersonRecord {
+                id: _,
+                name,
+                email,
+                institution_id,
+                orcid,
+            },
         is_staff,
         grant_permissions: permissions_to_grant,
         revoke_permissions: permissions_to_revoke,
     }: &NewPerson,
 ) -> Result<Person, ErrorInner> {
-    validate_email(email.as_ref())?;
+    validate_email(email.as_ref().map(NonemptyString::as_ref))?;
 
     let fields: FieldValuePairs<_> = [
         ("name", name),
@@ -88,7 +93,7 @@ pub async fn update_person_by_id(
 
 #[cfg(test)]
 mod test {
-    use cellnoor_types::person::NewPerson;
+    use cellnoor_types::person::{NewPerson, PersonRecord};
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
@@ -110,16 +115,19 @@ mod test {
         let person = insert_person(&tx, &to_insert).await.unwrap();
 
         let new_data = NewPerson {
-            name: "updated".to_nonempty_string(),
+            record: PersonRecord {
+                name: "updated".to_nonempty_string(),
+                ..to_insert.record
+            },
             ..to_insert
         };
 
-        let updated = update_person_by_id(&tx, person.record.id, &new_data)
+        let updated = update_person_by_id(&tx, *person.record.id, &new_data)
             .await
             .unwrap();
 
         assert_eq!(updated.record.id, person.record.id);
-        assert_eq!(updated.record.name, new_data.name);
+        assert_eq!(updated.record.name, new_data.record.name);
     }
 
     #[tokio::test(flavor = "multi_thread")]

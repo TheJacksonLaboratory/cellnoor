@@ -89,7 +89,7 @@ mod test {
         let tx = client.begin().await.unwrap();
 
         let person = insert_person(&tx, &new_person()).await.unwrap();
-        delete_person_by_id(&tx, person.record.id).await.unwrap();
+        delete_person_by_id(&tx, *person.record.id).await.unwrap();
     }
 
     #[tokio::test(flavor = "multi_thread")]

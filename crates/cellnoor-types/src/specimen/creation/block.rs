@@ -1,8 +1,12 @@
 use macro_attributes::{base_model, unit_enum};
 
-use crate::specimen::{
-    Fixative, NewSpecimenCommonFields, NewSpecimenVariableFields, SpecimenType,
-    ThermalPreservationMethod, creation::SpecimenInsertion,
+use crate::{
+    id::NoId,
+    specimen::{
+        NewSpecimenCommonFields,
+        creation::{NewSpecimenRecord, SpecimenInsertion},
+        record::{Fixative, SpecimenType, ThermalPreservationMethod},
+    },
 };
 
 #[unit_enum]
@@ -49,55 +53,32 @@ pub enum BlockEmbeddingMatrix {
 }
 
 impl NewBlock {
-    fn into_common(self) -> NewSpecimenCommonFields {
-        match self {
-            Self::CarboxymethylCellulose { inner, fixative: _ }
-            | Self::OptimalCuttingTemperatureCompound { inner, fixative: _ }
-            | Self::Paraffin { inner, fixative: _ } => inner,
-        }
-    }
-
-    fn fixative(&self) -> Option<BlockFixative> {
-        match self {
-            Self::CarboxymethylCellulose { inner: _, fixative }
-            | Self::OptimalCuttingTemperatureCompound { inner: _, fixative } => *fixative,
-            Self::Paraffin { inner: _, fixative } => Some(*fixative),
-        }
-    }
-
-    fn embedding_matrix(&self) -> BlockEmbeddingMatrix {
-        match &self {
-            Self::CarboxymethylCellulose { .. } => BlockEmbeddingMatrix::CarboxymethylCellulose,
-            Self::OptimalCuttingTemperatureCompound { .. } => {
-                BlockEmbeddingMatrix::OptimalCuttingTemperatureCompound
+    pub(crate) fn split_for_insertion(self) -> SpecimenInsertion {
+        let type_ = SpecimenType::Block;
+        let (common, embedded_in, fixative, thermal_preservation_method) = match self {
+            Self::CarboxymethylCellulose { inner, fixative } => (
+                inner,
+                BlockEmbeddingMatrix::CarboxymethylCellulose,
+                fixative,
+                Some(ThermalPreservationMethod::FlashFreezing),
+            ),
+            Self::OptimalCuttingTemperatureCompound { inner, fixative } => (
+                inner,
+                BlockEmbeddingMatrix::OptimalCuttingTemperatureCompound,
+                fixative,
+                Some(ThermalPreservationMethod::FlashFreezing),
+            ),
+            Self::Paraffin { inner, fixative } => {
+                (inner, BlockEmbeddingMatrix::Paraffin, Some(fixative), None)
             }
-            Self::Paraffin { .. } => BlockEmbeddingMatrix::Paraffin,
-        }
-    }
+        };
 
-    fn thermal_preservation_method(&self) -> Option<ThermalPreservationMethod> {
-        match &self {
-            Self::CarboxymethylCellulose { .. } => Some(ThermalPreservationMethod::FlashFreezing),
-            Self::OptimalCuttingTemperatureCompound { .. } => {
-                Some(ThermalPreservationMethod::FlashFreezing)
-            }
-            Self::Paraffin { .. } => None,
-        }
-    }
-
-    pub fn split_for_insertion(self) -> SpecimenInsertion {
-        let fixative = self.fixative();
-        let embedded_in = Some(self.embedding_matrix());
-        let thermal_preservation_method = self.thermal_preservation_method();
-
-        (
-            self.into_common().split_for_insertion(),
-            NewSpecimenVariableFields {
-                type_: SpecimenType::Block,
-                embedded_in,
-                fixative: fixative.map(Into::into),
-                thermal_preservation_method,
-            },
+        SpecimenInsertion::from_common_and_variable(
+            common,
+            type_,
+            Some(embedded_in),
+            fixative,
+            thermal_preservation_method,
         )
     }
 }

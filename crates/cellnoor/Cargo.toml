@@ -38,6 +38,7 @@ sha3.workspace = true
 regex.workspace = true
 futures.workspace = true
 serde_json.workspace = true
+nonempty = { path = "../nonempty" }
 
 [features]
 hydrate = [

@@ -1,4 +1,4 @@
-use macro_attributes::{base_model, select};
+use macro_attributes::base_model;
 pub use query::{InstitutionPredicate, InstitutionQuery, SimpleInstitutionQuery};
 
 use crate::{
@@ -8,6 +8,7 @@ use crate::{
 };
 
 mod query;
+
 mod record {
     use macro_attributes::select;
     use nonempty::NonemptyString;

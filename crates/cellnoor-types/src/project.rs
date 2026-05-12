@@ -4,36 +4,47 @@ use nonempty::NonemptyString;
 pub use query::{ProjectPredicate, ProjectQuery, SimpleProjectQuery};
 use uuid::Uuid;
 
-use crate::simple_links::SimpleLinks;
+use crate::{
+    id::{Id, NoId},
+    project::record::ProjectRecord,
+    simple_links::SimpleLinks,
+};
 
 mod query;
 
+mod record {
+    use jiff::Timestamp;
+    use macro_attributes::select;
+    use nonempty::NonemptyString;
+
+    #[select]
+    #[cfg_attr(feature = "postgres-types", postgres(name = "project"))]
+    pub struct ProjectRecord<T> {
+        pub id: T,
+        pub name: NonemptyString,
+        pub started_at: Timestamp,
+        pub ended_at: Timestamp,
+    }
+}
+
 #[base_model]
 pub struct NewProject {
-    pub name: NonemptyString,
-    pub started_at: Timestamp,
-    pub ended_at: Timestamp,
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: ProjectRecord<NoId>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub people: Vec<Uuid>,
 }
 
-#[select]
-#[cfg_attr(feature = "postgres-types", postgres(name = "project"))]
-pub struct ProjectRecord {
-    pub id: Uuid,
-    pub name: NonemptyString,
-    pub started_at: Timestamp,
-    pub ended_at: Timestamp,
-}
+pub type SavedProject = ProjectRecord<Id>;
 
 // We don't particularly need a "detailed" view of a project, but this is a good
 // exercise in implementing patterns we will use for libraries and Chromium
 // datasets
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "project_detailed"))]
-pub struct ProjectRecordDetailed {
+pub struct SavedProjectDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub project: ProjectRecord,
+    pub project: SavedProject,
     pub people: Vec<Uuid>,
 }
 
@@ -42,12 +53,12 @@ pub struct ProjectRecordDetailed {
 pub enum Project {
     Compact {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        record: ProjectRecord,
+        record: SavedProject,
         links: SimpleLinks,
     },
     Detailed {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        record: ProjectRecordDetailed,
+        record: SavedProjectDetailed,
         links: SimpleLinks,
     },
 }
@@ -59,25 +70,25 @@ impl SimpleLinks {
 }
 
 impl Project {
-    pub fn from_record(record: ProjectRecord) -> Self {
+    pub fn from_record(record: SavedProject) -> Self {
         Self::Compact {
-            links: SimpleLinks::for_project(record.id),
+            links: SimpleLinks::for_project(*record.id),
             record,
         }
     }
 
-    pub fn from_detailed_record(record: ProjectRecordDetailed) -> Self {
+    pub fn from_detailed_record(record: SavedProjectDetailed) -> Self {
         Self::Detailed {
-            links: SimpleLinks::for_project(record.project.id),
+            links: SimpleLinks::for_project(*record.project.id),
             record,
         }
     }
 
-    pub fn record(&self) -> &ProjectRecord {
+    pub fn record(&self) -> &SavedProject {
         match self {
             Self::Compact { record, .. } => record,
             Self::Detailed {
-                record: ProjectRecordDetailed { project, .. },
+                record: SavedProjectDetailed { project, .. },
                 ..
             } => project,
         }

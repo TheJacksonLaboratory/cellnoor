@@ -12,28 +12,87 @@ use serde_json::Value;
 use uuid::Uuid;
 
 use crate::{
-    project::{Project, ProjectRecord},
+    id::{Id, NoId},
+    project::{Project, SavedProject},
     simple_links::SimpleLinks,
-    specimen::measurement::{NewSpecimenMeasurement, SpecimenMeasurement},
+    specimen::{
+        measurement::{NewSpecimenMeasurement, SpecimenMeasurement},
+        record::{Species, SpecimenRecord},
+    },
 };
 
 mod creation;
 pub mod measurement;
 mod query;
 
-#[unit_enum]
-pub enum Species {
-    AmbystomaMexicanum,
-    CanisFamiliaris,
-    CallithrixJacchus,
-    DrosophilaMelanogaster,
-    GasterosteusAculeatus,
-    HomoSapiens,
-    MusMusculus,
-    RattusNorvegicus,
-    SminthopsisCrassicaudata,
+mod record {
+    use jiff::Timestamp;
+    use macro_attributes::{select, unit_enum};
+    use nonempty::NonemptyString;
+    use uuid::Uuid;
+
+    use crate::specimen::BlockEmbeddingMatrix;
+
+    #[select]
+    #[cfg_attr(feature = "schemars", schemars(inline))]
+    #[cfg_attr(feature = "postgres-types", postgres(name = "specimen"))]
+    pub struct SpecimenRecord<T> {
+        #[cfg_attr(feature = "serde", serde(flatten))]
+        pub id: T,
+        pub readable_id: NonemptyString,
+        pub name: NonemptyString,
+        pub submitted_by: Uuid,
+        pub received_at: Timestamp,
+        pub project_id: Uuid,
+        pub species: Species,
+        pub host_species: Option<Species>,
+        pub returned_by: Option<Uuid>,
+        pub returned_at: Option<Timestamp>,
+        pub tissue: NonemptyString,
+        pub additional_data: Option<serde_json::Value>,
+        pub type_: SpecimenType,
+        pub embedded_in: Option<BlockEmbeddingMatrix>,
+        pub fixative: Option<Fixative>,
+        pub thermal_preservation_method: Option<ThermalPreservationMethod>,
+    }
+
+    #[unit_enum]
+    pub enum Species {
+        AmbystomaMexicanum,
+        CanisFamiliaris,
+        CallithrixJacchus,
+        DrosophilaMelanogaster,
+        GasterosteusAculeatus,
+        HomoSapiens,
+        MusMusculus,
+        RattusNorvegicus,
+        SminthopsisCrassicaudata,
+    }
+
+    #[unit_enum]
+    pub enum SpecimenType {
+        Block,
+        CellPellet,
+        RnaExtract,
+        Suspension,
+        Tissue,
+    }
+
+    #[unit_enum]
+    pub enum Fixative {
+        DithiobisSuccinimidylpropionate,
+        FormaldehydeDerivative,
+    }
+
+    #[unit_enum]
+    pub enum ThermalPreservationMethod {
+        ControlledRateFreezing,
+        FlashFreezing,
+    }
 }
 
+// We have to repeat these fields because only a subset are common to all
+// specimen types, and there's no attribute like `postgres(flatten)`
 #[base_model]
 pub struct NewSpecimenCommonFields {
     pub readable_id: NonemptyString,
@@ -51,71 +110,14 @@ pub struct NewSpecimenCommonFields {
     pub measurements: Vec<NewSpecimenMeasurement>,
 }
 
-impl NewSpecimenCommonFields {
-    fn split_for_insertion(mut self) -> (Self, Vec<NewSpecimenMeasurement>) {
-        let measurements = self.measurements.drain(..).collect();
-
-        (self, measurements)
-    }
-}
-
-#[unit_enum]
-pub enum SpecimenType {
-    Block,
-    CellPellet,
-    RnaExtract,
-    Suspension,
-    Tissue,
-}
-
-#[unit_enum]
-pub enum Fixative {
-    DithiobisSuccinimidylpropionate,
-    FormaldehydeDerivative,
-}
-
-#[unit_enum]
-pub enum ThermalPreservationMethod {
-    ControlledRateFreezing,
-    FlashFreezing,
-}
-
-#[base_model]
-pub struct NewSpecimenVariableFields {
-    pub type_: SpecimenType,
-    pub embedded_in: Option<BlockEmbeddingMatrix>,
-    pub fixative: Option<Fixative>,
-    pub thermal_preservation_method: Option<ThermalPreservationMethod>,
-}
-
-#[select]
-#[cfg_attr(feature = "postgres-types", postgres(name = "specimen"))]
-pub struct SpecimenRecord {
-    pub id: Uuid,
-    pub readable_id: NonemptyString,
-    pub name: NonemptyString,
-    pub submitted_by: Uuid,
-    pub project_id: Uuid,
-    pub received_at: Timestamp,
-    pub species: Species,
-    pub host_species: Option<Species>,
-    pub returned_at: Option<Timestamp>,
-    pub returned_by: Option<Uuid>,
-    #[cfg_attr(feature = "postgres-types", postgres(name = "type"))]
-    pub type_: SpecimenType,
-    pub embedded_in: Option<BlockEmbeddingMatrix>,
-    pub fixative: Option<Fixative>,
-    pub thermal_preservation_method: Option<ThermalPreservationMethod>,
-    pub tissue: NonemptyString,
-    pub additional_data: Option<Value>,
-}
+pub type SavedSpecimen = SpecimenRecord<Id>;
 
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "specimen_detailed"))]
-pub struct SpecimenRecordDetailed {
+pub struct SavedSpecimenDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub specimen: SpecimenRecord,
-    pub project: ProjectRecord,
+    pub specimen: SavedSpecimen,
+    pub project: SavedProject,
     pub measurements: Vec<SpecimenMeasurement>,
 }
 
@@ -123,14 +125,14 @@ pub struct SpecimenRecordDetailed {
 pub enum Specimen {
     Compact {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SpecimenRecord,
+        record: SavedSpecimen,
         links: SimpleLinks,
     },
     // Rather than just wrapping the `SpecimenRecordDetailed`, we destructure its fields so that
     // we have a `Project` rather than a `ProjectRecord`
     Detailed {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SpecimenRecord,
+        record: SavedSpecimen,
         links: SimpleLinks,
         project: Project,
         measurements: Vec<SpecimenMeasurement>,
@@ -144,29 +146,29 @@ impl SimpleLinks {
 }
 
 impl Specimen {
-    pub fn record(&self) -> &SpecimenRecord {
+    pub fn record(&self) -> &SavedSpecimen {
         match self {
             Self::Compact { record, .. } => record,
             Self::Detailed { record, .. } => record,
         }
     }
 
-    pub fn from_record(record: SpecimenRecord) -> Self {
+    pub fn from_record(record: SavedSpecimen) -> Self {
         Self::Compact {
-            links: SimpleLinks::for_specimen(record.id),
+            links: SimpleLinks::for_specimen(*record.id),
             record,
         }
     }
 
     pub fn from_detailed_record(
-        SpecimenRecordDetailed {
+        SavedSpecimenDetailed {
             specimen,
             project,
             measurements,
-        }: SpecimenRecordDetailed,
+        }: SavedSpecimenDetailed,
     ) -> Self {
         Self::Detailed {
-            links: SimpleLinks::for_specimen(specimen.id),
+            links: SimpleLinks::for_specimen(*specimen.id),
             record: specimen,
             project: Project::from_record(project),
             measurements,

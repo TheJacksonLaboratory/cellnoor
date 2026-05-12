@@ -1,8 +1,9 @@
 use macro_attributes::{base_model, unit_enum};
 
 use crate::specimen::{
-    NewSpecimenCommonFields, NewSpecimenVariableFields, SpecimenType, ThermalPreservationMethod,
-    creation::SpecimenInsertion,
+    NewSpecimenCommonFields,
+    creation::{NewSpecimenRecord, SpecimenInsertion},
+    record::ThermalPreservationMethod,
 };
 
 #[unit_enum]
@@ -33,14 +34,21 @@ impl NewCellPellet {
     pub fn split_for_insertion(self) -> SpecimenInsertion {
         let thermal_preservation_method = self.thermal_preservation_method.into();
 
-        (
-            self.into_common().split_for_insertion(),
-            NewSpecimenVariableFields {
-                type_: SpecimenType::CellPellet,
-                embedded_in: None,
-                fixative: None,
-                thermal_preservation_method: Some(thermal_preservation_method),
-            },
-        )
+        let NewSpecimenCommonFields {
+            readable_id,
+            name,
+            submitted_by,
+            received_at,
+            project_id,
+            species,
+            host_species,
+            returned_by,
+            returned_at,
+            tissue,
+            additional_data,
+            measurements,
+        } = self.into_common();
+
+        (NewSpecimenRecord, measurements)
     }
 }
