@@ -1,7 +1,5 @@
-use macro_attributes::{base_model, select, unit_enum};
-use nonempty::NonemptyString;
+use macro_attributes::{base_model, unit_enum};
 pub use query::{PersonPredicate, PersonQuery, SimplePersonQuery};
-use uuid::Uuid;
 
 use crate::{
     id::{Id, NoId},

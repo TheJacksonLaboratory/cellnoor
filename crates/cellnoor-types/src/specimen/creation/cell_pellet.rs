@@ -2,7 +2,7 @@ use macro_attributes::{base_model, unit_enum};
 
 use crate::specimen::{
     Fixative, SpecimenType, ThermalPreservationMethod,
-    creation::{NewSpecimenCommonFields, NewSpecimenRecord, SpecimenInsertion},
+    creation::{NewSpecimenCommonFields, SpecimenInsertion},
 };
 
 #[unit_enum]

@@ -1,6 +1,4 @@
-use jiff::Timestamp;
 use macro_attributes::{base_model, select};
-use nonempty::NonemptyString;
 pub use query::{ProjectPredicate, ProjectQuery, SimpleProjectQuery};
 use uuid::Uuid;
 

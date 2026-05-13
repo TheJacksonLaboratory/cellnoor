@@ -1,10 +1,8 @@
-use jiff::Timestamp;
 use macro_attributes::{base_model, select, unit_enum};
-use nonempty::{NonemptyString, NonemptyVec};
+use nonempty::NonemptyVec;
 pub use query::{
     SimpleSuspensionQuery, SuspensionPredicate, SuspensionPredicateInner, SuspensionQuery,
 };
-use serde_json::Value;
 use uuid::Uuid;
 
 use crate::{

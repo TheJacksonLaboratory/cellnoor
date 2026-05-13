@@ -1,13 +1,12 @@
 use macro_attributes::{base_model, select, unit_enum};
 pub use query::{SimpleSpecimenQuery, SpecimenPredicate, SpecimenQuery};
-use uuid::Uuid;
 
 use crate::{
     id::Id,
     project::{Project, SavedProjectRecord},
     simple_links::SimpleLinks,
     specimen::{
-        measurement::{NewSpecimenMeasurement, SpecimenMeasurement},
+        measurement::SpecimenMeasurement,
         record::SpecimenRecord,
     },
 };

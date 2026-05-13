@@ -1,4 +1,4 @@
-use macro_attributes::{base_model, unit_enum};
+use macro_attributes::base_model;
 
 use crate::specimen::{
     Fixative, SpecimenType, ThermalPreservationMethod,
