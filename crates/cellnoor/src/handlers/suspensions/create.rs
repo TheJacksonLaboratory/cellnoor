@@ -127,7 +127,7 @@ pub mod test {
         },
     };
     use jiff::Timestamp;
-    use positive::PositiveF32;
+    use positive::{PositiveBoundedF32, PositiveF32};
     use postgres_types::Json;
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
@@ -158,7 +158,7 @@ pub mod test {
                 measured_at: Timestamp::now(),
                 data: Json(SuspensionMeasurementData::Viability {
                     inner: Viability {
-                        value: PositiveF32::new(0.5).unwrap(),
+                        value: PositiveBoundedF32::new(0.5).unwrap(),
                     },
                     post_hybridization: false,
                 }),

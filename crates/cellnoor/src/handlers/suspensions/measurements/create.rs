@@ -46,8 +46,6 @@ pub async fn insert_suspension_measurement(
         data,
     }: &NewSuspensionMeasurement,
 ) -> Result<(), ErrorInner> {
-    validate_suspension_measurement_data(&data.0)?;
-
     let fields: FieldValuePairs<_> = [
         ("suspension_id", &suspension_id),
         ("measured_by", measured_by),
@@ -65,26 +63,6 @@ pub async fn insert_suspension_measurement(
         &params,
     )
     .await?;
-
-    Ok(())
-}
-
-fn validate_suspension_measurement_data(
-    data: &SuspensionMeasurementData,
-) -> Result<(), ErrorInner> {
-    let (field, value, inclusive_max) = match data {
-        SuspensionMeasurementData::Viability { inner, .. } => ("Viability", &inner.value, 1.0),
-        _ => return Ok(()),
-    };
-
-    if *value > inclusive_max {
-        return Err(ErrorInner::DataConstraint {
-            resource: Some("suspension_measurement".to_owned()),
-            field: Some(field.to_owned()),
-            message: format!("invalid value for {field}"),
-            detail: None,
-        });
-    }
 
     Ok(())
 }

@@ -18,6 +18,7 @@ mod record {
     #[select]
     #[cfg_attr(feature = "postgres-types", postgres(name = "project"))]
     pub struct ProjectRecord<T> {
+        #[cfg_attr(feature = "serde", serde(flatten))]
         pub id: T,
         pub name: NonemptyString,
         pub started_at: Timestamp,

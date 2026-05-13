@@ -17,6 +17,7 @@ mod record {
     #[select]
     #[cfg_attr(feature = "postgres-types", postgres(name = "person_public"))]
     pub struct PersonRecord<T> {
+        #[cfg_attr(feature = "serde", serde(flatten))]
         pub id: T,
         pub name: NonemptyString,
         pub email: Option<NonemptyString>,

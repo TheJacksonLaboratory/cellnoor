@@ -44,8 +44,6 @@ pub async fn insert_specimen_measurement(
         data,
     }: &NewSpecimenMeasurement,
 ) -> Result<(), ErrorInner> {
-    validate_specimen_measurement_data(&data.0)?;
-
     let fields: FieldValuePairs<_> = [
         ("specimen_id", &specimen_id),
         ("measured_by", measured_by),
@@ -63,24 +61,6 @@ pub async fn insert_specimen_measurement(
         &params,
     )
     .await?;
-
-    Ok(())
-}
-
-fn validate_specimen_measurement_data(data: &SpecimenMeasurementData) -> Result<(), ErrorInner> {
-    let (field, value, inclusive_max) = match data {
-        SpecimenMeasurementData::Rin { value, .. } => ("RIN", value, 10.0),
-        SpecimenMeasurementData::Dv200 { value, .. } => ("DV200", value, 1.0),
-    };
-
-    if *value > inclusive_max {
-        return Err(ErrorInner::DataConstraint {
-            resource: Some("specimen_measurement".to_owned()),
-            field: Some(field.to_owned()),
-            message: format!("invalid value for {field}"),
-            detail: None,
-        });
-    }
 
     Ok(())
 }

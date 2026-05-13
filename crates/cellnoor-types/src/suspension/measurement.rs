@@ -1,6 +1,6 @@
 use jiff::Timestamp;
 use macro_attributes::{base_model, select, unit_enum};
-use positive::PositiveF32;
+use positive::{PositiveBoundedF32, PositiveF32};
 #[cfg(feature = "postgres-types")]
 use postgres_types::Json;
 use uuid::Uuid;
@@ -71,7 +71,7 @@ pub struct Concentration {
 
 #[base_model]
 pub struct Viability {
-    pub value: PositiveF32,
+    pub value: PositiveBoundedF32<1>,
 }
 
 #[base_model]

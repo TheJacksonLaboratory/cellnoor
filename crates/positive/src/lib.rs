@@ -1,102 +1,124 @@
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize))]
-#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
-#[cfg_attr(
-    feature = "postgres-types",
-    derive(postgres_types::FromSql, postgres_types::ToSql)
-)]
-#[cfg_attr(feature = "serde", serde(transparent))]
-#[cfg_attr(feature = "schemars", schemars(with = "f32"))]
-#[cfg_attr(feature = "postgres-types", postgres(transparent))]
-pub struct PositiveF32(f32);
+use crate::positive::{Positive, PositiveBounded};
 
-impl PositiveF32 {
-    pub fn new(f: f32) -> Option<Self> {
-        if f <= 0.0 {
-            return None;
+mod positive {
+    #[cfg(feature = "postgres-types")]
+    use bytes::BytesMut;
+    #[cfg(feature = "postgres-types")]
+    use postgres_types::{FromSql, ToSql, to_sql_checked};
+    #[cfg(feature = "serde")]
+    use serde::{
+        Deserialize,
+        de::{self, Unexpected},
+    };
+
+    #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+    #[cfg_attr(feature = "serde", derive(serde::Serialize))]
+    #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+    #[cfg_attr(feature = "serde", serde(transparent))]
+    #[cfg_attr(feature = "schemars", schemars(with = "T"))]
+    pub struct PositiveBounded<T, const N: u32>(T);
+
+    impl<T, const N: u32> PositiveBounded<T, N>
+    where
+        T: Copy + Into<f64>,
+    {
+        pub fn new(val: T) -> Option<Self> {
+            let as_f64 = val.into();
+
+            if as_f64 <= 0.0 || as_f64 > N.into() {
+                return None;
+            }
+
+            Some(Self(val))
         }
-
-        Some(Self(f))
     }
-}
 
-impl PartialEq<f32> for PositiveF32 {
-    fn eq(&self, other: &f32) -> bool {
-        self.0.eq(other)
-    }
-}
-
-impl PartialOrd<f32> for PositiveF32 {
-    fn partial_cmp(&self, other: &f32) -> Option<std::cmp::Ordering> {
-        self.0.partial_cmp(other)
-    }
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize))]
-#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
-#[cfg_attr(
-    feature = "postgres-types",
-    derive(postgres_types::FromSql, postgres_types::ToSql)
-)]
-#[cfg_attr(feature = "serde", serde(transparent))]
-#[cfg_attr(feature = "schemars", schemars(with = "i32"))]
-#[cfg_attr(feature = "postgres-types", postgres(transparent))]
-pub struct PositiveI32(i32);
-
-impl PositiveI32 {
-    pub fn new(i: i32) -> Option<Self> {
-        if i <= 0 {
-            return None;
+    impl<T, const N: u32> PartialEq<T> for PositiveBounded<T, N>
+    where
+        T: PartialEq,
+    {
+        fn eq(&self, other: &T) -> bool {
+            self.0.eq(other)
         }
-
-        Some(Self(i))
     }
-}
 
-#[cfg(feature = "serde")]
-mod serde_impls {
-    use serde::Deserialize;
+    impl<T, const N: u32> PartialOrd<T> for PositiveBounded<T, N>
+    where
+        T: PartialOrd,
+    {
+        fn partial_cmp(&self, other: &T) -> Option<std::cmp::Ordering> {
+            self.0.partial_cmp(other)
+        }
+    }
 
-    use super::{PositiveF32, PositiveI32};
-
-    impl<'de> Deserialize<'de> for PositiveF32 {
+    #[cfg(feature = "serde")]
+    impl<'de, T, const N: u32> Deserialize<'de> for PositiveBounded<T, N>
+    where
+        T: Copy + Into<f64> + Deserialize<'de>,
+    {
         fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where
             D: serde::Deserializer<'de>,
         {
-            let num = f32::deserialize(deserializer)?;
+            let val = T::deserialize(deserializer)?;
 
-            let Some(positive) = Self::new(num) else {
-                use serde::de;
-
-                return Err(de::Error::invalid_value(
-                    de::Unexpected::Float(f64::from(num)),
-                    &format!("a positive float").as_str(),
-                ));
-            };
-
-            Ok(positive)
+            Self::new(val).ok_or(de::Error::invalid_value(
+                Unexpected::Other(&format!("a number <= 0 or > {N}")),
+                &format!("a number n such that 0 < 0 <= {N}").as_str(),
+            ))
         }
     }
 
-    impl<'de> Deserialize<'de> for PositiveI32 {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    #[cfg(feature = "postgres-types")]
+    impl<'a, T, const N: u32> FromSql<'a> for PositiveBounded<T, N>
+    where
+        T: FromSql<'a>,
+    {
+        fn from_sql(
+            ty: &postgres_types::Type,
+            raw: &'a [u8],
+        ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
+            T::from_sql(ty, raw).map(Self)
+        }
+
+        fn accepts(ty: &postgres_types::Type) -> bool {
+            T::accepts(ty)
+        }
+    }
+
+    #[cfg(feature = "postgres-types")]
+    impl<T, const N: u32> ToSql for PositiveBounded<T, N>
+    where
+        T: ToSql,
+    {
+        to_sql_checked!();
+
+        fn to_sql(
+            &self,
+            ty: &postgres_types::Type,
+            out: &mut BytesMut,
+        ) -> Result<postgres_types::IsNull, Box<dyn std::error::Error + Sync + Send>>
         where
-            D: serde::Deserializer<'de>,
+            Self: Sized,
         {
-            let num = i32::deserialize(deserializer)?;
+            self.0.to_sql(ty, out)
+        }
 
-            let Some(positive) = Self::new(num) else {
-                use serde::de;
-
-                return Err(de::Error::invalid_value(
-                    de::Unexpected::Signed(i64::from(num)),
-                    &format!("a positive integer").as_str(),
-                ));
-            };
-
-            Ok(positive)
+        fn accepts(ty: &postgres_types::Type) -> bool
+        where
+            Self: Sized,
+        {
+            T::accepts(ty)
         }
     }
+
+    pub type Positive<T> = PositiveBounded<T, { u32::MAX }>;
 }
+
+pub type PositiveF32 = Positive<f32>;
+
+pub type PositiveU32 = Positive<u32>;
+
+pub type PositiveBoundedF32<const N: u32> = PositiveBounded<f32, N>;
+
+pub type PositiveBoundedU32<const N: u32> = PositiveBounded<u32, N>;

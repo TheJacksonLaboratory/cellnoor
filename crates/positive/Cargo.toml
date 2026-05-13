@@ -7,6 +7,7 @@ edition.workspace = true
 postgres-types = { workspace = true, optional = true }
 schemars = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
+bytes = {workspace = true, optional = true}
 
 [lints]
 workspace = true
@@ -14,4 +15,4 @@ workspace = true
 [features]
 serde = ["dep:serde"]
 schemars = ["dep:schemars", "serde"]
-postgres-types = ["dep:postgres-types"]
+postgres-types = ["dep:postgres-types", "dep:bytes"]

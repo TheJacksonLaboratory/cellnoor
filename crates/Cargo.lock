@@ -2391,6 +2391,7 @@ dependencies = [
 name = "positive"
 version = "0.1.0"
 dependencies = [
+ "bytes",
  "postgres-types",
  "schemars",
  "serde",

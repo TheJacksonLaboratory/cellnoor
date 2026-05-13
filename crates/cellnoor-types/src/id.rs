@@ -12,10 +12,12 @@ use uuid::Uuid;
 
 #[base_model]
 #[derive(Copy)]
+#[cfg_attr(feature = "schemars", schemars(inline))]
 pub struct NoId {}
 
 #[base_model]
 #[derive(Copy)]
+#[cfg_attr(feature = "schemars", schemars(inline))]
 pub struct Id {
     pub id: Uuid,
 }

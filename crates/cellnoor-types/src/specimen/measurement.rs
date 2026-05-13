@@ -1,7 +1,7 @@
 use jiff::Timestamp;
 use macro_attributes::{base_model, select};
 use nonempty::NonemptyString;
-use positive::PositiveF32;
+use positive::PositiveBoundedF32;
 #[cfg(feature = "postgres-types")]
 use postgres_types::Json;
 use uuid::Uuid;
@@ -37,11 +37,11 @@ pub enum SpecimenMeasurementData {
     #[cfg_attr(feature = "serde", serde(rename = "DV200"))]
     Dv200 {
         instrument_name: Option<NonemptyString>,
-        value: PositiveF32,
+        value: PositiveBoundedF32<1>,
     },
     #[cfg_attr(feature = "serde", serde(rename = "RIN"))]
     Rin {
         instrument_name: Option<NonemptyString>,
-        value: PositiveF32,
+        value: PositiveBoundedF32<10>,
     },
 }

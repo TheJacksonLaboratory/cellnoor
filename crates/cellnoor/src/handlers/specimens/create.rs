@@ -122,7 +122,7 @@ pub mod test {
         },
     };
     use jiff::{SignedDuration, Timestamp};
-    use positive::PositiveF32;
+    use positive::{PositiveBoundedF32, PositiveF32};
     use postgres_types::Json;
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
@@ -155,7 +155,7 @@ pub mod test {
                     measured_at: Timestamp::now(),
                     data: Json(SpecimenMeasurementData::Rin {
                         instrument_name: None,
-                        value: PositiveF32::new(5.0).unwrap(),
+                        value: PositiveBoundedF32::new(5.0).unwrap(),
                     }),
                 }],
             },
