@@ -6,7 +6,7 @@ use deadpool_postgres::{
     Transaction as InnerTransaction,
     tokio_postgres::{Error as TokioPgError, Row, RowStream, types::ToSql},
 };
-use futures::{Stream, StreamExt};
+use futures::{Stream, StreamExt, TryStreamExt};
 use postgres_types::FromSqlOwned;
 use uuid::Uuid;
 
@@ -104,7 +104,7 @@ impl<'a> Transaction<'a> {
             .await
     }
 
-    pub async fn query_into_stream<T>(
+    pub async fn query_stream_into<T>(
         &self,
         query: &str,
         params: Vec<&(dyn ToSql + Sync)>,

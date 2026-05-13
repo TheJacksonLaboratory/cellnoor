@@ -1,8 +1,8 @@
 use macro_attributes::{base_model, unit_enum};
 
 use crate::specimen::{
-    Fixative, NewSpecimenCommonFields, NewSpecimenVariableFields, SpecimenType,
-    ThermalPreservationMethod, creation::SpecimenInsertion,
+    Fixative, SpecimenType, ThermalPreservationMethod,
+    creation::{NewSpecimenCommonFields, SpecimenInsertion},
 };
 
 #[unit_enum]
@@ -71,18 +71,17 @@ impl NewSuspensionSpecimen {
         }
     }
 
-    pub fn split_for_insertion(self) -> SpecimenInsertion {
+    pub(super) fn split_for_insertion(self) -> SpecimenInsertion {
+        let type_ = SpecimenType::Suspension;
         let fixative = self.fixative();
         let thermal_preservation_method = self.thermal_preservation_method();
 
-        (
-            self.into_common().split_for_insertion(),
-            NewSpecimenVariableFields {
-                type_: SpecimenType::Suspension,
-                embedded_in: None,
-                fixative,
-                thermal_preservation_method: thermal_preservation_method.map(Into::into),
-            },
+        SpecimenInsertion::from_fields(
+            self.into_common(),
+            type_,
+            None,
+            fixative,
+            thermal_preservation_method,
         )
     }
 }

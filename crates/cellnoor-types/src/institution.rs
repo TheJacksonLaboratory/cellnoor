@@ -27,18 +27,18 @@ mod record {
 
 pub type NewInstitution = InstitutionRecord<NoId>;
 
-pub type SavedInstitution = InstitutionRecord<Id>;
+pub type SavedInstitutionRecord = InstitutionRecord<Id>;
 
 #[base_model]
 #[cfg_attr(feature = "schemars", schemars(rename = "Institution"))]
 pub struct Institution {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: SavedInstitution,
+    pub record: SavedInstitutionRecord,
     pub links: SimpleLinks,
 }
 
 impl Institution {
-    pub fn from_record(record: SavedInstitution) -> Self {
+    pub fn from_record(record: SavedInstitutionRecord) -> Self {
         Self {
             links: SimpleLinks {
                 self_: format!("/institutions/{}", record.id),

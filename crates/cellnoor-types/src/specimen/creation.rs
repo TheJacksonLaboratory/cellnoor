@@ -1,15 +1,22 @@
+use jiff::Timestamp;
 use macro_attributes::base_model;
+use nonempty::NonemptyString;
+use serde_json::Value;
+use uuid::Uuid;
 
 use crate::{
     id::NoId,
     specimen::{
-        BlockEmbeddingMatrix, NewSpecimenCommonFields,
+        Fixative, Species, SpecimenType, ThermalPreservationMethod,
         creation::{
-            block::NewBlock, cell_pellet::NewCellPellet, rna_extract::NewRnaExtract,
-            suspension::NewSuspensionSpecimen, tissue::NewTissue,
+            block::{BlockEmbeddingMatrix, NewBlock},
+            cell_pellet::NewCellPellet,
+            rna_extract::NewRnaExtract,
+            suspension::NewSuspensionSpecimen,
+            tissue::NewTissue,
         },
         measurement::NewSpecimenMeasurement,
-        record::{Fixative, SpecimenRecord, SpecimenType, ThermalPreservationMethod},
+        record::SpecimenRecord,
     },
 };
 
@@ -29,12 +36,45 @@ pub enum NewSpecimen {
     Tissue(NewTissue),
 }
 
+// We have to repeat these fields because only a subset are common to all
+// specimen types, and there's no attribute like `postgres(flatten)`
+#[base_model]
+pub struct NewSpecimenCommonFields {
+    pub readable_id: NonemptyString,
+    pub name: NonemptyString,
+    pub submitted_by: Uuid,
+    pub received_at: Timestamp,
+    pub project_id: Uuid,
+    pub species: Species,
+    pub host_species: Option<Species>,
+    pub returned_by: Option<Uuid>,
+    pub returned_at: Option<Timestamp>,
+    pub tissue: NonemptyString,
+    pub additional_data: Option<Value>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub measurements: Vec<NewSpecimenMeasurement>,
+}
+
 pub type NewSpecimenRecord = SpecimenRecord<NoId>;
+
+impl NewSpecimen {
+    pub fn split_for_insertion(self) -> (NewSpecimenRecord, Vec<NewSpecimenMeasurement>) {
+        let SpecimenInsertion(record, measurements) = match self {
+            Self::Block(s) => s.split_for_insertion(),
+            Self::CellPellet(s) => s.split_for_insertion(),
+            Self::RnaExtract(s) => s.split_for_insertion(),
+            Self::Suspension(s) => s.split_for_insertion(),
+            Self::Tissue(s) => s.split_for_insertion(),
+        };
+
+        (record, measurements)
+    }
+}
 
 struct SpecimenInsertion(NewSpecimenRecord, Vec<NewSpecimenMeasurement>);
 
 impl SpecimenInsertion {
-    fn from_common_and_variable(
+    fn from_fields(
         NewSpecimenCommonFields {
             readable_id,
             name,
@@ -75,17 +115,5 @@ impl SpecimenInsertion {
             },
             measurements,
         )
-    }
-}
-
-impl NewSpecimen {
-    pub fn split_for_insertion(self) -> SpecimenInsertion {
-        match self {
-            Self::Block(s) => s.split_for_insertion(),
-            Self::CellPellet(s) => s.split_for_insertion(),
-            Self::RnaExtract(s) => s.split_for_insertion(),
-            Self::Suspension(s) => s.split_for_insertion(),
-            Self::Tissue(s) => s.split_for_insertion(),
-        }
     }
 }

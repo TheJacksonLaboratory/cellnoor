@@ -27,15 +27,17 @@ mod record {
     }
 }
 
+pub type NewProjectRecord = ProjectRecord<NoId>;
+
 #[base_model]
 pub struct NewProject {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: ProjectRecord<NoId>,
+    pub record: NewProjectRecord,
     #[cfg_attr(feature = "serde", serde(default))]
     pub people: Vec<Uuid>,
 }
 
-pub type SavedProject = ProjectRecord<Id>;
+pub type SavedProjectRecord = ProjectRecord<Id>;
 
 // We don't particularly need a "detailed" view of a project, but this is a good
 // exercise in implementing patterns we will use for libraries and Chromium
@@ -44,7 +46,7 @@ pub type SavedProject = ProjectRecord<Id>;
 #[cfg_attr(feature = "postgres-types", postgres(name = "project_detailed"))]
 pub struct SavedProjectDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub project: SavedProject,
+    pub project: SavedProjectRecord,
     pub people: Vec<Uuid>,
 }
 
@@ -53,7 +55,7 @@ pub struct SavedProjectDetailed {
 pub enum Project {
     Compact {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SavedProject,
+        record: SavedProjectRecord,
         links: SimpleLinks,
     },
     Detailed {
@@ -64,27 +66,27 @@ pub enum Project {
 }
 
 impl SimpleLinks {
-    fn for_project(id: Uuid) -> Self {
+    fn for_project(id: Id) -> Self {
         SimpleLinks::from_str_and_id("/projects", id)
     }
 }
 
 impl Project {
-    pub fn from_record(record: SavedProject) -> Self {
+    pub fn from_record(record: SavedProjectRecord) -> Self {
         Self::Compact {
-            links: SimpleLinks::for_project(*record.id),
+            links: SimpleLinks::for_project(record.id),
             record,
         }
     }
 
     pub fn from_detailed_record(record: SavedProjectDetailed) -> Self {
         Self::Detailed {
-            links: SimpleLinks::for_project(*record.project.id),
+            links: SimpleLinks::for_project(record.project.id),
             record,
         }
     }
 
-    pub fn record(&self) -> &SavedProject {
+    pub fn record(&self) -> &SavedProjectRecord {
         match self {
             Self::Compact { record, .. } => record,
             Self::Detailed {

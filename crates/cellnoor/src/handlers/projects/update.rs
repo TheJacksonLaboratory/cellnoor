@@ -2,14 +2,14 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::project::{NewProject, Project};
+use cellnoor_types::project::{NewProject, NewProjectRecord, Project};
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
     db::{
         self,
-        util::{FieldValuePairs, ToUpdateClause},
+        util::{AsFieldValuePairs, FieldValuePairs, ToUpdateClause},
     },
     error::{Error, ErrorInner},
     handlers::{
@@ -38,19 +38,9 @@ pub async fn update_project(
 pub async fn update_project_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-    NewProject {
-        name,
-        started_at,
-        ended_at,
-        people,
-    }: &NewProject,
+    NewProject { record, people }: &NewProject,
 ) -> Result<Project, ErrorInner> {
-    let fields: FieldValuePairs<_> = [
-        ("name", name),
-        ("started_at", started_at),
-        ("ended_at", ended_at),
-    ];
-
+    let fields = record.as_field_value_pairs();
     let (update_clause, params) = fields.to_update_clause(&id);
 
     let n = tx

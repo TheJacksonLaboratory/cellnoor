@@ -2,14 +2,14 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::suspension::{Suspension, SuspensionUpdate};
+use cellnoor_types::suspension::{NewSuspensionRecord, Suspension, SuspensionUpdate};
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
     db::{
         self,
-        util::{FieldValuePairs, ToUpdateClause},
+        util::{AsFieldValuePairs, ToUpdateClause},
     },
     error::{Error, ErrorInner},
     handlers::{
@@ -31,7 +31,7 @@ pub async fn update_suspension(
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = update_suspension_by_id(&tx, id, record).await.map(Json)?;
+    let response = update_suspension_by_id(&tx, id, &record).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -41,12 +41,16 @@ pub async fn update_suspension(
 pub async fn update_suspension_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-    record: SuspensionUpdate,
+    SuspensionUpdate {
+        record,
+        measurements,
+        preparers,
+    }: &SuspensionUpdate,
 ) -> Result<Suspension, ErrorInner> {
     update_suspension_record(tx, id, &record).await?;
 
     let preparer_insertions = async {
-        if let Some(preparers) = &record.preparers {
+        if !preparers.is_empty() {
             insert_suspension_preparers(tx, id, preparers.as_ref()).await
         } else {
             Ok(())
@@ -54,8 +58,7 @@ pub async fn update_suspension_by_id(
     };
 
     let measurement_insertions = futures::future::try_join_all(
-        record
-            .measurements
+        measurements
             .iter()
             .map(|m| insert_suspension_measurement(tx, id, m)),
     );
@@ -68,27 +71,9 @@ pub async fn update_suspension_by_id(
 async fn update_suspension_record(
     tx: &db::Transaction<'_>,
     id: Uuid,
-    SuspensionUpdate {
-        readable_id,
-        specimen_id,
-        content,
-        created_at,
-        lysis_duration_minutes,
-        target_cell_recovery,
-        additional_data,
-        measurements: _,
-        preparers: _,
-    }: &SuspensionUpdate,
+    record: &NewSuspensionRecord,
 ) -> Result<(), ErrorInner> {
-    let fields: FieldValuePairs<_> = [
-        ("readable_id", readable_id),
-        ("specimen_id", specimen_id),
-        ("content", content),
-        ("created_at", created_at),
-        ("lysis_duration_minutes", lysis_duration_minutes),
-        ("target_cell_recovery", target_cell_recovery),
-        ("additional_data", additional_data),
-    ];
+    let fields = record.as_field_value_pairs();
 
     let (update_clause, params) = fields.to_update_clause(&id);
 

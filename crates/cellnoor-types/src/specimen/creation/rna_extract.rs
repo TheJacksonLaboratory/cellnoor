@@ -1,20 +1,9 @@
 use macro_attributes::{base_model, unit_enum};
 
 use crate::specimen::{
-    Fixative, NewSpecimenCommonFields, NewSpecimenVariableFields, SpecimenType,
-    creation::SpecimenInsertion,
+    Fixative, SpecimenType, ThermalPreservationMethod,
+    creation::{NewSpecimenCommonFields, SpecimenInsertion},
 };
-
-#[unit_enum]
-pub enum BlockFixative {
-    FormaldehydeDerivative,
-}
-
-impl From<BlockFixative> for Fixative {
-    fn from(_: BlockFixative) -> Self {
-        Fixative::FormaldehydeDerivative
-    }
-}
 
 #[base_model]
 #[cfg_attr(feature = "serde", serde(transparent))]
@@ -23,19 +12,13 @@ pub struct NewRnaExtract {
 }
 
 impl NewRnaExtract {
-    fn into_common(self) -> NewSpecimenCommonFields {
-        self.inner
-    }
-
-    pub fn split_for_insertion(self) -> SpecimenInsertion {
-        (
-            self.into_common().split_for_insertion(),
-            NewSpecimenVariableFields {
-                type_: SpecimenType::RnaExtract,
-                embedded_in: None,
-                fixative: None,
-                thermal_preservation_method: None,
-            },
+    pub(crate) fn split_for_insertion(self) -> SpecimenInsertion {
+        SpecimenInsertion::from_fields(
+            self.inner,
+            SpecimenType::RnaExtract,
+            None,
+            None::<Fixative>,
+            None::<ThermalPreservationMethod>,
         )
     }
 }

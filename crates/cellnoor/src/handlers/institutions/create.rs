@@ -5,7 +5,7 @@ use crate::{
     auth::AuthUser,
     db::{
         self,
-        util::{FieldValuePairs, ToFieldListPlaceholdersParams},
+        util::{AsFieldValuePairs, FieldValuePairs, ToFieldListPlaceholdersParams},
     },
     error::{Error, ErrorInner},
     state::AppState,
@@ -27,18 +27,26 @@ pub async fn create_institution(
     Ok(response)
 }
 
+impl AsFieldValuePairs<2> for NewInstitution {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, 2> {
+        let Self {
+            id: _,
+            name,
+            microsoft_entra_tenant_id,
+        } = self;
+
+        [
+            ("name", name),
+            ("microsoft_entra_tenant_id", microsoft_entra_tenant_id),
+        ]
+    }
+}
+
 pub async fn insert_institution(
     tx: &db::Transaction<'_>,
-    NewInstitution {
-        id: _,
-        name,
-        microsoft_entra_tenant_id,
-    }: &NewInstitution,
+    new_record: &NewInstitution,
 ) -> Result<Institution, ErrorInner> {
-    let fields: FieldValuePairs<_> = [
-        ("name", name),
-        ("microsoft_entra_tenant_id", microsoft_entra_tenant_id),
-    ];
+    let fields = new_record.as_field_value_pairs();
     let (field_list, placeholders, params) = fields.to_field_list_and_placeholders_and_params();
 
     // Simple queries can be written inline

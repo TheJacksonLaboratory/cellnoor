@@ -32,7 +32,7 @@ pub async fn select_institutions(
     let query = format!("select institution from institution {sql}");
 
     Ok(tx
-        .query_into_stream(&query, params)
+        .query_stream_into(&query, params)
         .await
         .map(async |stream| stream.map(Institution::from_record).collect().await)?
         .await)

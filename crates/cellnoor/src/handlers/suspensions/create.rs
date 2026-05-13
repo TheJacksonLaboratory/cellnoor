@@ -1,5 +1,5 @@
 use axum::{Json, extract::State};
-use cellnoor_types::suspension::{NewSuspension, Suspension};
+use cellnoor_types::suspension::{NewSuspension, NewSuspensionRecord, Suspension};
 use uuid::Uuid;
 
 use crate::{
@@ -7,7 +7,8 @@ use crate::{
     db::{
         self,
         util::{
-            FieldValuePairs, JunctionTable, ToFieldListPlaceholdersParams, insert_many_to_many,
+            AsFieldValuePairs, FieldValuePairs, JunctionTable, ToFieldListPlaceholdersParams,
+            insert_many_to_many,
         },
     },
     error::{Error, ErrorInner},
@@ -35,19 +36,22 @@ pub async fn create_suspension(
 
 pub async fn insert_suspension(
     tx: &db::Transaction<'_>,
-    record: NewSuspension,
+    NewSuspension {
+        record,
+        measurements,
+        preparers,
+    }: NewSuspension,
 ) -> Result<Suspension, ErrorInner> {
     let id = insert_suspension_record(tx, &record).await?;
 
     let measurement_insertions = futures::future::try_join_all(
-        record
-            .measurements
+        measurements
             .iter()
             .map(|m| insert_suspension_measurement(tx, id, m)),
     );
 
     tokio::try_join!(
-        insert_suspension_preparers(tx, id, record.preparers.as_ref()),
+        insert_suspension_preparers(tx, id, preparers.as_ref()),
         measurement_insertions
     )?;
 
@@ -56,27 +60,9 @@ pub async fn insert_suspension(
 
 async fn insert_suspension_record(
     tx: &db::Transaction<'_>,
-    NewSuspension {
-        readable_id,
-        specimen_id,
-        content,
-        created_at,
-        lysis_duration_minutes,
-        target_cell_recovery,
-        additional_data,
-        measurements: _,
-        preparers: _,
-    }: &NewSuspension,
+    new_record: &NewSuspensionRecord,
 ) -> Result<Uuid, ErrorInner> {
-    let fields: FieldValuePairs<_> = [
-        ("readable_id", readable_id),
-        ("specimen_id", specimen_id),
-        ("content", content),
-        ("created_at", created_at),
-        ("lysis_duration_minutes", lysis_duration_minutes),
-        ("target_cell_recovery", target_cell_recovery),
-        ("additional_data", additional_data),
-    ];
+    let fields = new_record.as_field_value_pairs();
 
     let (field_list, placeholders, params) = fields.to_field_list_and_placeholders_and_params();
 
@@ -104,13 +90,39 @@ pub(super) async fn insert_suspension_preparers(
     .await
 }
 
+impl AsFieldValuePairs<7> for NewSuspensionRecord {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, 7> {
+        let Self {
+            id: _,
+            readable_id,
+            specimen_id,
+            content,
+            created_at,
+            lysis_duration_minutes,
+            target_cell_recovery,
+            additional_data,
+        } = self;
+
+        [
+            ("readable_id", readable_id),
+            ("specimen_id", specimen_id),
+            ("content", content),
+            ("created_at", created_at),
+            ("lysis_duration_minutes", lysis_duration_minutes),
+            ("target_cell_recovery", target_cell_recovery),
+            ("additional_data", additional_data),
+        ]
+    }
+}
+
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
         UuidOperator,
+        id::NoId,
         specimen::SpecimenPredicate,
         suspension::{
-            NewSuspension, SuspensionContent, SuspensionQuery,
+            NewSuspension, NewSuspensionRecord, SuspensionContent, SuspensionQuery,
             measurement::{NewSuspensionMeasurement, SuspensionMeasurementData, Viability},
         },
     };
@@ -131,13 +143,16 @@ pub mod test {
 
     pub fn new_suspension(specimen_id: Uuid) -> NewSuspension {
         NewSuspension {
-            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-            specimen_id,
-            content: SuspensionContent::Cells,
-            created_at: Some(Timestamp::now()),
-            lysis_duration_minutes: None,
-            target_cell_recovery: None,
-            additional_data: None,
+            record: NewSuspensionRecord {
+                id: NoId {},
+                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                specimen_id,
+                content: SuspensionContent::Cells,
+                created_at: Some(Timestamp::now()),
+                lysis_duration_minutes: None,
+                target_cell_recovery: None,
+                additional_data: None,
+            },
             measurements: vec![NewSuspensionMeasurement {
                 measured_by: Uuid::nil(),
                 measured_at: Timestamp::now(),
@@ -158,17 +173,17 @@ pub mod test {
         let tx = client.begin().await.unwrap();
 
         let project = insert_project(&tx, &new_project()).await.unwrap();
-        let specimen = insert_specimen(&tx, new_specimen(project.record().id))
+        let specimen = insert_specimen(&tx, new_specimen(*project.record().id))
             .await
             .unwrap();
 
-        let new = new_suspension(specimen.record().id);
+        let new = new_suspension(*specimen.record().id);
         let inserted = insert_suspension(&tx, new).await.unwrap();
 
         let suspensions_from_query = select_suspensions(
             &tx,
             &SuspensionQuery::from_filter(
-                SpecimenPredicate::Id(UuidOperator::Eq(specimen.record().id)).into(),
+                SpecimenPredicate::Id(UuidOperator::Eq(*specimen.record().id)).into(),
                 false,
             ),
         )

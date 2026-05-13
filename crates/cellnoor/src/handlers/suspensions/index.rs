@@ -32,14 +32,14 @@ pub async fn select_suspensions(
 
     let suspensions = if query.detailed {
         let sql = format!("select suspension_detailed from suspension_detailed {clause}");
-        let stream = tx.query_into_stream(&sql, params).await?;
+        let stream = tx.query_stream_into(&sql, params).await?;
         stream.map(Suspension::from_detailed_record).collect().await
     } else {
         // We query through `suspension_to_specimen` rather than `suspension` because
         // the predicate can filter on the parent specimen's fields, which need
         // a `(specimen)` row in scope.
         let sql = format!("select suspension from suspension_to_specimen {clause}");
-        let stream = tx.query_into_stream(&sql, params).await?;
+        let stream = tx.query_stream_into(&sql, params).await?;
         stream.map(Suspension::from_record).collect().await
     };
 

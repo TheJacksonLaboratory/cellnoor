@@ -1,8 +1,8 @@
 use macro_attributes::base_model;
 
 use crate::specimen::{
-    Fixative, NewSpecimenCommonFields, NewSpecimenVariableFields, SpecimenType,
-    ThermalPreservationMethod, creation::SpecimenInsertion,
+    Fixative, SpecimenType, ThermalPreservationMethod,
+    creation::{NewSpecimenCommonFields, SpecimenInsertion},
 };
 
 #[base_model]
@@ -63,17 +63,16 @@ impl NewTissue {
 
     #[must_use]
     pub fn split_for_insertion(self) -> SpecimenInsertion {
+        let type_ = SpecimenType::Tissue;
         let fixative = self.fixative();
         let thermal_preservation_method = self.thermal_preservation_method();
 
-        (
-            self.into_common().split_for_insertion(),
-            NewSpecimenVariableFields {
-                type_: SpecimenType::Suspension,
-                embedded_in: None,
-                fixative,
-                thermal_preservation_method,
-            },
+        SpecimenInsertion::from_fields(
+            self.into_common(),
+            SpecimenType::Tissue,
+            None,
+            fixative,
+            thermal_preservation_method,
         )
     }
 }

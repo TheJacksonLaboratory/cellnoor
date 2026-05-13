@@ -32,7 +32,7 @@ pub async fn select_people(
     let query = format!("select person_public from person_public {sql}");
 
     Ok(tx
-        .query_into_stream(&query, params)
+        .query_stream_into(&query, params)
         .await
         .map(async |stream| stream.map(Person::from_record).collect().await)?
         .await)

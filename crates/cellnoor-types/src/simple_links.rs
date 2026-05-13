@@ -1,5 +1,6 @@
 use macro_attributes::base_model;
-use uuid::Uuid;
+
+use crate::id::Id;
 
 #[base_model]
 #[cfg_attr(feature = "schemars", schemars(inline))]
@@ -9,7 +10,7 @@ pub struct SimpleLinks {
 }
 
 impl SimpleLinks {
-    pub(crate) fn from_str_and_id(s: &str, id: Uuid) -> Self {
+    pub(crate) fn from_str_and_id(s: &str, id: Id) -> Self {
         Self {
             self_: format!("{s}/{id}"),
         }

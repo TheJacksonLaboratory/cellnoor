@@ -32,11 +32,11 @@ pub async fn select_projects(
 
     let projects = if query.detailed {
         let sql = format!("select project_detailed from project_detailed {clause}");
-        let stream = tx.query_into_stream(&sql, params).await?;
+        let stream = tx.query_stream_into(&sql, params).await?;
         stream.map(Project::from_detailed_record).collect().await
     } else {
         let sql = format!("select project from project {clause}");
-        let stream = tx.query_into_stream(&sql, params).await?;
+        let stream = tx.query_stream_into(&sql, params).await?;
         stream.map(Project::from_record).collect().await
     };
 

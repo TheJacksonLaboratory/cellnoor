@@ -1,4 +1,4 @@
-use cellnoor_types::query::ComplexQuery;
+use cellnoor_types::{institution::NewInstitution, query::ComplexQuery};
 use postgres_types::ToSql;
 use uuid::Uuid;
 
@@ -81,6 +81,12 @@ pub async fn insert_many_to_many(
 type FieldValuePair<'a> = (&'static str, &'a (dyn ToSql + Sync));
 
 pub type FieldValuePairs<'a, const N: usize> = [FieldValuePair<'a>; N];
+
+pub trait AsFieldValuePairs<const N: usize> {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, N>;
+}
+
+pub async fn insert_or_update() {}
 
 pub trait ToFieldListPlaceholdersParams<const N: usize> {
     fn to_field_list_and_placeholders_and_params(

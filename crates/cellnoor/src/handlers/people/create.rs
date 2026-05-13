@@ -1,7 +1,7 @@
 use std::sync::LazyLock;
 
 use axum::{Json, extract::State};
-use cellnoor_types::person::{NewPerson, Person, PersonRecord, ResourcePermission};
+use cellnoor_types::person::{NewPerson, NewPersonRecord, Person, ResourcePermission};
 use nonempty::NonemptyString;
 use regex::Regex;
 use uuid::Uuid;
@@ -37,7 +37,7 @@ pub async fn insert_person(
     tx: &db::Transaction<'_>,
     NewPerson {
         record:
-            PersonRecord {
+            NewPersonRecord {
                 id: _,
                 name,
                 email,
@@ -202,7 +202,9 @@ pub mod test {
     use cellnoor_types::{
         id::NoId,
         institution::InstitutionQuery,
-        person::{Action, NewPerson, Person, PersonRecord, ResourcePermission},
+        person::{
+            Action, NewPerson, NewPersonRecord, Person, ResourcePermission, SavedPersonRecord,
+        },
         project::ProjectQuery,
     };
     use pretty_assertions::assert_eq;
@@ -227,7 +229,7 @@ pub mod test {
 
     pub fn new_person() -> NewPerson {
         NewPerson {
-            record: PersonRecord {
+            record: NewPersonRecord {
                 id: NoId {},
                 name: "hamood".to_nonempty_string(),
                 institution_id: Uuid::nil(),
@@ -248,7 +250,7 @@ pub mod test {
         // Create a new person/db-user
         let new_record = new_person();
         let Person {
-            record: PersonRecord { id: user_id, .. },
+            record: SavedPersonRecord { id: user_id, .. },
             ..
         } = insert_person(&tx, &new_record).await.unwrap();
 

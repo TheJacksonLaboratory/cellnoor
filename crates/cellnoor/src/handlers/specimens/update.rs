@@ -3,7 +3,8 @@ use axum::{
     extract::{Path, State},
 };
 use cellnoor_types::specimen::{
-    NewSpecimen, NewSpecimenCommonFields, NewSpecimenVariableFields, Specimen,
+    Specimen,
+    creation::{NewSpecimen, NewSpecimenRecord},
 };
 use uuid::Uuid;
 
@@ -11,7 +12,7 @@ use crate::{
     auth::AuthUser,
     db::{
         self,
-        util::{FieldValuePairs, ToUpdateClause},
+        util::{AsFieldValuePairs, FieldValuePairs, ToUpdateClause},
     },
     error::{Error, ErrorInner},
     handlers::{
@@ -44,9 +45,9 @@ pub async fn update_specimen_by_id(
     id: Uuid,
     record: NewSpecimen,
 ) -> Result<Specimen, ErrorInner> {
-    let ((common_fields, measurements), variable_fields) = record.split_for_insertion();
+    let (record, measurements) = record.split_for_insertion();
 
-    update_specimen_record(tx, id, &(common_fields, variable_fields)).await?;
+    update_specimen_record(tx, id, &record).await?;
 
     futures::future::try_join_all(
         measurements
@@ -61,46 +62,9 @@ pub async fn update_specimen_by_id(
 async fn update_specimen_record(
     tx: &db::Transaction<'_>,
     id: Uuid,
-    (
-        NewSpecimenCommonFields {
-            readable_id,
-            name,
-            submitted_by,
-            received_at,
-            project_id,
-            species,
-            host_species,
-            returned_by,
-            returned_at,
-            tissue,
-            additional_data,
-            measurements: _,
-        },
-        NewSpecimenVariableFields {
-            type_,
-            embedded_in,
-            fixative,
-            thermal_preservation_method,
-        },
-    ): &(NewSpecimenCommonFields, NewSpecimenVariableFields),
+    record: &NewSpecimenRecord,
 ) -> Result<(), ErrorInner> {
-    let fields: FieldValuePairs<_> = [
-        ("readable_id", readable_id),
-        ("name", name),
-        ("submitted_by", submitted_by),
-        ("received_at", received_at),
-        ("project_id", project_id),
-        ("species", species),
-        ("host_species", host_species),
-        ("returned_by", returned_by),
-        ("returned_at", returned_at),
-        ("tissue", tissue),
-        ("additional_data", additional_data),
-        ("type", type_),
-        ("embedded_in", embedded_in),
-        ("fixative", fixative),
-        ("thermal_preservation_method", thermal_preservation_method),
-    ];
+    let fields = record.as_field_value_pairs();
 
     let (update_clause, params) = fields.to_update_clause(&id);
 

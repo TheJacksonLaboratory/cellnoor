@@ -9,7 +9,7 @@ use crate::{
     auth::AuthUser,
     db::{
         self,
-        util::{FieldValuePairs, ToUpdateClause},
+        util::{AsFieldValuePairs, FieldValuePairs, ToUpdateClause},
     },
     error::{Error, ErrorInner},
     handlers::{institutions::show::select_institution_by_id, path::IdParam},
@@ -37,17 +37,9 @@ pub async fn update_institution(
 pub async fn update_institution_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-    NewInstitution {
-        id: _,
-        name,
-        microsoft_entra_tenant_id,
-    }: &NewInstitution,
+    updated_record: &NewInstitution,
 ) -> Result<Institution, ErrorInner> {
-    let fields: FieldValuePairs<_> = [
-        ("name", name),
-        ("microsoft_entra_tenant_id", microsoft_entra_tenant_id),
-    ];
-
+    let fields = updated_record.as_field_value_pairs();
     let (update_clause, params) = fields.to_update_clause(&id);
 
     let n = tx
@@ -65,7 +57,7 @@ pub async fn update_institution_by_id(
 mod test {
     use cellnoor_types::{
         id::NoId,
-        institution::{NewInstitution, SavedInstitution},
+        institution::{NewInstitution, SavedInstitutionRecord},
     };
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
@@ -96,7 +88,7 @@ mod test {
 
         assert_eq!(
             updated_institution.record,
-            SavedInstitution {
+            SavedInstitutionRecord {
                 id: Uuid::nil().into(),
                 name,
                 microsoft_entra_tenant_id: Uuid::max()

@@ -1,11 +1,11 @@
 use axum::{Json, extract::State};
-use cellnoor_types::project::{NewProject, Project};
+use cellnoor_types::project::{NewProject, NewProjectRecord, Project};
 
 use crate::{
     auth::AuthUser,
     db::{
         self,
-        util::{FieldValuePairs, ToFieldListPlaceholdersParams},
+        util::{AsFieldValuePairs, FieldValuePairs, ToFieldListPlaceholdersParams},
     },
     error::{Error, ErrorInner},
     handlers::projects::{access::add_person::insert_project_accesses, show::select_project_by_id},
@@ -30,18 +30,9 @@ pub async fn create_project(
 
 pub async fn insert_project(
     tx: &db::Transaction<'_>,
-    NewProject {
-        name,
-        started_at,
-        ended_at,
-        people,
-    }: &NewProject,
+    NewProject { record, people }: &NewProject,
 ) -> Result<Project, ErrorInner> {
-    let fields: FieldValuePairs<_> = [
-        ("name", name),
-        ("started_at", started_at),
-        ("ended_at", ended_at),
-    ];
+    let fields = record.as_field_value_pairs();
     let (field_list, placeholders, params) = fields.to_field_list_and_placeholders_and_params();
 
     let id = tx
@@ -56,11 +47,29 @@ pub async fn insert_project(
     select_project_by_id(tx, id).await
 }
 
+impl AsFieldValuePairs<3> for NewProjectRecord {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, 3> {
+        let Self {
+            id: _,
+            name,
+            started_at,
+            ended_at,
+        } = self;
+
+        [
+            ("name", name),
+            ("started_at", started_at),
+            ("ended_at", ended_at),
+        ]
+    }
+}
+
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
         SimpleStringOperator,
-        project::{NewProject, ProjectPredicate, ProjectQuery},
+        id::NoId,
+        project::{NewProject, NewProjectRecord, ProjectPredicate, ProjectQuery},
     };
     use jiff::Timestamp;
     use pretty_assertions::assert_eq;
@@ -78,9 +87,12 @@ pub mod test {
 
     pub fn new_project() -> NewProject {
         NewProject {
-            name: Uuid::new_v4().to_string().to_nonempty_string(),
-            started_at: Timestamp::now(),
-            ended_at: Timestamp::now(),
+            record: NewProjectRecord {
+                id: NoId {},
+                name: Uuid::new_v4().to_string().to_nonempty_string(),
+                started_at: Timestamp::now(),
+                ended_at: Timestamp::now(),
+            },
             people: vec![],
         }
     }
@@ -101,25 +113,25 @@ pub mod test {
         let inserted = insert_project(&tx, new).await.unwrap();
         let id = inserted.record().id;
 
-        id
+        *id
     }
 
     async fn select(tx: &db::Transaction<'_>, new: &NewProject, id: Uuid) {
         let query = ProjectQuery::from_filter(
-            ProjectPredicate::Name(SimpleStringOperator::Eq(new.name.clone().into()).into()),
+            ProjectPredicate::Name(SimpleStringOperator::Eq(new.record.name.clone().into()).into()),
             false,
         );
         let selected = select_projects(&tx, &query).await.unwrap();
 
-        assert_eq!(selected[0].record().id, id);
+        assert_eq!(*selected[0].record().id, id);
     }
 
     async fn update(tx: &db::Transaction<'_>, id: Uuid) {
         let new_data = new_project();
         let updated = update_project_by_id(&tx, id, &new_data).await.unwrap();
 
-        assert_eq!(updated.record().id, id);
-        assert_eq!(updated.record().name, new_data.name);
+        assert_eq!(*updated.record().id, id);
+        assert_eq!(updated.record().name, new_data.record.name);
     }
 
     async fn delete(tx: &db::Transaction<'_>, id: Uuid) {

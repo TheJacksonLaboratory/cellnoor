@@ -1,6 +1,7 @@
 use axum::{Json, extract::State};
 use cellnoor_types::specimen::{
-    NewSpecimen, NewSpecimenCommonFields, NewSpecimenVariableFields, Specimen,
+    Specimen,
+    creation::{NewSpecimen, NewSpecimenRecord},
 };
 use uuid::Uuid;
 
@@ -8,7 +9,7 @@ use crate::{
     auth::AuthUser,
     db::{
         self,
-        util::{FieldValuePairs, ToFieldListPlaceholdersParams},
+        util::{AsFieldValuePairs, FieldValuePairs, ToFieldListPlaceholdersParams},
     },
     error::{Error, ErrorInner},
     handlers::specimens::{
@@ -37,9 +38,9 @@ pub async fn insert_specimen(
     tx: &db::Transaction<'_>,
     record: NewSpecimen,
 ) -> Result<Specimen, ErrorInner> {
-    let ((common_fields, measurements), variable_fields) = record.split_for_insertion();
+    let (record, measurements) = record.split_for_insertion();
 
-    let id = insert_specimen_record(tx, &(common_fields, variable_fields)).await?;
+    let id = insert_specimen_record(tx, &record).await?;
 
     futures::future::try_join_all(
         measurements
@@ -53,46 +54,9 @@ pub async fn insert_specimen(
 
 async fn insert_specimen_record(
     tx: &db::Transaction<'_>,
-    (
-        NewSpecimenCommonFields {
-            readable_id,
-            name,
-            submitted_by,
-            received_at,
-            project_id,
-            species,
-            host_species,
-            returned_by,
-            returned_at,
-            tissue,
-            additional_data,
-            measurements: _,
-        },
-        NewSpecimenVariableFields {
-            type_,
-            embedded_in,
-            fixative,
-            thermal_preservation_method,
-        },
-    ): &(NewSpecimenCommonFields, NewSpecimenVariableFields),
+    new_record: &NewSpecimenRecord,
 ) -> Result<Uuid, ErrorInner> {
-    let fields: FieldValuePairs<_> = [
-        ("readable_id", readable_id),
-        ("name", name),
-        ("submitted_by", submitted_by),
-        ("received_at", received_at),
-        ("project_id", project_id),
-        ("species", species),
-        ("host_species", host_species),
-        ("returned_by", returned_by),
-        ("returned_at", returned_at),
-        ("tissue", tissue),
-        ("additional_data", additional_data),
-        ("type", type_),
-        ("embedded_in", embedded_in),
-        ("fixative", fixative),
-        ("thermal_preservation_method", thermal_preservation_method),
-    ];
+    let fields = new_record.as_field_value_pairs();
 
     let (field_list, placeholders, params) = fields.to_field_list_and_placeholders_and_params();
 
@@ -106,13 +70,54 @@ async fn insert_specimen_record(
     Ok(id)
 }
 
+impl AsFieldValuePairs<15> for NewSpecimenRecord {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, 15> {
+        let Self {
+            id: _,
+            readable_id,
+            name,
+            submitted_by,
+            received_at,
+            project_id,
+            species,
+            host_species,
+            returned_by,
+            returned_at,
+            tissue,
+            additional_data,
+            type_,
+            embedded_in,
+            fixative,
+            thermal_preservation_method,
+        } = self;
+
+        [
+            ("readable_id", readable_id),
+            ("name", name),
+            ("submitted_by", submitted_by),
+            ("received_at", received_at),
+            ("project_id", project_id),
+            ("species", species),
+            ("host_species", host_species),
+            ("returned_by", returned_by),
+            ("returned_at", returned_at),
+            ("tissue", tissue),
+            ("additional_data", additional_data),
+            ("type", type_),
+            ("embedded_in", embedded_in),
+            ("fixative", fixative),
+            ("thermal_preservation_method", thermal_preservation_method),
+        ]
+    }
+}
+
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
         UuidOperator,
         specimen::{
-            NewBlock, NewSpecimen, NewSpecimenCommonFields, Species, SpecimenPredicate,
-            SpecimenQuery,
+            Species, SpecimenPredicate, SpecimenQuery,
+            creation::{NewSpecimen, NewSpecimenCommonFields, block::NewBlock},
             measurement::{NewSpecimenMeasurement, SpecimenMeasurementData},
         },
     };
@@ -165,7 +170,7 @@ pub mod test {
 
         let project = insert_project(&tx, &new_project()).await.unwrap();
 
-        let new = new_specimen(project.record().id);
+        let new = new_specimen(*project.record().id);
         let inserted = insert_specimen(&tx, new).await.unwrap();
 
         // Apply a filter to make sure it works. Note that we fetch the compact
@@ -174,7 +179,7 @@ pub mod test {
         let specimens_from_query = select_specimens(
             &tx,
             &SpecimenQuery::from_filter(
-                SpecimenPredicate::Id(UuidOperator::Eq(inserted.record().id)),
+                SpecimenPredicate::Id(UuidOperator::Eq(*inserted.record().id)),
                 false,
             ),
         )
@@ -191,7 +196,7 @@ pub mod test {
 
         let project = insert_project(&tx, &new_project()).await.unwrap();
 
-        let mut new = new_specimen(project.record().id);
+        let mut new = new_specimen(*project.record().id);
         match &mut new {
             NewSpecimen::Block(NewBlock::CarboxymethylCellulose { inner, .. }) => {
                 inner.received_at = Timestamp::now() - SignedDuration::from_hours(48);

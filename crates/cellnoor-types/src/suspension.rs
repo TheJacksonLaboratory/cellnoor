@@ -8,31 +8,32 @@ use serde_json::Value;
 use uuid::Uuid;
 
 use crate::{
+    id::{Id, NoId},
     simple_links::SimpleLinks,
-    specimen::{Specimen, SpecimenRecord},
-    suspension::measurement::SuspensionMeasurement,
+    specimen::{SavedSpecimenRecord, Specimen},
+    suspension::{
+        measurement::{NewSuspensionMeasurement, SuspensionMeasurement},
+        record::SuspensionRecord,
+    },
 };
 
 pub mod measurement;
 mod query;
 
-#[unit_enum]
-pub enum SuspensionContent {
-    Cells,
-    Nuclei,
-}
-
-mod new_suspension {
+mod record {
     use jiff::Timestamp;
-    use macro_attributes::base_model;
+    use macro_attributes::select;
     use nonempty::NonemptyString;
     use serde_json::Value;
     use uuid::Uuid;
 
-    use crate::suspension::{SuspensionContent, measurement::NewSuspensionMeasurement};
+    use crate::suspension::SuspensionContent;
 
-    #[base_model]
-    pub struct NewSuspension<P> {
+    #[select]
+    #[cfg_attr(feature = "postgres-types", postgres(name = "suspension"))]
+    pub struct SuspensionRecord<T> {
+        #[cfg_attr(feature = "serde", serde(flatten))]
+        pub id: T,
         pub readable_id: NonemptyString,
         pub specimen_id: Uuid,
         pub content: SuspensionContent,
@@ -40,34 +41,43 @@ mod new_suspension {
         pub lysis_duration_minutes: Option<f32>,
         pub target_cell_recovery: Option<i64>,
         pub additional_data: Option<Value>,
-        #[cfg_attr(feature = "serde", serde(default))]
-        pub measurements: Vec<NewSuspensionMeasurement>,
-        pub preparers: P,
     }
 }
 
-pub type NewSuspension = new_suspension::NewSuspension<NonemptyVec<Uuid>>;
+pub type NewSuspensionRecord = SuspensionRecord<NoId>;
 
-pub type SuspensionUpdate = new_suspension::NewSuspension<Option<NonemptyVec<Uuid>>>;
+pub type SavedSuspensionRecord = SuspensionRecord<Id>;
 
-#[select]
-#[cfg_attr(feature = "postgres-types", postgres(name = "suspension"))]
-pub struct SuspensionRecord {
-    pub id: Uuid,
-    pub readable_id: NonemptyString,
-    pub specimen_id: Uuid,
-    pub content: SuspensionContent,
-    pub created_at: Option<Timestamp>,
-    pub lysis_duration_minutes: Option<f32>,
-    pub target_cell_recovery: Option<i64>,
-    pub additional_data: Option<Value>,
+#[unit_enum]
+pub enum SuspensionContent {
+    Cells,
+    Nuclei,
+}
+
+#[base_model]
+pub struct NewSuspension {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: NewSuspensionRecord,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub measurements: Vec<NewSuspensionMeasurement>,
+    pub preparers: NonemptyVec<Uuid>,
+}
+
+#[base_model]
+pub struct SuspensionUpdate {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: NewSuspensionRecord,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub measurements: Vec<NewSuspensionMeasurement>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub preparers: Vec<Uuid>,
 }
 
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "suspension_detailed"))]
-pub struct SuspensionRecordDetailed {
-    pub suspension: SuspensionRecord,
-    pub specimen: SpecimenRecord,
+pub struct SavedSuspensionRecordDetailed {
+    pub suspension: SavedSuspensionRecord,
+    pub specimen: SavedSpecimenRecord,
     pub measurements: Vec<SuspensionMeasurement>,
     pub preparers: Vec<Uuid>,
 }
@@ -76,14 +86,14 @@ pub struct SuspensionRecordDetailed {
 pub enum Suspension {
     Compact {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SuspensionRecord,
+        record: SavedSuspensionRecord,
         links: SimpleLinks,
     },
     // Rather than just wrapping the `SuspensionRecordDetailed`, we destructure its fields so that
     // we have a `Specimen` rather than a `SpecimenRecord`
     Detailed {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SuspensionRecord,
+        record: SavedSuspensionRecord,
         links: SimpleLinks,
         specimen: Specimen,
         measurements: Vec<SuspensionMeasurement>,
@@ -92,20 +102,20 @@ pub enum Suspension {
 }
 
 impl SimpleLinks {
-    fn for_suspension(id: Uuid) -> Self {
+    fn for_suspension(id: Id) -> Self {
         Self::from_str_and_id("/suspensions", id)
     }
 }
 
 impl Suspension {
-    pub fn record(&self) -> &SuspensionRecord {
+    pub fn record(&self) -> &SavedSuspensionRecord {
         match self {
             Self::Compact { record, .. } => record,
             Self::Detailed { record, .. } => record,
         }
     }
 
-    pub fn from_record(record: SuspensionRecord) -> Self {
+    pub fn from_record(record: SavedSuspensionRecord) -> Self {
         Self::Compact {
             links: SimpleLinks::for_suspension(record.id),
             record,
@@ -113,12 +123,12 @@ impl Suspension {
     }
 
     pub fn from_detailed_record(
-        SuspensionRecordDetailed {
+        SavedSuspensionRecordDetailed {
             suspension,
             specimen,
             measurements,
             preparers,
-        }: SuspensionRecordDetailed,
+        }: SavedSuspensionRecordDetailed,
     ) -> Self {
         Self::Detailed {
             links: SimpleLinks::for_suspension(suspension.id),

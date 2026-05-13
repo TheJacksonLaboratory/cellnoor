@@ -32,11 +32,11 @@ pub async fn select_specimens(
 
     let specimens = if query.detailed {
         let sql = format!("select specimen_detailed from specimen_detailed {clause}");
-        let stream = tx.query_into_stream(&sql, params).await?;
+        let stream = tx.query_stream_into(&sql, params).await?;
         stream.map(Specimen::from_detailed_record).collect().await
     } else {
         let sql = format!("select specimen from specimen {clause}");
-        let stream = tx.query_into_stream(&sql, params).await?;
+        let stream = tx.query_stream_into(&sql, params).await?;
         stream.map(Specimen::from_record).collect().await
     };
 

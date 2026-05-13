@@ -2,7 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::person::{NewPerson, Person, PersonRecord};
+use cellnoor_types::person::{NewPerson, NewPersonRecord, Person};
 use nonempty::NonemptyString;
 use uuid::Uuid;
 
@@ -47,7 +47,7 @@ pub async fn update_person_by_id(
     id: Uuid,
     NewPerson {
         record:
-            PersonRecord {
+            NewPersonRecord {
                 id: _,
                 name,
                 email,
@@ -93,7 +93,7 @@ pub async fn update_person_by_id(
 
 #[cfg(test)]
 mod test {
-    use cellnoor_types::person::{NewPerson, PersonRecord};
+    use cellnoor_types::person::{NewPerson, NewPersonRecord};
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
@@ -115,7 +115,7 @@ mod test {
         let person = insert_person(&tx, &to_insert).await.unwrap();
 
         let new_data = NewPerson {
-            record: PersonRecord {
+            record: NewPersonRecord {
                 name: "updated".to_nonempty_string(),
                 ..to_insert.record
             },
