@@ -6,7 +6,7 @@ use deadpool_postgres::{
     Transaction as InnerTransaction,
     tokio_postgres::{Error as TokioPgError, Row, RowStream, types::ToSql},
 };
-use futures::{Stream, StreamExt, TryStreamExt};
+use futures::{Stream, StreamExt};
 use postgres_types::FromSqlOwned;
 use uuid::Uuid;
 
