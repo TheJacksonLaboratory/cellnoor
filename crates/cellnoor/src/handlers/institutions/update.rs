@@ -9,7 +9,7 @@ use crate::{
     auth::AuthUser,
     db::{
         self,
-        util::{AsFieldValuePairs, FieldValuePairs, ToUpdateClause},
+        util::{AsFieldValuePairs, ToUpdateClause},
     },
     error::{Error, ErrorInner},
     handlers::{institutions::show::select_institution_by_id, path::IdParam},

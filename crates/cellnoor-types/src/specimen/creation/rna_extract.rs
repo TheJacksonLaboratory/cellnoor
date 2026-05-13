@@ -12,7 +12,7 @@ pub struct NewRnaExtract {
 }
 
 impl NewRnaExtract {
-    pub(crate) fn split_for_insertion(self) -> SpecimenInsertion {
+    pub(super) fn split_for_insertion(self) -> SpecimenInsertion {
         SpecimenInsertion::from_fields(
             self.inner,
             SpecimenType::RnaExtract,

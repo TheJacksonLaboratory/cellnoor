@@ -12,7 +12,7 @@ use crate::{
     auth::AuthUser,
     db::{
         self,
-        util::{AsFieldValuePairs, FieldValuePairs, ToUpdateClause},
+        util::{AsFieldValuePairs, ToUpdateClause},
     },
     error::{Error, ErrorInner},
     handlers::{

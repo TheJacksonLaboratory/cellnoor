@@ -1,4 +1,4 @@
-use cellnoor_types::{institution::NewInstitution, query::ComplexQuery};
+use cellnoor_types::query::ComplexQuery;
 use postgres_types::ToSql;
 use uuid::Uuid;
 

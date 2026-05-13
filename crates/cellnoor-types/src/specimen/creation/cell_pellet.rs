@@ -26,7 +26,7 @@ pub struct NewCellPellet {
 }
 
 impl NewCellPellet {
-    pub(crate) fn split_for_insertion(self) -> SpecimenInsertion {
+    pub(super) fn split_for_insertion(self) -> SpecimenInsertion {
         let thermal_preservation_method = self.thermal_preservation_method.into();
 
         SpecimenInsertion::from_fields(

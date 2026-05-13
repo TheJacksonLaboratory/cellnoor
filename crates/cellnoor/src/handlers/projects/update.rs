@@ -2,14 +2,14 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::project::{NewProject, NewProjectRecord, Project};
+use cellnoor_types::project::{NewProject, Project};
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
     db::{
         self,
-        util::{AsFieldValuePairs, FieldValuePairs, ToUpdateClause},
+        util::{AsFieldValuePairs, ToUpdateClause},
     },
     error::{Error, ErrorInner},
     handlers::{

@@ -5,10 +5,7 @@ use crate::{
     id::Id,
     project::{Project, SavedProjectRecord},
     simple_links::SimpleLinks,
-    specimen::{
-        measurement::SpecimenMeasurement,
-        record::SpecimenRecord,
-    },
+    specimen::{measurement::SpecimenMeasurement, record::SpecimenRecord},
 };
 
 pub mod creation;
