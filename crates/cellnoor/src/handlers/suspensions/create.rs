@@ -117,36 +117,50 @@ impl AsFieldValuePairs<7> for NewSuspensionRecord {
 
 #[cfg(test)]
 pub mod test {
+    use std::convert::identity;
+
     use cellnoor_types::{
-        UuidOperator,
         id::NoId,
-        specimen::SpecimenPredicate,
+        specimen::SavedSpecimenRecord,
         suspension::{
-            NewSuspension, NewSuspensionRecord, SuspensionContent, SuspensionQuery,
+            NewSuspension, NewSuspensionRecord, Suspension, SuspensionContent,
             measurement::{NewSuspensionMeasurement, SuspensionMeasurementData, Viability},
         },
     };
     use jiff::Timestamp;
     use positive::PositiveBoundedF32;
     use postgres_types::Json;
-    use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
     use crate::{
+        db,
         handlers::{
-            projects::create::{insert_project, test::new_project},
-            specimens::create::{insert_specimen, test::new_specimen},
-            suspensions::{create::insert_suspension, index::select_suspensions},
+            people::create::test::insert_test_person_and_institution,
+            specimens::create::test::insert_test_specimen_and_project,
+            suspensions::create::insert_suspension,
         },
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
-    pub fn new_suspension(specimen_id: Uuid) -> NewSuspension {
-        NewSuspension {
+    pub async fn insert_test_suspension_and_specimen<F>(
+        tx: &db::Transaction<'_>,
+        modify: F,
+    ) -> Suspension
+    where
+        F: Fn(NewSuspension) -> NewSuspension,
+    {
+        let specimen = insert_test_specimen_and_project(tx, identity).await;
+        let SavedSpecimenRecord {
+            id: specimen_id,
+            submitted_by: person_id,
+            ..
+        } = specimen.record();
+
+        let mut new = NewSuspension {
             record: NewSuspensionRecord {
                 id: NoId {},
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                specimen_id,
+                specimen_id: **specimen_id,
                 content: SuspensionContent::Cells,
                 created_at: Some(Timestamp::now()),
                 lysis_duration_minutes: None,
@@ -154,7 +168,7 @@ pub mod test {
                 additional_data: None,
             },
             measurements: vec![NewSuspensionMeasurement {
-                measured_by: Uuid::nil(),
+                measured_by: *person_id,
                 measured_at: Timestamp::now(),
                 data: Json(SuspensionMeasurementData::Viability {
                     inner: Viability {
@@ -163,33 +177,19 @@ pub mod test {
                     post_hybridization: false,
                 }),
             }],
-            preparers: nonempty::NonemptyVec::new(vec![Uuid::nil()]).unwrap(),
-        }
+            preparers: nonempty::NonemptyVec::new(vec![*person_id]).unwrap(),
+        };
+
+        new = modify(new);
+
+        insert_suspension(tx, new).await.unwrap()
     }
 
     #[tokio::test(flavor = "multi_thread")]
-    async fn insert_and_select() {
+    async fn insert() {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let project = insert_project(&tx, &new_project()).await.unwrap();
-        let specimen = insert_specimen(&tx, new_specimen(*project.record().id))
-            .await
-            .unwrap();
-
-        let new = new_suspension(*specimen.record().id);
-        let inserted = insert_suspension(&tx, new).await.unwrap();
-
-        let suspensions_from_query = select_suspensions(
-            &tx,
-            &SuspensionQuery::from_filter(
-                SpecimenPredicate::Id(UuidOperator::Eq(*specimen.record().id)).into(),
-                false,
-            ),
-        )
-        .await
-        .unwrap();
-
-        assert_eq!(suspensions_from_query[0].record(), inserted.record());
+        insert_test_suspension_and_specimen(&tx, identity).await;
     }
 }

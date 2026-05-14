@@ -66,27 +66,26 @@ impl AsFieldValuePairs<3> for NewProjectRecord {
 
 #[cfg(test)]
 pub mod test {
+    use std::convert::identity;
+
     use cellnoor_types::{
-        SimpleStringOperator,
         id::NoId,
-        project::{NewProject, NewProjectRecord, ProjectPredicate, ProjectQuery},
+        project::{NewProject, NewProjectRecord, Project},
     };
     use jiff::Timestamp;
-    use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
     use crate::{
         db,
-        error::ErrorInner,
-        handlers::projects::{
-            create::insert_project, delete::delete_project_by_id, index::select_projects,
-            show::select_project_by_id, update::update_project_by_id,
-        },
+        handlers::projects::create::insert_project,
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
-    pub fn new_project() -> NewProject {
-        NewProject {
+    pub async fn insert_test_project<F>(tx: &db::Transaction<'_>, modify: F) -> Project
+    where
+        F: Fn(NewProject) -> NewProject,
+    {
+        let mut new = NewProject {
             record: NewProjectRecord {
                 id: NoId {},
                 name: Uuid::new_v4().to_string().to_nonempty_string(),
@@ -94,51 +93,18 @@ pub mod test {
                 ended_at: Timestamp::now(),
             },
             people: vec![],
-        }
+        };
+
+        new = modify(new);
+
+        insert_project(tx, &new).await.unwrap()
     }
 
     #[tokio::test(flavor = "multi_thread")]
-    async fn insert_select_update_delete() {
+    async fn insert() {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let new = new_project();
-        let id = insert(&tx, &new).await;
-        select(&tx, &new, id).await;
-        update(&tx, id).await;
-        delete(&tx, id).await;
-    }
-
-    async fn insert(tx: &db::Transaction<'_>, new: &NewProject) -> Uuid {
-        let inserted = insert_project(&tx, new).await.unwrap();
-        let id = inserted.record().id;
-
-        *id
-    }
-
-    async fn select(tx: &db::Transaction<'_>, new: &NewProject, id: Uuid) {
-        let query = ProjectQuery::from_filter(
-            ProjectPredicate::Name(SimpleStringOperator::Eq(new.record.name.clone().into()).into()),
-            false,
-        );
-        let selected = select_projects(&tx, &query).await.unwrap();
-
-        assert_eq!(*selected[0].record().id, id);
-    }
-
-    async fn update(tx: &db::Transaction<'_>, id: Uuid) {
-        let new_data = new_project();
-        let updated = update_project_by_id(&tx, id, &new_data).await.unwrap();
-
-        assert_eq!(*updated.record().id, id);
-        assert_eq!(updated.record().name, new_data.record.name);
-    }
-
-    async fn delete(tx: &db::Transaction<'_>, id: Uuid) {
-        delete_project_by_id(&tx, id).await.unwrap();
-
-        // Verify the project no longer exists
-        let error = select_project_by_id(&tx, id).await.unwrap_err();
-        assert_eq!(error, ErrorInner::ResourceNotFound);
+        insert_test_project(&tx, identity).await;
     }
 }

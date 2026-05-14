@@ -65,20 +65,33 @@ pub async fn insert_institution(
 
 #[cfg(test)]
 pub mod test {
-    use cellnoor_types::{id::NoId, institution::NewInstitution};
+    use std::convert::identity;
+
+    use cellnoor_types::{
+        id::NoId,
+        institution::{Institution, NewInstitution},
+    };
     use uuid::Uuid;
 
     use crate::{
+        db,
         handlers::institutions::create::insert_institution,
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
-    pub fn new_institution() -> NewInstitution {
-        NewInstitution {
+    pub async fn insert_test_institution<F>(tx: &db::Transaction<'_>, modify: F) -> Institution
+    where
+        F: Fn(NewInstitution) -> NewInstitution,
+    {
+        let mut new = NewInstitution {
             id: NoId {},
-            name: "institution".to_nonempty_string(),
+            name: Uuid::new_v4().to_string().to_nonempty_string(),
             microsoft_entra_tenant_id: Uuid::new_v4(),
-        }
+        };
+
+        new = modify(new);
+
+        insert_institution(tx, &new).await.unwrap()
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -86,6 +99,6 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        insert_institution(&tx, &new_institution()).await.unwrap();
+        insert_test_institution(&tx, identity).await;
     }
 }

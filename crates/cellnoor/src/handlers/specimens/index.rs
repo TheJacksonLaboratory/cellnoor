@@ -42,3 +42,41 @@ pub async fn select_specimens(
 
     Ok(specimens)
 }
+
+#[cfg(test)]
+mod test {
+    use std::convert::identity;
+
+    use cellnoor_types::{
+        UuidOperator,
+        specimen::{SpecimenPredicate, SpecimenQuery},
+    };
+    use pretty_assertions::assert_eq;
+
+    use crate::{
+        handlers::specimens::{
+            create::test::insert_test_specimen_and_project, index::select_specimens,
+        },
+        state::test_util::db_client_as_admin,
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn select_with_filter() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let inserted = insert_test_specimen_and_project(&tx, identity).await;
+
+        let specimens = select_specimens(
+            &tx,
+            &SpecimenQuery::from_filter(
+                SpecimenPredicate::Id(UuidOperator::Eq(*inserted.record().id)),
+                false,
+            ),
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(specimens[0].record(), inserted.record());
+    }
+}

@@ -54,7 +54,12 @@ pub async fn insert_suspension_pool(
             preparer_ids,
             suspensions
                 .into_iter()
-                .map(|TaggedSuspension { suspension_id, tag_id }| (suspension_id, Some(tag_id)))
+                .map(
+                    |TaggedSuspension {
+                         suspension_id,
+                         tag_id,
+                     }| (suspension_id, Some(tag_id)),
+                )
                 .collect::<Vec<_>>(),
         ),
         NewSuspensionPool::Genetic {
@@ -139,9 +144,12 @@ pub(super) async fn insert_suspension_poolings(
         if i > 0 {
             values_clause.push(',');
         }
+
         let suspension_param = params.len() + 1;
         let tag_param = params.len() + 2;
+
         values_clause.push_str(&format!("($1, ${suspension_param}, ${tag_param})"));
+
         params.push(suspension_id);
         params.push(tag_id);
     }

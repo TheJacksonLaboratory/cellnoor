@@ -1,3 +1,5 @@
+use std::slice::Iter;
+
 use macro_attributes::{base_model, unit_enum};
 pub use query::{PersonPredicate, PersonQuery, SimplePersonQuery};
 
@@ -57,14 +59,46 @@ pub enum ResourcePermission {
 pub type NewPersonRecord = PersonRecord<NoId>;
 
 #[base_model]
+#[derive(Default)]
+pub struct PermissionsToGrant(Vec<ResourcePermission>);
+
+impl PermissionsToGrant {
+    pub fn iter<'a>(&'a self) -> Iter<'a, ResourcePermission> {
+        self.0.iter()
+    }
+}
+
+impl From<Vec<ResourcePermission>> for PermissionsToGrant {
+    fn from(value: Vec<ResourcePermission>) -> Self {
+        Self(value)
+    }
+}
+
+#[base_model]
+#[derive(Default)]
+pub struct PermissionsToRevoke(Vec<ResourcePermission>);
+
+impl PermissionsToRevoke {
+    pub fn iter<'a>(&'a self) -> Iter<'a, ResourcePermission> {
+        self.0.iter()
+    }
+}
+
+impl From<Vec<ResourcePermission>> for PermissionsToRevoke {
+    fn from(value: Vec<ResourcePermission>) -> Self {
+        Self(value)
+    }
+}
+
+#[base_model]
 pub struct NewPerson {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: NewPersonRecord,
     pub is_staff: bool,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub grant_permissions: Vec<ResourcePermission>,
+    pub permissions_to_grant: PermissionsToGrant,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub revoke_permissions: Vec<ResourcePermission>,
+    pub permissions_to_revoke: PermissionsToRevoke,
 }
 
 #[base_model]

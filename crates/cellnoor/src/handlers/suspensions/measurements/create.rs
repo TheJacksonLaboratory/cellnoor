@@ -9,7 +9,7 @@ use crate::{
     auth::AuthUser,
     db::{
         self,
-        util::{FieldValuePairs, ToFieldListPlaceholdersParams},
+        util::{AsFieldValuePairs, FieldValuePairs, ToFieldListPlaceholdersParams},
     },
     error::{Error, ErrorInner},
     handlers::path::IdParam,
@@ -38,18 +38,10 @@ pub async fn create_suspension_measurement(
 pub async fn insert_suspension_measurement(
     tx: &db::Transaction<'_>,
     suspension_id: Uuid,
-    NewSuspensionMeasurement {
-        measured_by,
-        measured_at,
-        data,
-    }: &NewSuspensionMeasurement,
+    record: &NewSuspensionMeasurement,
 ) -> Result<(), ErrorInner> {
-    let fields: FieldValuePairs<_> = [
-        ("suspension_id", &suspension_id),
-        ("measured_by", measured_by),
-        ("measured_at", measured_at),
-        ("data", data),
-    ];
+    let pair = (suspension_id, record);
+    let fields = pair.as_field_value_pairs();
 
     let (field_list, placeholders, params) = fields.to_field_list_and_placeholders_and_params();
 
@@ -63,4 +55,24 @@ pub async fn insert_suspension_measurement(
     .await?;
 
     Ok(())
+}
+
+impl AsFieldValuePairs<4> for (Uuid, &NewSuspensionMeasurement) {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, 4> {
+        let (
+            suspension_id,
+            NewSuspensionMeasurement {
+                measured_by,
+                measured_at,
+                data,
+            },
+        ) = self;
+
+        [
+            ("suspension_id", suspension_id),
+            ("measured_by", measured_by),
+            ("measured_at", measured_at),
+            ("data", data),
+        ]
+    }
 }

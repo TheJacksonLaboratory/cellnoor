@@ -1,7 +1,9 @@
 use std::sync::LazyLock;
 
 use axum::{Json, extract::State};
-use cellnoor_types::person::{NewPerson, NewPersonRecord, Person, ResourcePermission};
+use cellnoor_types::person::{
+    NewPerson, NewPersonRecord, PermissionsToGrant, PermissionsToRevoke, Person, ResourcePermission,
+};
 use nonempty::NonemptyString;
 use regex::Regex;
 use uuid::Uuid;
@@ -10,7 +12,7 @@ use crate::{
     auth::AuthUser,
     db::{
         self,
-        util::{FieldValuePairs, ToFieldListPlaceholdersParams},
+        util::{AsFieldValuePairs, FieldValuePairs, ToFieldListPlaceholdersParams},
     },
     error::{Error, ErrorInner},
     handlers::people::show::select_person_by_id,
@@ -36,28 +38,15 @@ pub async fn create_person(
 pub async fn insert_person(
     tx: &db::Transaction<'_>,
     NewPerson {
-        record:
-            NewPersonRecord {
-                id: _,
-                name,
-                email,
-                institution_id,
-                orcid,
-            },
-
+        record,
         is_staff,
-        grant_permissions: permissions_to_grant,
-        revoke_permissions: permissions_to_revoke,
+        permissions_to_grant,
+        permissions_to_revoke,
     }: &NewPerson,
 ) -> Result<Person, ErrorInner> {
-    validate_email(email.as_ref().map(NonemptyString::as_ref))?;
+    validate_email(record.email.as_ref().map(NonemptyString::as_ref))?;
 
-    let fields: FieldValuePairs<_> = [
-        ("name", name),
-        ("institution_id", institution_id),
-        ("email", email),
-        ("orcid", orcid),
-    ];
+    let fields = record.as_field_value_pairs();
     let (field_list, placeholders, params) = fields.to_field_list_and_placeholders_and_params();
 
     // Simple queries can be written inline
@@ -68,24 +57,38 @@ pub async fn insert_person(
         )
         .await?;
 
-    let db_user_operations = async || {
-        // In the unlikely event that this route is called in a crazily-concurrent
-        // fashion, we acquire a transaction-level lock to prevent the error "tuple
-        // concurrently updated"
-
-        tx.acquire_user_permisssions_lock().await?;
-
-        create_db_user(tx, person_id, *is_staff).await?;
-        grant_permissions_to_db_user(tx, person_id, permissions_to_grant).await?;
-        revoke_permissions_from_db_user(tx, person_id, permissions_to_revoke).await?;
-
-        Ok(())
-    };
-
     // But they can be grouped and done concurrently with the select
-    let (_, person) = tokio::try_join!(db_user_operations(), select_person_by_id(tx, person_id))?;
+    let (_, person) = tokio::try_join!(
+        provision_db_user(
+            tx,
+            person_id,
+            *is_staff,
+            permissions_to_grant,
+            permissions_to_revoke
+        ),
+        select_person_by_id(tx, person_id)
+    )?;
 
     Ok(person)
+}
+
+impl AsFieldValuePairs<4> for NewPersonRecord {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, 4> {
+        let Self {
+            id: _,
+            name,
+            email,
+            institution_id,
+            orcid,
+        } = self;
+
+        [
+            ("name", name),
+            ("institution_id", institution_id),
+            ("email", email),
+            ("orcid", orcid),
+        ]
+    }
 }
 
 // https://html.spec.whatwg.org/multipage/forms.html#valid-e-mail-address
@@ -112,7 +115,23 @@ pub(super) fn validate_email(email: Option<&str>) -> Result<(), ErrorInner> {
     Ok(())
 }
 
-pub(super) async fn create_db_user(
+pub(super) async fn provision_db_user(
+    tx: &db::Transaction<'_>,
+    person_id: Uuid,
+    is_staff: bool,
+    permissions_to_grant: &PermissionsToGrant,
+    permissions_to_revoke: &PermissionsToRevoke,
+) -> Result<(), ErrorInner> {
+    tx.acquire_user_permisssions_lock().await?;
+
+    create_db_user(tx, person_id, is_staff).await?;
+    grant_permissions_to_db_user(tx, person_id, permissions_to_grant).await?;
+    revoke_permissions_from_db_user(tx, person_id, permissions_to_revoke).await?;
+
+    Ok(())
+}
+
+async fn create_db_user(
     tx: &db::Transaction<'_>,
     user_id: Uuid,
     is_staff: bool,
@@ -126,10 +145,10 @@ pub(super) async fn create_db_user(
     Ok(())
 }
 
-pub(super) async fn grant_permissions_to_db_user(
+async fn grant_permissions_to_db_user(
     tx: &db::Transaction<'_>,
     user_id: Uuid,
-    permissions: &[ResourcePermission],
+    permissions: &PermissionsToGrant,
 ) -> Result<(), ErrorInner> {
     let grant_stmts: Vec<_> = permissions
         .iter()
@@ -142,10 +161,10 @@ pub(super) async fn grant_permissions_to_db_user(
     Ok(())
 }
 
-pub(super) async fn revoke_permissions_from_db_user(
+async fn revoke_permissions_from_db_user(
     tx: &db::Transaction<'_>,
     user_id: Uuid,
-    permissions: &[ResourcePermission],
+    permissions: &PermissionsToRevoke,
 ) -> Result<(), ErrorInner> {
     let revoke_stmt: Vec<_> = permissions
         .iter()
@@ -199,27 +218,28 @@ fn construct_grant_or_revoke_statement(
 
 #[cfg(test)]
 pub mod test {
+    use std::convert::identity;
+
     use cellnoor_types::{
         id::NoId,
         institution::InstitutionQuery,
         person::{
             Action, NewPerson, NewPersonRecord, Person, ResourcePermission, SavedPersonRecord,
         },
-        project::ProjectQuery,
+        project::{NewProject, NewProjectRecord, ProjectQuery},
     };
+    use jiff::Timestamp;
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
     use crate::{
+        db,
         error::ErrorInner,
         handlers::{
-            institutions::{
-                create::{insert_institution, test::new_institution},
-                index::select_institutions,
-            },
+            institutions::{create::test::insert_test_institution, index::select_institutions},
             people::create::insert_person,
             projects::{
-                create::{insert_project, test::new_project},
+                create::{insert_project, test::insert_test_project},
                 index::select_projects,
                 show::select_project_by_id,
             },
@@ -227,19 +247,32 @@ pub mod test {
         state::test_util::{ToNonemptyString, db_client_as_admin, db_client_as_user},
     };
 
-    pub fn new_person() -> NewPerson {
-        NewPerson {
+    pub async fn insert_test_person_and_institution<F>(
+        tx: &db::Transaction<'_>,
+        modify: F,
+    ) -> Person
+    where
+        F: Fn(NewPerson) -> NewPerson,
+    {
+        let institution = insert_test_institution(tx, identity).await;
+
+        let mut new = NewPerson {
             record: NewPersonRecord {
                 id: NoId {},
                 name: "hamood".to_nonempty_string(),
-                institution_id: Uuid::nil(),
+                institution_id: *institution.record.id,
                 email: Some(format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string()),
                 orcid: None,
             },
             is_staff: false,
-            grant_permissions: vec![ResourcePermission::Institution(vec![Action::Create])],
-            revoke_permissions: vec![],
-        }
+            permissions_to_grant: vec![ResourcePermission::Institution(vec![Action::Create])]
+                .into(),
+            permissions_to_revoke: vec![].into(),
+        };
+
+        new = modify(new);
+
+        insert_person(tx, &new).await.unwrap()
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -248,19 +281,19 @@ pub mod test {
         let tx = client.begin().await.unwrap();
 
         // Create a new person/db-user
-        let new_record = new_person();
         let Person {
             record: SavedPersonRecord { id: user_id, .. },
             ..
-        } = insert_person(&tx, &new_record).await.unwrap();
+        } = insert_test_person_and_institution(&tx, identity).await;
 
-        let mut p = new_project();
-        p.people.push(*user_id);
-        let accessible_project = insert_project(&tx, &p).await.unwrap();
+        let accessible_project = insert_test_project(&tx, |new| NewProject {
+            people: vec![*user_id],
+            ..new
+        })
+        .await;
 
         // And insert one the new user cannot
-        let p = new_project();
-        let inaccessible_project = insert_project(&tx, &p).await.unwrap();
+        let inaccessible_project = insert_test_project(&tx, identity).await;
 
         // We have to commit this transaction so the change persists for the next part
         // of the test
@@ -274,11 +307,19 @@ pub mod test {
         select_institutions(&tx, &InstitutionQuery::default())
             .await
             .unwrap();
-        insert_institution(&tx, &new_institution()).await.unwrap();
+        insert_test_institution(&tx, identity).await;
 
         // They should not be able to insert a project
-        let p = new_project();
-        let error = insert_project(&tx, &p).await.unwrap_err();
+        let new = NewProject {
+            record: NewProjectRecord {
+                id: NoId {},
+                name: Uuid::new_v4().to_string().to_nonempty_string(),
+                started_at: Timestamp::now(),
+                ended_at: Timestamp::now(),
+            },
+            people: vec![],
+        };
+        let error = insert_project(&tx, &new).await.unwrap_err();
         assert_eq!(error, ErrorInner::PermissionDenied);
         // Commit the transaction because the error causes it to abort
         tx.commit().await.unwrap();
@@ -309,10 +350,20 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let mut new_record = new_person();
-        new_record.record.institution_id = Uuid::new_v4();
+        let new = NewPerson {
+            record: NewPersonRecord {
+                id: NoId {},
+                name: "hamood".to_nonempty_string(),
+                institution_id: Uuid::new_v4(),
+                email: Some(format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string()),
+                orcid: None,
+            },
+            is_staff: false,
+            permissions_to_grant: vec![].into(),
+            permissions_to_revoke: vec![].into(),
+        };
 
-        let error = insert_person(&tx, &new_record).await.unwrap_err();
+        let error = insert_person(&tx, &new).await.unwrap_err();
 
         assert_eq!(
             error,

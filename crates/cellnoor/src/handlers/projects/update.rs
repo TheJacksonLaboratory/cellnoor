@@ -55,3 +55,80 @@ pub async fn update_project_by_id(
 
     select_project_by_id(tx, id).await
 }
+
+#[cfg(test)]
+mod test {
+    use std::convert::identity;
+
+    use cellnoor_types::{
+        id::NoId,
+        project::{NewProject, NewProjectRecord, SavedProjectRecord},
+    };
+    use jiff::Timestamp;
+    use pretty_assertions::assert_eq;
+    use uuid::Uuid;
+
+    use crate::{
+        error::ErrorInner,
+        handlers::projects::{create::test::insert_test_project, update::update_project_by_id},
+        state::test_util::{ToNonemptyString, db_client_as_admin},
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn update() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let original_project = insert_test_project(&tx, identity).await;
+
+        let new_name = Uuid::new_v4().to_string().to_nonempty_string();
+        let new_started_at = Timestamp::now();
+        let new_ended_at = Timestamp::now();
+
+        let new_data = NewProject {
+            record: NewProjectRecord {
+                id: NoId {},
+                name: new_name.clone(),
+                started_at: new_started_at,
+                ended_at: new_ended_at,
+            },
+            people: vec![],
+        };
+
+        let updated = update_project_by_id(&tx, *original_project.record().id, &new_data)
+            .await
+            .unwrap();
+
+        assert_eq!(
+            updated.record(),
+            &SavedProjectRecord {
+                id: original_project.record().id,
+                name: new_name,
+                started_at: new_started_at,
+                ended_at: new_ended_at
+            }
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn update_missing() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let new_data = NewProject {
+            record: NewProjectRecord {
+                id: NoId {},
+                name: "missing".to_nonempty_string(),
+                started_at: Timestamp::now(),
+                ended_at: Timestamp::now(),
+            },
+            people: vec![],
+        };
+
+        let error = update_project_by_id(&tx, Uuid::new_v4(), &new_data)
+            .await
+            .unwrap_err();
+
+        assert_eq!(error, ErrorInner::ResourceNotFound);
+    }
+}

@@ -113,13 +113,12 @@ impl AsFieldValuePairs<15> for NewSpecimenRecord {
 
 #[cfg(test)]
 pub mod test {
-    use cellnoor_types::{
-        UuidOperator,
-        specimen::{
-            Species, SpecimenPredicate, SpecimenQuery,
-            creation::{NewSpecimen, NewSpecimenCommonFields, block::NewBlock},
-            measurement::{NewSpecimenMeasurement, SpecimenMeasurementData},
-        },
+    use std::convert::identity;
+
+    use cellnoor_types::specimen::{
+        Species, Specimen,
+        creation::{NewSpecimen, NewSpecimenCommonFields, block::NewBlock},
+        measurement::{NewSpecimenMeasurement, SpecimenMeasurementData},
     };
     use jiff::{SignedDuration, Timestamp};
     use positive::PositiveBoundedF32;
@@ -128,22 +127,35 @@ pub mod test {
     use uuid::Uuid;
 
     use crate::{
+        db,
         error::ErrorInner,
         handlers::{
-            projects::create::{insert_project, test::new_project},
-            specimens::{create::insert_specimen, index::select_specimens},
+            people::create::test::insert_test_person_and_institution,
+            projects::create::test::insert_test_project, specimens::create::insert_specimen,
         },
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
-    pub fn new_specimen(project_id: Uuid) -> NewSpecimen {
-        NewSpecimen::Block(NewBlock::CarboxymethylCellulose {
+    pub async fn insert_test_specimen_and_project<F>(
+        tx: &db::Transaction<'_>,
+        modify: F,
+    ) -> Specimen
+    where
+        F: Fn(NewSpecimen) -> NewSpecimen,
+    {
+        let person_id = *insert_test_person_and_institution(tx, identity)
+            .await
+            .record
+            .id;
+        let project = insert_test_project(tx, identity).await;
+
+        let mut new = NewSpecimen::Block(NewBlock::CarboxymethylCellulose {
             inner: NewSpecimenCommonFields {
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 name: "specimen".to_nonempty_string(),
-                submitted_by: Uuid::nil(),
+                submitted_by: person_id,
                 received_at: Timestamp::now(),
-                project_id,
+                project_id: *project.record().id,
                 species: Species::MusMusculus,
                 host_species: None,
                 returned_by: None,
@@ -151,7 +163,7 @@ pub mod test {
                 tissue: "tissue".to_nonempty_string(),
                 additional_data: None,
                 measurements: vec![NewSpecimenMeasurement {
-                    measured_by: Uuid::nil(),
+                    measured_by: person_id,
                     measured_at: Timestamp::now(),
                     data: Json(SpecimenMeasurementData::Rin {
                         instrument_name: None,
@@ -160,33 +172,19 @@ pub mod test {
                 }],
             },
             fixative: None,
-        })
+        });
+
+        new = modify(new);
+
+        insert_specimen(tx, new).await.unwrap()
     }
 
     #[tokio::test(flavor = "multi_thread")]
-    async fn insert_and_select() {
+    async fn insert() {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let project = insert_project(&tx, &new_project()).await.unwrap();
-
-        let new = new_specimen(*project.record().id);
-        let inserted = insert_specimen(&tx, new).await.unwrap();
-
-        // Apply a filter to make sure it works. Note that we fetch the compact
-        // representation because we already fetch the detailed one inside of
-        // `insert_project`
-        let specimens_from_query = select_specimens(
-            &tx,
-            &SpecimenQuery::from_filter(
-                SpecimenPredicate::Id(UuidOperator::Eq(*inserted.record().id)),
-                false,
-            ),
-        )
-        .await
-        .unwrap();
-
-        assert_eq!(specimens_from_query[0].record(), inserted.record());
+        insert_test_specimen_and_project(&tx, identity).await;
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -194,15 +192,36 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let project = insert_project(&tx, &new_project()).await.unwrap();
+        // Use the underlying insert directly (rather than the unwrapping helper) so
+        // we can inspect the error.
+        let project = insert_test_project(&tx, identity).await;
+        let person = insert_test_person_and_institution(&tx, identity).await;
+        let person_id = *person.record.id;
 
-        let mut new = new_specimen(*project.record().id);
-        match &mut new {
-            NewSpecimen::Block(NewBlock::CarboxymethylCellulose { inner, .. }) => {
-                inner.received_at = Timestamp::now() - SignedDuration::from_hours(48);
-            }
-            _ => unreachable!(),
-        }
+        let new = NewSpecimen::Block(NewBlock::CarboxymethylCellulose {
+            inner: NewSpecimenCommonFields {
+                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                name: "specimen".to_nonempty_string(),
+                submitted_by: person_id,
+                received_at: Timestamp::now() - SignedDuration::from_hours(48),
+                project_id: *project.record().id,
+                species: Species::MusMusculus,
+                host_species: None,
+                returned_by: None,
+                returned_at: None,
+                tissue: "tissue".to_nonempty_string(),
+                additional_data: None,
+                measurements: vec![NewSpecimenMeasurement {
+                    measured_by: person_id,
+                    measured_at: Timestamp::now(),
+                    data: Json(SpecimenMeasurementData::Rin {
+                        instrument_name: None,
+                        value: PositiveBoundedF32::new(5.0).unwrap(),
+                    }),
+                }],
+            },
+            fixative: None,
+        });
 
         let error = insert_specimen(&tx, new).await.unwrap_err();
 

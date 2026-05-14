@@ -40,48 +40,49 @@ pub async fn select_institutions(
 
 #[cfg(test)]
 mod test {
+    use std::convert::identity;
+
     use cellnoor_types::{
-        SimpleStringOperator, StringOperator,
+        SimpleStringOperator, UuidOperator,
         institution::{InstitutionPredicate, InstitutionQuery},
     };
-    use uuid::Uuid;
+    use pretty_assertions::assert_eq;
 
     use crate::{
-        handlers::institutions::index::select_institutions, state::test_util::db_client_as_admin,
+        handlers::institutions::{
+            create::test::insert_test_institution, index::select_institutions,
+        },
+        state::test_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]
-    async fn default_select() {
+    async fn select_with_filter() {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let institutions = select_institutions(&tx, &InstitutionQuery::default())
-            .await
-            .unwrap();
+        let inserted = insert_test_institution(&tx, identity).await;
 
-        assert_eq!(*institutions[0].record.id, Uuid::nil());
-    }
+        let by_id = select_institutions(
+            &tx,
+            &InstitutionQuery::from_filter(
+                InstitutionPredicate::Id(UuidOperator::Eq(*inserted.record.id)),
+                false,
+            ),
+        )
+        .await
+        .unwrap();
+        assert_eq!(by_id.len(), 1);
+        assert_eq!(by_id[0].record.id, inserted.record.id);
 
-    #[tokio::test(flavor = "multi_thread")]
-    async fn filtered_select() {
-        let mut client = db_client_as_admin().await;
-        let tx = client.begin().await.unwrap();
-
-        let query = InstitutionQuery::from_filter(
-            InstitutionPredicate::Name(StringOperator::Like("Jackson%".to_owned())),
-            false,
-        );
-
-        let institutions = select_institutions(&tx, &query).await.unwrap();
-
-        assert_eq!(institutions.len(), 1);
-        assert_eq!(*institutions[0].record.id, Uuid::nil());
-
-        let query = InstitutionQuery::from_filter(
-            InstitutionPredicate::Name(SimpleStringOperator::In(vec!["".to_owned()]).into()),
-            false,
-        );
-
-        assert_eq!(select_institutions(&tx, &query).await.unwrap().len(), 0);
+        let none = select_institutions(
+            &tx,
+            &InstitutionQuery::from_filter(
+                InstitutionPredicate::Name(SimpleStringOperator::In(vec!["".to_owned()]).into()),
+                false,
+            ),
+        )
+        .await
+        .unwrap();
+        assert_eq!(none.len(), 0);
     }
 }

@@ -40,26 +40,36 @@ pub async fn select_people(
 
 #[cfg(test)]
 mod test {
+    use std::convert::identity;
+
     use cellnoor_types::{
         UuidOperator,
         person::{PersonPredicate, PersonQuery},
     };
-    use uuid::Uuid;
+    use pretty_assertions::assert_eq;
 
-    use crate::{handlers::people::index::select_people, state::test_util::db_client_as_admin};
+    use crate::{
+        handlers::people::{create::test::insert_test_person_and_institution, index::select_people},
+        state::test_util::db_client_as_admin,
+    };
 
     #[tokio::test(flavor = "multi_thread")]
     async fn select_with_filter() {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
+        let inserted = insert_test_person_and_institution(&tx, identity).await;
+
         let records = select_people(
             &tx,
-            &PersonQuery::from_filter(PersonPredicate::Id(UuidOperator::Eq(Uuid::nil())), false),
+            &PersonQuery::from_filter(
+                PersonPredicate::Id(UuidOperator::Eq(*inserted.record.id)),
+                false,
+            ),
         )
         .await
         .unwrap();
 
-        assert_eq!(*records[0].record.id, Uuid::nil());
+        assert_eq!(*records[0].record.id, *inserted.record.id);
     }
 }

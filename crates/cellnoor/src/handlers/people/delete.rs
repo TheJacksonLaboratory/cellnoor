@@ -71,14 +71,15 @@ async fn drop_db_user(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInn
 
 #[cfg(test)]
 mod test {
+    use std::convert::identity;
+
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
     use crate::{
         error::ErrorInner,
         handlers::people::{
-            create::{insert_person, test::new_person},
-            delete::delete_person_by_id,
+            create::test::insert_test_person_and_institution, delete::delete_person_by_id,
         },
         state::test_util::db_client_as_admin,
     };
@@ -88,7 +89,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let person = insert_person(&tx, &new_person()).await.unwrap();
+        let person = insert_test_person_and_institution(&tx, identity).await;
         delete_person_by_id(&tx, *person.record.id).await.unwrap();
     }
 

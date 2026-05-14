@@ -10,16 +10,13 @@ use crate::{
     auth::AuthUser,
     db::{
         self,
-        util::{FieldValuePairs, ToUpdateClause},
+        util::{AsFieldValuePairs, FieldValuePairs, ToUpdateClause},
     },
     error::{Error, ErrorInner},
     handlers::{
         path::IdParam,
         people::{
-            create::{
-                create_db_user, grant_permissions_to_db_user, revoke_permissions_from_db_user,
-                validate_email,
-            },
+            create::{provision_db_user, validate_email},
             show::select_person_by_id,
         },
     },
@@ -46,27 +43,15 @@ pub async fn update_person_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     NewPerson {
-        record:
-            NewPersonRecord {
-                id: _,
-                name,
-                email,
-                institution_id,
-                orcid,
-            },
+        record,
         is_staff,
-        grant_permissions: permissions_to_grant,
-        revoke_permissions: permissions_to_revoke,
+        permissions_to_grant,
+        permissions_to_revoke,
     }: &NewPerson,
 ) -> Result<Person, ErrorInner> {
-    validate_email(email.as_ref().map(NonemptyString::as_ref))?;
+    validate_email(record.email.as_ref().map(NonemptyString::as_ref))?;
 
-    let fields: FieldValuePairs<_> = [
-        ("name", name),
-        ("institution_id", institution_id),
-        ("email", email),
-        ("orcid", orcid),
-    ];
+    let fields = record.as_field_value_pairs();
 
     let (update_clause, params) = fields.to_update_clause(&id);
 
@@ -78,30 +63,35 @@ pub async fn update_person_by_id(
         return Err(ErrorInner::ResourceNotFound);
     }
 
-    let user_operations = async || {
-        create_db_user(tx, id, *is_staff).await?;
-        grant_permissions_to_db_user(tx, id, permissions_to_grant).await?;
-        revoke_permissions_from_db_user(tx, id, permissions_to_revoke).await?;
-
-        Ok(())
-    };
-
-    let (_, person) = tokio::try_join!(user_operations(), select_person_by_id(tx, id))?;
+    let (_, person) = tokio::try_join!(
+        provision_db_user(
+            tx,
+            id,
+            *is_staff,
+            permissions_to_grant,
+            permissions_to_revoke
+        ),
+        select_person_by_id(tx, id)
+    )?;
 
     Ok(person)
 }
 
 #[cfg(test)]
 mod test {
-    use cellnoor_types::person::{NewPerson, NewPersonRecord};
+    use std::convert::identity;
+
+    use cellnoor_types::{
+        id::NoId,
+        person::{NewPerson, NewPersonRecord, SavedPersonRecord},
+    };
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
     use crate::{
         error::ErrorInner,
         handlers::people::{
-            create::{insert_person, test::new_person},
-            update::update_person_by_id,
+            create::test::insert_test_person_and_institution, update::update_person_by_id,
         },
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
@@ -111,23 +101,38 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let to_insert = new_person();
-        let person = insert_person(&tx, &to_insert).await.unwrap();
+        let original_person = insert_test_person_and_institution(&tx, identity).await;
+
+        let new_name = "updated".to_nonempty_string();
+        let new_email = Some(format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string());
 
         let new_data = NewPerson {
             record: NewPersonRecord {
-                name: "updated".to_nonempty_string(),
-                ..to_insert.record
+                id: NoId {},
+                name: new_name.clone(),
+                institution_id: original_person.record.institution_id,
+                email: new_email.clone(),
+                orcid: None,
             },
-            ..to_insert
+            is_staff: false,
+            permissions_to_grant: vec![].into(),
+            permissions_to_revoke: vec![].into(),
         };
 
-        let updated = update_person_by_id(&tx, *person.record.id, &new_data)
+        let updated = update_person_by_id(&tx, *original_person.record.id, &new_data)
             .await
             .unwrap();
 
-        assert_eq!(updated.record.id, person.record.id);
-        assert_eq!(updated.record.name, new_data.record.name);
+        assert_eq!(
+            updated.record,
+            SavedPersonRecord {
+                id: original_person.record.id,
+                name: new_name,
+                email: new_email,
+                institution_id: original_person.record.institution_id,
+                orcid: None
+            }
+        );
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -135,7 +140,24 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let error = update_person_by_id(&tx, Uuid::new_v4(), &new_person())
+        // We need an institution for the FK; the update should still fail with
+        // ResourceNotFound because the person id doesn't exist
+        let person = insert_test_person_and_institution(&tx, identity).await;
+
+        let new_data = NewPerson {
+            record: NewPersonRecord {
+                id: NoId {},
+                name: "missing".to_nonempty_string(),
+                institution_id: person.record.institution_id,
+                email: Some(format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string()),
+                orcid: None,
+            },
+            is_staff: false,
+            permissions_to_grant: vec![].into(),
+            permissions_to_revoke: vec![].into(),
+        };
+
+        let error = update_person_by_id(&tx, Uuid::new_v4(), &new_data)
             .await
             .unwrap_err();
 

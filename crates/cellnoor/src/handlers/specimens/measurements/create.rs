@@ -9,7 +9,7 @@ use crate::{
     auth::AuthUser,
     db::{
         self,
-        util::{FieldValuePairs, ToFieldListPlaceholdersParams},
+        util::{AsFieldValuePairs, FieldValuePairs, ToFieldListPlaceholdersParams},
     },
     error::{Error, ErrorInner},
     handlers::path::IdParam,
@@ -38,18 +38,10 @@ pub async fn create_specimen_measurement(
 pub async fn insert_specimen_measurement(
     tx: &db::Transaction<'_>,
     specimen_id: Uuid,
-    NewSpecimenMeasurement {
-        measured_by,
-        measured_at,
-        data,
-    }: &NewSpecimenMeasurement,
+    record: &NewSpecimenMeasurement,
 ) -> Result<(), ErrorInner> {
-    let fields: FieldValuePairs<_> = [
-        ("specimen_id", &specimen_id),
-        ("measured_by", measured_by),
-        ("measured_at", measured_at),
-        ("data", data),
-    ];
+    let pair = (specimen_id, record);
+    let fields = pair.as_field_value_pairs();
 
     let (field_list, placeholders, params) = fields.to_field_list_and_placeholders_and_params();
 
@@ -63,4 +55,24 @@ pub async fn insert_specimen_measurement(
     .await?;
 
     Ok(())
+}
+
+impl AsFieldValuePairs<4> for (Uuid, &NewSpecimenMeasurement) {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, 4> {
+        let (
+            specimen_id,
+            NewSpecimenMeasurement {
+                measured_by,
+                measured_at,
+                data,
+            },
+        ) = self;
+
+        [
+            ("specimen_id", specimen_id),
+            ("measured_by", measured_by),
+            ("measured_at", measured_at),
+            ("data", data),
+        ]
+    }
 }

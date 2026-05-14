@@ -55,6 +55,8 @@ pub async fn update_institution_by_id(
 
 #[cfg(test)]
 mod test {
+    use std::convert::identity;
+
     use cellnoor_types::{
         id::NoId,
         institution::{NewInstitution, SavedInstitutionRecord},
@@ -64,7 +66,9 @@ mod test {
 
     use crate::{
         error::ErrorInner,
-        handlers::institutions::update::update_institution_by_id,
+        handlers::institutions::{
+            create::test::insert_test_institution, update::update_institution_by_id,
+        },
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
@@ -73,25 +77,28 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let name = "Not The Jackson Laboratory".to_nonempty_string();
-        let updated_institution = update_institution_by_id(
+        let original_institution = insert_test_institution(&tx, identity).await;
+
+        let new_name = "Not The Jackson Laboratory".to_nonempty_string();
+        let new_tenant = Uuid::max();
+        let updated = update_institution_by_id(
             &tx,
-            Uuid::nil(),
+            *original_institution.record.id,
             &NewInstitution {
                 id: NoId {},
-                name: name.clone(),
-                microsoft_entra_tenant_id: Uuid::max(),
+                name: new_name.clone(),
+                microsoft_entra_tenant_id: new_tenant,
             },
         )
         .await
         .unwrap();
 
         assert_eq!(
-            updated_institution.record,
+            updated.record,
             SavedInstitutionRecord {
-                id: Uuid::nil().into(),
-                name,
-                microsoft_entra_tenant_id: Uuid::max()
+                id: original_institution.record.id,
+                name: new_name,
+                microsoft_entra_tenant_id: new_tenant
             }
         );
     }
@@ -106,7 +113,7 @@ mod test {
             Uuid::new_v4(),
             &NewInstitution {
                 id: NoId {},
-                name: "foo".to_nonempty_string(),
+                name: "updated".to_nonempty_string(),
                 microsoft_entra_tenant_id: Uuid::new_v4(),
             },
         )

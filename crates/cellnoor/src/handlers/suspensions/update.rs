@@ -87,3 +87,98 @@ async fn update_suspension_record(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod test {
+    use std::convert::identity;
+
+    use cellnoor_types::{
+        id::NoId,
+        suspension::{
+            NewSuspensionRecord, SavedSuspensionRecord, SuspensionContent, SuspensionUpdate,
+        },
+    };
+    use jiff::Timestamp;
+    use pretty_assertions::assert_eq;
+    use uuid::Uuid;
+
+    use crate::{
+        error::ErrorInner,
+        handlers::suspensions::{
+            create::test::insert_test_suspension_and_specimen, update::update_suspension_by_id,
+        },
+        state::test_util::{ToNonemptyString, db_client_as_admin},
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn update() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let original_suspension = insert_test_suspension_and_specimen(&tx, identity).await;
+        let original_record = original_suspension.record();
+
+        let new_readable_id = Uuid::new_v4().to_string().to_nonempty_string();
+        let new_created_at = Some(Timestamp::now());
+
+        let new_data = SuspensionUpdate {
+            record: NewSuspensionRecord {
+                id: NoId {},
+                readable_id: new_readable_id.clone(),
+                specimen_id: original_record.specimen_id,
+                content: SuspensionContent::Nuclei,
+                created_at: new_created_at,
+                lysis_duration_minutes: None,
+                target_cell_recovery: None,
+                additional_data: None,
+            },
+            measurements: vec![],
+            preparers: vec![],
+        };
+
+        let updated = update_suspension_by_id(&tx, *original_record.id, &new_data)
+            .await
+            .unwrap();
+
+        assert_eq!(
+            updated.record(),
+            &SavedSuspensionRecord {
+                id: original_record.id,
+                readable_id: new_readable_id,
+                specimen_id: original_record.specimen_id,
+                content: SuspensionContent::Nuclei,
+                created_at: new_created_at,
+                lysis_duration_minutes: None,
+                target_cell_recovery: None,
+                additional_data: None,
+            }
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn update_missing() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let new_data = SuspensionUpdate {
+            record: NewSuspensionRecord {
+                id: NoId {},
+                readable_id: "missing".to_nonempty_string(),
+                specimen_id: Uuid::new_v4(),
+                content: SuspensionContent::Cells,
+                created_at: Some(Timestamp::now()),
+                lysis_duration_minutes: None,
+                target_cell_recovery: None,
+                additional_data: None,
+            },
+            measurements: vec![],
+            preparers: vec![],
+        };
+
+        let error = update_suspension_by_id(&tx, Uuid::new_v4(), &new_data)
+            .await
+            .unwrap_err();
+
+        assert_eq!(error, ErrorInner::ResourceNotFound);
+    }
+}

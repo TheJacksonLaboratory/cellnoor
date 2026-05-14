@@ -42,3 +42,37 @@ pub async fn select_projects(
 
     Ok(projects)
 }
+
+#[cfg(test)]
+mod test {
+    use std::convert::identity;
+
+    use cellnoor_types::{
+        SimpleStringOperator,
+        project::{ProjectPredicate, ProjectQuery},
+    };
+    use pretty_assertions::assert_eq;
+
+    use crate::{
+        handlers::projects::{create::test::insert_test_project, index::select_projects},
+        state::test_util::db_client_as_admin,
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn select_with_filter() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let inserted = insert_test_project(&tx, identity).await;
+
+        let query = ProjectQuery::from_filter(
+            ProjectPredicate::Name(
+                SimpleStringOperator::Eq(inserted.record().name.clone().into()).into(),
+            ),
+            false,
+        );
+        let selected = select_projects(&tx, &query).await.unwrap();
+
+        assert_eq!(*selected[0].record().id, *inserted.record().id);
+    }
+}

@@ -45,3 +45,41 @@ pub async fn select_suspensions(
 
     Ok(suspensions)
 }
+
+#[cfg(test)]
+mod test {
+    use std::convert::identity;
+
+    use cellnoor_types::{
+        UuidOperator,
+        suspension::{SuspensionPredicateInner, SuspensionQuery},
+    };
+    use pretty_assertions::assert_eq;
+
+    use crate::{
+        handlers::suspensions::{
+            create::test::insert_test_suspension_and_specimen, index::select_suspensions,
+        },
+        state::test_util::db_client_as_admin,
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn select_with_filter() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let inserted = insert_test_suspension_and_specimen(&tx, identity).await;
+
+        let suspensions = select_suspensions(
+            &tx,
+            &SuspensionQuery::from_filter(
+                SuspensionPredicateInner::Id(UuidOperator::Eq(*inserted.record().id)).into(),
+                false,
+            ),
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(suspensions[0].record(), inserted.record());
+    }
+}
