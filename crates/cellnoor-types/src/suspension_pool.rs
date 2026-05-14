@@ -1,5 +1,9 @@
 use macro_attributes::{base_model, select};
 use nonempty::{NonemptyBoundedVec, NonemptyVec};
+pub use query::{
+    SimpleSuspensionPoolQuery, SuspensionPoolPredicate, SuspensionPoolPredicateInner,
+    SuspensionPoolQuery,
+};
 use uuid::Uuid;
 
 use crate::{
@@ -11,6 +15,7 @@ use crate::{
 };
 
 pub mod measurement;
+mod query;
 
 mod record {
     use jiff::Timestamp;
@@ -55,15 +60,29 @@ pub enum NewSuspensionPool {
     ExogenousTag {
         #[cfg_attr(feature = "serde", serde(flatten))]
         inner: NewSuspensionPoolRecord,
+        #[cfg_attr(feature = "serde", serde(default))]
+        measurements: Vec<measurement::NewSuspensionPoolMeasurement>,
         preparer_ids: NonemptyVec<Uuid>,
         suspensions: NonemptyBoundedVec<TaggedSuspension, MAX_TAGGED_SUSPENSIONS_IN_POOL>,
     },
     Genetic {
         #[cfg_attr(feature = "serde", serde(flatten))]
         inner: NewSuspensionPoolRecord,
+        #[cfg_attr(feature = "serde", serde(default))]
+        measurements: Vec<measurement::NewSuspensionPoolMeasurement>,
         preparer_ids: NonemptyVec<Uuid>,
         suspensions: NonemptyVec<Uuid>,
     },
+}
+
+#[base_model]
+pub struct SuspensionPoolUpdate {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: NewSuspensionPoolRecord,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub measurements: Vec<measurement::NewSuspensionPoolMeasurement>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub preparers: Vec<Uuid>,
 }
 
 #[base_model]
@@ -74,7 +93,7 @@ pub struct SuspensionPoolLinks {
 }
 
 impl SuspensionPoolLinks {
-    fn new(id: Id) -> Self {
+    pub fn from_id(id: Id) -> Self {
         Self {
             simple: SimpleLinks::from_str_and_id("/suspension-pools", id),
             suspensions: format!("/suspension-pools/{id}/suspensions"),
@@ -98,20 +117,14 @@ pub struct TaggedSpecimen {
 }
 
 impl TaggedSpecimen {
-    fn from_record(SavedTaggedSpecimenRecord { specimen, tag }: SavedTaggedSpecimenRecord) -> Self {
+    pub fn from_record(
+        SavedTaggedSpecimenRecord { specimen, tag }: SavedTaggedSpecimenRecord,
+    ) -> Self {
         Self {
             specimen: Specimen::from_record(specimen),
             tag,
         }
     }
-}
-
-#[base_model]
-pub struct SavedSuspensionPoolRecordDetailed {
-    pub suspension_pool: SavedSuspensionPoolRecord,
-    pub specimens: Vec<SavedTaggedSpecimenRecord>,
-    pub measurements: Vec<SuspensionPoolMeasurement>,
-    pub preparers: Vec<Uuid>,
 }
 
 #[base_model]
@@ -122,8 +135,6 @@ pub enum SuspensionPool {
         record: SavedSuspensionPoolRecord,
         links: SuspensionPoolLinks,
     },
-    // Rather than just wrapping the `SuspensionRecordDetailed`, we destructure its fields so that
-    // we have a `Specimen` rather than a `SpecimenRecord`
     Detailed {
         #[cfg_attr(feature = "serde", serde(flatten))]
         record: SavedSuspensionPoolRecord,
@@ -144,28 +155,8 @@ impl SuspensionPool {
 
     pub fn from_record(record: SavedSuspensionPoolRecord) -> Self {
         Self::Compact {
-            links: SuspensionPoolLinks::new(record.id),
+            links: SuspensionPoolLinks::from_id(record.id),
             record,
-        }
-    }
-
-    pub fn from_detailed_record(
-        SavedSuspensionPoolRecordDetailed {
-            suspension_pool,
-            specimens,
-            measurements,
-            preparers,
-        }: SavedSuspensionPoolRecordDetailed,
-    ) -> Self {
-        Self::Detailed {
-            links: SuspensionPoolLinks::new(suspension_pool.id),
-            record: suspension_pool,
-            specimens: specimens
-                .into_iter()
-                .map(TaggedSpecimen::from_record)
-                .collect(),
-            measurements,
-            preparers,
         }
     }
 }

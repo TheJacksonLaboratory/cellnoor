@@ -22,7 +22,7 @@ mod institutions;
 mod people;
 mod projects;
 mod specimens;
-// pub mod suspension_pools;
+mod suspension_pools;
 mod suspensions;
 // pub mod tenx_assays;
 
@@ -43,10 +43,10 @@ pub(super) fn router<'a>() -> Router<AppState> {
         .nest("/people", people::router())
         .nest("/projects", projects::router())
         .nest("/specimens", specimens::router())
-        .nest("/suspensions", suspensions::router());
+        .nest("/suspensions", suspensions::router())
+        .nest("/suspension-pools", suspension_pools::router());
     // .nest("/10x-assays", tenx_assays::router())
     // .nest("/multiplexing-tags", multiplexing_tags::router())
-    // .nest("/suspension-pools", suspension_pools::router())
     // .nest("/chromium-runs", chromium_runs::router())
     // .nest("/gem-pools", gem_pools::router())
     // .nest("/chip-loadings", chip_loadings::router())
