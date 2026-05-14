@@ -6,8 +6,10 @@ use crate::{
     id::{Id, NoId},
     simple_links::SimpleLinks,
     specimen::{SavedSpecimenRecord, Specimen},
-    suspension_pool::record::SuspensionPoolRecord,
+    suspension_pool::{measurement::SuspensionPoolMeasurement, record::SuspensionPoolRecord},
 };
+
+pub mod measurement;
 
 mod record {
     use jiff::Timestamp;
@@ -83,6 +85,7 @@ impl SuspensionPoolLinks {
 pub struct SavedSuspensionPoolRecordDetailed {
     pub suspension_pool: SavedSuspensionPoolRecord,
     pub specimens: Vec<SavedSpecimenRecord>,
+    pub measurements: Vec<SuspensionPoolMeasurement>,
     pub preparers: Vec<Uuid>,
 }
 
@@ -100,7 +103,41 @@ pub enum SuspensionPool {
         #[cfg_attr(feature = "serde", serde(flatten))]
         record: SavedSuspensionPoolRecord,
         links: SuspensionPoolLinks,
-        specimen: Specimen,
+        specimens: Vec<Specimen>,
+        measurements: Vec<SuspensionPoolMeasurement>,
         preparers: Vec<Uuid>,
     },
+}
+
+impl SuspensionPool {
+    pub fn record(&self) -> &SavedSuspensionPoolRecord {
+        match self {
+            Self::Compact { record, .. } => record,
+            Self::Detailed { record, .. } => record,
+        }
+    }
+
+    pub fn from_record(record: SavedSuspensionPoolRecord) -> Self {
+        Self::Compact {
+            links: SuspensionPoolLinks::new(record.id),
+            record,
+        }
+    }
+
+    pub fn from_detailed_record(
+        SavedSuspensionPoolRecordDetailed {
+            suspension_pool,
+            specimens,
+            measurements,
+            preparers,
+        }: SavedSuspensionPoolRecordDetailed,
+    ) -> Self {
+        Self::Detailed {
+            links: SuspensionPoolLinks::new(suspension_pool.id),
+            record: suspension_pool,
+            specimens: specimens.into_iter().map(Specimen::from_record).collect(),
+            measurements,
+            preparers,
+        }
+    }
 }
