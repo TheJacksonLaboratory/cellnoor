@@ -95,7 +95,8 @@ mod test {
     use cellnoor_types::{
         id::NoId,
         suspension::{
-            NewSuspensionRecord, SavedSuspensionRecord, SuspensionContent, SuspensionUpdate,
+            NewSuspensionRecord, SavedSuspensionRecord, Suspension, SuspensionContent,
+            SuspensionUpdate,
         },
     };
     use jiff::Timestamp;
@@ -115,44 +116,62 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let original_suspension = insert_test_suspension_and_specimen(&tx, identity).await;
-        let original_record = original_suspension.record();
+        let (
+            insert_input,
+            Suspension::Detailed {
+                record: SavedSuspensionRecord { id, .. },
+                ..
+            },
+        ) = insert_test_suspension_and_specimen(&tx, identity).await
+        else {
+            panic!("expected Suspension::Detailed");
+        };
 
-        let new_readable_id = Uuid::new_v4().to_string().to_nonempty_string();
-        let new_created_at = Some(Timestamp::now());
-
-        let new_data = SuspensionUpdate {
+        let mut pre_update = SuspensionUpdate {
             record: NewSuspensionRecord {
-                id: NoId {},
-                readable_id: new_readable_id.clone(),
-                specimen_id: original_record.specimen_id,
+                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 content: SuspensionContent::Nuclei,
-                created_at: new_created_at,
-                lysis_duration_minutes: None,
-                target_cell_recovery: None,
-                additional_data: None,
+                ..insert_input.record
             },
             measurements: vec![],
             preparers: vec![],
         };
+        pre_update.record.created_at = Some(Timestamp::now());
 
-        let updated = update_suspension_by_id(&tx, *original_record.id, &new_data)
+        let Suspension::Detailed {
+            record: post_update_record,
+            specimen: post_update_specimen,
+            measurements: post_update_measurements,
+            preparers: post_update_preparers,
+            links: _,
+        } = update_suspension_by_id(&tx, *id, &pre_update)
             .await
-            .unwrap();
+            .unwrap()
+        else {
+            panic!("expected Suspension::Detailed");
+        };
 
+        let expected_record = SavedSuspensionRecord {
+            id,
+            readable_id: pre_update.record.readable_id,
+            specimen_id: pre_update.record.specimen_id,
+            content: pre_update.record.content,
+            created_at: pre_update.record.created_at,
+            lysis_duration_minutes: pre_update.record.lysis_duration_minutes,
+            target_cell_recovery: pre_update.record.target_cell_recovery,
+            additional_data: pre_update.record.additional_data,
+        };
+
+        assert_eq!(post_update_record, expected_record);
         assert_eq!(
-            updated.record(),
-            &SavedSuspensionRecord {
-                id: original_record.id,
-                readable_id: new_readable_id,
-                specimen_id: original_record.specimen_id,
-                content: SuspensionContent::Nuclei,
-                created_at: new_created_at,
-                lysis_duration_minutes: None,
-                target_cell_recovery: None,
-                additional_data: None,
-            }
+            *post_update_specimen.record().id,
+            post_update_record.specimen_id
         );
+
+        // The update did not add new measurements/preparers, so we still have
+        // exactly the one each that the insert helper produced.
+        assert_eq!(post_update_measurements.len(), 1);
+        assert_eq!(post_update_preparers.len(), 1);
     }
 
     #[tokio::test(flavor = "multi_thread")]

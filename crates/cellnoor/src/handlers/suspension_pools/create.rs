@@ -184,3 +184,131 @@ impl AsFieldValuePairs<5> for NewSuspensionPoolRecord {
         ]
     }
 }
+
+#[cfg(test)]
+pub mod test {
+    use std::convert::identity;
+
+    use cellnoor_types::{
+        id::NoId,
+        suspension::measurement::Viability,
+        suspension_pool::{
+            NewSuspensionPool, NewSuspensionPoolRecord, SavedSuspensionPoolRecord, SuspensionPool,
+            measurement::{NewSuspensionPoolMeasurement, SuspensionPoolMeasurementData},
+        },
+    };
+    use jiff::Timestamp;
+    use nonempty::NonemptyVec;
+    use positive::PositiveBoundedF32;
+    use postgres_types::Json;
+    use pretty_assertions::assert_eq;
+    use uuid::Uuid;
+
+    use crate::{
+        db,
+        handlers::{
+            people::create::test::insert_test_person_and_institution,
+            suspension_pools::create::insert_suspension_pool,
+            suspensions::create::test::insert_test_suspension_and_specimen,
+        },
+        state::test_util::{ToNonemptyString, db_client_as_admin},
+    };
+
+    pub async fn insert_test_pool_and_suspension<F>(
+        tx: &db::Transaction<'_>,
+        modify: F,
+    ) -> (NewSuspensionPool, SuspensionPool)
+    where
+        F: Fn(NewSuspensionPool) -> NewSuspensionPool,
+    {
+        let (_, suspension) = insert_test_suspension_and_specimen(tx, identity).await;
+        let (_, person) = insert_test_person_and_institution(tx, identity).await;
+        let suspension_id = *suspension.record().id;
+        let person_id = *person.record.id;
+
+        let mut new = NewSuspensionPool::Genetic {
+            inner: NewSuspensionPoolRecord {
+                id: NoId {},
+                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                name: "pool".to_nonempty_string(),
+                multiplexing_type: "genetic".to_owned(),
+                pooled_at: Timestamp::now(),
+                additional_data: None,
+            },
+            measurements: vec![NewSuspensionPoolMeasurement {
+                measured_by: person_id,
+                measured_at: Timestamp::now(),
+                data: Json(SuspensionPoolMeasurementData::Viability(Viability {
+                    value: PositiveBoundedF32::new(0.5).unwrap(),
+                })),
+            }],
+            preparer_ids: NonemptyVec::new(vec![person_id]).unwrap(),
+            suspensions: NonemptyVec::new(vec![suspension_id]).unwrap(),
+        };
+
+        new = modify(new);
+
+        let inserted = insert_suspension_pool(tx, new.clone()).await.unwrap();
+        (new, inserted)
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn insert() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let (input, inserted) = insert_test_pool_and_suspension(&tx, identity).await;
+
+        let SuspensionPool::Detailed {
+            record: output_record,
+            specimens: output_specimens,
+            measurements: output_measurements,
+            preparers: output_preparers,
+            links: _,
+        } = inserted
+        else {
+            panic!("expected SuspensionPool::Detailed");
+        };
+
+        let NewSuspensionPool::Genetic {
+            inner: input_record,
+            measurements: input_measurements,
+            preparer_ids: input_preparer_ids,
+            suspensions: input_suspensions,
+        } = input
+        else {
+            panic!("helper only uses Genetic");
+        };
+
+        let expected_record = SavedSuspensionPoolRecord {
+            id: output_record.id,
+            readable_id: input_record.readable_id,
+            name: input_record.name,
+            multiplexing_type: input_record.multiplexing_type,
+            pooled_at: input_record.pooled_at,
+            additional_data: input_record.additional_data,
+        };
+
+        assert_eq!(output_record, expected_record);
+
+        // Genetic pool: one tagged_specimen per suspension, all with tag = None.
+        assert_eq!(output_specimens.len(), input_suspensions.as_ref().len());
+        for tagged in &output_specimens {
+            assert_eq!(tagged.tag, None);
+        }
+
+        // Measurements: ids are auto-generated; everything else should match.
+        assert_eq!(output_measurements.len(), input_measurements.len());
+        for (out, inp) in output_measurements.iter().zip(input_measurements.iter()) {
+            assert_eq!(out.pool_id, *output_record.id);
+            assert_eq!(out.measured_by, inp.measured_by);
+            assert_eq!(out.measured_at, inp.measured_at);
+            assert_eq!(out.data, inp.data);
+        }
+
+        assert_eq!(
+            output_preparers,
+            input_preparer_ids.into_iter().collect::<Vec<_>>()
+        );
+    }
+}

@@ -58,6 +58,54 @@ pub struct NewSpecimenCommonFields {
 pub type NewSpecimenRecord = SpecimenRecord<NoId>;
 
 impl NewSpecimen {
+    pub fn inner_mut(&mut self) -> &mut NewSpecimenCommonFields {
+        use NewSpecimen::*;
+
+        match self {
+            Block(
+                NewBlock::CarboxymethylCellulose { inner, .. }
+                | NewBlock::OptimalCuttingTemperatureCompound { inner, .. }
+                | NewBlock::Paraffin { inner, .. },
+            )
+            | CellPellet(NewCellPellet { inner, .. })
+            | RnaExtract(NewRnaExtract { inner, .. })
+            | Suspension(
+                NewSuspensionSpecimen::Fixed { inner, .. }
+                | NewSuspensionSpecimen::Fresh(inner)
+                | NewSuspensionSpecimen::ThermallyPreserved { inner, .. },
+            )
+            | Tissue(
+                NewTissue::Fixed { inner, .. }
+                | NewTissue::Fresh { inner }
+                | NewTissue::ThermallyPreserved { inner, .. },
+            ) => inner,
+        }
+    }
+
+    pub fn into_inner(self) -> NewSpecimenCommonFields {
+        use NewSpecimen::*;
+
+        match self {
+            Block(
+                NewBlock::CarboxymethylCellulose { inner, .. }
+                | NewBlock::OptimalCuttingTemperatureCompound { inner, .. }
+                | NewBlock::Paraffin { inner, .. },
+            )
+            | CellPellet(NewCellPellet { inner, .. })
+            | RnaExtract(NewRnaExtract { inner, .. })
+            | Suspension(
+                NewSuspensionSpecimen::Fixed { inner, .. }
+                | NewSuspensionSpecimen::Fresh(inner)
+                | NewSuspensionSpecimen::ThermallyPreserved { inner, .. },
+            )
+            | Tissue(
+                NewTissue::Fixed { inner, .. }
+                | NewTissue::Fresh { inner }
+                | NewTissue::ThermallyPreserved { inner, .. },
+            ) => inner,
+        }
+    }
+
     pub fn split_for_insertion(self) -> (NewSpecimenRecord, Vec<NewSpecimenMeasurement>) {
         let SpecimenInsertion(record, measurements) = match self {
             Self::Block(s) => s.split_for_insertion(),

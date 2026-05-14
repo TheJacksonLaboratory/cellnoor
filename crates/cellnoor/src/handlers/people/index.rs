@@ -43,13 +43,15 @@ mod test {
     use std::convert::identity;
 
     use cellnoor_types::{
-        UuidOperator,
+        StringOperator,
         person::{PersonPredicate, PersonQuery},
     };
     use pretty_assertions::assert_eq;
 
     use crate::{
-        handlers::people::{create::test::insert_test_person_and_institution, index::select_people},
+        handlers::people::{
+            create::test::insert_test_person_and_institution, index::select_people,
+        },
         state::test_util::db_client_as_admin,
     };
 
@@ -58,18 +60,19 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let inserted = insert_test_person_and_institution(&tx, identity).await;
+        let (_, inserted) = insert_test_person_and_institution(&tx, identity).await;
 
-        let records = select_people(
+        let selected_records = select_people(
             &tx,
             &PersonQuery::from_filter(
-                PersonPredicate::Id(UuidOperator::Eq(*inserted.record.id)),
+                PersonPredicate::Name(StringOperator::Like(inserted.record.name.into())),
                 false,
             ),
         )
         .await
         .unwrap();
 
-        assert_eq!(*records[0].record.id, *inserted.record.id);
+        assert_eq!(selected_records.len(), 1);
+        assert_eq!(*selected_records[0].record.id, *inserted.record.id);
     }
 }

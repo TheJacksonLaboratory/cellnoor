@@ -21,8 +21,8 @@ impl From<CellPelletThermalPreservation> for ThermalPreservationMethod {
 #[base_model]
 pub struct NewCellPellet {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    inner: NewSpecimenCommonFields,
-    thermal_preservation_method: CellPelletThermalPreservation,
+    pub inner: NewSpecimenCommonFields,
+    pub thermal_preservation_method: CellPelletThermalPreservation,
 }
 
 impl NewCellPellet {

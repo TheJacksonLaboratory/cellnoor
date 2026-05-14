@@ -43,7 +43,7 @@ pub type SavedProjectRecord = ProjectRecord<Id>;
 // datasets
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "project_detailed"))]
-pub struct SavedProjectDetailed {
+pub struct SavedProjectRecordDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub project: SavedProjectRecord,
     pub people: Vec<Uuid>,
@@ -59,7 +59,7 @@ pub enum Project {
     },
     Detailed {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SavedProjectDetailed,
+        record: SavedProjectRecordDetailed,
         links: SimpleLinks,
     },
 }
@@ -78,7 +78,7 @@ impl Project {
         }
     }
 
-    pub fn from_detailed_record(record: SavedProjectDetailed) -> Self {
+    pub fn from_detailed_record(record: SavedProjectRecordDetailed) -> Self {
         Self::Detailed {
             links: SimpleLinks::for_project(record.project.id),
             record,
@@ -89,7 +89,7 @@ impl Project {
         match self {
             Self::Compact { record, .. } => record,
             Self::Detailed {
-                record: SavedProjectDetailed { project, .. },
+                record: SavedProjectRecordDetailed { project, .. },
                 ..
             } => project,
         }

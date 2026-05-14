@@ -70,21 +70,33 @@ pub mod test {
 
     use cellnoor_types::{
         id::NoId,
-        project::{NewProject, NewProjectRecord, Project},
+        project::{
+            NewProject, NewProjectRecord, Project, SavedProjectRecord, SavedProjectRecordDetailed,
+        },
     };
     use jiff::Timestamp;
+    use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
     use crate::{
         db,
-        handlers::projects::create::insert_project,
+        handlers::{
+            people::create::test::insert_test_person_and_institution,
+            projects::create::insert_project,
+        },
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
-    pub async fn insert_test_project<F>(tx: &db::Transaction<'_>, modify: F) -> Project
+    pub async fn insert_test_project<F>(
+        tx: &db::Transaction<'_>,
+        modify: F,
+    ) -> (NewProject, Project)
     where
         F: Fn(NewProject) -> NewProject,
     {
+        let (_, person) = insert_test_person_and_institution(tx, identity).await;
+        let person_id = *person.record.id;
+
         let mut new = NewProject {
             record: NewProjectRecord {
                 id: NoId {},
@@ -92,12 +104,13 @@ pub mod test {
                 started_at: Timestamp::now(),
                 ended_at: Timestamp::now(),
             },
-            people: vec![],
+            people: vec![person_id],
         };
 
         new = modify(new);
 
-        insert_project(tx, &new).await.unwrap()
+        let inserted = insert_project(tx, &new).await.unwrap();
+        (new, inserted)
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -105,6 +118,32 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        insert_test_project(&tx, identity).await;
+        let (
+            NewProject {
+                record: input_record,
+                people: input_people,
+            },
+            Project::Detailed {
+                record:
+                    SavedProjectRecordDetailed {
+                        project: output_record,
+                        people: output_people,
+                    },
+                links: _,
+            },
+        ) = insert_test_project(&tx, identity).await
+        else {
+            panic!("expected Project::Detailed");
+        };
+
+        let expected_record = SavedProjectRecord {
+            id: output_record.id,
+            name: input_record.name,
+            started_at: input_record.started_at,
+            ended_at: input_record.ended_at,
+        };
+
+        assert_eq!(output_record, expected_record);
+        assert_eq!(output_people, input_people);
     }
 }

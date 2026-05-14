@@ -8,7 +8,7 @@ use crate::specimen::{
 #[base_model]
 #[cfg_attr(feature = "serde", serde(transparent))]
 pub struct NewRnaExtract {
-    inner: NewSpecimenCommonFields,
+    pub inner: NewSpecimenCommonFields,
 }
 
 impl NewRnaExtract {

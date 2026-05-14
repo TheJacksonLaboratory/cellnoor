@@ -65,7 +65,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let inserted = insert_test_specimen_and_project(&tx, identity).await;
+        let (_, inserted) = insert_test_specimen_and_project(&tx, identity).await;
 
         let specimens = select_specimens(
             &tx,

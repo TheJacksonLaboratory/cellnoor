@@ -89,7 +89,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let person = insert_test_person_and_institution(&tx, identity).await;
+        let (_, person) = insert_test_person_and_institution(&tx, identity).await;
         delete_person_by_id(&tx, *person.record.id).await.unwrap();
     }
 

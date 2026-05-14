@@ -250,11 +250,11 @@ pub mod test {
     pub async fn insert_test_person_and_institution<F>(
         tx: &db::Transaction<'_>,
         modify: F,
-    ) -> Person
+    ) -> (NewPerson, Person)
     where
         F: Fn(NewPerson) -> NewPerson,
     {
-        let institution = insert_test_institution(tx, identity).await;
+        let (_, institution) = insert_test_institution(tx, identity).await;
 
         let mut new = NewPerson {
             record: NewPersonRecord {
@@ -272,7 +272,35 @@ pub mod test {
 
         new = modify(new);
 
-        insert_person(tx, &new).await.unwrap()
+        let inserted = insert_person(tx, &new).await.unwrap();
+        (new, inserted)
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn insert() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let (
+            NewPerson {
+                record: input_record,
+                ..
+            },
+            Person {
+                record: output_record,
+                links: _,
+            },
+        ) = insert_test_person_and_institution(&tx, identity).await;
+
+        let expected = SavedPersonRecord {
+            id: output_record.id,
+            name: input_record.name,
+            institution_id: input_record.institution_id,
+            email: input_record.email,
+            orcid: input_record.orcid,
+        };
+
+        assert_eq!(output_record, expected);
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -281,19 +309,22 @@ pub mod test {
         let tx = client.begin().await.unwrap();
 
         // Create a new person/db-user
-        let Person {
-            record: SavedPersonRecord { id: user_id, .. },
-            ..
-        } = insert_test_person_and_institution(&tx, identity).await;
+        let (
+            _,
+            Person {
+                record: SavedPersonRecord { id: user_id, .. },
+                ..
+            },
+        ) = insert_test_person_and_institution(&tx, identity).await;
 
-        let accessible_project = insert_test_project(&tx, |new| NewProject {
+        let (_, accessible_project) = insert_test_project(&tx, |new| NewProject {
             people: vec![*user_id],
             ..new
         })
         .await;
 
         // And insert one the new user cannot
-        let inaccessible_project = insert_test_project(&tx, identity).await;
+        let (_, inaccessible_project) = insert_test_project(&tx, identity).await;
 
         // We have to commit this transaction so the change persists for the next part
         // of the test
@@ -307,10 +338,10 @@ pub mod test {
         select_institutions(&tx, &InstitutionQuery::default())
             .await
             .unwrap();
-        insert_test_institution(&tx, identity).await;
+        let _ = insert_test_institution(&tx, identity).await;
 
         // They should not be able to insert a project
-        let new = NewProject {
+        let new_project = NewProject {
             record: NewProjectRecord {
                 id: NoId {},
                 name: Uuid::new_v4().to_string().to_nonempty_string(),
@@ -319,9 +350,8 @@ pub mod test {
             },
             people: vec![],
         };
-        let error = insert_project(&tx, &new).await.unwrap_err();
+        let error = insert_project(&tx, &new_project).await.unwrap_err();
         assert_eq!(error, ErrorInner::PermissionDenied);
-        // Commit the transaction because the error causes it to abort
         tx.commit().await.unwrap();
 
         let tx = client.begin().await.unwrap();

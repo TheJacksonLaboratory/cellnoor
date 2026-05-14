@@ -42,3 +42,4 @@ pub async fn select_suspension_by_id(
     )
     .await
 }
+

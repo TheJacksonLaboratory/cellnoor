@@ -84,10 +84,10 @@ mod test {
     use std::convert::identity;
 
     use cellnoor_types::specimen::{
-        Fixative, SavedSpecimenRecord, Species, SpecimenType, ThermalPreservationMethod,
+        SavedSpecimenRecord, Species, Specimen,
         creation::{
             NewSpecimen, NewSpecimenCommonFields,
-            block::{BlockEmbeddingMatrix, BlockFixative, NewBlock},
+            block::{BlockFixative, NewBlock},
         },
     };
     use jiff::Timestamp;
@@ -96,8 +96,11 @@ mod test {
 
     use crate::{
         error::ErrorInner,
-        handlers::specimens::{
-            create::test::insert_test_specimen_and_project, update::update_specimen_by_id,
+        handlers::{
+            projects::show::select_project_by_id,
+            specimens::{
+                create::test::insert_test_specimen_and_project, update::update_specimen_by_id,
+            },
         },
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
@@ -107,56 +110,66 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let original_specimen = insert_test_specimen_and_project(&tx, identity).await;
-        let original_record = original_specimen.record();
-
-        let new_readable_id = Uuid::new_v4().to_string().to_nonempty_string();
-        let new_name = "updated".to_nonempty_string();
-        let new_received_at = Timestamp::now();
-        let new_tissue = "updated tissue".to_nonempty_string();
-
-        let new_data = NewSpecimen::Block(NewBlock::Paraffin {
-            inner: NewSpecimenCommonFields {
-                readable_id: new_readable_id.clone(),
-                name: new_name.clone(),
-                submitted_by: original_record.submitted_by,
-                received_at: new_received_at,
-                project_id: original_record.project_id,
-                species: Species::HomoSapiens,
-                host_species: None,
-                returned_by: None,
-                returned_at: None,
-                tissue: new_tissue.clone(),
-                additional_data: None,
-                measurements: vec![],
+        let (
+            mut pre_update,
+            Specimen::Detailed {
+                record: SavedSpecimenRecord { id, .. },
+                ..
             },
+        ) = insert_test_specimen_and_project(&tx, identity).await
+        else {
+            panic!("expected Specimen::Detailed");
+        };
+
+        // Switch the variant to Paraffin (different derived type_/embedded_in/etc.)
+        // and rename it. The helper produces a Cmc variant; we destructure the
+        // common fields and re-wrap.
+        pre_update.inner_mut().readable_id = Uuid::new_v4().to_string().to_nonempty_string();
+        let inner = pre_update.into_inner();
+        let pre_update = NewSpecimen::Block(NewBlock::Paraffin {
+            inner,
             fixative: BlockFixative::FormaldehydeDerivative,
         });
 
-        let updated = update_specimen_by_id(&tx, *original_record.id, new_data)
+        let Specimen::Detailed {
+            record: post_update_record,
+            project: post_update_project,
+            measurements: post_update_measurements,
+            links: _,
+        } = update_specimen_by_id(&tx, *id, pre_update.clone())
             .await
-            .unwrap();
+            .unwrap()
+        else {
+            panic!("expected Specimen::Detailed");
+        };
 
+        let (input_record, _) = pre_update.split_for_insertion();
+
+        let expected_record = SavedSpecimenRecord {
+            id,
+            readable_id: input_record.readable_id,
+            name: input_record.name,
+            submitted_by: input_record.submitted_by,
+            project_id: input_record.project_id,
+            received_at: input_record.received_at,
+            species: input_record.species,
+            host_species: input_record.host_species,
+            returned_at: input_record.returned_at,
+            returned_by: input_record.returned_by,
+            type_: input_record.type_,
+            embedded_in: input_record.embedded_in,
+            fixative: input_record.fixative,
+            thermal_preservation_method: input_record.thermal_preservation_method,
+            tissue: input_record.tissue,
+            additional_data: input_record.additional_data,
+        };
+
+        assert_eq!(post_update_record, expected_record);
         assert_eq!(
-            updated.record(),
-            &SavedSpecimenRecord {
-                id: original_record.id,
-                readable_id: new_readable_id,
-                name: new_name,
-                submitted_by: original_record.submitted_by,
-                project_id: original_record.project_id,
-                received_at: new_received_at,
-                species: Species::HomoSapiens,
-                host_species: None,
-                returned_at: None,
-                returned_by: None,
-                type_: SpecimenType::Block,
-                embedded_in: Some(BlockEmbeddingMatrix::Paraffin),
-                fixative: Some(Fixative::FormaldehydeDerivative),
-                thermal_preservation_method: None,
-                tissue: new_tissue,
-                additional_data: None,
-            }
+            post_update_project,
+            select_project_by_id(&tx, expected_record.project_id)
+                .await
+                .unwrap()
         );
     }
 

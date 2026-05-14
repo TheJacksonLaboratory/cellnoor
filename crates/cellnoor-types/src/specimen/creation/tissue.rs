@@ -28,7 +28,7 @@ pub enum NewTissue {
 }
 
 impl NewTissue {
-    fn into_common(self) -> NewSpecimenCommonFields {
+    fn into_inner(self) -> NewSpecimenCommonFields {
         match self {
             Self::Fixed { inner, fixative: _ }
             | Self::Fresh { inner }
@@ -68,7 +68,7 @@ impl NewTissue {
         let thermal_preservation_method = self.thermal_preservation_method();
 
         SpecimenInsertion::from_fields(
-            self.into_common(),
+            self.into_inner(),
             SpecimenType::Tissue,
             None,
             fixative,

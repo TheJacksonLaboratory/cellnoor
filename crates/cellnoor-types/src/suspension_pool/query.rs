@@ -6,7 +6,7 @@ use postgres_types::ToSql;
 use crate::query::filter::ToPredicate;
 use crate::{
     StringOperator, TimestampOperator, UuidOperator,
-    query::{ComplexQuery, SimpleQuery},
+    query::{ComplexQuery, SimpleQuery, filter::Filter},
     specimen::SpecimenPredicate,
 };
 
@@ -44,6 +44,12 @@ impl From<SpecimenPredicate> for SuspensionPoolPredicate {
 impl From<SuspensionPoolPredicateInner> for SuspensionPoolPredicate {
     fn from(value: SuspensionPoolPredicateInner) -> Self {
         Self::SuspensionPool(value)
+    }
+}
+
+impl From<SuspensionPoolPredicateInner> for Filter<SuspensionPoolPredicate> {
+    fn from(value: SuspensionPoolPredicateInner) -> Self {
+        Self::Leaf(value.into())
     }
 }
 

@@ -83,7 +83,7 @@ mod test {
 
     use cellnoor_types::{
         id::NoId,
-        person::{NewPerson, NewPersonRecord, SavedPersonRecord},
+        person::{NewPerson, NewPersonRecord, Person, SavedPersonRecord},
     };
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
@@ -101,38 +101,29 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let original_person = insert_test_person_and_institution(&tx, identity).await;
-
-        let new_name = "updated".to_nonempty_string();
-        let new_email = Some(format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string());
-
-        let new_data = NewPerson {
-            record: NewPersonRecord {
-                id: NoId {},
-                name: new_name.clone(),
-                institution_id: original_person.record.institution_id,
-                email: new_email.clone(),
-                orcid: None,
+        let (
+            mut pre_update,
+            Person {
+                record: SavedPersonRecord { id, .. },
+                links: _,
             },
-            is_staff: false,
-            permissions_to_grant: vec![].into(),
-            permissions_to_revoke: vec![].into(),
+        ) = insert_test_person_and_institution(&tx, identity).await;
+        pre_update.record.name = "updated".to_nonempty_string();
+
+        let Person {
+            record: post_update_record,
+            links: _,
+        } = update_person_by_id(&tx, *id, &pre_update).await.unwrap();
+
+        let expected_record = SavedPersonRecord {
+            id,
+            name: pre_update.record.name,
+            institution_id: pre_update.record.institution_id,
+            email: pre_update.record.email,
+            orcid: pre_update.record.orcid,
         };
 
-        let updated = update_person_by_id(&tx, *original_person.record.id, &new_data)
-            .await
-            .unwrap();
-
-        assert_eq!(
-            updated.record,
-            SavedPersonRecord {
-                id: original_person.record.id,
-                name: new_name,
-                email: new_email,
-                institution_id: original_person.record.institution_id,
-                orcid: None
-            }
-        );
+        assert_eq!(post_update_record, expected_record);
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -140,15 +131,11 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        // We need an institution for the FK; the update should still fail with
-        // ResourceNotFound because the person id doesn't exist
-        let person = insert_test_person_and_institution(&tx, identity).await;
-
         let new_data = NewPerson {
             record: NewPersonRecord {
                 id: NoId {},
                 name: "missing".to_nonempty_string(),
-                institution_id: person.record.institution_id,
+                institution_id: Uuid::new_v4(),
                 email: Some(format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string()),
                 orcid: None,
             },

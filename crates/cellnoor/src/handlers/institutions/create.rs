@@ -69,8 +69,9 @@ pub mod test {
 
     use cellnoor_types::{
         id::NoId,
-        institution::{Institution, NewInstitution},
+        institution::{Institution, NewInstitution, SavedInstitutionRecord},
     };
+    use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
     use crate::{
@@ -79,7 +80,10 @@ pub mod test {
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
-    pub async fn insert_test_institution<F>(tx: &db::Transaction<'_>, modify: F) -> Institution
+    pub async fn insert_test_institution<F>(
+        tx: &db::Transaction<'_>,
+        modify: F,
+    ) -> (NewInstitution, Institution)
     where
         F: Fn(NewInstitution) -> NewInstitution,
     {
@@ -91,7 +95,8 @@ pub mod test {
 
         new = modify(new);
 
-        insert_institution(tx, &new).await.unwrap()
+        let inserted = insert_institution(tx, &new).await.unwrap();
+        (new, inserted)
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -99,6 +104,20 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        insert_test_institution(&tx, identity).await;
+        let (
+            input_record,
+            Institution {
+                record: output_record,
+                links: _,
+            },
+        ) = insert_test_institution(&tx, identity).await;
+
+        let expected = SavedInstitutionRecord {
+            id: output_record.id,
+            name: input_record.name,
+            microsoft_entra_tenant_id: input_record.microsoft_entra_tenant_id,
+        };
+
+        assert_eq!(output_record, expected);
     }
 }

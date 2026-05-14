@@ -106,14 +106,14 @@ impl SuspensionPoolLinks {
 pub struct SavedTaggedSpecimenRecord {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub specimen: SavedSpecimenRecord,
-    pub tag: SavedMultiplexingTag,
+    pub tag: Option<SavedMultiplexingTag>,
 }
 
 #[base_model]
 pub struct TaggedSpecimen {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub specimen: Specimen,
-    pub tag: SavedMultiplexingTag,
+    pub tag: Option<SavedMultiplexingTag>,
 }
 
 impl TaggedSpecimen {

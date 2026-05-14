@@ -60,7 +60,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let inserted = insert_test_project(&tx, identity).await;
+        let (_, inserted) = insert_test_project(&tx, identity).await;
         let id = *inserted.record().id;
 
         delete_project_by_id(&tx, id).await.unwrap();

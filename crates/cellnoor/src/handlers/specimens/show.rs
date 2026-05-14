@@ -42,3 +42,4 @@ pub async fn select_specimen_by_id(
     )
     .await
 }
+

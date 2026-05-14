@@ -62,7 +62,9 @@ mod test {
 
     use cellnoor_types::{
         id::NoId,
-        project::{NewProject, NewProjectRecord, SavedProjectRecord},
+        project::{
+            NewProject, NewProjectRecord, Project, SavedProjectRecord, SavedProjectRecordDetailed,
+        },
     };
     use jiff::Timestamp;
     use pretty_assertions::assert_eq;
@@ -79,35 +81,43 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let original_project = insert_test_project(&tx, identity).await;
-
-        let new_name = Uuid::new_v4().to_string().to_nonempty_string();
-        let new_started_at = Timestamp::now();
-        let new_ended_at = Timestamp::now();
-
-        let new_data = NewProject {
-            record: NewProjectRecord {
-                id: NoId {},
-                name: new_name.clone(),
-                started_at: new_started_at,
-                ended_at: new_ended_at,
+        let (
+            mut pre_update,
+            Project::Detailed {
+                record:
+                    SavedProjectRecordDetailed {
+                        project: SavedProjectRecord { id, .. },
+                        ..
+                    },
+                links: _,
             },
-            people: vec![],
+        ) = insert_test_project(&tx, identity).await
+        else {
+            panic!("expected Project::Detailed");
+        };
+        pre_update.record.name = "updated".to_nonempty_string();
+
+        let Project::Detailed {
+            record:
+                SavedProjectRecordDetailed {
+                    project: post_update_record,
+                    people: post_update_people,
+                },
+            links: _,
+        } = update_project_by_id(&tx, *id, &pre_update).await.unwrap()
+        else {
+            panic!("expected Project::Detailed");
         };
 
-        let updated = update_project_by_id(&tx, *original_project.record().id, &new_data)
-            .await
-            .unwrap();
+        let expected_record = SavedProjectRecord {
+            id,
+            name: pre_update.record.name,
+            started_at: pre_update.record.started_at,
+            ended_at: pre_update.record.ended_at,
+        };
 
-        assert_eq!(
-            updated.record(),
-            &SavedProjectRecord {
-                id: original_project.record().id,
-                name: new_name,
-                started_at: new_started_at,
-                ended_at: new_ended_at
-            }
-        );
+        assert_eq!(post_update_record, expected_record);
+        assert_eq!(post_update_people, pre_update.people);
     }
 
     #[tokio::test(flavor = "multi_thread")]

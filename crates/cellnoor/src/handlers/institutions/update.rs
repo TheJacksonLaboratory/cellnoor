@@ -59,7 +59,7 @@ mod test {
 
     use cellnoor_types::{
         id::NoId,
-        institution::{NewInstitution, SavedInstitutionRecord},
+        institution::{Institution, NewInstitution, SavedInstitutionRecord},
     };
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
@@ -77,30 +77,29 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let original_institution = insert_test_institution(&tx, identity).await;
-
-        let new_name = "Not The Jackson Laboratory".to_nonempty_string();
-        let new_tenant = Uuid::max();
-        let updated = update_institution_by_id(
-            &tx,
-            *original_institution.record.id,
-            &NewInstitution {
-                id: NoId {},
-                name: new_name.clone(),
-                microsoft_entra_tenant_id: new_tenant,
+        let (
+            mut pre_update,
+            Institution {
+                record: SavedInstitutionRecord { id, .. },
+                links: _,
             },
-        )
-        .await
-        .unwrap();
+        ) = insert_test_institution(&tx, identity).await;
+        pre_update.name = "updated".to_nonempty_string();
 
-        assert_eq!(
-            updated.record,
-            SavedInstitutionRecord {
-                id: original_institution.record.id,
-                name: new_name,
-                microsoft_entra_tenant_id: new_tenant
-            }
-        );
+        let Institution {
+            record: post_update_record,
+            links: _,
+        } = update_institution_by_id(&tx, *id, &pre_update)
+            .await
+            .unwrap();
+
+        let expected_record = SavedInstitutionRecord {
+            id,
+            name: pre_update.name,
+            microsoft_entra_tenant_id: pre_update.microsoft_entra_tenant_id,
+        };
+
+        assert_eq!(post_update_record, expected_record);
     }
 
     #[tokio::test(flavor = "multi_thread")]

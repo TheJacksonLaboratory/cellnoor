@@ -43,8 +43,8 @@ mod test {
     use std::convert::identity;
 
     use cellnoor_types::{
-        SimpleStringOperator, UuidOperator,
-        institution::{InstitutionPredicate, InstitutionQuery},
+        StringOperator,
+        institution::{InstitutionPredicate, InstitutionQuery, NewInstitution},
     };
     use pretty_assertions::assert_eq;
 
@@ -60,29 +60,18 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let inserted = insert_test_institution(&tx, identity).await;
+        let (NewInstitution { name, .. }, inserted) = insert_test_institution(&tx, identity).await;
 
-        let by_id = select_institutions(
+        let selected_records = select_institutions(
             &tx,
             &InstitutionQuery::from_filter(
-                InstitutionPredicate::Id(UuidOperator::Eq(*inserted.record.id)),
+                InstitutionPredicate::Name(StringOperator::Like(name.into())),
                 false,
             ),
         )
         .await
         .unwrap();
-        assert_eq!(by_id.len(), 1);
-        assert_eq!(by_id[0].record.id, inserted.record.id);
-
-        let none = select_institutions(
-            &tx,
-            &InstitutionQuery::from_filter(
-                InstitutionPredicate::Name(SimpleStringOperator::In(vec!["".to_owned()]).into()),
-                false,
-            ),
-        )
-        .await
-        .unwrap();
-        assert_eq!(none.len(), 0);
+        assert_eq!(selected_records.len(), 1);
+        assert_eq!(selected_records[0], inserted);
     }
 }
