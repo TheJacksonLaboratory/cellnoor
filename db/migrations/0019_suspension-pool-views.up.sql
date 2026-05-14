@@ -1,4 +1,9 @@
 -- We include the multiplexing tag because it's cheap and is useful for consumers
+create type tagged_specimen as (
+    specimen specimen,
+    multiplexing_tag multiplexing_tag
+);
+
 create view suspension_pool_to_specimen as (
     select
         suspension_pool,

@@ -5,6 +5,7 @@ pub use query::filter::{
 
 pub mod id;
 pub mod institution;
+pub mod multiplexing_tag;
 pub mod person;
 pub mod project;
 pub mod query;

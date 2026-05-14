@@ -1,9 +1,10 @@
-use macro_attributes::base_model;
+use macro_attributes::{base_model, select};
 use nonempty::{NonemptyBoundedVec, NonemptyVec};
 use uuid::Uuid;
 
 use crate::{
     id::{Id, NoId},
+    multiplexing_tag::SavedMultiplexingTag,
     simple_links::SimpleLinks,
     specimen::{SavedSpecimenRecord, Specimen},
     suspension_pool::{measurement::SuspensionPoolMeasurement, record::SuspensionPoolRecord},
@@ -81,10 +82,34 @@ impl SuspensionPoolLinks {
     }
 }
 
+#[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "tagged_specimen"))]
+pub struct SavedTaggedSpecimenRecord {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub specimen: SavedSpecimenRecord,
+    pub tag: SavedMultiplexingTag,
+}
+
+#[base_model]
+pub struct TaggedSpecimen {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub specimen: Specimen,
+    pub tag: SavedMultiplexingTag,
+}
+
+impl TaggedSpecimen {
+    fn from_record(SavedTaggedSpecimenRecord { specimen, tag }: SavedTaggedSpecimenRecord) -> Self {
+        Self {
+            specimen: Specimen::from_record(specimen),
+            tag,
+        }
+    }
+}
+
 #[base_model]
 pub struct SavedSuspensionPoolRecordDetailed {
     pub suspension_pool: SavedSuspensionPoolRecord,
-    pub specimens: Vec<SavedSpecimenRecord>,
+    pub specimens: Vec<SavedTaggedSpecimenRecord>,
     pub measurements: Vec<SuspensionPoolMeasurement>,
     pub preparers: Vec<Uuid>,
 }
@@ -103,7 +128,7 @@ pub enum SuspensionPool {
         #[cfg_attr(feature = "serde", serde(flatten))]
         record: SavedSuspensionPoolRecord,
         links: SuspensionPoolLinks,
-        specimens: Vec<Specimen>,
+        specimens: Vec<TaggedSpecimen>,
         measurements: Vec<SuspensionPoolMeasurement>,
         preparers: Vec<Uuid>,
     },
@@ -135,7 +160,10 @@ impl SuspensionPool {
         Self::Detailed {
             links: SuspensionPoolLinks::new(suspension_pool.id),
             record: suspension_pool,
-            specimens: specimens.into_iter().map(Specimen::from_record).collect(),
+            specimens: specimens
+                .into_iter()
+                .map(TaggedSpecimen::from_record)
+                .collect(),
             measurements,
             preparers,
         }
