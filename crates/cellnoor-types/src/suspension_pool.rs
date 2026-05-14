@@ -1,8 +1,36 @@
-use jiff::Timestamp;
-use macro_attributes::{base_model, select};
-use nonempty::{NonemptyBoundedVec, NonemptyString, NonemptyVec};
-use serde_json::Value;
+use macro_attributes::base_model;
+use nonempty::{NonemptyBoundedVec, NonemptyVec};
 use uuid::Uuid;
+
+use crate::{
+    id::{Id, NoId},
+    simple_links::SimpleLinks,
+    specimen::{SavedSpecimenRecord, Specimen},
+    suspension_pool::record::SuspensionPoolRecord,
+};
+
+mod record {
+    use jiff::Timestamp;
+    use macro_attributes::select;
+    use nonempty::NonemptyString;
+    use serde_json::Value;
+
+    #[select]
+    #[cfg_attr(feature = "postgres-types", postgres(name = "suspension_pool"))]
+    pub struct SuspensionPoolRecord<T> {
+        #[cfg_attr(feature = "serde", serde(flatten))]
+        pub id: T,
+        pub readable_id: NonemptyString,
+        pub name: NonemptyString,
+        pub multiplexing_type: String,
+        pub pooled_at: Timestamp,
+        pub additional_data: Option<Value>,
+    }
+}
+
+pub type NewSuspensionPoolRecord = SuspensionPoolRecord<NoId>;
+
+pub type SavedSuspensionPoolRecord = SuspensionPoolRecord<Id>;
 
 #[base_model]
 pub struct TaggedSuspension {
@@ -14,14 +42,6 @@ pub struct TaggedSuspension {
 const MAX_TAGGED_SUSPENSIONS_IN_POOL: usize = 384;
 
 #[base_model]
-pub struct NewSuspensionPoolFields {
-    pub readable_id: NonemptyString,
-    pub name: NonemptyString,
-    pub pooled_at: Timestamp,
-    pub additional_data: Option<Value>,
-}
-
-#[base_model]
 #[derive(strum::AsRefStr)]
 #[cfg_attr(
     feature = "serde",
@@ -31,35 +51,56 @@ pub struct NewSuspensionPoolFields {
 pub enum NewSuspensionPool {
     ExogenousTag {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: NewSuspensionPoolFields,
+        inner: NewSuspensionPoolRecord,
         preparer_ids: NonemptyVec<Uuid>,
         suspensions: NonemptyBoundedVec<TaggedSuspension, MAX_TAGGED_SUSPENSIONS_IN_POOL>,
     },
     Genetic {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: NewSuspensionPoolFields,
+        inner: NewSuspensionPoolRecord,
         preparer_ids: NonemptyVec<Uuid>,
         suspensions: NonemptyVec<Uuid>,
     },
 }
 
-#[select]
-#[cfg_attr(feature = "postgres-types", postgres(name = "suspension_pool"))]
-pub struct SuspensionPoolRecord {
-    pub id: Uuid,
-    pub readable_id: NonemptyString,
-    pub name: NonemptyString,
-    pub multiplexing_type: String,
-    pub pooled_at: Timestamp,
-    pub additional_data: Option<Value>,
+#[base_model]
+pub struct SuspensionPoolLinks {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub simple: SimpleLinks,
+    pub suspensions: String,
 }
 
-// #[select]
-// #[cfg_attr(feature = "postgres-types", postgres(name = "specimen_detailed"))]
-// pub struct SuspensionPoolRecordDetailed {
-//     #[cfg_attr(feature = "serde", serde(flatten))]
-//     pub suspension_pool: SuspensionPoolRecord,
-//     pub suspensions: Vec<Suspension>,
-//     pub preparers: Vec<Uuid>,
-//     pub measurements: Vec<SuspensionPoolMeasurement>,
-// }
+impl SuspensionPoolLinks {
+    fn new(id: Id) -> Self {
+        Self {
+            simple: SimpleLinks::from_str_and_id("/suspension-pools", id),
+            suspensions: format!("/suspension-pools/{id}/suspensions"),
+        }
+    }
+}
+
+#[base_model]
+pub struct SavedSuspensionPoolRecordDetailed {
+    pub suspension_pool: SavedSuspensionPoolRecord,
+    pub specimens: Vec<SavedSpecimenRecord>,
+    pub preparers: Vec<Uuid>,
+}
+
+#[base_model]
+#[cfg_attr(feature = "serde", serde(tag = "view"))]
+pub enum SuspensionPool {
+    Compact {
+        #[cfg_attr(feature = "serde", serde(flatten))]
+        record: SavedSuspensionPoolRecord,
+        links: SuspensionPoolLinks,
+    },
+    // Rather than just wrapping the `SuspensionRecordDetailed`, we destructure its fields so that
+    // we have a `Specimen` rather than a `SpecimenRecord`
+    Detailed {
+        #[cfg_attr(feature = "serde", serde(flatten))]
+        record: SavedSuspensionPoolRecord,
+        links: SuspensionPoolLinks,
+        specimen: Specimen,
+        preparers: Vec<Uuid>,
+    },
+}

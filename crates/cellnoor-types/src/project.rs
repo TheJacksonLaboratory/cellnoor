@@ -50,7 +50,7 @@ pub struct SavedProjectDetailed {
 }
 
 #[base_model]
-#[cfg_attr(feature = "serde", serde(untagged))]
+#[cfg_attr(feature = "serde", serde(tag = "view"))]
 pub enum Project {
     Compact {
         #[cfg_attr(feature = "serde", serde(flatten))]

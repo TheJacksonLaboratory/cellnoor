@@ -81,6 +81,7 @@ pub struct SavedSuspensionRecordDetailed {
 }
 
 #[base_model]
+#[cfg_attr(feature = "serde", serde(tag = "view"))]
 pub enum Suspension {
     Compact {
         #[cfg_attr(feature = "serde", serde(flatten))]
