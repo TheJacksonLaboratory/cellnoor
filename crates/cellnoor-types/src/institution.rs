@@ -16,7 +16,9 @@ mod record {
 
     #[select]
     #[cfg_attr(feature = "postgres-types", postgres(name = "institution"))]
-    #[cfg_attr(feature = "schemars", schemars(inline))]
+    // We name it `NewInstitution` so it shows up as `NewInstitution` in the schema and because it
+    // just gets flattened into the definition of `Institution`, so the type is only named once
+    #[cfg_attr(feature = "schemars", schemars(rename = "NewInstitution"))]
     pub struct InstitutionRecord<T> {
         #[cfg_attr(feature = "serde", serde(flatten))]
         pub id: T,

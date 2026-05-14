@@ -24,7 +24,6 @@ mod record {
     };
 
     #[select]
-    #[cfg_attr(feature = "schemars", schemars(inline))]
     #[cfg_attr(feature = "postgres-types", postgres(name = "specimen"))]
     pub struct SpecimenRecord<T> {
         #[cfg_attr(feature = "serde", serde(flatten))]
