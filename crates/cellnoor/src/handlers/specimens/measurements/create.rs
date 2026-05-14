@@ -2,7 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::specimen::measurement::{NewSpecimenMeasurement, SpecimenMeasurementData};
+use cellnoor_types::specimen::measurement::NewSpecimenMeasurement;
 use uuid::Uuid;
 
 use crate::{

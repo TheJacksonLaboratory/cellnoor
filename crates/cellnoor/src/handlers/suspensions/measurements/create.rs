@@ -2,9 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::suspension::measurement::{
-    NewSuspensionMeasurement, SuspensionMeasurementData,
-};
+use cellnoor_types::suspension::measurement::NewSuspensionMeasurement;
 use uuid::Uuid;
 
 use crate::{
