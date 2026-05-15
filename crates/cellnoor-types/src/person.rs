@@ -1,7 +1,7 @@
 use std::slice::Iter;
 
 use macro_attributes::{base_model, unit_enum};
-pub use query::{PersonPredicate, PersonQuery, SimplePersonQuery};
+pub use query::{PersonField, PersonPredicate, PersonQuery, SimplePersonQuery};
 
 use crate::{
     id::{Id, NoId},

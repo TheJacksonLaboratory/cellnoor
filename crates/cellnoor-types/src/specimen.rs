@@ -1,5 +1,5 @@
 use macro_attributes::{base_model, select, unit_enum};
-pub use query::{SimpleSpecimenQuery, SpecimenPredicate, SpecimenQuery};
+pub use query::{SimpleSpecimenQuery, SpecimenField, SpecimenPredicate, SpecimenQuery};
 
 use crate::{
     id::Id,

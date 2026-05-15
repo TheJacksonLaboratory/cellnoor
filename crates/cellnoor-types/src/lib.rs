@@ -1,6 +1,6 @@
 pub use query::filter::{
     BoolOperator, F32Operator, I32Operator, I64Operator, SimpleStringOperator, StringOperator,
-    TimestampOperator, UuidOperator,
+    TimestampOperator, ToPredicate, UuidOperator,
 };
 
 pub mod id;

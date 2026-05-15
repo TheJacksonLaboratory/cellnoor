@@ -1,5 +1,5 @@
 use macro_attributes::{base_model, select};
-pub use query::{ProjectPredicate, ProjectQuery, SimpleProjectQuery};
+pub use query::{ProjectField, ProjectPredicate, ProjectQuery, SimpleProjectQuery};
 use uuid::Uuid;
 
 use crate::{

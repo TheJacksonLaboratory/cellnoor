@@ -63,8 +63,8 @@ where
                 }
 
                 for (i, f) in filters.iter().enumerate() {
-                    let subquery = f.as_where_clause_inner(bind_params);
-                    query.push_str(&format!("({subquery})"));
+                    let subfilter = f.as_where_clause_inner(bind_params);
+                    query.push_str(&format!("({subfilter})"));
 
                     if i != filters.len() - 1 {
                         query.push_str(combinator);
@@ -81,14 +81,14 @@ where
         }
     }
 
-    pub(crate) fn to_where_clause(&self) -> (String, Vec<&(dyn ToSql + Sync)>) {
+    pub fn to_where_clause(&self) -> (String, Vec<&(dyn ToSql + Sync)>) {
         // 64 is arbitrary but it's not a lot and definitely more than anyone will be
         // constructing
         let mut bind_params = Vec::with_capacity(64);
 
         let query = self.as_where_clause_inner(&mut bind_params);
 
-        (format!("where {query}"), bind_params)
+        (query, bind_params)
     }
 }
 

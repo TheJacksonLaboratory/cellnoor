@@ -1,9 +1,5 @@
 use macro_attributes::base_model;
-#[cfg(feature = "postgres-types")]
-use postgres_types::ToSql;
 
-#[cfg(feature = "postgres-types")]
-use crate::query::filter::ToPredicate;
 use crate::query::{
     filter::Filter,
     order_by::{OrderBy, OrderBySet},
@@ -87,55 +83,5 @@ where
             }),
             ..Default::default()
         }
-    }
-}
-
-#[cfg(feature = "postgres-types")]
-impl<P, O> ComplexQuery<P, O>
-where
-    P: AsRef<str> + ToPredicate,
-    O: Default + Copy + AsRef<str>,
-{
-    pub fn to_sql_query_with_group_by(&self, group_by: &str) -> (String, Vec<&(dyn ToSql + Sync)>) {
-        let Self {
-            filter,
-            limit,
-            offset,
-            order_by,
-            detailed: _,
-        } = self;
-
-        // That's probably enough for a where clause
-        let mut sql = String::with_capacity(1024);
-
-        let (where_clause, params) = if let Some(filter) = filter {
-            filter.to_where_clause()
-        } else {
-            (String::new(), Vec::new())
-        };
-
-        sql.push_str(&where_clause);
-
-        sql.push(' ');
-
-        if !group_by.is_empty() {
-            sql.push_str(group_by);
-            sql.push(' ');
-        }
-
-        sql.push_str(&order_by.to_order_by_clause());
-
-        if let Some(limit) = limit {
-            sql.push_str(&format!(" limit {limit}"));
-        }
-
-        // Note the final space
-        sql.push_str(&format!(" offset {offset} "));
-
-        (sql, params)
-    }
-
-    pub fn to_sql_query(&self) -> (String, Vec<&(dyn ToSql + Sync)>) {
-        self.to_sql_query_with_group_by("")
     }
 }

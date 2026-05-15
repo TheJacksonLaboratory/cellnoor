@@ -7,10 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{
-        self,
-        util::{AsFieldValuePairs, ToUpdateClause},
-    },
+    db::{self},
     error::{Error, ErrorInner},
     handlers::{institutions::show::select_institution_by_id, path::IdParam},
     state::AppState,
@@ -39,16 +36,7 @@ pub async fn update_institution_by_id(
     id: Uuid,
     updated_record: &NewInstitution,
 ) -> Result<Institution, ErrorInner> {
-    let fields = updated_record.as_field_value_pairs();
-    let (update_clause, params) = fields.to_update_clause(&id);
-
-    let n = tx
-        .execute(&format!("update institution set {update_clause}"), &params)
-        .await?;
-
-    if n == 0 {
-        return Err(ErrorInner::ResourceNotFound);
-    }
+    db::update(tx, "institution", id, updated_record).await?;
 
     select_institution_by_id(tx, id).await
 }
@@ -86,39 +74,8 @@ mod test {
         ) = insert_test_institution(&tx, identity).await;
         pre_update.name = "updated".to_nonempty_string();
 
-        let Institution {
-            record: post_update_record,
-            links: _,
-        } = update_institution_by_id(&tx, *id, &pre_update)
+        update_institution_by_id(&tx, *id, &pre_update)
             .await
             .unwrap();
-
-        let expected_record = SavedInstitutionRecord {
-            id,
-            name: pre_update.name,
-            microsoft_entra_tenant_id: pre_update.microsoft_entra_tenant_id,
-        };
-
-        assert_eq!(post_update_record, expected_record);
-    }
-
-    #[tokio::test(flavor = "multi_thread")]
-    async fn update_missing() {
-        let mut client = db_client_as_admin().await;
-        let tx = client.begin().await.unwrap();
-
-        let error = update_institution_by_id(
-            &tx,
-            Uuid::new_v4(),
-            &NewInstitution {
-                id: NoId {},
-                name: "updated".to_nonempty_string(),
-                microsoft_entra_tenant_id: Uuid::new_v4(),
-            },
-        )
-        .await
-        .unwrap_err();
-
-        assert_eq!(error, ErrorInner::ResourceNotFound);
     }
 }

@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, util::select_one},
+    db::{self, select_one},
     error::{Error, ErrorInner},
     handlers::{institutions::index::select_institutions, path::IdParam},
     state::AppState,

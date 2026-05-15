@@ -19,13 +19,14 @@ use crate::{
 pub enum InstitutionPredicate {
     Id(UuidOperator),
     Name(StringOperator),
+    MicrosoftEntraTenantId(UuidOperator),
 }
 
 #[cfg(feature = "postgres-types")]
 impl ToPredicate for InstitutionPredicate {
     fn to_predicate(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
-            Self::Id(u) => u.to_predicate(),
+            Self::Id(u) | Self::MicrosoftEntraTenantId(u) => u.to_predicate(),
             Self::Name(s) => s.to_predicate(),
         }
     }

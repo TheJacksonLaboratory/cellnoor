@@ -1,5 +1,5 @@
 use macro_attributes::base_model;
-pub use query::{InstitutionPredicate, InstitutionQuery, SimpleInstitutionQuery};
+pub use query::{InstitutionField, InstitutionPredicate, InstitutionQuery, SimpleInstitutionQuery};
 
 use crate::{
     id::{Id, NoId},

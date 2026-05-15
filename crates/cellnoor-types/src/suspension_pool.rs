@@ -1,8 +1,8 @@
 use macro_attributes::{base_model, select};
 use nonempty::{NonemptyBoundedVec, NonemptyVec};
 pub use query::{
-    SimpleSuspensionPoolQuery, SuspensionPoolPredicate, SuspensionPoolPredicateInner,
-    SuspensionPoolQuery,
+    SimpleSuspensionPoolQuery, SuspensionPoolField, SuspensionPoolPredicate,
+    SuspensionPoolPredicateInner, SuspensionPoolQuery,
 };
 use uuid::Uuid;
 
