@@ -15,9 +15,8 @@ use crate::{
     error::Error,
     handlers::suspension_pools::{
         create::create_suspension_pool, delete::delete_suspension_pool,
-        index::index_suspension_pools,
-        measurements::create::create_suspension_pool_measurement, show::show_suspension_pool,
-        update::update_suspension_pool,
+        index::index_suspension_pools, measurements::create::create_suspension_pool_measurement,
+        show::show_suspension_pool, update::update_suspension_pool,
     },
     state::AppState,
 };

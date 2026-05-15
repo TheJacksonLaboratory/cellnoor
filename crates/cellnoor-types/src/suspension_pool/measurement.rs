@@ -18,7 +18,10 @@ pub struct NewSuspensionPoolMeasurement {
 }
 
 #[select]
-#[cfg_attr(feature = "postgres-types", postgres(name = "suspension_pool_measurement"))]
+#[cfg_attr(
+    feature = "postgres-types",
+    postgres(name = "suspension_pool_measurement")
+)]
 pub struct SuspensionPoolMeasurement {
     pub id: Uuid,
     pub pool_id: Uuid,
