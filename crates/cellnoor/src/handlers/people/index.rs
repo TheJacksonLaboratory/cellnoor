@@ -4,7 +4,7 @@ use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db,
+    db::{self, construct_select_stmt},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -28,8 +28,7 @@ pub async fn select_people(
     tx: &db::Transaction<'_>,
     query: &PersonQuery,
 ) -> Result<Vec<Person>, ErrorInner> {
-    let (sql, params) = query.to_sql_query();
-    let query = format!("select person_public from person_public {sql}");
+    let (query, params) = construct_select_stmt("person_public", &["person_public"], None, query);
 
     Ok(tx
         .query_stream_into(&query, params)

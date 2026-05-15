@@ -70,6 +70,7 @@ mod test {
         )
         .await
         .unwrap();
+
         assert_eq!(selected_records.len(), 1);
         assert_eq!(selected_records[0], inserted);
     }

@@ -92,7 +92,7 @@ pub mod test {
         modify: F,
     ) -> (NewProject, Project)
     where
-        F: Fn(NewProject) -> NewProject,
+        F: FnMut(&mut NewProject),
     {
         let (_, person) = insert_test_person_and_institution(tx, identity).await;
         let person_id = *person.record.id;
@@ -107,7 +107,7 @@ pub mod test {
             people: vec![person_id],
         };
 
-        new = modify(new);
+        modify(&mut new);
 
         let inserted = insert_project(tx, &new).await.unwrap();
         (new, inserted)

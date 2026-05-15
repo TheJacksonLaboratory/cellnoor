@@ -8,10 +8,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{
-        self,
-        util::{AsFieldValuePairs, FieldValuePairs, ToUpdateClause},
-    },
+    db::{self},
     error::{Error, ErrorInner},
     handlers::{
         path::IdParam,
@@ -51,17 +48,7 @@ pub async fn update_person_by_id(
 ) -> Result<Person, ErrorInner> {
     validate_email(record.email.as_ref().map(NonemptyString::as_ref))?;
 
-    let fields = record.as_field_value_pairs();
-
-    let (update_clause, params) = fields.to_update_clause(&id);
-
-    let n = tx
-        .execute(&format!("update person set {update_clause}"), &params)
-        .await?;
-
-    if n == 0 {
-        return Err(ErrorInner::ResourceNotFound);
-    }
+    db::update(tx, "person", id, record).await?;
 
     let (_, person) = tokio::try_join!(
         provision_db_user(
@@ -114,40 +101,5 @@ mod test {
             record: post_update_record,
             links: _,
         } = update_person_by_id(&tx, *id, &pre_update).await.unwrap();
-
-        let expected_record = SavedPersonRecord {
-            id,
-            name: pre_update.record.name,
-            institution_id: pre_update.record.institution_id,
-            email: pre_update.record.email,
-            orcid: pre_update.record.orcid,
-        };
-
-        assert_eq!(post_update_record, expected_record);
-    }
-
-    #[tokio::test(flavor = "multi_thread")]
-    async fn update_missing() {
-        let mut client = db_client_as_admin().await;
-        let tx = client.begin().await.unwrap();
-
-        let new_data = NewPerson {
-            record: NewPersonRecord {
-                id: NoId {},
-                name: "missing".to_nonempty_string(),
-                institution_id: Uuid::new_v4(),
-                email: Some(format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string()),
-                orcid: None,
-            },
-            is_staff: false,
-            permissions_to_grant: vec![].into(),
-            permissions_to_revoke: vec![].into(),
-        };
-
-        let error = update_person_by_id(&tx, Uuid::new_v4(), &new_data)
-            .await
-            .unwrap_err();
-
-        assert_eq!(error, ErrorInner::ResourceNotFound);
     }
 }

@@ -3,7 +3,7 @@ use cellnoor_types::institution::{Institution, InstitutionField, NewInstitution}
 
 use crate::{
     auth::AuthUser,
-    db::{self, Record, ToRecord, insert_into},
+    db::{self, Record, ToRecord},
     error::{Error, ErrorInner},
     handlers::institutions::show::select_institution_by_id,
     state::AppState,
@@ -56,9 +56,8 @@ pub mod test {
 
     use cellnoor_types::{
         id::NoId,
-        institution::{Institution, NewInstitution, SavedInstitutionRecord},
+        institution::{Institution, NewInstitution},
     };
-    use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
     use crate::{

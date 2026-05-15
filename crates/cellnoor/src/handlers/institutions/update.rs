@@ -45,15 +45,9 @@ pub async fn update_institution_by_id(
 mod test {
     use std::convert::identity;
 
-    use cellnoor_types::{
-        id::NoId,
-        institution::{Institution, NewInstitution, SavedInstitutionRecord},
-    };
-    use pretty_assertions::assert_eq;
-    use uuid::Uuid;
+    use cellnoor_types::institution::{Institution, SavedInstitutionRecord};
 
     use crate::{
-        error::ErrorInner,
         handlers::institutions::{
             create::test::insert_test_institution, update::update_institution_by_id,
         },

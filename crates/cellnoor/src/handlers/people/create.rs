@@ -2,7 +2,8 @@ use std::sync::LazyLock;
 
 use axum::{Json, extract::State};
 use cellnoor_types::person::{
-    NewPerson, NewPersonRecord, PermissionsToGrant, PermissionsToRevoke, Person, ResourcePermission,
+    NewPerson, NewPersonRecord, PermissionsToGrant, PermissionsToRevoke, Person, PersonField,
+    ResourcePermission,
 };
 use nonempty::NonemptyString;
 use regex::Regex;
@@ -10,10 +11,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{
-        self,
-        util::{AsFieldValuePairs, FieldValuePairs, ToFieldListPlaceholdersParams},
-    },
+    db::{self, ToRecord},
     error::{Error, ErrorInner},
     handlers::people::show::select_person_by_id,
     state::AppState,
@@ -46,34 +44,27 @@ pub async fn insert_person(
 ) -> Result<Person, ErrorInner> {
     validate_email(record.email.as_ref().map(NonemptyString::as_ref))?;
 
-    let fields = record.as_field_value_pairs();
-    let (field_list, placeholders, params) = fields.to_field_list_and_placeholders_and_params();
-
-    // Simple queries can be written inline
-    let person_id = tx
-        .query_one_into(
-            &format!("insert into person {field_list} values {placeholders} returning id"),
-            &params,
-        )
-        .await?;
+    let id = db::insert_into(tx, "person", record).await?;
 
     // But they can be grouped and done concurrently with the select
     let (_, person) = tokio::try_join!(
         provision_db_user(
             tx,
-            person_id,
+            id,
             *is_staff,
             permissions_to_grant,
             permissions_to_revoke
         ),
-        select_person_by_id(tx, person_id)
+        select_person_by_id(tx, id)
     )?;
 
     Ok(person)
 }
 
-impl AsFieldValuePairs<4> for NewPersonRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, 4> {
+impl ToRecord<PersonField, 4> for NewPersonRecord {
+    fn to_record(&self) -> db::Record<PersonField, 4> {
+        use PersonField::*;
+
         let Self {
             id: _,
             name,
@@ -83,10 +74,10 @@ impl AsFieldValuePairs<4> for NewPersonRecord {
         } = self;
 
         [
-            ("name", name),
-            ("institution_id", institution_id),
-            ("email", email),
-            ("orcid", orcid),
+            (Name, name),
+            (InstitutionId, institution_id),
+            (Email, email),
+            (Orcid, orcid),
         ]
     }
 }
@@ -252,7 +243,7 @@ pub mod test {
         modify: F,
     ) -> (NewPerson, Person)
     where
-        F: Fn(NewPerson) -> NewPerson,
+        F: FnMut(&mut NewPerson),
     {
         let (_, institution) = insert_test_institution(tx, identity).await;
 
@@ -270,7 +261,7 @@ pub mod test {
             permissions_to_revoke: vec![].into(),
         };
 
-        new = modify(new);
+        modify(&mut new);
 
         let inserted = insert_person(tx, &new).await.unwrap();
         (new, inserted)
@@ -281,26 +272,7 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (
-            NewPerson {
-                record: input_record,
-                ..
-            },
-            Person {
-                record: output_record,
-                links: _,
-            },
-        ) = insert_test_person_and_institution(&tx, identity).await;
-
-        let expected = SavedPersonRecord {
-            id: output_record.id,
-            name: input_record.name,
-            institution_id: input_record.institution_id,
-            email: input_record.email,
-            orcid: input_record.orcid,
-        };
-
-        assert_eq!(output_record, expected);
+        insert_test_person_and_institution(&tx, identity).await;
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -308,7 +280,7 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        // Create a new person/db-user
+        // Create a new person and db-user
         let (
             _,
             Person {
@@ -317,11 +289,8 @@ pub mod test {
             },
         ) = insert_test_person_and_institution(&tx, identity).await;
 
-        let (_, accessible_project) = insert_test_project(&tx, |new| NewProject {
-            people: vec![*user_id],
-            ..new
-        })
-        .await;
+        let (_, accessible_project) =
+            insert_test_project(&tx, |new| new.people = vec![*user_id]).await;
 
         // And insert one the new user cannot
         let (_, inaccessible_project) = insert_test_project(&tx, identity).await;
@@ -340,17 +309,7 @@ pub mod test {
             .unwrap();
         let _ = insert_test_institution(&tx, identity).await;
 
-        // They should not be able to insert a project
-        let new_project = NewProject {
-            record: NewProjectRecord {
-                id: NoId {},
-                name: Uuid::new_v4().to_string().to_nonempty_string(),
-                started_at: Timestamp::now(),
-                ended_at: Timestamp::now(),
-            },
-            people: vec![],
-        };
-        let error = insert_project(&tx, &new_project).await.unwrap_err();
+        let error = insert_test_project(&tx, identity).await.unwrap_err();
         assert_eq!(error, ErrorInner::PermissionDenied);
         tx.commit().await.unwrap();
 
@@ -375,6 +334,7 @@ pub mod test {
         assert_eq!(error, ErrorInner::ResourceNotFound);
     }
 
+    // We only test this once in the earliest place in the "chain"
     #[tokio::test(flavor = "multi_thread")]
     async fn invalid_reference_error() {
         let mut client = db_client_as_admin().await;

@@ -71,12 +71,11 @@ where
 mod tests {
     use cellnoor_types::{
         StringOperator,
-        institution::{InstitutionField, InstitutionPredicate, InstitutionQuery},
+        institution::{InstitutionPredicate, InstitutionQuery},
     };
     use deadpool_postgres::tokio_postgres::types::private::BytesMut;
     use postgres_types::{ToSql, Type};
     use pretty_assertions::assert_eq;
-    use uuid::Uuid;
 
     use crate::db::construct_select_stmt;
 
