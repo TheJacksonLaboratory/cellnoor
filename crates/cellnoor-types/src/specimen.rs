@@ -118,13 +118,14 @@ impl SimpleLinks {
 }
 
 impl Specimen {
+    #[must_use]
     pub fn record(&self) -> &SavedSpecimenRecord {
         match self {
-            Self::Compact { record, .. } => record,
-            Self::Detailed { record, .. } => record,
+            Self::Compact { record, .. } | Self::Detailed { record, .. } => record,
         }
     }
 
+    #[must_use]
     pub fn from_record(record: SavedSpecimenRecord) -> Self {
         Self::Compact {
             links: SimpleLinks::for_specimen(record.id),
@@ -132,6 +133,7 @@ impl Specimen {
         }
     }
 
+    #[must_use]
     pub fn from_detailed_record(
         SavedSpecimenRecordDetailed {
             specimen,

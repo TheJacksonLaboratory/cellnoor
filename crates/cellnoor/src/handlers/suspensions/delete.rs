@@ -28,13 +28,5 @@ pub async fn delete_suspension(
 }
 
 pub async fn delete_suspension_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    let n = tx
-        .execute("delete from suspension where id = $1", &[&id])
-        .await?;
-
-    if n == 0 {
-        return Err(ErrorInner::ResourceNotFound);
-    }
-
-    Ok(())
+    db::delete_by_id(tx, "suspension", id).await
 }

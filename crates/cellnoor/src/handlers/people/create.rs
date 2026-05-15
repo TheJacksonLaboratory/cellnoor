@@ -46,7 +46,6 @@ pub async fn insert_person(
 
     let id = db::insert_into(tx, "person", record).await?;
 
-    // But they can be grouped and done concurrently with the select
     let (_, person) = tokio::try_join!(
         provision_db_user(
             tx,
@@ -62,7 +61,7 @@ pub async fn insert_person(
 }
 
 impl ToRecord<PersonField, 4> for NewPersonRecord {
-    fn to_record(&self) -> db::Record<PersonField, 4> {
+    fn to_record(&self) -> db::Record<'_, PersonField, 4> {
         use PersonField::*;
 
         let Self {
@@ -209,7 +208,6 @@ fn construct_grant_or_revoke_statement(
 
 #[cfg(test)]
 pub mod test {
-    use std::convert::identity;
 
     use cellnoor_types::{
         id::NoId,
@@ -238,17 +236,17 @@ pub mod test {
 
     pub async fn insert_test_person_and_institution<F>(
         tx: &db::Transaction<'_>,
-        modify: F,
-    ) -> (NewPerson, Person)
+        mut modify: F,
+    ) -> Result<(NewPerson, Person), ErrorInner>
     where
         F: FnMut(&mut NewPerson),
     {
-        let (_, institution) = insert_test_institution(tx, identity).await;
+        let (_, institution) = insert_test_institution(tx, |_| ()).await?;
 
         let mut new = NewPerson {
             record: NewPersonRecord {
                 id: NoId {},
-                name: "hamood".to_nonempty_string(),
+                name: Uuid::new_v4().to_string().to_nonempty_string(),
                 institution_id: *institution.record.id,
                 email: Some(format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string()),
                 orcid: None,
@@ -261,8 +259,8 @@ pub mod test {
 
         modify(&mut new);
 
-        let inserted = insert_person(tx, &new).await.unwrap();
-        (new, inserted)
+        let inserted = insert_person(tx, &new).await?;
+        Ok((new, inserted))
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -270,7 +268,9 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        insert_test_person_and_institution(&tx, identity).await;
+        insert_test_person_and_institution(&tx, |_| ())
+            .await
+            .unwrap();
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -285,13 +285,16 @@ pub mod test {
                 record: SavedPersonRecord { id: user_id, .. },
                 ..
             },
-        ) = insert_test_person_and_institution(&tx, identity).await;
+        ) = insert_test_person_and_institution(&tx, |_| ())
+            .await
+            .unwrap();
 
-        let (_, accessible_project) =
-            insert_test_project(&tx, |new| new.people = vec![*user_id]).await;
+        let (_, accessible_project) = insert_test_project(&tx, |new| new.people = vec![*user_id])
+            .await
+            .unwrap();
 
         // And insert one the new user cannot
-        let (_, inaccessible_project) = insert_test_project(&tx, identity).await;
+        let (_, inaccessible_project) = insert_test_project(&tx, |_| ()).await.unwrap();
 
         // We have to commit this transaction so the change persists for the next part
         // of the test
@@ -305,9 +308,9 @@ pub mod test {
         select_institutions(&tx, &InstitutionQuery::default())
             .await
             .unwrap();
-        let _ = insert_test_institution(&tx, identity).await;
+        let _ = insert_test_institution(&tx, |_| ()).await;
 
-        let error = insert_test_project(&tx, identity).await.unwrap_err();
+        let error = insert_test_project(&tx, |_| ()).await.unwrap_err();
         assert_eq!(error, ErrorInner::PermissionDenied);
         tx.commit().await.unwrap();
 

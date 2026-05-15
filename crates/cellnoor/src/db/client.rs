@@ -100,7 +100,7 @@ impl<'a> Transaction<'a> {
         query: &str,
         params: Vec<&(dyn ToSql + Sync)>,
     ) -> Result<RowStream, TokioPgError> {
-        self.execute_as_user(self.inner.query_raw(query, params.into_iter()))
+        self.execute_as_user(self.inner.query_raw(query, params))
             .await
     }
 

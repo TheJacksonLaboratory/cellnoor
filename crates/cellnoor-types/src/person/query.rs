@@ -3,7 +3,7 @@ use macro_attributes::{predicate_enum, sort_field_enum};
 #[cfg(feature = "postgres-types")]
 use crate::query::filter::ToPredicate;
 use crate::{
-    StringOperator, UuidOperator,
+    operator::{StringOperator, UuidOperator},
     query::{ComplexQuery, SimpleQuery},
 };
 

@@ -71,6 +71,7 @@ impl SimpleLinks {
 }
 
 impl Project {
+    #[must_use]
     pub fn from_record(record: SavedProjectRecord) -> Self {
         Self::Compact {
             links: SimpleLinks::for_project(record.id),
@@ -78,6 +79,7 @@ impl Project {
         }
     }
 
+    #[must_use]
     pub fn from_detailed_record(record: SavedProjectRecordDetailed) -> Self {
         Self::Detailed {
             links: SimpleLinks::for_project(record.project.id),
@@ -85,6 +87,7 @@ impl Project {
         }
     }
 
+    #[must_use]
     pub fn record(&self) -> &SavedProjectRecord {
         match self {
             Self::Compact { record, .. } => record,

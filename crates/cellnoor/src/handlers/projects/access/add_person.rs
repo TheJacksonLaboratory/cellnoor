@@ -6,10 +6,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{
-        self,
-        util::{JunctionTable, insert_many_to_many},
-    },
+    db::{self, Record, ToRecord},
     error::{Error, ErrorInner},
     handlers::path::IdParam,
     state::AppState,
@@ -38,13 +35,36 @@ pub async fn insert_project_accesses(
     project_id: Uuid,
     people: &[Uuid],
 ) -> Result<(), ErrorInner> {
-    insert_many_to_many(
-        &tx,
-        JunctionTable::ProjectAccess,
-        ("project_id", project_id),
-        ("person_id", &people),
+    let accesses: Vec<_> = people
+        .iter()
+        .map(|&person_id| NewProjectAccess {
+            project_id,
+            person_id,
+        })
+        .collect();
+
+    futures::future::try_join_all(
+        accesses
+            .iter()
+            .map(|a| db::insert_into_no_returning(tx, "project_access", a)),
     )
     .await?;
 
     Ok(())
+}
+
+struct NewProjectAccess {
+    project_id: Uuid,
+    person_id: Uuid,
+}
+
+impl ToRecord<&'static str, 2> for NewProjectAccess {
+    fn to_record(&self) -> Record<'_, &'static str, 2> {
+        let Self {
+            project_id,
+            person_id,
+        } = self;
+
+        [("project_id", project_id), ("person_id", person_id)]
+    }
 }

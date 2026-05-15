@@ -7,10 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{
-        self,
-        util::{AsFieldValuePairs, FieldValuePairs, ToFieldListPlaceholdersParams},
-    },
+    db::{self, Record, ToRecord},
     error::{Error, ErrorInner},
     handlers::path::IdParam,
     state::AppState,
@@ -40,25 +37,13 @@ pub async fn insert_specimen_measurement(
     specimen_id: Uuid,
     record: &NewSpecimenMeasurement,
 ) -> Result<(), ErrorInner> {
-    let pair = (specimen_id, record);
-    let fields = pair.as_field_value_pairs();
-
-    let (field_list, placeholders, params) = fields.to_field_list_and_placeholders_and_params();
-
-    tx.execute(
-        &format!(
-            "insert into specimen_measurement {field_list} values {placeholders} on conflict do \
-             nothing"
-        ),
-        &params,
-    )
-    .await?;
+    db::insert_into_no_returning(tx, "specimen_measurement", &(specimen_id, record)).await?;
 
     Ok(())
 }
 
-impl AsFieldValuePairs<4> for (Uuid, &NewSpecimenMeasurement) {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, 4> {
+impl ToRecord<&'static str, 4> for (Uuid, &NewSpecimenMeasurement) {
+    fn to_record(&self) -> Record<'_, &'static str, 4> {
         let (
             specimen_id,
             NewSpecimenMeasurement {

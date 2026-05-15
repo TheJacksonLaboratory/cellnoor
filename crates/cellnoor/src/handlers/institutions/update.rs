@@ -43,7 +43,6 @@ pub async fn update_institution_by_id(
 
 #[cfg(test)]
 mod test {
-    use std::convert::identity;
 
     use cellnoor_types::institution::{Institution, SavedInstitutionRecord};
 
@@ -65,7 +64,7 @@ mod test {
                 record: SavedInstitutionRecord { id, .. },
                 links: _,
             },
-        ) = insert_test_institution(&tx, identity).await;
+        ) = insert_test_institution(&tx, |_| ()).await.unwrap();
         pre_update.name = "updated".to_nonempty_string();
 
         update_institution_by_id(&tx, *id, &pre_update)

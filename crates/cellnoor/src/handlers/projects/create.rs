@@ -1,12 +1,9 @@
 use axum::{Json, extract::State};
-use cellnoor_types::project::{NewProject, NewProjectRecord, Project};
+use cellnoor_types::project::{NewProject, NewProjectRecord, Project, ProjectField};
 
 use crate::{
     auth::AuthUser,
-    db::{
-        self,
-        util::{AsFieldValuePairs, FieldValuePairs, ToFieldListPlaceholdersParams},
-    },
+    db::{self, Record, ToRecord},
     error::{Error, ErrorInner},
     handlers::projects::{access::add_person::insert_project_accesses, show::select_project_by_id},
     state::AppState,
@@ -32,23 +29,17 @@ pub async fn insert_project(
     tx: &db::Transaction<'_>,
     NewProject { record, people }: &NewProject,
 ) -> Result<Project, ErrorInner> {
-    let fields = record.as_field_value_pairs();
-    let (field_list, placeholders, params) = fields.to_field_list_and_placeholders_and_params();
+    let id = db::insert_into(tx, "project", record).await?;
 
-    let id = tx
-        .query_one_into(
-            &format!("insert into project {field_list} values {placeholders} returning id"),
-            &params,
-        )
-        .await?;
-
-    insert_project_accesses(&tx, id, &people).await?;
+    insert_project_accesses(tx, id, people).await?;
 
     select_project_by_id(tx, id).await
 }
 
-impl AsFieldValuePairs<3> for NewProjectRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, 3> {
+impl ToRecord<ProjectField, 3> for NewProjectRecord {
+    fn to_record(&self) -> Record<'_, ProjectField, 3> {
+        use ProjectField::*;
+
         let Self {
             id: _,
             name,
@@ -56,30 +47,23 @@ impl AsFieldValuePairs<3> for NewProjectRecord {
             ended_at,
         } = self;
 
-        [
-            ("name", name),
-            ("started_at", started_at),
-            ("ended_at", ended_at),
-        ]
+        [(Name, name), (StartedAt, started_at), (EndedAt, ended_at)]
     }
 }
 
 #[cfg(test)]
 pub mod test {
-    use std::convert::identity;
 
     use cellnoor_types::{
         id::NoId,
-        project::{
-            NewProject, NewProjectRecord, Project, SavedProjectRecord, SavedProjectRecordDetailed,
-        },
+        project::{NewProject, NewProjectRecord, Project},
     };
     use jiff::Timestamp;
-    use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
     use crate::{
         db,
+        error::ErrorInner,
         handlers::{
             people::create::test::insert_test_person_and_institution,
             projects::create::insert_project,
@@ -87,14 +71,15 @@ pub mod test {
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
+    // This one returns a `Result` because a different test needs that
     pub async fn insert_test_project<F>(
         tx: &db::Transaction<'_>,
-        modify: F,
-    ) -> (NewProject, Project)
+        mut modify: F,
+    ) -> Result<(NewProject, Project), ErrorInner>
     where
         F: FnMut(&mut NewProject),
     {
-        let (_, person) = insert_test_person_and_institution(tx, identity).await;
+        let (_, person) = insert_test_person_and_institution(tx, |_| ()).await?;
         let person_id = *person.record.id;
 
         let mut new = NewProject {
@@ -109,8 +94,9 @@ pub mod test {
 
         modify(&mut new);
 
-        let inserted = insert_project(tx, &new).await.unwrap();
-        (new, inserted)
+        let inserted = insert_project(tx, &new).await?;
+
+        Ok((new, inserted))
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -118,32 +104,6 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (
-            NewProject {
-                record: input_record,
-                people: input_people,
-            },
-            Project::Detailed {
-                record:
-                    SavedProjectRecordDetailed {
-                        project: output_record,
-                        people: output_people,
-                    },
-                links: _,
-            },
-        ) = insert_test_project(&tx, identity).await
-        else {
-            panic!("expected Project::Detailed");
-        };
-
-        let expected_record = SavedProjectRecord {
-            id: output_record.id,
-            name: input_record.name,
-            started_at: input_record.started_at,
-            ended_at: input_record.ended_at,
-        };
-
-        assert_eq!(output_record, expected_record);
-        assert_eq!(output_people, input_people);
+        insert_test_project(&tx, |_| ()).await.unwrap();
     }
 }

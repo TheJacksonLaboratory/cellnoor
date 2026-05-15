@@ -3,14 +3,10 @@ use cellnoor_types::specimen::{
     Specimen,
     creation::{NewSpecimen, NewSpecimenRecord},
 };
-use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{
-        self,
-        util::{AsFieldValuePairs, FieldValuePairs, ToFieldListPlaceholdersParams},
-    },
+    db::{self, Record, ToRecord},
     error::{Error, ErrorInner},
     handlers::specimens::{
         measurements::create::insert_specimen_measurement, show::select_specimen_by_id,
@@ -40,7 +36,7 @@ pub async fn insert_specimen(
 ) -> Result<Specimen, ErrorInner> {
     let (record, measurements) = record.split_for_insertion();
 
-    let id = insert_specimen_record(tx, &record).await?;
+    let id = db::insert_into(tx, "specimen", &record).await?;
 
     futures::future::try_join_all(
         measurements
@@ -52,26 +48,8 @@ pub async fn insert_specimen(
     select_specimen_by_id(tx, id).await
 }
 
-async fn insert_specimen_record(
-    tx: &db::Transaction<'_>,
-    new_record: &NewSpecimenRecord,
-) -> Result<Uuid, ErrorInner> {
-    let fields = new_record.as_field_value_pairs();
-
-    let (field_list, placeholders, params) = fields.to_field_list_and_placeholders_and_params();
-
-    let id = tx
-        .query_one_into(
-            &format!("insert into specimen {field_list} values {placeholders} returning id"),
-            &params,
-        )
-        .await?;
-
-    Ok(id)
-}
-
-impl AsFieldValuePairs<15> for NewSpecimenRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, 15> {
+impl ToRecord<&'static str, 15> for NewSpecimenRecord {
+    fn to_record(&self) -> Record<'_, &'static str, 15> {
         let Self {
             id: _,
             readable_id,
@@ -113,17 +91,15 @@ impl AsFieldValuePairs<15> for NewSpecimenRecord {
 
 #[cfg(test)]
 pub mod test {
-    use std::convert::identity;
-
     use cellnoor_types::{
         project::{Project, SavedProjectRecordDetailed},
         specimen::{
-            SavedSpecimenRecord, Species, Specimen,
+            Species, Specimen,
             creation::{NewSpecimen, NewSpecimenCommonFields, block::NewBlock},
             measurement::{NewSpecimenMeasurement, SpecimenMeasurementData},
         },
     };
-    use jiff::{SignedDuration, Timestamp};
+    use jiff::Timestamp;
     use positive::PositiveBoundedF32;
     use postgres_types::Json;
     use pretty_assertions::assert_eq;
@@ -140,10 +116,10 @@ pub mod test {
 
     pub async fn insert_test_specimen_and_project<F>(
         tx: &db::Transaction<'_>,
-        modify: F,
-    ) -> (NewSpecimen, Specimen)
+        mut modify: F,
+    ) -> Result<(NewSpecimen, Specimen), ErrorInner>
     where
-        F: Fn(NewSpecimen) -> NewSpecimen,
+        F: FnMut(&mut NewSpecimen),
     {
         let (
             _,
@@ -151,9 +127,9 @@ pub mod test {
                 record: SavedProjectRecordDetailed { project, people },
                 links: _,
             },
-        ) = insert_test_project(tx, identity).await
+        ) = insert_test_project(tx, |_| ()).await?
         else {
-            panic!("expected detailed project");
+            panic!("expected Project::Detailed");
         };
 
         let mut new = NewSpecimen::Block(NewBlock::CarboxymethylCellulose {
@@ -181,10 +157,10 @@ pub mod test {
             fixative: None,
         });
 
-        new = modify(new);
+        modify(&mut new);
 
-        let inserted = insert_specimen(tx, new.clone()).await.unwrap();
-        (new, inserted)
+        let inserted = insert_specimen(tx, new.clone()).await?;
+        Ok((new, inserted))
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -192,52 +168,7 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (
-            input,
-            Specimen::Detailed {
-                record: output_record,
-                project: output_project,
-                measurements: output_measurements,
-                links: _,
-            },
-        ) = insert_test_specimen_and_project(&tx, identity).await
-        else {
-            panic!("expected Specimen::Detailed");
-        };
-
-        let (input_record, input_measurements) = input.split_for_insertion();
-
-        let expected_record = SavedSpecimenRecord {
-            id: output_record.id,
-            readable_id: input_record.readable_id,
-            name: input_record.name,
-            submitted_by: input_record.submitted_by,
-            project_id: input_record.project_id,
-            received_at: input_record.received_at,
-            species: input_record.species,
-            host_species: input_record.host_species,
-            returned_at: input_record.returned_at,
-            returned_by: input_record.returned_by,
-            type_: input_record.type_,
-            embedded_in: input_record.embedded_in,
-            fixative: input_record.fixative,
-            thermal_preservation_method: input_record.thermal_preservation_method,
-            tissue: input_record.tissue,
-            additional_data: input_record.additional_data,
-        };
-
-        assert_eq!(output_record, expected_record);
-        assert_eq!(*output_project.record().id, expected_record.project_id);
-
-        // Measurements: ids are auto-generated, but everything else should match
-        // what we asked to insert.
-        assert_eq!(output_measurements.len(), input_measurements.len());
-        for (out, inp) in output_measurements.iter().zip(input_measurements.iter()) {
-            assert_eq!(out.specimen_id, *output_record.id);
-            assert_eq!(out.measured_by, inp.measured_by);
-            assert_eq!(out.measured_at, inp.measured_at);
-            assert_eq!(out.data, inp.data);
-        }
+        insert_test_specimen_and_project(&tx, |_| ()).await.unwrap();
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -245,13 +176,11 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        // Just use the new specimen returned by this test helper
-        let (mut new, _) = insert_test_specimen_and_project(&tx, identity).await;
-        let inner = new.inner_mut();
-        inner.readable_id = Uuid::new_v4().to_string().to_nonempty_string();
-        inner.received_at = Timestamp::from_second(0).unwrap();
-
-        let error = insert_specimen(&tx, new).await.unwrap_err();
+        let error = insert_test_specimen_and_project(&tx, |sp| {
+            sp.inner_mut().received_at = Timestamp::from_second(0).unwrap()
+        })
+        .await
+        .unwrap_err();
 
         assert_eq!(
             error,

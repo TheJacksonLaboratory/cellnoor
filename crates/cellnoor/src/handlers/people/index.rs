@@ -39,10 +39,9 @@ pub async fn select_people(
 
 #[cfg(test)]
 mod test {
-    use std::convert::identity;
 
     use cellnoor_types::{
-        StringOperator,
+        operator::StringOperator,
         person::{PersonPredicate, PersonQuery},
     };
     use pretty_assertions::assert_eq;
@@ -59,7 +58,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, inserted) = insert_test_person_and_institution(&tx, identity).await;
+        let (_, inserted) = insert_test_person_and_institution(&tx, |_| ())
+            .await
+            .unwrap();
 
         let selected_records = select_people(
             &tx,

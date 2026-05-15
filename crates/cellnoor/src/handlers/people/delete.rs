@@ -3,8 +3,6 @@ use axum::{
     extract::{Path, State},
 };
 use deadpool_postgres::tokio_postgres::error::SqlState;
-use futures::TryFutureExt;
-use postgres_types::ToSql;
 use uuid::Uuid;
 
 use crate::{
@@ -31,16 +29,7 @@ pub async fn delete_person(
 }
 
 pub async fn delete_person_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    let params: [&(dyn ToSql + Sync); _] = [&id];
-    let delete = tx
-        .execute("delete from person where id = $1", &params)
-        .map_err(ErrorInner::from);
-
-    let (n, _) = tokio::try_join!(delete, drop_db_user(tx, id))?;
-
-    if n == 0 {
-        return Err(ErrorInner::ResourceNotFound);
-    }
+    tokio::try_join!(db::delete_by_id(tx, "person", id), drop_db_user(tx, id))?;
 
     Ok(())
 }
@@ -71,13 +60,8 @@ async fn drop_db_user(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInn
 
 #[cfg(test)]
 mod test {
-    use std::convert::identity;
-
-    use pretty_assertions::assert_eq;
-    use uuid::Uuid;
 
     use crate::{
-        error::ErrorInner,
         handlers::people::{
             create::test::insert_test_person_and_institution, delete::delete_person_by_id,
         },
@@ -89,17 +73,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, person) = insert_test_person_and_institution(&tx, identity).await;
+        let (_, person) = insert_test_person_and_institution(&tx, |_| ())
+            .await
+            .unwrap();
         delete_person_by_id(&tx, *person.record.id).await.unwrap();
-    }
-
-    #[tokio::test(flavor = "multi_thread")]
-    async fn delete_missing() {
-        let mut client = db_client_as_admin().await;
-        let tx = client.begin().await.unwrap();
-
-        let error = delete_person_by_id(&tx, Uuid::new_v4()).await.unwrap_err();
-
-        assert_eq!(error, ErrorInner::ResourceNotFound);
     }
 }

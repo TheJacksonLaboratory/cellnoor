@@ -19,6 +19,7 @@ async fn main() -> anyhow::Result<()> {
 }
 
 #[cfg(feature = "ssr")]
+#[allow(dead_code)]
 async fn leptos_main() {
     use axum::Router;
     use camino::Utf8PathBuf;

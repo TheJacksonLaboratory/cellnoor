@@ -51,8 +51,8 @@ pub enum BlockEmbeddingMatrix {
 impl NewBlock {
     fn fixative(&self) -> Option<Fixative> {
         let fixative = match self {
-            Self::CarboxymethylCellulose { fixative, .. } => *fixative,
-            Self::OptimalCuttingTemperatureCompound { fixative, .. } => *fixative,
+            Self::CarboxymethylCellulose { fixative, .. }
+            | Self::OptimalCuttingTemperatureCompound { fixative, .. } => *fixative,
             Self::Paraffin { fixative, .. } => Some(*fixative),
         };
 

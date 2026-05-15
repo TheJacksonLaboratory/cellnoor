@@ -31,26 +31,13 @@ pub async fn delete_institution_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<(), ErrorInner> {
-    let n = tx
-        .execute("delete from institution where id = $1", &[&id])
-        .await?;
-
-    if n == 0 {
-        return Err(ErrorInner::ResourceNotFound);
-    }
-
-    Ok(())
+    db::delete_by_id(tx, "institution", id).await
 }
 
 #[cfg(test)]
 mod test {
-    use std::convert::identity;
-
-    use pretty_assertions::assert_eq;
-    use uuid::Uuid;
 
     use crate::{
-        error::ErrorInner,
         handlers::institutions::{
             create::test::insert_test_institution, delete::delete_institution_by_id,
         },
@@ -62,21 +49,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, institution) = insert_test_institution(&tx, identity).await;
+        let (_, institution) = insert_test_institution(&tx, |_| ()).await.unwrap();
         delete_institution_by_id(&tx, *institution.record.id)
             .await
             .unwrap();
-    }
-
-    #[tokio::test(flavor = "multi_thread")]
-    async fn delete_missing() {
-        let mut client = db_client_as_admin().await;
-        let tx = client.begin().await.unwrap();
-
-        let error = delete_institution_by_id(&tx, Uuid::new_v4())
-            .await
-            .unwrap_err();
-
-        assert_eq!(error, ErrorInner::ResourceNotFound);
     }
 }

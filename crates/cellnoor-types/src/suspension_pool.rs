@@ -93,6 +93,7 @@ pub struct SuspensionPoolLinks {
 }
 
 impl SuspensionPoolLinks {
+    #[must_use]
     pub fn from_id(id: Id) -> Self {
         Self {
             simple: SimpleLinks::from_str_and_id("/suspension-pools", id),
@@ -106,23 +107,27 @@ impl SuspensionPoolLinks {
 pub struct SavedTaggedSpecimenRecord {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub specimen: SavedSpecimenRecord,
-    pub tag: Option<SavedMultiplexingTag>,
+    pub multiplexing_tag: Option<SavedMultiplexingTag>,
 }
 
 #[base_model]
 pub struct TaggedSpecimen {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub specimen: Specimen,
-    pub tag: Option<SavedMultiplexingTag>,
+    pub multiplexing_tag: Option<SavedMultiplexingTag>,
 }
 
 impl TaggedSpecimen {
+    #[must_use]
     pub fn from_record(
-        SavedTaggedSpecimenRecord { specimen, tag }: SavedTaggedSpecimenRecord,
+        SavedTaggedSpecimenRecord {
+            specimen,
+            multiplexing_tag,
+        }: SavedTaggedSpecimenRecord,
     ) -> Self {
         Self {
             specimen: Specimen::from_record(specimen),
-            tag,
+            multiplexing_tag,
         }
     }
 }
@@ -146,13 +151,14 @@ pub enum SuspensionPool {
 }
 
 impl SuspensionPool {
+    #[must_use]
     pub fn record(&self) -> &SavedSuspensionPoolRecord {
         match self {
-            Self::Compact { record, .. } => record,
-            Self::Detailed { record, .. } => record,
+            Self::Compact { record, .. } | Self::Detailed { record, .. } => record,
         }
     }
 
+    #[must_use]
     pub fn from_record(record: SavedSuspensionPoolRecord) -> Self {
         Self::Compact {
             links: SuspensionPoolLinks::from_id(record.id),

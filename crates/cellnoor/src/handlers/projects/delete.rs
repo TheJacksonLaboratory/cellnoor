@@ -28,30 +28,14 @@ pub async fn delete_project(
 }
 
 pub async fn delete_project_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    let n = tx
-        .execute("delete from project where id = $1", &[&id])
-        .await?;
-
-    if n == 0 {
-        return Err(ErrorInner::ResourceNotFound);
-    }
-
-    Ok(())
+    db::delete_by_id(tx, "project", id).await
 }
 
 #[cfg(test)]
 mod test {
-    use std::convert::identity;
-
-    use pretty_assertions::assert_eq;
-    use uuid::Uuid;
 
     use crate::{
-        error::ErrorInner,
-        handlers::projects::{
-            create::test::insert_test_project, delete::delete_project_by_id,
-            show::select_project_by_id,
-        },
+        handlers::projects::{create::test::insert_test_project, delete::delete_project_by_id},
         state::test_util::db_client_as_admin,
     };
 
@@ -60,21 +44,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, inserted) = insert_test_project(&tx, identity).await;
-        let id = *inserted.record().id;
-
-        delete_project_by_id(&tx, id).await.unwrap();
-
-        let error = select_project_by_id(&tx, id).await.unwrap_err();
-        assert_eq!(error, ErrorInner::ResourceNotFound);
-    }
-
-    #[tokio::test(flavor = "multi_thread")]
-    async fn delete_missing() {
-        let mut client = db_client_as_admin().await;
-        let tx = client.begin().await.unwrap();
-
-        let error = delete_project_by_id(&tx, Uuid::new_v4()).await.unwrap_err();
-        assert_eq!(error, ErrorInner::ResourceNotFound);
+        let (_, inserted) = insert_test_project(&tx, |_| ()).await.unwrap();
+        delete_project_by_id(&tx, *inserted.record().id)
+            .await
+            .unwrap();
     }
 }

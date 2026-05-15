@@ -3,14 +3,14 @@ use axum::{
     extract::{Path, State},
 };
 use cellnoor_types::{
-    UuidOperator,
+    operator::UuidOperator,
     suspension_pool::{SuspensionPool, SuspensionPoolPredicateInner},
 };
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, util::select_one},
+    db::{self, select_one},
     error::{Error, ErrorInner},
     handlers::{path::IdParam, suspension_pools::index::select_suspension_pools},
     state::AppState,
@@ -42,4 +42,3 @@ pub async fn select_suspension_pool_by_id(
     )
     .await
 }
-

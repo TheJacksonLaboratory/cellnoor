@@ -3,11 +3,13 @@ use cellnoor_types::suspension_pool::{
     SavedSuspensionPoolRecord, SavedTaggedSpecimenRecord, SuspensionPool, SuspensionPoolLinks,
     SuspensionPoolQuery, TaggedSpecimen,
 };
+use deadpool_postgres::tokio_postgres::Row;
 use futures::StreamExt;
+use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
-    db,
+    db::{self, construct_select_stmt},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -32,37 +34,56 @@ pub async fn select_suspension_pools(
     query: &SuspensionPoolQuery,
 ) -> Result<Vec<SuspensionPool>, ErrorInner> {
     let pools = if query.detailed {
-        let (clause, params) = query.to_sql_query_with_group_by("group by suspension_pool");
-        let sql = format!("{} {clause}", include_str!("./select_detailed.sql"));
+        let (sql, params) = construct_detailed_select_stmt(query);
         let stream = tx.query_stream(&sql, params).await?;
         stream
-            .map(|row| {
-                let row = row.unwrap();
-                let record: SavedSuspensionPoolRecord = row.get(0);
-                let specimens: Vec<SavedTaggedSpecimenRecord> = row.get(1);
-
-                SuspensionPool::Detailed {
-                    links: SuspensionPoolLinks::from_id(record.id),
-                    record,
-                    specimens: specimens
-                        .into_iter()
-                        .map(TaggedSpecimen::from_record)
-                        .collect(),
-                    measurements: row.get(2),
-                    preparers: row.get(3),
-                }
-            })
+            .map(|row| row.map(map_detailed_row).unwrap())
             .collect()
             .await
     } else {
-        let (clause, params) = query.to_sql_query();
-        let sql = format!(
-            "select distinct on ((suspension_pool).id) suspension_pool from \
-             suspension_pool_to_specimen {clause}"
+        let (sql, params) = construct_select_stmt(
+            "suspension_pool_to_specimen",
+            &["distinct on ((suspension_pool).id) suspension_pool"],
+            None,
+            query,
         );
         let stream = tx.query_stream_into(&sql, params).await?;
         stream.map(SuspensionPool::from_record).collect().await
     };
 
     Ok(pools)
+}
+
+fn construct_detailed_select_stmt(
+    query: &SuspensionPoolQuery,
+) -> (String, Vec<&(dyn ToSql + Sync)>) {
+    construct_select_stmt(
+        "suspension_pool_to_specimen",
+        &[
+            "suspension_pool",
+            "array_agg((specimen, multiplexing_tag)::tagged_specimen) as specimens",
+            "array(select m from suspension_pool_measurement as m where m.pool_id = \
+             (suspension_pool).id) as measurements",
+            "array(select prep.prepared_by from suspension_pool_preparer as prep where \
+             prep.pool_id = (suspension_pool).id) as preparers",
+        ],
+        Some("suspension_pool"),
+        query,
+    )
+}
+
+fn map_detailed_row(row: Row) -> SuspensionPool {
+    let record: SavedSuspensionPoolRecord = row.get("suspension_pool");
+    let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
+
+    SuspensionPool::Detailed {
+        links: SuspensionPoolLinks::from_id(record.id),
+        record,
+        specimens: specimens
+            .into_iter()
+            .map(TaggedSpecimen::from_record)
+            .collect(),
+        measurements: row.get("measurements"),
+        preparers: row.get("preparers"),
+    }
 }

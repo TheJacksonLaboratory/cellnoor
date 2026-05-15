@@ -37,10 +37,7 @@ create function check_timestamp_ordering() returns trigger language plpgsql vola
             return new;
         end if;
 
-        execute format(
-            'select count(*) from %I where id = $1 and %I <= $2',
-            parent_table, parent_value_field
-        ) into n using child_fk, child_value;
+        execute format('select count(*) from %I where id = $1 and (%I <= $2 or %I is null)', parent_table, parent_value_field, parent_value_field) into n using child_fk, child_value;
 
         if (n != 1) then
             raise check_violation using message = format('%I cannot be before parent %I field %I', child_value_field, parent_table, parent_value_field), table = tg_table_name, column = child_value_field;

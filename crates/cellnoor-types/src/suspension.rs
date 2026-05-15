@@ -108,13 +108,14 @@ impl SimpleLinks {
 }
 
 impl Suspension {
+    #[must_use]
     pub fn record(&self) -> &SavedSuspensionRecord {
         match self {
-            Self::Compact { record, .. } => record,
-            Self::Detailed { record, .. } => record,
+            Self::Compact { record, .. } | Self::Detailed { record, .. } => record,
         }
     }
 
+    #[must_use]
     pub fn from_record(record: SavedSuspensionRecord) -> Self {
         Self::Compact {
             links: SimpleLinks::for_suspension(record.id),
@@ -122,6 +123,7 @@ impl Suspension {
         }
     }
 
+    #[must_use]
     pub fn from_detailed_record(
         SavedSuspensionRecordDetailed {
             suspension,

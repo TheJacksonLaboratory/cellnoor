@@ -26,7 +26,7 @@ mod suspension_pools;
 mod suspensions;
 // pub mod tenx_assays;
 
-pub(super) fn router<'a>() -> Router<AppState> {
+pub(super) fn router() -> Router<AppState> {
     aide::generate::infer_responses(true);
 
     let router = ApiRouter::new()

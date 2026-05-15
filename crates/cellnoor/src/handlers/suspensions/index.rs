@@ -4,7 +4,7 @@ use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db,
+    db::{self, construct_select_stmt},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -28,17 +28,17 @@ pub async fn select_suspensions(
     tx: &db::Transaction<'_>,
     query: &SuspensionQuery,
 ) -> Result<Vec<Suspension>, ErrorInner> {
-    let (clause, params) = query.to_sql_query();
-
     let suspensions = if query.detailed {
-        let sql = format!("select suspension_detailed from suspension_detailed {clause}");
+        let (sql, params) =
+            construct_select_stmt("suspension_detailed", &["suspension_detailed"], None, query);
         let stream = tx.query_stream_into(&sql, params).await?;
         stream.map(Suspension::from_detailed_record).collect().await
     } else {
         // We query through `suspension_to_specimen` rather than `suspension` because
         // the predicate can filter on the parent specimen's fields, which need
         // a `(specimen)` row in scope.
-        let sql = format!("select suspension from suspension_to_specimen {clause}");
+        let (sql, params) =
+            construct_select_stmt("suspension_to_specimen", &["suspension"], None, query);
         let stream = tx.query_stream_into(&sql, params).await?;
         stream.map(Suspension::from_record).collect().await
     };
@@ -48,10 +48,9 @@ pub async fn select_suspensions(
 
 #[cfg(test)]
 mod test {
-    use std::convert::identity;
 
     use cellnoor_types::{
-        UuidOperator,
+        operator::UuidOperator,
         suspension::{SuspensionPredicateInner, SuspensionQuery},
     };
     use pretty_assertions::assert_eq;
@@ -68,7 +67,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, inserted) = insert_test_suspension_and_specimen(&tx, identity).await;
+        let (_, inserted) = insert_test_suspension_and_specimen(&tx, |_| ())
+            .await
+            .unwrap();
 
         let suspensions = select_suspensions(
             &tx,
@@ -80,6 +81,7 @@ mod test {
         .await
         .unwrap();
 
+        assert_eq!(suspensions.len(), 1);
         assert_eq!(suspensions[0].record(), inserted.record());
     }
 }

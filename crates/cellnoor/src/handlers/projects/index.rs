@@ -4,7 +4,7 @@ use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db,
+    db::{self, construct_select_stmt},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -28,14 +28,13 @@ pub async fn select_projects(
     tx: &db::Transaction<'_>,
     query: &ProjectQuery,
 ) -> Result<Vec<Project>, ErrorInner> {
-    let (clause, params) = query.to_sql_query();
-
     let projects = if query.detailed {
-        let sql = format!("select project_detailed from project_detailed {clause}");
+        let (sql, params) =
+            construct_select_stmt("project_detailed", &["project_detailed"], None, query);
         let stream = tx.query_stream_into(&sql, params).await?;
         stream.map(Project::from_detailed_record).collect().await
     } else {
-        let sql = format!("select project from project {clause}");
+        let (sql, params) = construct_select_stmt("project", &["project"], None, query);
         let stream = tx.query_stream_into(&sql, params).await?;
         stream.map(Project::from_record).collect().await
     };
@@ -45,10 +44,9 @@ pub async fn select_projects(
 
 #[cfg(test)]
 mod test {
-    use std::convert::identity;
 
     use cellnoor_types::{
-        SimpleStringOperator,
+        operator::SimpleStringOperator,
         project::{ProjectPredicate, ProjectQuery},
     };
     use pretty_assertions::assert_eq;
@@ -63,7 +61,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, inserted) = insert_test_project(&tx, identity).await;
+        let (_, inserted) = insert_test_project(&tx, |_| ()).await.unwrap();
 
         let query = ProjectQuery::from_filter(
             ProjectPredicate::Name(
@@ -73,6 +71,7 @@ mod test {
         );
         let selected = select_projects(&tx, &query).await.unwrap();
 
+        assert_eq!(selected.len(), 1);
         assert_eq!(*selected[0].record().id, *inserted.record().id);
     }
 }

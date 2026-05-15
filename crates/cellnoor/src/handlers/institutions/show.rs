@@ -3,8 +3,8 @@ use axum::{
     extract::{Path, State},
 };
 use cellnoor_types::{
-    UuidOperator,
     institution::{Institution, InstitutionPredicate},
+    operator::UuidOperator,
 };
 use uuid::Uuid;
 

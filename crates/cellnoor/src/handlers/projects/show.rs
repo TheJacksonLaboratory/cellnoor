@@ -3,14 +3,14 @@ use axum::{
     extract::{Path, State},
 };
 use cellnoor_types::{
-    UuidOperator,
+    operator::UuidOperator,
     project::{Project, ProjectPredicate},
 };
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, util::select_one},
+    db::{self, select_one},
     error::{Error, ErrorInner},
     handlers::{path::IdParam, projects::index::select_projects},
     state::AppState,
@@ -42,4 +42,3 @@ pub async fn select_project_by_id(
     )
     .await
 }
-

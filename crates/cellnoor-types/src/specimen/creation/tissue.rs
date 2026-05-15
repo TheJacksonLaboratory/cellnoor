@@ -63,13 +63,13 @@ impl NewTissue {
 
     #[must_use]
     pub(super) fn split_for_insertion(self) -> SpecimenInsertion {
-        let _type_ = SpecimenType::Tissue;
+        let type_ = SpecimenType::Tissue;
         let fixative = self.fixative();
         let thermal_preservation_method = self.thermal_preservation_method();
 
         SpecimenInsertion::from_fields(
             self.into_inner(),
-            SpecimenType::Tissue,
+            type_,
             None,
             fixative,
             thermal_preservation_method,

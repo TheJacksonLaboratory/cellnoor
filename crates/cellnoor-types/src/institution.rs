@@ -40,6 +40,7 @@ pub struct Institution {
 }
 
 impl Institution {
+    #[must_use]
     pub fn from_record(record: SavedInstitutionRecord) -> Self {
         Self {
             links: SimpleLinks {
@@ -57,8 +58,8 @@ mod tests {
 
     use super::query::InstitutionPredicate;
     use crate::{
-        SimpleStringOperator,
         institution::InstitutionQuery,
+        operator::SimpleStringOperator,
         query::filter::{Filter, UuidOperator},
     };
 

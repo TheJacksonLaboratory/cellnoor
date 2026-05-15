@@ -14,10 +14,12 @@ fn default_address() -> String {
 pub struct Settings {
     db_url: SecretString,
     auth_secret: SecretString,
+    #[allow(dead_code)]
     auth_url: String,
     max_db_pool_size: Option<usize>,
     #[serde(default = "default_address")]
     address: String,
+    #[allow(dead_code)]
     app_url: String,
     #[serde(default = "default_with_auth")]
     with_auth: bool,
@@ -44,10 +46,9 @@ impl Settings {
                  settings set in environment should have a prefix of 'CELLNOOR'"
             )
         } else {
-            format!(
-                "failed to read app configuration from environment. All settings set in \
-                 environment should have a prefix of 'CELLNOOR'"
-            )
+            "failed to read app configuration from environment. All settings set in environment \
+             should have a prefix of 'CELLNOOR'"
+                .to_string()
         };
 
         let settings = settings

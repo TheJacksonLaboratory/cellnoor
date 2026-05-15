@@ -1,7 +1,5 @@
-pub use query::filter::{
-    BoolOperator, F32Operator, I32Operator, I64Operator, SimpleStringOperator, StringOperator,
-    TimestampOperator, ToPredicate, UuidOperator,
-};
+#[cfg(feature = "postgres-types")]
+pub use query::filter::ToPredicate;
 
 pub mod id;
 pub mod institution;
@@ -20,4 +18,8 @@ pub mod operator {
         BoolOperator, F32Operator, I32Operator, I64Operator, SimpleStringOperator, StringOperator,
         TimestampOperator, UuidOperator,
     };
+}
+
+pub mod order_by {
+    pub use crate::query::order_by::{OrderBy, OrderBySet};
 }

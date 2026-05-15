@@ -39,11 +39,10 @@ pub async fn select_institutions(
 
 #[cfg(test)]
 mod test {
-    use std::convert::identity;
 
     use cellnoor_types::{
-        StringOperator,
         institution::{InstitutionPredicate, InstitutionQuery, NewInstitution},
+        operator::StringOperator,
     };
     use pretty_assertions::assert_eq;
 
@@ -59,7 +58,8 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (NewInstitution { name, .. }, inserted) = insert_test_institution(&tx, identity).await;
+        let (NewInstitution { name, .. }, inserted) =
+            insert_test_institution(&tx, |_| ()).await.unwrap();
 
         let selected_records = select_institutions(
             &tx,

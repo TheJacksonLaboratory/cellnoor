@@ -4,7 +4,7 @@ use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db,
+    db::{self, construct_select_stmt},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -28,14 +28,13 @@ pub async fn select_specimens(
     tx: &db::Transaction<'_>,
     query: &SpecimenQuery,
 ) -> Result<Vec<Specimen>, ErrorInner> {
-    let (clause, params) = query.to_sql_query();
-
     let specimens = if query.detailed {
-        let sql = format!("select specimen_detailed from specimen_detailed {clause}");
+        let (sql, params) =
+            construct_select_stmt("specimen_detailed", &["specimen_detailed"], None, query);
         let stream = tx.query_stream_into(&sql, params).await?;
         stream.map(Specimen::from_detailed_record).collect().await
     } else {
-        let sql = format!("select specimen from specimen {clause}");
+        let (sql, params) = construct_select_stmt("specimen", &["specimen"], None, query);
         let stream = tx.query_stream_into(&sql, params).await?;
         stream.map(Specimen::from_record).collect().await
     };
@@ -45,10 +44,9 @@ pub async fn select_specimens(
 
 #[cfg(test)]
 mod test {
-    use std::convert::identity;
 
     use cellnoor_types::{
-        UuidOperator,
+        operator::UuidOperator,
         specimen::{SpecimenPredicate, SpecimenQuery},
     };
     use pretty_assertions::assert_eq;
@@ -65,7 +63,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, inserted) = insert_test_specimen_and_project(&tx, identity).await;
+        let (_, inserted) = insert_test_specimen_and_project(&tx, |_| ()).await.unwrap();
 
         let specimens = select_specimens(
             &tx,
@@ -77,6 +75,7 @@ mod test {
         .await
         .unwrap();
 
+        assert_eq!(specimens.len(), 1);
         assert_eq!(specimens[0].record(), inserted.record());
     }
 }

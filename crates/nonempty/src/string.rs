@@ -62,7 +62,7 @@ mod serde_tests {
     fn deserialize_empty_string_fails() {
         let result: Result<Vec<NonemptyString>, _> = serde_json::from_str(r#"[""]"#);
 
-        assert!(result.is_err())
+        assert!(result.is_err());
     }
 
     #[test]

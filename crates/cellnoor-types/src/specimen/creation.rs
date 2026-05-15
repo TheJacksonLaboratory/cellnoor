@@ -59,7 +59,7 @@ pub type NewSpecimenRecord = SpecimenRecord<NoId>;
 
 impl NewSpecimen {
     pub fn inner_mut(&mut self) -> &mut NewSpecimenCommonFields {
-        use NewSpecimen::*;
+        use NewSpecimen::{Block, CellPellet, RnaExtract, Suspension, Tissue};
 
         match self {
             Block(
@@ -82,8 +82,9 @@ impl NewSpecimen {
         }
     }
 
+    #[must_use]
     pub fn into_inner(self) -> NewSpecimenCommonFields {
-        use NewSpecimen::*;
+        use NewSpecimen::{Block, CellPellet, RnaExtract, Suspension, Tissue};
 
         match self {
             Block(
@@ -106,6 +107,7 @@ impl NewSpecimen {
         }
     }
 
+    #[must_use]
     pub fn split_for_insertion(self) -> (NewSpecimenRecord, Vec<NewSpecimenMeasurement>) {
         let SpecimenInsertion(record, measurements) = match self {
             Self::Block(s) => s.split_for_insertion(),

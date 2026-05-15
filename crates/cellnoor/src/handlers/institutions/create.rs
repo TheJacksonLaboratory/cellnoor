@@ -29,13 +29,13 @@ pub async fn insert_institution(
     tx: &db::Transaction<'_>,
     new_record: &NewInstitution,
 ) -> Result<Institution, ErrorInner> {
-    let id = db::insert_into(tx, "institution", &[new_record]).await?;
+    let id = db::insert_into(tx, "institution", new_record).await?;
 
     select_institution_by_id(tx, id).await
 }
 
 impl ToRecord<InstitutionField, 2> for NewInstitution {
-    fn to_record(&self) -> Record<InstitutionField, 2> {
+    fn to_record(&self) -> Record<'_, InstitutionField, 2> {
         use InstitutionField::*;
         let Self {
             id: _,
@@ -52,8 +52,6 @@ impl ToRecord<InstitutionField, 2> for NewInstitution {
 
 #[cfg(test)]
 pub mod test {
-    use std::convert::identity;
-
     use cellnoor_types::{
         id::NoId,
         institution::{Institution, NewInstitution},
@@ -62,14 +60,15 @@ pub mod test {
 
     use crate::{
         db,
+        error::ErrorInner,
         handlers::institutions::create::insert_institution,
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
     pub async fn insert_test_institution<F>(
         tx: &db::Transaction<'_>,
-        modify: F,
-    ) -> (NewInstitution, Institution)
+        mut modify: F,
+    ) -> Result<(NewInstitution, Institution), ErrorInner>
     where
         F: FnMut(&mut NewInstitution),
     {
@@ -81,8 +80,8 @@ pub mod test {
 
         modify(&mut new);
 
-        let inserted = insert_institution(tx, &new).await.unwrap();
-        (new, inserted)
+        let inserted = insert_institution(tx, &new).await?;
+        Ok((new, inserted))
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -90,6 +89,6 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        insert_test_institution(&tx, identity).await;
+        insert_test_institution(&tx, |_| ()).await.unwrap();
     }
 }

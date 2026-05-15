@@ -46,15 +46,19 @@ where
     let mut params = Vec::with_capacity(N + 1);
 
     for (i, (field, value)) in record.iter().enumerate() {
-        column_sets.push(format!("{} = ${}", field.as_ref(), i + 1));
+        column_sets.push(format!(
+            "{} = ${}",
+            field.as_ref().split('.').last().unwrap(),
+            i + 1
+        ));
         params.push(*value);
     }
 
     params.push(id);
 
-    let column_sets = column_sets.join(",");
+    let column_sets = column_sets.join(", ");
 
-    let update_clause = format!("update {table} set {column_sets} where id = ${}", N + 2);
+    let update_clause = format!("update {table} set {column_sets} where id = ${}", N + 1);
 
     Some((update_clause, params))
 }
@@ -69,16 +73,14 @@ mod tests {
 
     use crate::db::update::convert_record_to_update_stmt;
 
+    static TEST_ID: Uuid = Uuid::nil();
+    static TEST_DATA: [(InstitutionField, &'static (dyn ToSql + Sync)); 2] = [
+        (InstitutionField::Name, &"name"),
+        (InstitutionField::MicrosoftEntraTenantId, &Uuid::max()),
+    ];
+
     fn test_update_clause() -> (String, Vec<&'static (dyn ToSql + Sync)>) {
-        convert_record_to_update_stmt(
-            "institution",
-            &Uuid::nil(),
-            &[
-                (InstitutionField::Name, "name"),
-                (InstitutionField::MicrosoftEntraTenantId, &Uuid::max()),
-            ],
-        )
-        .unwrap()
+        convert_record_to_update_stmt("institution", &TEST_ID, &TEST_DATA).unwrap()
     }
 
     #[test]
@@ -95,9 +97,16 @@ mod tests {
     fn params_are_correct() {
         let mut actual_params = BytesMut::new();
         let (_, params) = test_update_clause();
-        params[0].to_sql(&Type::TEXT, &mut actual_params).unwrap();
-        params[1].to_sql(&Type::UUID, &mut actual_params).unwrap();
-        params[2].to_sql(&Type::UUID, &mut actual_params).unwrap();
+
+        params[0]
+            .to_sql_checked(&Type::TEXT, &mut actual_params)
+            .unwrap();
+        params[1]
+            .to_sql_checked(&Type::UUID, &mut actual_params)
+            .unwrap();
+        params[2]
+            .to_sql_checked(&Type::UUID, &mut actual_params)
+            .unwrap();
 
         let mut expected_params = BytesMut::new();
         "name".to_sql(&Type::TEXT, &mut expected_params).unwrap();

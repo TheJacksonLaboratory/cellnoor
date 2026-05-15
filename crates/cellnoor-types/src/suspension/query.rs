@@ -5,7 +5,7 @@ use postgres_types::ToSql;
 #[cfg(feature = "postgres-types")]
 use crate::query::filter::ToPredicate;
 use crate::{
-    F32Operator, I64Operator, StringOperator, TimestampOperator, UuidOperator,
+    operator::{F32Operator, I64Operator, StringOperator, TimestampOperator, UuidOperator},
     query::{
         ComplexQuery, SimpleQuery,
         filter::{Filter, Operator},

@@ -2,17 +2,12 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::suspension_pool::{
-    NewSuspensionPoolRecord, SuspensionPool, SuspensionPoolUpdate,
-};
+use cellnoor_types::suspension_pool::{SuspensionPool, SuspensionPoolUpdate};
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{
-        self,
-        util::{AsFieldValuePairs, ToUpdateClause},
-    },
+    db::{self},
     error::{Error, ErrorInner},
     handlers::{
         path::IdParam,
@@ -52,7 +47,7 @@ pub async fn update_suspension_pool_by_id(
         preparers,
     }: &SuspensionPoolUpdate,
 ) -> Result<SuspensionPool, ErrorInner> {
-    update_suspension_pool_record(tx, id, record).await?;
+    db::update(tx, "suspension_pool", id, record).await?;
 
     let preparer_insertions = async {
         if !preparers.is_empty() {
@@ -71,27 +66,4 @@ pub async fn update_suspension_pool_by_id(
     tokio::try_join!(preparer_insertions, measurement_insertions)?;
 
     select_suspension_pool_by_id(tx, id).await
-}
-
-async fn update_suspension_pool_record(
-    tx: &db::Transaction<'_>,
-    id: Uuid,
-    record: &NewSuspensionPoolRecord,
-) -> Result<(), ErrorInner> {
-    let fields = record.as_field_value_pairs();
-
-    let (update_clause, params) = fields.to_update_clause(&id);
-
-    let n = tx
-        .execute(
-            &format!("update suspension_pool set {update_clause}"),
-            &params,
-        )
-        .await?;
-
-    if n == 0 {
-        return Err(ErrorInner::ResourceNotFound.into());
-    }
-
-    Ok(())
 }

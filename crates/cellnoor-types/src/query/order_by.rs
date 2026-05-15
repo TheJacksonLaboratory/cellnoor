@@ -1,3 +1,5 @@
+use std::fmt::Write;
+
 use macro_attributes::base_model;
 
 #[base_model]
@@ -65,12 +67,12 @@ where
                 let mut clause = String::with_capacity(fields.len() * 16);
                 clause.push_str("order by ");
 
-                for OrderBy { field, desc } in fields {
-                    clause.push_str(field.as_ref());
-                    clause.push(' ');
+                for (i, OrderBy { field, desc }) in fields.iter().enumerate() {
+                    if i != 0 {
+                        clause.push_str(", ");
+                    }
 
-                    clause.push_str(direction(*desc));
-                    clause.push(' ');
+                    write!(clause, "{} {}", field.as_ref(), direction(*desc)).unwrap();
                 }
 
                 clause

@@ -66,7 +66,6 @@ pub async fn update_person_by_id(
 
 #[cfg(test)]
 mod test {
-    use std::convert::identity;
 
     use cellnoor_types::person::{Person, SavedPersonRecord};
 
@@ -88,12 +87,11 @@ mod test {
                 record: SavedPersonRecord { id, .. },
                 links: _,
             },
-        ) = insert_test_person_and_institution(&tx, identity).await;
+        ) = insert_test_person_and_institution(&tx, |_| ())
+            .await
+            .unwrap();
         pre_update.record.name = "updated".to_nonempty_string();
 
-        let Person {
-            record: post_update_record,
-            links: _,
-        } = update_person_by_id(&tx, *id, &pre_update).await.unwrap();
+        update_person_by_id(&tx, *id, &pre_update).await.unwrap();
     }
 }

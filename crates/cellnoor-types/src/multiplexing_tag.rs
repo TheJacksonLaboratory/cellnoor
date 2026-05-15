@@ -13,10 +13,12 @@ mod record {
 
     #[select]
     #[cfg_attr(feature = "schemars", schemars(inline))]
+    #[cfg_attr(feature = "postgres-types", postgres(name = "multiplexing_tag"))]
     pub struct MultiplexingTagRecord<T> {
         #[cfg_attr(feature = "serde", serde(flatten))]
         pub id: T,
         pub tag_id: NonemptyString,
+        #[cfg_attr(feature = "postgres-types", postgres(name = "type"))]
         pub type_: MultiplexingTagType,
     }
 }

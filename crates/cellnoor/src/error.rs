@@ -92,7 +92,7 @@ impl IntoResponse for Error {
         }
 
         let status = match &self.error {
-            ErrorInner::ResourceNotFound { .. } => StatusCode::NOT_FOUND,
+            ErrorInner::ResourceNotFound => StatusCode::NOT_FOUND,
             ErrorInner::DataConstraint { .. } | ErrorInner::InvalidReference { .. } => {
                 StatusCode::UNPROCESSABLE_ENTITY
             }
@@ -114,8 +114,7 @@ impl From<TokioPgError> for ErrorInner {
             return ErrorInner::Other {
                 message: err.to_string(),
                 sql_state: None,
-            }
-            .into();
+            };
         };
 
         // TODO: complete this with the relevant SQL states

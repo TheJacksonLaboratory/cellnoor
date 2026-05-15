@@ -1,3 +1,4 @@
+#![allow(clippy::iter_without_into_iter)]
 use std::slice::Iter;
 
 use macro_attributes::{base_model, unit_enum};
@@ -63,7 +64,7 @@ pub type NewPersonRecord = PersonRecord<NoId>;
 pub struct PermissionsToGrant(Vec<ResourcePermission>);
 
 impl PermissionsToGrant {
-    pub fn iter<'a>(&'a self) -> Iter<'a, ResourcePermission> {
+    pub fn iter(&self) -> Iter<'_, ResourcePermission> {
         self.0.iter()
     }
 }
@@ -79,7 +80,7 @@ impl From<Vec<ResourcePermission>> for PermissionsToGrant {
 pub struct PermissionsToRevoke(Vec<ResourcePermission>);
 
 impl PermissionsToRevoke {
-    pub fn iter<'a>(&'a self) -> Iter<'a, ResourcePermission> {
+    pub fn iter(&self) -> Iter<'_, ResourcePermission> {
         self.0.iter()
     }
 }
@@ -118,6 +119,7 @@ pub struct Person {
 }
 
 impl Person {
+    #[must_use]
     pub fn from_record(record: SavedPersonRecord) -> Self {
         let self_ = format!("/people/{}", record.id);
 

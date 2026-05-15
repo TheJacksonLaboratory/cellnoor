@@ -1,3 +1,5 @@
+use std::fmt::Write;
+
 #[cfg(feature = "postgres-types")]
 use postgres_types::ToSql;
 use uuid::Uuid;
@@ -50,7 +52,7 @@ where
                 query
             }
             Self::AllOf(filters) | Self::AnyOf(filters) => {
-                let mut query = "".to_owned();
+                let mut query = String::new();
 
                 let (combinator, default) = if matches!(self, Self::AllOf(_)) {
                     (" and ", "true")
@@ -64,7 +66,7 @@ where
 
                 for (i, f) in filters.iter().enumerate() {
                     let subfilter = f.as_where_clause_inner(bind_params);
-                    query.push_str(&format!("({subfilter})"));
+                    let _ = write!(query, "({subfilter})");
 
                     if i != filters.len() - 1 {
                         query.push_str(combinator);
@@ -86,9 +88,9 @@ where
         // constructing
         let mut bind_params = Vec::with_capacity(64);
 
-        let query = self.as_where_clause_inner(&mut bind_params);
+        let filter = self.as_where_clause_inner(&mut bind_params);
 
-        (query, bind_params)
+        (format!("where {filter}"), bind_params)
     }
 }
 
@@ -155,8 +157,8 @@ pub type TimestampOperator = Operator<jiff::Timestamp>;
 
 /// A comparison operator for string values.
 ///
-/// This is a superset of [ScalarOperator] and adds two string-specific methods
-/// present in PostgreSQL:
+/// This is a superset of [`ScalarOperator`] and adds two string-specific
+/// methods present in `PostgreSQL`:
 /// 1. [`like`](https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE)
 /// 2. [Trigram similar](https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS)
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -165,9 +167,9 @@ pub type TimestampOperator = Operator<jiff::Timestamp>;
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(inline))]
 pub enum StringOperator {
-    /// PostgreSQL `like`
+    /// `PostgreSQL` `like`
     Like(String),
-    /// PostgreSQL trigram similarity
+    /// `PostgreSQL` trigram similarity
     Trgm(String),
     /// All other operators
     #[cfg_attr(feature = "serde", serde(untagged))]

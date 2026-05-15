@@ -28,13 +28,5 @@ pub async fn delete_specimen(
 }
 
 pub async fn delete_specimen_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    let n = tx
-        .execute("delete from specimen where id = $1", &[&id])
-        .await?;
-
-    if n == 0 {
-        return Err(ErrorInner::ResourceNotFound.into());
-    }
-
-    Ok(())
+    db::delete_by_id(tx, "specimen", id).await
 }

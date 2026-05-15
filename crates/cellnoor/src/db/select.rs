@@ -30,7 +30,7 @@ pub fn construct_select_stmt<'a, P, O>(
         limit,
         offset,
         order_by,
-        detailed,
+        detailed: _,
     }: &'a ComplexQuery<P, O>,
 ) -> (String, Vec<&'a (dyn ToSql + Sync)>)
 where
@@ -60,7 +60,7 @@ where
     };
 
     let query = format!(
-        "select {columns} from {table} where {where_clause} {group_by} limit {limit} offset \
+        "select {columns} from {table} {where_clause} {group_by} {order_by} {limit} offset \
          {offset}"
     );
 
@@ -70,8 +70,9 @@ where
 #[cfg(test)]
 mod tests {
     use cellnoor_types::{
-        StringOperator,
-        institution::{InstitutionPredicate, InstitutionQuery},
+        institution::{InstitutionField, InstitutionPredicate, InstitutionQuery},
+        operator::StringOperator,
+        order_by::{OrderBy, OrderBySet},
     };
     use deadpool_postgres::tokio_postgres::types::private::BytesMut;
     use postgres_types::{ToSql, Type};
@@ -79,33 +80,46 @@ mod tests {
 
     use crate::db::construct_select_stmt;
 
-    fn test_select_stmt() -> (String, Vec<&'static (dyn ToSql + Sync)>) {
-        construct_select_stmt(
-            "institution",
-            &["institution"],
-            None,
-            &InstitutionQuery::from_filter(
-                InstitutionPredicate::Name(StringOperator::Like("institution".to_owned())),
-                false,
-            ),
-        )
-    }
-
     #[test]
     fn select_stmt_has_correct_sql() {
-        let (select_stmt, _) = test_select_stmt();
+        let mut q = InstitutionQuery::from_filter(
+            InstitutionPredicate::Name(StringOperator::Like("institution".to_owned())),
+            false,
+        );
+        q.limit = Some(1);
+        q.order_by = OrderBySet::Many(vec![
+            OrderBy {
+                field: InstitutionField::Id,
+                desc: false,
+            },
+            OrderBy {
+                field: InstitutionField::Name,
+                desc: true,
+            },
+        ]);
+
+        let (select_stmt, _) = construct_select_stmt("institution", &["institution"], None, &q);
 
         assert_eq!(
             select_stmt,
-            "select institution from institution where (name like ($1))"
+            "select institution from institution where (institution).name like ($1)  order by \
+             (institution).id asc, (institution).name desc limit 1 offset 0"
         );
     }
 
     #[test]
     fn params_are_correct() {
         let mut actual_params = BytesMut::new();
-        let (_, params) = test_select_stmt();
-        params[0].to_sql(&Type::TEXT, &mut actual_params).unwrap();
+
+        let q = InstitutionQuery::from_filter(
+            InstitutionPredicate::Name(StringOperator::Like("institution".to_owned())),
+            false,
+        );
+        let (_, params) = construct_select_stmt("institution", &["institution"], None, &q);
+
+        params[0]
+            .to_sql_checked(&Type::TEXT, &mut actual_params)
+            .unwrap();
 
         let mut expected_params = BytesMut::new();
         "institution"

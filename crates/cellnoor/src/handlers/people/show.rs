@@ -3,7 +3,7 @@ use axum::{
     extract::{Path, State},
 };
 use cellnoor_types::{
-    UuidOperator,
+    operator::UuidOperator,
     person::{Person, PersonPredicate},
 };
 use uuid::Uuid;
