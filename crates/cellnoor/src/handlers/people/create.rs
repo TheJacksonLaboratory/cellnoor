@@ -217,9 +217,8 @@ pub mod test {
         person::{
             Action, NewPerson, NewPersonRecord, Person, ResourcePermission, SavedPersonRecord,
         },
-        project::{NewProject, NewProjectRecord, ProjectQuery},
+        project::ProjectQuery,
     };
-    use jiff::Timestamp;
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
@@ -230,8 +229,7 @@ pub mod test {
             institutions::{create::test::insert_test_institution, index::select_institutions},
             people::create::insert_person,
             projects::{
-                create::{insert_project, test::insert_test_project},
-                index::select_projects,
+                create::test::insert_test_project, index::select_projects,
                 show::select_project_by_id,
             },
         },

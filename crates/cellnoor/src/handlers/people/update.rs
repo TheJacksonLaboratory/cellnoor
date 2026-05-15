@@ -2,7 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::person::{NewPerson, NewPersonRecord, Person};
+use cellnoor_types::person::{NewPerson, Person};
 use nonempty::NonemptyString;
 use uuid::Uuid;
 
@@ -68,15 +68,9 @@ pub async fn update_person_by_id(
 mod test {
     use std::convert::identity;
 
-    use cellnoor_types::{
-        id::NoId,
-        person::{NewPerson, NewPersonRecord, Person, SavedPersonRecord},
-    };
-    use pretty_assertions::assert_eq;
-    use uuid::Uuid;
+    use cellnoor_types::person::{Person, SavedPersonRecord};
 
     use crate::{
-        error::ErrorInner,
         handlers::people::{
             create::test::insert_test_person_and_institution, update::update_person_by_id,
         },
