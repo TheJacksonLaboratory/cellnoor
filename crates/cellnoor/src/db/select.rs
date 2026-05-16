@@ -7,12 +7,12 @@ use crate::error::ErrorInner;
 pub async fn select_one<P, O, T>(
     tx: &Transaction<'_>,
     pred: P,
-    select_fn: impl AsyncFn(&Transaction, &ComplexQuery<P, O>) -> Result<Vec<T>, ErrorInner>,
+    select_fn: impl AsyncFn(&Transaction, &mut ComplexQuery<P, O>) -> Result<Vec<T>, ErrorInner>,
 ) -> Result<T, ErrorInner>
 where
     O: Default,
 {
-    let mut records = select_fn(tx, &ComplexQuery::from_filter(pred, true)).await?;
+    let mut records = select_fn(tx, &mut ComplexQuery::from_filter(pred, true)).await?;
 
     if records.len() != 1 {
         return Err(ErrorInner::ResourceNotFound);
@@ -69,6 +69,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::collections::VecDeque;
+
     use cellnoor_types::{
         institution::{InstitutionField, InstitutionPredicate, InstitutionQuery},
         operator::StringOperator,
@@ -87,7 +89,7 @@ mod tests {
             false,
         );
         q.limit = Some(1);
-        q.order_by = OrderBySet::Many(vec![
+        q.order_by = OrderBySet::Many(VecDeque::from([
             OrderBy {
                 field: InstitutionField::Id,
                 desc: false,
@@ -96,7 +98,7 @@ mod tests {
                 field: InstitutionField::Name,
                 desc: true,
             },
-        ]);
+        ]));
 
         let (select_stmt, _) = construct_select_stmt("institution", &["institution"], None, &q);
 

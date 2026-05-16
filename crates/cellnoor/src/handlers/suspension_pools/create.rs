@@ -225,7 +225,7 @@ pub mod test {
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
-    pub async fn insert_test_pool_and_suspension<F>(
+    pub async fn insert_test_suspension_pool_and_suspensions<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
     ) -> Result<(NewSuspensionPool, SuspensionPool), ErrorInner>
@@ -298,7 +298,9 @@ pub mod test {
                 measurements,
                 preparers,
             },
-        ) = insert_test_pool_and_suspension(&tx, |_| ()).await.unwrap()
+        ) = insert_test_suspension_pool_and_suspensions(&tx, |_| ())
+            .await
+            .unwrap()
         else {
             panic!("insertion did not return detailed suspension pool");
         };

@@ -12,12 +12,12 @@ use crate::{
 pub async fn index_suspensions(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<SuspensionQuery>,
+    Json(mut query): Json<SuspensionQuery>,
 ) -> Result<Json<Vec<Suspension>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_suspensions(&tx, &query).await.map(Json)?;
+    let response = select_suspensions(&tx, &mut query).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -26,7 +26,7 @@ pub async fn index_suspensions(
 
 pub async fn select_suspensions(
     tx: &db::Transaction<'_>,
-    query: &SuspensionQuery,
+    query: &mut SuspensionQuery,
 ) -> Result<Vec<Suspension>, ErrorInner> {
     let suspensions = if query.detailed {
         let (sql, params) =
@@ -48,7 +48,6 @@ pub async fn select_suspensions(
 
 #[cfg(test)]
 mod test {
-
     use cellnoor_types::{
         operator::UuidOperator,
         suspension::{SuspensionPredicateInner, SuspensionQuery},
@@ -73,7 +72,7 @@ mod test {
 
         let suspensions = select_suspensions(
             &tx,
-            &SuspensionQuery::from_filter(
+            &mut SuspensionQuery::from_filter(
                 SuspensionPredicateInner::Id(UuidOperator::Eq(*inserted.record().id)).into(),
                 false,
             ),

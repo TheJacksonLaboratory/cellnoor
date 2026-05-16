@@ -1,7 +1,10 @@
 use axum::{Json, extract::State};
-use cellnoor_types::suspension_pool::{
-    SavedSuspensionPoolRecord, SavedTaggedSpecimenRecord, SuspensionPool, SuspensionPoolLinks,
-    SuspensionPoolQuery, TaggedSpecimen,
+use cellnoor_types::{
+    order_by::OrderBy,
+    suspension_pool::{
+        SavedSuspensionPoolRecord, SavedTaggedSpecimenRecord, SuspensionPool, SuspensionPoolField,
+        SuspensionPoolLinks, SuspensionPoolQuery, TaggedSpecimen,
+    },
 };
 use deadpool_postgres::tokio_postgres::Row;
 use futures::StreamExt;
@@ -17,12 +20,12 @@ use crate::{
 pub async fn index_suspension_pools(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<SuspensionPoolQuery>,
+    Json(mut query): Json<SuspensionPoolQuery>,
 ) -> Result<Json<Vec<SuspensionPool>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_suspension_pools(&tx, &query).await.map(Json)?;
+    let response = select_suspension_pools(&tx, &mut query).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -31,8 +34,16 @@ pub async fn index_suspension_pools(
 
 pub async fn select_suspension_pools(
     tx: &db::Transaction<'_>,
-    query: &SuspensionPoolQuery,
+    query: &mut SuspensionPoolQuery,
 ) -> Result<Vec<SuspensionPool>, ErrorInner> {
+    // The first column in the `order by` clause needs to match the `distinct on`
+    // clause
+    let distinct_on = OrderBy {
+        field: SuspensionPoolField::Id,
+        desc: true,
+    };
+    query.order_by.push_front(distinct_on);
+
     let pools = if query.detailed {
         let (sql, params) = construct_detailed_select_stmt(query);
         let stream = tx.query_stream(&sql, params).await?;
@@ -57,10 +68,10 @@ pub async fn select_suspension_pools(
 fn construct_detailed_select_stmt(
     query: &SuspensionPoolQuery,
 ) -> (String, Vec<&(dyn ToSql + Sync)>) {
-    construct_select_stmt(
+    dbg!(construct_select_stmt(
         "suspension_pool_to_specimen",
         &[
-            "suspension_pool",
+            "distinct on ((suspension_pool).id) suspension_pool",
             "array_agg((specimen, multiplexing_tag)::tagged_specimen) as specimens",
             "array(select m from suspension_pool_measurement as m where m.pool_id = \
              (suspension_pool).id) as measurements",
@@ -69,7 +80,7 @@ fn construct_detailed_select_stmt(
         ],
         Some("suspension_pool"),
         query,
-    )
+    ))
 }
 
 fn map_detailed_row(row: Row) -> SuspensionPool {
@@ -85,5 +96,56 @@ fn map_detailed_row(row: Row) -> SuspensionPool {
             .collect(),
         measurements: row.get("measurements"),
         preparers: row.get("preparers"),
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use cellnoor_types::{
+        operator::SimpleStringOperator,
+        specimen::SpecimenPredicate,
+        suspension_pool::{SuspensionPool, SuspensionPoolQuery},
+    };
+    use pretty_assertions::assert_eq;
+
+    use crate::{
+        handlers::suspension_pools::{
+            create::test::insert_test_suspension_pool_and_suspensions,
+            index::select_suspension_pools,
+        },
+        state::test_util::db_client_as_admin,
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn select_with_specimen_filter() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let (
+            _,
+            SuspensionPool::Detailed {
+                record: inserted_record,
+                specimens,
+                ..
+            },
+        ) = insert_test_suspension_pool_and_suspensions(&tx, |_| ())
+            .await
+            .unwrap()
+        else {
+            unreachable!("expected detailed suspension pool")
+        };
+
+        let mut query = SuspensionPoolQuery::from_filter(
+            SpecimenPredicate::Name(
+                SimpleStringOperator::Eq(specimens[0].specimen.record().name.clone().into()).into(),
+            )
+            .into(),
+            false,
+        );
+
+        let selected_suspension_pools = select_suspension_pools(&tx, &mut query).await.unwrap();
+
+        assert_eq!(selected_suspension_pools.len(), 1);
+        assert_eq!(selected_suspension_pools[0].record(), &inserted_record);
     }
 }

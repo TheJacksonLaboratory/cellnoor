@@ -10,11 +10,8 @@ create view chromium_run_to_assay as (
 create view gem_pool_to_specimen as (
     select
         chr as chromium_run,
-        chip_loading,
         suspension.specimen,
-        gem_pool,
-        suspension,
-        null as suspension_pool
+        gem_pool
     from chip_loading
     join gem_pool on chip_loading.gem_pool_id = gem_pool.id
     join chromium_run_to_assay as chr on gem_pool.chromium_run_id = (chr.chromium_run).id
@@ -25,17 +22,19 @@ create view gem_pool_to_specimen as (
 
     select
         chr as chromium_run,
-        chip_loading,
         suspension_pool.specimen,
-        gem_pool,
-        null as suspension,
-        suspension_pool
+        gem_pool
     from chip_loading
     join gem_pool on chip_loading.gem_pool_id = gem_pool.id
     join chromium_run_to_assay as chr on gem_pool.chromium_run_id = (chr.chromium_run).id
     join
         suspension_pool_to_specimen as suspension_pool
         on chip_loading.suspension_pool_id = (suspension_pool.suspension_pool).id
+);
+
+create type gem_pool_with_specimens as (
+    gem_pool gem_pool,
+    specimens tagged_specimen[]
 );
 
 create function get_chromium_run_at_from_gem_pool_id(

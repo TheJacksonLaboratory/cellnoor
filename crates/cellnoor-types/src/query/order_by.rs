@@ -1,4 +1,4 @@
-use std::fmt::Write;
+use std::{collections::VecDeque, fmt::Write};
 
 use macro_attributes::base_model;
 
@@ -34,7 +34,7 @@ where
     T: Default,
 {
     One(OrderBy<T>),
-    Many(Vec<OrderBy<T>>),
+    Many(VecDeque<OrderBy<T>>),
 }
 
 impl<T> Default for OrderBySet<T>
@@ -78,5 +78,19 @@ where
                 clause
             }
         }
+    }
+}
+
+impl<T> OrderBySet<T>
+where
+    T: Default + Copy,
+{
+    pub fn push_front(&mut self, value: OrderBy<T>) {
+        match self {
+            Self::One(original) => {
+                *self = Self::Many(VecDeque::from([value, *original]));
+            }
+            Self::Many(originals) => originals.push_front(value),
+        };
     }
 }

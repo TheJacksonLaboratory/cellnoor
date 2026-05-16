@@ -305,7 +305,7 @@ pub mod test {
         let tx = client.begin().await.unwrap();
 
         // Check that the user can do what they should be able to
-        select_institutions(&tx, &InstitutionQuery::default())
+        select_institutions(&tx, &mut InstitutionQuery::default())
             .await
             .unwrap();
         let _ = insert_test_institution(&tx, |_| ()).await;
@@ -318,7 +318,7 @@ pub mod test {
         // Check that only one of the two projects is accessible
         let projects = select_projects(
             &tx,
-            &ProjectQuery {
+            &mut ProjectQuery {
                 detailed: true,
                 ..Default::default()
             },

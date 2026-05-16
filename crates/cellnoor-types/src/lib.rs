@@ -1,6 +1,7 @@
 #[cfg(feature = "postgres-types")]
 pub use query::filter::ToPredicate;
 
+pub mod chromium_run;
 pub mod id;
 pub mod institution;
 pub mod multiplexing_tag;
@@ -11,6 +12,7 @@ pub(crate) mod simple_links;
 pub mod specimen;
 pub mod suspension;
 pub mod suspension_pool;
+pub mod tenx_assay;
 pub mod units;
 
 pub mod operator {

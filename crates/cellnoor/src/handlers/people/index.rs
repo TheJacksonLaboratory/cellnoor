@@ -12,12 +12,12 @@ use crate::{
 pub async fn index_people(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<PersonQuery>,
+    Json(mut query): Json<PersonQuery>,
 ) -> Result<Json<Vec<Person>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_people(&tx, &query).await.map(Json)?;
+    let response = select_people(&tx, &mut query).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -26,7 +26,7 @@ pub async fn index_people(
 
 pub async fn select_people(
     tx: &db::Transaction<'_>,
-    query: &PersonQuery,
+    query: &mut PersonQuery,
 ) -> Result<Vec<Person>, ErrorInner> {
     let (query, params) = construct_select_stmt("person_public", &["person_public"], None, query);
 
@@ -64,7 +64,7 @@ mod test {
 
         let selected_records = select_people(
             &tx,
-            &PersonQuery::from_filter(
+            &mut PersonQuery::from_filter(
                 PersonPredicate::Name(StringOperator::Like(inserted.record.name.into())),
                 false,
             ),

@@ -12,12 +12,12 @@ use crate::{
 pub async fn index_institutions(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<InstitutionQuery>,
+    Json(mut query): Json<InstitutionQuery>,
 ) -> Result<Json<Vec<Institution>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_institutions(&tx, &query).await.map(Json)?;
+    let response = select_institutions(&tx, &mut query).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -26,7 +26,7 @@ pub async fn index_institutions(
 
 pub async fn select_institutions(
     tx: &db::Transaction<'_>,
-    query: &InstitutionQuery,
+    query: &mut InstitutionQuery,
 ) -> Result<Vec<Institution>, ErrorInner> {
     let (query, params) = construct_select_stmt("institution", &["institution"], None, query);
 
@@ -63,7 +63,7 @@ mod test {
 
         let selected_records = select_institutions(
             &tx,
-            &InstitutionQuery::from_filter(
+            &mut InstitutionQuery::from_filter(
                 InstitutionPredicate::Name(StringOperator::Like(name.into())),
                 false,
             ),

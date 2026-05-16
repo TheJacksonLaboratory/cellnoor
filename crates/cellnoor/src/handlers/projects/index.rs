@@ -12,12 +12,12 @@ use crate::{
 pub async fn index_projects(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<ProjectQuery>,
+    Json(mut query): Json<ProjectQuery>,
 ) -> Result<Json<Vec<Project>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_projects(&tx, &query).await.map(Json)?;
+    let response = select_projects(&tx, &mut query).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -26,7 +26,7 @@ pub async fn index_projects(
 
 pub async fn select_projects(
     tx: &db::Transaction<'_>,
-    query: &ProjectQuery,
+    query: &mut ProjectQuery,
 ) -> Result<Vec<Project>, ErrorInner> {
     let projects = if query.detailed {
         let (sql, params) =
@@ -63,13 +63,13 @@ mod test {
 
         let (_, inserted) = insert_test_project(&tx, |_| ()).await.unwrap();
 
-        let query = ProjectQuery::from_filter(
+        let mut query = ProjectQuery::from_filter(
             ProjectPredicate::Name(
                 SimpleStringOperator::Eq(inserted.record().name.clone().into()).into(),
             ),
             false,
         );
-        let selected = select_projects(&tx, &query).await.unwrap();
+        let selected = select_projects(&tx, &mut query).await.unwrap();
 
         assert_eq!(selected.len(), 1);
         assert_eq!(*selected[0].record().id, *inserted.record().id);

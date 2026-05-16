@@ -12,12 +12,12 @@ use crate::{
 pub async fn index_specimens(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<SpecimenQuery>,
+    Json(mut query): Json<SpecimenQuery>,
 ) -> Result<Json<Vec<Specimen>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_specimens(&tx, &query).await.map(Json)?;
+    let response = select_specimens(&tx, &mut query).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -26,7 +26,7 @@ pub async fn index_specimens(
 
 pub async fn select_specimens(
     tx: &db::Transaction<'_>,
-    query: &SpecimenQuery,
+    query: &mut SpecimenQuery,
 ) -> Result<Vec<Specimen>, ErrorInner> {
     let specimens = if query.detailed {
         let (sql, params) =
@@ -44,7 +44,6 @@ pub async fn select_specimens(
 
 #[cfg(test)]
 mod test {
-
     use cellnoor_types::{
         operator::UuidOperator,
         specimen::{SpecimenPredicate, SpecimenQuery},
@@ -67,7 +66,7 @@ mod test {
 
         let specimens = select_specimens(
             &tx,
-            &SpecimenQuery::from_filter(
+            &mut SpecimenQuery::from_filter(
                 SpecimenPredicate::Id(UuidOperator::Eq(*inserted.record().id)),
                 false,
             ),
