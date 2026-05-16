@@ -1,5 +1,9 @@
 use macro_attributes::{base_model, select};
 use positive::PositiveF32;
+pub use query::{
+    ChromiumRunField, ChromiumRunPredicate, ChromiumRunPredicateInner, ChromiumRunQuery,
+    SimpleChromiumRunQuery,
+};
 
 use crate::{
     chromium_run::record::{ChromiumRunRecord, GemPoolRecord},
@@ -49,6 +53,12 @@ pub type NewChromiumRunRecord = ChromiumRunRecord<NoId>;
 
 pub type SavedChromiumRunRecord = ChromiumRunRecord<Id>;
 
+// The detailed view is read from two separate columns of `gem_pool_to_specimen`
+// and assembled in Rust, so this type is a plain serialization carrier — it
+// intentionally does not derive `FromSql` (the `chromium_run_to_assay` view
+// was removed).
+pub type ChromiumRunUpdate = NewChromiumRunRecord;
+
 #[base_model]
 pub struct LoadingVolume {
     pub value: PositiveF32,
@@ -75,7 +85,7 @@ impl ChromiumRunLinks {
 
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "gem_pool_with_specimens"))]
-pub struct GemPoolWithSpecimensRecord {
+pub struct SavedGemPoolWithSpecimensRecord {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub gem_pool: SavedGemPoolRecord,
     pub specimens: Vec<SavedTaggedSpecimenRecord>,
@@ -84,8 +94,15 @@ pub struct GemPoolWithSpecimensRecord {
 #[base_model]
 pub struct GemPool {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub gem_pool: SavedGemPoolRecord,
+    pub record: SavedGemPoolRecord,
     pub specimens: Vec<TaggedSpecimen>,
+}
+
+#[base_model]
+pub struct SavedChromiumRunRecordDetailed {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub chromium_run: SavedChromiumRunRecord,
+    pub assay: TenxAssay,
 }
 
 #[base_model]
@@ -98,8 +115,7 @@ pub enum ChromiumRun {
     },
     Detailed {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SavedChromiumRunRecord,
-        assay: TenxAssay,
+        record: SavedChromiumRunRecordDetailed,
         gem_pools: Vec<GemPool>,
         links: ChromiumRunLinks,
     },
@@ -110,6 +126,27 @@ impl ChromiumRun {
         Self::Compact {
             links: ChromiumRunLinks::from_id(record.id),
             record,
+        }
+    }
+
+    pub fn from_detailed_record_and_gem_pools(
+        record: SavedChromiumRunRecordDetailed,
+        gem_pools: Vec<SavedGemPoolWithSpecimensRecord>,
+    ) -> Self {
+        Self::Detailed {
+            links: ChromiumRunLinks::from_id(record.chromium_run.id),
+            record,
+            gem_pools: gem_pools
+                .into_iter()
+                .map(|g| GemPool {
+                    record: g.gem_pool,
+                    specimens: g
+                        .specimens
+                        .into_iter()
+                        .map(TaggedSpecimen::from_record)
+                        .collect(),
+                })
+                .collect(),
         }
     }
 }

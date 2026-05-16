@@ -1,5 +1,5 @@
 use macro_attributes::{base_model, select};
-use nonempty::{NonemptyBoundedVec, NonemptyVec};
+use nonempty::{NonemptyBoundedVec, NonemptyString, NonemptyVec};
 pub use query::{
     SimpleSuspensionPoolQuery, SuspensionPoolField, SuspensionPoolPredicate,
     SuspensionPoolPredicateInner, SuspensionPoolQuery,
@@ -7,6 +7,7 @@ pub use query::{
 use uuid::Uuid;
 
 use crate::{
+    chromium_run::creation::ocm::OcmBarcodeId,
     id::{Id, NoId},
     multiplexing_tag::SavedMultiplexingTag,
     simple_links::SimpleLinks,
@@ -108,6 +109,7 @@ pub struct SavedTaggedSpecimenRecord {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub specimen: SavedSpecimenRecord,
     pub multiplexing_tag: Option<SavedMultiplexingTag>,
+    pub ocm_barcode_id: Option<OcmBarcodeId>,
 }
 
 #[base_model]
@@ -115,6 +117,7 @@ pub struct TaggedSpecimen {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub specimen: Specimen,
     pub multiplexing_tag: Option<SavedMultiplexingTag>,
+    pub ocm_barcode_id: Option<OcmBarcodeId>,
 }
 
 impl TaggedSpecimen {
@@ -123,11 +126,13 @@ impl TaggedSpecimen {
         SavedTaggedSpecimenRecord {
             specimen,
             multiplexing_tag,
+            ocm_barcode_id,
         }: SavedTaggedSpecimenRecord,
     ) -> Self {
         Self {
             specimen: Specimen::from_record(specimen),
             multiplexing_tag,
+            ocm_barcode_id,
         }
     }
 }

@@ -1,7 +1,7 @@
 // pub mod cdna;
 // pub mod chip_loadings;
 // pub mod chromium_datasets;
-// pub mod chromium_runs;
+pub mod chromium_runs;
 // pub mod gem_pools;
 pub mod institutions;
 // pub mod libraries;

@@ -2,7 +2,7 @@ create view cdna_to_specimen as (
     select
         cdna,
         gem_pool.specimen,
-        gem_pool
+        gem_pool.tenx_assay
     from cdna join gem_pool_to_specimen as gem_pool on cdna.gem_pool_id = (gem_pool.gem_pool).id
 );
 

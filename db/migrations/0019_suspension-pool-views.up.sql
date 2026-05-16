@@ -1,7 +1,8 @@
 -- We include the multiplexing tag because it's cheap and is useful for consumers
 create type tagged_specimen as (
     specimen specimen,
-    multiplexing_tag multiplexing_tag
+    multiplexing_tag multiplexing_tag,
+    ocm_barcode_id case_insensitive_text
 );
 
 create view suspension_pool_to_specimen as (

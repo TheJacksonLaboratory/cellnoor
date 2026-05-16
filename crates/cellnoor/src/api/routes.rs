@@ -13,7 +13,7 @@ use crate::state::AppState;
 // pub mod cdna;
 // pub mod chip_loadings;
 // pub mod chromium_datasets;
-// pub mod chromium_runs;
+mod chromium_runs;
 // pub mod database;
 // pub mod gem_pools;
 mod institutions;
@@ -44,10 +44,10 @@ pub(super) fn router() -> Router<AppState> {
         .nest("/projects", projects::router())
         .nest("/specimens", specimens::router())
         .nest("/suspensions", suspensions::router())
-        .nest("/suspension-pools", suspension_pools::router());
+        .nest("/suspension-pools", suspension_pools::router())
+        .nest("/chromium-runs", chromium_runs::router());
     // .nest("/10x-assays", tenx_assays::router())
     // .nest("/multiplexing-tags", multiplexing_tags::router())
-    // .nest("/chromium-runs", chromium_runs::router())
     // .nest("/gem-pools", gem_pools::router())
     // .nest("/chip-loadings", chip_loadings::router())
     // .nest("/cdna", cdna::router())

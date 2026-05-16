@@ -68,11 +68,11 @@ pub async fn select_suspension_pools(
 fn construct_detailed_select_stmt(
     query: &SuspensionPoolQuery,
 ) -> (String, Vec<&(dyn ToSql + Sync)>) {
-    dbg!(construct_select_stmt(
+    construct_select_stmt(
         "suspension_pool_to_specimen",
         &[
             "distinct on ((suspension_pool).id) suspension_pool",
-            "array_agg((specimen, multiplexing_tag)::tagged_specimen) as specimens",
+            "array_agg((specimen, multiplexing_tag, null)::tagged_specimen) as specimens",
             "array(select m from suspension_pool_measurement as m where m.pool_id = \
              (suspension_pool).id) as measurements",
             "array(select prep.prepared_by from suspension_pool_preparer as prep where \
@@ -80,7 +80,7 @@ fn construct_detailed_select_stmt(
         ],
         Some("suspension_pool"),
         query,
-    ))
+    )
 }
 
 fn map_detailed_row(row: Row) -> SuspensionPool {

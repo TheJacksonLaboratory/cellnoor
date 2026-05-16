@@ -1,32 +1,33 @@
-create view chromium_run_to_assay as (
-    select
-        chr as chromium_run,
-        assay
-    from chromium_run as chr join tenx_assay as assay on chr.assay_id = assay.id
-);
-
 -- This view is complex because from a gem_pool, we can get to a specimen either from a suspension (query 1) or from a
 -- suspension_pool (query 2)
 create view gem_pool_to_specimen as (
     select
-        chr as chromium_run,
+        chromium_run,
+        tenx_assay,
         suspension.specimen,
-        gem_pool
+        gem_pool,
+        chip_loading.ocm_barcode_id,
+        null as multiplexing_tag
     from chip_loading
     join gem_pool on chip_loading.gem_pool_id = gem_pool.id
-    join chromium_run_to_assay as chr on gem_pool.chromium_run_id = (chr.chromium_run).id
+    join chromium_run on gem_pool.chromium_run_id = chromium_run.id
+    join tenx_assay on chromium_run.assay_id = tenx_assay.id
     join suspension_to_specimen as suspension on chip_loading.suspension_id = (suspension.suspension).id
 
     -- `union all` because we don't need deduplication because we know there are no duplicates
     union all
 
     select
-        chr as chromium_run,
+        chromium_run,
+        tenx_assay,
         suspension_pool.specimen,
-        gem_pool
+        gem_pool,
+        chip_loading.ocm_barcode_id,
+        suspension_pool.multiplexing_tag
     from chip_loading
     join gem_pool on chip_loading.gem_pool_id = gem_pool.id
-    join chromium_run_to_assay as chr on gem_pool.chromium_run_id = (chr.chromium_run).id
+    join chromium_run on gem_pool.chromium_run_id = chromium_run.id
+    join tenx_assay on chromium_run.assay_id = tenx_assay.id
     join
         suspension_pool_to_specimen as suspension_pool
         on chip_loading.suspension_pool_id = (suspension_pool.suspension_pool).id
