@@ -31,7 +31,7 @@ pub async fn select_specimens(
     let stmt = if query.detailed {
         include_str!("index/select_detailed.sql")
     } else {
-        include_str!("index/select_detailed.sql")
+        include_str!("index/select_compact.sql")
     };
 
     let sql = SqlTemplate::new(stmt).finish_with_query(query)?;
