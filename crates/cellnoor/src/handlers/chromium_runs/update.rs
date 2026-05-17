@@ -22,7 +22,9 @@ pub async fn update_chromium_run(
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = update_chromium_run_by_id(&tx, id, &record).await.map(Json)?;
+    let response = update_chromium_run_by_id(&tx, id, &record)
+        .await
+        .map(Json)?;
 
     tx.commit().await?;
 

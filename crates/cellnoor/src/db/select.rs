@@ -1,4 +1,3 @@
-
 use cellnoor_types::query::ComplexQuery;
 
 use super::Transaction;
