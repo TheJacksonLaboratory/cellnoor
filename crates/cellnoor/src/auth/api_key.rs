@@ -99,7 +99,7 @@ pub async fn fetch_api_key_record(
         id: r.get("id"),
         person_id: r.get("person_id"),
         service_account_id: r.get("service_account_id"),
-        expires_at: r.get("expired_at"),
+        expires_at: r.get("expires_at"),
     })?;
 
     Ok(hashed_api_key)
