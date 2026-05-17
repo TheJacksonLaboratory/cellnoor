@@ -35,7 +35,7 @@ create view gem_pool_to_specimen as (
 
 create type gem_pool_with_specimens as (
     gem_pool gem_pool,
-    specimens tagged_specimen[]
+    specimens tagged_specimen []
 );
 
 create function get_chromium_run_at_from_gem_pool_id(

@@ -2,7 +2,7 @@ use postgres_types::ToSql;
 use uuid::Uuid;
 
 use crate::{
-    db::{Record, ToRecord},
+    db::{AsFieldValuePairs, FieldValuePairs, Sql},
     error::ErrorInner,
 };
 
@@ -14,14 +14,14 @@ pub async fn update<F, T, const N: usize>(
 ) -> Result<(), ErrorInner>
 where
     F: Copy + AsRef<str>,
-    T: ToRecord<F, N>,
+    T: AsFieldValuePairs<F, N>,
 {
-    let record = data.to_record();
-    let Some((query, params)) = convert_record_to_update_stmt(table, &id, &record) else {
+    let record = data.as_field_value_pairs();
+    let Some(sql) = convert_record_to_update_stmt(table, &id, &record) else {
         return Ok(());
     };
 
-    let n = tx.execute(&query, &params).await?;
+    let n = tx.execute(&sql).await?;
 
     if n == 0 {
         return Err(ErrorInner::ResourceNotFound);
@@ -33,8 +33,8 @@ where
 fn convert_record_to_update_stmt<'a, F, const N: usize>(
     table: &str,
     id: &'a Uuid,
-    record: &'a Record<F, N>,
-) -> Option<(String, Vec<&'a (dyn ToSql + Sync)>)>
+    record: &'a FieldValuePairs<F, N>,
+) -> Option<Sql<'a>>
 where
     F: Copy + AsRef<str>,
 {
@@ -60,7 +60,7 @@ where
 
     let update_clause = format!("update {table} set {column_sets} where id = ${}", N + 1);
 
-    Some((update_clause, params))
+    Some(Sql(update_clause, params))
 }
 
 #[cfg(test)]
@@ -71,7 +71,7 @@ mod tests {
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
-    use crate::db::update::convert_record_to_update_stmt;
+    use crate::db::{Sql, update::convert_record_to_update_stmt};
 
     static TEST_ID: Uuid = Uuid::nil();
     static TEST_DATA: [(InstitutionField, &'static (dyn ToSql + Sync)); 2] = [
@@ -79,13 +79,13 @@ mod tests {
         (InstitutionField::MicrosoftEntraTenantId, &Uuid::max()),
     ];
 
-    fn test_update_clause() -> (String, Vec<&'static (dyn ToSql + Sync)>) {
+    fn test_update_clause() -> Sql<'static> {
         convert_record_to_update_stmt("institution", &TEST_ID, &TEST_DATA).unwrap()
     }
 
     #[test]
     fn update_stmt_has_correct_sql() {
-        let (update_clause, _) = test_update_clause();
+        let Sql(update_clause, _) = test_update_clause();
 
         assert_eq!(
             update_clause,
@@ -96,7 +96,7 @@ mod tests {
     #[test]
     fn params_are_correct() {
         let mut actual_params = BytesMut::new();
-        let (_, params) = test_update_clause();
+        let Sql(_, params) = test_update_clause();
 
         params[0]
             .to_sql_checked(&Type::TEXT, &mut actual_params)

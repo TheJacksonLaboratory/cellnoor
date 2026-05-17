@@ -21,7 +21,7 @@ impl From<CellPelletThermalPreservation> for ThermalPreservationMethod {
 #[base_model]
 pub struct NewCellPellet {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub inner: NewSpecimenCommonFields,
+    pub common: NewSpecimenCommonFields,
     pub thermal_preservation_method: CellPelletThermalPreservation,
 }
 
@@ -30,7 +30,7 @@ impl NewCellPellet {
         let thermal_preservation_method = self.thermal_preservation_method.into();
 
         SpecimenInsertion::from_fields(
-            self.inner,
+            self.common,
             SpecimenType::CellPellet,
             None,
             None::<Fixative>,

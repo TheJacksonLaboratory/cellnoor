@@ -1,7 +1,11 @@
 use sha3::Digest;
 use uuid::Uuid;
 
-use crate::{auth::AuthUser, db, error::ErrorInner};
+use crate::{
+    auth::AuthUser,
+    db::{self, SqlTemplate},
+    error::ErrorInner,
+};
 
 const API_KEY_LENGTH: usize = 22;
 
@@ -85,20 +89,18 @@ pub async fn fetch_api_key_record(
 
     let tx = db_client.begin().await?;
 
+    let sql = SqlTemplate::new(
+        "select (id, person_id, service_account_id, expires_at) from api_key where hashed_key = $1",
+    )
+    .finish_with_params(vec![&hashed_key]);
+
     // We manually map the fields from the database record into the struct we return
-    let hashed_api_key = tx
-        .query_one(
-            "select (id, person_id, service_account_id, expires_at) from api_key where hashed_key \
-             = $1",
-            &[&hashed_key],
-        )
-        .await
-        .map(|r| ApiKeyRecord {
-            id: r.get("id"),
-            person_id: r.get("person_id"),
-            service_account_id: r.get("service_account_id"),
-            expires_at: r.get("expired_at"),
-        })?;
+    let hashed_api_key = tx.query_one(&sql).await.map(|r| ApiKeyRecord {
+        id: r.get("id"),
+        person_id: r.get("person_id"),
+        service_account_id: r.get("service_account_id"),
+        expires_at: r.get("expired_at"),
+    })?;
 
     Ok(hashed_api_key)
 }

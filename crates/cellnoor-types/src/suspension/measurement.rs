@@ -40,22 +40,22 @@ pub struct SuspensionMeasurement {
 pub enum SuspensionMeasurementData {
     Concentration {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: Concentration,
+        common: Concentration,
         post_hybridization: bool,
     },
     Viability {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: Viability,
+        common: Viability,
         post_hybridization: bool,
     },
     Volume {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: Volume,
+        common: Volume,
         post_hybridization: bool,
     },
     MeanDiameter {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: MeanDiameter,
+        common: MeanDiameter,
         post_hybridization: bool,
     },
 }

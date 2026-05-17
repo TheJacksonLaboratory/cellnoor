@@ -1,5 +1,5 @@
 use macro_attributes::{base_model, select};
-use nonempty::{NonemptyBoundedVec, NonemptyString, NonemptyVec};
+use nonempty::{NonemptyBoundedVec, NonemptyVec};
 pub use query::{
     SimpleSuspensionPoolQuery, SuspensionPoolField, SuspensionPoolPredicate,
     SuspensionPoolPredicateInner, SuspensionPoolQuery,
@@ -60,7 +60,7 @@ const MAX_TAGGED_SUSPENSIONS_IN_POOL: usize = 384;
 pub enum NewSuspensionPool {
     ExogenousTag {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: NewSuspensionPoolRecord,
+        common: NewSuspensionPoolRecord,
         #[cfg_attr(feature = "serde", serde(default))]
         measurements: Vec<measurement::NewSuspensionPoolMeasurement>,
         preparer_ids: NonemptyVec<Uuid>,
@@ -68,7 +68,7 @@ pub enum NewSuspensionPool {
     },
     Genetic {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: NewSuspensionPoolRecord,
+        common: NewSuspensionPoolRecord,
         #[cfg_attr(feature = "serde", serde(default))]
         measurements: Vec<measurement::NewSuspensionPoolMeasurement>,
         preparer_ids: NonemptyVec<Uuid>,

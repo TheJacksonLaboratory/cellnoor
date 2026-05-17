@@ -4,7 +4,7 @@ use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, construct_select_stmt},
+    db::{self, SqlTemplate},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -28,18 +28,19 @@ pub async fn select_suspensions(
     tx: &db::Transaction<'_>,
     query: &mut SuspensionQuery,
 ) -> Result<Vec<Suspension>, ErrorInner> {
+    let stmt = if query.detailed {
+        include_str!("index/select_detailed.sql")
+    } else {
+        include_str!("index/select_compact.sql")
+    };
+
+    let sql = SqlTemplate::new(stmt).finish_with_query(query)?;
+
     let suspensions = if query.detailed {
-        let (sql, params) =
-            construct_select_stmt("suspension_detailed", &["suspension_detailed"], None, query);
-        let stream = tx.query_stream_into(&sql, params).await?;
+        let stream = tx.query_stream_into(sql).await?;
         stream.map(Suspension::from_detailed_record).collect().await
     } else {
-        // We query through `suspension_to_specimen` rather than `suspension` because
-        // the predicate can filter on the parent specimen's fields, which need
-        // a `(specimen)` row in scope.
-        let (sql, params) =
-            construct_select_stmt("suspension_to_specimen", &["suspension"], None, query);
-        let stream = tx.query_stream_into(&sql, params).await?;
+        let stream = tx.query_stream_into(sql).await?;
         stream.map(Suspension::from_record).collect().await
     };
 

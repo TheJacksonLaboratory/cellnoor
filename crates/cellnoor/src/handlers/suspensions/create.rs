@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, Record, ToRecord},
+    db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
     handlers::suspensions::{
         measurements::create::insert_suspension_measurement, show::select_suspension_by_id,
@@ -80,8 +80,8 @@ struct NewSuspensionPreparer {
     prepared_by: Uuid,
 }
 
-impl ToRecord<&'static str, 2> for NewSuspensionPreparer {
-    fn to_record(&self) -> Record<'_, &'static str, 2> {
+impl AsFieldValuePairs<&'static str, 2> for NewSuspensionPreparer {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 2> {
         let Self {
             suspension_id,
             prepared_by,
@@ -94,8 +94,8 @@ impl ToRecord<&'static str, 2> for NewSuspensionPreparer {
     }
 }
 
-impl ToRecord<&'static str, 7> for NewSuspensionRecord {
-    fn to_record(&self) -> Record<'_, &'static str, 7> {
+impl AsFieldValuePairs<&'static str, 7> for NewSuspensionRecord {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 7> {
         let Self {
             id: _,
             readable_id,
@@ -171,7 +171,7 @@ pub mod test {
                 measured_by: person_id,
                 measured_at: Timestamp::now(),
                 data: Json(SuspensionMeasurementData::Viability {
-                    inner: Viability {
+                    common: Viability {
                         value: PositiveBoundedF32::new(0.5).unwrap(),
                     },
                     post_hybridization: false,

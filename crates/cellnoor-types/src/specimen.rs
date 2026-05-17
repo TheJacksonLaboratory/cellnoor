@@ -2,7 +2,7 @@ use macro_attributes::{base_model, select, unit_enum};
 pub use query::{SimpleSpecimenQuery, SpecimenField, SpecimenPredicate, SpecimenQuery};
 
 use crate::{
-    id::Id,
+    id::{Id, NoId},
     project::{Project, SavedProjectRecord},
     simple_links::SimpleLinks,
     specimen::{measurement::SpecimenMeasurement, record::SpecimenRecord},
@@ -80,6 +80,8 @@ pub enum ThermalPreservationMethod {
     ControlledRateFreezing,
     FlashFreezing,
 }
+
+pub type NewSpecimenRecord = SpecimenRecord<NoId>;
 
 pub type SavedSpecimenRecord = SpecimenRecord<Id>;
 

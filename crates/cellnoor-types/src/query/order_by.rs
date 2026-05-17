@@ -50,7 +50,7 @@ impl<T> OrderBySet<T>
 where
     T: Default + Copy + AsRef<str>,
 {
-    pub fn to_order_by_clause(&self) -> String {
+    pub(super) fn to_order_by_clause(&self) -> String {
         fn direction(desc: bool) -> &'static str {
             if desc { "desc" } else { "asc" }
         }

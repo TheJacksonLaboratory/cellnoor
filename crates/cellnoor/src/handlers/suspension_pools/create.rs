@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, Record, ToRecord},
+    db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
     handlers::suspension_pools::{
         measurements::create::insert_suspension_pool_measurement,
@@ -37,12 +37,12 @@ pub async fn insert_suspension_pool(
 ) -> Result<SuspensionPool, ErrorInner> {
     let (record, measurements, preparer_ids, suspensions) = match new {
         NewSuspensionPool::ExogenousTag {
-            inner,
+            common,
             measurements,
             preparer_ids,
             suspensions,
         } => (
-            inner,
+            common,
             measurements,
             preparer_ids,
             suspensions
@@ -56,12 +56,12 @@ pub async fn insert_suspension_pool(
                 .collect::<Vec<_>>(),
         ),
         NewSuspensionPool::Genetic {
-            inner,
+            common,
             measurements,
             preparer_ids,
             suspensions,
         } => (
-            inner,
+            common,
             measurements,
             preparer_ids,
             suspensions
@@ -140,8 +140,8 @@ struct NewSuspensionPoolPreparer {
     prepared_by: Uuid,
 }
 
-impl ToRecord<&'static str, 2> for NewSuspensionPoolPreparer {
-    fn to_record(&'_ self) -> Record<'_, &'static str, 2> {
+impl AsFieldValuePairs<&'static str, 2> for NewSuspensionPoolPreparer {
+    fn as_field_value_pairs(&'_ self) -> FieldValuePairs<'_, &'static str, 2> {
         let Self {
             pool_id,
             prepared_by,
@@ -157,8 +157,8 @@ struct NewSuspensionPooling {
     tag_id: Option<Uuid>,
 }
 
-impl ToRecord<&'static str, 3> for NewSuspensionPooling {
-    fn to_record(&'_ self) -> Record<'_, &'static str, 3> {
+impl AsFieldValuePairs<&'static str, 3> for NewSuspensionPooling {
+    fn as_field_value_pairs(&'_ self) -> FieldValuePairs<'_, &'static str, 3> {
         let Self {
             pool_id,
             suspension_id,
@@ -173,8 +173,8 @@ impl ToRecord<&'static str, 3> for NewSuspensionPooling {
     }
 }
 
-impl ToRecord<&'static str, 5> for NewSuspensionPoolRecord {
-    fn to_record(&self) -> Record<'_, &'static str, 5> {
+impl AsFieldValuePairs<&'static str, 5> for NewSuspensionPoolRecord {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 5> {
         let Self {
             id: _,
             readable_id,
@@ -244,7 +244,7 @@ pub mod test {
         let person_id = specimen.record().submitted_by;
 
         let mut new = NewSuspensionPool::Genetic {
-            inner: NewSuspensionPoolRecord {
+            common: NewSuspensionPoolRecord {
                 id: NoId {},
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 name: "pool".to_nonempty_string(),

@@ -1,7 +1,7 @@
 use postgres_types::ToSql;
 use uuid::Uuid;
 
-use crate::db::{Record, ToRecord};
+use crate::db::{AsFieldValuePairs, FieldValuePairs, Sql};
 
 pub async fn insert_into<F, T, const N: usize>(
     tx: &super::Transaction<'_>,
@@ -10,12 +10,12 @@ pub async fn insert_into<F, T, const N: usize>(
 ) -> Result<Uuid, deadpool_postgres::tokio_postgres::Error>
 where
     F: Copy + AsRef<str>,
-    T: ToRecord<F, N>,
+    T: AsFieldValuePairs<F, N>,
 {
-    let record = data.to_record();
-    let (query, params) = convert_record_to_insert_stmt(table, &record, Some("id"));
+    let record = data.as_field_value_pairs();
+    let sql = convert_record_to_insert_stmt(table, &record, Some("id"));
 
-    tx.query_one_into(&query, &params).await
+    tx.query_one_into(&sql).await
 }
 
 pub async fn insert_into_no_returning<F, T, const N: usize>(
@@ -25,21 +25,21 @@ pub async fn insert_into_no_returning<F, T, const N: usize>(
 ) -> Result<(), deadpool_postgres::tokio_postgres::Error>
 where
     F: Copy + AsRef<str>,
-    T: ToRecord<F, N>,
+    T: AsFieldValuePairs<F, N>,
 {
-    let record = data.to_record();
-    let (query, params) = convert_record_to_insert_stmt(table, &record, None);
+    let record = data.as_field_value_pairs();
+    let sql = convert_record_to_insert_stmt(table, &record, None);
 
-    tx.execute(&query, &params).await?;
+    tx.execute(&sql).await?;
 
     Ok(())
 }
 
 fn convert_record_to_insert_stmt<'a, F, const N: usize>(
     table: &str,
-    record: &'a Record<'a, F, N>,
+    record: &'a FieldValuePairs<'a, F, N>,
     returning: Option<&str>,
-) -> (String, Vec<&'a (dyn ToSql + Sync)>)
+) -> Sql<'a>
 where
     F: Copy + AsRef<str>,
 {
@@ -65,7 +65,7 @@ where
         "insert into {table} ({joined_fieldnames}) values ({joined_placeholders}) {returning}"
     );
 
-    (insert_clause, params)
+    Sql(insert_clause, params)
 }
 
 #[cfg(test)]
@@ -76,20 +76,20 @@ mod tests {
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
-    use crate::db::insert::convert_record_to_insert_stmt;
+    use crate::db::{Sql, insert::convert_record_to_insert_stmt};
 
     static TEST_DATA: [(InstitutionField, &'static (dyn ToSql + Sync)); 2] = [
         (InstitutionField::Name, &"name"),
         (InstitutionField::MicrosoftEntraTenantId, &Uuid::nil()),
     ];
 
-    fn test_insert_stmt() -> (String, Vec<&'static (dyn ToSql + Sync)>) {
+    fn test_insert_stmt() -> Sql<'static> {
         convert_record_to_insert_stmt("institution", &TEST_DATA, Some("id"))
     }
 
     #[test]
     fn insert_stmt_has_correct_sql() {
-        let (insert_clause, _) = test_insert_stmt();
+        let Sql(insert_clause, _) = test_insert_stmt();
 
         assert_eq!(
             insert_clause,
@@ -101,7 +101,7 @@ mod tests {
     #[test]
     fn params_are_correct() {
         let mut actual_params = BytesMut::new();
-        let (_, params) = test_insert_stmt();
+        let Sql(_, params) = test_insert_stmt();
 
         params[0]
             .to_sql_checked(&Type::TEXT, &mut actual_params)

@@ -3,7 +3,7 @@ use cellnoor_types::institution::{Institution, InstitutionField, NewInstitution}
 
 use crate::{
     auth::AuthUser,
-    db::{self, Record, ToRecord},
+    db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
     handlers::institutions::show::select_institution_by_id,
     state::AppState,
@@ -34,8 +34,8 @@ pub async fn insert_institution(
     select_institution_by_id(tx, id).await
 }
 
-impl ToRecord<InstitutionField, 2> for NewInstitution {
-    fn to_record(&self) -> Record<'_, InstitutionField, 2> {
+impl AsFieldValuePairs<InstitutionField, 2> for NewInstitution {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, InstitutionField, 2> {
         use InstitutionField::*;
         let Self {
             id: _,

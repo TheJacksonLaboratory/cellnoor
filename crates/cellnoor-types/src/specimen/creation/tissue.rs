@@ -13,38 +13,44 @@ use crate::specimen::{
 pub enum NewTissue {
     Fixed {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: NewSpecimenCommonFields,
+        common: NewSpecimenCommonFields,
         fixative: Fixative,
     },
     Fresh {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: NewSpecimenCommonFields,
+        common: NewSpecimenCommonFields,
     },
     ThermallyPreserved {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: NewSpecimenCommonFields,
+        common: NewSpecimenCommonFields,
         thermal_preservation_method: ThermalPreservationMethod,
     },
 }
 
 impl NewTissue {
-    fn into_inner(self) -> NewSpecimenCommonFields {
+    fn into_common(self) -> NewSpecimenCommonFields {
         match self {
-            Self::Fixed { inner, fixative: _ }
-            | Self::Fresh { inner }
+            Self::Fixed {
+                common,
+                fixative: _,
+            }
+            | Self::Fresh { common }
             | Self::ThermallyPreserved {
-                inner,
+                common,
                 thermal_preservation_method: _,
-            } => inner,
+            } => common,
         }
     }
 
     fn fixative(&self) -> Option<Fixative> {
         match self {
-            Self::Fixed { inner: _, fixative } => Some(*fixative),
-            Self::Fresh { inner: _ }
+            Self::Fixed {
+                common: _,
+                fixative,
+            } => Some(*fixative),
+            Self::Fresh { common: _ }
             | Self::ThermallyPreserved {
-                inner: _,
+                common: _,
                 thermal_preservation_method: _,
             } => None,
         }
@@ -54,7 +60,7 @@ impl NewTissue {
         match self {
             Self::Fixed { .. } | Self::Fresh { .. } => None,
             Self::ThermallyPreserved {
-                inner: _,
+                common: _,
                 thermal_preservation_method,
                 ..
             } => Some(*thermal_preservation_method),
@@ -68,7 +74,7 @@ impl NewTissue {
         let thermal_preservation_method = self.thermal_preservation_method();
 
         SpecimenInsertion::from_fields(
-            self.into_inner(),
+            self.into_common(),
             type_,
             None,
             fixative,

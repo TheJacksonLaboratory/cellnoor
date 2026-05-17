@@ -10,6 +10,8 @@ use futures::{Stream, StreamExt};
 use postgres_types::FromSqlOwned;
 use uuid::Uuid;
 
+use crate::db::Sql;
+
 #[derive(Debug, Clone)]
 pub struct Pool(InnerPool);
 
@@ -97,63 +99,52 @@ impl<'a> Transaction<'a> {
 
     pub async fn query_stream(
         &self,
-        query: &str,
-        params: Vec<&(dyn ToSql + Sync)>,
+        Sql(stmt, params): Sql<'_>,
     ) -> Result<RowStream, TokioPgError> {
-        self.execute_as_user(self.inner.query_raw(query, params))
+        self.execute_as_user(self.inner.query_raw(&stmt, params))
             .await
     }
 
     pub async fn query_stream_into<T>(
         &self,
-        query: &str,
-        params: Vec<&(dyn ToSql + Sync)>,
+        sql: Sql<'_>,
     ) -> Result<impl Stream<Item = T>, TokioPgError>
     where
         T: FromSqlOwned,
     {
-        let stream = self.query_stream(query, params).await?;
+        let stream = self.query_stream(sql).await?;
 
         Ok(stream.map(|row| row.unwrap().get(0)))
     }
 
-    pub async fn query(
-        &self,
-        query: &str,
-        params: &[&(dyn ToSql + Sync)],
-    ) -> Result<Vec<Row>, TokioPgError> {
-        self.execute_as_user(self.inner.query(query, params)).await
+    pub async fn query(&self, Sql(stmt, params): &Sql<'_>) -> Result<Vec<Row>, TokioPgError> {
+        self.execute_as_user(self.inner.query(stmt, params)).await
     }
 
-    pub async fn query_one(
-        &self,
-        query: &str,
-        params: &[&(dyn ToSql + Sync)],
-    ) -> Result<Row, TokioPgError> {
-        self.execute_as_user(self.inner.query_one(query, params))
+    pub async fn query_one(&self, Sql(stmt, params): &Sql<'_>) -> Result<Row, TokioPgError> {
+        self.execute_as_user(self.inner.query_one(stmt, params))
             .await
     }
 
-    pub async fn query_one_into<T>(
-        &self,
-        query: &str,
-        params: &[&(dyn ToSql + Sync)],
-    ) -> Result<T, TokioPgError>
+    pub async fn query_one_into<T>(&self, sql: &Sql<'_>) -> Result<T, TokioPgError>
     where
         T: FromSqlOwned,
     {
-        let row = self.query_one(query, params).await?;
+        let row = self.query_one(sql).await?;
 
         Ok(row.get(0))
     }
 
-    pub async fn execute(
+    pub async fn execute(&self, Sql(stmt, params): &Sql<'_>) -> Result<u64, TokioPgError> {
+        self.execute_as_user(self.inner.execute(stmt, params)).await
+    }
+
+    pub async fn execute_raw_sql(
         &self,
-        query: &str,
+        stmt: &str,
         params: &[&(dyn ToSql + Sync)],
     ) -> Result<u64, TokioPgError> {
-        self.execute_as_user(self.inner.execute(query, params))
-            .await
+        self.execute_as_user(self.inner.execute(stmt, params)).await
     }
 
     pub async fn commit(self) -> Result<(), TokioPgError> {
@@ -161,11 +152,12 @@ impl<'a> Transaction<'a> {
     }
 
     pub async fn acquire_user_permisssions_lock(&self) -> Result<(), TokioPgError> {
-        self.execute(
-            "select pg_advisory_xact_lock(hashtext($1))",
-            &[&"user_permissions"],
-        )
-        .await?;
+        let sql = Sql(
+            "select pg_advisory_xact_lock(hashtext($1))".to_string(),
+            vec![&"user_permissions"],
+        );
+
+        self.execute(&sql).await?;
 
         Ok(())
     }

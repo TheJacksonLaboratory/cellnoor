@@ -4,7 +4,7 @@ use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, construct_select_stmt},
+    db::{self, SqlTemplate},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -28,14 +28,19 @@ pub async fn select_specimens(
     tx: &db::Transaction<'_>,
     query: &mut SpecimenQuery,
 ) -> Result<Vec<Specimen>, ErrorInner> {
+    let stmt = if query.detailed {
+        include_str!("index/select_detailed.sql")
+    } else {
+        include_str!("index/select_detailed.sql")
+    };
+
+    let sql = SqlTemplate::new(stmt).finish_with_query(query)?;
+
     let specimens = if query.detailed {
-        let (sql, params) =
-            construct_select_stmt("specimen_detailed", &["specimen_detailed"], None, query);
-        let stream = tx.query_stream_into(&sql, params).await?;
+        let stream = tx.query_stream_into(sql).await?;
         stream.map(Specimen::from_detailed_record).collect().await
     } else {
-        let (sql, params) = construct_select_stmt("specimen", &["specimen"], None, query);
-        let stream = tx.query_stream_into(&sql, params).await?;
+        let stream = tx.query_stream_into(sql).await?;
         stream.map(Specimen::from_record).collect().await
     };
 

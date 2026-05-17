@@ -26,17 +26,17 @@ impl From<BlockFixative> for Fixative {
 pub enum NewBlock {
     OptimalCuttingTemperatureCompound {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: NewSpecimenCommonFields,
+        common: NewSpecimenCommonFields,
         fixative: Option<BlockFixative>,
     },
     CarboxymethylCellulose {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: NewSpecimenCommonFields,
+        common: NewSpecimenCommonFields,
         fixative: Option<BlockFixative>,
     },
     Paraffin {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        inner: NewSpecimenCommonFields,
+        common: NewSpecimenCommonFields,
         fixative: BlockFixative,
     },
 }
@@ -79,11 +79,11 @@ impl NewBlock {
         }
     }
 
-    fn into_inner(self) -> NewSpecimenCommonFields {
+    fn into_common(self) -> NewSpecimenCommonFields {
         match self {
-            Self::CarboxymethylCellulose { inner, .. }
-            | Self::OptimalCuttingTemperatureCompound { inner, .. }
-            | Self::Paraffin { inner, .. } => inner,
+            Self::CarboxymethylCellulose { common, .. }
+            | Self::OptimalCuttingTemperatureCompound { common, .. }
+            | Self::Paraffin { common, .. } => common,
         }
     }
 
@@ -94,7 +94,7 @@ impl NewBlock {
         let thermal_preservation_method = self.thermal_preservation_method();
 
         SpecimenInsertion::from_fields(
-            self.into_inner(),
+            self.into_common(),
             type_,
             Some(embedded_in),
             fixative,

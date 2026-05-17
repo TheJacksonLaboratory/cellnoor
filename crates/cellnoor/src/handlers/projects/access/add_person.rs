@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, Record, ToRecord},
+    db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
     handlers::path::IdParam,
     state::AppState,
@@ -58,8 +58,8 @@ struct NewProjectAccess {
     person_id: Uuid,
 }
 
-impl ToRecord<&'static str, 2> for NewProjectAccess {
-    fn to_record(&self) -> Record<'_, &'static str, 2> {
+impl AsFieldValuePairs<&'static str, 2> for NewProjectAccess {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 2> {
         let Self {
             project_id,
             person_id,

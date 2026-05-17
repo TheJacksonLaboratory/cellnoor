@@ -27,8 +27,6 @@ mod suspensions;
 // pub mod tenx_assays;
 
 pub(super) fn router() -> Router<AppState> {
-    aide::generate::infer_responses(true);
-
     let router = ApiRouter::new()
         .route("/health", get(async || "ok"))
         .route("/openapi.json", aide::axum::routing::get(show_api_docs))

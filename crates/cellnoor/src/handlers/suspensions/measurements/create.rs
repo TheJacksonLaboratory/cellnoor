@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, Record, ToRecord},
+    db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
     handlers::path::IdParam,
     state::AppState,
@@ -42,8 +42,8 @@ pub async fn insert_suspension_measurement(
     Ok(())
 }
 
-impl ToRecord<&'static str, 4> for (Uuid, &NewSuspensionMeasurement) {
-    fn to_record(&self) -> Record<'_, &'static str, 4> {
+impl AsFieldValuePairs<&'static str, 4> for (Uuid, &NewSuspensionMeasurement) {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 4> {
         let (
             suspension_id,
             NewSuspensionMeasurement {

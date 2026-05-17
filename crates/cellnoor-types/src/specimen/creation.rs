@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::{
     id::NoId,
     specimen::{
-        Fixative, Species, SpecimenType, ThermalPreservationMethod,
+        Fixative, NewSpecimenRecord, Species, SpecimenType, ThermalPreservationMethod,
         creation::{
             block::{BlockEmbeddingMatrix, NewBlock},
             cell_pellet::NewCellPellet,
@@ -16,7 +16,6 @@ use crate::{
             tissue::NewTissue,
         },
         measurement::NewSpecimenMeasurement,
-        record::SpecimenRecord,
     },
 };
 
@@ -55,55 +54,53 @@ pub struct NewSpecimenCommonFields {
     pub measurements: Vec<NewSpecimenMeasurement>,
 }
 
-pub type NewSpecimenRecord = SpecimenRecord<NoId>;
-
 impl NewSpecimen {
-    pub fn inner_mut(&mut self) -> &mut NewSpecimenCommonFields {
+    pub fn common_mut(&mut self) -> &mut NewSpecimenCommonFields {
         use NewSpecimen::{Block, CellPellet, RnaExtract, Suspension, Tissue};
 
         match self {
             Block(
-                NewBlock::CarboxymethylCellulose { inner, .. }
-                | NewBlock::OptimalCuttingTemperatureCompound { inner, .. }
-                | NewBlock::Paraffin { inner, .. },
+                NewBlock::CarboxymethylCellulose { common, .. }
+                | NewBlock::OptimalCuttingTemperatureCompound { common, .. }
+                | NewBlock::Paraffin { common, .. },
             )
-            | CellPellet(NewCellPellet { inner, .. })
-            | RnaExtract(NewRnaExtract { inner, .. })
+            | CellPellet(NewCellPellet { common, .. })
+            | RnaExtract(NewRnaExtract { common, .. })
             | Suspension(
-                NewSuspensionSpecimen::Fixed { inner, .. }
-                | NewSuspensionSpecimen::Fresh(inner)
-                | NewSuspensionSpecimen::ThermallyPreserved { inner, .. },
+                NewSuspensionSpecimen::Fixed { common, .. }
+                | NewSuspensionSpecimen::Fresh(common)
+                | NewSuspensionSpecimen::ThermallyPreserved { common, .. },
             )
             | Tissue(
-                NewTissue::Fixed { inner, .. }
-                | NewTissue::Fresh { inner }
-                | NewTissue::ThermallyPreserved { inner, .. },
-            ) => inner,
+                NewTissue::Fixed { common, .. }
+                | NewTissue::Fresh { common }
+                | NewTissue::ThermallyPreserved { common, .. },
+            ) => common,
         }
     }
 
     #[must_use]
-    pub fn into_inner(self) -> NewSpecimenCommonFields {
+    pub fn into_common(self) -> NewSpecimenCommonFields {
         use NewSpecimen::{Block, CellPellet, RnaExtract, Suspension, Tissue};
 
         match self {
             Block(
-                NewBlock::CarboxymethylCellulose { inner, .. }
-                | NewBlock::OptimalCuttingTemperatureCompound { inner, .. }
-                | NewBlock::Paraffin { inner, .. },
+                NewBlock::CarboxymethylCellulose { common, .. }
+                | NewBlock::OptimalCuttingTemperatureCompound { common, .. }
+                | NewBlock::Paraffin { common, .. },
             )
-            | CellPellet(NewCellPellet { inner, .. })
-            | RnaExtract(NewRnaExtract { inner, .. })
+            | CellPellet(NewCellPellet { common, .. })
+            | RnaExtract(NewRnaExtract { common, .. })
             | Suspension(
-                NewSuspensionSpecimen::Fixed { inner, .. }
-                | NewSuspensionSpecimen::Fresh(inner)
-                | NewSuspensionSpecimen::ThermallyPreserved { inner, .. },
+                NewSuspensionSpecimen::Fixed { common, .. }
+                | NewSuspensionSpecimen::Fresh(common)
+                | NewSuspensionSpecimen::ThermallyPreserved { common, .. },
             )
             | Tissue(
-                NewTissue::Fixed { inner, .. }
-                | NewTissue::Fresh { inner }
-                | NewTissue::ThermallyPreserved { inner, .. },
-            ) => inner,
+                NewTissue::Fixed { common, .. }
+                | NewTissue::Fresh { common }
+                | NewTissue::ThermallyPreserved { common, .. },
+            ) => common,
         }
     }
 

@@ -1,0 +1,2 @@
+select specimen_detailed from specimen_detailed
+where true

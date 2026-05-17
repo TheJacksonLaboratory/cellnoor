@@ -32,12 +32,27 @@ impl<T, const N: usize> NonemptyBoundedVec<T, N> {
     }
 }
 
+impl<T, const N: usize> NonemptyBoundedVec<T, N> {
+    pub fn iter(&self) -> std::slice::Iter<'_, T> {
+        self.0.iter()
+    }
+}
+
 impl<T, const N: usize> IntoIterator for NonemptyBoundedVec<T, N> {
     type IntoIter = <Vec<T> as IntoIterator>::IntoIter;
     type Item = T;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.into_iter()
+    }
+}
+
+impl<'a, T, const N: usize> IntoIterator for &'a NonemptyBoundedVec<T, N> {
+    type IntoIter = std::slice::Iter<'a, T>;
+    type Item = &'a T;
+
+    fn into_iter(self) -> Self::IntoIter {
+        (&self.0).into_iter()
     }
 }
 

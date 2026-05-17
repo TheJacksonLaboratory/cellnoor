@@ -12,7 +12,7 @@ use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
-    db::{self, construct_select_stmt},
+    db::{self, SqlTemplate},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -44,43 +44,26 @@ pub async fn select_suspension_pools(
     };
     query.order_by.push_front(distinct_on);
 
+    let stmt = if query.detailed {
+        include_str!("index/select_detailed.sql")
+    } else {
+        include_str!("index/select_compact.sql")
+    };
+
+    let sql = SqlTemplate::new(stmt).finish_with_query(query)?;
+
     let pools = if query.detailed {
-        let (sql, params) = construct_detailed_select_stmt(query);
-        let stream = tx.query_stream(&sql, params).await?;
+        let stream = tx.query_stream(sql).await?;
         stream
             .map(|row| row.map(map_detailed_row).unwrap())
             .collect()
             .await
     } else {
-        let (sql, params) = construct_select_stmt(
-            "suspension_pool_to_specimen",
-            &["distinct on ((suspension_pool).id) suspension_pool"],
-            None,
-            query,
-        );
-        let stream = tx.query_stream_into(&sql, params).await?;
+        let stream = tx.query_stream_into(sql).await?;
         stream.map(SuspensionPool::from_record).collect().await
     };
 
     Ok(pools)
-}
-
-fn construct_detailed_select_stmt(
-    query: &SuspensionPoolQuery,
-) -> (String, Vec<&(dyn ToSql + Sync)>) {
-    construct_select_stmt(
-        "suspension_pool_to_specimen",
-        &[
-            "distinct on ((suspension_pool).id) suspension_pool",
-            "array_agg((specimen, multiplexing_tag, null)::tagged_specimen) as specimens",
-            "array(select m from suspension_pool_measurement as m where m.pool_id = \
-             (suspension_pool).id) as measurements",
-            "array(select prep.prepared_by from suspension_pool_preparer as prep where \
-             prep.pool_id = (suspension_pool).id) as preparers",
-        ],
-        Some("suspension_pool"),
-        query,
-    )
 }
 
 fn map_detailed_row(row: Row) -> SuspensionPool {

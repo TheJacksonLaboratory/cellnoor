@@ -8,13 +8,13 @@ use crate::specimen::{
 #[base_model]
 #[cfg_attr(feature = "serde", serde(transparent))]
 pub struct NewRnaExtract {
-    pub inner: NewSpecimenCommonFields,
+    pub common: NewSpecimenCommonFields,
 }
 
 impl NewRnaExtract {
     pub(super) fn split_for_insertion(self) -> SpecimenInsertion {
         SpecimenInsertion::from_fields(
-            self.inner,
+            self.common,
             SpecimenType::RnaExtract,
             None,
             None::<Fixative>,

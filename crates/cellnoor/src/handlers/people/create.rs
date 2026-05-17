@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, ToRecord},
+    db::{self, AsFieldValuePairs, SqlTemplate},
     error::{Error, ErrorInner},
     handlers::people::show::select_person_by_id,
     state::AppState,
@@ -60,8 +60,8 @@ pub async fn insert_person(
     Ok(person)
 }
 
-impl ToRecord<PersonField, 4> for NewPersonRecord {
-    fn to_record(&self) -> db::Record<'_, PersonField, 4> {
+impl AsFieldValuePairs<PersonField, 4> for NewPersonRecord {
+    fn as_field_value_pairs(&self) -> db::FieldValuePairs<'_, PersonField, 4> {
         use PersonField::*;
 
         let Self {
@@ -126,11 +126,11 @@ async fn create_db_user(
     user_id: Uuid,
     is_staff: bool,
 ) -> Result<(), ErrorInner> {
-    tx.execute(
-        "select create_person_user_if_not_exists($1, $2)",
-        &[&user_id.to_string(), &is_staff],
-    )
-    .await?;
+    let user_id = user_id.to_string();
+    let sql = SqlTemplate::new("select create_person_user_if_not_exists($1, $2)")
+        .finish_with_params(vec![&user_id, &is_staff]);
+
+    tx.execute(&sql).await?;
 
     Ok(())
 }
@@ -145,7 +145,7 @@ async fn grant_permissions_to_db_user(
         .map(|p| construct_grant_or_revoke_statement(GrantOrRevoke::Grant, user_id, p))
         .collect();
 
-    let grant_ops = grant_stmts.iter().map(|s| tx.execute(s, &[]));
+    let grant_ops = grant_stmts.iter().map(|s| tx.execute_raw_sql(s, &[]));
     futures::future::try_join_all(grant_ops).await?;
 
     Ok(())
@@ -161,7 +161,7 @@ async fn revoke_permissions_from_db_user(
         .map(|p| construct_grant_or_revoke_statement(GrantOrRevoke::Revoke, user_id, p))
         .collect();
 
-    let revoke_ops = revoke_stmt.iter().map(|s| tx.execute(s, &[]));
+    let revoke_ops = revoke_stmt.iter().map(|s| tx.execute_raw_sql(s, &[]));
     futures::future::try_join_all(revoke_ops).await?;
 
     Ok(())

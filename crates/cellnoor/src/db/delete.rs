@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use crate::error::ErrorInner;
+use crate::{db::Sql, error::ErrorInner};
 
 pub async fn delete_by_id(
     tx: &super::Transaction<'_>,
@@ -9,7 +9,7 @@ pub async fn delete_by_id(
 ) -> Result<(), ErrorInner> {
     let stmt = format!("delete from {table} where id = $1");
 
-    let n = tx.execute(&stmt, &[&id]).await?;
+    let n = tx.execute(&Sql(stmt, vec![&id])).await?;
 
     if n == 0 {
         return Err(ErrorInner::ResourceNotFound);

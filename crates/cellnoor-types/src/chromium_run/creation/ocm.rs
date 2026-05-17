@@ -15,26 +15,20 @@ pub enum OcmBarcodeId {
 }
 
 #[base_model]
-pub struct NewOcmSuspensionLoading {
-    pub suspension_id: Uuid,
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub inner: NewChipLoadingCommonFields,
-    pub ocm_barcode_id: OcmBarcodeId,
-}
-
-#[base_model]
-pub struct NewOcmSuspensionPoolLoading {
-    pub suspension_pool_id: Uuid,
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub inner: NewChipLoadingCommonFields,
-    pub ocm_barcode_id: OcmBarcodeId,
-}
-
-#[base_model]
 #[cfg_attr(feature = "serde", serde(untagged, rename_all = "snake_case"))]
 pub enum NewOcmChipLoading {
-    Suspension(NewOcmSuspensionLoading),
-    SuspensionPool(NewOcmSuspensionPoolLoading),
+    Suspension {
+        suspension_id: Uuid,
+        #[cfg_attr(feature = "serde", serde(flatten))]
+        common: NewChipLoadingCommonFields,
+        ocm_barcode_id: OcmBarcodeId,
+    },
+    SuspensionPool {
+        suspension_pool_id: Uuid,
+        #[cfg_attr(feature = "serde", serde(flatten))]
+        common: NewChipLoadingCommonFields,
+        ocm_barcode_id: OcmBarcodeId,
+    },
 }
 
 #[base_model]

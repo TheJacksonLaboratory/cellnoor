@@ -38,7 +38,7 @@ async fn drop_db_user(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInn
     tx.acquire_user_permisssions_lock().await?;
 
     let revoke_result = tx
-        .execute(
+        .execute_raw_sql(
             &format!(r#"revoke all on all tables in schema public from "{id}""#),
             &[],
         )
@@ -52,7 +52,7 @@ async fn drop_db_user(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInn
         return Err(ErrorInner::ResourceNotFound);
     }
 
-    tx.execute(&format!(r#"drop user if exists "{}""#, id), &[])
+    tx.execute_raw_sql(&format!(r#"drop user if exists "{}""#, id), &[])
         .await?;
 
     Ok(())

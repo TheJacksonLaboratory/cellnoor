@@ -77,11 +77,11 @@ mod test {
         let (pre_update, inserted) = insert_test_specimen_and_project(&tx, |_| ()).await.unwrap();
         let id = *inserted.record().id;
 
-        let mut inner = pre_update.into_inner();
-        inner.readable_id = Uuid::new_v4().to_string().to_nonempty_string();
-        inner.measurements = vec![];
+        let mut common = pre_update.into_common();
+        common.readable_id = Uuid::new_v4().to_string().to_nonempty_string();
+        common.measurements = vec![];
         let update = NewSpecimen::Block(NewBlock::Paraffin {
-            inner,
+            common,
             fixative: BlockFixative::FormaldehydeDerivative,
         });
 

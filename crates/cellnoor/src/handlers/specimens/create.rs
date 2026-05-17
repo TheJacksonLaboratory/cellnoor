@@ -1,12 +1,9 @@
 use axum::{Json, extract::State};
-use cellnoor_types::specimen::{
-    Specimen,
-    creation::{NewSpecimen, NewSpecimenRecord},
-};
+use cellnoor_types::specimen::{NewSpecimenRecord, Specimen, creation::NewSpecimen};
 
 use crate::{
     auth::AuthUser,
-    db::{self, Record, ToRecord},
+    db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
     handlers::specimens::{
         measurements::create::insert_specimen_measurement, show::select_specimen_by_id,
@@ -48,8 +45,8 @@ pub async fn insert_specimen(
     select_specimen_by_id(tx, id).await
 }
 
-impl ToRecord<&'static str, 15> for NewSpecimenRecord {
-    fn to_record(&self) -> Record<'_, &'static str, 15> {
+impl AsFieldValuePairs<&'static str, 15> for NewSpecimenRecord {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 15> {
         let Self {
             id: _,
             readable_id,
@@ -133,7 +130,7 @@ pub mod test {
         };
 
         let mut new = NewSpecimen::Block(NewBlock::CarboxymethylCellulose {
-            inner: NewSpecimenCommonFields {
+            common: NewSpecimenCommonFields {
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 name: "specimen".to_nonempty_string(),
                 submitted_by: people[0],
@@ -177,7 +174,7 @@ pub mod test {
         let tx = client.begin().await.unwrap();
 
         let error = insert_test_specimen_and_project(&tx, |sp| {
-            sp.inner_mut().received_at = Timestamp::from_second(0).unwrap()
+            sp.common_mut().received_at = Timestamp::from_second(0).unwrap()
         })
         .await
         .unwrap_err();

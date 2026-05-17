@@ -4,9 +4,9 @@ use nonempty::NonemptyString;
 use postgres_types::ToSql;
 use uuid::Uuid;
 
+use crate::operator::{StringOperator, UuidOperator};
 #[cfg(feature = "postgres-types")]
 use crate::query::filter::ToPredicate;
-use crate::operator::{StringOperator, UuidOperator};
 
 #[unit_enum]
 pub enum LibraryType {
@@ -34,6 +34,7 @@ pub enum SampleMultiplexing {
 }
 
 #[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "tenx_assay"))]
 pub struct TenxAssay {
     pub id: Uuid,
     pub name: NonemptyString,
@@ -47,11 +48,7 @@ pub struct TenxAssay {
 
 #[predicate_enum]
 #[strum(prefix = "(tenx_assay).")]
-#[strum_discriminants(
-    name(TenxAssayField),
-    sort_field_enum,
-    strum(prefix = "(tenx_assay).")
-)]
+#[strum_discriminants(name(TenxAssayField), sort_field_enum, strum(prefix = "(tenx_assay)."))]
 pub enum TenxAssayPredicate {
     Id(UuidOperator),
     Name(StringOperator),

@@ -3,7 +3,7 @@ use cellnoor_types::project::{NewProject, NewProjectRecord, Project, ProjectFiel
 
 use crate::{
     auth::AuthUser,
-    db::{self, Record, ToRecord},
+    db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
     handlers::projects::{access::add_person::insert_project_accesses, show::select_project_by_id},
     state::AppState,
@@ -36,8 +36,8 @@ pub async fn insert_project(
     select_project_by_id(tx, id).await
 }
 
-impl ToRecord<ProjectField, 3> for NewProjectRecord {
-    fn to_record(&self) -> Record<'_, ProjectField, 3> {
+impl AsFieldValuePairs<ProjectField, 3> for NewProjectRecord {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, ProjectField, 3> {
         use ProjectField::*;
 
         let Self {
