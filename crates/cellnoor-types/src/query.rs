@@ -2,12 +2,11 @@ use macro_attributes::base_model;
 #[cfg(feature = "postgres-types")]
 use postgres_types::ToSql;
 
-use crate::{
-    ToPredicate,
-    query::{
-        filter::Filter,
-        order_by::{OrderBy, OrderBySet},
-    },
+#[cfg(feature = "postgres-types")]
+use crate::ToPredicate;
+use crate::query::{
+    filter::Filter,
+    order_by::{OrderBy, OrderBySet},
 };
 
 pub(crate) mod filter;

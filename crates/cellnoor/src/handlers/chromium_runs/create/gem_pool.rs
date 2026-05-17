@@ -1,10 +1,8 @@
 use cellnoor_types::chromium_run::creation::{
-    NewChipLoadingCommonFields,
     mixed::{NewMixedChipLoading, NewMixedGemPool},
-    ocm::{MAX_SUSPENSIONS_PER_OCM_GEM_POOL, NewOcmChipLoading, NewOcmGemPool, OcmBarcodeId},
-    standard::{NewStandardChipLoading, NewStandardGemPool},
+    ocm::{MAX_SUSPENSIONS_PER_OCM_GEM_POOL, NewOcmGemPool},
+    standard::NewStandardGemPool,
 };
-use nonempty::NonemptyString;
 use uuid::Uuid;
 
 use crate::{

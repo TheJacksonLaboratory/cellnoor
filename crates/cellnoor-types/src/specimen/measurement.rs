@@ -2,7 +2,7 @@ use jiff::Timestamp;
 use macro_attributes::{base_model, select};
 use nonempty::NonemptyString;
 use positive::PositiveBoundedF32;
-#[cfg(feature = "postgres-types")]
+#[cfg(all(feature = "postgres-types", feature = "schemars"))]
 use postgres_types::Json;
 use uuid::Uuid;
 
@@ -10,8 +10,11 @@ use uuid::Uuid;
 pub struct NewSpecimenMeasurement {
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
-    #[cfg(feature = "postgres-types")]
-    #[cfg_attr(feature = "schemars", schemars(with = "SpecimenMeasurementData"))]
+    #[cfg(all(feature = "postgres-types", feature = "schemars"))]
+    #[cfg_attr(
+        all(feature = "postgres-types", feature = "schemars"),
+        schemars(with = "SpecimenMeasurementData")
+    )]
     pub data: Json<SpecimenMeasurementData>,
     #[cfg(not(feature = "postgres-types"))]
     pub data: SpecimenMeasurementData,
@@ -24,8 +27,11 @@ pub struct SpecimenMeasurement {
     pub specimen_id: Uuid,
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
-    #[cfg(feature = "postgres-types")]
-    #[cfg_attr(feature = "schemars", schemars(with = "SpecimenMeasurementData"))]
+    #[cfg(all(feature = "postgres-types", feature = "schemars"))]
+    #[cfg_attr(
+        all(feature = "postgres-types", feature = "schemars"),
+        schemars(with = "SpecimenMeasurementData")
+    )]
     pub data: Json<SpecimenMeasurementData>,
     #[cfg(not(feature = "postgres-types"))]
     pub data: SpecimenMeasurementData,

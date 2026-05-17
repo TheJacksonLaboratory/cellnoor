@@ -1,6 +1,5 @@
 use cellnoor_types::chromium_run::creation::{
     NewChipLoadingCommonFields,
-    mixed::NewMixedChipLoading,
     ocm::{NewOcmChipLoading, OcmBarcodeId},
     standard::NewStandardChipLoading,
 };

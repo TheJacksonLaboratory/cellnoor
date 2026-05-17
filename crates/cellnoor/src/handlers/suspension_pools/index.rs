@@ -8,7 +8,6 @@ use cellnoor_types::{
 };
 use deadpool_postgres::tokio_postgres::Row;
 use futures::StreamExt;
-use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,

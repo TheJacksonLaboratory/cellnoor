@@ -7,7 +7,6 @@ pub use insert::{insert_into, insert_into_no_returning};
 use postgres_types::ToSql;
 pub use select::select_one;
 pub use update::update;
-use uuid::Uuid;
 
 use crate::error::ErrorInner;
 

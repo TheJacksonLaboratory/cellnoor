@@ -1,7 +1,7 @@
 use jiff::Timestamp;
 use macro_attributes::{base_model, select, unit_enum};
 use positive::{PositiveBoundedF32, PositiveF32};
-#[cfg(feature = "postgres-types")]
+#[cfg(all(feature = "postgres-types", feature = "schemars"))]
 use postgres_types::Json;
 use uuid::Uuid;
 
@@ -14,8 +14,11 @@ use crate::{
 pub struct NewSuspensionMeasurement {
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
-    #[cfg(feature = "postgres-types")]
-    #[cfg_attr(feature = "schemars", schemars(with = "SuspensionMeasurementData"))]
+    #[cfg(all(feature = "postgres-types", feature = "schemars"))]
+    #[cfg_attr(
+        all(feature = "postgres-types", feature = "schemars"),
+        schemars(with = "SuspensionMeasurementData")
+    )]
     pub data: Json<SuspensionMeasurementData>,
     #[cfg(not(feature = "postgres-types"))]
     pub data: SuspensionMeasurementData,
@@ -28,8 +31,11 @@ pub struct SuspensionMeasurement {
     pub suspension_id: Uuid,
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
-    #[cfg(feature = "postgres-types")]
-    #[cfg_attr(feature = "schemars", schemars(with = "SuspensionMeasurementData"))]
+    #[cfg(all(feature = "postgres-types", feature = "schemars"))]
+    #[cfg_attr(
+        all(feature = "postgres-types", feature = "schemars"),
+        schemars(with = "SuspensionMeasurementData")
+    )]
     pub data: Json<SuspensionMeasurementData>,
     #[cfg(not(feature = "postgres-types"))]
     pub data: SuspensionMeasurementData,

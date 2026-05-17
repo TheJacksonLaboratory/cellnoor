@@ -1,4 +1,3 @@
-use postgres_types::ToSql;
 use uuid::Uuid;
 
 use crate::db::{AsFieldValuePairs, FieldValuePairs, Sql};

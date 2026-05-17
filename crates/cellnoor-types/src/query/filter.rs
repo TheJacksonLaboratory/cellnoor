@@ -1,3 +1,4 @@
+#[cfg(feature = "postgres-types")]
 use std::fmt::Write;
 
 #[cfg(feature = "postgres-types")]

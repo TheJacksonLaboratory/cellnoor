@@ -32,20 +32,20 @@ pub struct NewChipLoadingCommonFields {
 }
 
 #[base_model]
-#[serde(tag = "plexy", rename_all = "snake_case")]
+#[cfg_attr(feature = "serde", serde(tag = "plexy", rename_all = "snake_case"))]
 pub enum NewChromiumRun {
     Mixed {
-        #[serde(flatten)]
+        #[cfg_attr(feature = "serde", serde(flatten))]
         common: NewChromiumRunRecord,
         gem_pools: NonemptyBoundedVec<NewMixedGemPool, MAX_GEM_POOLS_PER_OCM_RUN>,
     },
     OnChipMultiplexing {
-        #[serde(flatten)]
+        #[cfg_attr(feature = "serde", serde(flatten))]
         common: NewChromiumRunRecord,
         gem_pools: NonemptyBoundedVec<NewOcmGemPool, MAX_GEM_POOLS_PER_OCM_RUN>,
     },
     Standard {
-        #[serde(flatten)]
+        #[cfg_attr(feature = "serde", serde(flatten))]
         common: NewChromiumRunRecord,
         gem_pools: NonemptyBoundedVec<NewStandardGemPool, MAX_GEM_POOLS_PER_NON_OCM_RUN>,
     },

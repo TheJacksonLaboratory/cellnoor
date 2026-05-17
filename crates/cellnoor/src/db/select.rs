@@ -1,10 +1,8 @@
-use std::fmt::Write;
 
-use cellnoor_types::{ToPredicate, query::ComplexQuery};
-use postgres_types::ToSql;
+use cellnoor_types::query::ComplexQuery;
 
 use super::Transaction;
-use crate::{db::SqlTemplate, error::ErrorInner};
+use crate::error::ErrorInner;
 
 pub async fn select_one<P, O, T>(
     tx: &Transaction<'_>,
