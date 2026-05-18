@@ -26,11 +26,11 @@ pub type DualIndexSet = DualIndexSetRecord;
 #[base_model]
 pub struct NewDualIndexSet {
     #[cfg_attr(feature = "serde", serde(alias = "index(i7)"))]
-    index_i7: String,
+    pub index_i7: String,
     #[cfg_attr(feature = "serde", serde(alias = "index2_workflow_a(i5)"))]
-    index2_workflow_a_i5: String,
+    pub index2_workflow_a_i5: String,
     #[cfg_attr(feature = "serde", serde(alias = "index2_workflow_b(i5)"))]
-    index2_workflow_b_i5: String,
+    pub index2_workflow_b_i5: String,
 }
 
 mod single_index_set_record {

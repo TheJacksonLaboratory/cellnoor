@@ -46,7 +46,7 @@ pub async fn insert_specimen(
 }
 
 impl AsFieldValuePairs<SpecimenField, 15> for NewSpecimenRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<SpecimenField, 15> {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, SpecimenField, 15> {
         use SpecimenField::*;
 
         let Self {

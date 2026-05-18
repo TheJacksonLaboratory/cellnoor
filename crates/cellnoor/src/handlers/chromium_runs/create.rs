@@ -77,7 +77,7 @@ async fn insert_chromium_run_record(
 }
 
 impl AsFieldValuePairs<ChromiumRunField, 6> for NewChromiumRunRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<ChromiumRunField, 6> {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, ChromiumRunField, 6> {
         use ChromiumRunField::*;
 
         let Self {

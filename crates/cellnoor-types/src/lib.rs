@@ -2,11 +2,14 @@
 #[cfg(feature = "postgres-types")]
 pub use query::filter::ToPredicate;
 
+pub mod cdna;
 pub mod chromium_run;
 pub mod id;
 pub mod index_set;
 pub mod institution;
+pub mod library;
 pub mod multiplexing_tag;
+pub(crate) mod nucleic_acid_measurement;
 pub mod person;
 pub mod project;
 pub mod query;

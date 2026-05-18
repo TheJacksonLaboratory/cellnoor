@@ -1,4 +1,4 @@
-#![allow(incomplete_features)]
+#![allow(incomplete_features, uncommon_codepoints)]
 #![feature(generic_const_exprs)]
 
 #[cfg(feature = "ssr")]

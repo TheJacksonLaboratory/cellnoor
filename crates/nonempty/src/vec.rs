@@ -1,5 +1,10 @@
 use std::fmt::Debug;
 
+#[cfg(feature = "postgres-types")]
+use bytes::BytesMut;
+#[cfg(feature = "postgres-types")]
+use postgres_types::{ToSql, to_sql_checked};
+
 #[must_use]
 #[derive(Clone, Debug, thiserror::Error, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[error("array must have between 1 and {N} elements")]
@@ -73,6 +78,32 @@ impl<T, const N: usize> TryFrom<Vec<T>> for NonemptyBoundedVec<T, N> {
 
     fn try_from(value: Vec<T>) -> Result<Self, Error<T, N>> {
         Self::new(value)
+    }
+}
+
+#[cfg(feature = "postgres-types")]
+impl<T, const N: usize> ToSql for NonemptyBoundedVec<T, N>
+where
+    T: ToSql,
+{
+    to_sql_checked!();
+
+    fn to_sql(
+        &self,
+        ty: &postgres_types::Type,
+        out: &mut BytesMut,
+    ) -> Result<postgres_types::IsNull, Box<dyn std::error::Error + Sync + Send>>
+    where
+        Self: Sized,
+    {
+        self.0.to_sql(ty, out)
+    }
+
+    fn accepts(ty: &postgres_types::Type) -> bool
+    where
+        Self: Sized,
+    {
+        Vec::<T>::accepts(ty)
     }
 }
 

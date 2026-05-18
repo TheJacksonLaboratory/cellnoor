@@ -175,7 +175,7 @@ impl AsFieldValuePairs<&'static str, 3> for NewSuspensionPooling {
 }
 
 impl AsFieldValuePairs<SuspensionPoolField, 5> for NewSuspensionPoolRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<SuspensionPoolField, 5> {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, SuspensionPoolField, 5> {
         use SuspensionPoolField::*;
 
         let Self {
