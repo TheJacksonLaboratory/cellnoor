@@ -1,5 +1,5 @@
 use axum::{Json, extract::State};
-use cellnoor_types::specimen::{NewSpecimenRecord, Specimen, creation::NewSpecimen};
+use cellnoor_types::specimen::{NewSpecimenRecord, Specimen, SpecimenField, creation::NewSpecimen};
 
 use crate::{
     auth::AuthUser,
@@ -45,8 +45,10 @@ pub async fn insert_specimen(
     select_specimen_by_id(tx, id).await
 }
 
-impl AsFieldValuePairs<&'static str, 15> for NewSpecimenRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 15> {
+impl AsFieldValuePairs<SpecimenField, 15> for NewSpecimenRecord {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<SpecimenField, 15> {
+        use SpecimenField::*;
+
         let Self {
             id: _,
             readable_id,
@@ -67,21 +69,21 @@ impl AsFieldValuePairs<&'static str, 15> for NewSpecimenRecord {
         } = self;
 
         [
-            ("readable_id", readable_id),
-            ("name", name),
-            ("submitted_by", submitted_by),
-            ("received_at", received_at),
-            ("project_id", project_id),
-            ("species", species),
-            ("host_species", host_species),
-            ("returned_by", returned_by),
-            ("returned_at", returned_at),
-            ("tissue", tissue),
-            ("additional_data", additional_data),
-            ("type", type_),
-            ("embedded_in", embedded_in),
-            ("fixative", fixative),
-            ("thermal_preservation_method", thermal_preservation_method),
+            (ReadableId, readable_id),
+            (Name, name),
+            (SubmittedBy, submitted_by),
+            (ReceivedAt, received_at),
+            (ProjectId, project_id),
+            (Species, species),
+            (HostSpecies, host_species),
+            (ReturnedBy, returned_by),
+            (ReturnedAt, returned_at),
+            (Tissue, tissue),
+            (AdditionalData, additional_data),
+            (Type, type_),
+            (EmbeddedIn, embedded_in),
+            (Fixative, fixative),
+            (ThermalPreservationMethod, thermal_preservation_method),
         ]
     }
 }

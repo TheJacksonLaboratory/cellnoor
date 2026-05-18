@@ -3,7 +3,7 @@ use std::sync::LazyLock;
 use regex::Regex;
 
 use crate::{
-    db::{self, AsFieldValuePairs, insert_into, insert_into_no_returning},
+    db::{self, AsFieldValuePairs, insert_into_no_returning},
     error::ErrorInner,
 };
 
@@ -32,6 +32,18 @@ fn extract_well_name(s: &str) -> Result<&str, ErrorInner> {
         field: None,
         detail: Some(format!("must match {}", INDEX_SET_NAME_REGEX.to_string())),
     })
+}
+
+mod new_index_kit {
+    use crate::error::ErrorInner;
+
+    pub struct NewIndexKit<'a>(&'a str);
+
+    impl NewIndexKit<'_> {
+        pub fn new(kit_name: &str) -> Result<Self, ErrorInner> {
+            todo!()
+        }
+    }
 }
 
 async fn insert_index_kit(tx: &db::Transaction<'_>, name: &str) -> anyhow::Result<()> {

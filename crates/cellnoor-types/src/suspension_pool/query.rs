@@ -5,7 +5,7 @@ use postgres_types::ToSql;
 #[cfg(feature = "postgres-types")]
 use crate::query::filter::ToPredicate;
 use crate::{
-    operator::{StringOperator, TimestampOperator, UuidOperator},
+    operator::{JsonOperator, StringOperator, TimestampOperator, UuidOperator},
     query::{ComplexQuery, SimpleQuery, filter::Filter},
     specimen::SpecimenPredicate,
 };
@@ -23,6 +23,7 @@ pub enum SuspensionPoolPredicateInner {
     Name(StringOperator),
     MultiplexingType(StringOperator),
     PooledAt(TimestampOperator),
+    AdditionalData(JsonOperator),
 }
 
 #[base_model]
@@ -64,6 +65,7 @@ impl ToPredicate for SuspensionPoolPredicate {
                 | SuspensionPoolPredicateInner::Name(s)
                 | SuspensionPoolPredicateInner::MultiplexingType(s) => s.to_predicate(),
                 SuspensionPoolPredicateInner::PooledAt(t) => t.to_predicate(),
+                SuspensionPoolPredicateInner::AdditionalData(ad) => ad.to_predicate(),
             },
         }
     }

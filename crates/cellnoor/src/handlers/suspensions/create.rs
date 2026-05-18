@@ -1,5 +1,5 @@
 use axum::{Json, extract::State};
-use cellnoor_types::suspension::{NewSuspension, NewSuspensionRecord, Suspension};
+use cellnoor_types::suspension::{NewSuspension, NewSuspensionRecord, Suspension, SuspensionField};
 use uuid::Uuid;
 
 use crate::{
@@ -94,8 +94,10 @@ impl AsFieldValuePairs<&'static str, 2> for NewSuspensionPreparer {
     }
 }
 
-impl AsFieldValuePairs<&'static str, 7> for NewSuspensionRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 7> {
+impl AsFieldValuePairs<SuspensionField, 7> for NewSuspensionRecord {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, SuspensionField, 7> {
+        use SuspensionField::*;
+
         let Self {
             id: _,
             readable_id,
@@ -108,13 +110,13 @@ impl AsFieldValuePairs<&'static str, 7> for NewSuspensionRecord {
         } = self;
 
         [
-            ("readable_id", readable_id),
-            ("specimen_id", specimen_id),
-            ("content", content),
-            ("created_at", created_at),
-            ("lysis_duration_minutes", lysis_duration_minutes),
-            ("target_cell_recovery", target_cell_recovery),
-            ("additional_data", additional_data),
+            (ReadableId, readable_id),
+            (SpecimenId, specimen_id),
+            (Content, content),
+            (CreatedAt, created_at),
+            (LysisDurationMinutes, lysis_duration_minutes),
+            (TargetCellRecovery, target_cell_recovery),
+            (AdditionalData, additional_data),
         ]
     }
 }

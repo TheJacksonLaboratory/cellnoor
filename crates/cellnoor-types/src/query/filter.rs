@@ -156,6 +156,8 @@ pub type UuidOperator = Operator<Uuid>;
 
 pub type TimestampOperator = Operator<jiff::Timestamp>;
 
+pub type SimpleJsonOperator = Operator<serde_json::Value>;
+
 /// A comparison operator for string values.
 ///
 /// This is a superset of [`ScalarOperator`] and adds two string-specific
@@ -174,7 +176,7 @@ pub enum StringOperator {
     Trgm(String),
     /// All other operators
     #[cfg_attr(feature = "serde", serde(untagged))]
-    Simple(Operator<String>),
+    Simple(SimpleStringOperator),
 }
 
 #[cfg(feature = "postgres-types")]
@@ -189,7 +191,38 @@ impl ToPredicate for StringOperator {
 }
 
 impl From<Operator<String>> for StringOperator {
-    fn from(value: Operator<String>) -> Self {
+    fn from(value: SimpleStringOperator) -> Self {
+        Self::Simple(value)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schemars", schemars(inline))]
+pub enum JsonOperator {
+    Contains(serde_json::Value),
+    IsContainedIn(serde_json::Value),
+    HasKey(String),
+    #[cfg_attr(feature = "serde", serde(untagged))]
+    Simple(SimpleJsonOperator),
+}
+
+#[cfg(feature = "postgres-types")]
+impl ToPredicate for JsonOperator {
+    fn to_predicate(&self) -> (&'static str, &(dyn ToSql + Sync)) {
+        match self {
+            Self::Contains(v) => ("@>", v),
+            Self::IsContainedIn(v) => ("<@", v),
+            Self::HasKey(s) => ("?", s),
+            Self::Simple(op) => op.to_predicate(),
+        }
+    }
+}
+
+impl From<SimpleJsonOperator> for JsonOperator {
+    fn from(value: SimpleJsonOperator) -> Self {
         Self::Simple(value)
     }
 }

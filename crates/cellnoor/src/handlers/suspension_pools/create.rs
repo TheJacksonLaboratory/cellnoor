@@ -1,6 +1,7 @@
 use axum::{Json, extract::State};
 use cellnoor_types::suspension_pool::{
-    NewSuspensionPool, NewSuspensionPoolRecord, SuspensionPool, TaggedSuspension,
+    NewSuspensionPool, NewSuspensionPoolRecord, SuspensionPool, SuspensionPoolField,
+    TaggedSuspension,
 };
 use uuid::Uuid;
 
@@ -173,8 +174,10 @@ impl AsFieldValuePairs<&'static str, 3> for NewSuspensionPooling {
     }
 }
 
-impl AsFieldValuePairs<&'static str, 5> for NewSuspensionPoolRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 5> {
+impl AsFieldValuePairs<SuspensionPoolField, 5> for NewSuspensionPoolRecord {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<SuspensionPoolField, 5> {
+        use SuspensionPoolField::*;
+
         let Self {
             id: _,
             readable_id,
@@ -185,11 +188,11 @@ impl AsFieldValuePairs<&'static str, 5> for NewSuspensionPoolRecord {
         } = self;
 
         [
-            ("readable_id", readable_id),
-            ("name", name),
-            ("multiplexing_type", multiplexing_type),
-            ("pooled_at", pooled_at),
-            ("additional_data", additional_data),
+            (ReadableId, readable_id),
+            (Name, name),
+            (MultiplexingType, multiplexing_type),
+            (PooledAt, pooled_at),
+            (AdditionalData, additional_data),
         ]
     }
 }

@@ -1,5 +1,7 @@
 use axum::{Json as AxumJson, extract::State};
-use cellnoor_types::chromium_run::{ChromiumRun, NewChromiumRunRecord, creation::NewChromiumRun};
+use cellnoor_types::chromium_run::{
+    ChromiumRun, ChromiumRunField, NewChromiumRunRecord, creation::NewChromiumRun,
+};
 use uuid::Uuid;
 
 use crate::{
@@ -74,8 +76,10 @@ async fn insert_chromium_run_record(
     Ok(insert_into(tx, "chromium_run", record).await?)
 }
 
-impl AsFieldValuePairs<&'static str, 6> for NewChromiumRunRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 6> {
+impl AsFieldValuePairs<ChromiumRunField, 6> for NewChromiumRunRecord {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<ChromiumRunField, 6> {
+        use ChromiumRunField::*;
+
         let Self {
             id: _,
             readable_id,
@@ -87,12 +91,12 @@ impl AsFieldValuePairs<&'static str, 6> for NewChromiumRunRecord {
         } = self;
 
         [
-            ("readable_id", readable_id),
-            ("assay_id", assay_id),
-            ("run_at", run_at),
-            ("run_by", run_by),
-            ("succeeded", succeeded),
-            ("additional_data", additional_data),
+            (ReadableId, readable_id),
+            (AssayId, assay_id),
+            (RunAt, run_at),
+            (RunBy, run_by),
+            (Succeeded, succeeded),
+            (AdditionalData, additional_data),
         ]
     }
 }

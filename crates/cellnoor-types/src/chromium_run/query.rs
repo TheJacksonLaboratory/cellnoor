@@ -5,7 +5,7 @@ use postgres_types::ToSql;
 #[cfg(feature = "postgres-types")]
 use crate::query::filter::ToPredicate;
 use crate::{
-    operator::{BoolOperator, StringOperator, TimestampOperator, UuidOperator},
+    operator::{BoolOperator, JsonOperator, StringOperator, TimestampOperator, UuidOperator},
     query::{ComplexQuery, SimpleQuery, filter::Filter},
     specimen::SpecimenPredicate,
     tenx_assay::TenxAssayPredicate,
@@ -25,6 +25,7 @@ pub enum ChromiumRunPredicateInner {
     RunAt(TimestampOperator),
     RunBy(UuidOperator),
     Succeeded(BoolOperator),
+    AdditionalData(JsonOperator),
 }
 
 #[base_model]
@@ -76,6 +77,7 @@ impl ToPredicate for ChromiumRunPredicate {
                 ChromiumRunPredicateInner::ReadableId(s) => s.to_predicate(),
                 ChromiumRunPredicateInner::RunAt(t) => t.to_predicate(),
                 ChromiumRunPredicateInner::Succeeded(b) => b.to_predicate(),
+                ChromiumRunPredicateInner::AdditionalData(j) => j.to_predicate(),
             },
         }
     }

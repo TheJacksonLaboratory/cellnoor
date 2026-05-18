@@ -19,8 +19,8 @@ pub mod units;
 
 pub mod operator {
     pub use crate::query::filter::{
-        BoolOperator, F32Operator, I32Operator, I64Operator, SimpleStringOperator, StringOperator,
-        TimestampOperator, UuidOperator,
+        BoolOperator, F32Operator, I32Operator, I64Operator, JsonOperator, SimpleStringOperator,
+        StringOperator, TimestampOperator, UuidOperator,
     };
 }
 

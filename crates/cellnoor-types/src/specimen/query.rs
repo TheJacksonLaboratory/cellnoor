@@ -5,7 +5,7 @@ use postgres_types::ToSql;
 #[cfg(feature = "postgres-types")]
 use crate::query::filter::ToPredicate;
 use crate::{
-    operator::{StringOperator, TimestampOperator, UuidOperator},
+    operator::{JsonOperator, StringOperator, TimestampOperator, UuidOperator},
     query::{ComplexQuery, SimpleQuery, filter::Operator},
     specimen::{
         Fixative, Species, SpecimenType, ThermalPreservationMethod,
@@ -38,6 +38,7 @@ pub enum SpecimenPredicate {
     Fixative(FixativeOperator),
     ThermalPreservationMethod(ThermalPreservationMethodOperator),
     Tissue(StringOperator),
+    AdditionalData(JsonOperator),
 }
 
 #[cfg(feature = "postgres-types")]
@@ -54,6 +55,7 @@ impl ToPredicate for SpecimenPredicate {
             Self::EmbeddedIn(e) => e.to_predicate(),
             Self::Fixative(f) => f.to_predicate(),
             Self::ThermalPreservationMethod(tp) => tp.to_predicate(),
+            Self::AdditionalData(d) => d.to_predicate(),
         }
     }
 }
