@@ -18,16 +18,14 @@ create table chip_loading (
     id uuid primary key default uuidv7(),
     gem_pool_id uuid references gem_pool on delete cascade not null,
     suspension_id uuid references suspension on delete cascade,
+    suspension_pool_id uuid references suspension_pool on delete cascade,
     -- There are only 4 allowed OCM barcode IDs, but we let the application restrict this so there is only one source
     -- of truth (and so that we don't need a database migration if things change)
     ocm_barcode_id case_insensitive_text,
-    suspension_pool_id uuid references suspension_pool on delete cascade,
     suspension_volume_loaded jsonb not null,
     buffer_volume_loaded jsonb not null,
     additional_data jsonb,
 
-    -- In theory, someone could insert two rows with the same `gem_pool_id` and `suspension_id` - one with an
-    -- `ocm_barcode_id` and another without one, but the application prevents this
-    unique nulls not distinct (gem_pool_id, suspension_id, ocm_barcode_id, suspension_pool_id),
+    unique nulls not distinct (gem_pool_id, ocm_barcode_id),
     constraint has_suspension check ((suspension_id is null) != (suspension_pool_id is null))
 );
