@@ -206,12 +206,12 @@ pub mod test {
         id::NoId,
         suspension::{Suspension, measurement::Viability},
         suspension_pool::{
-            NewSuspensionPool, NewSuspensionPoolRecord, SuspensionPool,
+            NewSuspensionPool, NewSuspensionPoolRecord, SuspensionPool, TaggedSuspension,
             measurement::{NewSuspensionPoolMeasurement, SuspensionPoolMeasurementData},
         },
     };
     use jiff::Timestamp;
-    use nonempty::NonemptyVec;
+    use nonempty::{NonemptyBoundedVec, NonemptyVec};
     use positive::PositiveBoundedF32;
     use postgres_types::Json;
     use pretty_assertions::assert_eq;
@@ -221,6 +221,7 @@ pub mod test {
         db,
         error::ErrorInner,
         handlers::{
+            multiplexing_tags::create::tests::insert_test_multiplexing_tag,
             specimens::create::test::insert_test_specimen_and_project,
             suspension_pools::create::insert_suspension_pool,
             suspensions::create::test::insert_test_suspension_and_specimen,
@@ -238,6 +239,9 @@ pub mod test {
         let (_, suspension1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
         let (_, suspension2) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
 
+        let multiplexing_tag1_id = insert_test_multiplexing_tag(tx).await?;
+        let multiplexing_tag2_id = insert_test_multiplexing_tag(tx).await?;
+
         let suspension1_id = *suspension1.record().id;
         let suspension2_id = *suspension2.record().id;
 
@@ -246,7 +250,7 @@ pub mod test {
         };
         let person_id = specimen.record().submitted_by;
 
-        let mut new = NewSuspensionPool::Genetic {
+        let mut new = NewSuspensionPool::ExogenousTag {
             common: NewSuspensionPoolRecord {
                 id: NoId {},
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
@@ -263,7 +267,17 @@ pub mod test {
                 })),
             }],
             preparer_ids: NonemptyVec::new(vec![person_id]).unwrap(),
-            suspensions: NonemptyVec::new(vec![suspension1_id, suspension2_id]).unwrap(),
+            suspensions: NonemptyBoundedVec::new(vec![
+                TaggedSuspension {
+                    suspension_id: suspension1_id,
+                    tag_id: multiplexing_tag1_id,
+                },
+                TaggedSuspension {
+                    suspension_id: suspension2_id,
+                    tag_id: multiplexing_tag2_id,
+                },
+            ])
+            .unwrap(),
         };
 
         modify(&mut new);
@@ -309,13 +323,13 @@ pub mod test {
         };
 
         assert_eq!(specimens.len(), 2);
-        assert_eq!(
-            specimens
-                .iter()
-                .map(|s| s.multiplexing_tag.clone())
-                .collect::<Vec<_>>(),
-            vec![None, None]
-        );
+
+        let multiplexing_tags = specimens
+            .iter()
+            .map(|s| s.multiplexing_tag.clone())
+            .collect::<Vec<_>>();
+        assert_ne!(multiplexing_tags[0], multiplexing_tags[1]);
+
         assert!(
             unrelated_specimen_ids
                 .is_disjoint(&specimens.iter().map(|s| *s.specimen.record().id).collect())

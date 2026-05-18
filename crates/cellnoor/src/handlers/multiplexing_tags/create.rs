@@ -64,7 +64,7 @@ pub mod tests {
         let new = NewMultiplexingTag {
             id: NoId {},
             tag_id: Uuid::new_v4().to_string().to_nonempty_string(),
-            type_: MultiplexingTagType::TotalSeqA,
+            type_: MultiplexingTagType::FlexBarcode,
         };
 
         insert_multiplexing_tag(tx, &new).await
