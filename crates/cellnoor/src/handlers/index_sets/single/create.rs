@@ -1,7 +1,4 @@
-use std::collections::{HashMap, HashSet};
-
 use axum::{Json, extract::State};
-use cellnoor_types::index_set::NewDualIndexSet;
 
 use crate::{
     auth::AuthUser,
@@ -120,14 +117,9 @@ impl<'a> AsFieldValuePairs<&'static str, 4> for NewSingleIndexSetRecord<'a> {
 
 #[cfg(test)]
 pub mod tests {
-    use std::collections::HashMap;
-
-    use cellnoor_types::index_set::NewDualIndexSet;
 
     use crate::{
-        db,
-        error::ErrorInner,
-        handlers::{index_sets, index_sets::single::create::insert_single_index_sets},
+        db, error::ErrorInner, handlers::index_sets::single::create::insert_single_index_sets,
         state::test_util::db_client_as_admin,
     };
 
@@ -150,7 +142,7 @@ pub mod tests {
         }
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn insert() {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();

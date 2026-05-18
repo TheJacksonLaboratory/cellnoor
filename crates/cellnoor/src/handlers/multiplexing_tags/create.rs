@@ -70,7 +70,7 @@ pub mod tests {
         insert_multiplexing_tag(tx, &new).await
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn insert() {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();

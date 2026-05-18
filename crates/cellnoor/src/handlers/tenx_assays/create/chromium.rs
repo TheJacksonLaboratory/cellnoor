@@ -1,9 +1,9 @@
-use cellnoor_types::tenx_assay::{LibraryType, creation::NewChromiumAssay};
+use cellnoor_types::tenx_assay::{LibraryType, TenxAssay, creation::NewChromiumAssay};
 use nonempty::NonemptyString;
 use uuid::Uuid;
 
 use crate::{
-    db::{self, AsFieldValuePairs, FieldValuePairs, insert_into},
+    db::{self, AsFieldValuePairs, FieldValuePairs, SqlTemplate, insert_into},
     error::ErrorInner,
     handlers::tenx_assays::create::{
         NewLibraryTypeSpecificationRecord, insert_library_type_specification,
@@ -87,8 +87,8 @@ impl AsFieldValuePairs<&'static str, 7> for NewChromiumAssayRecord<'_> {
 #[cfg(test)]
 pub mod tests {
     use cellnoor_types::tenx_assay::{
-        LibraryType, SampleMultiplexing,
-        creation::{LibraryTypeSpecification, NewChromiumAssay},
+        LibraryType, SampleMultiplexing, TenxAssay,
+        creation::{LibraryTypeSpecification, NewChromiumAssay, NewTenxAssay},
     };
     use nonempty::{NonemptyBoundedVec, NonemptyVec};
     use positive::PositiveI32;
@@ -99,16 +99,18 @@ pub mod tests {
         error::ErrorInner,
         handlers::{
             index_sets::insert_test_dual_index_set,
-            tenx_assays::create::chromium::insert_chromium_assay,
+            tenx_assays::create::{chromium::insert_chromium_assay, insert_tenx_assay},
         },
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
-    pub async fn insert_test_chromium_assay(tx: &db::Transaction<'_>) -> Result<Uuid, ErrorInner> {
+    pub async fn insert_test_chromium_assay(
+        tx: &db::Transaction<'_>,
+    ) -> Result<(NewChromiumAssay, TenxAssay), ErrorInner> {
         let index_set_name = insert_test_dual_index_set(tx).await?;
         let kit_name = index_set_name[3..5].to_owned();
 
-        let assay = NewChromiumAssay {
+        let chromium_assay = NewChromiumAssay {
             name: Uuid::new_v4().to_string().to_nonempty_string(),
             chemistry_version: "v1".to_nonempty_string(),
             protocol_url: "https://10xgenomics.com".to_nonempty_string(),
@@ -124,10 +126,14 @@ pub mod tests {
             .unwrap(),
         };
 
-        insert_chromium_assay(tx, &assay).await
+        let assay = NewTenxAssay::Chromium(chromium_assay.clone());
+
+        let inserted = insert_tenx_assay(tx, &assay).await?;
+
+        Ok((chromium_assay, inserted))
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn insert() {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();

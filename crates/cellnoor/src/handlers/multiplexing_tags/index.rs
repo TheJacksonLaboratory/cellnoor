@@ -40,7 +40,7 @@ mod test {
         state::test_util::db_client_as_admin,
     };
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn select() {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();

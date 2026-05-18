@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use axum::{Json, extract::State};
 use cellnoor_types::index_set::NewDualIndexSet;
@@ -135,9 +135,7 @@ pub mod tests {
     use cellnoor_types::index_set::NewDualIndexSet;
 
     use crate::{
-        db,
-        error::ErrorInner,
-        handlers::index_sets::dual::create::{insert_dual_index_set, insert_dual_index_sets},
+        db, error::ErrorInner, handlers::index_sets::dual::create::insert_dual_index_sets,
         state::test_util::db_client_as_admin,
     };
 
@@ -164,7 +162,7 @@ pub mod tests {
         }
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn insert() {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();

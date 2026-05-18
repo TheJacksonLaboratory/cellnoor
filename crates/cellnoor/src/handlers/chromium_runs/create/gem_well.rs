@@ -75,12 +75,12 @@ pub async fn insert_mixed_gem_well(
     let mut standard_chip_loading_insertions = Vec::with_capacity(MAX_SUSPENSIONS_PER_OCM_GEM_WELL);
     let mut ocm_chip_loading_insertions = Vec::with_capacity(MAX_SUSPENSIONS_PER_OCM_GEM_WELL);
 
-    for l in loading {
-        match l {
-            NewMixedChipLoading::Standard(loading) => standard_chip_loading_insertions
-                .push(insert_standard_chip_loading(tx, loading, gem_well_id)),
-            NewMixedChipLoading::Ocm(loading) => {
-                ocm_chip_loading_insertions.push(insert_ocm_chip_loading(tx, loading, gem_well_id))
+    match loading {
+        NewMixedChipLoading::Standard(loading) => standard_chip_loading_insertions
+            .push(insert_standard_chip_loading(tx, loading, gem_well_id)),
+        NewMixedChipLoading::Ocm(loadings) => {
+            for l in loadings {
+                ocm_chip_loading_insertions.push(insert_ocm_chip_loading(tx, l, gem_well_id))
             }
         }
     }

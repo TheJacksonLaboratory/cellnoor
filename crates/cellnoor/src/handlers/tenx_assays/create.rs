@@ -1,17 +1,19 @@
 use axum::{Json, extract::State};
-use cellnoor_types::tenx_assay::creation::{LibraryTypeSpecification, NewTenxAssay};
+use cellnoor_types::tenx_assay::{
+    TenxAssay,
+    creation::{LibraryTypeSpecification, NewTenxAssay},
+};
+#[cfg(test)]
+pub use chromium::tests::insert_test_chromium_assay;
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs, insert_into_no_returning},
+    db::{self, AsFieldValuePairs, FieldValuePairs, SqlTemplate, insert_into_no_returning},
     error::{Error, ErrorInner},
     handlers::tenx_assays::create::chromium::insert_chromium_assay,
     state::AppState,
 };
-
-#[cfg(test)]
-pub use chromium::tests::insert_test_chromium_assay;
 
 mod chromium;
 
@@ -19,24 +21,33 @@ pub async fn create_tenx_assay(
     State(state): State<AppState>,
     user: AuthUser,
     Json(new): Json<NewTenxAssay>,
-) -> Result<Json<Uuid>, Error> {
+) -> Result<Json<TenxAssay>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let id = insert_tenx_assay(&tx, new).await?;
+    let response = insert_tenx_assay(&tx, &new).await.map(Json)?;
 
     tx.commit().await?;
 
-    Ok(Json(id))
+    Ok(response)
 }
 
 pub async fn insert_tenx_assay(
     tx: &db::Transaction<'_>,
-    new: NewTenxAssay,
-) -> Result<Uuid, ErrorInner> {
-    match new {
-        NewTenxAssay::Chromium(chromium) => insert_chromium_assay(tx, &chromium).await,
-    }
+    new: &NewTenxAssay,
+) -> Result<TenxAssay, ErrorInner> {
+    let assay_id = match new {
+        NewTenxAssay::Chromium(chromium) => insert_chromium_assay(tx, chromium).await?,
+    };
+
+    let assay = tx
+        .query_one_into(
+            &SqlTemplate::new("select tenx_assay from tenx_assay where id = $1")
+                .finish_with_params(vec![&assay_id]),
+        )
+        .await?;
+
+    Ok(assay)
 }
 
 async fn insert_library_type_specification(

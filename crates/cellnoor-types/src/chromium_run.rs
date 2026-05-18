@@ -149,4 +149,14 @@ impl ChromiumRun {
                 .collect(),
         }
     }
+
+    pub fn record(&self) -> &SavedChromiumRunRecord {
+        match self {
+            Self::Compact { record, .. } => record,
+            Self::Detailed {
+                record: SavedChromiumRunRecordDetailed { chromium_run, .. },
+                ..
+            } => chromium_run,
+        }
+    }
 }

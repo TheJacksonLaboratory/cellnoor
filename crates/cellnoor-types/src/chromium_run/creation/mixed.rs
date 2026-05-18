@@ -9,12 +9,12 @@ use crate::chromium_run::creation::{
 #[base_model]
 #[cfg_attr(feature = "serde", serde(untagged, rename_all = "snake_case"))]
 pub enum NewMixedChipLoading {
-    Ocm(NewOcmChipLoading),
+    Ocm(NonemptyBoundedVec<NewOcmChipLoading, MAX_SUSPENSIONS_PER_OCM_GEM_WELL>),
     Standard(NewStandardChipLoading),
 }
 
 #[base_model]
 pub struct NewMixedGemWell {
     pub readable_id: NonemptyString,
-    pub loading: NonemptyBoundedVec<NewMixedChipLoading, MAX_SUSPENSIONS_PER_OCM_GEM_WELL>,
+    pub loading: NewMixedChipLoading,
 }

@@ -24,9 +24,7 @@ pub struct LibraryMeasurement {
 }
 
 #[base_model]
-pub struct CdnaMeasurement {
-    pub id: Uuid,
-    pub library_id: Uuid,
+pub struct NewLibraryMeasurement {
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
     #[cfg(all(feature = "postgres-types", feature = "schemars"))]
