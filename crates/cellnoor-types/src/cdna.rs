@@ -3,8 +3,9 @@ use nonempty::NonemptyVec;
 use uuid::Uuid;
 
 use crate::{
-    cdna::{measurement::NewCdnaMeasurement, record::CdnaRecord},
+    cdna::record::CdnaRecord,
     id::{Id, NoId},
+    nucleic_acid_measurement::NewNucleicAcidMeasurement,
     simple_links::SimpleLinks,
     suspension_pool::TaggedSpecimen,
 };
@@ -40,7 +41,7 @@ pub type SavedCdnaRecord = CdnaRecord<Id>;
 pub struct NewCdna {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: NewCdnaRecord,
-    pub measurements: Vec<NewCdnaMeasurement>,
+    pub measurements: Vec<NewNucleicAcidMeasurement>,
     pub preparers: NonemptyVec<Uuid>,
 }
 

@@ -22,17 +22,3 @@ pub struct CdnaMeasurement {
     #[cfg(not(feature = "postgres-types"))]
     pub data: NucleicAcidMeasurementData,
 }
-
-#[base_model]
-pub struct NewCdnaMeasurement {
-    pub measured_by: Uuid,
-    pub measured_at: Timestamp,
-    #[cfg(all(feature = "postgres-types", feature = "schemars"))]
-    #[cfg_attr(
-        all(feature = "postgres-types", feature = "schemars"),
-        schemars(with = "NucleicAcidMeasurementData")
-    )]
-    pub data: Json<NucleicAcidMeasurementData>,
-    #[cfg(not(feature = "postgres-types"))]
-    pub data: NucleicAcidMeasurementData,
-}

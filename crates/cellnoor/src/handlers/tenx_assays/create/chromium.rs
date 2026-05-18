@@ -1,9 +1,8 @@
-use cellnoor_types::tenx_assay::{LibraryType, TenxAssay, creation::NewChromiumAssay};
-use nonempty::NonemptyString;
+use cellnoor_types::tenx_assay::{LibraryType, creation::NewChromiumAssay};
 use uuid::Uuid;
 
 use crate::{
-    db::{self, AsFieldValuePairs, FieldValuePairs, SqlTemplate, insert_into},
+    db::{self, AsFieldValuePairs, FieldValuePairs, insert_into},
     error::ErrorInner,
     handlers::tenx_assays::create::{
         NewLibraryTypeSpecificationRecord, insert_library_type_specification,
@@ -98,8 +97,7 @@ pub mod tests {
         db,
         error::ErrorInner,
         handlers::{
-            index_sets::insert_test_dual_index_set,
-            tenx_assays::create::{chromium::insert_chromium_assay, insert_tenx_assay},
+            index_sets::insert_test_dual_index_set, tenx_assays::create::insert_tenx_assay,
         },
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
