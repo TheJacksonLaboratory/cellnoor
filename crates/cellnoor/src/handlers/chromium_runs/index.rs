@@ -2,7 +2,7 @@ use axum::{Json, extract::State};
 use cellnoor_types::{
     chromium_run::{
         ChromiumRun, ChromiumRunField, ChromiumRunQuery, SavedChromiumRunRecord,
-        SavedChromiumRunRecordDetailed, SavedGemPoolWithSpecimensRecord,
+        SavedChromiumRunRecordDetailed, SavedGemWellWithSpecimensRecord,
     },
     order_by::OrderBy,
     tenx_assay::TenxAssay,
@@ -70,13 +70,13 @@ pub async fn select_chromium_runs(
 fn map_detailed_row(row: Row) -> ChromiumRun {
     let chromium_run: SavedChromiumRunRecord = row.get("chromium_run");
     let assay: TenxAssay = row.get("tenx_assay");
-    let gem_pools: Vec<SavedGemPoolWithSpecimensRecord> = row.get("gem_pools");
+    let gem_wells: Vec<SavedGemWellWithSpecimensRecord> = row.get("gem_wells");
 
-    ChromiumRun::from_detailed_record_and_gem_pools(
+    ChromiumRun::from_detailed_record_and_gem_wells(
         SavedChromiumRunRecordDetailed {
             chromium_run,
             assay,
         },
-        gem_pools,
+        gem_wells,
     )
 }

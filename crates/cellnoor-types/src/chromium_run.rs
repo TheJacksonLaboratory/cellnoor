@@ -6,7 +6,7 @@ pub use query::{
 };
 
 use crate::{
-    chromium_run::record::{ChromiumRunRecord, GemPoolRecord},
+    chromium_run::record::{ChromiumRunRecord, GemWellRecord},
     id::{Id, NoId},
     simple_links::SimpleLinks,
     suspension_pool::{SavedTaggedSpecimenRecord, TaggedSpecimen},
@@ -25,8 +25,8 @@ mod record {
     use uuid::Uuid;
 
     #[select]
-    #[cfg_attr(feature = "postgres-types", postgres(name = "gem_pool"))]
-    pub struct GemPoolRecord<T> {
+    #[cfg_attr(feature = "postgres-types", postgres(name = "gem_well"))]
+    pub struct GemWellRecord<T> {
         #[cfg_attr(feature = "serde", serde(flatten))]
         pub id: T,
         pub readable_id: NonemptyString,
@@ -47,13 +47,13 @@ mod record {
     }
 }
 
-pub type SavedGemPoolRecord = GemPoolRecord<Id>;
+pub type SavedGemWellRecord = GemWellRecord<Id>;
 
 pub type NewChromiumRunRecord = ChromiumRunRecord<NoId>;
 
 pub type SavedChromiumRunRecord = ChromiumRunRecord<Id>;
 
-// The detailed view is read from two separate columns of `gem_pool_to_specimen`
+// The detailed view is read from two separate columns of `gem_well_to_specimen`
 // and assembled in Rust, so this type is a plain serialization carrier — it
 // intentionally does not derive `FromSql` (the `chromium_run_to_assay` view
 // was removed).
@@ -84,17 +84,17 @@ impl ChromiumRunLinks {
 }
 
 #[select]
-#[cfg_attr(feature = "postgres-types", postgres(name = "gem_pool_with_specimens"))]
-pub struct SavedGemPoolWithSpecimensRecord {
+#[cfg_attr(feature = "postgres-types", postgres(name = "gem_well_with_specimens"))]
+pub struct SavedGemWellWithSpecimensRecord {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub gem_pool: SavedGemPoolRecord,
+    pub gem_well: SavedGemWellRecord,
     pub specimens: Vec<SavedTaggedSpecimenRecord>,
 }
 
 #[base_model]
-pub struct GemPool {
+pub struct GemWell {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: SavedGemPoolRecord,
+    pub record: SavedGemWellRecord,
     pub specimens: Vec<TaggedSpecimen>,
 }
 
@@ -116,7 +116,7 @@ pub enum ChromiumRun {
     Detailed {
         #[cfg_attr(feature = "serde", serde(flatten))]
         record: SavedChromiumRunRecordDetailed,
-        gem_pools: Vec<GemPool>,
+        gem_wells: Vec<GemWell>,
         links: ChromiumRunLinks,
     },
 }
@@ -129,17 +129,17 @@ impl ChromiumRun {
         }
     }
 
-    pub fn from_detailed_record_and_gem_pools(
+    pub fn from_detailed_record_and_gem_wells(
         record: SavedChromiumRunRecordDetailed,
-        gem_pools: Vec<SavedGemPoolWithSpecimensRecord>,
+        gem_wells: Vec<SavedGemWellWithSpecimensRecord>,
     ) -> Self {
         Self::Detailed {
             links: ChromiumRunLinks::from_id(record.chromium_run.id),
             record,
-            gem_pools: gem_pools
+            gem_wells: gem_wells
                 .into_iter()
-                .map(|g| GemPool {
-                    record: g.gem_pool,
+                .map(|g| GemWell {
+                    record: g.gem_well,
                     specimens: g
                         .specimens
                         .into_iter()

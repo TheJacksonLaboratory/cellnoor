@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::chromium_run::creation::NewChipLoadingCommonFields;
 
-pub const MAX_SUSPENSIONS_PER_OCM_GEM_POOL: usize = 4;
+pub const MAX_SUSPENSIONS_PER_OCM_GEM_WELL: usize = 4;
 
 #[unit_enum]
 pub enum OcmBarcodeId {
@@ -32,7 +32,7 @@ pub enum NewOcmChipLoading {
 }
 
 #[base_model]
-pub struct NewOcmGemPool {
+pub struct NewOcmGemWell {
     pub readable_id: NonemptyString,
-    pub loading: NonemptyBoundedVec<NewOcmChipLoading, MAX_SUSPENSIONS_PER_OCM_GEM_POOL>,
+    pub loading: NonemptyBoundedVec<NewOcmChipLoading, MAX_SUSPENSIONS_PER_OCM_GEM_WELL>,
 }

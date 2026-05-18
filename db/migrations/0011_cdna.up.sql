@@ -3,12 +3,12 @@ create table cdna (
     readable_id case_insensitive_text unique not null,
     library_type case_insensitive_text not null,
     prepared_at timestamptz not null,
-    gem_pool_id uuid references gem_pool,
+    gem_well_id uuid references gem_well,
     n_amplification_cycles integer not null,
     additional_data jsonb,
 
-    -- a single GEM pool cannot generate more than one cDNA of the same library type
-    unique (gem_pool_id, library_type)
+    -- a single GEM well cannot generate more than one cDNA of the same library type
+    unique (gem_well_id, library_type)
 );
 
 create table cdna_measurement (

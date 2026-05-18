@@ -50,7 +50,7 @@ pub enum ResourcePermission {
     #[strum(
         serialize = "suspension, suspension_measurement, suspension_preparer, suspension_pool, \
                      suspension_pool_measurement, suspension_pool_preparer, chromium_run, \
-                     gem_pool, chip_loading, cdna, cdna_measurement, cdna_preparer, library, \
+                     gem_well, chip_loading, cdna, cdna_measurement, cdna_preparer, library, \
                      library_measurement, library_preparer"
     )]
     ChromiumExperimentalEntities(Vec<Action>),

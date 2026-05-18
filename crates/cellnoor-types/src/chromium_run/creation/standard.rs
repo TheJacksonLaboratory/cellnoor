@@ -27,7 +27,7 @@ pub enum NewStandardChipLoading {
 }
 
 #[base_model]
-pub struct NewStandardGemPool {
+pub struct NewStandardGemWell {
     pub readable_id: NonemptyString,
     pub loading: NewStandardChipLoading,
 }

@@ -3,15 +3,15 @@ select distinct on ((chromium_run).id)
     tenx_assay,
     array(
         select (
-            gp.gem_pool,
+            gw.gem_well,
             array_agg(
-                (gp.specimen, gp.multiplexing_tag, gp.ocm_barcode_id)::tagged_specimen
+                (gw.specimen, gw.multiplexing_tag, gw.ocm_barcode_id)::tagged_specimen
             )
-        )::gem_pool_with_specimens
-        from gem_pool_to_specimen as gp
-        where (gp.chromium_run).id = (chromium_run).id
-        group by gp.gem_pool
-    ) as gem_pools
-from gem_pool_to_specimen
+        )::gem_well_with_specimens
+        from gem_well_to_specimen as gw
+        where (gw.chromium_run).id = (chromium_run).id
+        group by gw.gem_well
+    ) as gem_wells
+from gem_well_to_specimen
 where true
 group by chromium_run, tenx_assay

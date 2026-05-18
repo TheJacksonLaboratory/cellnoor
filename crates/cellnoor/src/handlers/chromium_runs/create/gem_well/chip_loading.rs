@@ -13,9 +13,9 @@ use crate::{
 pub async fn insert_standard_chip_loading(
     tx: &db::Transaction<'_>,
     loading: &NewStandardChipLoading,
-    gem_pool_id: Uuid,
+    gem_well_id: Uuid,
 ) -> Result<(), ErrorInner> {
-    let chip_loading = NewChipLoadingRecord::from_standard_chip_loading(loading, gem_pool_id);
+    let chip_loading = NewChipLoadingRecord::from_standard_chip_loading(loading, gem_well_id);
 
     insert_chip_loading(tx, &chip_loading).await
 }
@@ -23,9 +23,9 @@ pub async fn insert_standard_chip_loading(
 pub async fn insert_ocm_chip_loading(
     tx: &db::Transaction<'_>,
     loading: &NewOcmChipLoading,
-    gem_pool_id: Uuid,
+    gem_well_id: Uuid,
 ) -> Result<(), ErrorInner> {
-    let chip_loading = NewChipLoadingRecord::from_ocm_chip_loading(loading, gem_pool_id);
+    let chip_loading = NewChipLoadingRecord::from_ocm_chip_loading(loading, gem_well_id);
 
     insert_chip_loading(tx, &chip_loading).await
 }
@@ -39,7 +39,7 @@ async fn insert_chip_loading(
 
 #[derive(Clone, Debug, PartialEq)]
 struct NewChipLoadingRecord<'a> {
-    gem_pool_id: Uuid,
+    gem_well_id: Uuid,
     suspension_id: Option<Uuid>,
     suspension_pool_id: Option<Uuid>,
     ocm_barcode_id: Option<OcmBarcodeId>,
@@ -47,7 +47,7 @@ struct NewChipLoadingRecord<'a> {
 }
 
 impl<'a> NewChipLoadingRecord<'a> {
-    fn from_standard_chip_loading(loading: &'a NewStandardChipLoading, gem_pool_id: Uuid) -> Self {
+    fn from_standard_chip_loading(loading: &'a NewStandardChipLoading, gem_well_id: Uuid) -> Self {
         let (suspension_id, suspension_pool_id, common) = match loading {
             NewStandardChipLoading::Suspension {
                 suspension_id,
@@ -60,7 +60,7 @@ impl<'a> NewChipLoadingRecord<'a> {
         };
 
         Self {
-            gem_pool_id,
+            gem_well_id,
             suspension_id: suspension_id.copied(),
             suspension_pool_id: suspension_pool_id.copied(),
             ocm_barcode_id: None,
@@ -68,7 +68,7 @@ impl<'a> NewChipLoadingRecord<'a> {
         }
     }
 
-    fn from_ocm_chip_loading(loading: &'a NewOcmChipLoading, gem_pool_id: Uuid) -> Self {
+    fn from_ocm_chip_loading(loading: &'a NewOcmChipLoading, gem_well_id: Uuid) -> Self {
         let (suspension_id, suspension_pool_id, common, ocm_barcode_id) = match loading {
             NewOcmChipLoading::Suspension {
                 suspension_id,
@@ -83,7 +83,7 @@ impl<'a> NewChipLoadingRecord<'a> {
         };
 
         Self {
-            gem_pool_id,
+            gem_well_id,
             suspension_id: suspension_id.copied(),
             suspension_pool_id: suspension_pool_id.copied(),
             ocm_barcode_id: Some(*ocm_barcode_id),
@@ -95,7 +95,7 @@ impl<'a> NewChipLoadingRecord<'a> {
 impl<'a> AsFieldValuePairs<&'static str, 7> for NewChipLoadingRecord<'a> {
     fn as_field_value_pairs(&self) -> crate::db::FieldValuePairs<'_, &'static str, 7> {
         let Self {
-            gem_pool_id,
+            gem_well_id,
             suspension_id,
             suspension_pool_id,
             ocm_barcode_id,
@@ -108,7 +108,7 @@ impl<'a> AsFieldValuePairs<&'static str, 7> for NewChipLoadingRecord<'a> {
         } = self;
 
         [
-            ("gem_pool_id", gem_pool_id),
+            ("gem_well_id", gem_well_id),
             ("suspension_id", suspension_id),
             ("suspension_pool_id", suspension_pool_id),
             ("ocm_barcode_id", ocm_barcode_id),

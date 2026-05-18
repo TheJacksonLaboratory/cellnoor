@@ -15,7 +15,6 @@ use crate::state::AppState;
 // pub mod chromium_datasets;
 mod chromium_runs;
 // pub mod database;
-// pub mod gem_pools;
 mod institutions;
 // pub mod libraries;
 // pub mod multiplexing_tags;
@@ -46,7 +45,6 @@ pub(super) fn router() -> Router<AppState> {
         .nest("/chromium-runs", chromium_runs::router());
     // .nest("/10x-assays", tenx_assays::router())
     // .nest("/multiplexing-tags", multiplexing_tags::router())
-    // .nest("/gem-pools", gem_pools::router())
     // .nest("/chip-loadings", chip_loadings::router())
     // .nest("/cdna", cdna::router())
     // .nest("/libraries", libraries::router())

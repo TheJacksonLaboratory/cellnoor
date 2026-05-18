@@ -2,7 +2,7 @@ use macro_attributes::base_model;
 use nonempty::{NonemptyBoundedVec, NonemptyString};
 
 use crate::chromium_run::creation::{
-    ocm::{MAX_SUSPENSIONS_PER_OCM_GEM_POOL, NewOcmChipLoading},
+    ocm::{MAX_SUSPENSIONS_PER_OCM_GEM_WELL, NewOcmChipLoading},
     standard::NewStandardChipLoading,
 };
 
@@ -14,7 +14,7 @@ pub enum NewMixedChipLoading {
 }
 
 #[base_model]
-pub struct NewMixedGemPool {
+pub struct NewMixedGemWell {
     pub readable_id: NonemptyString,
-    pub loading: NonemptyBoundedVec<NewMixedChipLoading, MAX_SUSPENSIONS_PER_OCM_GEM_POOL>,
+    pub loading: NonemptyBoundedVec<NewMixedChipLoading, MAX_SUSPENSIONS_PER_OCM_GEM_WELL>,
 }

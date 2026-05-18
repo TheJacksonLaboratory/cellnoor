@@ -7,13 +7,13 @@ use crate::{
     db::{self, AsFieldValuePairs, FieldValuePairs, insert_into},
     error::{Error, ErrorInner},
     handlers::chromium_runs::{
-        create::gem_pool::{insert_mixed_gem_pool, insert_ocm_gem_pool, insert_standard_gem_pool},
+        create::gem_well::{insert_mixed_gem_well, insert_ocm_gem_well, insert_standard_gem_well},
         show::select_chromium_run_by_id,
     },
     state::AppState,
 };
 
-mod gem_pool;
+mod gem_well;
 
 pub async fn create_chromium_run(
     State(state): State<AppState>,
@@ -43,24 +43,24 @@ pub async fn insert_chromium_run(
     };
 
     match new {
-        NewChromiumRun::Standard { gem_pools, .. } => {
-            let gem_pool_insertions = gem_pools
+        NewChromiumRun::Standard { gem_wells, .. } => {
+            let gem_well_insertions = gem_wells
                 .iter()
-                .map(|g| insert_standard_gem_pool(tx, g, run_id));
+                .map(|g| insert_standard_gem_well(tx, g, run_id));
 
-            futures::future::try_join_all(gem_pool_insertions).await?;
+            futures::future::try_join_all(gem_well_insertions).await?;
         }
-        NewChromiumRun::OnChipMultiplexing { gem_pools, .. } => {
-            let gem_pool_insertions = gem_pools.iter().map(|g| insert_ocm_gem_pool(tx, g, run_id));
+        NewChromiumRun::OnChipMultiplexing { gem_wells, .. } => {
+            let gem_well_insertions = gem_wells.iter().map(|g| insert_ocm_gem_well(tx, g, run_id));
 
-            futures::future::try_join_all(gem_pool_insertions).await?;
+            futures::future::try_join_all(gem_well_insertions).await?;
         }
-        NewChromiumRun::Mixed { gem_pools, .. } => {
-            let gem_pool_insertions = gem_pools
+        NewChromiumRun::Mixed { gem_wells, .. } => {
+            let gem_well_insertions = gem_wells
                 .iter()
-                .map(|g| insert_mixed_gem_pool(tx, g, run_id));
+                .map(|g| insert_mixed_gem_well(tx, g, run_id));
 
-            futures::future::try_join_all(gem_pool_insertions).await?;
+            futures::future::try_join_all(gem_well_insertions).await?;
         }
     }
 

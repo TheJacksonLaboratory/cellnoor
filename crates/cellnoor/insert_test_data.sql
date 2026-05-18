@@ -46,12 +46,12 @@ values (
     true
 );
 
-insert into gem_pool (id, readable_id, chromium_run_id)
-values (uuid_nil(), 'gem_pool0', uuid_nil());
+insert into gem_well (id, readable_id, chromium_run_id)
+values (uuid_nil(), 'gem_well0', uuid_nil());
 
 insert into chip_loading (
     id,
-    gem_pool_id,
+    gem_well_id,
     suspension_id,
     suspension_volume_loaded,
     buffer_volume_loaded
@@ -63,7 +63,7 @@ insert into cdna (
     readable_id,
     library_type,
     prepared_at,
-    gem_pool_id,
+    gem_well_id,
     n_amplification_cycles
 )
 values (

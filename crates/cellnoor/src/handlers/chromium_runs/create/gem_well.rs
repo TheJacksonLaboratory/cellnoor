@@ -1,86 +1,86 @@
 use cellnoor_types::chromium_run::creation::{
-    mixed::{NewMixedChipLoading, NewMixedGemPool},
-    ocm::{MAX_SUSPENSIONS_PER_OCM_GEM_POOL, NewOcmGemPool},
-    standard::NewStandardGemPool,
+    mixed::{NewMixedChipLoading, NewMixedGemWell},
+    ocm::{MAX_SUSPENSIONS_PER_OCM_GEM_WELL, NewOcmGemWell},
+    standard::NewStandardGemWell,
 };
 use uuid::Uuid;
 
 use crate::{
     db::{self, AsFieldValuePairs, insert_into},
     error::ErrorInner,
-    handlers::chromium_runs::create::gem_pool::chip_loading::{
+    handlers::chromium_runs::create::gem_well::chip_loading::{
         insert_ocm_chip_loading, insert_standard_chip_loading,
     },
 };
 
 mod chip_loading;
 
-pub async fn insert_standard_gem_pool(
+pub async fn insert_standard_gem_well(
     tx: &db::Transaction<'_>,
-    NewStandardGemPool {
+    NewStandardGemWell {
         readable_id,
         loading,
-    }: &NewStandardGemPool,
+    }: &NewStandardGemWell,
     chromium_run_id: Uuid,
 ) -> Result<(), ErrorInner> {
-    let gem_pool = NewGemPoolRecord {
+    let gem_well = NewGemWellRecord {
         readable_id: readable_id.as_ref(),
         chromium_run_id,
     };
 
-    let gem_pool_id = insert_gem_pool(tx, &gem_pool).await?;
-    insert_standard_chip_loading(tx, loading, gem_pool_id).await?;
+    let gem_well_id = insert_gem_well(tx, &gem_well).await?;
+    insert_standard_chip_loading(tx, loading, gem_well_id).await?;
 
     Ok(())
 }
 
-pub async fn insert_ocm_gem_pool(
+pub async fn insert_ocm_gem_well(
     tx: &db::Transaction<'_>,
-    NewOcmGemPool {
+    NewOcmGemWell {
         readable_id,
         loading,
-    }: &NewOcmGemPool,
+    }: &NewOcmGemWell,
     chromium_run_id: Uuid,
 ) -> Result<(), ErrorInner> {
-    let gem_pool = NewGemPoolRecord {
+    let gem_well = NewGemWellRecord {
         readable_id: readable_id.as_ref(),
         chromium_run_id,
     };
 
-    let gem_pool_id = insert_gem_pool(tx, &gem_pool).await?;
+    let gem_well_id = insert_gem_well(tx, &gem_well).await?;
 
     let chip_loading_insertions = loading
         .iter()
-        .map(|l| insert_ocm_chip_loading(tx, l, gem_pool_id));
+        .map(|l| insert_ocm_chip_loading(tx, l, gem_well_id));
     futures::future::try_join_all(chip_loading_insertions).await?;
 
     Ok(())
 }
 
-pub async fn insert_mixed_gem_pool(
+pub async fn insert_mixed_gem_well(
     tx: &db::Transaction<'_>,
-    NewMixedGemPool {
+    NewMixedGemWell {
         readable_id,
         loading,
-    }: &NewMixedGemPool,
+    }: &NewMixedGemWell,
     chromium_run_id: Uuid,
 ) -> Result<(), ErrorInner> {
-    let gem_pool = NewGemPoolRecord {
+    let gem_well = NewGemWellRecord {
         readable_id: readable_id.as_ref(),
         chromium_run_id,
     };
 
-    let gem_pool_id = insert_gem_pool(tx, &gem_pool).await?;
+    let gem_well_id = insert_gem_well(tx, &gem_well).await?;
 
-    let mut standard_chip_loading_insertions = Vec::with_capacity(MAX_SUSPENSIONS_PER_OCM_GEM_POOL);
-    let mut ocm_chip_loading_insertions = Vec::with_capacity(MAX_SUSPENSIONS_PER_OCM_GEM_POOL);
+    let mut standard_chip_loading_insertions = Vec::with_capacity(MAX_SUSPENSIONS_PER_OCM_GEM_WELL);
+    let mut ocm_chip_loading_insertions = Vec::with_capacity(MAX_SUSPENSIONS_PER_OCM_GEM_WELL);
 
     for l in loading {
         match l {
             NewMixedChipLoading::Standard(loading) => standard_chip_loading_insertions
-                .push(insert_standard_chip_loading(tx, loading, gem_pool_id)),
+                .push(insert_standard_chip_loading(tx, loading, gem_well_id)),
             NewMixedChipLoading::Ocm(loading) => {
-                ocm_chip_loading_insertions.push(insert_ocm_chip_loading(tx, loading, gem_pool_id))
+                ocm_chip_loading_insertions.push(insert_ocm_chip_loading(tx, loading, gem_well_id))
             }
         }
     }
@@ -93,20 +93,20 @@ pub async fn insert_mixed_gem_pool(
     Ok(())
 }
 
-async fn insert_gem_pool(
+async fn insert_gem_well(
     tx: &db::Transaction<'_>,
-    gem_pool: &NewGemPoolRecord<'_>,
+    gem_well: &NewGemWellRecord<'_>,
 ) -> Result<Uuid, ErrorInner> {
-    Ok(insert_into(tx, "gem_pool", gem_pool).await?)
+    Ok(insert_into(tx, "gem_well", gem_well).await?)
 }
 
 #[derive(Clone, Debug, PartialEq)]
-struct NewGemPoolRecord<'a> {
+struct NewGemWellRecord<'a> {
     readable_id: &'a str,
     chromium_run_id: Uuid,
 }
 
-impl AsFieldValuePairs<&'static str, 2> for NewGemPoolRecord<'_> {
+impl AsFieldValuePairs<&'static str, 2> for NewGemWellRecord<'_> {
     fn as_field_value_pairs(&self) -> crate::db::FieldValuePairs<'_, &'static str, 2> {
         let Self {
             readable_id,

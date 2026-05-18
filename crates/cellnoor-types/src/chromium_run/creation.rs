@@ -6,15 +6,15 @@ use serde_json::Value;
 
 use crate::chromium_run::{
     LoadingVolume, NewChromiumRunRecord,
-    creation::{mixed::NewMixedGemPool, ocm::NewOcmGemPool, standard::NewStandardGemPool},
+    creation::{mixed::NewMixedGemWell, ocm::NewOcmGemWell, standard::NewStandardGemWell},
 };
 
 pub mod mixed;
 pub mod ocm;
 pub mod standard;
 
-pub const MAX_GEM_POOLS_PER_OCM_RUN: usize = 2;
-pub const MAX_GEM_POOLS_PER_NON_OCM_RUN: usize = 8;
+pub const MAX_GEM_WELLS_PER_OCM_RUN: usize = 2;
+pub const MAX_GEM_WELLS_PER_NON_OCM_RUN: usize = 8;
 
 #[base_model]
 pub struct NewChipLoadingCommonFields {
@@ -37,16 +37,16 @@ pub enum NewChromiumRun {
     Mixed {
         #[cfg_attr(feature = "serde", serde(flatten))]
         common: NewChromiumRunRecord,
-        gem_pools: NonemptyBoundedVec<NewMixedGemPool, MAX_GEM_POOLS_PER_OCM_RUN>,
+        gem_wells: NonemptyBoundedVec<NewMixedGemWell, MAX_GEM_WELLS_PER_OCM_RUN>,
     },
     OnChipMultiplexing {
         #[cfg_attr(feature = "serde", serde(flatten))]
         common: NewChromiumRunRecord,
-        gem_pools: NonemptyBoundedVec<NewOcmGemPool, MAX_GEM_POOLS_PER_OCM_RUN>,
+        gem_wells: NonemptyBoundedVec<NewOcmGemWell, MAX_GEM_WELLS_PER_OCM_RUN>,
     },
     Standard {
         #[cfg_attr(feature = "serde", serde(flatten))]
         common: NewChromiumRunRecord,
-        gem_pools: NonemptyBoundedVec<NewStandardGemPool, MAX_GEM_POOLS_PER_NON_OCM_RUN>,
+        gem_wells: NonemptyBoundedVec<NewStandardGemWell, MAX_GEM_WELLS_PER_NON_OCM_RUN>,
     },
 }

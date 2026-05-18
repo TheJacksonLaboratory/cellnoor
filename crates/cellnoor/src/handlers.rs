@@ -2,7 +2,7 @@
 // pub mod chip_loadings;
 // pub mod chromium_datasets;
 pub mod chromium_runs;
-// pub mod gem_pools;
+// pub mod gem_wells;
 pub mod institutions;
 // pub mod libraries;
 // pub mod multiplexing_tags;
