@@ -30,9 +30,7 @@ pub async fn insert_standard_gem_well(
     };
 
     let gem_well_id = insert_gem_well(tx, &gem_well).await?;
-    dbg!("inserted gem well");
     insert_standard_chip_loading(tx, loading, gem_well_id).await?;
-    dbg!("inserted chip loading");
 
     Ok(())
 }

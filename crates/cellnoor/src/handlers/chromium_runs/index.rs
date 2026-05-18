@@ -83,6 +83,8 @@ fn map_detailed_row(row: Row) -> ChromiumRun {
 
 #[cfg(test)]
 mod test {
+    use std::{collections::HashSet, hash::RandomState};
+
     use cellnoor_types::{
         chromium_run::{
             ChromiumRun, ChromiumRunPredicateInner, ChromiumRunQuery,
@@ -151,20 +153,25 @@ mod test {
             unreachable!("expected ChromiumRun::Detailed");
         };
 
-        assert_eq!(gem_wells.len(), 1);
+        assert_eq!(gem_wells.len(), 2);
 
-        // Ensure that the two returned specimens are different and that they have
-        // different multiplexing tags
-        let specimens = &gem_wells[0].specimens;
-        assert_eq!(specimens.len(), 2);
-        assert_ne!(
-            specimens[0].specimen.record().id,
-            specimens[1].specimen.record().id
+        // Ensure that the returned specimens are all different and that they have
+        // different multiplexing tags, so aggregate all the specimens
+        let mut specimens = gem_wells[0].specimens.clone();
+        specimens.extend_from_slice(&gem_wells[1].specimens);
+
+        assert_eq!(specimens.len(), 4);
+
+        let set: HashSet<_, RandomState> =
+            HashSet::from_iter(specimens.iter().map(|s| s.specimen.record().id));
+        assert_eq!(set.len(), 4);
+
+        let set: HashSet<_, RandomState> = HashSet::from_iter(
+            specimens
+                .iter()
+                .map(|s| s.multiplexing_tag.as_ref().unwrap().id),
         );
-        assert_ne!(
-            specimens[0].multiplexing_tag.clone().unwrap(),
-            specimens[1].multiplexing_tag.clone().unwrap()
-        );
+        assert_eq!(set.len(), 4);
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -181,7 +188,7 @@ mod test {
             unreachable!("expected ChromiumRun::Detailed");
         };
 
-        assert_eq!(gem_wells.len(), 1);
+        assert_eq!(gem_wells.len(), 2);
 
         // Ensure that the two returned specimens are different and that they have
         // different OCM barcode IDs
@@ -233,7 +240,7 @@ mod test {
             unreachable!("expected ChromiumRun::Detailed");
         };
 
-        assert_eq!(gem_wells.len(), 1);
+        assert_eq!(gem_wells.len(), 2);
 
         let specimens = &gem_wells[0].specimens;
         assert_eq!(specimens.len(), 2);
@@ -244,32 +251,42 @@ mod test {
         );
 
         assert_ne!(specimens[0].ocm_barcode_id, specimens[1].ocm_barcode_id);
+
+        // The second GEM well is loaded with two different specimens, but the first
+        // specimen is the same as the two specimens loaded in the first GEM well
+        assert_eq!(gem_wells[1].specimens[0], specimens[0]);
     }
 
     fn point_second_loading_at_first_suspension(new: &mut NewChromiumRun) {
-        let NewChromiumRun::OnChipMultiplexing { gem_wells, .. } = new else {
-            unreachable!("expected NewChromiumRun::OnChipMultiplexing");
-        };
-        let gem_well = &mut gem_wells.as_mut()[0];
-        let loading = gem_well.loading.as_mut();
+        // We do this for both the GEM wells in the Chromium run
+        fn get_suspension_id(
+            chromium_run: &mut NewChromiumRun,
+            gem_well_idx: usize,
+            loading_idx: usize,
+        ) -> &mut Uuid {
+            let NewChromiumRun::OnChipMultiplexing { gem_wells, .. } = chromium_run else {
+                unreachable!("expected NewChromiumRun::OnChipMultiplexing");
+            };
 
-        let NewOcmChipLoading::Suspension {
-            suspension_id: first_id,
-            ..
-        } = loading[0]
-        else {
-            unreachable!("expected NewOcmChipLoading::Suspension");
-        };
+            let gem_well = &mut gem_wells.as_mut()[gem_well_idx];
+            let loading = gem_well.loading.as_mut();
 
-        let NewOcmChipLoading::Suspension {
-            suspension_id: second_id,
-            ..
-        } = &mut loading[1]
-        else {
-            unreachable!("expected NewOcmChipLoading::Suspension");
-        };
+            let NewOcmChipLoading::Suspension { suspension_id, .. } = &mut loading[loading_idx]
+            else {
+                unreachable!()
+            };
 
-        *second_id = first_id;
+            suspension_id
+        }
+
+        let first_suspension_id = get_suspension_id(new, 0, 0).to_owned();
+        let second_suspension_id = get_suspension_id(new, 0, 1);
+        *second_suspension_id = first_suspension_id;
+
+        let first_suspension_id = get_suspension_id(new, 1, 0).to_owned();
+        let second_suspension_id = get_suspension_id(new, 1, 1);
+
+        *second_suspension_id = first_suspension_id;
     }
 
     #[tokio::test(flavor = "multi_thread")]

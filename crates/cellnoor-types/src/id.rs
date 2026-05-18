@@ -11,12 +11,12 @@ use uuid::Uuid;
 // `NewInstitution` or `SavedInstitution` in the resulting OpenAPI schema
 
 #[base_model]
-#[derive(Copy)]
+#[derive(Copy, Eq, Hash)]
 #[cfg_attr(feature = "schemars", schemars(inline))]
 pub struct NoId {}
 
 #[base_model]
-#[derive(Copy)]
+#[derive(Copy, Eq, Hash)]
 #[cfg_attr(feature = "schemars", schemars(inline))]
 pub struct Id {
     pub id: Uuid,

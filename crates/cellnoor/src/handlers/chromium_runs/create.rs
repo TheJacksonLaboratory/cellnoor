@@ -43,7 +43,6 @@ pub async fn insert_chromium_run(
         | NewChromiumRun::OnChipMultiplexing { common, .. }
         | NewChromiumRun::Mixed { common, .. } => insert_chromium_run_record(tx, common).await?,
     };
-    dbg!("inserted run_id");
 
     match new {
         NewChromiumRun::Standard { gem_wells, .. } => {
@@ -170,29 +169,38 @@ pub mod test {
     where
         F: FnMut(&mut NewChromiumRun),
     {
-        let (_, pool) = insert_test_suspension_pool_and_suspensions(tx, |_| ()).await?;
-        let SuspensionPool::Detailed {
-            record, specimens, ..
-        } = &pool
-        else {
+        let (_, pool1) = insert_test_suspension_pool_and_suspensions(tx, |_| ()).await?;
+        let (_, pool2) = insert_test_suspension_pool_and_suspensions(tx, |_| ()).await?;
+
+        let SuspensionPool::Detailed { preparers, .. } = &pool1 else {
             panic!("expected SuspensionPool::Detailed");
         };
-        let pool_id = *record.id;
-        let person_id = specimens[0].specimen.record().submitted_by;
+        let person_id = preparers[0];
 
         let (_, assay) = insert_test_chromium_assay(tx).await?;
         let assay_id = assay.id;
 
+        // To exercise the ability of a mulitply loaded chip, the chromium run has two
+        // GEM wells
+        let gem_well1 = NewStandardGemWell {
+            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+            loading: NewStandardChipLoading::SuspensionPool {
+                suspension_pool_id: *pool1.record().id,
+                common: loading_common(),
+            },
+        };
+
+        let gem_well2 = NewStandardGemWell {
+            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+            loading: NewStandardChipLoading::SuspensionPool {
+                suspension_pool_id: *pool2.record().id,
+                common: loading_common(),
+            },
+        };
+
         let mut new = NewChromiumRun::Standard {
             common: new_common(assay_id, person_id),
-            gem_wells: NonemptyBoundedVec::new(vec![NewStandardGemWell {
-                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                loading: NewStandardChipLoading::SuspensionPool {
-                    suspension_pool_id: pool_id,
-                    common: loading_common(),
-                },
-            }])
-            .unwrap(),
+            gem_wells: NonemptyBoundedVec::new(vec![gem_well1, gem_well2]).unwrap(),
         };
 
         modify(&mut new);
@@ -211,35 +219,43 @@ pub mod test {
         let (_, s1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
         let (_, s2) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
 
-        let Suspension::Detailed { specimen, .. } = &s1 else {
+        let Suspension::Detailed { preparers, .. } = &s1 else {
             panic!("expected Suspension::Detailed");
         };
-        let person_id = specimen.record().submitted_by;
-        let sus1_id = *s1.record().id;
-        let sus2_id = *s2.record().id;
+        let person_id = preparers[0];
 
         let (_, assay) = insert_test_chromium_assay(tx).await?;
         let assay_id = assay.id;
 
+        // To exercise the ability of a mulitply loaded chip, each GEM well has two
+        // suspensions, and the chromium run has two GEM wells. However, this time, the
+        // two GEM wells are basically equivalent so we can see if we get duplicate
+        // specimens
+        let loadings = vec![
+            NewOcmChipLoading::Suspension {
+                suspension_id: *s1.record().id,
+                common: loading_common(),
+                ocm_barcode_id: OcmBarcodeId::Ob1,
+            },
+            NewOcmChipLoading::Suspension {
+                suspension_id: *s2.record().id,
+                common: loading_common(),
+                ocm_barcode_id: OcmBarcodeId::Ob2,
+            },
+        ];
+        let gem_wells = vec![
+            NewOcmGemWell {
+                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                loading: NonemptyBoundedVec::new(loadings.clone()).unwrap(),
+            },
+            NewOcmGemWell {
+                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                loading: NonemptyBoundedVec::new(loadings).unwrap(),
+            },
+        ];
         let mut new = NewChromiumRun::OnChipMultiplexing {
             common: new_common(assay_id, person_id),
-            gem_wells: NonemptyBoundedVec::new(vec![NewOcmGemWell {
-                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                loading: NonemptyBoundedVec::new(vec![
-                    NewOcmChipLoading::Suspension {
-                        suspension_id: sus1_id,
-                        common: loading_common(),
-                        ocm_barcode_id: OcmBarcodeId::Ob1,
-                    },
-                    NewOcmChipLoading::Suspension {
-                        suspension_id: sus2_id,
-                        common: loading_common(),
-                        ocm_barcode_id: OcmBarcodeId::Ob2,
-                    },
-                ])
-                .unwrap(),
-            }])
-            .unwrap(),
+            gem_wells: NonemptyBoundedVec::new(gem_wells).unwrap(),
         };
 
         modify(&mut new);
@@ -258,12 +274,10 @@ pub mod test {
         let (_, s1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
         let (_, s2) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
 
-        let Suspension::Detailed { specimen, .. } = &s1 else {
+        let Suspension::Detailed { preparers, .. } = &s1 else {
             panic!("expected Suspension::Detailed");
         };
-        let person_id = specimen.record().submitted_by;
-        let sus1_id = *s1.record().id;
-        let sus2_id = *s2.record().id;
+        let person_id = preparers[0];
 
         let (_, assay) = insert_test_chromium_assay(tx).await?;
         let assay_id = assay.id;
@@ -274,7 +288,7 @@ pub mod test {
                 NewMixedGemWell {
                     readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                     loading: NewMixedChipLoading::Standard(NewStandardChipLoading::Suspension {
-                        suspension_id: sus1_id,
+                        suspension_id: *s1.record().id,
                         common: loading_common(),
                     }),
                 },
@@ -282,7 +296,7 @@ pub mod test {
                     readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                     loading: NewMixedChipLoading::Ocm(
                         NonemptyBoundedVec::new(vec![NewOcmChipLoading::Suspension {
-                            suspension_id: sus2_id,
+                            suspension_id: *s2.record().id,
                             common: loading_common(),
                             ocm_barcode_id: OcmBarcodeId::Ob1,
                         }])
