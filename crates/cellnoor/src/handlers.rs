@@ -5,7 +5,7 @@ pub mod chromium_runs;
 // pub mod gem_wells;
 pub mod institutions;
 // pub mod libraries;
-// pub mod multiplexing_tags;
+pub mod multiplexing_tags;
 pub mod index_sets;
 mod path;
 pub mod people;
