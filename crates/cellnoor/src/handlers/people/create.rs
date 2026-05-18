@@ -187,13 +187,14 @@ fn construct_grant_or_revoke_statement(
     user_id: Uuid,
     resource_permissions: &ResourcePermission,
 ) -> String {
-    let resource_name = resource_permissions.as_ref();
+    let resource_names = permission_as_tableset(resource_permissions);
     let actions = match resource_permissions {
         ResourcePermission::Institution(a)
         | ResourcePermission::Person(a)
         | ResourcePermission::Project(a)
         | ResourcePermission::Specimen(a)
-        | ResourcePermission::ChromiumExperimentalEntities(a)
+        | ResourcePermission::AssayConstantData(a)
+        | ResourcePermission::ChromiumExperimentalData(a)
         | ResourcePermission::ChromiumDataset(a) => a,
     };
 
@@ -201,9 +202,31 @@ fn construct_grant_or_revoke_statement(
     let actions = actions.join(", ");
 
     format!(
-        r#"{grant_or_revoke} {actions} on {resource_name} {} "{user_id}""#,
+        r#"{grant_or_revoke} {actions} on {resource_names} {} "{user_id}""#,
         grant_or_revoke.preposition()
     )
+}
+
+fn permission_as_tableset(permission: &ResourcePermission) -> &'static str {
+    match permission {
+        ResourcePermission::Institution(_) => "institution",
+        ResourcePermission::Person(_) => "person",
+        ResourcePermission::Project(_) => "project",
+        ResourcePermission::Specimen(_) => "specimen",
+        ResourcePermission::AssayConstantData(_) => {
+            "tenx_assay, index_set, library_type_specification, multiplexing_tag"
+        }
+        ResourcePermission::ChromiumExperimentalData(_) => {
+            "suspension, suspension_measurement, suspension_preparer, suspension_pool, \
+             suspension_pool_measurement, suspension_pool_preparer, chromium_run, gem_well, \
+             chip_loading, cdna, cdna_measurement, cdna_preparer, library, library_measurement, \
+             library_preparer"
+        }
+        ResourcePermission::ChromiumDataset(_) => {
+            "chromium_dataset, chromium_dataset_raw_file, chromium_dataset_parsed_file, \
+             chromium_dataset_library"
+        }
+    }
 }
 
 #[cfg(test)]

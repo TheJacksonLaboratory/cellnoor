@@ -9,7 +9,7 @@ use uuid::Uuid;
 use crate::{
     chromium_run::creation::ocm::OcmBarcodeId,
     id::{Id, NoId},
-    multiplexing_tag::SavedMultiplexingTag,
+    multiplexing_tag::MultiplexingTag,
     simple_links::SimpleLinks,
     specimen::{SavedSpecimenRecord, Specimen},
     suspension_pool::{measurement::SuspensionPoolMeasurement, record::SuspensionPoolRecord},
@@ -108,7 +108,7 @@ impl SuspensionPoolLinks {
 pub struct SavedTaggedSpecimenRecord {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub specimen: SavedSpecimenRecord,
-    pub multiplexing_tag: Option<SavedMultiplexingTag>,
+    pub multiplexing_tag: Option<MultiplexingTag>,
     pub ocm_barcode_id: Option<OcmBarcodeId>,
 }
 
@@ -116,7 +116,7 @@ pub struct SavedTaggedSpecimenRecord {
 pub struct TaggedSpecimen {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub specimen: Specimen,
-    pub multiplexing_tag: Option<SavedMultiplexingTag>,
+    pub multiplexing_tag: Option<MultiplexingTag>,
     pub ocm_barcode_id: Option<OcmBarcodeId>,
 }
 

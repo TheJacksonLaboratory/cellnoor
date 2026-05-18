@@ -25,7 +25,7 @@ mod record {
 
 pub type NewMultiplexingTag = MultiplexingTagRecord<NoId>;
 
-pub type SavedMultiplexingTag = MultiplexingTagRecord<Id>;
+pub type MultiplexingTag = MultiplexingTagRecord<Id>;
 
 #[unit_enum]
 pub enum MultiplexingTagType {

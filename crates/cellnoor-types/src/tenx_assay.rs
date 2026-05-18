@@ -1,12 +1,10 @@
-use macro_attributes::{predicate_enum, select, sort_field_enum, unit_enum};
+use macro_attributes::{select, unit_enum};
 use nonempty::NonemptyString;
-#[cfg(feature = "postgres-types")]
-use postgres_types::ToSql;
+pub use query::{TenxAssayField, TenxAssayPredicate};
 use uuid::Uuid;
 
-use crate::operator::{StringOperator, UuidOperator};
-#[cfg(feature = "postgres-types")]
-use crate::query::filter::ToPredicate;
+pub mod creation;
+mod query;
 
 #[unit_enum]
 pub enum LibraryType {
@@ -44,30 +42,4 @@ pub struct TenxAssay {
     pub protocol_url: NonemptyString,
     pub chromium_chip: Option<NonemptyString>,
     pub cmdlines: Option<Vec<NonemptyString>>,
-}
-
-#[predicate_enum]
-#[strum(prefix = "(tenx_assay).")]
-#[strum_discriminants(name(TenxAssayField), sort_field_enum, strum(prefix = "(tenx_assay)."))]
-pub enum TenxAssayPredicate {
-    Id(UuidOperator),
-    Name(StringOperator),
-    ChemistryVersion(StringOperator),
-    ProtocolUrl(StringOperator),
-}
-
-#[cfg(feature = "postgres-types")]
-impl ToPredicate for TenxAssayPredicate {
-    fn to_predicate(&self) -> (&'static str, &(dyn ToSql + Sync)) {
-        match self {
-            Self::Id(u) => u.to_predicate(),
-            Self::Name(s) | Self::ChemistryVersion(s) | Self::ProtocolUrl(s) => s.to_predicate(),
-        }
-    }
-}
-
-impl Default for TenxAssayField {
-    fn default() -> Self {
-        Self::Name
-    }
 }

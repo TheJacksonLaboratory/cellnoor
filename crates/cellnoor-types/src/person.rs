@@ -37,23 +37,17 @@ pub enum Action {
     Delete,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, ::strum::AsRefStr)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
-#[strum(serialize_all = "snake_case")]
 pub enum ResourcePermission {
     Institution(Vec<Action>),
     Person(Vec<Action>),
     Project(Vec<Action>),
     Specimen(Vec<Action>),
-    #[strum(
-        serialize = "suspension, suspension_measurement, suspension_preparer, suspension_pool, \
-                     suspension_pool_measurement, suspension_pool_preparer, chromium_run, \
-                     gem_well, chip_loading, cdna, cdna_measurement, cdna_preparer, library, \
-                     library_measurement, library_preparer"
-    )]
-    ChromiumExperimentalEntities(Vec<Action>),
+    AssayConstantData(Vec<Action>),
+    ChromiumExperimentalData(Vec<Action>),
     ChromiumDataset(Vec<Action>),
 }
 

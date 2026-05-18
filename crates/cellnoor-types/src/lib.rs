@@ -1,8 +1,10 @@
+#![allow(uncommon_codepoints)]
 #[cfg(feature = "postgres-types")]
 pub use query::filter::ToPredicate;
 
 pub mod chromium_run;
 pub mod id;
+pub mod index_set;
 pub mod institution;
 pub mod multiplexing_tag;
 pub mod person;
