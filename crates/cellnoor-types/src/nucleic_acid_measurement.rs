@@ -1,7 +1,7 @@
 use jiff::Timestamp;
 use macro_attributes::base_model;
 use nonempty::NonemptyString;
-use positive::PositiveU32;
+use positive::PositiveI32;
 #[cfg(all(feature = "postgres-types", feature = "schemars"))]
 use postgres_types::Json;
 use uuid::Uuid;
@@ -10,7 +10,7 @@ use crate::units::{Microliter, Nanogram, Picogram};
 
 #[base_model]
 pub struct Concentration<N> {
-    pub value: PositiveU32,
+    pub value: PositiveI32,
     pub numerator_unit: N,
     pub denominator_unit: Microliter,
 }
@@ -20,8 +20,8 @@ pub struct Concentration<N> {
 pub enum NucleicAcidMeasurementData {
     Electrophoretic {
         instrument_name: NonemptyString,
-        mean_size_bp: Option<PositiveU32>,
-        sizing_range: (u16, PositiveU32),
+        mean_size_bp: Option<PositiveI32>,
+        sizing_range: (u16, PositiveI32),
         concentration: Concentration<Picogram>,
     },
     Fluorometric {

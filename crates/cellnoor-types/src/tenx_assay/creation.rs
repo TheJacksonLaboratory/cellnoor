@@ -1,6 +1,6 @@
 pub use chromium::NewChromiumAssay;
 use macro_attributes::base_model;
-use positive::PositiveU32;
+use positive::PositiveI32;
 
 use crate::tenx_assay::LibraryType;
 
@@ -16,6 +16,6 @@ pub enum NewTenxAssay {
 pub struct LibraryTypeSpecification {
     pub library_type: LibraryType,
     pub index_kit: String,
-    pub cdna_volume_µl: PositiveU32,
-    pub library_volume_µl: PositiveU32,
+    pub cdna_volume_µl: PositiveI32,
+    pub library_volume_µl: PositiveI32,
 }

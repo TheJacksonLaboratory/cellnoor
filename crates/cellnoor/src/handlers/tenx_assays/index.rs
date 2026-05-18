@@ -23,10 +23,24 @@ pub async fn index_tenx_assays(
     Ok(response)
 }
 
-pub async fn select_tenx_assays(
-    tx: &db::Transaction<'_>,
-) -> Result<Vec<TenxAssay>, ErrorInner> {
+pub async fn select_tenx_assays(tx: &db::Transaction<'_>) -> Result<Vec<TenxAssay>, ErrorInner> {
     let sql = SqlTemplate::new(include_str!("index/select.sql")).finish_with_params(vec![]);
 
     Ok(tx.query_stream_into(sql).await?.collect().await)
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{
+        handlers::tenx_assays::{create::insert_test_chromium_assay, index::select_tenx_assays},
+        state::test_util::db_client_as_admin,
+    };
+
+    #[tokio::test]
+    async fn select() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        insert_test_chromium_assay(&tx).await.unwrap();
+    }
 }

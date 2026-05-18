@@ -53,11 +53,11 @@ mod index_set_name {
         }
 
         pub fn kit_name(&self) -> IndexKitName<'a> {
-            self.0.get(3..5).map(IndexKitName).unwrap()
+            IndexKitName(&self.0[3..5])
         }
 
         pub fn well_name(&self) -> IndexSetWellName<'a> {
-            self.0.get(6..8).map(IndexSetWellName).unwrap()
+            IndexSetWellName(&self.0[6..8])
         }
     }
 }

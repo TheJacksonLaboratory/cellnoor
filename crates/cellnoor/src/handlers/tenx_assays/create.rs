@@ -10,6 +10,9 @@ use crate::{
     state::AppState,
 };
 
+#[cfg(test)]
+pub use chromium::tests::insert_test_chromium_assay;
+
 mod chromium;
 
 pub async fn create_tenx_assay(
