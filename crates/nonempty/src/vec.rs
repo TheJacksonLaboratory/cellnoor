@@ -67,6 +67,12 @@ impl<T, const N: usize> AsRef<[T]> for NonemptyBoundedVec<T, N> {
     }
 }
 
+impl<T, const N: usize> AsMut<[T]> for NonemptyBoundedVec<T, N> {
+    fn as_mut(&mut self) -> &mut [T] {
+        &mut self.0
+    }
+}
+
 impl<T, const N: usize> From<NonemptyBoundedVec<T, N>> for Vec<T> {
     fn from(value: NonemptyBoundedVec<T, N>) -> Self {
         value.0

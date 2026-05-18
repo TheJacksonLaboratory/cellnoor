@@ -43,6 +43,7 @@ pub async fn insert_chromium_run(
         | NewChromiumRun::OnChipMultiplexing { common, .. }
         | NewChromiumRun::Mixed { common, .. } => insert_chromium_run_record(tx, common).await?,
     };
+    dbg!("inserted run_id");
 
     match new {
         NewChromiumRun::Standard { gem_wells, .. } => {
@@ -98,5 +99,229 @@ impl AsFieldValuePairs<ChromiumRunField, 6> for NewChromiumRunRecord {
             (Succeeded, succeeded),
             (AdditionalData, additional_data),
         ]
+    }
+}
+
+#[cfg(test)]
+pub mod test {
+    use cellnoor_types::{
+        chromium_run::{
+            ChromiumRun, LoadingVolume, NewChromiumRunRecord,
+            creation::{
+                NewChipLoadingCommonFields, NewChromiumRun,
+                mixed::{NewMixedChipLoading, NewMixedGemWell},
+                ocm::{NewOcmChipLoading, NewOcmGemWell, OcmBarcodeId},
+                standard::{NewStandardChipLoading, NewStandardGemWell},
+            },
+        },
+        id::NoId,
+        suspension::Suspension,
+        suspension_pool::SuspensionPool,
+        units::Microliter,
+    };
+    use jiff::Timestamp;
+    use nonempty::NonemptyBoundedVec;
+    use positive::PositiveF32;
+    use postgres_types::Json;
+    use uuid::Uuid;
+
+    use crate::{
+        db,
+        error::ErrorInner,
+        handlers::{
+            chromium_runs::create::insert_chromium_run,
+            suspension_pools::create::test::insert_test_suspension_pool_and_suspensions,
+            suspensions::create::test::insert_test_suspension_and_specimen,
+            tenx_assays::create::insert_test_chromium_assay,
+        },
+        state::test_util::{ToNonemptyString, db_client_as_admin},
+    };
+
+    pub fn loading_common() -> NewChipLoadingCommonFields {
+        NewChipLoadingCommonFields {
+            suspension_volume_loaded: Json(LoadingVolume {
+                value: PositiveF32::new(50.0).unwrap(),
+                unit: Microliter::Microliter,
+            }),
+            buffer_volume_loaded: Json(LoadingVolume {
+                value: PositiveF32::new(50.0).unwrap(),
+                unit: Microliter::Microliter,
+            }),
+            additional_data: None,
+        }
+    }
+
+    pub fn new_common(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRecord {
+        NewChromiumRunRecord {
+            id: NoId {},
+            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+            assay_id,
+            run_at: Timestamp::now(),
+            run_by,
+            succeeded: true,
+            additional_data: None,
+        }
+    }
+
+    pub async fn insert_test_standard_chromium_run<F>(
+        tx: &db::Transaction<'_>,
+        mut modify: F,
+    ) -> Result<(NewChromiumRun, ChromiumRun), ErrorInner>
+    where
+        F: FnMut(&mut NewChromiumRun),
+    {
+        let (_, pool) = insert_test_suspension_pool_and_suspensions(tx, |_| ()).await?;
+        let SuspensionPool::Detailed {
+            record, specimens, ..
+        } = &pool
+        else {
+            panic!("expected SuspensionPool::Detailed");
+        };
+        let pool_id = *record.id;
+        let person_id = specimens[0].specimen.record().submitted_by;
+
+        let (_, assay) = insert_test_chromium_assay(tx).await?;
+        let assay_id = assay.id;
+
+        let mut new = NewChromiumRun::Standard {
+            common: new_common(assay_id, person_id),
+            gem_wells: NonemptyBoundedVec::new(vec![NewStandardGemWell {
+                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                loading: NewStandardChipLoading::SuspensionPool {
+                    suspension_pool_id: pool_id,
+                    common: loading_common(),
+                },
+            }])
+            .unwrap(),
+        };
+
+        modify(&mut new);
+
+        let inserted = insert_chromium_run(tx, new.clone()).await?;
+        Ok((new, inserted))
+    }
+
+    pub async fn insert_test_ocm_chromium_run<F>(
+        tx: &db::Transaction<'_>,
+        mut modify: F,
+    ) -> Result<(NewChromiumRun, ChromiumRun), ErrorInner>
+    where
+        F: FnMut(&mut NewChromiumRun),
+    {
+        let (_, s1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+        let (_, s2) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+
+        let Suspension::Detailed { specimen, .. } = &s1 else {
+            panic!("expected Suspension::Detailed");
+        };
+        let person_id = specimen.record().submitted_by;
+        let sus1_id = *s1.record().id;
+        let sus2_id = *s2.record().id;
+
+        let (_, assay) = insert_test_chromium_assay(tx).await?;
+        let assay_id = assay.id;
+
+        let mut new = NewChromiumRun::OnChipMultiplexing {
+            common: new_common(assay_id, person_id),
+            gem_wells: NonemptyBoundedVec::new(vec![NewOcmGemWell {
+                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                loading: NonemptyBoundedVec::new(vec![
+                    NewOcmChipLoading::Suspension {
+                        suspension_id: sus1_id,
+                        common: loading_common(),
+                        ocm_barcode_id: OcmBarcodeId::Ob1,
+                    },
+                    NewOcmChipLoading::Suspension {
+                        suspension_id: sus2_id,
+                        common: loading_common(),
+                        ocm_barcode_id: OcmBarcodeId::Ob2,
+                    },
+                ])
+                .unwrap(),
+            }])
+            .unwrap(),
+        };
+
+        modify(&mut new);
+
+        let inserted = insert_chromium_run(tx, new.clone()).await?;
+        Ok((new, inserted))
+    }
+
+    pub async fn insert_test_mixed_chromium_run<F>(
+        tx: &db::Transaction<'_>,
+        mut modify: F,
+    ) -> Result<(NewChromiumRun, ChromiumRun), ErrorInner>
+    where
+        F: FnMut(&mut NewChromiumRun),
+    {
+        let (_, s1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+        let (_, s2) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+
+        let Suspension::Detailed { specimen, .. } = &s1 else {
+            panic!("expected Suspension::Detailed");
+        };
+        let person_id = specimen.record().submitted_by;
+        let sus1_id = *s1.record().id;
+        let sus2_id = *s2.record().id;
+
+        let (_, assay) = insert_test_chromium_assay(tx).await?;
+        let assay_id = assay.id;
+
+        let mut new = NewChromiumRun::Mixed {
+            common: new_common(assay_id, person_id),
+            gem_wells: NonemptyBoundedVec::new(vec![
+                NewMixedGemWell {
+                    readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                    loading: NewMixedChipLoading::Standard(NewStandardChipLoading::Suspension {
+                        suspension_id: sus1_id,
+                        common: loading_common(),
+                    }),
+                },
+                NewMixedGemWell {
+                    readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                    loading: NewMixedChipLoading::Ocm(
+                        NonemptyBoundedVec::new(vec![NewOcmChipLoading::Suspension {
+                            suspension_id: sus2_id,
+                            common: loading_common(),
+                            ocm_barcode_id: OcmBarcodeId::Ob1,
+                        }])
+                        .unwrap(),
+                    ),
+                },
+            ])
+            .unwrap(),
+        };
+
+        modify(&mut new);
+
+        let inserted = insert_chromium_run(tx, new.clone()).await?;
+        Ok((new, inserted))
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn insert_standard() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        insert_test_standard_chromium_run(&tx, |_| ())
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn insert_ocm() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        insert_test_ocm_chromium_run(&tx, |_| ()).await.unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn insert_mixed() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        insert_test_mixed_chromium_run(&tx, |_| ()).await.unwrap();
     }
 }

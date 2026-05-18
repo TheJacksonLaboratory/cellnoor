@@ -3,6 +3,7 @@ use cellnoor_types::chromium_run::creation::{
     ocm::{MAX_SUSPENSIONS_PER_OCM_GEM_WELL, NewOcmGemWell},
     standard::NewStandardGemWell,
 };
+use nonempty::NonemptyString;
 use uuid::Uuid;
 
 use crate::{
@@ -24,12 +25,14 @@ pub async fn insert_standard_gem_well(
     chromium_run_id: Uuid,
 ) -> Result<(), ErrorInner> {
     let gem_well = NewGemWellRecord {
-        readable_id: readable_id.as_ref(),
+        readable_id,
         chromium_run_id,
     };
 
     let gem_well_id = insert_gem_well(tx, &gem_well).await?;
+    dbg!("inserted gem well");
     insert_standard_chip_loading(tx, loading, gem_well_id).await?;
+    dbg!("inserted chip loading");
 
     Ok(())
 }
@@ -43,7 +46,7 @@ pub async fn insert_ocm_gem_well(
     chromium_run_id: Uuid,
 ) -> Result<(), ErrorInner> {
     let gem_well = NewGemWellRecord {
-        readable_id: readable_id.as_ref(),
+        readable_id,
         chromium_run_id,
     };
 
@@ -66,7 +69,7 @@ pub async fn insert_mixed_gem_well(
     chromium_run_id: Uuid,
 ) -> Result<(), ErrorInner> {
     let gem_well = NewGemWellRecord {
-        readable_id: readable_id.as_ref(),
+        readable_id,
         chromium_run_id,
     };
 
@@ -102,7 +105,7 @@ async fn insert_gem_well(
 
 #[derive(Clone, Debug, PartialEq)]
 struct NewGemWellRecord<'a> {
-    readable_id: &'a str,
+    readable_id: &'a NonemptyString,
     chromium_run_id: Uuid,
 }
 
