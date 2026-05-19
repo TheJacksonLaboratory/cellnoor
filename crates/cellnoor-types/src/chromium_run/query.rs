@@ -1,9 +1,5 @@
 use macro_attributes::{base_model, predicate_enum, sort_field_enum};
-#[cfg(feature = "postgres-types")]
-use postgres_types::ToSql;
 
-#[cfg(feature = "postgres-types")]
-use crate::query::filter::ToPredicate;
 use crate::{
     operator::{BoolOperator, JsonOperator, StringOperator, TimestampOperator, UuidOperator},
     query::{ComplexQuery, SimpleQuery, filter::Filter},
@@ -65,23 +61,6 @@ impl From<ChromiumRunPredicateInner> for Filter<ChromiumRunPredicate> {
 }
 
 #[cfg(feature = "postgres-types")]
-impl ToPredicate for ChromiumRunPredicate {
-    fn to_predicate(&self) -> (&'static str, &(dyn ToSql + Sync)) {
-        match self {
-            Self::Specimen(p) => p.to_predicate(),
-            Self::TenxAssay(p) => p.to_predicate(),
-            Self::ChromiumRun(field) => match field {
-                ChromiumRunPredicateInner::Id(u)
-                | ChromiumRunPredicateInner::AssayId(u)
-                | ChromiumRunPredicateInner::RunBy(u) => u.to_predicate(),
-                ChromiumRunPredicateInner::ReadableId(s) => s.to_predicate(),
-                ChromiumRunPredicateInner::RunAt(t) => t.to_predicate(),
-                ChromiumRunPredicateInner::Succeeded(b) => b.to_predicate(),
-                ChromiumRunPredicateInner::AdditionalData(j) => j.to_predicate(),
-            },
-        }
-    }
-}
 
 impl Default for ChromiumRunField {
     fn default() -> Self {

@@ -1,10 +1,11 @@
 use axum::{Json, extract::State};
-use cellnoor_types::specimen::{Specimen, SpecimenQuery};
+use cellnoor_types::specimen::{Specimen, SpecimenPredicate, SpecimenQuery};
 use futures::StreamExt;
+use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
-    db::{self, SqlTemplate},
+    db::{self, AsPredicate, BaseSqlStmt},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -34,7 +35,7 @@ pub async fn select_specimens(
         include_str!("index/select_compact.sql")
     };
 
-    let sql = SqlTemplate::new(stmt).finish_with_query(query)?;
+    let sql = BaseSqlStmt::new(stmt).finish_with_query(query)?;
 
     let specimens = if query.detailed {
         let stream = tx.query_stream_into(sql).await?;
@@ -45,6 +46,28 @@ pub async fn select_specimens(
     };
 
     Ok(specimens)
+}
+
+impl AsPredicate for SpecimenPredicate {
+    fn as_predicate(&self) -> (&str, (&str, &(dyn ToSql + Sync))) {
+        let field_name = self.as_ref();
+
+        let sql = match self {
+            Self::Id(u) | Self::SubmittedBy(u) | Self::ProjectId(u) | Self::ReturnedBy(u) => {
+                u.as_sql_operator_and_value()
+            }
+            Self::ReadableId(s) | Self::Name(s) | Self::Tissue(s) => s.as_sql_operator_and_value(),
+            Self::ReceivedAt(t) | Self::ReturnedAt(t) => t.as_sql_operator_and_value(),
+            Self::Species(sp) | Self::HostSpecies(sp) => sp.as_sql_operator_and_value(),
+            Self::Type(ty) => ty.as_sql_operator_and_value(),
+            Self::EmbeddedIn(e) => e.as_sql_operator_and_value(),
+            Self::Fixative(f) => f.as_sql_operator_and_value(),
+            Self::ThermalPreservationMethod(tp) => tp.as_sql_operator_and_value(),
+            Self::AdditionalData(d) => d.as_sql_operator_and_value(),
+        };
+
+        (field_name, sql)
+    }
 }
 
 #[cfg(test)]

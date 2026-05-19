@@ -1,7 +1,5 @@
 use macro_attributes::{predicate_enum, sort_field_enum};
 
-#[cfg(feature = "postgres-types")]
-use crate::query::filter::ToPredicate;
 use crate::{
     operator::{StringOperator, UuidOperator},
     query::{ComplexQuery, SimpleQuery},
@@ -19,14 +17,6 @@ pub enum PersonPredicate {
 }
 
 #[cfg(feature = "postgres-types")]
-impl ToPredicate for PersonPredicate {
-    fn to_predicate(&self) -> (&'static str, &(dyn postgres_types::ToSql + Sync)) {
-        match self {
-            Self::Id(u) | Self::InstitutionId(u) => u.to_predicate(),
-            Self::Name(s) | Self::Email(s) | Self::Orcid(s) => s.to_predicate(),
-        }
-    }
-}
 
 impl Default for PersonField {
     fn default() -> Self {

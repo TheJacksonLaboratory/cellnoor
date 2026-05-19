@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, SqlTemplate},
+    db::{self, BaseSqlStmt},
     error::ErrorInner,
 };
 
@@ -89,7 +89,7 @@ pub async fn fetch_api_key_record(
 
     let tx = db_client.begin().await?;
 
-    let sql = SqlTemplate::new(
+    let sql = BaseSqlStmt::new(
         "select (id, person_id, service_account_id, expires_at) from api_key where hashed_key = $1",
     )
     .finish_with_params(vec![&hashed_key]);

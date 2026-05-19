@@ -1,3 +1,5 @@
+use std::fmt::Write;
+
 use uuid::Uuid;
 
 use crate::{
@@ -16,9 +18,7 @@ where
     T: AsFieldValuePairs<F, N>,
 {
     let record = data.as_field_value_pairs();
-    let Some(sql) = convert_record_to_update_stmt(table, &id, &record) else {
-        return Ok(());
-    };
+    let sql = convert_record_to_update_stmt(table, &id, &record)?;
 
     let n = tx.execute(&sql).await?;
 
@@ -33,33 +33,49 @@ fn convert_record_to_update_stmt<'a, F, const N: usize>(
     table: &str,
     id: &'a Uuid,
     record: &'a FieldValuePairs<F, N>,
-) -> Option<Sql<'a>>
+) -> Result<Sql<'a>, ErrorInner>
 where
     F: Copy + AsRef<str>,
 {
-    if N == 0 {
-        return None;
+    fn map_err(e: std::fmt::Error) -> ErrorInner {
+        ErrorInner::Other {
+            message: e.to_string(),
+            sql_state: None,
+        }
     }
 
-    let mut column_sets = Vec::with_capacity(N);
+    if N == 0 {
+        return Err(ErrorInner::Other {
+            message: "no update provided".to_string(),
+            sql_state: None,
+        });
+    }
+
     let mut params = Vec::with_capacity(N + 1);
 
+    // Assume that `column = $n` is 32 characters at maximum, leaving room also for
+    // the `update table set` part
+    let mut update_clause = String::with_capacity(32 * N);
+    write!(update_clause, "update {table} set ").map_err(map_err)?;
+
     for (i, (field, value)) in record.iter().enumerate() {
-        column_sets.push(format!(
+        if i != 0 {
+            update_clause.push_str(", ");
+        }
+
+        write!(
+            update_clause,
             "{} = ${}",
-            field.as_ref().split('.').last().unwrap(),
+            field.as_ref().split(".").last().unwrap(),
             i + 1
-        ));
+        )
+        .map_err(map_err)?;
         params.push(*value);
     }
-
+    write!(update_clause, " where id = ${}", N + 1).map_err(map_err)?;
     params.push(id);
 
-    let column_sets = column_sets.join(", ");
-
-    let update_clause = format!("update {table} set {column_sets} where id = ${}", N + 1);
-
-    Some(Sql(update_clause, params))
+    Ok(Sql(update_clause, params))
 }
 
 #[cfg(test)]
@@ -100,12 +116,9 @@ mod tests {
         params[0]
             .to_sql_checked(&Type::TEXT, &mut actual_params)
             .unwrap();
-        params[1]
-            .to_sql_checked(&Type::UUID, &mut actual_params)
-            .unwrap();
-        params[2]
-            .to_sql_checked(&Type::UUID, &mut actual_params)
-            .unwrap();
+        for p in &params[1..] {
+            p.to_sql_checked(&Type::UUID, &mut actual_params).unwrap();
+        }
 
         let mut expected_params = BytesMut::new();
         "name".to_sql(&Type::TEXT, &mut expected_params).unwrap();

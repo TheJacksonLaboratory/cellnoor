@@ -11,11 +11,11 @@ use uuid::Uuid;
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(rename = "{P}Filter"))]
 pub enum Filter<P> {
-    /// Combines these predicates with logical `and`
+    /// Combines these predicates with logical and
     AllOf(Vec<Filter<P>>),
-    /// Combines these predicates with logical `or`
+    /// Combines these predicates with logical or
     AnyOf(Vec<Filter<P>>),
-    /// Negates this predicate with logical `not`
+    /// Negates this predicate with logical not
     Not(Box<Filter<P>>),
     #[cfg_attr(feature = "serde", serde(untagged))]
     /// Apply just one boolean predicate
@@ -28,107 +28,38 @@ impl<P> From<P> for Filter<P> {
     }
 }
 
-#[cfg(feature = "postgres-types")]
-pub trait ToPredicate {
-    fn to_predicate(&self) -> (&'static str, &(dyn ToSql + Sync));
-}
-
-#[cfg(feature = "postgres-types")]
-impl<P> Filter<P>
-where
-    P: AsRef<str> + ToPredicate,
-{
-    fn as_where_clause_inner<'a>(
-        &'a self,
-        bind_params: &mut Vec<&'a (dyn ToSql + Sync)>,
-    ) -> String {
-        match self {
-            Self::Leaf(pred) => {
-                let (operator, bind_param) = pred.to_predicate();
-
-                bind_params.push(bind_param);
-                // This works because Postgres's indexing for bind parameters starts at 1
-                let query = format!("{} {} (${})", pred.as_ref(), operator, bind_params.len());
-
-                query
-            }
-            Self::AllOf(filters) | Self::AnyOf(filters) => {
-                let mut query = String::new();
-
-                let (combinator, default) = if matches!(self, Self::AllOf(_)) {
-                    (" and ", "true")
-                } else {
-                    (" or ", "false")
-                };
-
-                if filters.is_empty() {
-                    return default.to_owned();
-                }
-
-                for (i, f) in filters.iter().enumerate() {
-                    let subfilter = f.as_where_clause_inner(bind_params);
-                    let _ = write!(query, "({subfilter})");
-
-                    if i != filters.len() - 1 {
-                        query.push_str(combinator);
-                    }
-                }
-
-                query
-            }
-            Self::Not(filter) => {
-                let query = format!("not ({})", filter.as_where_clause_inner(bind_params));
-
-                query
-            }
-        }
-    }
-
-    pub fn to_where_clause(&self) -> (String, Vec<&(dyn ToSql + Sync)>) {
-        // 64 is arbitrary but it's not a lot and definitely more than anyone will be
-        // constructing
-        let mut bind_params = Vec::with_capacity(64);
-
-        let filter = self.as_where_clause_inner(&mut bind_params);
-
-        (format!("where {filter}"), bind_params)
-    }
-}
-
 /// A comparison operator for any scalar value.
-///
-/// See [Filter] for an example of usage.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(rename = "{T}Operator"))]
 pub enum Operator<T> {
-    /// equals (`=`)
+    /// equals (=)
     Eq(T),
-    /// less than (`<`)
+    /// less than (<)
     Lt(T),
-    /// less than or equal to (`<=`)
+    /// less than or equal to (<=)
     Lte(T),
-    /// greater than (`>`)
+    /// greater than (>)
     Gt(T),
-    /// greater than or equal to (`>=`)
+    /// greater than or equal to (>=)
     Gte(T),
-    /// is contained in (`= any($1)`)
+    /// is contained in (= any($1))
     In(Vec<T>),
-    /// equals (`=`), but (de)serializes as `{"field": "value"}` instead of
-    /// `{"field": {"eq": "value"}}`
+    /// equals (=), but (de)serializes as '{"field": "value"}' instead of
+    /// '{"field": {"eq": "value"}}'
     #[cfg(feature = "serde")]
     #[serde(untagged)]
     ImplicitEq(T),
 }
 
 #[cfg(feature = "postgres-types")]
-impl<T> ToPredicate for Operator<T>
+impl<T> Operator<T>
 where
     T: ToSql + Sync,
 {
-    fn to_predicate(&self) -> (&'static str, &(dyn ToSql + Sync)) {
+    pub fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Eq(v) => ("=", v),
             Self::Lt(v) => ("<", v),
@@ -160,37 +91,43 @@ pub type SimpleJsonOperator = Operator<serde_json::Value>;
 
 /// A comparison operator for string values.
 ///
-/// This is a superset of [`ScalarOperator`] and adds two string-specific
-/// methods present in `PostgreSQL`:
-/// 1. [`like`](https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE)
-/// 2. [Trigram similar](https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS)
+/// This is a superset of Operator<T> and adds string-specific methods present
+/// in PostgreSQL:
+/// 1. like (https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE)
+/// 2. trigram similar (https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS)
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(inline))]
 pub enum StringOperator {
-    /// `PostgreSQL` `like`
+    /// PostgreSQL like
     Like(String),
-    /// `PostgreSQL` trigram similarity
-    Trgm(String),
+    /// PostgreSQL like any
+    LikeAny(Vec<String>),
+    /// PostgreSQL trigram similar to (%)
+    TrgmSim(String),
+    /// PostgreSQL trigram similar to any (% any)
+    TrgmSimAny(Vec<String>),
     /// All other operators
     #[cfg_attr(feature = "serde", serde(untagged))]
     Simple(SimpleStringOperator),
 }
 
 #[cfg(feature = "postgres-types")]
-impl ToPredicate for StringOperator {
-    fn to_predicate(&self) -> (&'static str, &(dyn ToSql + Sync)) {
+impl StringOperator {
+    pub fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Like(s) => ("like", s),
-            Self::Trgm(s) => ("%", s),
-            Self::Simple(op) => op.to_predicate(),
+            Self::LikeAny(s) => ("like any", s),
+            Self::TrgmSim(s) => ("%", s),
+            Self::TrgmSimAny(s) => ("% any", s),
+            Self::Simple(op) => op.as_sql_operator_and_value(),
         }
     }
 }
 
-impl From<Operator<String>> for StringOperator {
+impl From<SimpleStringOperator> for StringOperator {
     fn from(value: SimpleStringOperator) -> Self {
         Self::Simple(value)
     }
@@ -202,21 +139,31 @@ impl From<Operator<String>> for StringOperator {
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(inline))]
 pub enum JsonOperator {
+    /// PostgreSQL contains (@>)
     Contains(serde_json::Value),
+    /// PostgreSQL is contained in (<@)
     IsContainedIn(serde_json::Value),
+    /// PostgreSQL has key (?)
     HasKey(String),
+    /// PostgreSQL has any of keys (?|)
+    HasAnyOfKeys(Vec<String>),
+    /// PostgreSQL has all of keys (?&)
+    HasAllOfKeys(Vec<String>),
+    /// All other operators
     #[cfg_attr(feature = "serde", serde(untagged))]
     Simple(SimpleJsonOperator),
 }
 
 #[cfg(feature = "postgres-types")]
-impl ToPredicate for JsonOperator {
-    fn to_predicate(&self) -> (&'static str, &(dyn ToSql + Sync)) {
+impl JsonOperator {
+    pub fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Contains(v) => ("@>", v),
             Self::IsContainedIn(v) => ("<@", v),
             Self::HasKey(s) => ("?", s),
-            Self::Simple(op) => op.to_predicate(),
+            Self::HasAnyOfKeys(s) => ("?|", s),
+            Self::HasAllOfKeys(s) => ("?&", s),
+            Self::Simple(op) => op.as_sql_operator_and_value(),
         }
     }
 }

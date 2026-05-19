@@ -1,9 +1,5 @@
 use macro_attributes::{base_model, predicate_enum, sort_field_enum};
-#[cfg(feature = "postgres-types")]
-use postgres_types::ToSql;
 
-#[cfg(feature = "postgres-types")]
-use crate::query::filter::ToPredicate;
 use crate::{
     operator::{
         F32Operator, I64Operator, JsonOperator, StringOperator, TimestampOperator, UuidOperator,
@@ -65,24 +61,6 @@ impl From<SuspensionPredicateInner> for Filter<SuspensionPredicate> {
 }
 
 #[cfg(feature = "postgres-types")]
-impl ToPredicate for SuspensionPredicate {
-    fn to_predicate(&self) -> (&'static str, &(dyn ToSql + Sync)) {
-        match self {
-            Self::Specimen(p) => p.to_predicate(),
-            Self::Suspension(field) => match field {
-                SuspensionPredicateInner::Id(u) | SuspensionPredicateInner::SpecimenId(u) => {
-                    u.to_predicate()
-                }
-                SuspensionPredicateInner::ReadableId(s) => s.to_predicate(),
-                SuspensionPredicateInner::Content(c) => c.to_predicate(),
-                SuspensionPredicateInner::CreatedAt(t) => t.to_predicate(),
-                SuspensionPredicateInner::LysisDurationMinutes(f) => f.to_predicate(),
-                SuspensionPredicateInner::TargetCellRecovery(i) => i.to_predicate(),
-                SuspensionPredicateInner::AdditionalData(ad) => ad.to_predicate(),
-            },
-        }
-    }
-}
 
 impl Default for SuspensionField {
     fn default() -> Self {

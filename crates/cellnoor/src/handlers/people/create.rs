@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, SqlTemplate},
+    db::{self, AsFieldValuePairs, BaseSqlStmt},
     error::{Error, ErrorInner},
     handlers::people::show::select_person_by_id,
     state::AppState,
@@ -127,7 +127,7 @@ async fn create_db_user(
     is_staff: bool,
 ) -> Result<(), ErrorInner> {
     let user_id = user_id.to_string();
-    let sql = SqlTemplate::new("select create_person_user_if_not_exists($1, $2)")
+    let sql = BaseSqlStmt::new("select create_person_user_if_not_exists($1, $2)")
         .finish_with_params(vec![&user_id, &is_staff]);
 
     tx.execute(&sql).await?;

@@ -1,9 +1,5 @@
 use macro_attributes::base_model;
-#[cfg(feature = "postgres-types")]
-use postgres_types::ToSql;
 
-#[cfg(feature = "postgres-types")]
-use crate::ToPredicate;
 use crate::query::{
     filter::Filter,
     order_by::{OrderBy, OrderBySet},
@@ -87,36 +83,5 @@ where
             }),
             ..Default::default()
         }
-    }
-
-    pub fn limit_clause(&self) -> String {
-        self.limit.map(|i| format!("limit {i}")).unwrap_or_default()
-    }
-
-    pub fn offset_clause(&self) -> String {
-        format!("offset {}", self.offset)
-    }
-}
-
-impl<P, O> ComplexQuery<P, O>
-where
-    O: Default + Copy + AsRef<str>,
-{
-    pub fn to_order_by_clause(&self) -> String {
-        self.order_by.to_order_by_clause()
-    }
-}
-
-#[cfg(feature = "postgres-types")]
-impl<P, O> ComplexQuery<P, O>
-where
-    P: AsRef<str> + ToPredicate,
-    O: Default,
-{
-    pub fn to_where_clause(&self) -> (String, Vec<&(dyn ToSql + Sync)>) {
-        self.filter
-            .as_ref()
-            .map(Filter::to_where_clause)
-            .unwrap_or_default()
     }
 }

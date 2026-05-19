@@ -1,10 +1,10 @@
 use axum::{Json, extract::State};
-use cellnoor_types::project::{Project, ProjectQuery};
+use cellnoor_types::project::{Project, ProjectPredicate, ProjectQuery};
 use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, SqlTemplate},
+    db::{self, AsPredicate, BaseSqlStmt},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -34,7 +34,7 @@ pub async fn select_projects(
         include_str!("index/select_compact.sql")
     };
 
-    let sql = SqlTemplate::new(base_stmt).finish_with_query(query)?;
+    let sql = BaseSqlStmt::new(base_stmt).finish_with_query(query)?;
 
     let projects = if query.detailed {
         let stream = tx.query_stream_into(sql).await?;
@@ -45,6 +45,18 @@ pub async fn select_projects(
     };
 
     Ok(projects)
+}
+
+impl AsPredicate for ProjectPredicate {
+    fn as_predicate(&self) -> (&str, (&str, &(dyn postgres_types::ToSql + Sync))) {
+        let sql = match self {
+            Self::Id(u) => u.as_sql_operator_and_value(),
+            Self::Name(s) => s.as_sql_operator_and_value(),
+            Self::StartedAt(t) | Self::EndedAt(t) => t.as_sql_operator_and_value(),
+        };
+
+        (self.as_ref(), sql)
+    }
 }
 
 #[cfg(test)]

@@ -4,7 +4,7 @@ use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, SqlTemplate},
+    db::{self, BaseSqlStmt},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -26,7 +26,7 @@ pub async fn index_multiplexing_tags(
 pub async fn select_multiplexing_tags(
     tx: &db::Transaction<'_>,
 ) -> Result<Vec<MultiplexingTag>, ErrorInner> {
-    let sql = SqlTemplate::new(include_str!("index/select.sql")).finish_with_params(vec![]);
+    let sql = BaseSqlStmt::new(include_str!("index/select.sql")).finish_with_params(vec![]);
 
     Ok(tx.query_stream_into(sql).await?.collect().await)
 }

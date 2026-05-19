@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs, SqlTemplate, insert_into_no_returning},
+    db::{self, AsFieldValuePairs, FieldValuePairs, BaseSqlStmt, insert_into_no_returning},
     error::{Error, ErrorInner},
     handlers::tenx_assays::create::chromium::insert_chromium_assay,
     state::AppState,
@@ -42,7 +42,7 @@ pub async fn insert_tenx_assay(
 
     let assay = tx
         .query_one_into(
-            &SqlTemplate::new("select tenx_assay from tenx_assay where id = $1")
+            &BaseSqlStmt::new("select tenx_assay from tenx_assay where id = $1")
                 .finish_with_params(vec![&assay_id]),
         )
         .await?;

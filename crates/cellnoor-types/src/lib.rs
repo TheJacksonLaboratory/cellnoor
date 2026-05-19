@@ -1,7 +1,4 @@
 #![allow(uncommon_codepoints)]
-#[cfg(feature = "postgres-types")]
-pub use query::filter::ToPredicate;
-
 pub mod cdna;
 pub mod chromium_run;
 pub mod id;
@@ -25,6 +22,10 @@ pub mod operator {
         BoolOperator, F32Operator, I32Operator, I64Operator, JsonOperator, SimpleStringOperator,
         StringOperator, TimestampOperator, UuidOperator,
     };
+}
+
+pub mod filter {
+    pub use crate::query::filter::Filter;
 }
 
 pub mod order_by {

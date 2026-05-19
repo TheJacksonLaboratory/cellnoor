@@ -36,7 +36,7 @@ where
 
 fn convert_record_to_insert_stmt<'a, F, const N: usize>(
     table: &str,
-    record: &'a FieldValuePairs<'a, F, N>,
+    field_value_pairs: &'a FieldValuePairs<'a, F, N>,
     returning: Option<&str>,
 ) -> Sql<'a>
 where
@@ -46,7 +46,7 @@ where
     let mut placeholders = Vec::with_capacity(N);
     let mut params = Vec::with_capacity(N);
 
-    for (i, (field, value)) in record.iter().enumerate() {
+    for (i, (field, value)) in field_value_pairs.iter().enumerate() {
         fieldnames.push(field.as_ref().split('.').last().unwrap());
         placeholders.push(format!("${}", i + 1));
         params.push(*value);

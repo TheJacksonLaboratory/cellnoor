@@ -1,10 +1,10 @@
 use axum::{Json, extract::State};
-use cellnoor_types::person::{Person, PersonQuery};
+use cellnoor_types::person::{Person, PersonPredicate, PersonQuery};
 use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, SqlTemplate},
+    db::{self, AsPredicate, BaseSqlStmt},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -28,13 +28,24 @@ pub async fn select_people(
     tx: &db::Transaction<'_>,
     query: &mut PersonQuery,
 ) -> Result<Vec<Person>, ErrorInner> {
-    let sql = SqlTemplate::new(include_str!("index/select.sql")).finish_with_query(query)?;
+    let sql = BaseSqlStmt::new(include_str!("index/select.sql")).finish_with_query(query)?;
 
     Ok(tx
         .query_stream_into(sql)
         .await
         .map(async |stream| stream.map(Person::from_record).collect().await)?
         .await)
+}
+
+impl AsPredicate for PersonPredicate {
+    fn as_predicate(&self) -> (&str, (&str, &(dyn postgres_types::ToSql + Sync))) {
+        let sql = match self {
+            Self::Id(u) | Self::InstitutionId(u) => u.as_sql_operator_and_value(),
+            Self::Name(s) | Self::Email(s) | Self::Orcid(s) => s.as_sql_operator_and_value(),
+        };
+
+        (self.as_ref(), sql)
+    }
 }
 
 #[cfg(test)]

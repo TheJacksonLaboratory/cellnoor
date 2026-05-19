@@ -1,18 +1,20 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
     chromium_run::{
-        ChromiumRun, ChromiumRunField, ChromiumRunQuery, SavedChromiumRunRecord,
-        SavedChromiumRunRecordDetailed, SavedGemWellWithSpecimensRecord,
+        ChromiumRun, ChromiumRunField, ChromiumRunPredicate, ChromiumRunPredicateInner,
+        ChromiumRunQuery, SavedChromiumRunRecord, SavedChromiumRunRecordDetailed,
+        SavedGemWellWithSpecimensRecord,
     },
     order_by::OrderBy,
     tenx_assay::TenxAssay,
 };
 use deadpool_postgres::tokio_postgres::Row;
 use futures::StreamExt;
+use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
-    db::{self, SqlTemplate},
+    db::{self, AsPredicate, BaseSqlStmt},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -51,7 +53,7 @@ pub async fn select_chromium_runs(
         include_str!("index/select_compact.sql")
     };
 
-    let sql = SqlTemplate::new(base_stmt).finish_with_query(query)?;
+    let sql = BaseSqlStmt::new(base_stmt).finish_with_query(query)?;
 
     let runs = if query.detailed {
         let stream = tx.query_stream(sql).await?;
@@ -79,6 +81,28 @@ fn map_detailed_row(row: Row) -> ChromiumRun {
         },
         gem_wells,
     )
+}
+
+impl AsPredicate for ChromiumRunPredicate {
+    fn as_predicate(&self) -> (&str, (&str, &(dyn ToSql + Sync))) {
+        let field_name = self.as_ref();
+
+        let operator_and_value = match self {
+            Self::Specimen(p) => return p.as_predicate(),
+            Self::TenxAssay(p) => return p.as_predicate(),
+            Self::ChromiumRun(field) => match field {
+                ChromiumRunPredicateInner::Id(u)
+                | ChromiumRunPredicateInner::AssayId(u)
+                | ChromiumRunPredicateInner::RunBy(u) => u.as_sql_operator_and_value(),
+                ChromiumRunPredicateInner::ReadableId(s) => s.as_sql_operator_and_value(),
+                ChromiumRunPredicateInner::RunAt(t) => t.as_sql_operator_and_value(),
+                ChromiumRunPredicateInner::Succeeded(b) => b.as_sql_operator_and_value(),
+                ChromiumRunPredicateInner::AdditionalData(j) => j.as_sql_operator_and_value(),
+            },
+        };
+
+        (field_name, operator_and_value)
+    }
 }
 
 #[cfg(test)]

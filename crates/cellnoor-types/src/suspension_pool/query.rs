@@ -1,9 +1,5 @@
 use macro_attributes::{base_model, predicate_enum, sort_field_enum};
-#[cfg(feature = "postgres-types")]
-use postgres_types::ToSql;
 
-#[cfg(feature = "postgres-types")]
-use crate::query::filter::ToPredicate;
 use crate::{
     operator::{JsonOperator, StringOperator, TimestampOperator, UuidOperator},
     query::{ComplexQuery, SimpleQuery, filter::Filter},
@@ -55,21 +51,6 @@ impl From<SuspensionPoolPredicateInner> for Filter<SuspensionPoolPredicate> {
 }
 
 #[cfg(feature = "postgres-types")]
-impl ToPredicate for SuspensionPoolPredicate {
-    fn to_predicate(&self) -> (&'static str, &(dyn ToSql + Sync)) {
-        match self {
-            Self::Specimen(p) => p.to_predicate(),
-            Self::SuspensionPool(field) => match field {
-                SuspensionPoolPredicateInner::Id(u) => u.to_predicate(),
-                SuspensionPoolPredicateInner::ReadableId(s)
-                | SuspensionPoolPredicateInner::Name(s)
-                | SuspensionPoolPredicateInner::MultiplexingType(s) => s.to_predicate(),
-                SuspensionPoolPredicateInner::PooledAt(t) => t.to_predicate(),
-                SuspensionPoolPredicateInner::AdditionalData(ad) => ad.to_predicate(),
-            },
-        }
-    }
-}
 
 impl Default for SuspensionPoolField {
     fn default() -> Self {

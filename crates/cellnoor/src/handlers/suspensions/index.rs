@@ -1,10 +1,12 @@
 use axum::{Json, extract::State};
-use cellnoor_types::suspension::{Suspension, SuspensionQuery};
+use cellnoor_types::suspension::{
+    Suspension, SuspensionPredicate, SuspensionPredicateInner, SuspensionQuery,
+};
 use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, SqlTemplate},
+    db::{self, AsPredicate, BaseSqlStmt},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -34,7 +36,7 @@ pub async fn select_suspensions(
         include_str!("index/select_compact.sql")
     };
 
-    let sql = SqlTemplate::new(stmt).finish_with_query(query)?;
+    let sql = BaseSqlStmt::new(stmt).finish_with_query(query)?;
 
     let suspensions = if query.detailed {
         let stream = tx.query_stream_into(sql).await?;
@@ -45,6 +47,29 @@ pub async fn select_suspensions(
     };
 
     Ok(suspensions)
+}
+
+impl AsPredicate for SuspensionPredicate {
+    fn as_predicate(&self) -> (&str, (&str, &(dyn postgres_types::ToSql + Sync))) {
+        let field_name = self.as_ref();
+
+        let sql = match self {
+            Self::Specimen(p) => return p.as_predicate(),
+            Self::Suspension(field) => match field {
+                SuspensionPredicateInner::Id(u) | SuspensionPredicateInner::SpecimenId(u) => {
+                    u.as_sql_operator_and_value()
+                }
+                SuspensionPredicateInner::ReadableId(s) => s.as_sql_operator_and_value(),
+                SuspensionPredicateInner::Content(c) => c.as_sql_operator_and_value(),
+                SuspensionPredicateInner::CreatedAt(t) => t.as_sql_operator_and_value(),
+                SuspensionPredicateInner::LysisDurationMinutes(f) => f.as_sql_operator_and_value(),
+                SuspensionPredicateInner::TargetCellRecovery(i) => i.as_sql_operator_and_value(),
+                SuspensionPredicateInner::AdditionalData(j) => j.as_sql_operator_and_value(),
+            },
+        };
+
+        (field_name, sql)
+    }
 }
 
 #[cfg(test)]

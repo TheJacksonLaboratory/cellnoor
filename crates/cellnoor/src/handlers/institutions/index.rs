@@ -1,10 +1,10 @@
 use axum::{Json, extract::State};
-use cellnoor_types::institution::{Institution, InstitutionQuery};
+use cellnoor_types::institution::{Institution, InstitutionPredicate, InstitutionQuery};
 use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, SqlTemplate},
+    db::{self, AsPredicate, BaseSqlStmt},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -28,13 +28,26 @@ pub async fn select_institutions(
     tx: &db::Transaction<'_>,
     query: &mut InstitutionQuery,
 ) -> Result<Vec<Institution>, ErrorInner> {
-    let sql = SqlTemplate::new(include_str!("index/select.sql")).finish_with_query(query)?;
+    let sql = BaseSqlStmt::new(include_str!("index/select.sql")).finish_with_query(query)?;
 
     Ok(tx
         .query_stream_into(sql)
         .await
         .map(async |stream| stream.map(Institution::from_record).collect().await)?
         .await)
+}
+
+impl AsPredicate for InstitutionPredicate {
+    fn as_predicate(&self) -> (&str, (&str, &(dyn postgres_types::ToSql + Sync))) {
+        let field_name = self.as_ref();
+
+        match self {
+            Self::Id(u) | Self::MicrosoftEntraTenantId(u) => {
+                (field_name, u.as_sql_operator_and_value())
+            }
+            Self::Name(s) => (field_name, s.as_sql_operator_and_value()),
+        }
+    }
 }
 
 #[cfg(test)]

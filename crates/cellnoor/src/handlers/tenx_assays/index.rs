@@ -1,10 +1,10 @@
 use axum::{Json, extract::State};
-use cellnoor_types::tenx_assay::TenxAssay;
+use cellnoor_types::tenx_assay::{TenxAssay, TenxAssayPredicate};
 use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, SqlTemplate},
+    db::{self, AsPredicate, BaseSqlStmt},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -24,9 +24,24 @@ pub async fn index_tenx_assays(
 }
 
 pub async fn select_tenx_assays(tx: &db::Transaction<'_>) -> Result<Vec<TenxAssay>, ErrorInner> {
-    let sql = SqlTemplate::new(include_str!("index/select.sql")).finish_with_params(vec![]);
+    let sql = BaseSqlStmt::new(include_str!("index/select.sql")).finish_with_params(vec![]);
 
     Ok(tx.query_stream_into(sql).await?.collect().await)
+}
+
+impl AsPredicate for TenxAssayPredicate {
+    fn as_predicate(&self) -> (&str, (&str, &(dyn postgres_types::ToSql + Sync))) {
+        let field_name = self.as_ref();
+
+        let sql = match self {
+            Self::Id(u) => u.as_sql_operator_and_value(),
+            Self::Name(s) | Self::ChemistryVersion(s) | Self::ProtocolUrl(s) => {
+                s.as_sql_operator_and_value()
+            }
+        };
+
+        (field_name, sql)
+    }
 }
 
 #[cfg(test)]

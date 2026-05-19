@@ -1,9 +1,5 @@
 use macro_attributes::{predicate_enum, sort_field_enum};
-#[cfg(feature = "postgres-types")]
-use postgres_types::ToSql;
 
-#[cfg(feature = "postgres-types")]
-use crate::query::filter::ToPredicate;
 use crate::{
     operator::{StringOperator, TimestampOperator, UuidOperator},
     query::{ComplexQuery, SimpleQuery},
@@ -20,15 +16,6 @@ pub enum ProjectPredicate {
 }
 
 #[cfg(feature = "postgres-types")]
-impl ToPredicate for ProjectPredicate {
-    fn to_predicate(&self) -> (&'static str, &(dyn ToSql + Sync)) {
-        match self {
-            Self::Id(u) => u.to_predicate(),
-            Self::Name(s) => s.to_predicate(),
-            Self::StartedAt(t) | Self::EndedAt(t) => t.to_predicate(),
-        }
-    }
-}
 
 impl Default for ProjectField {
     fn default() -> Self {

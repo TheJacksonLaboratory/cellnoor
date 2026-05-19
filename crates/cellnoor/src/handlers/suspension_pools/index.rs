@@ -3,15 +3,17 @@ use cellnoor_types::{
     order_by::OrderBy,
     suspension_pool::{
         SavedSuspensionPoolRecord, SavedTaggedSpecimenRecord, SuspensionPool, SuspensionPoolField,
-        SuspensionPoolLinks, SuspensionPoolQuery, TaggedSpecimen,
+        SuspensionPoolLinks, SuspensionPoolPredicate, SuspensionPoolPredicateInner,
+        SuspensionPoolQuery, TaggedSpecimen,
     },
 };
 use deadpool_postgres::tokio_postgres::Row;
 use futures::StreamExt;
+use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
-    db::{self, SqlTemplate},
+    db::{self, AsPredicate, BaseSqlStmt},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -49,7 +51,7 @@ pub async fn select_suspension_pools(
         include_str!("index/select_compact.sql")
     };
 
-    let sql = SqlTemplate::new(stmt).finish_with_query(query)?;
+    let sql = BaseSqlStmt::new(stmt).finish_with_query(query)?;
 
     let pools = if query.detailed {
         let stream = tx.query_stream(sql).await?;
@@ -78,6 +80,30 @@ fn map_detailed_row(row: Row) -> SuspensionPool {
             .collect(),
         measurements: row.get("measurements"),
         preparers: row.get("preparers"),
+    }
+}
+
+impl AsPredicate for SuspensionPoolPredicate {
+    fn as_predicate(&self) -> (&str, (&str, &(dyn ToSql + Sync))) {
+        let field_name = self.as_ref();
+
+        let sql = match self {
+            Self::Specimen(p) => {
+                return p.as_predicate();
+            }
+            Self::SuspensionPool(p) => match p {
+                SuspensionPoolPredicateInner::Id(u) => u.as_sql_operator_and_value(),
+                SuspensionPoolPredicateInner::Name(s)
+                | SuspensionPoolPredicateInner::ReadableId(s)
+                | SuspensionPoolPredicateInner::MultiplexingType(s) => {
+                    s.as_sql_operator_and_value()
+                }
+                SuspensionPoolPredicateInner::PooledAt(t) => t.as_sql_operator_and_value(),
+                SuspensionPoolPredicateInner::AdditionalData(j) => j.as_sql_operator_and_value(),
+            },
+        };
+
+        (field_name, sql)
     }
 }
 
