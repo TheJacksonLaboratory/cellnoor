@@ -101,7 +101,7 @@ impl BaseSqlStmt {
 }
 
 pub trait AsPredicate {
-    fn as_predicate(&self) -> (&str, (&str, &(dyn ToSql + Sync)));
+    fn as_predicate(&self) -> (&'static str, (&'static str, &(dyn ToSql + Sync)));
 }
 
 fn write_where_clause_predicates<'a, 'b, P>(

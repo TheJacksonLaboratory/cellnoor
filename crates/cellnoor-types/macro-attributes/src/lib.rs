@@ -42,7 +42,7 @@ fn enum_derives() -> proc_macro2::TokenStream {
 
     quote! {
         #base_derives
-        #[derive(::strum::AsRefStr)]
+        #[derive(::strum::IntoStaticStr)]
         #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
         #[strum(serialize_all = "snake_case")]
     }
@@ -52,12 +52,20 @@ fn enum_derives() -> proc_macro2::TokenStream {
 pub fn predicate_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let enum_derives = enum_derives();
 
+    let cloned = input.clone();
+    let ItemEnum { ident, .. } = parse_macro_input!(cloned as ItemEnum);
     let input: proc_macro2::TokenStream = input.into();
 
     quote! {
         #enum_derives
         #[derive(::strum::EnumDiscriminants)]
         #input
+
+        impl #ident {
+            pub fn field_name(&self) -> &'static str {
+                self.into()
+            }
+        }
     }
     .into()
 }
@@ -131,7 +139,8 @@ pub fn unit_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
                 where
                     Self: Sized,
                 {
-                    nonempty::NonemptyString::new(self.as_ref().to_owned()).unwrap().to_sql(ty, out)
+                    let as_str: &str = self.into();
+                    nonempty::NonemptyString::new(as_str.to_owned()).unwrap().to_sql(ty, out)
                 }
 
                 fn accepts(ty: &postgres_types::Type) -> bool

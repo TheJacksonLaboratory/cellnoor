@@ -84,9 +84,7 @@ fn map_detailed_row(row: Row) -> SuspensionPool {
 }
 
 impl AsPredicate for SuspensionPoolPredicate {
-    fn as_predicate(&self) -> (&str, (&str, &(dyn ToSql + Sync))) {
-        let field_name = self.as_ref();
-
+    fn as_predicate(&self) -> (&'static str, (&'static str, &(dyn ToSql + Sync))) {
         let sql = match self {
             Self::Specimen(p) => {
                 return p.as_predicate();
@@ -103,7 +101,7 @@ impl AsPredicate for SuspensionPoolPredicate {
             },
         };
 
-        (field_name, sql)
+        (self.field_name(), sql)
     }
 }
 

@@ -38,15 +38,18 @@ pub async fn select_institutions(
 }
 
 impl AsPredicate for InstitutionPredicate {
-    fn as_predicate(&self) -> (&str, (&str, &(dyn postgres_types::ToSql + Sync))) {
-        let field_name = self.as_ref();
+    fn as_predicate(
+        &self,
+    ) -> (
+        &'static str,
+        (&'static str, &(dyn postgres_types::ToSql + Sync)),
+    ) {
+        let sql = match self {
+            Self::Id(u) | Self::MicrosoftEntraTenantId(u) => u.as_sql_operator_and_value(),
+            Self::Name(s) => s.as_sql_operator_and_value(),
+        };
 
-        match self {
-            Self::Id(u) | Self::MicrosoftEntraTenantId(u) => {
-                (field_name, u.as_sql_operator_and_value())
-            }
-            Self::Name(s) => (field_name, s.as_sql_operator_and_value()),
-        }
+        (self.field_name(), sql)
     }
 }
 

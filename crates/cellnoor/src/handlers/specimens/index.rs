@@ -49,9 +49,7 @@ pub async fn select_specimens(
 }
 
 impl AsPredicate for SpecimenPredicate {
-    fn as_predicate(&self) -> (&str, (&str, &(dyn ToSql + Sync))) {
-        let field_name = self.as_ref();
-
+    fn as_predicate(&self) -> (&'static str, (&'static str, &(dyn ToSql + Sync))) {
         let sql = match self {
             Self::Id(u) | Self::SubmittedBy(u) | Self::ProjectId(u) | Self::ReturnedBy(u) => {
                 u.as_sql_operator_and_value()
@@ -66,7 +64,7 @@ impl AsPredicate for SpecimenPredicate {
             Self::AdditionalData(d) => d.as_sql_operator_and_value(),
         };
 
-        (field_name, sql)
+        (self.field_name(), sql)
     }
 }
 

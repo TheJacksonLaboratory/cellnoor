@@ -25,7 +25,7 @@ pub enum ChromiumRunPredicateInner {
 }
 
 #[base_model]
-#[derive(strum::AsRefStr)]
+#[derive(strum::IntoStaticStr)]
 pub enum ChromiumRunPredicate {
     #[strum(transparent)]
     Specimen(SpecimenPredicate),
@@ -34,6 +34,16 @@ pub enum ChromiumRunPredicate {
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(transparent)]
     ChromiumRun(ChromiumRunPredicateInner),
+}
+
+impl ChromiumRunPredicate {
+    pub fn field_name(&self) -> &'static str {
+        match self {
+            Self::Specimen(p) => p.field_name(),
+            Self::TenxAssay(p) => p.field_name(),
+            Self::ChromiumRun(p) => p.field_name(),
+        }
+    }
 }
 
 impl From<SpecimenPredicate> for ChromiumRunPredicate {

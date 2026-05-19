@@ -37,6 +37,12 @@ pub enum Action {
     Delete,
 }
 
+impl Action {
+    pub fn as_str(&self) -> &'static str {
+        self.into()
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]

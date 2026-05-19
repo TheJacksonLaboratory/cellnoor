@@ -23,13 +23,22 @@ pub enum SuspensionPoolPredicateInner {
 }
 
 #[base_model]
-#[derive(strum::AsRefStr)]
+#[derive(strum::IntoStaticStr)]
 pub enum SuspensionPoolPredicate {
     #[strum(transparent)]
     Specimen(SpecimenPredicate),
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(transparent)]
     SuspensionPool(SuspensionPoolPredicateInner),
+}
+
+impl SuspensionPoolPredicate {
+    pub fn field_name(&self) -> &'static str {
+        match self {
+            Self::Specimen(p) => p.field_name(),
+            Self::SuspensionPool(p) => p.field_name(),
+        }
+    }
 }
 
 impl From<SpecimenPredicate> for SuspensionPoolPredicate {

@@ -33,13 +33,22 @@ pub enum SuspensionPredicateInner {
 }
 
 #[base_model]
-#[derive(strum::AsRefStr)]
+#[derive(strum::IntoStaticStr)]
 pub enum SuspensionPredicate {
     #[strum(transparent)]
     Specimen(SpecimenPredicate),
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(transparent)]
     Suspension(SuspensionPredicateInner),
+}
+
+impl SuspensionPredicate {
+    pub fn field_name(&self) -> &'static str {
+        match self {
+            Self::Specimen(p) => p.field_name(),
+            Self::Suspension(p) => p.field_name(),
+        }
+    }
 }
 
 impl From<SpecimenPredicate> for SuspensionPredicate {

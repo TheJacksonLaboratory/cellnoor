@@ -84,9 +84,7 @@ fn map_detailed_row(row: Row) -> ChromiumRun {
 }
 
 impl AsPredicate for ChromiumRunPredicate {
-    fn as_predicate(&self) -> (&str, (&str, &(dyn ToSql + Sync))) {
-        let field_name = self.as_ref();
-
+    fn as_predicate(&self) -> (&'static str, (&'static str, &(dyn ToSql + Sync))) {
         let operator_and_value = match self {
             Self::Specimen(p) => return p.as_predicate(),
             Self::TenxAssay(p) => return p.as_predicate(),
@@ -101,7 +99,7 @@ impl AsPredicate for ChromiumRunPredicate {
             },
         };
 
-        (field_name, operator_and_value)
+        (self.field_name(), operator_and_value)
     }
 }
 

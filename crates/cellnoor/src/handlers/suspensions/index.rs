@@ -50,9 +50,12 @@ pub async fn select_suspensions(
 }
 
 impl AsPredicate for SuspensionPredicate {
-    fn as_predicate(&self) -> (&str, (&str, &(dyn postgres_types::ToSql + Sync))) {
-        let field_name = self.as_ref();
-
+    fn as_predicate(
+        &self,
+    ) -> (
+        &'static str,
+        (&'static str, &(dyn postgres_types::ToSql + Sync)),
+    ) {
         let sql = match self {
             Self::Specimen(p) => return p.as_predicate(),
             Self::Suspension(field) => match field {
@@ -68,7 +71,7 @@ impl AsPredicate for SuspensionPredicate {
             },
         };
 
-        (field_name, sql)
+        (self.field_name(), sql)
     }
 }
 

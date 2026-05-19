@@ -48,14 +48,19 @@ pub async fn select_projects(
 }
 
 impl AsPredicate for ProjectPredicate {
-    fn as_predicate(&self) -> (&str, (&str, &(dyn postgres_types::ToSql + Sync))) {
+    fn as_predicate(
+        &self,
+    ) -> (
+        &'static str,
+        (&'static str, &(dyn postgres_types::ToSql + Sync)),
+    ) {
         let sql = match self {
             Self::Id(u) => u.as_sql_operator_and_value(),
             Self::Name(s) => s.as_sql_operator_and_value(),
             Self::StartedAt(t) | Self::EndedAt(t) => t.as_sql_operator_and_value(),
         };
 
-        (self.as_ref(), sql)
+        (self.field_name(), sql)
     }
 }
 

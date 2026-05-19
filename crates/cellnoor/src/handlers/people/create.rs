@@ -2,8 +2,8 @@ use std::sync::LazyLock;
 
 use axum::{Json, extract::State};
 use cellnoor_types::person::{
-    NewPerson, NewPersonRecord, PermissionsToGrant, PermissionsToRevoke, Person, PersonField,
-    ResourcePermission,
+    Action, NewPerson, NewPersonRecord, PermissionsToGrant, PermissionsToRevoke, Person,
+    PersonField, ResourcePermission,
 };
 use nonempty::NonemptyString;
 use regex::Regex;
@@ -198,7 +198,7 @@ fn construct_grant_or_revoke_statement(
         | ResourcePermission::ChromiumDataset(a) => a,
     };
 
-    let actions: Vec<_> = actions.iter().map(|a| a.as_ref()).collect();
+    let actions: Vec<_> = actions.iter().map(Action::as_str).collect();
     let actions = actions.join(", ");
 
     format!(
