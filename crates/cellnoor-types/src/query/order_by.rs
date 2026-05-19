@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, fmt::Write};
+use std::collections::VecDeque;
 
 use macro_attributes::base_model;
 
@@ -43,41 +43,6 @@ where
 {
     fn default() -> Self {
         Self::One(OrderBy::default())
-    }
-}
-
-impl<T> OrderBySet<T>
-where
-    T: Default + Copy + AsRef<str>,
-{
-    pub(super) fn to_order_by_clause(&self) -> String {
-        fn direction(desc: bool) -> &'static str {
-            if desc { "desc" } else { "asc" }
-        }
-
-        match self {
-            Self::One(OrderBy { field, desc }) => {
-                format!("order by {} {}", field.as_ref(), direction(*desc))
-            }
-            Self::Many(fields) => {
-                if fields.is_empty() {
-                    return String::new();
-                }
-
-                let mut clause = String::with_capacity(fields.len() * 16);
-                clause.push_str("order by ");
-
-                for (i, OrderBy { field, desc }) in fields.iter().enumerate() {
-                    if i != 0 {
-                        clause.push_str(", ");
-                    }
-
-                    write!(clause, "{} {}", field.as_ref(), direction(*desc)).unwrap();
-                }
-
-                clause
-            }
-        }
     }
 }
 

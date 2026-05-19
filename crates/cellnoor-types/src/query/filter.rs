@@ -1,7 +1,4 @@
 #[cfg(feature = "postgres-types")]
-use std::fmt::Write;
-
-#[cfg(feature = "postgres-types")]
 use postgres_types::ToSql;
 use uuid::Uuid;
 
