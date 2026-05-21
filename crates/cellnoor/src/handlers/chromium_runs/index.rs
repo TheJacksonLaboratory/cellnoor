@@ -1,12 +1,12 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
     chromium_run::{
-        ChromiumRun, ChromiumRunField, ChromiumRunPredicate, ChromiumRunPredicateInner,
-        ChromiumRunQuery, SavedChromiumRunRecord, SavedChromiumRunRecordDetailed,
+        ChromiumRun, ChromiumRunField, ChromiumRunLinks, ChromiumRunPredicate,
+        ChromiumRunPredicateInner, ChromiumRunQuery, GemWell, SavedChromiumRunRecord,
         SavedGemWellWithSpecimensRecord,
     },
     order_by::OrderBy,
-    tenx_assay::TenxAssay,
+    suspension_pool::TaggedSpecimen,
 };
 use deadpool_postgres::tokio_postgres::Row;
 use futures::StreamExt;
@@ -70,17 +70,26 @@ pub async fn select_chromium_runs(
 }
 
 fn map_detailed_row(row: Row) -> ChromiumRun {
-    let chromium_run: SavedChromiumRunRecord = row.get("chromium_run");
-    let assay: TenxAssay = row.get("tenx_assay");
+    let record: SavedChromiumRunRecord = row.get("chromium_run");
+    let assay = row.get("tenx_assay");
     let gem_wells: Vec<SavedGemWellWithSpecimensRecord> = row.get("gem_wells");
 
-    ChromiumRun::from_detailed_record_and_gem_wells(
-        SavedChromiumRunRecordDetailed {
-            chromium_run,
-            assay,
-        },
-        gem_wells,
-    )
+    ChromiumRun::Detailed {
+        links: ChromiumRunLinks::from_id(record.id),
+        record,
+        assay,
+        gem_wells: gem_wells
+            .into_iter()
+            .map(|g| GemWell {
+                record: g.gem_well,
+                specimens: g
+                    .specimens
+                    .into_iter()
+                    .map(TaggedSpecimen::from_record)
+                    .collect(),
+            })
+            .collect(),
+    }
 }
 
 impl AsPredicate for ChromiumRunPredicate {

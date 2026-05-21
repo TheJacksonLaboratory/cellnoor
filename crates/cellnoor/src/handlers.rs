@@ -1,4 +1,4 @@
-// pub mod cdna;
+pub mod cdna;
 // pub mod chip_loadings;
 // pub mod chromium_datasets;
 pub mod chromium_runs;

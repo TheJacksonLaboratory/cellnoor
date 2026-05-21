@@ -1,0 +1,202 @@
+use axum::{Json, extract::State};
+use cellnoor_types::cdna::{Cdna, CdnaField, NewCdna, NewCdnaRecord};
+use uuid::Uuid;
+
+use crate::{
+    auth::AuthUser,
+    db::{self, AsFieldValuePairs, FieldValuePairs},
+    error::{Error, ErrorInner},
+    handlers::cdna::{measurements::create::insert_cdna_measurement, show::select_cdna_by_id},
+    state::AppState,
+};
+
+pub async fn create_cdna(
+    State(state): State<AppState>,
+    user: AuthUser,
+    Json(record): Json<NewCdna>,
+) -> Result<Json<Cdna>, Error> {
+    let mut client = state.db_client(user).await?;
+
+    let tx = client.begin().await?;
+
+    let response = insert_cdna(&tx, record).await.map(Json)?;
+
+    tx.commit().await?;
+
+    Ok(response)
+}
+
+pub async fn insert_cdna(
+    tx: &db::Transaction<'_>,
+    NewCdna {
+        record,
+        measurements,
+        preparers,
+    }: NewCdna,
+) -> Result<Cdna, ErrorInner> {
+    let id = db::insert_into(tx, "cdna", &record).await?;
+
+    let measurement_insertions = futures::future::try_join_all(
+        measurements
+            .iter()
+            .map(|m| insert_cdna_measurement(tx, id, m)),
+    );
+
+    tokio::try_join!(
+        insert_cdna_preparers(tx, id, preparers.as_ref()),
+        measurement_insertions
+    )?;
+
+    select_cdna_by_id(tx, id).await
+}
+
+pub(super) async fn insert_cdna_preparers(
+    tx: &db::Transaction<'_>,
+    cdna_id: Uuid,
+    preparer_ids: &[Uuid],
+) -> Result<(), ErrorInner> {
+    let preparers: Vec<_> = preparer_ids
+        .iter()
+        .map(|&prepared_by| NewCdnaPreparer {
+            cdna_id,
+            prepared_by,
+        })
+        .collect();
+
+    futures::future::try_join_all(
+        preparers
+            .iter()
+            .map(|p| db::insert_into_no_returning(tx, "cdna_preparer", p)),
+    )
+    .await?;
+
+    Ok(())
+}
+
+struct NewCdnaPreparer {
+    cdna_id: Uuid,
+    prepared_by: Uuid,
+}
+
+impl AsFieldValuePairs<&'static str, 2> for NewCdnaPreparer {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 2> {
+        let Self {
+            cdna_id,
+            prepared_by,
+        } = self;
+
+        [("cdna_id", cdna_id), ("prepared_by", prepared_by)]
+    }
+}
+
+impl AsFieldValuePairs<CdnaField, 6> for NewCdnaRecord {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, CdnaField, 6> {
+        use CdnaField::*;
+
+        let Self {
+            id: _,
+            readable_id,
+            library_type,
+            prepared_at,
+            gem_well_id,
+            n_amplification_cycles,
+            additional_data,
+        } = self;
+
+        [
+            (ReadableId, readable_id),
+            (LibraryType, library_type),
+            (PreparedAt, prepared_at),
+            (GemWellId, gem_well_id),
+            (NAmplificationCycles, n_amplification_cycles),
+            (AdditionalData, additional_data),
+        ]
+    }
+}
+
+#[cfg(test)]
+pub mod test {
+    use cellnoor_types::{
+        cdna::{Cdna, NewCdna, NewCdnaRecord},
+        chromium_run::ChromiumRun,
+        id::NoId,
+        nucleic_acid_measurement::{
+            Concentration, NewNucleicAcidMeasurement, NucleicAcidMeasurementData,
+        },
+        tenx_assay::LibraryType,
+        units::{Microliter, Nanogram},
+    };
+    use jiff::Timestamp;
+    use positive::PositiveI32;
+    use postgres_types::Json;
+    use uuid::Uuid;
+
+    use crate::{
+        db,
+        error::ErrorInner,
+        handlers::{
+            cdna::create::insert_cdna,
+            chromium_runs::create::test::insert_test_standard_chromium_run,
+        },
+        state::test_util::{ToNonemptyString, db_client_as_admin},
+    };
+
+    pub async fn insert_test_cdna<F>(
+        tx: &db::Transaction<'_>,
+        mut modify: F,
+    ) -> Result<(NewCdna, Cdna), ErrorInner>
+    where
+        F: FnMut(&mut NewCdna),
+    {
+        let (_, run) = insert_test_standard_chromium_run(tx, |_| ()).await?;
+
+        let ChromiumRun::Detailed {
+            record, gem_wells, ..
+        } = &run
+        else {
+            panic!("expected ChromiumRun::Detailed");
+        };
+
+        let gem_well_id = *gem_wells[0].record.id;
+        let person_id = record.run_by;
+        let prepared_at = record.run_at;
+
+        let mut new = NewCdna {
+            record: NewCdnaRecord {
+                id: NoId {},
+                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                library_type: LibraryType::GeneExpression,
+                prepared_at,
+                gem_well_id: Some(gem_well_id),
+                n_amplification_cycles: PositiveI32::new(10).unwrap(),
+                additional_data: None,
+            },
+            measurements: vec![NewNucleicAcidMeasurement {
+                measured_by: person_id,
+                measured_at: Timestamp::now(),
+                data: Json(NucleicAcidMeasurementData::Fluorometric {
+                    instrument_name: "Qubit".to_nonempty_string(),
+                    concentration: Concentration {
+                        value: PositiveI32::new(50).unwrap(),
+                        numerator_unit: Nanogram::Nanogram,
+                        denominator_unit: Microliter::Microliter,
+                    },
+                }),
+            }],
+            preparers: nonempty::NonemptyVec::new(vec![person_id]).unwrap(),
+        };
+
+        modify(&mut new);
+
+        let inserted = insert_cdna(tx, new.clone()).await?;
+        Ok((new, inserted))
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn insert() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        insert_test_cdna(&tx, |_| ()).await.unwrap();
+    }
+}

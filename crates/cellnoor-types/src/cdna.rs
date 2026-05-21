@@ -1,9 +1,10 @@
 use macro_attributes::base_model;
 use nonempty::NonemptyVec;
+pub use query::{CdnaField, CdnaPredicate, CdnaPredicateInner, CdnaQuery, SimpleCdnaQuery};
 use uuid::Uuid;
 
 use crate::{
-    cdna::record::CdnaRecord,
+    cdna::{measurement::CdnaMeasurement, record::CdnaRecord},
     id::{Id, NoId},
     nucleic_acid_measurement::NewNucleicAcidMeasurement,
     simple_links::SimpleLinks,
@@ -11,18 +12,21 @@ use crate::{
 };
 
 pub mod measurement;
+mod query;
 
 mod record {
     use jiff::Timestamp;
-    use macro_attributes::base_model;
+    use macro_attributes::select;
     use nonempty::NonemptyString;
     use positive::PositiveI32;
     use uuid::Uuid;
 
     use crate::tenx_assay::LibraryType;
 
-    #[base_model]
+    #[select]
+    #[cfg_attr(feature = "postgres-types", postgres(name = "cdna"))]
     pub struct CdnaRecord<T> {
+        #[cfg_attr(feature = "serde", serde(flatten))]
         pub id: T,
         pub readable_id: NonemptyString,
         pub library_type: LibraryType,
@@ -46,6 +50,16 @@ pub struct NewCdna {
 }
 
 #[base_model]
+pub struct CdnaUpdate {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: NewCdnaRecord,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub measurements: Vec<NewNucleicAcidMeasurement>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub preparers: Vec<Uuid>,
+}
+
+#[base_model]
 #[cfg_attr(feature = "serde", serde(tag = "view"))]
 pub enum Cdna {
     Compact {
@@ -59,11 +73,13 @@ pub enum Cdna {
         record: SavedCdnaRecord,
         links: SimpleLinks,
         specimens: Vec<TaggedSpecimen>,
+        measurements: Vec<CdnaMeasurement>,
+        preparers: Vec<Uuid>,
     },
 }
 
 impl SimpleLinks {
-    fn for_cdna(id: Id) -> Self {
+    pub fn for_cdna(id: Id) -> Self {
         Self::from_str_and_id("/cdna", id)
     }
 }

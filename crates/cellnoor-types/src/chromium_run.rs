@@ -74,7 +74,7 @@ pub struct ChromiumRunLinks {
 }
 
 impl ChromiumRunLinks {
-    fn from_id(id: Id) -> Self {
+    pub fn from_id(id: Id) -> Self {
         Self {
             simple: SimpleLinks::from_str_and_id("/chromium-runs", id),
             suspensions: format!("/chromium-runs/{id}/suspensions"),
@@ -99,13 +99,6 @@ pub struct GemWell {
 }
 
 #[base_model]
-pub struct SavedChromiumRunRecordDetailed {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub chromium_run: SavedChromiumRunRecord,
-    pub assay: TenxAssay,
-}
-
-#[base_model]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case", tag = "view"))]
 pub enum ChromiumRun {
     Compact {
@@ -115,7 +108,8 @@ pub enum ChromiumRun {
     },
     Detailed {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SavedChromiumRunRecordDetailed,
+        record: SavedChromiumRunRecord,
+        assay: TenxAssay,
         gem_wells: Vec<GemWell>,
         links: ChromiumRunLinks,
     },
@@ -129,34 +123,9 @@ impl ChromiumRun {
         }
     }
 
-    pub fn from_detailed_record_and_gem_wells(
-        record: SavedChromiumRunRecordDetailed,
-        gem_wells: Vec<SavedGemWellWithSpecimensRecord>,
-    ) -> Self {
-        Self::Detailed {
-            links: ChromiumRunLinks::from_id(record.chromium_run.id),
-            record,
-            gem_wells: gem_wells
-                .into_iter()
-                .map(|g| GemWell {
-                    record: g.gem_well,
-                    specimens: g
-                        .specimens
-                        .into_iter()
-                        .map(TaggedSpecimen::from_record)
-                        .collect(),
-                })
-                .collect(),
-        }
-    }
-
     pub fn record(&self) -> &SavedChromiumRunRecord {
         match self {
-            Self::Compact { record, .. } => record,
-            Self::Detailed {
-                record: SavedChromiumRunRecordDetailed { chromium_run, .. },
-                ..
-            } => chromium_run,
+            Self::Compact { record, .. } | Self::Detailed { record, .. } => record,
         }
     }
 }

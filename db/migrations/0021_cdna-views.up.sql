@@ -1,9 +1,11 @@
 create view cdna_to_specimen as (
     select
         cdna,
-        gem_well.specimen,
-        gem_well.tenx_assay
-    from cdna join gem_well_to_specimen as gem_well on cdna.gem_well_id = (gem_well.gem_well).id
+        gws as gem_well,
+        gws.specimen,
+        -- Bring tenx_assay one level forward because eventually chromium_dataset_to_specimen needs it
+        gws.tenx_assay
+    from cdna join gem_well_to_specimen as gws on cdna.gem_well_id = (gws.gem_well).id
 );
 
 create function check_cdna_prepared_after_chromium_run() returns trigger language plpgsql volatile strict as $$

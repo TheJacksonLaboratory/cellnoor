@@ -1,4 +1,6 @@
 #![allow(uncommon_codepoints)]
+pub use simple_links::SimpleLinks;
+
 pub mod cdna;
 pub mod chromium_run;
 pub mod id;
@@ -6,7 +8,7 @@ pub mod index_set;
 pub mod institution;
 pub mod library;
 pub mod multiplexing_tag;
-pub(crate) mod nucleic_acid_measurement;
+pub mod nucleic_acid_measurement;
 pub mod person;
 pub mod project;
 pub mod query;

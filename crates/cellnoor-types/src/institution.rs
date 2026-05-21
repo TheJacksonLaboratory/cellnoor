@@ -39,13 +39,17 @@ pub struct Institution {
     pub links: SimpleLinks,
 }
 
+impl SimpleLinks {
+    pub fn for_institution(id: Id) -> Self {
+        Self::from_str_and_id("/institutions", id)
+    }
+}
+
 impl Institution {
     #[must_use]
     pub fn from_record(record: SavedInstitutionRecord) -> Self {
         Self {
-            links: SimpleLinks {
-                self_: format!("/institutions/{}", record.id),
-            },
+            links: SimpleLinks::for_institution(record.id),
             record,
         }
     }

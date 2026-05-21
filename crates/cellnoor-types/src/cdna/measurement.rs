@@ -1,5 +1,5 @@
 use jiff::Timestamp;
-use macro_attributes::base_model;
+use macro_attributes::select;
 #[cfg(all(feature = "postgres-types", feature = "schemars"))]
 use postgres_types::Json;
 use uuid::Uuid;
@@ -7,7 +7,8 @@ use uuid::Uuid;
 #[cfg(all(feature = "postgres-types", feature = "schemars"))]
 use crate::nucleic_acid_measurement::NucleicAcidMeasurementData;
 
-#[base_model]
+#[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "cdna_measurement"))]
 pub struct CdnaMeasurement {
     pub id: Uuid,
     pub cdna_id: Uuid,
