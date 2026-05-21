@@ -100,7 +100,8 @@ mod tests {
 
     #[test]
     fn update_stmt_has_correct_sql() {
-        let Sql(update_clause, _) = test_update_clause();
+        let sql = test_update_clause();
+        let update_clause = sql.stmt();
 
         assert_eq!(
             update_clause,
@@ -111,7 +112,8 @@ mod tests {
     #[test]
     fn params_are_correct() {
         let mut actual_params = BytesMut::new();
-        let Sql(_, params) = test_update_clause();
+        let sql = test_update_clause();
+        let params = sql.params();
 
         params[0]
             .to_sql_checked(&Type::TEXT, &mut actual_params)

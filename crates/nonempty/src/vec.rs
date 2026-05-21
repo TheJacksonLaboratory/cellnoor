@@ -8,7 +8,7 @@ use postgres_types::{ToSql, to_sql_checked};
 #[must_use]
 #[derive(Clone, Debug, thiserror::Error, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[error("array must have between 1 and {N} elements")]
-pub struct Error<T, const N: usize>(pub Vec<T>);
+pub struct Error<V, const N: usize>(pub V);
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -24,7 +24,7 @@ impl<T, const N: usize> From<T> for NonemptyBoundedVec<T, N> {
 }
 
 impl<T, const N: usize> NonemptyBoundedVec<T, N> {
-    pub fn new(v: Vec<T>) -> Result<Self, Error<T, N>> {
+    pub fn new(v: Vec<T>) -> Result<Self, Error<Vec<T>, N>> {
         if v.is_empty() {
             return Err(Error(v));
         }
@@ -80,9 +80,9 @@ impl<T, const N: usize> From<NonemptyBoundedVec<T, N>> for Vec<T> {
 }
 
 impl<T, const N: usize> TryFrom<Vec<T>> for NonemptyBoundedVec<T, N> {
-    type Error = Error<T, N>;
+    type Error = Error<Vec<T>, N>;
 
-    fn try_from(value: Vec<T>) -> Result<Self, Error<T, N>> {
+    fn try_from(value: Vec<T>) -> Result<Self, Error<Vec<T>, N>> {
         Self::new(value)
     }
 }

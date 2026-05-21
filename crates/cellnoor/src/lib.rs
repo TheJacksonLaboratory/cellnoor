@@ -1,5 +1,4 @@
-#![allow(incomplete_features, uncommon_codepoints)]
-#![feature(generic_const_exprs)]
+#![allow(uncommon_codepoints)]
 
 #[cfg(feature = "ssr")]
 pub mod api;

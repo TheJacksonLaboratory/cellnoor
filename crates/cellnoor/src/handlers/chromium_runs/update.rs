@@ -57,7 +57,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, run) = insert_test_standard_chromium_run(&tx, |_| ()).await.unwrap();
+        let (_, run) = insert_test_standard_chromium_run(&tx, |_| ())
+            .await
+            .unwrap();
         let record = run.record();
         let id = *record.id;
 
