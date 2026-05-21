@@ -1,5 +1,9 @@
 use axum::{Json, extract::State};
-use cellnoor_types::institution::{Institution, InstitutionPredicate, InstitutionQuery};
+use cellnoor_types::{
+    SimpleLinks,
+    id::Id,
+    institution::{Institution, InstitutionPredicate, InstitutionQuery, SavedInstitutionRecord},
+};
 use futures::StreamExt;
 
 use crate::{
@@ -8,6 +12,17 @@ use crate::{
     error::{Error, ErrorInner},
     state::AppState,
 };
+
+pub fn institution_simple_links(id: Id) -> SimpleLinks {
+    SimpleLinks::from_str_and_id("/institutions", id)
+}
+
+pub fn institution_from_record(record: SavedInstitutionRecord) -> Institution {
+    Institution {
+        links: institution_simple_links(record.id),
+        record,
+    }
+}
 
 pub async fn index_institutions(
     State(state): State<AppState>,
@@ -33,7 +48,7 @@ pub async fn select_institutions(
     Ok(tx
         .query_stream_into(sql)
         .await
-        .map(async |stream| stream.map(Institution::from_record).collect().await)?
+        .map(async |stream| stream.map(institution_from_record).collect().await)?
         .await)
 }
 

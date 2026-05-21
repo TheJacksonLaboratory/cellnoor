@@ -146,7 +146,10 @@ impl Specimen {
         Self::Detailed {
             links: SimpleLinks::for_specimen(specimen.id),
             record: specimen,
-            project: Project::from_record(project),
+            project: Project::Compact {
+                links: SimpleLinks::from_str_and_id("/projects", project.id),
+                record: project,
+            },
             measurements,
         }
     }

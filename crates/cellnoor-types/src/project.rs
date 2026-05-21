@@ -64,29 +64,7 @@ pub enum Project {
     },
 }
 
-impl SimpleLinks {
-    fn for_project(id: Id) -> Self {
-        SimpleLinks::from_str_and_id("/projects", id)
-    }
-}
-
 impl Project {
-    #[must_use]
-    pub fn from_record(record: SavedProjectRecord) -> Self {
-        Self::Compact {
-            links: SimpleLinks::for_project(record.id),
-            record,
-        }
-    }
-
-    #[must_use]
-    pub fn from_detailed_record(record: SavedProjectRecordDetailed) -> Self {
-        Self::Detailed {
-            links: SimpleLinks::for_project(record.project.id),
-            record,
-        }
-    }
-
     #[must_use]
     pub fn record(&self) -> &SavedProjectRecord {
         match self {

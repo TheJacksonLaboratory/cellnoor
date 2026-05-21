@@ -1,5 +1,11 @@
 use axum::{Json, extract::State};
-use cellnoor_types::project::{Project, ProjectPredicate, ProjectQuery};
+use cellnoor_types::{
+    SimpleLinks,
+    id::Id,
+    project::{
+        Project, ProjectPredicate, ProjectQuery, SavedProjectRecord, SavedProjectRecordDetailed,
+    },
+};
 use futures::StreamExt;
 
 use crate::{
@@ -8,6 +14,24 @@ use crate::{
     error::{Error, ErrorInner},
     state::AppState,
 };
+
+pub fn project_simple_links(id: Id) -> SimpleLinks {
+    SimpleLinks::from_str_and_id("/projects", id)
+}
+
+pub fn project_from_record(record: SavedProjectRecord) -> Project {
+    Project::Compact {
+        links: project_simple_links(record.id),
+        record,
+    }
+}
+
+pub fn project_from_detailed_record(record: SavedProjectRecordDetailed) -> Project {
+    Project::Detailed {
+        links: project_simple_links(record.project.id),
+        record,
+    }
+}
 
 pub async fn index_projects(
     State(state): State<AppState>,
@@ -38,10 +62,10 @@ pub async fn select_projects(
 
     let projects = if query.detailed {
         let stream = tx.query_stream_into(sql).await?;
-        stream.map(Project::from_detailed_record).collect().await
+        stream.map(project_from_detailed_record).collect().await
     } else {
         let stream = tx.query_stream_into(sql).await?;
-        stream.map(Project::from_record).collect().await
+        stream.map(project_from_record).collect().await
     };
 
     Ok(projects)
