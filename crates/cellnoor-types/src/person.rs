@@ -117,18 +117,3 @@ pub struct Person {
     pub record: SavedPersonRecord,
     pub links: PersonLinks,
 }
-
-impl Person {
-    #[must_use]
-    pub fn from_record(record: SavedPersonRecord) -> Self {
-        let self_ = format!("/people/{}", record.id);
-
-        Self {
-            links: PersonLinks {
-                projects: format!("{self_}/projects"),
-                simple: SimpleLinks { self_ },
-            },
-            record,
-        }
-    }
-}

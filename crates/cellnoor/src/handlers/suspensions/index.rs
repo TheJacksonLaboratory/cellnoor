@@ -1,6 +1,11 @@
 use axum::{Json, extract::State};
-use cellnoor_types::suspension::{
-    Suspension, SuspensionPredicate, SuspensionPredicateInner, SuspensionQuery,
+use cellnoor_types::{
+    SimpleLinks,
+    id::Id,
+    suspension::{
+        SavedSuspensionRecord, SavedSuspensionRecordDetailed, Suspension, SuspensionPredicate,
+        SuspensionPredicateInner, SuspensionQuery,
+    },
 };
 use futures::StreamExt;
 
@@ -8,6 +13,7 @@ use crate::{
     auth::AuthUser,
     db::{self, AsPredicate, BaseSqlStmt},
     error::{Error, ErrorInner},
+    handlers::specimens::index::specimen_from_record,
     state::AppState,
 };
 
@@ -40,13 +46,41 @@ pub async fn select_suspensions(
 
     let suspensions = if query.detailed {
         let stream = tx.query_stream_into(sql).await?;
-        stream.map(Suspension::from_detailed_record).collect().await
+        stream.map(suspension_from_detailed_record).collect().await
     } else {
         let stream = tx.query_stream_into(sql).await?;
-        stream.map(Suspension::from_record).collect().await
+        stream.map(suspension_from_record).collect().await
     };
 
     Ok(suspensions)
+}
+
+fn suspension_simple_links(id: Id) -> SimpleLinks {
+    SimpleLinks::from_str_and_id("/suspensions", id)
+}
+
+pub fn suspension_from_record(record: SavedSuspensionRecord) -> Suspension {
+    Suspension::Compact {
+        links: suspension_simple_links(record.id),
+        record,
+    }
+}
+
+fn suspension_from_detailed_record(
+    SavedSuspensionRecordDetailed {
+        suspension,
+        specimen,
+        measurements,
+        preparers,
+    }: SavedSuspensionRecordDetailed,
+) -> Suspension {
+    Suspension::Detailed {
+        links: suspension_simple_links(suspension.id),
+        record: suspension,
+        specimen: specimen_from_record(specimen),
+        measurements,
+        preparers,
+    }
 }
 
 impl AsPredicate for SuspensionPredicate {

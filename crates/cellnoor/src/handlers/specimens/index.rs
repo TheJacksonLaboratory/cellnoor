@@ -1,5 +1,12 @@
 use axum::{Json, extract::State};
-use cellnoor_types::specimen::{Specimen, SpecimenPredicate, SpecimenQuery};
+use cellnoor_types::{
+    SimpleLinks,
+    id::Id,
+    specimen::{
+        SavedSpecimenRecord, SavedSpecimenRecordDetailed, Specimen, SpecimenPredicate,
+        SpecimenQuery,
+    },
+};
 use futures::StreamExt;
 use postgres_types::ToSql;
 
@@ -7,6 +14,7 @@ use crate::{
     auth::AuthUser,
     db::{self, AsPredicate, BaseSqlStmt},
     error::{Error, ErrorInner},
+    handlers::projects::index::project_from_record,
     state::AppState,
 };
 
@@ -39,13 +47,39 @@ pub async fn select_specimens(
 
     let specimens = if query.detailed {
         let stream = tx.query_stream_into(sql).await?;
-        stream.map(Specimen::from_detailed_record).collect().await
+        stream.map(specimen_from_detailed_record).collect().await
     } else {
         let stream = tx.query_stream_into(sql).await?;
-        stream.map(Specimen::from_record).collect().await
+        stream.map(specimen_from_record).collect().await
     };
 
     Ok(specimens)
+}
+
+fn specimen_simple_links(id: Id) -> SimpleLinks {
+    SimpleLinks::from_str_and_id("/specimens", id)
+}
+
+pub fn specimen_from_record(record: SavedSpecimenRecord) -> Specimen {
+    Specimen::Compact {
+        links: specimen_simple_links(record.id),
+        record,
+    }
+}
+
+fn specimen_from_detailed_record(
+    SavedSpecimenRecordDetailed {
+        specimen,
+        project,
+        measurements,
+    }: SavedSpecimenRecordDetailed,
+) -> Specimen {
+    Specimen::Detailed {
+        links: specimen_simple_links(specimen.id),
+        record: specimen,
+        project: project_from_record(project),
+        measurements,
+    }
 }
 
 impl AsPredicate for SpecimenPredicate {

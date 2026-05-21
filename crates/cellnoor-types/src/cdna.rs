@@ -78,21 +78,7 @@ pub enum Cdna {
     },
 }
 
-impl SimpleLinks {
-    pub fn for_cdna(id: Id) -> Self {
-        Self::from_str_and_id("/cdna", id)
-    }
-}
-
 impl Cdna {
-    #[must_use]
-    pub fn from_record(record: SavedCdnaRecord) -> Self {
-        Self::Compact {
-            links: SimpleLinks::for_cdna(record.id),
-            record,
-        }
-    }
-
     #[must_use]
     pub fn record(&self) -> &SavedCdnaRecord {
         match self {

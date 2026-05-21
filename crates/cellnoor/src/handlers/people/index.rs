@@ -1,5 +1,9 @@
 use axum::{Json, extract::State};
-use cellnoor_types::person::{Person, PersonPredicate, PersonQuery};
+use cellnoor_types::{
+    SimpleLinks,
+    id::Id,
+    person::{Person, PersonLinks, PersonPredicate, PersonQuery, SavedPersonRecord},
+};
 use futures::StreamExt;
 
 use crate::{
@@ -33,8 +37,24 @@ pub async fn select_people(
     Ok(tx
         .query_stream_into(sql)
         .await
-        .map(async |stream| stream.map(Person::from_record).collect().await)?
+        .map(async |stream| stream.map(person_from_record).collect().await)?
         .await)
+}
+
+fn person_links(id: Id) -> PersonLinks {
+    let self_ = format!("/people/{id}");
+
+    PersonLinks {
+        projects: format!("{self_}/projects"),
+        simple: SimpleLinks { self_ },
+    }
+}
+
+fn person_from_record(record: SavedPersonRecord) -> Person {
+    Person {
+        links: person_links(record.id),
+        record,
+    }
 }
 
 impl AsPredicate for PersonPredicate {

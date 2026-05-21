@@ -1,12 +1,13 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
+    SimpleLinks,
     chromium_run::{
         ChromiumRun, ChromiumRunField, ChromiumRunLinks, ChromiumRunPredicate,
         ChromiumRunPredicateInner, ChromiumRunQuery, GemWell, SavedChromiumRunRecord,
         SavedGemWellWithSpecimensRecord,
     },
+    id::Id,
     order_by::OrderBy,
-    suspension_pool::TaggedSpecimen,
 };
 use deadpool_postgres::tokio_postgres::Row;
 use futures::StreamExt;
@@ -16,6 +17,7 @@ use crate::{
     auth::AuthUser,
     db::{self, AsPredicate, BaseSqlStmt},
     error::{Error, ErrorInner},
+    handlers::suspension_pools::index::tagged_specimen_from_record,
     state::AppState,
 };
 
@@ -63,7 +65,7 @@ pub async fn select_chromium_runs(
             .await
     } else {
         let stream = tx.query_stream_into(sql).await?;
-        stream.map(ChromiumRun::from_record).collect().await
+        stream.map(chromium_run_from_record).collect().await
     };
 
     Ok(runs)
@@ -75,7 +77,7 @@ fn map_detailed_row(row: Row) -> ChromiumRun {
     let gem_wells: Vec<SavedGemWellWithSpecimensRecord> = row.get("gem_wells");
 
     ChromiumRun::Detailed {
-        links: ChromiumRunLinks::from_id(record.id),
+        links: chromium_run_links(record.id),
         record,
         assay,
         gem_wells: gem_wells
@@ -85,10 +87,25 @@ fn map_detailed_row(row: Row) -> ChromiumRun {
                 specimens: g
                     .specimens
                     .into_iter()
-                    .map(TaggedSpecimen::from_record)
+                    .map(tagged_specimen_from_record)
                     .collect(),
             })
             .collect(),
+    }
+}
+
+fn chromium_run_links(id: Id) -> ChromiumRunLinks {
+    ChromiumRunLinks {
+        simple: SimpleLinks::from_str_and_id("/chromium-runs", id),
+        suspensions: format!("/chromium-runs/{id}/suspensions"),
+        suspension_pools: format!("/chromium-runs/{id}/suspension-pools"),
+    }
+}
+
+fn chromium_run_from_record(record: SavedChromiumRunRecord) -> ChromiumRun {
+    ChromiumRun::Compact {
+        links: chromium_run_links(record.id),
+        record,
     }
 }
 

@@ -113,44 +113,11 @@ pub enum Specimen {
     },
 }
 
-impl SimpleLinks {
-    fn for_specimen(id: Id) -> Self {
-        Self::from_str_and_id("/specimens", id)
-    }
-}
-
 impl Specimen {
     #[must_use]
     pub fn record(&self) -> &SavedSpecimenRecord {
         match self {
             Self::Compact { record, .. } | Self::Detailed { record, .. } => record,
-        }
-    }
-
-    #[must_use]
-    pub fn from_record(record: SavedSpecimenRecord) -> Self {
-        Self::Compact {
-            links: SimpleLinks::for_specimen(record.id),
-            record,
-        }
-    }
-
-    #[must_use]
-    pub fn from_detailed_record(
-        SavedSpecimenRecordDetailed {
-            specimen,
-            project,
-            measurements,
-        }: SavedSpecimenRecordDetailed,
-    ) -> Self {
-        Self::Detailed {
-            links: SimpleLinks::for_specimen(specimen.id),
-            record: specimen,
-            project: Project::Compact {
-                links: SimpleLinks::from_str_and_id("/projects", project.id),
-                record: project,
-            },
-            measurements,
         }
     }
 }

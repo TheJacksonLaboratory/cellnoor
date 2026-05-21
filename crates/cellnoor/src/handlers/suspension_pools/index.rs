@@ -1,5 +1,7 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
+    SimpleLinks,
+    id::Id,
     order_by::OrderBy,
     suspension_pool::{
         SavedSuspensionPoolRecord, SavedTaggedSpecimenRecord, SuspensionPool, SuspensionPoolField,
@@ -15,6 +17,7 @@ use crate::{
     auth::AuthUser,
     db::{self, AsPredicate, BaseSqlStmt},
     error::{Error, ErrorInner},
+    handlers::specimens::index::specimen_from_record,
     state::AppState,
 };
 
@@ -61,7 +64,7 @@ pub async fn select_suspension_pools(
             .await
     } else {
         let stream = tx.query_stream_into(sql).await?;
-        stream.map(SuspensionPool::from_record).collect().await
+        stream.map(suspension_pool_from_record).collect().await
     };
 
     Ok(pools)
@@ -72,14 +75,42 @@ fn map_detailed_row(row: Row) -> SuspensionPool {
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
 
     SuspensionPool::Detailed {
-        links: SuspensionPoolLinks::from_id(record.id),
+        links: suspension_pool_links(record.id),
         record,
         specimens: specimens
             .into_iter()
-            .map(TaggedSpecimen::from_record)
+            .map(tagged_specimen_from_record)
             .collect(),
         measurements: row.get("measurements"),
         preparers: row.get("preparers"),
+    }
+}
+
+fn suspension_pool_links(id: Id) -> SuspensionPoolLinks {
+    SuspensionPoolLinks {
+        simple: SimpleLinks::from_str_and_id("/suspension-pools", id),
+        suspensions: format!("/suspension-pools/{id}/suspensions"),
+    }
+}
+
+pub fn suspension_pool_from_record(record: SavedSuspensionPoolRecord) -> SuspensionPool {
+    SuspensionPool::Compact {
+        links: suspension_pool_links(record.id),
+        record,
+    }
+}
+
+pub fn tagged_specimen_from_record(
+    SavedTaggedSpecimenRecord {
+        specimen,
+        multiplexing_tag,
+        ocm_barcode_id,
+    }: SavedTaggedSpecimenRecord,
+) -> TaggedSpecimen {
+    TaggedSpecimen {
+        specimen: specimen_from_record(specimen),
+        multiplexing_tag,
+        ocm_barcode_id,
     }
 }
 

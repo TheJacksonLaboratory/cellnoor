@@ -73,15 +73,6 @@ pub struct ChromiumRunLinks {
     pub suspension_pools: String,
 }
 
-impl ChromiumRunLinks {
-    pub fn from_id(id: Id) -> Self {
-        Self {
-            simple: SimpleLinks::from_str_and_id("/chromium-runs", id),
-            suspensions: format!("/chromium-runs/{id}/suspensions"),
-            suspension_pools: format!("/chromium-runs/{id}/suspension-pools"),
-        }
-    }
-}
 
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "gem_well_with_specimens"))]
@@ -116,13 +107,6 @@ pub enum ChromiumRun {
 }
 
 impl ChromiumRun {
-    pub fn from_record(record: SavedChromiumRunRecord) -> Self {
-        Self::Compact {
-            links: ChromiumRunLinks::from_id(record.id),
-            record,
-        }
-    }
-
     pub fn record(&self) -> &SavedChromiumRunRecord {
         match self {
             Self::Compact { record, .. } | Self::Detailed { record, .. } => record,

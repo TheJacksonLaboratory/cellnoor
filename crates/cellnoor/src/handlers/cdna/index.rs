@@ -2,8 +2,9 @@ use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
     cdna::{Cdna, CdnaField, CdnaPredicate, CdnaPredicateInner, CdnaQuery, SavedCdnaRecord},
+    id::Id,
     order_by::OrderBy,
-    suspension_pool::{SavedTaggedSpecimenRecord, TaggedSpecimen},
+    suspension_pool::SavedTaggedSpecimenRecord,
 };
 use deadpool_postgres::tokio_postgres::Row;
 use futures::StreamExt;
@@ -13,6 +14,7 @@ use crate::{
     auth::AuthUser,
     db::{self, AsPredicate, BaseSqlStmt},
     error::{Error, ErrorInner},
+    handlers::suspension_pools::index::tagged_specimen_from_record,
     state::AppState,
 };
 
@@ -59,7 +61,7 @@ pub async fn select_cdna(
             .await
     } else {
         let stream = tx.query_stream_into(sql).await?;
-        stream.map(Cdna::from_record).collect().await
+        stream.map(cdna_from_record).collect().await
     };
 
     Ok(cdna)
@@ -70,14 +72,25 @@ fn map_detailed_row(row: Row) -> Cdna {
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
 
     Cdna::Detailed {
-        links: SimpleLinks::for_cdna(record.id),
+        links: cdna_simple_links(record.id),
         record,
         specimens: specimens
             .into_iter()
-            .map(TaggedSpecimen::from_record)
+            .map(tagged_specimen_from_record)
             .collect(),
         measurements: row.get("measurements"),
         preparers: row.get("preparers"),
+    }
+}
+
+fn cdna_simple_links(id: Id) -> SimpleLinks {
+    SimpleLinks::from_str_and_id("/cdna", id)
+}
+
+pub fn cdna_from_record(record: SavedCdnaRecord) -> Cdna {
+    Cdna::Compact {
+        links: cdna_simple_links(record.id),
+        record,
     }
 }
 

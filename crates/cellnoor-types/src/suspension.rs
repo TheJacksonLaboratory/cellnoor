@@ -101,43 +101,11 @@ pub enum Suspension {
     },
 }
 
-impl SimpleLinks {
-    fn for_suspension(id: Id) -> Self {
-        Self::from_str_and_id("/suspensions", id)
-    }
-}
-
 impl Suspension {
     #[must_use]
     pub fn record(&self) -> &SavedSuspensionRecord {
         match self {
             Self::Compact { record, .. } | Self::Detailed { record, .. } => record,
-        }
-    }
-
-    #[must_use]
-    pub fn from_record(record: SavedSuspensionRecord) -> Self {
-        Self::Compact {
-            links: SimpleLinks::for_suspension(record.id),
-            record,
-        }
-    }
-
-    #[must_use]
-    pub fn from_detailed_record(
-        SavedSuspensionRecordDetailed {
-            suspension,
-            specimen,
-            measurements,
-            preparers,
-        }: SavedSuspensionRecordDetailed,
-    ) -> Self {
-        Self::Detailed {
-            links: SimpleLinks::for_suspension(suspension.id),
-            record: suspension,
-            specimen: Specimen::from_record(specimen),
-            measurements,
-            preparers,
         }
     }
 }
