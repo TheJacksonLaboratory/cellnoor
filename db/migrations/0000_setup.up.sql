@@ -57,11 +57,15 @@ create or replace function create_person_user_if_not_exists(
             -- Demote a user back to row-level-security if they were previously staff
             execute format('alter user %I with nobypassrls', username);
         end if;
-        -- These tables and views don't exist yet, but only these are granted to users so that a developer can't
-        -- accidentally query against underlying tables, only views that have row-security policies enabled
+        -- Because of how RLS works with views, and the fact that each view builds upon another, we only need to grant
+        -- select permissions on the tables that our application queries directly (that is, without a view) and on
+        -- the views our application uses. Any view that itself queries another view with security_invoker = true will
+        -- be subject to RLS. As such, we only need to enable RLS down the chain to `suspension_detailed`, as every
+        -- other view eventually leads to this one
         execute format('grant select on institution, person_public, project, project_access, project_detailed, specimen,
-        specimen_detailed, suspension_to_specimen, suspension_pool_to_specimen, gem_well_to_specimen, cdna_to_specimen,
-        library_to_specimen, chromium_dataset_to_specimen to %I', username);
+        specimen_measurement, specimen_detailed, tenx_assay, index_kit, single_index_set, dual_index_set,
+        library_type_specification, suspension, suspension_detailed, suspension_pool_to_specimen, gem_well_to_specimen,
+        cdna_to_specimen, library_to_specimen, chromium_dataset_to_specimen to %I', username);
         -- The db user 'app' needs to be able to do `set role username`, but it shouldn't inherit that user's privileges
         execute format('grant %I to app with inherit false', username);
     end;
