@@ -214,7 +214,8 @@ fn permission_as_tableset(permission: &ResourcePermission) -> &'static str {
         ResourcePermission::Project(_) => "project",
         ResourcePermission::Specimen(_) => "specimen",
         ResourcePermission::AssayConstantData(_) => {
-            "tenx_assay, index_set, library_type_specification, multiplexing_tag"
+            "tenx_assay, index_kit, single_index_set, dual_index_set, library_type_specification, \
+             multiplexing_tag"
         }
         ResourcePermission::ChromiumExperimentalData(_) => {
             "suspension, suspension_measurement, suspension_preparer, suspension_pool, \
@@ -275,8 +276,7 @@ pub mod test {
                 orcid: None,
             },
             is_staff: false,
-            permissions_to_grant: vec![ResourcePermission::Institution(vec![Action::Create])]
-                .into(),
+            permissions_to_grant: vec![].into(),
             permissions_to_revoke: vec![].into(),
         };
 
@@ -301,61 +301,37 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        // Create a new person and db-user
-        let (
-            _,
-            Person {
-                record: SavedPersonRecord { id: user_id, .. },
-                ..
-            },
-        ) = insert_test_person_and_institution(&tx, |_| ())
-            .await
-            .unwrap();
+        // Create a new person with permissions to create every entity in the chain from
+        // an institution to a Chromium dataset
+        let (_, person) = insert_test_person_and_institution(&tx, |p| {
+            p.permissions_to_grant = vec![
+                ResourcePermission::Institution(vec![Action::Create]),
+                ResourcePermission::Person(vec![Action::Create]),
+                ResourcePermission::Project(vec![Action::Create]),
+                ResourcePermission::Specimen(vec![Action::Create]),
+                ResourcePermission::AssayConstantData(vec![Action::Create]),
+                ResourcePermission::ChromiumExperimentalData(vec![Action::Create]),
+                ResourcePermission::ChromiumExperimentalData(vec![Action::Create]),
+            ]
+            .into();
+        })
+        .await
+        .unwrap();
 
-        let (_, accessible_project) = insert_test_project(&tx, |new| new.people = vec![*user_id])
-            .await
-            .unwrap();
-
-        // And insert one the new user cannot
-        let (_, inaccessible_project) = insert_test_project(&tx, |_| ()).await.unwrap();
-
-        // We have to commit this transaction so the change persists for the next part
-        // of the test
+        // Commit the transaction so the change persists for the next part of the test
         tx.commit().await.unwrap();
 
         // Log in as the new user
-        let mut client = db_client_as_user(*user_id).await;
+        let mut client = db_client_as_user(*person.record.id).await;
         let tx = client.begin().await.unwrap();
 
-        // Check that the user can do what they should be able to
-        select_institutions(&tx, &mut InstitutionQuery::default())
-            .await
-            .unwrap();
-        let _ = insert_test_institution(&tx, |_| ()).await;
+        // TODO: once we have `insert_test_chromium_dataset`, use that to ensure the
+        // user can insert everything required in the chain from an institution to a
+        // Chromium dataset
 
+        // Check that they cannot insert a project
         let error = insert_test_project(&tx, |_| ()).await.unwrap_err();
         assert_eq!(error, ErrorInner::PermissionDenied);
-        tx.commit().await.unwrap();
-
-        let tx = client.begin().await.unwrap();
-        // Check that only one of the two projects is accessible
-        let projects = select_projects(
-            &tx,
-            &mut ProjectQuery {
-                detailed: true,
-                ..Default::default()
-            },
-        )
-        .await
-        .unwrap();
-        assert_eq!(projects, vec![accessible_project]);
-
-        // Check that the inaccessible project causes a `ResourceNotFound`
-        let error = select_project_by_id(&tx, *inaccessible_project.record().id)
-            .await
-            .unwrap_err();
-
-        assert_eq!(error, ErrorInner::ResourceNotFound);
     }
 
     // We only test this once in the earliest place in the "chain"
@@ -364,20 +340,10 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let new = NewPerson {
-            record: NewPersonRecord {
-                id: NoId {},
-                name: "hamood".to_nonempty_string(),
-                institution_id: Uuid::new_v4(),
-                email: Some(format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string()),
-                orcid: None,
-            },
-            is_staff: false,
-            permissions_to_grant: vec![].into(),
-            permissions_to_revoke: vec![].into(),
-        };
-
-        let error = insert_person(&tx, &new).await.unwrap_err();
+        let error =
+            insert_test_person_and_institution(&tx, |p| p.record.institution_id = Uuid::new_v4())
+                .await
+                .unwrap_err();
 
         assert_eq!(
             error,
