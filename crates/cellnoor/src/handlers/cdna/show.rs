@@ -31,10 +31,7 @@ pub async fn show_cdna(
     Ok(response)
 }
 
-pub async fn select_cdna_by_id(
-    tx: &db::Transaction<'_>,
-    id: Uuid,
-) -> Result<Cdna, ErrorInner> {
+pub async fn select_cdna_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<Cdna, ErrorInner> {
     select_one(
         tx,
         CdnaPredicateInner::Id(UuidOperator::Eq(id)).into(),

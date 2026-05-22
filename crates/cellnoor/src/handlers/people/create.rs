@@ -235,9 +235,7 @@ pub mod test {
 
     use cellnoor_types::{
         id::NoId,
-        person::{
-            Action, NewPerson, NewPersonRecord, Person, ResourcePermission,
-        },
+        person::{Action, NewPerson, NewPersonRecord, Person, ResourcePermission},
     };
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
@@ -246,8 +244,7 @@ pub mod test {
         db,
         error::ErrorInner,
         handlers::{
-            institutions::create::test::insert_test_institution,
-            people::create::insert_person,
+            institutions::create::test::insert_test_institution, people::create::insert_person,
             projects::create::test::insert_test_project,
         },
         state::test_util::{ToNonemptyString, db_client_as_admin, db_client_as_user},
