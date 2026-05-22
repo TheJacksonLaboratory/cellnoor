@@ -1,7 +1,7 @@
 select distinct on ((cdna).id)
     cdna,
     array_agg((
-        specimen, (gem_well).multiplexing_tag, (gem_well).ocm_barcode_id
+        specimen, multiplexing_tag, ocm_barcode_id
     )::tagged_specimen) as specimens,
     array(
         select m from cdna_measurement as m

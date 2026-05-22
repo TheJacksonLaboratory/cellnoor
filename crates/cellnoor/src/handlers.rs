@@ -6,6 +6,7 @@ pub mod chromium_runs;
 pub mod institutions;
 // pub mod libraries;
 pub mod index_sets;
+pub mod library;
 pub mod multiplexing_tags;
 mod path;
 pub mod people;

@@ -139,10 +139,12 @@ pub mod tests {
         state::test_util::db_client_as_admin,
     };
 
+    pub const DUAL_INDEX_SET_NAME: &'static str = "SI-TT-A1";
+
     pub async fn insert_test_dual_index_set(
         tx: &db::Transaction<'_>,
     ) -> Result<String, ErrorInner> {
-        let name = "SI-TT-A1".to_owned();
+        let name = DUAL_INDEX_SET_NAME.to_owned();
 
         match insert_dual_index_sets(
             tx,

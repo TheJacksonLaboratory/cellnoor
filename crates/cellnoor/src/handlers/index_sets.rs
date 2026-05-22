@@ -1,5 +1,7 @@
 pub use dual::create::create_dual_index_sets;
 #[cfg(test)]
+pub use dual::create::tests::DUAL_INDEX_SET_NAME;
+#[cfg(test)]
 pub use dual::create::tests::insert_test_dual_index_set;
 pub use single::create::create_single_index_sets;
 #[cfg(test)]

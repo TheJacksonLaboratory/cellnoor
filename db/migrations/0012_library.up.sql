@@ -5,7 +5,7 @@ create table library (
     single_index_set_name text references single_index_set,
     dual_index_set_name text references dual_index_set,
     number_of_sample_index_pcr_cycles integer not null,
-    target_reads_per_cell bigint,
+    target_reads_per_cell integer,
     prepared_at timestamptz not null,
     additional_data jsonb,
     constraint has_index check ((single_index_set_name is null) != (dual_index_set_name is null))

@@ -13,7 +13,7 @@ mod cdna;
 // pub mod chromium_datasets;
 mod chromium_runs;
 mod institutions;
-// pub mod libraries;
+mod library;
 mod multiplexing_tags;
 mod people;
 mod projects;
@@ -41,9 +41,9 @@ pub(super) fn router() -> Router<AppState> {
         .nest("/chromium-runs", chromium_runs::router())
         .nest("/10x-assays", tenx_assays::router())
         .nest("/multiplexing-tags", multiplexing_tags::router())
-        .nest("/cdna", cdna::router());
+        .nest("/cdna", cdna::router())
+        .nest("/libraries", library::router());
     // .nest("/chip-loadings", chip_loadings::router())
-    // .nest("/libraries", libraries::router())
     // .nest("/chromium-datasets", chromium_datasets::router());
 
     let mut api_docs = OpenApi::default();
