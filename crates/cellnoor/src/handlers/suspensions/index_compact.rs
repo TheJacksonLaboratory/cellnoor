@@ -16,17 +16,6 @@ use crate::{
     state::AppState,
 };
 
-pub(super) fn suspension_simple_links(id: Id) -> SimpleLinks {
-    SimpleLinks::from_str_and_id("/suspensions", id)
-}
-
-pub fn suspension_from_record(record: SavedSuspensionRecord) -> SuspensionCompact {
-    SuspensionCompact {
-        links: suspension_simple_links(record.id),
-        record,
-    }
-}
-
 pub async fn index_suspensions(
     State(state): State<AppState>,
     user: AuthUser,
@@ -35,19 +24,21 @@ pub async fn index_suspensions(
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_suspensions_compact(&tx, &mut query).await.map(Json)?;
+    let response = select_suspensions_compact(&tx, &mut query)
+        .await
+        .map(Json)?;
 
     tx.commit().await?;
 
     Ok(response)
 }
 
-pub async fn select_suspensions_compact(
+async fn select_suspensions_compact(
     tx: &db::Transaction<'_>,
     query: &mut SuspensionQuery,
 ) -> Result<Vec<SuspensionCompact>, ErrorInner> {
-    let sql = BaseSqlStmt::new(include_str!("index/select_compact.sql"))
-        .finish_with_query(query)?;
+    let sql =
+        BaseSqlStmt::new(include_str!("index/select_compact.sql")).finish_with_query(query)?;
 
     let stream = tx.query_stream_into(sql).await?;
     Ok(stream.map(suspension_from_record).collect().await)
@@ -76,6 +67,17 @@ impl AsPredicate for SuspensionPredicate {
         };
 
         (self.field_name(), sql)
+    }
+}
+
+pub(super) fn suspension_simple_links(id: Id) -> SimpleLinks {
+    SimpleLinks::from_str_and_id("/suspensions", id)
+}
+
+pub fn suspension_from_record(record: SavedSuspensionRecord) -> SuspensionCompact {
+    SuspensionCompact {
+        links: suspension_simple_links(record.id),
+        record,
     }
 }
 

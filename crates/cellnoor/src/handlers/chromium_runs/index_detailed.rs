@@ -17,6 +17,39 @@ use crate::{
     state::AppState,
 };
 
+pub async fn index_chromium_runs_detailed(
+    State(state): State<AppState>,
+    user: AuthUser,
+    Json(mut query): Json<ChromiumRunQuery>,
+) -> Result<Json<Vec<ChromiumRunDetailed>>, Error> {
+    let mut client = state.db_client(user).await?;
+    let tx = client.begin().await?;
+
+    let response = select_chromium_runs_detailed(&tx, &mut query)
+        .await
+        .map(Json)?;
+
+    tx.commit().await?;
+
+    Ok(response)
+}
+
+pub(super) async fn select_chromium_runs_detailed(
+    tx: &db::Transaction<'_>,
+    query: &mut ChromiumRunQuery,
+) -> Result<Vec<ChromiumRunDetailed>, ErrorInner> {
+    push_distinct_on_id(query);
+
+    let sql =
+        BaseSqlStmt::new(include_str!("index/select_detailed.sql")).finish_with_query(query)?;
+
+    let stream = tx.query_stream(sql).await?;
+    Ok(stream
+        .map(|row| row.map(map_detailed_row).unwrap())
+        .collect()
+        .await)
+}
+
 fn map_detailed_row(row: Row) -> ChromiumRunDetailed {
     let record: SavedChromiumRunRecord = row.get("chromium_run");
     let assay = row.get("tenx_assay");
@@ -38,39 +71,6 @@ fn map_detailed_row(row: Row) -> ChromiumRunDetailed {
             })
             .collect(),
     }
-}
-
-pub async fn index_chromium_runs_detailed(
-    State(state): State<AppState>,
-    user: AuthUser,
-    Json(mut query): Json<ChromiumRunQuery>,
-) -> Result<Json<Vec<ChromiumRunDetailed>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_chromium_runs_detailed(&tx, &mut query)
-        .await
-        .map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
-}
-
-pub async fn select_chromium_runs_detailed(
-    tx: &db::Transaction<'_>,
-    query: &mut ChromiumRunQuery,
-) -> Result<Vec<ChromiumRunDetailed>, ErrorInner> {
-    push_distinct_on_id(query);
-
-    let sql = BaseSqlStmt::new(include_str!("index/select_detailed.sql"))
-        .finish_with_query(query)?;
-
-    let stream = tx.query_stream(sql).await?;
-    Ok(stream
-        .map(|row| row.map(map_detailed_row).unwrap())
-        .collect()
-        .await)
 }
 
 #[cfg(test)]
@@ -112,7 +112,9 @@ mod test {
             .await
             .unwrap();
 
-        let detailed = select_chromium_run_by_id(&tx, *run.record.id).await.unwrap();
+        let detailed = select_chromium_run_by_id(&tx, *run.record.id)
+            .await
+            .unwrap();
         let gem_wells = detailed.gem_wells;
 
         assert_eq!(gem_wells.len(), 2);
@@ -142,7 +144,9 @@ mod test {
         let tx = client.begin().await.unwrap();
 
         let (_, run) = insert_test_ocm_chromium_run(&tx, |_| ()).await.unwrap();
-        let detailed = select_chromium_run_by_id(&tx, *run.record.id).await.unwrap();
+        let detailed = select_chromium_run_by_id(&tx, *run.record.id)
+            .await
+            .unwrap();
         let gem_wells = detailed.gem_wells;
 
         assert_eq!(gem_wells.len(), 2);
@@ -167,7 +171,9 @@ mod test {
         let tx = client.begin().await.unwrap();
 
         let (_, run) = insert_test_mixed_chromium_run(&tx, |_| ()).await.unwrap();
-        let detailed = select_chromium_run_by_id(&tx, *run.record.id).await.unwrap();
+        let detailed = select_chromium_run_by_id(&tx, *run.record.id)
+            .await
+            .unwrap();
         let gem_wells = detailed.gem_wells;
 
         assert_eq!(gem_wells.len(), 2);
@@ -184,7 +190,9 @@ mod test {
             .await
             .unwrap();
 
-        let detailed = select_chromium_run_by_id(&tx, *run.record.id).await.unwrap();
+        let detailed = select_chromium_run_by_id(&tx, *run.record.id)
+            .await
+            .unwrap();
         let gem_wells = detailed.gem_wells;
 
         assert_eq!(gem_wells.len(), 2);
@@ -278,7 +286,9 @@ mod test {
 
         let run = insert_chromium_run(&tx, new).await.unwrap();
 
-        let detailed = select_chromium_run_by_id(&tx, *run.record.id).await.unwrap();
+        let detailed = select_chromium_run_by_id(&tx, *run.record.id)
+            .await
+            .unwrap();
         let gem_wells = detailed.gem_wells;
 
         assert_eq!(gem_wells.len(), 1);

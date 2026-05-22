@@ -1,1 +1,1 @@
-pub mod add_person;
+pub(super) mod add_people;

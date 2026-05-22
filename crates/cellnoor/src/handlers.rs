@@ -14,3 +14,6 @@ pub mod specimens;
 pub mod suspension_pools;
 pub mod suspensions;
 pub mod tenx_assays;
+
+#[cfg(test)]
+mod rls_tests;

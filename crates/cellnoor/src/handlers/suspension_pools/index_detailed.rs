@@ -16,22 +16,6 @@ use crate::{
     state::AppState,
 };
 
-fn map_detailed_row(row: Row) -> SuspensionPoolDetailed {
-    let record: SavedSuspensionPoolRecord = row.get("suspension_pool");
-    let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
-
-    SuspensionPoolDetailed {
-        links: suspension_pool_links(record.id),
-        record,
-        specimens: specimens
-            .into_iter()
-            .map(tagged_specimen_from_record)
-            .collect(),
-        measurements: row.get("measurements"),
-        preparers: row.get("preparers"),
-    }
-}
-
 pub async fn index_suspension_pools_detailed(
     State(state): State<AppState>,
     user: AuthUser,
@@ -49,18 +33,34 @@ pub async fn index_suspension_pools_detailed(
     Ok(response)
 }
 
-pub async fn select_suspension_pools_detailed(
+pub(super) async fn select_suspension_pools_detailed(
     tx: &db::Transaction<'_>,
     query: &mut SuspensionPoolQuery,
 ) -> Result<Vec<SuspensionPoolDetailed>, ErrorInner> {
     push_distinct_on_id(query);
 
-    let sql = BaseSqlStmt::new(include_str!("index/select_detailed.sql"))
-        .finish_with_query(query)?;
+    let sql =
+        BaseSqlStmt::new(include_str!("index/select_detailed.sql")).finish_with_query(query)?;
 
     let stream = tx.query_stream(sql).await?;
     Ok(stream
         .map(|row| row.map(map_detailed_row).unwrap())
         .collect()
         .await)
+}
+
+fn map_detailed_row(row: Row) -> SuspensionPoolDetailed {
+    let record: SavedSuspensionPoolRecord = row.get("suspension_pool");
+    let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
+
+    SuspensionPoolDetailed {
+        links: suspension_pool_links(record.id),
+        record,
+        specimens: specimens
+            .into_iter()
+            .map(tagged_specimen_from_record)
+            .collect(),
+        measurements: row.get("measurements"),
+        preparers: row.get("preparers"),
+    }
 }

@@ -128,7 +128,7 @@ pub mod test {
         let mut new = NewSpecimen::Block(NewBlock::CarboxymethylCellulose {
             common: NewSpecimenCommonFields {
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                name: "specimen".to_nonempty_string(),
+                name: Uuid::new_v4().to_string().to_nonempty_string(),
                 submitted_by: people[0],
                 received_at: Timestamp::now(),
                 project_id: *project.id,

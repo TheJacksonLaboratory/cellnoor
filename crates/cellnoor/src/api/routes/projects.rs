@@ -12,8 +12,8 @@ use crate::{
     auth::AuthUser,
     error::Error,
     handlers::projects::{
-        create::create_project, delete::delete_project, index_compact::index_projects,
-        index_detailed::index_projects_detailed, show::show_project, update::update_project,
+        add_people_to_project, create_project, delete_project, index_projects,
+        index_projects_detailed, show_project, update_project,
     },
     state::AppState,
 };
@@ -27,10 +27,12 @@ pub(super) fn router() -> ApiRouter<AppState> {
 }
 
 fn id_router() -> ApiRouter<AppState> {
-    ApiRouter::new().api_route(
-        "/",
-        get(show_project).put(update_project).delete(delete_project),
-    )
+    ApiRouter::new()
+        .api_route(
+            "/",
+            get(show_project).put(update_project).delete(delete_project),
+        )
+        .api_route("/people", post(add_people_to_project))
 }
 
 async fn index_projects_simple(

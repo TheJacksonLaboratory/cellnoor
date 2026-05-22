@@ -12,9 +12,8 @@ use crate::{
     auth::AuthUser,
     error::Error,
     handlers::chromium_runs::{
-        create::create_chromium_run, delete::delete_chromium_run,
-        index_compact::index_chromium_runs, index_detailed::index_chromium_runs_detailed,
-        show::show_chromium_run, update::update_chromium_run,
+        create_chromium_run, delete_chromium_run, index_chromium_runs,
+        index_chromium_runs_detailed, show_chromium_run, update_chromium_run,
     },
     state::AppState,
 };

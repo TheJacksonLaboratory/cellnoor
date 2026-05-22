@@ -14,17 +14,6 @@ use crate::{
     state::AppState,
 };
 
-pub(super) fn specimen_simple_links(id: Id) -> SimpleLinks {
-    SimpleLinks::from_str_and_id("/specimens", id)
-}
-
-pub fn specimen_from_record(record: SavedSpecimenRecord) -> SpecimenCompact {
-    SpecimenCompact {
-        links: specimen_simple_links(record.id),
-        record,
-    }
-}
-
 pub async fn index_specimens(
     State(state): State<AppState>,
     user: AuthUser,
@@ -40,12 +29,12 @@ pub async fn index_specimens(
     Ok(response)
 }
 
-pub async fn select_specimens_compact(
+async fn select_specimens_compact(
     tx: &db::Transaction<'_>,
     query: &mut SpecimenQuery,
 ) -> Result<Vec<SpecimenCompact>, ErrorInner> {
-    let sql = BaseSqlStmt::new(include_str!("index/select_compact.sql"))
-        .finish_with_query(query)?;
+    let sql =
+        BaseSqlStmt::new(include_str!("index/select_compact.sql")).finish_with_query(query)?;
 
     let stream = tx.query_stream_into(sql).await?;
     Ok(stream.map(specimen_from_record).collect().await)
@@ -68,6 +57,17 @@ impl AsPredicate for SpecimenPredicate {
         };
 
         (self.field_name(), sql)
+    }
+}
+
+pub(super) fn specimen_simple_links(id: Id) -> SimpleLinks {
+    SimpleLinks::from_str_and_id("/specimens", id)
+}
+
+pub fn specimen_from_record(record: SavedSpecimenRecord) -> SpecimenCompact {
+    SpecimenCompact {
+        links: specimen_simple_links(record.id),
+        record,
     }
 }
 

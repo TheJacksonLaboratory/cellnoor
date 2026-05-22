@@ -18,32 +18,6 @@ use crate::{
     state::AppState,
 };
 
-pub(super) fn chromium_run_links(id: Id) -> ChromiumRunLinks {
-    ChromiumRunLinks {
-        simple: SimpleLinks::from_str_and_id("/chromium-runs", id),
-        suspensions: format!("/chromium-runs/{id}/suspensions"),
-        suspension_pools: format!("/chromium-runs/{id}/suspension-pools"),
-    }
-}
-
-pub(super) fn chromium_run_from_record(record: SavedChromiumRunRecord) -> ChromiumRunCompact {
-    ChromiumRunCompact {
-        links: chromium_run_links(record.id),
-        record,
-    }
-}
-
-pub(super) fn push_distinct_on_id(query: &mut ChromiumRunQuery) {
-    // The first column in the `order by` clause needs to match the `distinct on`
-    // clause
-    let distinct_on = OrderBy {
-        field: ChromiumRunField::Id,
-        desc: true,
-    };
-
-    query.order_by.push_front(distinct_on);
-}
-
 pub async fn index_chromium_runs(
     State(state): State<AppState>,
     user: AuthUser,
@@ -61,14 +35,14 @@ pub async fn index_chromium_runs(
     Ok(response)
 }
 
-pub async fn select_chromium_runs_compact(
+async fn select_chromium_runs_compact(
     tx: &db::Transaction<'_>,
     query: &mut ChromiumRunQuery,
 ) -> Result<Vec<ChromiumRunCompact>, ErrorInner> {
     push_distinct_on_id(query);
 
-    let sql = BaseSqlStmt::new(include_str!("index/select_compact.sql"))
-        .finish_with_query(query)?;
+    let sql =
+        BaseSqlStmt::new(include_str!("index/select_compact.sql")).finish_with_query(query)?;
 
     let stream = tx.query_stream_into(sql).await?;
     Ok(stream.map(chromium_run_from_record).collect().await)
@@ -94,6 +68,32 @@ impl AsPredicate for ChromiumRunPredicate {
     }
 }
 
+pub(super) fn chromium_run_links(id: Id) -> ChromiumRunLinks {
+    ChromiumRunLinks {
+        simple: SimpleLinks::from_str_and_id("/chromium-runs", id),
+        suspensions: format!("/chromium-runs/{id}/suspensions"),
+        suspension_pools: format!("/chromium-runs/{id}/suspension-pools"),
+    }
+}
+
+pub fn chromium_run_from_record(record: SavedChromiumRunRecord) -> ChromiumRunCompact {
+    ChromiumRunCompact {
+        links: chromium_run_links(record.id),
+        record,
+    }
+}
+
+pub(super) fn push_distinct_on_id(query: &mut ChromiumRunQuery) {
+    // The first column in the `order by` clause needs to match the `distinct on`
+    // clause
+    let distinct_on = OrderBy {
+        field: ChromiumRunField::Id,
+        desc: true,
+    };
+
+    query.order_by.push_front(distinct_on);
+}
+
 #[cfg(test)]
 mod test {
     use cellnoor_types::{
@@ -103,7 +103,8 @@ mod test {
 
     use crate::{
         handlers::chromium_runs::{
-            create::test::insert_test_standard_chromium_run, index_compact::select_chromium_runs_compact,
+            create::test::insert_test_standard_chromium_run,
+            index_compact::select_chromium_runs_compact,
         },
         state::test_util::db_client_as_admin,
     };

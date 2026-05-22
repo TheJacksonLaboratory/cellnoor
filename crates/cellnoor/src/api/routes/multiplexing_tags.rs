@@ -5,8 +5,7 @@ use aide::axum::{
 
 use crate::{
     handlers::multiplexing_tags::{
-        create::create_multiplexing_tag, delete::delete_multiplexing_tag,
-        index::index_multiplexing_tags,
+        create_multiplexing_tag, delete_multiplexing_tag, index_multiplexing_tags,
     },
     state::AppState,
 };

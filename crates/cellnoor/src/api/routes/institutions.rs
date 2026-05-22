@@ -12,8 +12,8 @@ use crate::{
     auth::AuthUser,
     error::Error,
     handlers::institutions::{
-        create::create_institution, delete::delete_institution, index::index_institutions,
-        show::show_institution, update::update_institution,
+        create_institution, delete_institution, index_institutions, show_institution,
+        update_institution,
     },
     state::AppState,
 };

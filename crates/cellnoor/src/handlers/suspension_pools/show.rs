@@ -31,7 +31,7 @@ pub async fn show_suspension_pool(
     Ok(response)
 }
 
-pub async fn select_suspension_pool_by_id(
+pub(super) async fn select_suspension_pool_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<SuspensionPoolDetailed, ErrorInner> {

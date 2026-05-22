@@ -17,22 +17,6 @@ use crate::{
     state::AppState,
 };
 
-fn map_detailed_row(row: Row) -> CdnaDetailed {
-    let record: SavedCdnaRecord = row.get("cdna");
-    let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
-
-    CdnaDetailed {
-        links: cdna_simple_links(record.id),
-        record,
-        specimens: specimens
-            .into_iter()
-            .map(tagged_specimen_from_record)
-            .collect(),
-        measurements: row.get("measurements"),
-        preparers: row.get("preparers"),
-    }
-}
-
 pub async fn index_cdna_detailed(
     State(state): State<AppState>,
     user: AuthUser,
@@ -48,18 +32,34 @@ pub async fn index_cdna_detailed(
     Ok(response)
 }
 
-pub async fn select_cdna_detailed(
+pub(super) async fn select_cdna_detailed(
     tx: &db::Transaction<'_>,
     query: &mut CdnaQuery,
 ) -> Result<Vec<CdnaDetailed>, ErrorInner> {
     push_distinct_on_id(query);
 
-    let sql = BaseSqlStmt::new(include_str!("index/select_detailed.sql"))
-        .finish_with_query(query)?;
+    let sql =
+        BaseSqlStmt::new(include_str!("index/select_detailed.sql")).finish_with_query(query)?;
 
     let stream = tx.query_stream(sql).await?;
     Ok(stream
         .map(|row| row.map(map_detailed_row).unwrap())
         .collect()
         .await)
+}
+
+fn map_detailed_row(row: Row) -> CdnaDetailed {
+    let record: SavedCdnaRecord = row.get("cdna");
+    let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
+
+    CdnaDetailed {
+        links: cdna_simple_links(record.id),
+        record,
+        specimens: specimens
+            .into_iter()
+            .map(tagged_specimen_from_record)
+            .collect(),
+        measurements: row.get("measurements"),
+        preparers: row.get("preparers"),
+    }
 }

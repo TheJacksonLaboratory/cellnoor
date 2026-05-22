@@ -12,10 +12,8 @@ use crate::{
     auth::AuthUser,
     error::Error,
     handlers::specimens::{
-        create::create_specimen, delete::delete_specimen,
-        index_compact::index_specimens, index_detailed::index_specimens_detailed,
-        measurements::create::create_specimen_measurement, show::show_specimen,
-        update::update_specimen,
+        create_specimen, create_specimen_measurement, delete_specimen, index_specimens,
+        index_specimens_detailed, show_specimen, update_specimen,
     },
     state::AppState,
 };

@@ -13,17 +13,6 @@ use crate::{
     state::AppState,
 };
 
-pub(super) fn project_simple_links(id: Id) -> SimpleLinks {
-    SimpleLinks::from_str_and_id("/projects", id)
-}
-
-pub fn project_from_record(record: SavedProjectRecord) -> ProjectCompact {
-    ProjectCompact {
-        links: project_simple_links(record.id),
-        record,
-    }
-}
-
 pub async fn index_projects(
     State(state): State<AppState>,
     user: AuthUser,
@@ -39,12 +28,12 @@ pub async fn index_projects(
     Ok(response)
 }
 
-pub async fn select_projects_compact(
+async fn select_projects_compact(
     tx: &db::Transaction<'_>,
     query: &mut ProjectQuery,
 ) -> Result<Vec<ProjectCompact>, ErrorInner> {
-    let sql = BaseSqlStmt::new(include_str!("index/select_compact.sql"))
-        .finish_with_query(query)?;
+    let sql =
+        BaseSqlStmt::new(include_str!("index/select_compact.sql")).finish_with_query(query)?;
 
     let stream = tx.query_stream_into(sql).await?;
     Ok(stream.map(project_from_record).collect().await)
@@ -64,6 +53,17 @@ impl AsPredicate for ProjectPredicate {
         };
 
         (self.field_name(), sql)
+    }
+}
+
+pub(super) fn project_simple_links(id: Id) -> SimpleLinks {
+    SimpleLinks::from_str_and_id("/projects", id)
+}
+
+pub fn project_from_record(record: SavedProjectRecord) -> ProjectCompact {
+    ProjectCompact {
+        links: project_simple_links(record.id),
+        record,
     }
 }
 

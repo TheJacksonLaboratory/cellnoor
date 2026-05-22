@@ -12,9 +12,8 @@ use crate::{
     auth::AuthUser,
     error::Error,
     handlers::cdna::{
-        create::create_cdna, delete::delete_cdna, index_compact::index_cdna,
-        index_detailed::index_cdna_detailed, measurements::create::create_cdna_measurement,
-        show::show_cdna, update::update_cdna,
+        create_cdna, create_cdna_measurement, delete_cdna, index_cdna, index_cdna_detailed,
+        show_cdna, update_cdna,
     },
     state::AppState,
 };
@@ -29,10 +28,7 @@ pub(super) fn router() -> ApiRouter<AppState> {
 
 fn id_router() -> ApiRouter<AppState> {
     ApiRouter::new()
-        .api_route(
-            "/",
-            get(show_cdna).put(update_cdna).delete(delete_cdna),
-        )
+        .api_route("/", get(show_cdna).put(update_cdna).delete(delete_cdna))
         .api_route("/measurements", post(create_cdna_measurement))
 }
 

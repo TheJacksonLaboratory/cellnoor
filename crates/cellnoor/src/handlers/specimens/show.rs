@@ -31,7 +31,8 @@ pub async fn show_specimen(
     Ok(response)
 }
 
-pub async fn select_specimen_by_id(
+// This visibility is necessary for RLS tests
+pub(in crate::handlers) async fn select_specimen_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<SpecimenDetailed, ErrorInner> {

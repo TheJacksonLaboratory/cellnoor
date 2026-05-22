@@ -61,7 +61,7 @@ pub(super) fn router() -> Router<AppState> {
                     description: None,
                 },
             )
-            .security_requirement("api_token")
+            .security_requirement("api_key")
     });
 
     router.layer(Extension(Arc::new(api_docs)))

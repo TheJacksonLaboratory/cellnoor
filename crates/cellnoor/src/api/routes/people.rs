@@ -11,10 +11,7 @@ use cellnoor_types::person::{Person, PersonQuery, SimplePersonQuery};
 use crate::{
     auth::AuthUser,
     error::Error,
-    handlers::people::{
-        create::create_person, delete::delete_person, index::index_people, show::show_person,
-        update::update_person,
-    },
+    handlers::people::{create_person, delete_person, index_people, show_person, update_person},
     state::AppState,
 };
 

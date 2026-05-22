@@ -12,10 +12,8 @@ use crate::{
     auth::AuthUser,
     error::Error,
     handlers::suspensions::{
-        create::create_suspension, delete::delete_suspension,
-        index_compact::index_suspensions, index_detailed::index_suspensions_detailed,
-        measurements::create::create_suspension_measurement, show::show_suspension,
-        update::update_suspension,
+        create_suspension, create_suspension_measurement, delete_suspension, index_suspensions,
+        index_suspensions_detailed, show_suspension, update_suspension,
     },
     state::AppState,
 };

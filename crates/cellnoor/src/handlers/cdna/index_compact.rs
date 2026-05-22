@@ -1,9 +1,7 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
-    cdna::{
-        CdnaCompact, CdnaField, CdnaPredicate, CdnaPredicateInner, CdnaQuery, SavedCdnaRecord,
-    },
+    cdna::{CdnaCompact, CdnaField, CdnaPredicate, CdnaPredicateInner, CdnaQuery, SavedCdnaRecord},
     id::Id,
     order_by::OrderBy,
 };
@@ -16,27 +14,6 @@ use crate::{
     error::{Error, ErrorInner},
     state::AppState,
 };
-
-pub(super) fn cdna_simple_links(id: Id) -> SimpleLinks {
-    SimpleLinks::from_str_and_id("/cdna", id)
-}
-
-pub fn cdna_from_record(record: SavedCdnaRecord) -> CdnaCompact {
-    CdnaCompact {
-        links: cdna_simple_links(record.id),
-        record,
-    }
-}
-
-pub(super) fn push_distinct_on_id(query: &mut CdnaQuery) {
-    // The first column in the `order by` clause needs to match the `distinct on`
-    // clause
-    let distinct_on = OrderBy {
-        field: CdnaField::Id,
-        desc: true,
-    };
-    query.order_by.push_front(distinct_on);
-}
 
 pub async fn index_cdna(
     State(state): State<AppState>,
@@ -53,14 +30,14 @@ pub async fn index_cdna(
     Ok(response)
 }
 
-pub async fn select_cdna_compact(
+async fn select_cdna_compact(
     tx: &db::Transaction<'_>,
     query: &mut CdnaQuery,
 ) -> Result<Vec<CdnaCompact>, ErrorInner> {
     push_distinct_on_id(query);
 
-    let sql = BaseSqlStmt::new(include_str!("index/select_compact.sql"))
-        .finish_with_query(query)?;
+    let sql =
+        BaseSqlStmt::new(include_str!("index/select_compact.sql")).finish_with_query(query)?;
 
     let stream = tx.query_stream_into(sql).await?;
     Ok(stream.map(cdna_from_record).collect().await)
@@ -84,6 +61,27 @@ impl AsPredicate for CdnaPredicate {
 
         (self.field_name(), sql)
     }
+}
+
+pub(super) fn cdna_simple_links(id: Id) -> SimpleLinks {
+    SimpleLinks::from_str_and_id("/cdna", id)
+}
+
+pub fn cdna_from_record(record: SavedCdnaRecord) -> CdnaCompact {
+    CdnaCompact {
+        links: cdna_simple_links(record.id),
+        record,
+    }
+}
+
+pub(super) fn push_distinct_on_id(query: &mut CdnaQuery) {
+    // The first column in the `order by` clause needs to match the `distinct on`
+    // clause
+    let distinct_on = OrderBy {
+        field: CdnaField::Id,
+        desc: true,
+    };
+    query.order_by.push_front(distinct_on);
 }
 
 #[cfg(test)]

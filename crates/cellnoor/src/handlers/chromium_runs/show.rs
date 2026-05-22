@@ -31,7 +31,7 @@ pub async fn show_chromium_run(
     Ok(response)
 }
 
-pub async fn select_chromium_run_by_id(
+pub(super) async fn select_chromium_run_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<ChromiumRunDetailed, ErrorInner> {

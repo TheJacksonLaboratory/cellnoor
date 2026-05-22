@@ -85,12 +85,12 @@ mod specimen_tests {
         error::ErrorInner,
         handlers::{
             projects::show::select_project_by_id,
+            rls_tests::project_tests::insert_inaccessible_project,
             specimens::{
                 create::test::insert_test_specimen_and_project,
                 index_detailed::select_specimens_detailed, show::select_specimen_by_id,
             },
         },
-        rls_tests::project_tests::insert_inaccessible_project,
         state::test_util::{db_client_as_admin, db_client_as_user},
     };
 
@@ -182,12 +182,12 @@ mod suspension_tests {
         error::ErrorInner,
         handlers::{
             projects::show::select_project_by_id,
+            rls_tests::specimen_tests::insert_inaccessible_specimen,
             suspensions::{
                 create::test::insert_test_suspension_and_specimen,
                 index_detailed::select_suspensions_detailed, show::select_suspension_by_id,
             },
         },
-        rls_tests::specimen_tests::insert_inaccessible_specimen,
         state::test_util::{db_client_as_admin, db_client_as_user},
     };
 

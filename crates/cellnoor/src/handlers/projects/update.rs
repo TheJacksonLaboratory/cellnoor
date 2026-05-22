@@ -11,7 +11,7 @@ use crate::{
     error::{Error, ErrorInner},
     handlers::{
         path::IdParam,
-        projects::{access::add_person::insert_project_accesses, show::select_project_by_id},
+        projects::{access::add_people::insert_project_accesses, show::select_project_by_id},
     },
     state::AppState,
 };

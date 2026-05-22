@@ -5,7 +5,7 @@ use crate::{
     auth::AuthUser,
     db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
-    handlers::projects::{access::add_person::insert_project_accesses, show::select_project_by_id},
+    handlers::projects::{access::add_people::insert_project_accesses, show::select_project_by_id},
     state::AppState,
 };
 

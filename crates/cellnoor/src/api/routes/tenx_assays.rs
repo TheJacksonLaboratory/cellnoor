@@ -1,7 +1,7 @@
 use aide::axum::{ApiRouter, routing::get};
 
 use crate::{
-    handlers::tenx_assays::{create::create_tenx_assay, index::index_tenx_assays},
+    handlers::tenx_assays::{create_tenx_assay, index_tenx_assays},
     state::AppState,
 };
 

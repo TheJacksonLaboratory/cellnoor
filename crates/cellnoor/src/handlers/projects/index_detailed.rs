@@ -10,13 +10,6 @@ use crate::{
     state::AppState,
 };
 
-fn project_from_detailed_record(record: SavedProjectRecordDetailed) -> ProjectDetailed {
-    ProjectDetailed {
-        links: project_simple_links(record.project.id),
-        record,
-    }
-}
-
 pub async fn index_projects_detailed(
     State(state): State<AppState>,
     user: AuthUser,
@@ -32,13 +25,21 @@ pub async fn index_projects_detailed(
     Ok(response)
 }
 
-pub async fn select_projects_detailed(
+// This visibility is necessary for RLS tests
+pub(in crate::handlers) async fn select_projects_detailed(
     tx: &db::Transaction<'_>,
     query: &mut ProjectQuery,
 ) -> Result<Vec<ProjectDetailed>, ErrorInner> {
-    let sql = BaseSqlStmt::new(include_str!("index/select_detailed.sql"))
-        .finish_with_query(query)?;
+    let sql =
+        BaseSqlStmt::new(include_str!("index/select_detailed.sql")).finish_with_query(query)?;
 
     let stream = tx.query_stream_into(sql).await?;
     Ok(stream.map(project_from_detailed_record).collect().await)
+}
+
+fn project_from_detailed_record(record: SavedProjectRecordDetailed) -> ProjectDetailed {
+    ProjectDetailed {
+        links: project_simple_links(record.project.id),
+        record,
+    }
 }

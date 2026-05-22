@@ -31,7 +31,8 @@ pub async fn show_project(
     Ok(response)
 }
 
-pub async fn select_project_by_id(
+// This visibility is necessary for RLS tests
+pub(in crate::handlers) async fn select_project_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<ProjectDetailed, ErrorInner> {

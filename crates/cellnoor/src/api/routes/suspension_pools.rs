@@ -14,11 +14,9 @@ use crate::{
     auth::AuthUser,
     error::Error,
     handlers::suspension_pools::{
-        create::create_suspension_pool, delete::delete_suspension_pool,
-        index_compact::index_suspension_pools,
-        index_detailed::index_suspension_pools_detailed,
-        measurements::create::create_suspension_pool_measurement, show::show_suspension_pool,
-        update::update_suspension_pool,
+        create_suspension_pool, create_suspension_pool_measurement, delete_suspension_pool,
+        index_suspension_pools, index_suspension_pools_detailed, show_suspension_pool,
+        update_suspension_pool,
     },
     state::AppState,
 };

@@ -11,8 +11,6 @@ pub mod db;
 pub mod error;
 #[cfg(feature = "ssr")]
 pub mod handlers;
-#[cfg(all(test, feature = "ssr"))]
-mod rls_tests;
 #[cfg(feature = "ssr")]
 pub mod settings;
 #[cfg(feature = "ssr")]
