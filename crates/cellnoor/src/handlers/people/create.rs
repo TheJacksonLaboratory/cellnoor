@@ -235,11 +235,9 @@ pub mod test {
 
     use cellnoor_types::{
         id::NoId,
-        institution::InstitutionQuery,
         person::{
-            Action, NewPerson, NewPersonRecord, Person, ResourcePermission, SavedPersonRecord,
+            Action, NewPerson, NewPersonRecord, Person, ResourcePermission,
         },
-        project::ProjectQuery,
     };
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
@@ -248,12 +246,9 @@ pub mod test {
         db,
         error::ErrorInner,
         handlers::{
-            institutions::{create::test::insert_test_institution, index::select_institutions},
+            institutions::create::test::insert_test_institution,
             people::create::insert_person,
-            projects::{
-                create::test::insert_test_project, index::select_projects,
-                show::select_project_by_id,
-            },
+            projects::create::test::insert_test_project,
         },
         state::test_util::{ToNonemptyString, db_client_as_admin, db_client_as_user},
     };

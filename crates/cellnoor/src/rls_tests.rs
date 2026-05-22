@@ -1,27 +1,16 @@
 mod project_tests {
-    use cellnoor_types::{
-        id::NoId,
-        institution::InstitutionQuery,
-        person::{
-            Action, NewPerson, NewPersonRecord, Person, ResourcePermission, SavedPersonRecord,
-        },
-        project::{NewProject, Project, ProjectQuery},
-    };
+    use cellnoor_types::project::{NewProject, Project, ProjectQuery};
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
     use crate::{
         db,
         error::ErrorInner,
-        handlers::{
-            institutions::{create::test::insert_test_institution, index::select_institutions},
-            people::create::{insert_person, test::insert_test_person_and_institution},
-            projects::{
+        handlers::projects::{
                 create::test::insert_test_project, index::select_projects,
                 show::select_project_by_id,
             },
-        },
-        state::test_util::{ToNonemptyString, db_client_as_admin, db_client_as_user},
+        state::test_util::{db_client_as_admin, db_client_as_user},
     };
 
     async fn insert_accessible_project(tx: &db::Transaction<'_>) -> (NewProject, Project) {
@@ -93,12 +82,7 @@ mod project_tests {
 
 mod specimen_tests {
     use cellnoor_types::{
-        id::NoId,
-        institution::InstitutionQuery,
-        person::{
-            Action, NewPerson, NewPersonRecord, Person, ResourcePermission, SavedPersonRecord,
-        },
-        project::{NewProject, Project, ProjectQuery},
+        project::Project,
         specimen::{Specimen, SpecimenQuery, creation::NewSpecimen},
     };
     use pretty_assertions::assert_eq;
@@ -108,10 +92,8 @@ mod specimen_tests {
         db,
         error::ErrorInner,
         handlers::{
-            institutions::{create::test::insert_test_institution, index::select_institutions},
-            people::create::{insert_person, test::insert_test_person_and_institution},
             projects::{
-                create::test::insert_test_project, index::select_projects,
+                create::test::insert_test_project,
                 show::select_project_by_id,
             },
             specimens::{
@@ -119,7 +101,7 @@ mod specimen_tests {
                 show::select_specimen_by_id,
             },
         },
-        state::test_util::{ToNonemptyString, db_client_as_admin, db_client_as_user},
+        state::test_util::{db_client_as_admin, db_client_as_user},
     };
 
     async fn insert_accessible_specimen(tx: &db::Transaction<'_>) -> (NewSpecimen, Specimen) {
