@@ -11,7 +11,7 @@ use crate::{
     id::{Id, NoId},
     multiplexing_tag::MultiplexingTag,
     simple_links::SimpleLinks,
-    specimen::{SavedSpecimenRecord, Specimen},
+    specimen::{SavedSpecimenRecord, SpecimenCompact},
     suspension_pool::{measurement::SuspensionPoolMeasurement, record::SuspensionPoolRecord},
 };
 
@@ -106,35 +106,25 @@ pub struct SavedTaggedSpecimenRecord {
 #[base_model]
 pub struct TaggedSpecimen {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub specimen: Specimen,
+    pub specimen: SpecimenCompact,
     pub multiplexing_tag: Option<MultiplexingTag>,
     pub ocm_barcode_id: Option<OcmBarcodeId>,
 }
 
 
 #[base_model]
-#[cfg_attr(feature = "serde", serde(tag = "view"))]
-pub enum SuspensionPool {
-    Compact {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SavedSuspensionPoolRecord,
-        links: SuspensionPoolLinks,
-    },
-    Detailed {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SavedSuspensionPoolRecord,
-        links: SuspensionPoolLinks,
-        specimens: Vec<TaggedSpecimen>,
-        measurements: Vec<SuspensionPoolMeasurement>,
-        preparers: Vec<Uuid>,
-    },
+pub struct SuspensionPoolCompact {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: SavedSuspensionPoolRecord,
+    pub links: SuspensionPoolLinks,
 }
 
-impl SuspensionPool {
-    #[must_use]
-    pub fn record(&self) -> &SavedSuspensionPoolRecord {
-        match self {
-            Self::Compact { record, .. } | Self::Detailed { record, .. } => record,
-        }
-    }
+#[base_model]
+pub struct SuspensionPoolDetailed {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: SavedSuspensionPoolRecord,
+    pub links: SuspensionPoolLinks,
+    pub specimens: Vec<TaggedSpecimen>,
+    pub measurements: Vec<SuspensionPoolMeasurement>,
+    pub preparers: Vec<Uuid>,
 }

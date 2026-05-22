@@ -2,7 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::specimen::{Specimen, creation::NewSpecimen};
+use cellnoor_types::specimen::{SpecimenDetailed, creation::NewSpecimen};
 use uuid::Uuid;
 
 use crate::{
@@ -23,7 +23,7 @@ pub async fn update_specimen(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<NewSpecimen>,
-) -> Result<Json<Specimen>, Error> {
+) -> Result<Json<SpecimenDetailed>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
@@ -38,7 +38,7 @@ pub async fn update_specimen_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     record: NewSpecimen,
-) -> Result<Specimen, ErrorInner> {
+) -> Result<SpecimenDetailed, ErrorInner> {
     let (record, measurements) = record.split_for_insertion();
 
     db::update(tx, "specimen", id, &record).await?;
@@ -75,7 +75,7 @@ mod test {
         let tx = client.begin().await.unwrap();
 
         let (pre_update, inserted) = insert_test_specimen_and_project(&tx, |_| ()).await.unwrap();
-        let id = *inserted.record().id;
+        let id = *inserted.record.id;
 
         let mut common = pre_update.into_common();
         common.readable_id = Uuid::new_v4().to_string().to_nonempty_string();

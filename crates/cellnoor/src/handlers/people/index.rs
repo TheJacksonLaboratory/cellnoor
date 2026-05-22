@@ -100,10 +100,9 @@ mod test {
 
         let selected_records = select_people(
             &tx,
-            &mut PersonQuery::from_filter(
-                PersonPredicate::Name(StringOperator::Like(inserted.record.name.into())),
-                false,
-            ),
+            &mut PersonQuery::from_filter(PersonPredicate::Name(StringOperator::Like(
+                inserted.record.name.into(),
+            ))),
         )
         .await
         .unwrap();

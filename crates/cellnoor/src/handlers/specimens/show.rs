@@ -4,7 +4,7 @@ use axum::{
 };
 use cellnoor_types::{
     operator::UuidOperator,
-    specimen::{Specimen, SpecimenPredicate},
+    specimen::{SpecimenDetailed, SpecimenPredicate},
 };
 use uuid::Uuid;
 
@@ -12,7 +12,7 @@ use crate::{
     auth::AuthUser,
     db::{self, select_one},
     error::{Error, ErrorInner},
-    handlers::{path::IdParam, specimens::index::select_specimens},
+    handlers::{path::IdParam, specimens::index_detailed::select_specimens_detailed},
     state::AppState,
 };
 
@@ -20,7 +20,7 @@ pub async fn show_specimen(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-) -> Result<Json<Specimen>, Error> {
+) -> Result<Json<SpecimenDetailed>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
@@ -34,11 +34,11 @@ pub async fn show_specimen(
 pub async fn select_specimen_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-) -> Result<Specimen, ErrorInner> {
+) -> Result<SpecimenDetailed, ErrorInner> {
     select_one(
         tx,
         SpecimenPredicate::Id(UuidOperator::Eq(id)),
-        select_specimens,
+        select_specimens_detailed,
     )
     .await
 }

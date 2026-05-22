@@ -1,5 +1,5 @@
 use axum::{Json, extract::State};
-use cellnoor_types::cdna::{Cdna, CdnaField, NewCdna, NewCdnaRecord};
+use cellnoor_types::cdna::{CdnaDetailed, CdnaField, NewCdna, NewCdnaRecord};
 use uuid::Uuid;
 
 use crate::{
@@ -14,7 +14,7 @@ pub async fn create_cdna(
     State(state): State<AppState>,
     user: AuthUser,
     Json(record): Json<NewCdna>,
-) -> Result<Json<Cdna>, Error> {
+) -> Result<Json<CdnaDetailed>, Error> {
     let mut client = state.db_client(user).await?;
 
     let tx = client.begin().await?;
@@ -33,7 +33,7 @@ pub async fn insert_cdna(
         measurements,
         preparers,
     }: NewCdna,
-) -> Result<Cdna, ErrorInner> {
+) -> Result<CdnaDetailed, ErrorInner> {
     let id = db::insert_into(tx, "cdna", &record).await?;
 
     let measurement_insertions = futures::future::try_join_all(
@@ -117,8 +117,7 @@ impl AsFieldValuePairs<CdnaField, 6> for NewCdnaRecord {
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
-        cdna::{Cdna, NewCdna, NewCdnaRecord},
-        chromium_run::ChromiumRun,
+        cdna::{CdnaDetailed, NewCdna, NewCdnaRecord},
         id::NoId,
         nucleic_acid_measurement::{
             Concentration, NewNucleicAcidMeasurement, NucleicAcidMeasurementData,
@@ -144,22 +143,15 @@ pub mod test {
     pub async fn insert_test_cdna<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewCdna, Cdna), ErrorInner>
+    ) -> Result<(NewCdna, CdnaDetailed), ErrorInner>
     where
         F: FnMut(&mut NewCdna),
     {
         let (_, run) = insert_test_standard_chromium_run(tx, |_| ()).await?;
 
-        let ChromiumRun::Detailed {
-            record, gem_wells, ..
-        } = &run
-        else {
-            panic!("expected ChromiumRun::Detailed");
-        };
-
-        let gem_well_id = *gem_wells[0].record.id;
-        let person_id = record.run_by;
-        let prepared_at = record.run_at;
+        let gem_well_id = *run.gem_wells[0].record.id;
+        let person_id = run.record.run_by;
+        let prepared_at = run.record.run_at;
 
         let mut new = NewCdna {
             record: NewCdnaRecord {

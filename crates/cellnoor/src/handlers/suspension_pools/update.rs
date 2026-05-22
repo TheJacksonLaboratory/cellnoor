@@ -2,7 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::suspension_pool::{SuspensionPool, SuspensionPoolUpdate};
+use cellnoor_types::suspension_pool::{SuspensionPoolDetailed, SuspensionPoolUpdate};
 use uuid::Uuid;
 
 use crate::{
@@ -25,7 +25,7 @@ pub async fn update_suspension_pool(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<SuspensionPoolUpdate>,
-) -> Result<Json<SuspensionPool>, Error> {
+) -> Result<Json<SuspensionPoolDetailed>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
@@ -46,7 +46,7 @@ pub async fn update_suspension_pool_by_id(
         measurements,
         preparers,
     }: &SuspensionPoolUpdate,
-) -> Result<SuspensionPool, ErrorInner> {
+) -> Result<SuspensionPoolDetailed, ErrorInner> {
     db::update(tx, "suspension_pool", id, record).await?;
 
     let preparer_insertions = async {

@@ -90,26 +90,17 @@ pub struct GemWell {
 }
 
 #[base_model]
-#[cfg_attr(feature = "serde", serde(rename_all = "snake_case", tag = "view"))]
-pub enum ChromiumRun {
-    Compact {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SavedChromiumRunRecord,
-        links: ChromiumRunLinks,
-    },
-    Detailed {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SavedChromiumRunRecord,
-        assay: TenxAssay,
-        gem_wells: Vec<GemWell>,
-        links: ChromiumRunLinks,
-    },
+pub struct ChromiumRunCompact {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: SavedChromiumRunRecord,
+    pub links: ChromiumRunLinks,
 }
 
-impl ChromiumRun {
-    pub fn record(&self) -> &SavedChromiumRunRecord {
-        match self {
-            Self::Compact { record, .. } | Self::Detailed { record, .. } => record,
-        }
-    }
+#[base_model]
+pub struct ChromiumRunDetailed {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: SavedChromiumRunRecord,
+    pub assay: TenxAssay,
+    pub gem_wells: Vec<GemWell>,
+    pub links: ChromiumRunLinks,
 }

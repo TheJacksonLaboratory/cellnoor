@@ -1,5 +1,5 @@
 use axum::{Json, extract::State};
-use cellnoor_types::project::{NewProject, NewProjectRecord, Project, ProjectField};
+use cellnoor_types::project::{NewProject, NewProjectRecord, ProjectDetailed, ProjectField};
 
 use crate::{
     auth::AuthUser,
@@ -13,7 +13,7 @@ pub async fn create_project(
     State(state): State<AppState>,
     user: AuthUser,
     Json(project): Json<NewProject>,
-) -> Result<Json<Project>, Error> {
+) -> Result<Json<ProjectDetailed>, Error> {
     let mut client = state.db_client(user).await?;
 
     let tx = client.begin().await?;
@@ -28,7 +28,7 @@ pub async fn create_project(
 pub async fn insert_project(
     tx: &db::Transaction<'_>,
     NewProject { record, people }: &NewProject,
-) -> Result<Project, ErrorInner> {
+) -> Result<ProjectDetailed, ErrorInner> {
     let id = db::insert_into(tx, "project", record).await?;
 
     insert_project_accesses(tx, id, people).await?;
@@ -56,7 +56,7 @@ pub mod test {
 
     use cellnoor_types::{
         id::NoId,
-        project::{NewProject, NewProjectRecord, Project},
+        project::{NewProject, NewProjectRecord, ProjectDetailed},
     };
     use jiff::Timestamp;
     use uuid::Uuid;
@@ -75,7 +75,7 @@ pub mod test {
     pub async fn insert_test_project<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewProject, Project), ErrorInner>
+    ) -> Result<(NewProject, ProjectDetailed), ErrorInner>
     where
         F: FnMut(&mut NewProject),
     {

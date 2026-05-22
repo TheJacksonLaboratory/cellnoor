@@ -3,7 +3,7 @@ use axum::{
     extract::{Path, State},
 };
 use cellnoor_types::{
-    cdna::{Cdna, CdnaPredicateInner},
+    cdna::{CdnaDetailed, CdnaPredicateInner},
     operator::UuidOperator,
 };
 use uuid::Uuid;
@@ -12,7 +12,7 @@ use crate::{
     auth::AuthUser,
     db::{self, select_one},
     error::{Error, ErrorInner},
-    handlers::{cdna::index::select_cdna, path::IdParam},
+    handlers::{cdna::index_detailed::select_cdna_detailed, path::IdParam},
     state::AppState,
 };
 
@@ -20,7 +20,7 @@ pub async fn show_cdna(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-) -> Result<Json<Cdna>, Error> {
+) -> Result<Json<CdnaDetailed>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
@@ -31,11 +31,14 @@ pub async fn show_cdna(
     Ok(response)
 }
 
-pub async fn select_cdna_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<Cdna, ErrorInner> {
+pub async fn select_cdna_by_id(
+    tx: &db::Transaction<'_>,
+    id: Uuid,
+) -> Result<CdnaDetailed, ErrorInner> {
     select_one(
         tx,
         CdnaPredicateInner::Id(UuidOperator::Eq(id)).into(),
-        select_cdna,
+        select_cdna_detailed,
     )
     .await
 }

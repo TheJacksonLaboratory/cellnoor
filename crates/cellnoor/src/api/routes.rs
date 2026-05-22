@@ -9,21 +9,18 @@ use axum::{Extension, Json, Router, routing::get};
 
 use crate::state::AppState;
 
-// pub mod admin;
-// pub mod cdna;
-// pub mod chip_loadings;
+mod cdna;
 // pub mod chromium_datasets;
 mod chromium_runs;
-// pub mod database;
 mod institutions;
 // pub mod libraries;
-// pub mod multiplexing_tags;
+mod multiplexing_tags;
 mod people;
 mod projects;
 mod specimens;
 mod suspension_pools;
 mod suspensions;
-// pub mod tenx_assays;
+mod tenx_assays;
 
 pub(super) fn router() -> Router<AppState> {
     let router = ApiRouter::new()
@@ -35,18 +32,17 @@ pub(super) fn router() -> Router<AppState> {
                 .with_title("cellnoor REST API")
                 .axum_handler()),
         )
-        // .nest("/admin", admin::router())
         .nest("/institutions", institutions::router())
         .nest("/people", people::router())
         .nest("/projects", projects::router())
         .nest("/specimens", specimens::router())
         .nest("/suspensions", suspensions::router())
         .nest("/suspension-pools", suspension_pools::router())
-        .nest("/chromium-runs", chromium_runs::router());
-    // .nest("/10x-assays", tenx_assays::router())
-    // .nest("/multiplexing-tags", multiplexing_tags::router())
+        .nest("/chromium-runs", chromium_runs::router())
+        .nest("/10x-assays", tenx_assays::router())
+        .nest("/multiplexing-tags", multiplexing_tags::router())
+        .nest("/cdna", cdna::router());
     // .nest("/chip-loadings", chip_loadings::router())
-    // .nest("/cdna", cdna::router())
     // .nest("/libraries", libraries::router())
     // .nest("/chromium-datasets", chromium_datasets::router());
 

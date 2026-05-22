@@ -1,5 +1,5 @@
 mod project_tests {
-    use cellnoor_types::project::{NewProject, Project, ProjectQuery};
+    use cellnoor_types::project::{NewProject, ProjectDetailed, ProjectQuery};
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
@@ -7,16 +7,19 @@ mod project_tests {
         db,
         error::ErrorInner,
         handlers::projects::{
-            create::test::insert_test_project, index::select_projects, show::select_project_by_id,
+            create::test::insert_test_project, index_detailed::select_projects_detailed,
+            show::select_project_by_id,
         },
         state::test_util::{db_client_as_admin, db_client_as_user},
     };
 
-    async fn insert_accessible_project(tx: &db::Transaction<'_>) -> (NewProject, Project) {
+    async fn insert_accessible_project(tx: &db::Transaction<'_>) -> (NewProject, ProjectDetailed) {
         insert_test_project(&tx, |_| ()).await.unwrap()
     }
 
-    pub async fn insert_inaccessible_project(tx: &db::Transaction<'_>) -> (NewProject, Project) {
+    pub async fn insert_inaccessible_project(
+        tx: &db::Transaction<'_>,
+    ) -> (NewProject, ProjectDetailed) {
         insert_test_project(&tx, |p| p.people = vec![])
             .await
             .unwrap()
@@ -24,17 +27,11 @@ mod project_tests {
 
     async fn test_user_can_only_see_accessible_project(
         tx: &db::Transaction<'_>,
-        accessible_project: Project,
+        accessible_project: ProjectDetailed,
     ) {
-        let projects = select_projects(
-            &tx,
-            &mut ProjectQuery {
-                detailed: true,
-                ..Default::default()
-            },
-        )
-        .await
-        .unwrap();
+        let projects = select_projects_detailed(&tx, &mut ProjectQuery::default())
+            .await
+            .unwrap();
 
         assert_eq!(projects, vec![accessible_project]);
     }
@@ -66,24 +63,20 @@ mod project_tests {
         // of the test
         tx.commit().await.unwrap();
 
-        let Project::Detailed { record, .. } = &accessible_project else {
-            unreachable!("insert_project should return Project::Detailed");
-        };
+        let person_id = accessible_project.record.people[0];
 
         // Log in as the new user
-        let mut client = db_client_as_user(record.people[0]).await;
+        let mut client = db_client_as_user(person_id).await;
         let tx = client.begin().await.unwrap();
 
         test_user_can_only_see_accessible_project(&tx, accessible_project).await;
-        test_user_cannot_see_inaccessible_project(&tx, *inaccessible_project.record().id).await;
+        test_user_cannot_see_inaccessible_project(&tx, *inaccessible_project.record.project.id)
+            .await;
     }
 }
 
 mod specimen_tests {
-    use cellnoor_types::{
-        project::Project,
-        specimen::{Specimen, SpecimenQuery, creation::NewSpecimen},
-    };
+    use cellnoor_types::specimen::{SpecimenDetailed, SpecimenQuery, creation::NewSpecimen};
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
@@ -93,53 +86,52 @@ mod specimen_tests {
         handlers::{
             projects::show::select_project_by_id,
             specimens::{
-                create::test::insert_test_specimen_and_project, index::select_specimens,
-                show::select_specimen_by_id,
+                create::test::insert_test_specimen_and_project,
+                index_detailed::select_specimens_detailed, show::select_specimen_by_id,
             },
         },
         rls_tests::project_tests::insert_inaccessible_project,
         state::test_util::{db_client_as_admin, db_client_as_user},
     };
 
-    async fn insert_accessible_specimen(tx: &db::Transaction<'_>) -> (NewSpecimen, Specimen) {
+    async fn insert_accessible_specimen(
+        tx: &db::Transaction<'_>,
+    ) -> (NewSpecimen, SpecimenDetailed) {
         // The underlying `insert_test_project` adds one person to the project, so we
         // don't need to do anything extra here
         insert_test_specimen_and_project(&tx, |_| ()).await.unwrap()
     }
 
-    pub async fn insert_inaccessible_specimen(tx: &db::Transaction<'_>) -> (NewSpecimen, Specimen) {
+    pub async fn insert_inaccessible_specimen(
+        tx: &db::Transaction<'_>,
+    ) -> (NewSpecimen, SpecimenDetailed) {
         let (_, project) = insert_inaccessible_project(tx).await;
 
-        insert_test_specimen_and_project(&tx, |s| s.common_mut().project_id = *project.record().id)
-            .await
-            .unwrap()
+        insert_test_specimen_and_project(&tx, |s| {
+            s.common_mut().project_id = *project.record.project.id
+        })
+        .await
+        .unwrap()
     }
 
-    pub async fn get_user_id_from_specimen(tx: &db::Transaction<'_>, specimen: &Specimen) -> Uuid {
-        let Project::Detailed { record, .. } =
-            select_project_by_id(&tx, specimen.record().project_id)
-                .await
-                .unwrap()
-        else {
-            unreachable!()
-        };
+    pub async fn get_user_id_from_specimen(
+        tx: &db::Transaction<'_>,
+        specimen: &SpecimenDetailed,
+    ) -> Uuid {
+        let project = select_project_by_id(&tx, specimen.record.project_id)
+            .await
+            .unwrap();
 
-        record.people[0]
+        project.record.people[0]
     }
 
     async fn test_user_can_only_see_accessible_specimen(
         tx: &db::Transaction<'_>,
-        accessible_specimen: Specimen,
+        accessible_specimen: SpecimenDetailed,
     ) {
-        let specimens = select_specimens(
-            &tx,
-            &mut SpecimenQuery {
-                detailed: true,
-                ..Default::default()
-            },
-        )
-        .await
-        .unwrap();
+        let specimens = select_specimens_detailed(&tx, &mut SpecimenQuery::default())
+            .await
+            .unwrap();
 
         assert_eq!(specimens, vec![accessible_specimen]);
     }
@@ -176,15 +168,12 @@ mod specimen_tests {
         let tx = client.begin().await.unwrap();
 
         test_user_can_only_see_accessible_specimen(&tx, accessible_specimen).await;
-        test_user_cannot_see_inaccessible_specimen(&tx, *inaccessible_specimen.record().id).await;
+        test_user_cannot_see_inaccessible_specimen(&tx, *inaccessible_specimen.record.id).await;
     }
 }
 
 mod suspension_tests {
-    use cellnoor_types::{
-        project::Project,
-        suspension::{NewSuspension, Suspension, SuspensionQuery},
-    };
+    use cellnoor_types::suspension::{NewSuspension, SuspensionDetailed, SuspensionQuery};
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
@@ -194,15 +183,17 @@ mod suspension_tests {
         handlers::{
             projects::show::select_project_by_id,
             suspensions::{
-                create::test::insert_test_suspension_and_specimen, index::select_suspensions,
-                show::select_suspension_by_id,
+                create::test::insert_test_suspension_and_specimen,
+                index_detailed::select_suspensions_detailed, show::select_suspension_by_id,
             },
         },
         rls_tests::specimen_tests::insert_inaccessible_specimen,
         state::test_util::{db_client_as_admin, db_client_as_user},
     };
 
-    async fn insert_accessible_suspension(tx: &db::Transaction<'_>) -> (NewSuspension, Suspension) {
+    async fn insert_accessible_suspension(
+        tx: &db::Transaction<'_>,
+    ) -> (NewSuspension, SuspensionDetailed) {
         // The underlying `insert_test_project` adds one person to the project, so we
         // don't need to do anything extra here
         insert_test_suspension_and_specimen(&tx, |_| ())
@@ -212,49 +203,35 @@ mod suspension_tests {
 
     async fn insert_inaccessible_suspension(
         tx: &db::Transaction<'_>,
-    ) -> (NewSuspension, Suspension) {
+    ) -> (NewSuspension, SuspensionDetailed) {
         let (_, specimen) = insert_inaccessible_specimen(tx).await;
 
-        insert_test_suspension_and_specimen(&tx, |s| s.record.specimen_id = *specimen.record().id)
+        insert_test_suspension_and_specimen(&tx, |s| s.record.specimen_id = *specimen.record.id)
             .await
             .unwrap()
     }
 
     async fn get_user_id_from_suspension(
         tx: &db::Transaction<'_>,
-        suspension: &Suspension,
+        suspension: &SuspensionDetailed,
     ) -> Uuid {
-        let Suspension::Detailed { specimen, .. } = suspension else {
-            unreachable!("insert_specimen returns Specimen::Detailed")
-        };
+        let project = select_project_by_id(&tx, suspension.specimen.record.project_id)
+            .await
+            .unwrap();
 
-        let Project::Detailed { record, .. } =
-            select_project_by_id(&tx, *&specimen.record().project_id)
-                .await
-                .unwrap()
-        else {
-            unreachable!()
-        };
-
-        record.people[0]
+        project.record.people[0]
     }
 
     async fn test_user_can_only_see_accessible_suspension(
         tx: &db::Transaction<'_>,
-        accessible_suspension: Suspension,
+        accessible_suspension: SuspensionDetailed,
     ) {
-        // Note that by passing in detailed = true, we are querying
+        // Note that by querying the detailed view, we are querying
         // `suspension_detailed`, and that allows us to test whether a view built on top
         // of a security_invoker = true view still adheres to RLS
-        let suspensions = select_suspensions(
-            &tx,
-            &mut SuspensionQuery {
-                detailed: true,
-                ..Default::default()
-            },
-        )
-        .await
-        .unwrap();
+        let suspensions = select_suspensions_detailed(&tx, &mut SuspensionQuery::default())
+            .await
+            .unwrap();
 
         assert_eq!(suspensions, vec![accessible_suspension]);
     }
@@ -291,18 +268,17 @@ mod suspension_tests {
         let tx = client.begin().await.unwrap();
 
         test_user_can_only_see_accessible_suspension(&tx, accessible_suspension).await;
-        test_user_cannot_see_inaccessible_suspension(&tx, *inaccessible_suspension.record().id)
-            .await;
+        test_user_cannot_see_inaccessible_suspension(&tx, *inaccessible_suspension.record.id).await;
     }
 }
 
 mod suspension_pool_tests {
-    use cellnoor_types::suspension_pool::{SuspensionPool, SuspensionPoolQuery};
+    use cellnoor_types::suspension_pool::SuspensionPoolQuery;
 
     use crate::{
         handlers::suspension_pools::{
             create::test::insert_test_suspension_pool_and_suspensions,
-            index::select_suspension_pools,
+            index_compact::select_suspension_pools_compact,
         },
         state::test_util::{db_client_as_admin, db_client_as_user},
     };
@@ -312,20 +288,16 @@ mod suspension_pool_tests {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, SuspensionPool::Detailed { preparers, .. }) =
-            insert_test_suspension_pool_and_suspensions(&tx, |_| ())
-                .await
-                .unwrap()
-        else {
-            unreachable!()
-        };
+        let (_, pool) = insert_test_suspension_pool_and_suspensions(&tx, |_| ())
+            .await
+            .unwrap();
         tx.commit().await.unwrap();
 
-        let mut client = db_client_as_user(preparers[0]).await;
+        let mut client = db_client_as_user(pool.preparers[0]).await;
         let tx = client.begin().await.unwrap();
 
         // As long as we don't get a permission_denied error, we are good
-        select_suspension_pools(&tx, &mut SuspensionPoolQuery::default())
+        select_suspension_pools_compact(&tx, &mut SuspensionPoolQuery::default())
             .await
             .unwrap();
     }

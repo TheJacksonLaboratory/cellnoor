@@ -94,10 +94,9 @@ mod test {
 
         let selected_records = select_institutions(
             &tx,
-            &mut InstitutionQuery::from_filter(
-                InstitutionPredicate::Name(StringOperator::Like(name.into())),
-                false,
-            ),
+            &mut InstitutionQuery::from_filter(InstitutionPredicate::Name(StringOperator::Like(
+                name.into(),
+            ))),
         )
         .await
         .unwrap();

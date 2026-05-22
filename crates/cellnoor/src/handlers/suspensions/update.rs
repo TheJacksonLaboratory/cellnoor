@@ -2,7 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::suspension::{Suspension, SuspensionUpdate};
+use cellnoor_types::suspension::{SuspensionDetailed, SuspensionUpdate};
 use uuid::Uuid;
 
 use crate::{
@@ -24,7 +24,7 @@ pub async fn update_suspension(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<SuspensionUpdate>,
-) -> Result<Json<Suspension>, Error> {
+) -> Result<Json<SuspensionDetailed>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
@@ -43,7 +43,7 @@ pub async fn update_suspension_by_id(
         measurements,
         preparers,
     }: &SuspensionUpdate,
-) -> Result<Suspension, ErrorInner> {
+) -> Result<SuspensionDetailed, ErrorInner> {
     db::update(tx, "suspension", id, record).await?;
 
     let preparer_insertions = async {
@@ -87,7 +87,7 @@ mod test {
         let (insert_input, inserted) = insert_test_suspension_and_specimen(&tx, |_| ())
             .await
             .unwrap();
-        let id = *inserted.record().id;
+        let id = *inserted.record.id;
 
         let mut pre_update = SuspensionUpdate {
             record: NewSuspensionRecord {

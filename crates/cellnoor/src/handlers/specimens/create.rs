@@ -1,5 +1,7 @@
 use axum::{Json, extract::State};
-use cellnoor_types::specimen::{NewSpecimenRecord, Specimen, SpecimenField, creation::NewSpecimen};
+use cellnoor_types::specimen::{
+    NewSpecimenRecord, SpecimenDetailed, SpecimenField, creation::NewSpecimen,
+};
 
 use crate::{
     auth::AuthUser,
@@ -15,7 +17,7 @@ pub async fn create_specimen(
     State(state): State<AppState>,
     user: AuthUser,
     Json(record): Json<NewSpecimen>,
-) -> Result<Json<Specimen>, Error> {
+) -> Result<Json<SpecimenDetailed>, Error> {
     let mut client = state.db_client(user).await?;
 
     let tx = client.begin().await?;
@@ -30,7 +32,7 @@ pub async fn create_specimen(
 pub async fn insert_specimen(
     tx: &db::Transaction<'_>,
     record: NewSpecimen,
-) -> Result<Specimen, ErrorInner> {
+) -> Result<SpecimenDetailed, ErrorInner> {
     let (record, measurements) = record.split_for_insertion();
 
     let id = db::insert_into(tx, "specimen", &record).await?;
@@ -91,9 +93,9 @@ impl AsFieldValuePairs<SpecimenField, 15> for NewSpecimenRecord {
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
-        project::{Project, SavedProjectRecordDetailed},
+        project::SavedProjectRecordDetailed,
         specimen::{
-            Species, Specimen,
+            Species, SpecimenDetailed,
             creation::{NewSpecimen, NewSpecimenCommonFields, block::NewBlock},
             measurement::{NewSpecimenMeasurement, SpecimenMeasurementData},
         },
@@ -116,20 +118,12 @@ pub mod test {
     pub async fn insert_test_specimen_and_project<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewSpecimen, Specimen), ErrorInner>
+    ) -> Result<(NewSpecimen, SpecimenDetailed), ErrorInner>
     where
         F: FnMut(&mut NewSpecimen),
     {
-        let (
-            _,
-            Project::Detailed {
-                record: SavedProjectRecordDetailed { project, people },
-                links: _,
-            },
-        ) = insert_test_project(tx, |_| ()).await?
-        else {
-            panic!("expected Project::Detailed");
-        };
+        let (_, inserted_project) = insert_test_project(tx, |_| ()).await?;
+        let SavedProjectRecordDetailed { project, people } = inserted_project.record;
 
         let mut new = NewSpecimen::Block(NewBlock::CarboxymethylCellulose {
             common: NewSpecimenCommonFields {

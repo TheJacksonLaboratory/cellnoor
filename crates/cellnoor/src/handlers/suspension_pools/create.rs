@@ -1,6 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::suspension_pool::{
-    NewSuspensionPool, NewSuspensionPoolRecord, SuspensionPool, SuspensionPoolField,
+    NewSuspensionPool, NewSuspensionPoolRecord, SuspensionPoolDetailed, SuspensionPoolField,
     TaggedSuspension,
 };
 use uuid::Uuid;
@@ -20,7 +20,7 @@ pub async fn create_suspension_pool(
     State(state): State<AppState>,
     user: AuthUser,
     Json(record): Json<NewSuspensionPool>,
-) -> Result<Json<SuspensionPool>, Error> {
+) -> Result<Json<SuspensionPoolDetailed>, Error> {
     let mut client = state.db_client(user).await?;
 
     let tx = client.begin().await?;
@@ -35,7 +35,7 @@ pub async fn create_suspension_pool(
 pub async fn insert_suspension_pool(
     tx: &db::Transaction<'_>,
     new: NewSuspensionPool,
-) -> Result<SuspensionPool, ErrorInner> {
+) -> Result<SuspensionPoolDetailed, ErrorInner> {
     let (record, measurements, preparer_ids, suspensions) = match new {
         NewSuspensionPool::ExogenousTag {
             common,
@@ -204,9 +204,9 @@ pub mod test {
 
     use cellnoor_types::{
         id::NoId,
-        suspension::{Suspension, measurement::Viability},
+        suspension::measurement::Viability,
         suspension_pool::{
-            NewSuspensionPool, NewSuspensionPoolRecord, SuspensionPool, TaggedSuspension,
+            NewSuspensionPool, NewSuspensionPoolRecord, SuspensionPoolDetailed, TaggedSuspension,
             measurement::{NewSuspensionPoolMeasurement, SuspensionPoolMeasurementData},
         },
     };
@@ -232,7 +232,7 @@ pub mod test {
     pub async fn insert_test_suspension_pool_and_suspensions<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewSuspensionPool, SuspensionPool), ErrorInner>
+    ) -> Result<(NewSuspensionPool, SuspensionPoolDetailed), ErrorInner>
     where
         F: FnMut(&mut NewSuspensionPool),
     {
@@ -242,13 +242,10 @@ pub mod test {
         let multiplexing_tag1_id = insert_test_multiplexing_tag(tx).await?;
         let multiplexing_tag2_id = insert_test_multiplexing_tag(tx).await?;
 
-        let suspension1_id = *suspension1.record().id;
-        let suspension2_id = *suspension2.record().id;
+        let suspension1_id = *suspension1.record.id;
+        let suspension2_id = *suspension2.record.id;
 
-        let Suspension::Detailed { specimen, .. } = &suspension1 else {
-            panic!("expected Suspension::Detailed");
-        };
-        let person_id = specimen.record().submitted_by;
+        let person_id = suspension1.specimen.record.submitted_by;
 
         let mut new = NewSuspensionPool::ExogenousTag {
             common: NewSuspensionPoolRecord {
@@ -301,26 +298,22 @@ pub mod test {
                 .await
                 .unwrap()
                 .1
-                .record()
+                .record
                 .id;
             unrelated_specimen_ids.insert(*id);
         }
 
-        let (
-            _,
-            SuspensionPool::Detailed {
-                record,
-                links: _,
-                specimens,
-                measurements,
-                preparers,
-            },
-        ) = insert_test_suspension_pool_and_suspensions(&tx, |_| ())
+        let (_, inserted) = insert_test_suspension_pool_and_suspensions(&tx, |_| ())
             .await
-            .unwrap()
-        else {
-            panic!("insertion did not return detailed suspension pool");
-        };
+            .unwrap();
+
+        let SuspensionPoolDetailed {
+            record,
+            links: _,
+            specimens,
+            measurements,
+            preparers,
+        } = inserted;
 
         assert_eq!(specimens.len(), 2);
 
@@ -332,7 +325,7 @@ pub mod test {
 
         assert!(
             unrelated_specimen_ids
-                .is_disjoint(&specimens.iter().map(|s| *s.specimen.record().id).collect())
+                .is_disjoint(&specimens.iter().map(|s| *s.specimen.record.id).collect())
         );
 
         assert_eq!(measurements.len(), 1);

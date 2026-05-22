@@ -9,7 +9,7 @@ use uuid::Uuid;
 use crate::{
     id::{Id, NoId},
     simple_links::SimpleLinks,
-    specimen::{SavedSpecimenRecord, Specimen},
+    specimen::{SavedSpecimenRecord, SpecimenCompact},
     suspension::{
         measurement::{NewSuspensionMeasurement, SuspensionMeasurement},
         record::SuspensionRecord,
@@ -82,30 +82,20 @@ pub struct SavedSuspensionRecordDetailed {
 }
 
 #[base_model]
-#[cfg_attr(feature = "serde", serde(tag = "view"))]
-pub enum Suspension {
-    Compact {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SavedSuspensionRecord,
-        links: SimpleLinks,
-    },
-    // Rather than just wrapping the `SuspensionRecordDetailed`, we destructure its fields so that
-    // we have a `Specimen` rather than a `SpecimenRecord`
-    Detailed {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SavedSuspensionRecord,
-        links: SimpleLinks,
-        specimen: Specimen,
-        measurements: Vec<SuspensionMeasurement>,
-        preparers: Vec<Uuid>,
-    },
+pub struct SuspensionCompact {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: SavedSuspensionRecord,
+    pub links: SimpleLinks,
 }
 
-impl Suspension {
-    #[must_use]
-    pub fn record(&self) -> &SavedSuspensionRecord {
-        match self {
-            Self::Compact { record, .. } | Self::Detailed { record, .. } => record,
-        }
-    }
+// Rather than just wrapping `SavedSuspensionRecordDetailed`, we destructure its fields so that
+// we have a `SpecimenCompact` rather than a bare `SavedSpecimenRecord`.
+#[base_model]
+pub struct SuspensionDetailed {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: SavedSuspensionRecord,
+    pub links: SimpleLinks,
+    pub specimen: SpecimenCompact,
+    pub measurements: Vec<SuspensionMeasurement>,
+    pub preparers: Vec<Uuid>,
 }

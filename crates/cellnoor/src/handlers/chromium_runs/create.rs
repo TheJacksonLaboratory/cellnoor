@@ -1,6 +1,6 @@
 use axum::{Json as AxumJson, extract::State};
 use cellnoor_types::chromium_run::{
-    ChromiumRun, ChromiumRunField, NewChromiumRunRecord, creation::NewChromiumRun,
+    ChromiumRunDetailed, ChromiumRunField, NewChromiumRunRecord, creation::NewChromiumRun,
 };
 use uuid::Uuid;
 
@@ -21,7 +21,7 @@ pub async fn create_chromium_run(
     State(state): State<AppState>,
     user: AuthUser,
     AxumJson(record): AxumJson<NewChromiumRun>,
-) -> Result<AxumJson<ChromiumRun>, Error> {
+) -> Result<AxumJson<ChromiumRunDetailed>, Error> {
     let mut client = state.db_client(user).await?;
 
     let tx = client.begin().await?;
@@ -36,7 +36,7 @@ pub async fn create_chromium_run(
 pub async fn insert_chromium_run(
     tx: &db::Transaction<'_>,
     new: NewChromiumRun,
-) -> Result<ChromiumRun, ErrorInner> {
+) -> Result<ChromiumRunDetailed, ErrorInner> {
     // We destructure twice cus it's so much less repetitive
     let run_id = match &new {
         NewChromiumRun::Standard { common, .. }
@@ -105,7 +105,7 @@ impl AsFieldValuePairs<ChromiumRunField, 6> for NewChromiumRunRecord {
 pub mod test {
     use cellnoor_types::{
         chromium_run::{
-            ChromiumRun, LoadingVolume, NewChromiumRunRecord,
+            ChromiumRunDetailed, LoadingVolume, NewChromiumRunRecord,
             creation::{
                 NewChipLoadingCommonFields, NewChromiumRun,
                 mixed::{NewMixedChipLoading, NewMixedGemWell},
@@ -114,8 +114,6 @@ pub mod test {
             },
         },
         id::NoId,
-        suspension::Suspension,
-        suspension_pool::SuspensionPool,
         units::Microliter,
     };
     use jiff::Timestamp;
@@ -165,17 +163,14 @@ pub mod test {
     pub async fn insert_test_standard_chromium_run<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewChromiumRun, ChromiumRun), ErrorInner>
+    ) -> Result<(NewChromiumRun, ChromiumRunDetailed), ErrorInner>
     where
         F: FnMut(&mut NewChromiumRun),
     {
         let (_, pool1) = insert_test_suspension_pool_and_suspensions(tx, |_| ()).await?;
         let (_, pool2) = insert_test_suspension_pool_and_suspensions(tx, |_| ()).await?;
 
-        let SuspensionPool::Detailed { preparers, .. } = &pool1 else {
-            panic!("expected SuspensionPool::Detailed");
-        };
-        let person_id = preparers[0];
+        let person_id = pool1.preparers[0];
 
         let (_, assay) = insert_test_chromium_assay(tx).await?;
         let assay_id = assay.id;
@@ -185,7 +180,7 @@ pub mod test {
         let gem_well1 = NewStandardGemWell {
             readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
             loading: NewStandardChipLoading::SuspensionPool {
-                suspension_pool_id: *pool1.record().id,
+                suspension_pool_id: *pool1.record.id,
                 common: loading_common(),
             },
         };
@@ -193,7 +188,7 @@ pub mod test {
         let gem_well2 = NewStandardGemWell {
             readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
             loading: NewStandardChipLoading::SuspensionPool {
-                suspension_pool_id: *pool2.record().id,
+                suspension_pool_id: *pool2.record.id,
                 common: loading_common(),
             },
         };
@@ -212,17 +207,14 @@ pub mod test {
     pub async fn insert_test_ocm_chromium_run<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewChromiumRun, ChromiumRun), ErrorInner>
+    ) -> Result<(NewChromiumRun, ChromiumRunDetailed), ErrorInner>
     where
         F: FnMut(&mut NewChromiumRun),
     {
         let (_, s1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
         let (_, s2) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
 
-        let Suspension::Detailed { preparers, .. } = &s1 else {
-            panic!("expected Suspension::Detailed");
-        };
-        let person_id = preparers[0];
+        let person_id = s1.preparers[0];
 
         let (_, assay) = insert_test_chromium_assay(tx).await?;
         let assay_id = assay.id;
@@ -233,12 +225,12 @@ pub mod test {
         // specimens
         let loadings = vec![
             NewOcmChipLoading::Suspension {
-                suspension_id: *s1.record().id,
+                suspension_id: *s1.record.id,
                 common: loading_common(),
                 ocm_barcode_id: OcmBarcodeId::Ob1,
             },
             NewOcmChipLoading::Suspension {
-                suspension_id: *s2.record().id,
+                suspension_id: *s2.record.id,
                 common: loading_common(),
                 ocm_barcode_id: OcmBarcodeId::Ob2,
             },
@@ -267,17 +259,14 @@ pub mod test {
     pub async fn insert_test_mixed_chromium_run<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewChromiumRun, ChromiumRun), ErrorInner>
+    ) -> Result<(NewChromiumRun, ChromiumRunDetailed), ErrorInner>
     where
         F: FnMut(&mut NewChromiumRun),
     {
         let (_, s1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
         let (_, s2) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
 
-        let Suspension::Detailed { preparers, .. } = &s1 else {
-            panic!("expected Suspension::Detailed");
-        };
-        let person_id = preparers[0];
+        let person_id = s1.preparers[0];
 
         let (_, assay) = insert_test_chromium_assay(tx).await?;
         let assay_id = assay.id;
@@ -288,7 +277,7 @@ pub mod test {
                 NewMixedGemWell {
                     readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                     loading: NewMixedChipLoading::Standard(NewStandardChipLoading::Suspension {
-                        suspension_id: *s1.record().id,
+                        suspension_id: *s1.record.id,
                         common: loading_common(),
                     }),
                 },
@@ -296,7 +285,7 @@ pub mod test {
                     readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                     loading: NewMixedChipLoading::Ocm(
                         NonemptyBoundedVec::new(vec![NewOcmChipLoading::Suspension {
-                            suspension_id: *s2.record().id,
+                            suspension_id: *s2.record.id,
                             common: loading_common(),
                             ocm_barcode_id: OcmBarcodeId::Ob1,
                         }])

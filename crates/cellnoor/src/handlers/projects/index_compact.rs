@@ -2,9 +2,7 @@ use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
     id::Id,
-    project::{
-        Project, ProjectPredicate, ProjectQuery, SavedProjectRecord, SavedProjectRecordDetailed,
-    },
+    project::{ProjectCompact, ProjectPredicate, ProjectQuery, SavedProjectRecord},
 };
 use futures::StreamExt;
 
@@ -15,20 +13,13 @@ use crate::{
     state::AppState,
 };
 
-pub fn project_simple_links(id: Id) -> SimpleLinks {
+pub(super) fn project_simple_links(id: Id) -> SimpleLinks {
     SimpleLinks::from_str_and_id("/projects", id)
 }
 
-pub fn project_from_record(record: SavedProjectRecord) -> Project {
-    Project::Compact {
+pub fn project_from_record(record: SavedProjectRecord) -> ProjectCompact {
+    ProjectCompact {
         links: project_simple_links(record.id),
-        record,
-    }
-}
-
-pub fn project_from_detailed_record(record: SavedProjectRecordDetailed) -> Project {
-    Project::Detailed {
-        links: project_simple_links(record.project.id),
         record,
     }
 }
@@ -37,38 +28,26 @@ pub async fn index_projects(
     State(state): State<AppState>,
     user: AuthUser,
     Json(mut query): Json<ProjectQuery>,
-) -> Result<Json<Vec<Project>>, Error> {
+) -> Result<Json<Vec<ProjectCompact>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_projects(&tx, &mut query).await.map(Json)?;
+    let response = select_projects_compact(&tx, &mut query).await.map(Json)?;
 
     tx.commit().await?;
 
     Ok(response)
 }
 
-pub async fn select_projects(
+pub async fn select_projects_compact(
     tx: &db::Transaction<'_>,
     query: &mut ProjectQuery,
-) -> Result<Vec<Project>, ErrorInner> {
-    let base_stmt = if query.detailed {
-        include_str!("index/select_detailed.sql")
-    } else {
-        include_str!("index/select_compact.sql")
-    };
+) -> Result<Vec<ProjectCompact>, ErrorInner> {
+    let sql = BaseSqlStmt::new(include_str!("index/select_compact.sql"))
+        .finish_with_query(query)?;
 
-    let sql = BaseSqlStmt::new(base_stmt).finish_with_query(query)?;
-
-    let projects = if query.detailed {
-        let stream = tx.query_stream_into(sql).await?;
-        stream.map(project_from_detailed_record).collect().await
-    } else {
-        let stream = tx.query_stream_into(sql).await?;
-        stream.map(project_from_record).collect().await
-    };
-
-    Ok(projects)
+    let stream = tx.query_stream_into(sql).await?;
+    Ok(stream.map(project_from_record).collect().await)
 }
 
 impl AsPredicate for ProjectPredicate {
@@ -98,7 +77,9 @@ mod test {
     use pretty_assertions::assert_eq;
 
     use crate::{
-        handlers::projects::{create::test::insert_test_project, index::select_projects},
+        handlers::projects::{
+            create::test::insert_test_project, index_compact::select_projects_compact,
+        },
         state::test_util::db_client_as_admin,
     };
 
@@ -109,15 +90,12 @@ mod test {
 
         let (_, inserted) = insert_test_project(&tx, |_| ()).await.unwrap();
 
-        let mut query = ProjectQuery::from_filter(
-            ProjectPredicate::Name(
-                SimpleStringOperator::Eq(inserted.record().name.clone().into()).into(),
-            ),
-            false,
-        );
-        let selected = select_projects(&tx, &mut query).await.unwrap();
+        let mut query = ProjectQuery::from_filter(ProjectPredicate::Name(
+            SimpleStringOperator::Eq(inserted.record().name.clone().into()).into(),
+        ));
+        let selected = select_projects_compact(&tx, &mut query).await.unwrap();
 
         assert_eq!(selected.len(), 1);
-        assert_eq!(*selected[0].record().id, *inserted.record().id);
+        assert_eq!(*selected[0].record.id, *inserted.record().id);
     }
 }

@@ -2,7 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::chromium_run::{ChromiumRun, ChromiumRunUpdate};
+use cellnoor_types::chromium_run::{ChromiumRunDetailed, ChromiumRunUpdate};
 use uuid::Uuid;
 
 use crate::{
@@ -18,7 +18,7 @@ pub async fn update_chromium_run(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<ChromiumRunUpdate>,
-) -> Result<Json<ChromiumRun>, Error> {
+) -> Result<Json<ChromiumRunDetailed>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
@@ -35,7 +35,7 @@ pub async fn update_chromium_run_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     update: &ChromiumRunUpdate,
-) -> Result<ChromiumRun, ErrorInner> {
+) -> Result<ChromiumRunDetailed, ErrorInner> {
     db::update(tx, "chromium_run", id, update).await?;
     select_chromium_run_by_id(tx, id).await
 }
@@ -60,7 +60,7 @@ mod test {
         let (_, run) = insert_test_standard_chromium_run(&tx, |_| ())
             .await
             .unwrap();
-        let record = run.record();
+        let record = &run.record;
         let id = *record.id;
 
         let update = ChromiumRunUpdate {

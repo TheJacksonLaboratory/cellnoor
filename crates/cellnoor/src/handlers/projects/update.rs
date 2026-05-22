@@ -2,7 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::project::{NewProject, Project};
+use cellnoor_types::project::{NewProject, ProjectDetailed};
 use uuid::Uuid;
 
 use crate::{
@@ -21,7 +21,7 @@ pub async fn update_project(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(project): Json<NewProject>,
-) -> Result<Json<Project>, Error> {
+) -> Result<Json<ProjectDetailed>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
@@ -36,7 +36,7 @@ pub async fn update_project_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     NewProject { record, people }: &NewProject,
-) -> Result<Project, ErrorInner> {
+) -> Result<ProjectDetailed, ErrorInner> {
     db::update(tx, "project", id, record).await?;
 
     insert_project_accesses(tx, id, people).await?;
@@ -61,7 +61,7 @@ mod tests {
         update.record.name = "updated".to_nonempty_string();
         update.people = vec![];
 
-        update_project_by_id(&tx, *inserted.record().id, &update)
+        update_project_by_id(&tx, *inserted.record.project.id, &update)
             .await
             .unwrap();
     }

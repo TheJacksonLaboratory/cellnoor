@@ -18,7 +18,6 @@ where
 {
     pub limit: Option<i32>,
     pub offset: i32,
-    pub detailed: bool,
     pub order_by_field: O,
     pub order_by_desc: bool,
 }
@@ -34,7 +33,6 @@ where
     pub limit: Option<i32>,
     pub offset: i32,
     pub order_by: OrderBySet<O>,
-    pub detailed: bool,
 }
 
 impl<F, O> Default for ComplexQuery<F, O>
@@ -47,7 +45,6 @@ where
             limit: None,
             offset: 0,
             order_by: OrderBySet::default(),
-            detailed: false,
         }
     }
 }
@@ -56,10 +53,9 @@ impl<P, O> ComplexQuery<P, O>
 where
     O: Default,
 {
-    pub fn from_filter(predicate: P, detailed: bool) -> Self {
+    pub fn from_filter(predicate: P) -> Self {
         Self {
             filter: Some(predicate.into()),
-            detailed,
             ..Default::default()
         }
     }
@@ -68,7 +64,6 @@ where
         SimpleQuery {
             limit,
             offset,
-            detailed,
             order_by_field,
             order_by_desc,
         }: SimpleQuery<O>,
@@ -76,7 +71,6 @@ where
         Self {
             limit,
             offset,
-            detailed,
             order_by: OrderBySet::One(OrderBy {
                 field: order_by_field,
                 desc: order_by_desc,

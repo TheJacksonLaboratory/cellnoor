@@ -52,7 +52,7 @@ mod test {
             .await
             .unwrap();
 
-        delete_chromium_run_by_id(&tx, *run.record().id)
+        delete_chromium_run_by_id(&tx, *run.record.id)
             .await
             .unwrap();
     }

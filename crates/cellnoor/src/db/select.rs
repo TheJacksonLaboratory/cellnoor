@@ -11,7 +11,7 @@ pub async fn select_one<P, O, T>(
 where
     O: Default,
 {
-    let mut records = select_fn(tx, &mut ComplexQuery::from_filter(pred, true)).await?;
+    let mut records = select_fn(tx, &mut ComplexQuery::from_filter(pred)).await?;
 
     if records.len() != 1 {
         return Err(ErrorInner::ResourceNotFound);

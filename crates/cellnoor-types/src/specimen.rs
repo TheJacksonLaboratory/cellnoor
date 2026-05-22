@@ -3,7 +3,7 @@ pub use query::{SimpleSpecimenQuery, SpecimenField, SpecimenPredicate, SpecimenQ
 
 use crate::{
     id::{Id, NoId},
-    project::{Project, SavedProjectRecord},
+    project::{ProjectCompact, SavedProjectRecord},
     simple_links::SimpleLinks,
     specimen::{measurement::SpecimenMeasurement, record::SpecimenRecord},
 };
@@ -95,29 +95,19 @@ pub struct SavedSpecimenRecordDetailed {
 }
 
 #[base_model]
-#[cfg_attr(feature = "serde", serde(tag = "view"))]
-pub enum Specimen {
-    Compact {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SavedSpecimenRecord,
-        links: SimpleLinks,
-    },
-    // Rather than just wrapping the `SpecimenRecordDetailed`, we destructure its fields so that
-    // we have a `Project` rather than a `ProjectRecord`
-    Detailed {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SavedSpecimenRecord,
-        links: SimpleLinks,
-        project: Project,
-        measurements: Vec<SpecimenMeasurement>,
-    },
+pub struct SpecimenCompact {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: SavedSpecimenRecord,
+    pub links: SimpleLinks,
 }
 
-impl Specimen {
-    #[must_use]
-    pub fn record(&self) -> &SavedSpecimenRecord {
-        match self {
-            Self::Compact { record, .. } | Self::Detailed { record, .. } => record,
-        }
-    }
+// Rather than just wrapping `SavedSpecimenRecordDetailed`, we destructure its fields so that
+// we have a `ProjectCompact` rather than a bare `SavedProjectRecord`.
+#[base_model]
+pub struct SpecimenDetailed {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: SavedSpecimenRecord,
+    pub links: SimpleLinks,
+    pub project: ProjectCompact,
+    pub measurements: Vec<SpecimenMeasurement>,
 }

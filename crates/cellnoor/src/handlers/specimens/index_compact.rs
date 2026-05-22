@@ -2,10 +2,7 @@ use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
     id::Id,
-    specimen::{
-        SavedSpecimenRecord, SavedSpecimenRecordDetailed, Specimen, SpecimenPredicate,
-        SpecimenQuery,
-    },
+    specimen::{SavedSpecimenRecord, SpecimenCompact, SpecimenPredicate, SpecimenQuery},
 };
 use futures::StreamExt;
 use postgres_types::ToSql;
@@ -14,72 +11,44 @@ use crate::{
     auth::AuthUser,
     db::{self, AsPredicate, BaseSqlStmt},
     error::{Error, ErrorInner},
-    handlers::projects::index::project_from_record,
     state::AppState,
 };
+
+pub(super) fn specimen_simple_links(id: Id) -> SimpleLinks {
+    SimpleLinks::from_str_and_id("/specimens", id)
+}
+
+pub fn specimen_from_record(record: SavedSpecimenRecord) -> SpecimenCompact {
+    SpecimenCompact {
+        links: specimen_simple_links(record.id),
+        record,
+    }
+}
 
 pub async fn index_specimens(
     State(state): State<AppState>,
     user: AuthUser,
     Json(mut query): Json<SpecimenQuery>,
-) -> Result<Json<Vec<Specimen>>, Error> {
+) -> Result<Json<Vec<SpecimenCompact>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_specimens(&tx, &mut query).await.map(Json)?;
+    let response = select_specimens_compact(&tx, &mut query).await.map(Json)?;
 
     tx.commit().await?;
 
     Ok(response)
 }
 
-pub async fn select_specimens(
+pub async fn select_specimens_compact(
     tx: &db::Transaction<'_>,
     query: &mut SpecimenQuery,
-) -> Result<Vec<Specimen>, ErrorInner> {
-    let stmt = if query.detailed {
-        include_str!("index/select_detailed.sql")
-    } else {
-        include_str!("index/select_compact.sql")
-    };
+) -> Result<Vec<SpecimenCompact>, ErrorInner> {
+    let sql = BaseSqlStmt::new(include_str!("index/select_compact.sql"))
+        .finish_with_query(query)?;
 
-    let sql = BaseSqlStmt::new(stmt).finish_with_query(query)?;
-
-    let specimens = if query.detailed {
-        let stream = tx.query_stream_into(sql).await?;
-        stream.map(specimen_from_detailed_record).collect().await
-    } else {
-        let stream = tx.query_stream_into(sql).await?;
-        stream.map(specimen_from_record).collect().await
-    };
-
-    Ok(specimens)
-}
-
-fn specimen_simple_links(id: Id) -> SimpleLinks {
-    SimpleLinks::from_str_and_id("/specimens", id)
-}
-
-pub fn specimen_from_record(record: SavedSpecimenRecord) -> Specimen {
-    Specimen::Compact {
-        links: specimen_simple_links(record.id),
-        record,
-    }
-}
-
-fn specimen_from_detailed_record(
-    SavedSpecimenRecordDetailed {
-        specimen,
-        project,
-        measurements,
-    }: SavedSpecimenRecordDetailed,
-) -> Specimen {
-    Specimen::Detailed {
-        links: specimen_simple_links(specimen.id),
-        record: specimen,
-        project: project_from_record(project),
-        measurements,
-    }
+    let stream = tx.query_stream_into(sql).await?;
+    Ok(stream.map(specimen_from_record).collect().await)
 }
 
 impl AsPredicate for SpecimenPredicate {
@@ -112,7 +81,7 @@ mod test {
 
     use crate::{
         handlers::specimens::{
-            create::test::insert_test_specimen_and_project, index::select_specimens,
+            create::test::insert_test_specimen_and_project, index_compact::select_specimens_compact,
         },
         state::test_util::db_client_as_admin,
     };
@@ -124,17 +93,16 @@ mod test {
 
         let (_, inserted) = insert_test_specimen_and_project(&tx, |_| ()).await.unwrap();
 
-        let specimens = select_specimens(
+        let specimens = select_specimens_compact(
             &tx,
-            &mut SpecimenQuery::from_filter(
-                SpecimenPredicate::Id(UuidOperator::Eq(*inserted.record().id)),
-                false,
-            ),
+            &mut SpecimenQuery::from_filter(SpecimenPredicate::Id(UuidOperator::Eq(
+                *inserted.record.id,
+            ))),
         )
         .await
         .unwrap();
 
         assert_eq!(specimens.len(), 1);
-        assert_eq!(specimens[0].record(), inserted.record());
+        assert_eq!(specimens[0].record, inserted.record);
     }
 }

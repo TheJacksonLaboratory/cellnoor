@@ -2,7 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::cdna::{Cdna, CdnaUpdate};
+use cellnoor_types::cdna::{CdnaDetailed, CdnaUpdate};
 use uuid::Uuid;
 
 use crate::{
@@ -24,7 +24,7 @@ pub async fn update_cdna(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<CdnaUpdate>,
-) -> Result<Json<Cdna>, Error> {
+) -> Result<Json<CdnaDetailed>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
@@ -43,7 +43,7 @@ pub async fn update_cdna_by_id(
         measurements,
         preparers,
     }: &CdnaUpdate,
-) -> Result<Cdna, ErrorInner> {
+) -> Result<CdnaDetailed, ErrorInner> {
     db::update(tx, "cdna", id, record).await?;
 
     let preparer_insertions = async {
@@ -82,7 +82,7 @@ mod test {
         let tx = client.begin().await.unwrap();
 
         let (insert_input, inserted) = insert_test_cdna(&tx, |_| ()).await.unwrap();
-        let id = *inserted.record().id;
+        let id = *inserted.record.id;
 
         let pre_update = CdnaUpdate {
             record: NewCdnaRecord {

@@ -27,7 +27,6 @@ impl BaseSqlStmt {
             limit,
             offset,
             order_by,
-            detailed: _,
         }: &ComplexQuery<P, O>,
     ) -> Result<Sql<'_>, ErrorInner>
     where
@@ -256,8 +255,7 @@ mod tests {
             },
             "limit": 10,
             "offset": 0,
-            "order_by": {"field": "name", "desc": true},
-            "detailed": false
+            "order_by": {"field": "name", "desc": true}
         });
 
         let filter = complex_filter();

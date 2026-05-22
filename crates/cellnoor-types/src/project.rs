@@ -50,29 +50,22 @@ pub struct SavedProjectRecordDetailed {
 }
 
 #[base_model]
-#[cfg_attr(feature = "serde", serde(tag = "view"))]
-pub enum Project {
-    Compact {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SavedProjectRecord,
-        links: SimpleLinks,
-    },
-    Detailed {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SavedProjectRecordDetailed,
-        links: SimpleLinks,
-    },
+pub struct ProjectCompact {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: SavedProjectRecord,
+    pub links: SimpleLinks,
 }
 
-impl Project {
+#[base_model]
+pub struct ProjectDetailed {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: SavedProjectRecordDetailed,
+    pub links: SimpleLinks,
+}
+
+impl ProjectDetailed {
     #[must_use]
     pub fn record(&self) -> &SavedProjectRecord {
-        match self {
-            Self::Compact { record, .. } => record,
-            Self::Detailed {
-                record: SavedProjectRecordDetailed { project, .. },
-                ..
-            } => project,
-        }
+        &self.record.project
     }
 }

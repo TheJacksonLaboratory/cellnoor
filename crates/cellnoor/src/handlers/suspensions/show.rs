@@ -4,7 +4,7 @@ use axum::{
 };
 use cellnoor_types::{
     operator::UuidOperator,
-    suspension::{Suspension, SuspensionPredicateInner},
+    suspension::{SuspensionDetailed, SuspensionPredicateInner},
 };
 use uuid::Uuid;
 
@@ -12,7 +12,7 @@ use crate::{
     auth::AuthUser,
     db::{self, select_one},
     error::{Error, ErrorInner},
-    handlers::{path::IdParam, suspensions::index::select_suspensions},
+    handlers::{path::IdParam, suspensions::index_detailed::select_suspensions_detailed},
     state::AppState,
 };
 
@@ -20,7 +20,7 @@ pub async fn show_suspension(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-) -> Result<Json<Suspension>, Error> {
+) -> Result<Json<SuspensionDetailed>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
@@ -34,11 +34,11 @@ pub async fn show_suspension(
 pub async fn select_suspension_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-) -> Result<Suspension, ErrorInner> {
+) -> Result<SuspensionDetailed, ErrorInner> {
     select_one(
         tx,
         SuspensionPredicateInner::Id(UuidOperator::Eq(id)).into(),
-        select_suspensions,
+        select_suspensions_detailed,
     )
     .await
 }

@@ -60,30 +60,18 @@ pub struct CdnaUpdate {
 }
 
 #[base_model]
-#[cfg_attr(feature = "serde", serde(tag = "view"))]
-pub enum Cdna {
-    Compact {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SavedCdnaRecord,
-        links: SimpleLinks,
-    },
-
-    Detailed {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        record: SavedCdnaRecord,
-        links: SimpleLinks,
-        specimens: Vec<TaggedSpecimen>,
-        measurements: Vec<CdnaMeasurement>,
-        preparers: Vec<Uuid>,
-    },
+pub struct CdnaCompact {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: SavedCdnaRecord,
+    pub links: SimpleLinks,
 }
 
-impl Cdna {
-    #[must_use]
-    pub fn record(&self) -> &SavedCdnaRecord {
-        match self {
-            Self::Compact { record, .. } => record,
-            Self::Detailed { record, .. } => record,
-        }
-    }
+#[base_model]
+pub struct CdnaDetailed {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: SavedCdnaRecord,
+    pub links: SimpleLinks,
+    pub specimens: Vec<TaggedSpecimen>,
+    pub measurements: Vec<CdnaMeasurement>,
+    pub preparers: Vec<Uuid>,
 }

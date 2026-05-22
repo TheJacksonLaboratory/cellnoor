@@ -1,5 +1,7 @@
 use axum::{Json, extract::State};
-use cellnoor_types::suspension::{NewSuspension, NewSuspensionRecord, Suspension, SuspensionField};
+use cellnoor_types::suspension::{
+    NewSuspension, NewSuspensionRecord, SuspensionDetailed, SuspensionField,
+};
 use uuid::Uuid;
 
 use crate::{
@@ -16,7 +18,7 @@ pub async fn create_suspension(
     State(state): State<AppState>,
     user: AuthUser,
     Json(record): Json<NewSuspension>,
-) -> Result<Json<Suspension>, Error> {
+) -> Result<Json<SuspensionDetailed>, Error> {
     let mut client = state.db_client(user).await?;
 
     let tx = client.begin().await?;
@@ -35,7 +37,7 @@ pub async fn insert_suspension(
         measurements,
         preparers,
     }: NewSuspension,
-) -> Result<Suspension, ErrorInner> {
+) -> Result<SuspensionDetailed, ErrorInner> {
     let id = db::insert_into(tx, "suspension", &record).await?;
 
     let measurement_insertions = futures::future::try_join_all(
@@ -127,7 +129,7 @@ pub mod test {
     use cellnoor_types::{
         id::NoId,
         suspension::{
-            NewSuspension, NewSuspensionRecord, Suspension, SuspensionContent,
+            NewSuspension, NewSuspensionRecord, SuspensionContent, SuspensionDetailed,
             measurement::{NewSuspensionMeasurement, SuspensionMeasurementData, Viability},
         },
     };
@@ -149,12 +151,12 @@ pub mod test {
     pub async fn insert_test_suspension_and_specimen<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewSuspension, Suspension), ErrorInner>
+    ) -> Result<(NewSuspension, SuspensionDetailed), ErrorInner>
     where
         F: FnMut(&mut NewSuspension),
     {
         let (_, specimen) = insert_test_specimen_and_project(tx, |_| ()).await?;
-        let specimen_record = specimen.record();
+        let specimen_record = &specimen.record;
         let specimen_id = *specimen_record.id;
         let person_id = specimen_record.submitted_by;
 

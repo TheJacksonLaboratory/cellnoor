@@ -1,82 +1,28 @@
 use axum::{Json, extract::State};
-use cellnoor_types::{
-    SimpleLinks,
-    chromium_run::{
-        ChromiumRun, ChromiumRunField, ChromiumRunLinks, ChromiumRunPredicate,
-        ChromiumRunPredicateInner, ChromiumRunQuery, GemWell, SavedChromiumRunRecord,
-        SavedGemWellWithSpecimensRecord,
-    },
-    id::Id,
-    order_by::OrderBy,
+use cellnoor_types::chromium_run::{
+    ChromiumRunDetailed, ChromiumRunQuery, GemWell, SavedChromiumRunRecord,
+    SavedGemWellWithSpecimensRecord,
 };
 use deadpool_postgres::tokio_postgres::Row;
 use futures::StreamExt;
-use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, BaseSqlStmt},
+    db::{self, BaseSqlStmt},
     error::{Error, ErrorInner},
-    handlers::suspension_pools::index::tagged_specimen_from_record,
+    handlers::{
+        chromium_runs::index_compact::{chromium_run_links, push_distinct_on_id},
+        suspension_pools::index_compact::tagged_specimen_from_record,
+    },
     state::AppState,
 };
 
-pub async fn index_chromium_runs(
-    State(state): State<AppState>,
-    user: AuthUser,
-    Json(mut query): Json<ChromiumRunQuery>,
-) -> Result<Json<Vec<ChromiumRun>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_chromium_runs(&tx, &mut query).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
-}
-
-pub async fn select_chromium_runs(
-    tx: &db::Transaction<'_>,
-    query: &mut ChromiumRunQuery,
-) -> Result<Vec<ChromiumRun>, ErrorInner> {
-    // The first column in the `order by` clause needs to match the `distinct on`
-    // clause
-    let distinct_on = OrderBy {
-        field: ChromiumRunField::Id,
-        desc: true,
-    };
-
-    query.order_by.push_front(distinct_on);
-
-    let base_stmt = if query.detailed {
-        include_str!("index/select_detailed.sql")
-    } else {
-        include_str!("index/select_compact.sql")
-    };
-
-    let sql = BaseSqlStmt::new(base_stmt).finish_with_query(query)?;
-
-    let runs = if query.detailed {
-        let stream = tx.query_stream(sql).await?;
-        stream
-            .map(|row| row.map(map_detailed_row).unwrap())
-            .collect()
-            .await
-    } else {
-        let stream = tx.query_stream_into(sql).await?;
-        stream.map(chromium_run_from_record).collect().await
-    };
-
-    Ok(runs)
-}
-
-fn map_detailed_row(row: Row) -> ChromiumRun {
+fn map_detailed_row(row: Row) -> ChromiumRunDetailed {
     let record: SavedChromiumRunRecord = row.get("chromium_run");
     let assay = row.get("tenx_assay");
     let gem_wells: Vec<SavedGemWellWithSpecimensRecord> = row.get("gem_wells");
 
-    ChromiumRun::Detailed {
+    ChromiumRunDetailed {
         links: chromium_run_links(record.id),
         record,
         assay,
@@ -94,55 +40,46 @@ fn map_detailed_row(row: Row) -> ChromiumRun {
     }
 }
 
-fn chromium_run_links(id: Id) -> ChromiumRunLinks {
-    ChromiumRunLinks {
-        simple: SimpleLinks::from_str_and_id("/chromium-runs", id),
-        suspensions: format!("/chromium-runs/{id}/suspensions"),
-        suspension_pools: format!("/chromium-runs/{id}/suspension-pools"),
-    }
+pub async fn index_chromium_runs_detailed(
+    State(state): State<AppState>,
+    user: AuthUser,
+    Json(mut query): Json<ChromiumRunQuery>,
+) -> Result<Json<Vec<ChromiumRunDetailed>>, Error> {
+    let mut client = state.db_client(user).await?;
+    let tx = client.begin().await?;
+
+    let response = select_chromium_runs_detailed(&tx, &mut query)
+        .await
+        .map(Json)?;
+
+    tx.commit().await?;
+
+    Ok(response)
 }
 
-fn chromium_run_from_record(record: SavedChromiumRunRecord) -> ChromiumRun {
-    ChromiumRun::Compact {
-        links: chromium_run_links(record.id),
-        record,
-    }
-}
+pub async fn select_chromium_runs_detailed(
+    tx: &db::Transaction<'_>,
+    query: &mut ChromiumRunQuery,
+) -> Result<Vec<ChromiumRunDetailed>, ErrorInner> {
+    push_distinct_on_id(query);
 
-impl AsPredicate for ChromiumRunPredicate {
-    fn as_predicate(&self) -> (&'static str, (&'static str, &(dyn ToSql + Sync))) {
-        let operator_and_value = match self {
-            Self::Specimen(p) => return p.as_predicate(),
-            Self::TenxAssay(p) => return p.as_predicate(),
-            Self::ChromiumRun(field) => match field {
-                ChromiumRunPredicateInner::Id(u)
-                | ChromiumRunPredicateInner::AssayId(u)
-                | ChromiumRunPredicateInner::RunBy(u) => u.as_sql_operator_and_value(),
-                ChromiumRunPredicateInner::ReadableId(s) => s.as_sql_operator_and_value(),
-                ChromiumRunPredicateInner::RunAt(t) => t.as_sql_operator_and_value(),
-                ChromiumRunPredicateInner::Succeeded(b) => b.as_sql_operator_and_value(),
-                ChromiumRunPredicateInner::AdditionalData(j) => j.as_sql_operator_and_value(),
-            },
-        };
+    let sql = BaseSqlStmt::new(include_str!("index/select_detailed.sql"))
+        .finish_with_query(query)?;
 
-        (self.field_name(), operator_and_value)
-    }
+    let stream = tx.query_stream(sql).await?;
+    Ok(stream
+        .map(|row| row.map(map_detailed_row).unwrap())
+        .collect()
+        .await)
 }
 
 #[cfg(test)]
 mod test {
     use std::{collections::HashSet, hash::RandomState};
 
-    use cellnoor_types::{
-        chromium_run::{
-            ChromiumRun, ChromiumRunPredicateInner, ChromiumRunQuery,
-            creation::{
-                NewChromiumRun,
-                ocm::{NewOcmChipLoading, NewOcmGemWell, OcmBarcodeId},
-            },
-        },
-        operator::UuidOperator,
-        suspension::Suspension,
+    use cellnoor_types::chromium_run::creation::{
+        NewChromiumRun,
+        ocm::{NewOcmChipLoading, NewOcmGemWell, OcmBarcodeId},
     };
     use nonempty::NonemptyBoundedVec;
     use pretty_assertions::assert_eq;
@@ -158,7 +95,6 @@ mod test {
                         insert_test_standard_chromium_run, loading_common, new_common,
                     },
                 },
-                index::select_chromium_runs,
                 show::select_chromium_run_by_id,
             },
             suspensions::create::test::insert_test_suspension_and_specimen,
@@ -166,23 +102,6 @@ mod test {
         },
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
-
-    #[tokio::test(flavor = "multi_thread")]
-    async fn select_compact() {
-        let mut client = db_client_as_admin().await;
-        let tx = client.begin().await.unwrap();
-
-        let (_, run) = insert_test_standard_chromium_run(&tx, |_| ())
-            .await
-            .unwrap();
-        let id = *run.record().id;
-
-        let mut query = ChromiumRunQuery::from_filter(
-            ChromiumRunPredicateInner::Id(UuidOperator::Eq(id)).into(),
-            false,
-        );
-        select_chromium_runs(&tx, &mut query).await.unwrap();
-    }
 
     #[tokio::test(flavor = "multi_thread")]
     async fn select_detailed_standard() {
@@ -193,13 +112,8 @@ mod test {
             .await
             .unwrap();
 
-        let ChromiumRun::Detailed { gem_wells, .. } =
-            select_chromium_run_by_id(&tx, *run.record().id)
-                .await
-                .unwrap()
-        else {
-            unreachable!("expected ChromiumRun::Detailed");
-        };
+        let detailed = select_chromium_run_by_id(&tx, *run.record.id).await.unwrap();
+        let gem_wells = detailed.gem_wells;
 
         assert_eq!(gem_wells.len(), 2);
 
@@ -211,7 +125,7 @@ mod test {
         assert_eq!(specimens.len(), 4);
 
         let set: HashSet<_, RandomState> =
-            HashSet::from_iter(specimens.iter().map(|s| s.specimen.record().id));
+            HashSet::from_iter(specimens.iter().map(|s| s.specimen.record.id));
         assert_eq!(set.len(), 4);
 
         let set: HashSet<_, RandomState> = HashSet::from_iter(
@@ -228,13 +142,8 @@ mod test {
         let tx = client.begin().await.unwrap();
 
         let (_, run) = insert_test_ocm_chromium_run(&tx, |_| ()).await.unwrap();
-        let ChromiumRun::Detailed { gem_wells, .. } =
-            select_chromium_run_by_id(&tx, *run.record().id)
-                .await
-                .unwrap()
-        else {
-            unreachable!("expected ChromiumRun::Detailed");
-        };
+        let detailed = select_chromium_run_by_id(&tx, *run.record.id).await.unwrap();
+        let gem_wells = detailed.gem_wells;
 
         assert_eq!(gem_wells.len(), 2);
 
@@ -243,8 +152,8 @@ mod test {
         let specimens = &gem_wells[0].specimens;
         assert_eq!(specimens.len(), 2);
         assert_ne!(
-            specimens[0].specimen.record().id,
-            specimens[1].specimen.record().id
+            specimens[0].specimen.record.id,
+            specimens[1].specimen.record.id
         );
         assert_ne!(
             specimens[0].ocm_barcode_id.unwrap(),
@@ -258,13 +167,8 @@ mod test {
         let tx = client.begin().await.unwrap();
 
         let (_, run) = insert_test_mixed_chromium_run(&tx, |_| ()).await.unwrap();
-        let ChromiumRun::Detailed { gem_wells, .. } =
-            select_chromium_run_by_id(&tx, *run.record().id)
-                .await
-                .unwrap()
-        else {
-            unreachable!("expected ChromiumRun::Detailed");
-        };
+        let detailed = select_chromium_run_by_id(&tx, *run.record.id).await.unwrap();
+        let gem_wells = detailed.gem_wells;
 
         assert_eq!(gem_wells.len(), 2);
         assert_eq!(gem_wells[0].specimens.len(), 1);
@@ -280,13 +184,8 @@ mod test {
             .await
             .unwrap();
 
-        let ChromiumRun::Detailed { gem_wells, .. } =
-            select_chromium_run_by_id(&tx, *run.record().id)
-                .await
-                .unwrap()
-        else {
-            unreachable!("expected ChromiumRun::Detailed");
-        };
+        let detailed = select_chromium_run_by_id(&tx, *run.record.id).await.unwrap();
+        let gem_wells = detailed.gem_wells;
 
         assert_eq!(gem_wells.len(), 2);
 
@@ -294,8 +193,8 @@ mod test {
         assert_eq!(specimens.len(), 2);
 
         assert_eq!(
-            *specimens[0].specimen.record().id,
-            *specimens[1].specimen.record().id
+            *specimens[0].specimen.record.id,
+            *specimens[1].specimen.record.id
         );
 
         assert_ne!(specimens[0].ocm_barcode_id, specimens[1].ocm_barcode_id);
@@ -345,7 +244,7 @@ mod test {
         let (_, s1) = insert_test_suspension_and_specimen(&tx, |_| ())
             .await
             .unwrap();
-        let shared_specimen_id = s1.record().specimen_id;
+        let shared_specimen_id = s1.record.specimen_id;
         let (_, s2) = insert_test_suspension_and_specimen(&tx, |new| {
             new.record.specimen_id = shared_specimen_id;
         })
@@ -354,10 +253,7 @@ mod test {
 
         let (_, assay) = insert_test_chromium_assay(&tx).await.unwrap();
         let assay_id = assay.id;
-        let Suspension::Detailed { specimen, .. } = &s1 else {
-            panic!("expected Suspension::Detailed");
-        };
-        let person_id = specimen.record().submitted_by;
+        let person_id = s1.specimen.record.submitted_by;
 
         let new = NewChromiumRun::OnChipMultiplexing {
             common: new_common(assay_id, person_id),
@@ -365,12 +261,12 @@ mod test {
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 loading: NonemptyBoundedVec::new(vec![
                     NewOcmChipLoading::Suspension {
-                        suspension_id: *s1.record().id,
+                        suspension_id: *s1.record.id,
                         common: loading_common(),
                         ocm_barcode_id: OcmBarcodeId::Ob1,
                     },
                     NewOcmChipLoading::Suspension {
-                        suspension_id: *s2.record().id,
+                        suspension_id: *s2.record.id,
                         common: loading_common(),
                         ocm_barcode_id: OcmBarcodeId::Ob2,
                     },
@@ -382,13 +278,8 @@ mod test {
 
         let run = insert_chromium_run(&tx, new).await.unwrap();
 
-        let ChromiumRun::Detailed { gem_wells, .. } =
-            select_chromium_run_by_id(&tx, *run.record().id)
-                .await
-                .unwrap()
-        else {
-            unreachable!("expected ChromiumRun::Detailed");
-        };
+        let detailed = select_chromium_run_by_id(&tx, *run.record.id).await.unwrap();
+        let gem_wells = detailed.gem_wells;
 
         assert_eq!(gem_wells.len(), 1);
 
@@ -396,8 +287,8 @@ mod test {
         assert_eq!(specimens.len(), 2);
 
         assert_eq!(
-            *specimens[0].specimen.record().id,
-            *specimens[1].specimen.record().id
+            *specimens[0].specimen.record.id,
+            *specimens[1].specimen.record.id
         );
         assert_ne!(specimens[0].ocm_barcode_id, specimens[1].ocm_barcode_id);
     }

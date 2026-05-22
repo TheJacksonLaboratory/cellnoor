@@ -1,5 +1,6 @@
 pub mod create;
 pub mod delete;
-pub mod index;
+pub mod index_compact;
+pub mod index_detailed;
 pub mod show;
 pub mod update;
