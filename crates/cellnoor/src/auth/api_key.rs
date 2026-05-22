@@ -2,7 +2,7 @@ use sha3::Digest;
 use uuid::Uuid;
 
 use crate::{
-    auth::AuthUser,
+    auth::{AuthUser, DbUser},
     db::{self, BaseSqlStmt},
     error::ErrorInner,
 };
@@ -62,8 +62,8 @@ impl ApiKeyRecord {
         }
 
         let user = match self.api_key_type()? {
-            ApiKeyUserType::Person => AuthUser::Person(self.id),
-            ApiKeyUserType::Service => AuthUser::Service(self.id),
+            ApiKeyUserType::Person => AuthUser(DbUser::Person(self.id)),
+            ApiKeyUserType::Service => AuthUser(DbUser::Service(self.id)),
         };
 
         Ok(user)

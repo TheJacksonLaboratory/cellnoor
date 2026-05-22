@@ -2,20 +2,16 @@ use std::sync::Arc;
 
 use deadpool_postgres::PoolError;
 use secrecy::ExposeSecret;
-use uuid::Uuid;
 
-use crate::{
-    db::{self},
-    settings::Settings,
-};
+use crate::{auth::AuthUser, db, settings::Settings};
 
 #[derive(Clone)]
 pub struct DevState {
     db_pool: db::Pool,
 }
 impl DevState {
-    pub async fn db_client(&self) -> Result<db::Client, PoolError> {
-        self.db_pool.get(db::User::Person(Uuid::nil())).await
+    pub fn db_pool(&self) -> db::Pool {
+        self.db_pool.clone()
     }
 }
 
@@ -26,7 +22,7 @@ pub struct ProdState {
 }
 
 impl ProdState {
-    pub async fn db_client(&self, user: db::User) -> Result<db::Client, PoolError> {
+    pub async fn db_client(&self, user: AuthUser) -> Result<db::Client, PoolError> {
         self.db_pool.get(user).await
     }
 
@@ -64,7 +60,7 @@ impl AppState {
 
     pub async fn db_client(
         &self,
-        user: db::User,
+        user: AuthUser,
     ) -> Result<db::Client, deadpool_postgres::PoolError> {
         match self {
             Self::Dev(s) => s.db_client().await,
@@ -83,7 +79,7 @@ pub mod test_util {
     #[cfg(test)]
     use uuid::Uuid;
 
-    use crate::{db, state::ProdState};
+    use crate::{auth::AuthUser, db, state::ProdState};
 
     fn test_state() -> ProdState {
         use std::env;
@@ -107,16 +103,19 @@ pub mod test_util {
     static TEST_STATE: std::sync::LazyLock<ProdState> = std::sync::LazyLock::new(test_state);
 
     pub async fn db_client_as_app() -> db::Client {
-        TEST_STATE.db_client(db::User::App).await.unwrap()
+        TEST_STATE.db_client(AuthUser::new_as_app()).await.unwrap()
     }
 
     pub async fn db_client_as_user(user: Uuid) -> db::Client {
-        TEST_STATE.db_client(db::User::Person(user)).await.unwrap()
+        TEST_STATE
+            .db_client(AuthUser::new_as_user(user))
+            .await
+            .unwrap()
     }
 
     pub async fn db_client_as_admin() -> db::Client {
         TEST_STATE
-            .db_client(db::User::Person(Uuid::nil()))
+            .db_client(AuthUser::new_as_admin())
             .await
             .unwrap()
     }

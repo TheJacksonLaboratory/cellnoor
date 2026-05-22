@@ -1,6 +1,3 @@
-use std::fmt::Display;
-
-use aide::OperationIo;
 use deadpool_postgres::{
     GenericClient, Object as InnerClient, Pool as InnerPool, PoolError,
     Transaction as InnerTransaction,
@@ -8,33 +5,11 @@ use deadpool_postgres::{
 };
 use futures::{Stream, StreamExt};
 use postgres_types::FromSqlOwned;
-use uuid::Uuid;
 
-use crate::db::Sql;
+use crate::{auth::AuthUser, db::Sql};
 
 #[derive(Debug, Clone)]
 pub struct Pool(InnerPool);
-
-/// An authenticated database user.
-///
-/// This could represent a person using the UI, a person using the RESTful API,
-/// a service account using the RESTful API, or the app itself switching into
-/// one of the aforementioned users.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, OperationIo)]
-pub enum User {
-    App,
-    Person(Uuid),
-    Service(Uuid),
-}
-
-impl Display for User {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::App => "app".fmt(f),
-            Self::Service(id) | Self::Person(id) => id.fmt(f),
-        }
-    }
-}
 
 impl Pool {
     // Use `anyhow::Result` because we only make the pool once at app-startup
@@ -50,7 +25,7 @@ impl Pool {
         Ok(builder.build().map(Self)?)
     }
 
-    pub async fn get(&self, user: User) -> Result<Client, PoolError> {
+    pub async fn get(&self, user: AuthUser) -> Result<Client, PoolError> {
         Ok(Client {
             user,
             inner: self.0.get().await?,
@@ -64,7 +39,7 @@ impl Pool {
 /// [Client::commit], or else nothing will be saved to the database.
 #[derive(Debug)]
 pub struct Client {
-    user: User,
+    user: AuthUser,
     inner: InnerClient,
 }
 
@@ -80,7 +55,7 @@ impl Client {
 }
 
 pub struct Transaction<'a> {
-    user: User,
+    user: AuthUser,
     inner: InnerTransaction<'a>,
 }
 
