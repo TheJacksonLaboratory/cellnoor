@@ -248,6 +248,9 @@ mod suspension_tests {
         tx: &db::Transaction<'_>,
         accessible_suspension: Suspension,
     ) {
+        // Note that by passing in detailed = true, we are querying
+        // `suspension_detailed`, and that allows us to test whether a view built on top
+        // of a security_invoker = true view still adheres to RLS
         let suspensions = select_suspensions(
             &tx,
             &mut SuspensionQuery {
