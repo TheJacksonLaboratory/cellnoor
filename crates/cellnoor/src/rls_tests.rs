@@ -91,7 +91,7 @@ mod specimen_tests {
         db,
         error::ErrorInner,
         handlers::{
-            projects::{create::test::insert_test_project, show::select_project_by_id},
+            projects::show::select_project_by_id,
             specimens::{
                 create::test::insert_test_specimen_and_project, index::select_specimens,
                 show::select_specimen_by_id,
@@ -183,7 +183,6 @@ mod specimen_tests {
 mod suspension_tests {
     use cellnoor_types::{
         project::Project,
-        specimen::{Specimen, SpecimenQuery, creation::NewSpecimen},
         suspension::{NewSuspension, Suspension, SuspensionQuery},
     };
     use pretty_assertions::assert_eq;
@@ -193,11 +192,7 @@ mod suspension_tests {
         db,
         error::ErrorInner,
         handlers::{
-            projects::{create::test::insert_test_project, show::select_project_by_id},
-            specimens::{
-                create::test::insert_test_specimen_and_project, index::select_specimens,
-                show::select_specimen_by_id,
-            },
+            projects::show::select_project_by_id,
             suspensions::{
                 create::test::insert_test_suspension_and_specimen, index::select_suspensions,
                 show::select_suspension_by_id,
@@ -302,34 +297,13 @@ mod suspension_tests {
 }
 
 mod suspension_pool_tests {
-    use cellnoor_types::{
-        project::Project,
-        specimen::{Specimen, SpecimenQuery, creation::NewSpecimen},
-        suspension::{NewSuspension, Suspension, SuspensionQuery},
-        suspension_pool::{SuspensionPool, SuspensionPoolQuery},
-    };
-    use pretty_assertions::assert_eq;
-    use uuid::Uuid;
+    use cellnoor_types::suspension_pool::{SuspensionPool, SuspensionPoolQuery};
 
     use crate::{
-        db,
-        error::ErrorInner,
-        handlers::{
-            projects::{create::test::insert_test_project, show::select_project_by_id},
-            specimens::{
-                create::test::insert_test_specimen_and_project, index::select_specimens,
-                show::select_specimen_by_id,
-            },
-            suspension_pools::{
-                create::test::insert_test_suspension_pool_and_suspensions,
-                index::select_suspension_pools,
-            },
-            suspensions::{
-                create::test::insert_test_suspension_and_specimen, index::select_suspensions,
-                show::select_suspension_by_id,
-            },
+        handlers::suspension_pools::{
+            create::test::insert_test_suspension_pool_and_suspensions,
+            index::select_suspension_pools,
         },
-        rls_tests::specimen_tests::insert_inaccessible_specimen,
         state::test_util::{db_client_as_admin, db_client_as_user},
     };
 
