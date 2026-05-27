@@ -43,7 +43,6 @@ pub(super) fn router() -> Router<AppState> {
         .nest("/multiplexing-tags", multiplexing_tags::router())
         .nest("/cdna", cdna::router())
         .nest("/libraries", library::router());
-    // .nest("/chip-loadings", chip_loadings::router())
     // .nest("/chromium-datasets", chromium_datasets::router());
 
     let mut api_docs = OpenApi::default();

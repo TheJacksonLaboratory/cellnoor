@@ -2,6 +2,7 @@
 pub use simple_links::SimpleLinks;
 
 pub mod cdna;
+pub mod chromium_dataset;
 pub mod chromium_run;
 pub mod id;
 pub mod index_set;
