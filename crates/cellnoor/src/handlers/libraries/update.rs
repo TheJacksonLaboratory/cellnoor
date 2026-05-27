@@ -10,7 +10,7 @@ use crate::{
     db::{self},
     error::{Error, ErrorInner},
     handlers::{
-        library::{
+        libraries::{
             create::insert_library_preparers, measurements::create::insert_library_measurement,
             show::select_library_by_id,
         },
@@ -72,7 +72,7 @@ mod test {
     use uuid::Uuid;
 
     use crate::{
-        handlers::library::{create::test::insert_test_library, update::update_library_by_id},
+        handlers::libraries::{create::test::insert_test_library, update::update_library_by_id},
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 

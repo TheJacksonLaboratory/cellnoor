@@ -100,7 +100,7 @@ mod test {
     use pretty_assertions::assert_eq;
 
     use crate::{
-        handlers::library::{
+        handlers::libraries::{
             create::test::insert_test_library, index_compact::select_libraries_compact,
         },
         state::test_util::db_client_as_admin,

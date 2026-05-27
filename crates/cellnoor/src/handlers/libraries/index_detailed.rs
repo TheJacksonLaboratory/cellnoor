@@ -11,7 +11,7 @@ use crate::{
     db::{self, BaseSqlStmt},
     error::{Error, ErrorInner},
     handlers::{
-        library::index_compact::{library_simple_links, push_distinct_on_id},
+        libraries::index_compact::{library_simple_links, push_distinct_on_id},
         suspension_pools::index_compact::tagged_specimen_from_record,
     },
     state::AppState,

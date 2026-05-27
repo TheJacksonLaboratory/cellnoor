@@ -11,7 +11,7 @@ use cellnoor_types::library::{LibraryCompact, LibraryQuery, SimpleLibraryQuery};
 use crate::{
     auth::AuthUser,
     error::Error,
-    handlers::library::{
+    handlers::libraries::{
         create_library, create_library_measurement, delete_library, index_libraries,
         index_libraries_detailed, show_library, update_library,
     },

@@ -6,7 +6,7 @@ use crate::{
     auth::AuthUser,
     db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
-    handlers::library::{
+    handlers::libraries::{
         measurements::create::insert_library_measurement, show::select_library_by_id,
     },
     state::AppState,
@@ -143,7 +143,7 @@ pub mod test {
         error::ErrorInner,
         handlers::{
             cdna::create::test::insert_test_cdna, index_sets::DUAL_INDEX_SET_NAME,
-            library::create::insert_library,
+            libraries::create::insert_library,
         },
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
