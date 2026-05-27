@@ -1,6 +1,7 @@
 use uuid::Uuid;
 
 pub mod cdna;
+pub mod chromium_datasets;
 pub mod chromium_runs;
 pub mod index_sets;
 pub mod institutions;
