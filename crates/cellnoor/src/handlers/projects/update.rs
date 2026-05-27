@@ -10,7 +10,7 @@ use crate::{
     db::{self},
     error::{Error, ErrorInner},
     handlers::{
-        path::IdParam,
+        IdParam,
         projects::{access::add_people::insert_project_accesses, show::select_project_by_id},
     },
     state::AppState,

@@ -10,7 +10,7 @@ use crate::{
     db::{self},
     error::{Error, ErrorInner},
     handlers::{
-        path::IdParam,
+        IdParam,
         suspension_pools::{
             create::insert_suspension_pool_preparers,
             measurements::create::insert_suspension_pool_measurement,

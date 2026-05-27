@@ -10,7 +10,7 @@ use crate::{
     db::{self},
     error::{Error, ErrorInner},
     handlers::{
-        path::IdParam,
+        IdParam,
         specimens::{
             measurements::create::insert_specimen_measurement, show::select_specimen_by_id,
         },

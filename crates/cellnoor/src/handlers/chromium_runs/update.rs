@@ -9,7 +9,7 @@ use crate::{
     auth::AuthUser,
     db::{self},
     error::{Error, ErrorInner},
-    handlers::{chromium_runs::show::select_chromium_run_by_id, path::IdParam},
+    handlers::{IdParam, chromium_runs::show::select_chromium_run_by_id},
     state::AppState,
 };
 

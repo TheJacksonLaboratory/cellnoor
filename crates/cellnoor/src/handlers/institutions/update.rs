@@ -9,7 +9,7 @@ use crate::{
     auth::AuthUser,
     db::{self},
     error::{Error, ErrorInner},
-    handlers::{institutions::show::select_institution_by_id, path::IdParam},
+    handlers::{IdParam, institutions::show::select_institution_by_id},
     state::AppState,
 };
 

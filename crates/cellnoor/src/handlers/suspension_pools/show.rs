@@ -12,7 +12,7 @@ use crate::{
     auth::AuthUser,
     db::{self, select_one},
     error::{Error, ErrorInner},
-    handlers::{path::IdParam, suspension_pools::index_detailed::select_suspension_pools_detailed},
+    handlers::{IdParam, suspension_pools::index_detailed::select_suspension_pools_detailed},
     state::AppState,
 };
 

@@ -10,11 +10,11 @@ use crate::{
     db::{self},
     error::{Error, ErrorInner},
     handlers::{
+        IdParam,
         libraries::{
             create::insert_library_preparers, measurements::create::insert_library_measurement,
             show::select_library_by_id,
         },
-        path::IdParam,
     },
     state::AppState,
 };

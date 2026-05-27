@@ -9,7 +9,7 @@ use crate::{
     auth::AuthUser,
     db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
-    handlers::path::IdParam,
+    handlers::IdParam,
     state::AppState,
 };
 

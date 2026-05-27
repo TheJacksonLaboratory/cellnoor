@@ -10,11 +10,11 @@ use crate::{
     db::{self},
     error::{Error, ErrorInner},
     handlers::{
+        IdParam,
         cdna::{
             create::insert_cdna_preparers, measurements::create::insert_cdna_measurement,
             show::select_cdna_by_id,
         },
-        path::IdParam,
     },
     state::AppState,
 };

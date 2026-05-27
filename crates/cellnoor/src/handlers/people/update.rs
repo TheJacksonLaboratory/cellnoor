@@ -11,7 +11,7 @@ use crate::{
     db::{self},
     error::{Error, ErrorInner},
     handlers::{
-        path::IdParam,
+        IdParam,
         people::{
             create::{provision_db_user, validate_email},
             show::select_person_by_id,
