@@ -189,13 +189,8 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let ((_, library1), (_, library2)) = tokio::try_join!(
-            insert_test_library(&tx, |_| ()),
-            insert_test_library(&tx, |_| ())
-        )
-        .unwrap();
-
-        println!("inserted libraries successfully");
+        let (_, library1) = insert_test_library(&tx, |_| ()).await.unwrap();
+        let (_, library2) = insert_test_library(&tx, |_| ()).await.unwrap();
 
         let new = NewChromiumDataset {
             record: NewChromiumDatasetRecord {
@@ -214,10 +209,11 @@ pub mod test {
         assert_eq!(
             err,
             ErrorInner::DataConstraint {
-                resource: None,
-                field: None,
-                message: "foo".to_owned(),
-                detail: None
+                resource: Some("chromium_dataset".to_owned()),
+                field: Some("library_ids".to_owned()),
+                message: "all libraries in a chromium dataset must come from the same GEM well"
+                    .to_owned(),
+                detail: None,
             }
         );
     }

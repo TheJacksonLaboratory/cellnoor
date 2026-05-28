@@ -135,7 +135,9 @@ pub mod tests {
     use cellnoor_types::index_set::NewDualIndexSet;
 
     use crate::{
-        db, error::ErrorInner, handlers::index_sets::dual::create::insert_dual_index_sets,
+        db::{self, BaseSqlStmt},
+        error::ErrorInner,
+        handlers::index_sets::dual::create::insert_dual_index_sets,
         state::test_util::db_client_as_admin,
     };
 
@@ -146,7 +148,16 @@ pub mod tests {
     ) -> Result<String, ErrorInner> {
         let name = DUAL_INDEX_SET_NAME.to_owned();
 
-        match insert_dual_index_sets(
+        let sql =
+            BaseSqlStmt::new("select count(*) from dual_index_set").finish_with_params(Vec::new());
+
+        let n: i64 = tx.query_one_into(&sql).await.unwrap();
+
+        if n > 0 {
+            return Ok(name);
+        }
+
+        insert_dual_index_sets(
             tx,
             &HashMap::from_iter([(
                 name.clone(),
@@ -157,11 +168,9 @@ pub mod tests {
                 },
             )]),
         )
-        .await
-        {
-            Ok(_) | Err(ErrorInner::DataConstraint { .. }) => Ok(name),
-            Err(e) => Err(e),
-        }
+        .await?;
+
+        Ok(name)
     }
 
     #[tokio::test(flavor = "multi_thread")]

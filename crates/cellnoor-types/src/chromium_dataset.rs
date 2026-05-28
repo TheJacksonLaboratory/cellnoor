@@ -1,5 +1,5 @@
-use macro_attributes::{base_model, unit_enum};
-use nonempty::NonemptyVec;
+use macro_attributes::{base_model, select, unit_enum};
+use nonempty::{NonemptyString, NonemptyVec};
 pub use query::{
     ChromiumDatasetField, ChromiumDatasetPredicate, ChromiumDatasetPredicateInner,
     ChromiumDatasetQuery, SimpleChromiumDatasetQuery,
@@ -78,6 +78,17 @@ pub struct ChromiumDatasetDetailedLinks {
     pub raw_files: Vec<String>,
 }
 
+#[select]
+#[cfg_attr(
+    feature = "postgres-types",
+    postgres(name = "chromium_dataset_parsed_file")
+)]
+pub struct ChromiumDatasetParsedFile {
+    pub dataset_id: Uuid,
+    pub path: NonemptyString,
+    pub data: serde_json::Value,
+}
+
 #[base_model]
 pub struct ChromiumDatasetDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]
@@ -85,4 +96,5 @@ pub struct ChromiumDatasetDetailed {
     pub links: ChromiumDatasetDetailedLinks,
     pub libraries: Vec<LibraryCompact>,
     pub specimens: Vec<TaggedSpecimen>,
+    pub data: Vec<ChromiumDatasetParsedFile>,
 }

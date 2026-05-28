@@ -72,6 +72,7 @@ fn map_detailed_row(raw_files_url: &str, row: Row) -> ChromiumDatasetDetailed {
             .into_iter()
             .map(tagged_specimen_from_record)
             .collect(),
+        data: row.get("data"),
     }
 }
 
