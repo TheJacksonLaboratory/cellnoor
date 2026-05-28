@@ -10,6 +10,12 @@
 #[cfg_attr(feature = "postgres-types", postgres(name = "case_insensitive_text"))]
 pub struct NonemptyString(String);
 
+impl std::fmt::Display for NonemptyString {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        <String as std::fmt::Display>::fmt(&self.0, f)
+    }
+}
+
 impl std::fmt::Debug for NonemptyString {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         <String as std::fmt::Debug>::fmt(&self.0, f)

@@ -2,15 +2,13 @@ use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
     chromium_dataset::{
-        ChromiumDatasetCompact, ChromiumDatasetField, ChromiumDatasetLinks,
-        ChromiumDatasetPredicate, ChromiumDatasetPredicateInner, ChromiumDatasetQuery,
-        SavedChromiumDatasetRecord,
+        ChromiumDatasetCompact, ChromiumDatasetField, ChromiumDatasetPredicate,
+        ChromiumDatasetPredicateInner, ChromiumDatasetQuery, SavedChromiumDatasetRecord,
     },
     id::Id,
     order_by::OrderBy,
 };
 use futures::StreamExt;
-use nonempty::NonemptyString;
 use postgres_types::ToSql;
 
 use crate::{
@@ -67,14 +65,8 @@ impl AsPredicate for ChromiumDatasetPredicate {
     }
 }
 
-pub(super) fn chromium_dataset_links(
-    id: Id,
-    raw_files: Vec<NonemptyString>,
-) -> ChromiumDatasetLinks {
-    ChromiumDatasetLinks {
-        simple: SimpleLinks::from_str_and_id("/chromium-datasets", id),
-        raw_files,
-    }
+pub(super) fn chromium_dataset_links(id: Id) -> SimpleLinks {
+    SimpleLinks::from_str_and_id("/chromium-datasets", id)
 }
 
 pub fn chromium_dataset_from_record(record: SavedChromiumDatasetRecord) -> ChromiumDatasetCompact {

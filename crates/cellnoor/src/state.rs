@@ -6,24 +6,35 @@ use secrecy::ExposeSecret;
 use crate::{auth::AuthUser, db, settings::Settings};
 
 #[derive(Clone)]
-pub struct DevState {
+struct StateCommon {
     db_pool: db::Pool,
+    raw_files_url: String,
 }
+
+#[derive(Clone)]
+pub struct DevState {
+    inner: StateCommon,
+}
+
 impl DevState {
     pub fn db_pool(&self) -> db::Pool {
-        self.db_pool.clone()
+        self.inner.db_pool.clone()
+    }
+
+    pub fn raw_files_url(&self) -> &str {
+        &self.inner.raw_files_url
     }
 }
 
 #[derive(Clone)]
 pub struct ProdState {
-    db_pool: db::Pool,
+    inner: StateCommon,
     jwt_decoding_key: Arc<jsonwebtoken::DecodingKey>,
 }
 
 impl ProdState {
     pub async fn db_client(&self, user: AuthUser) -> Result<db::Client, PoolError> {
-        self.db_pool.get(user).await
+        self.inner.db_pool.get(user).await
     }
 
     pub fn jwt_decoding_key(&self) -> &jsonwebtoken::DecodingKey {
@@ -38,21 +49,24 @@ pub enum AppState {
 }
 
 impl AppState {
-    pub fn initialize(settings: Settings) -> anyhow::Result<Self> {
-        let db_pool = db::Pool::new(
-            settings.db_url().expose_secret(),
-            settings.max_db_pool_size(),
-        )?;
+    pub fn initialize(settings: &Settings) -> anyhow::Result<Self> {
+        let inner = StateCommon {
+            db_pool: db::Pool::new(
+                settings.db_url().expose_secret(),
+                settings.max_db_pool_size(),
+            )?,
+            raw_files_url: settings.raw_files_url().to_owned(),
+        };
 
         let state = if settings.with_auth() {
             Self::Prod(ProdState {
-                db_pool,
+                inner,
                 jwt_decoding_key: Arc::new(jsonwebtoken::DecodingKey::from_secret(
                     settings.auth_secret().expose_secret().as_bytes(),
                 )),
             })
         } else {
-            Self::Dev(DevState { db_pool })
+            Self::Dev(DevState { inner })
         };
 
         Ok(state)
@@ -67,6 +81,16 @@ impl AppState {
             Self::Prod(s) => s.db_client(user).await,
         }
     }
+
+    fn inner(&self) -> &StateCommon {
+        match self {
+            Self::Dev(DevState { inner }) | Self::Prod(ProdState { inner, .. }) => inner,
+        }
+    }
+
+    pub fn raw_files_url(&self) -> &str {
+        &self.inner().raw_files_url
+    }
 }
 
 // We put this module inside of `state.rs` so it has full access to `ProdState`
@@ -79,7 +103,11 @@ pub mod test_util {
     #[cfg(test)]
     use uuid::Uuid;
 
-    use crate::{auth::AuthUser, db, state::ProdState};
+    use crate::{
+        auth::AuthUser,
+        db,
+        state::{ProdState, StateCommon},
+    };
 
     fn test_state() -> ProdState {
         use std::env;
@@ -95,7 +123,11 @@ pub mod test_util {
 
         // Unit-tests don't use JSON web tokens, so we pass in an empty secret
         ProdState {
-            db_pool,
+            inner: StateCommon {
+                db_pool,
+                raw_files_url: String::new(),
+            },
+
             jwt_decoding_key: Arc::new(jsonwebtoken::DecodingKey::from_secret(&[])),
         }
     }

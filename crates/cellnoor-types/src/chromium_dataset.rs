@@ -1,5 +1,5 @@
 use macro_attributes::{base_model, unit_enum};
-use nonempty::{NonemptyString, NonemptyVec};
+use nonempty::NonemptyVec;
 pub use query::{
     ChromiumDatasetField, ChromiumDatasetPredicate, ChromiumDatasetPredicateInner,
     ChromiumDatasetQuery, SimpleChromiumDatasetQuery,
@@ -65,25 +65,24 @@ pub struct NewChromiumDataset {
 }
 
 #[base_model]
-pub struct ChromiumDatasetLinks {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub simple: SimpleLinks,
-    pub raw_files: Vec<NonemptyString>,
-}
-
-#[base_model]
 pub struct ChromiumDatasetCompact {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: SavedChromiumDatasetRecord,
-    pub links: ChromiumDatasetLinks,
+    pub links: SimpleLinks,
+}
+
+#[base_model]
+pub struct ChromiumDatasetDetailedLinks {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub simple: SimpleLinks,
+    pub raw_files: Vec<String>,
 }
 
 #[base_model]
 pub struct ChromiumDatasetDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: SavedChromiumDatasetRecord,
-    pub links: ChromiumDatasetLinks,
+    pub links: ChromiumDatasetDetailedLinks,
     pub libraries: Vec<LibraryCompact>,
     pub specimens: Vec<TaggedSpecimen>,
-    pub raw_file_paths: Vec<String>,
 }

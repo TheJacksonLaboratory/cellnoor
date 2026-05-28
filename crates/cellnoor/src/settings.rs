@@ -21,6 +21,7 @@ pub struct Settings {
     address: String,
     #[allow(dead_code)]
     app_url: String,
+    raw_files_url: String,
     #[serde(default = "default_with_auth")]
     with_auth: bool,
 }
@@ -82,5 +83,10 @@ impl Settings {
     #[must_use]
     pub fn with_auth(&self) -> bool {
         self.with_auth
+    }
+
+    #[must_use]
+    pub fn raw_files_url(&self) -> &str {
+        &self.raw_files_url
     }
 }

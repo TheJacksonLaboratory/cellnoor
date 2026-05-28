@@ -21,7 +21,9 @@ pub async fn create_chromium_dataset(
 
     let tx = client.begin().await?;
 
-    let response = insert_chromium_dataset(&tx, record).await.map(Json)?;
+    let response = insert_chromium_dataset(&tx, state.raw_files_url(), record)
+        .await
+        .map(Json)?;
 
     tx.commit().await?;
 
@@ -30,6 +32,7 @@ pub async fn create_chromium_dataset(
 
 pub async fn insert_chromium_dataset(
     tx: &db::Transaction<'_>,
+    raw_files_url: &str,
     NewChromiumDataset {
         record,
         library_ids,
@@ -42,7 +45,7 @@ pub async fn insert_chromium_dataset(
 
     insert_chromium_dataset_libraries(tx, id, library_ids.as_ref()).await?;
 
-    select_chromium_dataset_by_id(tx, id).await
+    select_chromium_dataset_by_id(tx, raw_files_url, id).await
 }
 
 pub async fn validate_libraries_come_from_same_gem_well(
@@ -135,6 +138,7 @@ pub mod test {
     };
     use jiff::Timestamp;
     use nonempty::NonemptyVec;
+    use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
     use crate::{
@@ -168,7 +172,7 @@ pub mod test {
 
         modify(&mut new);
 
-        let inserted = insert_chromium_dataset(tx, new.clone()).await?;
+        let inserted = insert_chromium_dataset(tx, "files", new.clone()).await?;
         Ok((new, inserted))
     }
 
@@ -185,11 +189,13 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        // Each call to `insert_test_library` produces a brand-new chromium_run +
-        // gem_well + cdna chain, so the two libraries here come from completely
-        // different GEM wells.
-        let (_, library_a) = insert_test_library(&tx, |_| ()).await.unwrap();
-        let (_, library_b) = insert_test_library(&tx, |_| ()).await.unwrap();
+        let ((_, library1), (_, library2)) = tokio::try_join!(
+            insert_test_library(&tx, |_| ()),
+            insert_test_library(&tx, |_| ())
+        )
+        .unwrap();
+
+        println!("inserted libraries successfully");
 
         let new = NewChromiumDataset {
             record: NewChromiumDatasetRecord {
@@ -197,16 +203,22 @@ pub mod test {
                 name: Uuid::new_v4().to_string().to_nonempty_string(),
                 delivered_at: Timestamp::now(),
             },
-            library_ids: NonemptyVec::new(vec![*library_a.record.id, *library_b.record.id])
-                .unwrap(),
-            cmdline: ChromiumDatasetCmdline::CellrangerCount,
+            library_ids: NonemptyVec::new(vec![*library1.record.id, *library2.record.id]).unwrap(),
+            cmdline: ChromiumDatasetCmdline::CellrangerMulti,
         };
 
-        let err = insert_chromium_dataset(&tx, new).await.unwrap_err();
+        let err = insert_chromium_dataset(&tx, "files", new)
+            .await
+            .unwrap_err();
 
-        assert!(
-            matches!(err, ErrorInner::DataConstraint { ref field, .. } if field.as_deref() == Some("library_ids")),
-            "expected DataConstraint on library_ids, got: {err:?}"
+        assert_eq!(
+            err,
+            ErrorInner::DataConstraint {
+                resource: None,
+                field: None,
+                message: "foo".to_owned(),
+                detail: None
+            }
         );
     }
 }

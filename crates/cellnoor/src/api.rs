@@ -12,7 +12,7 @@ pub async fn serve(config_path: Option<&Utf8Path>) -> anyhow::Result<()> {
 
     let app_addr = settings.address().to_owned();
 
-    let app_state = AppState::initialize(settings).context("failed to initialize app state")?;
+    let app_state = AppState::initialize(&settings).context("failed to initialize app state")?;
 
     let api = api(app_state);
 
