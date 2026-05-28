@@ -1,4 +1,4 @@
-use macro_attributes::{base_model, select, unit_enum};
+use macro_attributes::{base_model, select};
 use nonempty::{NonemptyString, NonemptyVec};
 pub use query::{
     ChromiumDatasetField, ChromiumDatasetPredicate, ChromiumDatasetPredicateInner,
@@ -31,25 +31,6 @@ mod record {
     }
 }
 
-#[unit_enum]
-pub enum ChromiumDatasetCmdline {
-    #[serde(rename = "cellranger-arc count")]
-    #[strum(serialize = "cellranger-arc count")]
-    CellrangerarcCount,
-    #[serde(rename = "cellranger-atac count")]
-    #[strum(serialize = "cellranger-atac count")]
-    CellrangeratacCount,
-    #[serde(rename = "cellranger count")]
-    #[strum(serialize = "cellranger count")]
-    CellrangerCount,
-    #[serde(rename = "cellranger multi")]
-    #[strum(serialize = "cellranger multi")]
-    CellrangerMulti,
-    #[serde(rename = "cellranger vdj")]
-    #[strum(serialize = "cellranger vdj")]
-    CellrangerVdj,
-}
-
 pub type NewChromiumDatasetRecord = ChromiumDatasetRecord<NoId>;
 
 pub type SavedChromiumDatasetRecord = ChromiumDatasetRecord<Id>;
@@ -61,7 +42,6 @@ pub struct NewChromiumDataset {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: NewChromiumDatasetRecord,
     pub library_ids: NonemptyVec<Uuid>,
-    pub cmdline: ChromiumDatasetCmdline,
 }
 
 #[base_model]

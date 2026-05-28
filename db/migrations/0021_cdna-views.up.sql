@@ -1,7 +1,6 @@
 create view cdna_to_specimen as (
     select
         cdna,
-        gw_ts as gem_well,
         gw_ts.specimen,
         gw_ts.tenx_assay,
         gw_ts.multiplexing_tag,

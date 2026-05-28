@@ -2,7 +2,6 @@ create view library_to_specimen as (
     select
         library,
         -- Bring the following columns forward because they're useful
-        cdna_ts as cdna,
         cdna_ts.specimen,
         cdna_ts.tenx_assay,
         cdna_ts.multiplexing_tag,

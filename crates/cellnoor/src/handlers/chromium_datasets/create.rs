@@ -36,10 +36,9 @@ pub async fn insert_chromium_dataset(
     NewChromiumDataset {
         record,
         library_ids,
-        cmdline: _cmdline,
     }: NewChromiumDataset,
 ) -> Result<ChromiumDatasetDetailed, ErrorInner> {
-    validate_libraries_come_from_same_gem_well(tx, library_ids.as_ref()).await?;
+    validate_libraries_have_same_gem_well(tx, library_ids.as_ref()).await?;
 
     let id = db::insert_into(tx, "chromium_dataset", &record).await?;
 
@@ -48,25 +47,20 @@ pub async fn insert_chromium_dataset(
     select_chromium_dataset_by_id(tx, raw_files_url, id).await
 }
 
-pub async fn validate_libraries_come_from_same_gem_well(
+pub async fn validate_libraries_have_same_gem_well(
     tx: &db::Transaction<'_>,
     library_ids: &[Uuid],
 ) -> Result<(), ErrorInner> {
-    let sql = BaseSqlStmt::new(
-        "select count(distinct cdna.gem_well_id)::bigint
-         from library
-         join cdna on library.cdna_id = cdna.id
-         where library.id = any($1)",
-    )
-    .finish_with_params(vec![&library_ids]);
+    let sql = BaseSqlStmt::new(include_str!("create/select_n_gem_wells.sql"))
+        .finish_with_params(vec![&library_ids]);
 
     let n_gem_wells: i64 = tx.query_one_into(&sql).await?;
 
-    if n_gem_wells > 1 {
+    if n_gem_wells != 1 {
         return Err(ErrorInner::DataConstraint {
             resource: Some("chromium_dataset".to_owned()),
             field: Some("library_ids".to_owned()),
-            message: "all libraries in a chromium dataset must come from the same GEM well"
+            message: "all libraries in a Chromium dataset must come from the same GEM well"
                 .to_owned(),
             detail: None,
         });
@@ -130,10 +124,7 @@ impl AsFieldValuePairs<ChromiumDatasetField, 2> for NewChromiumDatasetRecord {
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
-        chromium_dataset::{
-            ChromiumDatasetCmdline, ChromiumDatasetDetailed, NewChromiumDataset,
-            NewChromiumDatasetRecord,
-        },
+        chromium_dataset::{ChromiumDatasetDetailed, NewChromiumDataset, NewChromiumDatasetRecord},
         id::NoId,
     };
     use jiff::Timestamp;
@@ -167,7 +158,6 @@ pub mod test {
                 delivered_at: Timestamp::now(),
             },
             library_ids: NonemptyVec::new(vec![*library.record.id]).unwrap(),
-            cmdline: ChromiumDatasetCmdline::CellrangerCount,
         };
 
         modify(&mut new);
@@ -199,7 +189,6 @@ pub mod test {
                 delivered_at: Timestamp::now(),
             },
             library_ids: NonemptyVec::new(vec![*library1.record.id, *library2.record.id]).unwrap(),
-            cmdline: ChromiumDatasetCmdline::CellrangerMulti,
         };
 
         let err = insert_chromium_dataset(&tx, "files", new)
@@ -211,7 +200,7 @@ pub mod test {
             ErrorInner::DataConstraint {
                 resource: Some("chromium_dataset".to_owned()),
                 field: Some("library_ids".to_owned()),
-                message: "all libraries in a chromium dataset must come from the same GEM well"
+                message: "all libraries in a Chromium dataset must come from the same GEM well"
                     .to_owned(),
                 detail: None,
             }
