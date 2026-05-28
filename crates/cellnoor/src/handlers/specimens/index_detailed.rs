@@ -4,7 +4,7 @@ use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, BaseSqlStmt},
+    db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     handlers::{
         projects::index_compact::project_from_record,
@@ -33,8 +33,10 @@ pub(in crate::handlers) async fn select_specimens_detailed(
     tx: &db::Transaction<'_>,
     query: &mut SpecimenQuery,
 ) -> Result<Vec<SpecimenDetailed>, ErrorInner> {
-    let sql =
-        BaseSqlStmt::new(include_str!("index/select_detailed.sql")).finish_with_query(query)?;
+    static SELECT_DETAILED_SPECIMEN: FilterableSqlBuilder =
+        FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
+
+    let sql = SELECT_DETAILED_SPECIMEN.finish_with_query(query);
 
     let stream = tx.query_stream_into(sql).await?;
     Ok(stream.map(specimen_from_detailed_record).collect().await)

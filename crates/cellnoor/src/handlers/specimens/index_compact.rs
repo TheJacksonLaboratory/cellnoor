@@ -9,7 +9,7 @@ use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, BaseSqlStmt},
+    db::{self, AsPredicate, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -33,8 +33,10 @@ async fn select_specimens_compact(
     tx: &db::Transaction<'_>,
     query: &mut SpecimenQuery,
 ) -> Result<Vec<SpecimenCompact>, ErrorInner> {
-    let sql =
-        BaseSqlStmt::new(include_str!("index/select_compact.sql")).finish_with_query(query)?;
+    static SELECT_COMPACT_SPECIMEN: FilterableSqlBuilder =
+        FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
+
+    let sql = SELECT_COMPACT_SPECIMEN.finish_with_query(query);
 
     let stream = tx.query_stream_into(sql).await?;
     Ok(stream.map(specimen_from_record).collect().await)

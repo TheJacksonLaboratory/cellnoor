@@ -8,7 +8,7 @@ use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, BaseSqlStmt},
+    db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     handlers::{
         chromium_runs::index_compact::{chromium_run_links, push_distinct_on_id},
@@ -38,10 +38,12 @@ pub(super) async fn select_chromium_runs_detailed(
     tx: &db::Transaction<'_>,
     query: &mut ChromiumRunQuery,
 ) -> Result<Vec<ChromiumRunDetailed>, ErrorInner> {
+    static SELECT_DETAILED_CHROMIUM_RUNS: FilterableSqlBuilder =
+        FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
+
     push_distinct_on_id(query);
 
-    let sql =
-        BaseSqlStmt::new(include_str!("index/select_detailed.sql")).finish_with_query(query)?;
+    let sql = SELECT_DETAILED_CHROMIUM_RUNS.finish_with_query(query);
 
     let stream = tx.query_stream(sql).await?;
     Ok(stream

@@ -1,2 +1,2 @@
 select institution from institution
-where true
+/* {where} */

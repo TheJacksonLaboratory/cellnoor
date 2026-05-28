@@ -10,10 +10,10 @@ use axum::{Extension, Json, Router, routing::get};
 use crate::state::AppState;
 
 mod cdna;
-// pub mod chromium_datasets;
+mod chromium_datasets;
 mod chromium_runs;
 mod institutions;
-mod library;
+mod libraries;
 mod multiplexing_tags;
 mod people;
 mod projects;
@@ -22,7 +22,7 @@ mod suspension_pools;
 mod suspensions;
 mod tenx_assays;
 
-pub(super) fn router() -> Router<AppState> {
+pub fn router() -> (OpenApi, Router<AppState>) {
     let router = ApiRouter::new()
         .route("/health", get(async || "ok"))
         .route("/openapi.json", aide::axum::routing::get(show_api_docs))
@@ -42,29 +42,30 @@ pub(super) fn router() -> Router<AppState> {
         .nest("/10x-assays", tenx_assays::router())
         .nest("/multiplexing-tags", multiplexing_tags::router())
         .nest("/cdna", cdna::router())
-        .nest("/libraries", library::router());
-    // .nest("/chromium-datasets", chromium_datasets::router());
+        .nest("/libraries", libraries::router())
+        .nest("/chromium-datasets", chromium_datasets::router());
 
     let mut api_docs = OpenApi::default();
 
-    let router = router.finish_api_with(&mut api_docs, |api_docs| {
-        api_docs
-            .title("cellnoor REST API")
-            .version("0.1.0")
-            .security_scheme(
-                "api_key",
-                SecurityScheme::ApiKey {
-                    location: ApiKeyLocation::Header,
-                    name: "x-api-key".to_owned(),
-                    extensions: Default::default(),
-                    description: None,
-                },
-            )
-            .security_requirement("api_key")
-    });
+    let router = router
+        .finish_api_with(&mut api_docs, |api_docs| {
+            api_docs
+                .title("cellnoor RESTful API")
+                .version("0.1.0")
+                .security_scheme(
+                    "api_key",
+                    SecurityScheme::ApiKey {
+                        location: ApiKeyLocation::Header,
+                        name: "x-api-key".to_owned(),
+                        extensions: Default::default(),
+                        description: None,
+                    },
+                )
+                .security_requirement("api_key")
+        })
+        .layer(Extension(Arc::new(api_docs.clone())));
 
-    router.layer(Extension(Arc::new(api_docs)))
-    // .nest("/admin/database", database::router())
+    (api_docs, router)
 }
 
 async fn show_api_docs(Extension(api_docs): Extension<Arc<OpenApi>>) -> Json<Arc<OpenApi>> {

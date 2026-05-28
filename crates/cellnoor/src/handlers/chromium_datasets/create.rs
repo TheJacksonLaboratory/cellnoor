@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, BaseSqlStmt, FieldValuePairs},
+    db::{self, AsFieldValuePairs, FieldValuePairs, FilterableSqlBuilder, Sql, SqlBuilder},
     error::{Error, ErrorInner},
     handlers::chromium_datasets::show::select_chromium_dataset_by_id,
     state::AppState,
@@ -51,8 +51,10 @@ pub async fn validate_libraries_have_same_gem_well(
     tx: &db::Transaction<'_>,
     library_ids: &[Uuid],
 ) -> Result<(), ErrorInner> {
-    let sql = BaseSqlStmt::new(include_str!("create/select_n_gem_wells.sql"))
-        .finish_with_params(vec![&library_ids]);
+    static SELECT_N_GEM_WELLS: SqlBuilder =
+        SqlBuilder::new(include_str!("create/select_n_gem_wells.sql"));
+
+    let sql = SELECT_N_GEM_WELLS.finish_with_params(vec![&library_ids]);
 
     let n_gem_wells: i64 = tx.query_one_into(&sql).await?;
 

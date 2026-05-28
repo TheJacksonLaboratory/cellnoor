@@ -93,7 +93,6 @@ pub struct SuspensionPoolLinks {
     pub suspensions: String,
 }
 
-
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "tagged_specimen"))]
 pub struct SavedTaggedSpecimenRecord {
@@ -110,7 +109,6 @@ pub struct TaggedSpecimen {
     pub multiplexing_tag: Option<MultiplexingTag>,
     pub ocm_barcode_id: Option<OcmBarcodeId>,
 }
-
 
 #[base_model]
 pub struct SuspensionPoolCompact {

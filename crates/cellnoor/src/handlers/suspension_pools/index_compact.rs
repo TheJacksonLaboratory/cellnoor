@@ -14,7 +14,7 @@ use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, BaseSqlStmt},
+    db::{self, AsPredicate, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     handlers::specimens::index_compact::specimen_from_record,
     state::AppState,
@@ -42,10 +42,12 @@ pub(in crate::handlers) async fn select_suspension_pools_compact(
     tx: &db::Transaction<'_>,
     query: &mut SuspensionPoolQuery,
 ) -> Result<Vec<SuspensionPoolCompact>, ErrorInner> {
+    static SELECT_COMPACT_SUSPENSION_POL: FilterableSqlBuilder =
+        FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
+
     push_distinct_on_id(query);
 
-    let sql =
-        BaseSqlStmt::new(include_str!("index/select_compact.sql")).finish_with_query(query)?;
+    let sql = SELECT_COMPACT_SUSPENSION_POL.finish_with_query(query);
 
     let stream = tx.query_stream_into(sql).await?;
     Ok(stream.map(suspension_pool_from_record).collect().await)

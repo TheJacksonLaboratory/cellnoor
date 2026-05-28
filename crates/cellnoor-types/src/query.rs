@@ -16,8 +16,8 @@ pub struct SimpleQuery<O>
 where
     O: Default,
 {
-    pub limit: Option<i32>,
-    pub offset: i32,
+    pub limit: Option<i64>,
+    pub offset: i64,
     pub order_by_field: O,
     pub order_by_desc: bool,
 }
@@ -30,8 +30,8 @@ where
     O: Default,
 {
     pub filter: Option<Filter<P>>,
-    pub limit: Option<i32>,
-    pub offset: i32,
+    pub limit: Option<i64>,
+    pub offset: i64,
     pub order_by: OrderBySet<O>,
 }
 

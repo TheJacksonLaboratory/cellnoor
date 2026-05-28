@@ -1,6 +1,7 @@
 use anyhow::Context;
 use axum::{Router, serve::Listener};
 use camino::Utf8Path;
+pub use routes::router;
 use tokio::net::{TcpListener, UnixListener};
 
 use crate::{settings::Settings, state::AppState};
@@ -48,7 +49,7 @@ where
 }
 
 fn api(app_state: AppState) -> Router {
-    let api_router = routes::router().with_state(app_state);
+    let (_, api_router) = routes::router();
 
-    Router::new().nest("/api", api_router)
+    Router::new().nest("/api", api_router.with_state(app_state))
 }

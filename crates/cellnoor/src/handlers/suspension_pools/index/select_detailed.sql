@@ -14,5 +14,5 @@ select distinct on ((suspension_pool).id)
         where prep.pool_id = (suspension_pool).id
     ) as preparers
 from suspension_pool_to_specimen
-where true
+/* {where} */
 group by suspension_pool

@@ -101,8 +101,9 @@ pub struct SpecimenCompact {
     pub links: SimpleLinks,
 }
 
-// Rather than just wrapping `SavedSpecimenRecordDetailed`, we destructure its fields so that
-// we have a `ProjectCompact` rather than a bare `SavedProjectRecord`.
+// Rather than just wrapping `SavedSpecimenRecordDetailed`, we destructure its
+// fields so that we have a `ProjectCompact` rather than a bare
+// `SavedProjectRecord`.
 #[base_model]
 pub struct SpecimenDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]

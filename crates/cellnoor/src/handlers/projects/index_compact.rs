@@ -1,3 +1,5 @@
+use std::iter::Filter;
+
 use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
@@ -8,7 +10,7 @@ use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, BaseSqlStmt},
+    db::{self, AsPredicate, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -32,8 +34,10 @@ async fn select_projects_compact(
     tx: &db::Transaction<'_>,
     query: &mut ProjectQuery,
 ) -> Result<Vec<ProjectCompact>, ErrorInner> {
-    let sql =
-        BaseSqlStmt::new(include_str!("index/select_compact.sql")).finish_with_query(query)?;
+    static SELECT_COMPACT_PROJECT: FilterableSqlBuilder =
+        FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
+
+    let sql = SELECT_COMPACT_PROJECT.finish_with_query(query);
 
     let stream = tx.query_stream_into(sql).await?;
     Ok(stream.map(project_from_record).collect().await)

@@ -13,5 +13,5 @@ select distinct on ((chromium_run).id)
         group by gw.gem_well
     ) as gem_wells
 from gem_well_to_specimen
-where true
+/* {where} */
 group by chromium_run, tenx_assay

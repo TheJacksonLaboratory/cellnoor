@@ -20,5 +20,6 @@ export CELLNOOR_AUTH_SECRET=""
 export CELLNOOR_AUTH_URL=""
 export CELLNOOR_ADDRESS="localhost:8000"
 export CELLNOOR_APP_URL="localhost:8000"
+export CELLNOOR_RAW_FILES_URL="localhost:8000/files"
 
-cargo run --manifest-path crates/Cargo.toml --package cellnoor --features ssr $@
+cargo run --manifest-path crates/Cargo.toml --package cellnoor --features ssr --bin cellnoor $@

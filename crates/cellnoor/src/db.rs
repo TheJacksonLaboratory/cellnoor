@@ -3,7 +3,7 @@ pub use delete::delete_by_id;
 pub use insert::{insert_into, insert_into_no_returning};
 use postgres_types::ToSql;
 pub use select::select_one;
-pub use stmt::{AsPredicate, BaseSqlStmt, Sql};
+pub use stmt::{AsPredicate, FilterableSqlBuilder, Sql, SqlBuilder};
 pub use update::update;
 
 mod client;

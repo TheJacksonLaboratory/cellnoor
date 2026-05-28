@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::{AuthUser, DbUser},
-    db::{self, BaseSqlStmt},
+    db::{self, Sql, SqlBuilder},
     error::ErrorInner,
 };
 
@@ -81,6 +81,10 @@ pub async fn fetch_api_key_record(
     api_key: &[u8],
     mut db_client: db::Client,
 ) -> Result<ApiKeyRecord, ErrorInner> {
+    static SELECT_API_KEY: SqlBuilder = SqlBuilder::new(
+        "select (id, person_id, service_account_id, expires_at) from api_key where hashed_key = $1",
+    );
+
     if api_key.len() != API_KEY_LENGTH {
         return Err(ErrorInner::InvalidApiKey);
     }
@@ -89,10 +93,7 @@ pub async fn fetch_api_key_record(
 
     let tx = db_client.begin().await?;
 
-    let sql = BaseSqlStmt::new(
-        "select (id, person_id, service_account_id, expires_at) from api_key where hashed_key = $1",
-    )
-    .finish_with_params(vec![&hashed_key]);
+    let sql = SELECT_API_KEY.finish_with_params(vec![&hashed_key]);
 
     // We manually map the fields from the database record into the struct we return
     let hashed_api_key = tx.query_one(&sql).await.map(|r| ApiKeyRecord {

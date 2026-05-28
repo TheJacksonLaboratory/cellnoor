@@ -73,7 +73,6 @@ pub struct ChromiumRunLinks {
     pub suspension_pools: String,
 }
 
-
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "gem_well_with_specimens"))]
 pub struct SavedGemWellWithSpecimensRecord {

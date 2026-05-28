@@ -14,7 +14,7 @@ use nonempty::NonemptyString;
 
 use crate::{
     auth::AuthUser,
-    db::{self, BaseSqlStmt},
+    db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     handlers::{
         chromium_datasets::index_compact::{chromium_dataset_links, push_distinct_on_id},
@@ -46,10 +46,12 @@ pub(super) async fn select_chromium_datasets_detailed(
     raw_files_url: &str,
     query: &mut ChromiumDatasetQuery,
 ) -> Result<Vec<ChromiumDatasetDetailed>, ErrorInner> {
+    static SELECT_DETAILED_CHROMIUM_DATASETS: FilterableSqlBuilder =
+        FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
+
     push_distinct_on_id(query);
 
-    let sql =
-        BaseSqlStmt::new(include_str!("index/select_detailed.sql")).finish_with_query(query)?;
+    let sql = SELECT_DETAILED_CHROMIUM_DATASETS.finish_with_query(query);
 
     let stream = tx.query_stream(sql).await?;
     Ok(stream

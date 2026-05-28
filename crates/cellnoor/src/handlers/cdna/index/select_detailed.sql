@@ -12,5 +12,5 @@ select distinct on ((cdna).id)
         where prep.cdna_id = (cdna).id
     ) as preparers
 from cdna_to_specimen
-where true
+/* {where} */
 group by cdna

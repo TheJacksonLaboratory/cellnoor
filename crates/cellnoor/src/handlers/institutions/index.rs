@@ -8,7 +8,7 @@ use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, BaseSqlStmt},
+    db::{self, AsPredicate, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -43,7 +43,10 @@ pub async fn select_institutions(
     tx: &db::Transaction<'_>,
     query: &mut InstitutionQuery,
 ) -> Result<Vec<Institution>, ErrorInner> {
-    let sql = BaseSqlStmt::new(include_str!("index/select.sql")).finish_with_query(query)?;
+    static SELECT_INSTITUTIONS: FilterableSqlBuilder =
+        FilterableSqlBuilder::new(include_str!("index/select.sql"));
+
+    let sql = SELECT_INSTITUTIONS.finish_with_query(query);
 
     Ok(tx
         .query_stream_into(sql)

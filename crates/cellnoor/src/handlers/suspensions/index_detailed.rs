@@ -6,7 +6,7 @@ use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, BaseSqlStmt},
+    db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     handlers::{
         specimens::index_compact::specimen_from_record,
@@ -37,8 +37,10 @@ pub(in crate::handlers) async fn select_suspensions_detailed(
     tx: &db::Transaction<'_>,
     query: &mut SuspensionQuery,
 ) -> Result<Vec<SuspensionDetailed>, ErrorInner> {
-    let sql =
-        BaseSqlStmt::new(include_str!("index/select_detailed.sql")).finish_with_query(query)?;
+    static SELECT_DETAILED_SUSPENSION: FilterableSqlBuilder =
+        FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
+
+    let sql = SELECT_DETAILED_SUSPENSION.finish_with_query(query);
 
     let stream = tx.query_stream_into(sql).await?;
     Ok(stream.map(suspension_from_detailed_record).collect().await)

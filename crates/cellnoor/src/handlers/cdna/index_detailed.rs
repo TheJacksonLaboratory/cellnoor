@@ -8,7 +8,7 @@ use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, BaseSqlStmt},
+    db::{self, FilterableSqlBuilder, Sql},
     error::{Error, ErrorInner},
     handlers::{
         cdna::index_compact::{cdna_simple_links, push_distinct_on_id},
@@ -36,10 +36,11 @@ pub(super) async fn select_cdna_detailed(
     tx: &db::Transaction<'_>,
     query: &mut CdnaQuery,
 ) -> Result<Vec<CdnaDetailed>, ErrorInner> {
+    static SELECT_DETAILED_CDNA: FilterableSqlBuilder =
+        FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
     push_distinct_on_id(query);
 
-    let sql =
-        BaseSqlStmt::new(include_str!("index/select_detailed.sql")).finish_with_query(query)?;
+    let sql = SELECT_DETAILED_CDNA.finish_with_query(query);
 
     let stream = tx.query_stream(sql).await?;
     Ok(stream

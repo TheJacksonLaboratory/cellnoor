@@ -4,10 +4,7 @@ use crate::{
     operator::{
         I32Operator, I64Operator, JsonOperator, StringOperator, TimestampOperator, UuidOperator,
     },
-    query::{
-        ComplexQuery, SimpleQuery,
-        filter::Filter,
-    },
+    query::{ComplexQuery, SimpleQuery, filter::Filter},
     specimen::SpecimenPredicate,
 };
 

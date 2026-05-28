@@ -13,7 +13,7 @@ use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, BaseSqlStmt},
+    db::{self, AsPredicate, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -39,10 +39,12 @@ async fn select_chromium_runs_compact(
     tx: &db::Transaction<'_>,
     query: &mut ChromiumRunQuery,
 ) -> Result<Vec<ChromiumRunCompact>, ErrorInner> {
+    static SELECT_COMPACT_CHROMIUM_RUNS: FilterableSqlBuilder =
+        FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
+
     push_distinct_on_id(query);
 
-    let sql =
-        BaseSqlStmt::new(include_str!("index/select_compact.sql")).finish_with_query(query)?;
+    let sql = SELECT_COMPACT_CHROMIUM_RUNS.finish_with_query(query);
 
     let stream = tx.query_stream_into(sql).await?;
     Ok(stream.map(chromium_run_from_record).collect().await)

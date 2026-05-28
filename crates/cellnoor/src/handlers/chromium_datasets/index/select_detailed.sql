@@ -13,5 +13,5 @@ select distinct on ((chromium_dataset).id)
         where dataset_id = (chromium_dataset).id
     ) as data
 from chromium_dataset_to_specimen
-where true
+/* {where} */
 group by chromium_dataset

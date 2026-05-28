@@ -88,8 +88,9 @@ pub struct SuspensionCompact {
     pub links: SimpleLinks,
 }
 
-// Rather than just wrapping `SavedSuspensionRecordDetailed`, we destructure its fields so that
-// we have a `SpecimenCompact` rather than a bare `SavedSpecimenRecord`.
+// Rather than just wrapping `SavedSuspensionRecordDetailed`, we destructure its
+// fields so that we have a `SpecimenCompact` rather than a bare
+// `SavedSpecimenRecord`.
 #[base_model]
 pub struct SuspensionDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]

@@ -4,7 +4,7 @@ use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, BaseSqlStmt},
+    db::{self, AsPredicate, FilterableSqlBuilder, SqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -24,7 +24,7 @@ pub async fn index_tenx_assays(
 }
 
 async fn select_tenx_assays(tx: &db::Transaction<'_>) -> Result<Vec<TenxAssay>, ErrorInner> {
-    let sql = BaseSqlStmt::new(include_str!("index/select.sql")).finish_with_params(vec![]);
+    let sql = SqlBuilder::new(include_str!("index/select.sql")).finish_with_params(vec![]);
 
     Ok(tx.query_stream_into(sql).await?.collect().await)
 }

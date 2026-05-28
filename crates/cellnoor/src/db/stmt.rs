@@ -7,69 +7,134 @@ use cellnoor_types::{
 };
 use postgres_types::ToSql;
 
-use crate::error::ErrorInner;
+#[derive(Debug, Clone)]
+pub struct Sql<'a>(pub(super) String, pub(super) Vec<&'a (dyn ToSql + Sync)>);
 
-pub struct BaseSqlStmt(&'static str);
-
-impl BaseSqlStmt {
-    pub fn new(sql: &'static str) -> Self {
-        Self(sql)
+impl Sql<'_> {
+    pub fn stmt(&self) -> &str {
+        &self.0
     }
 
-    pub fn finish_with_params<'a>(self, params: Vec<&'a (dyn ToSql + Sync)>) -> Sql<'a> {
+    pub fn params(&self) -> &[&(dyn ToSql + Sync)] {
+        &self.1
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct SqlBuilder(&'static str);
+
+impl SqlBuilder {
+    pub const fn new(sql: &'static str) -> SqlBuilder {
+        SqlBuilder(sql)
+    }
+
+    pub fn finish_with_params<'a>(&self, params: Vec<&'a (dyn ToSql + Sync)>) -> Sql<'a> {
         Sql(self.0.to_owned(), params)
     }
+}
 
-    pub fn finish_with_query<P, O>(
-        self,
+#[derive(Debug, Clone, PartialEq)]
+pub struct FilterableSqlBuilder {
+    prefix: &'static str,
+    suffix: &'static str,
+}
+
+impl FilterableSqlBuilder {
+    // We can use this function at compile-time to make sure every SQL statement has
+    // "/* {where} */" in it!
+    pub const fn new(base_sql: &'static str) -> Self {
+        static WHERE_CLAUSE_PLACEHOLDER: &'static [u8] = b"/* {where} */";
+
+        let mut i = 0;
+        let mut sentinel_was_found = false;
+
+        // The following nested while-loop is necessary because other string-searching
+        // functionality is not const-compatible. This loop basically evaluates every
+        // substring of sql with the same length as `WHERE_CLAUSE_SENTINEL`, checking if
+        // said substring == WHERE_CLAUSE_SENTINEL
+        while i <= base_sql.len() {
+            let mut current_needle_idx = 0;
+
+            while current_needle_idx < WHERE_CLAUSE_PLACEHOLDER.len() {
+                let current_haystack_idx = i + current_needle_idx;
+                let current_haystack_idx_is_valid = current_haystack_idx < base_sql.len();
+
+                if !current_haystack_idx_is_valid {
+                    break;
+                }
+
+                let haystack_char = base_sql.as_bytes()[current_haystack_idx];
+                let needle_char = WHERE_CLAUSE_PLACEHOLDER[current_needle_idx];
+
+                if haystack_char != needle_char {
+                    break;
+                }
+
+                current_needle_idx += 1;
+            }
+
+            sentinel_was_found = current_needle_idx == WHERE_CLAUSE_PLACEHOLDER.len();
+            if sentinel_was_found {
+                break;
+            }
+
+            i += 1;
+        }
+
+        if !sentinel_was_found {
+            panic!(r#"where-clause placeholder "/* {{where}} */"" not found in SQL statement"#);
+        }
+
+        let sentinel_idx = i;
+        let (prefix, _) = base_sql.split_at(sentinel_idx);
+
+        let suffix_idx = sentinel_idx + WHERE_CLAUSE_PLACEHOLDER.len();
+        let (_, suffix) = base_sql.split_at(suffix_idx);
+
+        Self { prefix, suffix }
+    }
+
+    pub fn finish_with_query<'a, P, O>(
+        &self,
         ComplexQuery {
             filter,
             limit,
             offset,
             order_by,
-        }: &ComplexQuery<P, O>,
-    ) -> Result<Sql<'_>, ErrorInner>
+        }: &'a ComplexQuery<P, O>,
+    ) -> Sql<'a>
     where
         P: AsPredicate,
         O: Default + Copy + AsRef<str>,
     {
-        let base = self.0;
-        let base_is_compatible_with_filter = base.contains("where true");
+        // Still tiny but should be more than enough inshallah
+        let mut stmt = String::with_capacity(2048);
+        let mut bind_params = Vec::with_capacity(32);
 
-        let (mut stmt, bind_params) = match filter {
-            Some(filter) if base_is_compatible_with_filter => {
-                // Arbitrary number of bytes that's really small but more than enough for a
-                // where clause
-                let mut where_clause = String::with_capacity(1024);
-                where_clause.push_str("where ");
-                let mut bind_params = Vec::with_capacity(32);
+        // The base of the query
+        stmt.push_str(self.prefix);
 
-                write_where_clause_predicates(&mut where_clause, &mut bind_params, filter);
+        // Write the where clause
+        if let Some(filter) = filter {
+            stmt.push_str(" where ");
+            write_where_clause_predicates(&mut stmt, &mut bind_params, filter);
+        }
 
-                (base.replace("where true", &where_clause), bind_params)
-            }
-            Some(_) => {
-                return Err(ErrorInner::Other {
-                    message: format!(
-                        "'where true' not found in base statement, so a 'where' clause cannot be \
-                         substituted in: {base}"
-                    ),
-                    sql_state: None,
-                });
-            }
-            None => (base.to_owned(), Vec::new()),
-        };
-
+        // Write the order by clause
         stmt.push_str(" order by ");
-
         write_order_by_fields(&mut stmt, order_by);
 
+        // Write limit clause
         if let Some(limit) = limit {
-            write!(stmt, " limit {limit}").unwrap();
+            bind_params.push(limit);
+            write!(stmt, " limit ${}", bind_params.len()).unwrap();
         }
-        write!(stmt, " offset {offset}").unwrap();
 
-        Ok(Sql(stmt, bind_params))
+        // Write offset clause
+        bind_params.push(offset);
+        write!(stmt, " offset ${}", bind_params.len()).unwrap();
+
+        Sql(stmt, bind_params)
     }
 }
 
@@ -91,12 +156,7 @@ where
 
             bind_params.push(bind_param);
 
-            clause.push_str(field);
-            clause.push(' ');
-            clause.push_str(operator);
-            clause.push_str(" ($");
-            clause.push_str(&bind_params.len().to_string());
-            clause.push(')');
+            write!(clause, "{field} {operator} (${})", bind_params.len()).unwrap();
         }
 
         Filter::AllOf(filters) | Filter::AnyOf(filters) => {
@@ -144,9 +204,7 @@ where
 
     match order_by_set {
         OrderBySet::One(OrderBy { field, desc }) => {
-            clause.push_str(field.as_ref());
-            clause.push(' ');
-            clause.push_str(direction(*desc));
+            write!(clause, "{} {}", field.as_ref(), direction(*desc)).unwrap();
         }
         OrderBySet::Many(fields) => {
             for (i, order_by) in fields.iter().copied().enumerate() {
@@ -160,18 +218,6 @@ where
     };
 
     Some(clause)
-}
-
-pub struct Sql<'a>(pub(super) String, pub(super) Vec<&'a (dyn ToSql + Sync)>);
-
-impl Sql<'_> {
-    pub fn stmt(&self) -> &str {
-        &self.0
-    }
-
-    pub fn params(&self) -> &[&(dyn ToSql + Sync)] {
-        &self.1
-    }
 }
 
 #[cfg(test)]

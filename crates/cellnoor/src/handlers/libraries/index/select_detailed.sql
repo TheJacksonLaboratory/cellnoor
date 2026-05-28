@@ -12,5 +12,5 @@ select distinct on ((library).id)
         where prep.library_id = (library).id
     ) as preparers
 from library_to_specimen
-where true
+/* {where} */
 group by library
