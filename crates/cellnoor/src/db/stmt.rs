@@ -120,6 +120,9 @@ impl FilterableSqlBuilder {
             write_where_clause_predicates(&mut stmt, &mut bind_params, filter);
         }
 
+        // Add the suffix
+        stmt.push_str(self.suffix);
+
         // Write the order by clause
         stmt.push_str(" order by ");
         write_order_by_fields(&mut stmt, order_by);
@@ -132,7 +135,7 @@ impl FilterableSqlBuilder {
 
         // Write offset clause
         bind_params.push(offset);
-        write!(stmt, " offset ${}", bind_params.len()).unwrap();
+        write!(stmt, " offset ${} ", bind_params.len()).unwrap();
 
         Sql(stmt, bind_params)
     }
