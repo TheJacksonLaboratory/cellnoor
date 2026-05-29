@@ -15,11 +15,3 @@ create view person_public as (
         orcid
     from person
 );
-
-create view person_to_institution as (
-    select
-        person_public as person,
-        institution
-    from person_public
-    join institution on person_public.institution_id = institution.id
-)

@@ -59,7 +59,7 @@ create table api_key (
     person_id uuid references person on delete cascade,
     service_account_id uuid references service_account on delete cascade,
     created_at timestamptz not null default now(),
-    expires_at timestamptz not null
+    expires_at timestamptz not null,
 
     constraint has_account check ((person_id is null) != (service_account_id is null)),
     constraint created_before_expires check (created_at < expires_at)

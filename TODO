@@ -1,7 +1,5 @@
 test whether user A can create user B with permissions that user A doesn't have
 
-fix query construction to use a static "/* {where} */" sentinel in the base stmt instead of where true
-
 chromium dataset raw file support (rsync)
 
 add csvranger and use to parse files

@@ -41,5 +41,6 @@ create table suspension_pooling (
     suspension_id uuid references suspension on delete cascade not null,
     tag_id uuid references multiplexing_tag,
 
+    unique (pool_id, tag_id),
     unique nulls not distinct (pool_id, suspension_id, tag_id)
 );
