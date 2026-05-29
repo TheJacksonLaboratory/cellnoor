@@ -1,4 +1,4 @@
-use serde_json::Value;
+use csvranger::TenxCsvValue;
 
 #[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize, Eq)]
 #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
@@ -15,18 +15,18 @@ pub struct SimpleFields {
     pub metric_name: String,
 }
 
-#[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize, Eq)]
+#[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize)]
 #[cfg_attr(feature = "app", derive(::schemars::JsonSchema))]
 pub struct Row {
     #[serde(flatten)]
     pub simple_fields: SimpleFields,
     #[serde(rename = "Metric Value")]
-    pub metric_value: Value,
+    pub metric_value: TenxCsvValue,
 }
 
 impl Row {
     #[must_use]
-    pub fn new(simple_fields: SimpleFields, metric_value: Value) -> Self {
+    pub fn new(simple_fields: SimpleFields, metric_value: TenxCsvValue) -> Self {
         Self {
             simple_fields,
             metric_value,

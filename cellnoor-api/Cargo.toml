@@ -3,6 +3,7 @@ edition.workspace = true
 name = "cellnoor-api"
 
 [dependencies]
+csvranger.workspace = true
 aide.workspace = true
 anyhow.workspace = true
 axum.workspace = true

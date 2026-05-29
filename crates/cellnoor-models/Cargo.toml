@@ -3,6 +3,7 @@ edition.workspace = true
 name = "cellnoor-models"
 
 [dependencies]
+csvranger.workspace = true
 bon = { workspace = true, optional = true }
 cellnoor-schema = { path = "../cellnoor-schema", optional = true }
 csv.workspace = true
