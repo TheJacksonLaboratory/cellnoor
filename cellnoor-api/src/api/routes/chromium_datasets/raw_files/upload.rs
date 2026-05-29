@@ -222,7 +222,7 @@ impl NewRawFile {
 impl ParsedChromiumDatasetFile {
     fn from_csv(dataset_id: Uuid, path: String, raw_content: &[u8]) -> Result<Self, db::DataError> {
         parse_ranger_csv(raw_content)
-            .map(ParsedMetricsData::KeyValue)
+            .map(ParsedMetricsData::Tabular2)
             .or_else(|_| parse_cellrangermulti_csv(raw_content).map(ParsedMetricsData::Tabular))
             .map(|data| Self {
                 dataset_id,
@@ -257,32 +257,6 @@ fn parse_ranger_csv(
         .map_err(|e| db::DataError::Other {
             message: e.to_string(),
         })
-
-    // let header: Vec<_> = csv
-    //     .headers()
-    //     .map_err(|e| db::DataError::new_other(&format!("failed to parse CSV headers: {e}")))?
-    //     .into_iter()
-    //     .map(str::to_owned)
-    //     .collect();
-    // let header_len = header.len();
-    // let mut records = csv.records();
-
-    // let mut parsed_data = HashMap::with_capacity(header_len);
-
-    // // Manual insertion into the map is preferred over `collect` because the latter
-    // // would require an extra iteration to transform `Vec<Result<_>>` to
-    // // `Result<Vec<_>>` before constructing the two-tuple
-    // for (field_name, field_value) in header.into_iter().zip(first_record.iter()) {
-    //     // Some of the fields of these CSVs have strings instead of numbers. If that's
-    //     // the case, then we just insert the original string
-    //     parsed_data.insert(
-    //         field_name,
-    //         parse_str_as_number(field_value)
-    //             .map_or_else(|_| Value::String(field_value.to_owned()), Value::Number),
-    //     );
-    // }
-
-    // Ok(parsed_data)
 }
 
 fn parse_cellrangermulti_csv(raw_content: &[u8]) -> Result<Vec<multi_row_csv::Row>, db::DataError> {

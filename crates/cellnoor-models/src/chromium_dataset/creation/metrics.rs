@@ -12,8 +12,9 @@ pub mod multi_row_csv;
 #[json]
 #[serde(untagged)]
 pub enum ParsedMetricsData {
-    KeyValue(Vec<HashMap<String, TenxCsvValue>>),
+    KeyValue(HashMap<String, TenxCsvValue>),
     Tabular(Vec<multi_row_csv::Row>),
+    Tabular2(Vec<HashMap<String, TenxCsvValue>>),
 }
 
 #[cfg(feature = "app")]
