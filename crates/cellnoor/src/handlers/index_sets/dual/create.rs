@@ -135,7 +135,7 @@ pub mod tests {
     use cellnoor_types::index_set::NewDualIndexSet;
 
     use crate::{
-        db::{self, FilterableSqlBuilder, SqlBuilder},
+        db::{self, SqlBuilder},
         error::ErrorInner,
         handlers::index_sets::dual::create::insert_dual_index_sets,
         state::test_util::db_client_as_admin,

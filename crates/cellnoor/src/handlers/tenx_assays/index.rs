@@ -4,7 +4,7 @@ use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, FilterableSqlBuilder, SqlBuilder},
+    db::{self, AsPredicate, SqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };

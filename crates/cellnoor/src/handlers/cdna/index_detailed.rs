@@ -8,7 +8,7 @@ use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FilterableSqlBuilder, Sql},
+    db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     handlers::{
         cdna::index_compact::cdna_simple_links,

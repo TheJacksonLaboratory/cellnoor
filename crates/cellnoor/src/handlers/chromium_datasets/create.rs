@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs, FilterableSqlBuilder, Sql, SqlBuilder},
+    db::{self, AsFieldValuePairs, FieldValuePairs, SqlBuilder},
     error::{Error, ErrorInner},
     handlers::chromium_datasets::show::select_chromium_dataset_by_id,
     state::AppState,

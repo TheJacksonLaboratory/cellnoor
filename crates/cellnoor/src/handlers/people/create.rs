@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FilterableSqlBuilder, SqlBuilder},
+    db::{self, AsFieldValuePairs, SqlBuilder},
     error::{Error, ErrorInner},
     handlers::people::show::select_person_by_id,
     state::AppState,

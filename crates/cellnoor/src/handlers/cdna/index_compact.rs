@@ -1,16 +1,15 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
-    cdna::{CdnaCompact, CdnaField, CdnaPredicate, CdnaPredicateInner, CdnaQuery, SavedCdnaRecord},
+    cdna::{CdnaCompact, CdnaPredicate, CdnaPredicateInner, CdnaQuery, SavedCdnaRecord},
     id::Id,
-    order_by::OrderBy,
 };
 use futures::StreamExt;
 use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, FilterableSqlBuilder, Sql},
+    db::{self, AsPredicate, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };

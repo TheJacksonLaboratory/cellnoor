@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::{AuthUser, DbUser},
-    db::{self, Sql, SqlBuilder},
+    db::{self, SqlBuilder},
     error::ErrorInner,
 };
 

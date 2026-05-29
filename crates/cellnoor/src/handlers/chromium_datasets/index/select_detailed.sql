@@ -1,6 +1,6 @@
 select
     chromium_dataset,
-    array_agg(distinct (
+    array_agg(distinct(
         specimen, multiplexing_tag, ocm_barcode_id
     )::tagged_specimen) as specimens,
     array_agg(distinct library) as libraries,

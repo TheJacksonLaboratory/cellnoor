@@ -3,10 +3,9 @@ use cellnoor_types::{
     SimpleLinks,
     id::Id,
     library::{
-        LibraryCompact, LibraryField, LibraryPredicate, LibraryPredicateInner, LibraryQuery,
+        LibraryCompact, LibraryPredicate, LibraryPredicateInner, LibraryQuery,
         SavedLibraryRecord,
     },
-    order_by::OrderBy,
 };
 use futures::StreamExt;
 use postgres_types::ToSql;

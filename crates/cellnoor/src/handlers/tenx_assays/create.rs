@@ -10,7 +10,7 @@ use uuid::Uuid;
 use crate::{
     auth::AuthUser,
     db::{
-        self, AsFieldValuePairs, FieldValuePairs, FilterableSqlBuilder, SqlBuilder,
+        self, AsFieldValuePairs, FieldValuePairs, SqlBuilder,
         insert_into_no_returning,
     },
     error::{Error, ErrorInner},

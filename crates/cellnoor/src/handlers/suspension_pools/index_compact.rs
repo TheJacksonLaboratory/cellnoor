@@ -2,10 +2,8 @@ use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
     id::Id,
-    order_by::OrderBy,
     suspension_pool::{
-        SavedSuspensionPoolRecord, SavedTaggedSpecimenRecord, SuspensionPoolCompact,
-        SuspensionPoolField, SuspensionPoolLinks, SuspensionPoolPredicate,
+        SavedSuspensionPoolRecord, SavedTaggedSpecimenRecord, SuspensionPoolCompact, SuspensionPoolLinks, SuspensionPoolPredicate,
         SuspensionPoolPredicateInner, SuspensionPoolQuery, TaggedSpecimen,
     },
 };

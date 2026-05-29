@@ -2,11 +2,10 @@ use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
     chromium_dataset::{
-        ChromiumDatasetCompact, ChromiumDatasetField, ChromiumDatasetPredicate,
+        ChromiumDatasetCompact, ChromiumDatasetPredicate,
         ChromiumDatasetPredicateInner, ChromiumDatasetQuery, SavedChromiumDatasetRecord,
     },
     id::Id,
-    order_by::OrderBy,
 };
 use futures::StreamExt;
 use postgres_types::ToSql;

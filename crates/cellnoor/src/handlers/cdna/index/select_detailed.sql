@@ -1,6 +1,6 @@
 select
     cdna,
-    array_agg(distinct (
+    array_agg(distinct(
         specimen, multiplexing_tag, ocm_barcode_id
     )::tagged_specimen) as specimens,
     array(

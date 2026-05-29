@@ -1,4 +1,3 @@
-use std::iter::Filter;
 
 use axum::{Json, extract::State};
 use cellnoor_types::{

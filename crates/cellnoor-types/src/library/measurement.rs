@@ -4,7 +4,6 @@ use macro_attributes::{base_model, select};
 use postgres_types::Json;
 use uuid::Uuid;
 
-#[cfg(all(feature = "postgres-types", feature = "schemars"))]
 use crate::nucleic_acid_measurement::NucleicAcidMeasurementData;
 
 #[select]

@@ -1,6 +1,6 @@
 select
     suspension_pool,
-    array_agg(distinct (
+    array_agg(distinct(
         specimen, multiplexing_tag, null
     )::tagged_specimen) as specimens,
     array(
