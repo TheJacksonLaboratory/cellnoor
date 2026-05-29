@@ -11,7 +11,7 @@ use crate::{
     db::{self, FilterableSqlBuilder, Sql},
     error::{Error, ErrorInner},
     handlers::{
-        cdna::index_compact::{cdna_simple_links, push_distinct_on_id},
+        cdna::index_compact::cdna_simple_links,
         suspension_pools::index_compact::tagged_specimen_from_record,
     },
     state::AppState,
@@ -38,7 +38,6 @@ pub(super) async fn select_cdna_detailed(
 ) -> Result<Vec<CdnaDetailed>, ErrorInner> {
     static SELECT_DETAILED_CDNA: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
-    push_distinct_on_id(query);
 
     let sql = SELECT_DETAILED_CDNA.finish_with_query(query);
 

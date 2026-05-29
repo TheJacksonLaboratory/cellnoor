@@ -37,8 +37,6 @@ async fn select_cdna_compact(
     static SELECT_COMPACT_CDNA: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
 
-    push_distinct_on_id(query);
-
     let sql = SELECT_COMPACT_CDNA.finish_with_query(query);
 
     let stream = tx.query_stream_into(sql).await?;
@@ -74,16 +72,6 @@ pub fn cdna_from_record(record: SavedCdnaRecord) -> CdnaCompact {
         links: cdna_simple_links(record.id),
         record,
     }
-}
-
-pub(super) fn push_distinct_on_id(query: &mut CdnaQuery) {
-    // The first column in the `order by` clause needs to match the `distinct on`
-    // clause
-    let distinct_on = OrderBy {
-        field: CdnaField::Id,
-        desc: true,
-    };
-    query.order_by.push_front(distinct_on);
 }
 
 #[cfg(test)]

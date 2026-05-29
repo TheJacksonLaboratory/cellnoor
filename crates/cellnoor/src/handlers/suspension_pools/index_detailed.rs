@@ -11,7 +11,7 @@ use crate::{
     db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     handlers::suspension_pools::index_compact::{
-        push_distinct_on_id, suspension_pool_links, tagged_specimen_from_record,
+        suspension_pool_links, tagged_specimen_from_record,
     },
     state::AppState,
 };
@@ -39,8 +39,6 @@ pub(super) async fn select_suspension_pools_detailed(
 ) -> Result<Vec<SuspensionPoolDetailed>, ErrorInner> {
     static SELECT_DETAILED_SUSPENSION_POOL: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
-
-    push_distinct_on_id(query);
 
     let sql = SELECT_DETAILED_SUSPENSION_POOL.finish_with_query(query);
 

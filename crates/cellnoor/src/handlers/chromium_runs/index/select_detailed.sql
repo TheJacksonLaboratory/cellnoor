@@ -4,7 +4,7 @@ with gem_wells as (
         tenx_assay,
         (
             gem_well,
-            array_agg((specimen, multiplexing_tag, ocm_barcode_id)::tagged_specimen)
+            array_agg(distinct (specimen, multiplexing_tag, ocm_barcode_id)::tagged_specimen)
         )::gem_well_with_specimens as gem_well
     from gem_well_to_specimen
     /* {where} */

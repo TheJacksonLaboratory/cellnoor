@@ -11,7 +11,7 @@ use crate::{
     db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     handlers::{
-        libraries::index_compact::{library_simple_links, push_distinct_on_id},
+        libraries::index_compact::library_simple_links,
         suspension_pools::index_compact::tagged_specimen_from_record,
     },
     state::AppState,
@@ -38,8 +38,6 @@ pub(super) async fn select_libraries_detailed(
 ) -> Result<Vec<LibraryDetailed>, ErrorInner> {
     static SELECT_DETAILED_LIBRARIES: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
-
-    push_distinct_on_id(query);
 
     let sql = SELECT_DETAILED_LIBRARIES.finish_with_query(query);
 

@@ -11,7 +11,7 @@ use crate::{
     db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     handlers::{
-        chromium_runs::index_compact::{chromium_run_links, push_distinct_on_id},
+        chromium_runs::index_compact::chromium_run_links,
         suspension_pools::index_compact::tagged_specimen_from_record,
     },
     state::AppState,
@@ -40,8 +40,6 @@ pub(super) async fn select_chromium_runs_detailed(
 ) -> Result<Vec<ChromiumRunDetailed>, ErrorInner> {
     static SELECT_DETAILED_CHROMIUM_RUNS: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
-
-    push_distinct_on_id(query);
 
     let sql = SELECT_DETAILED_CHROMIUM_RUNS.finish_with_query(query);
 

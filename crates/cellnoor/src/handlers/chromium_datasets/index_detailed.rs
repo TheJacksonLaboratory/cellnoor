@@ -17,7 +17,7 @@ use crate::{
     db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     handlers::{
-        chromium_datasets::index_compact::{chromium_dataset_links, push_distinct_on_id},
+        chromium_datasets::index_compact::chromium_dataset_links,
         libraries::index_compact::library_from_record,
         suspension_pools::index_compact::tagged_specimen_from_record,
     },
@@ -48,8 +48,6 @@ pub(super) async fn select_chromium_datasets_detailed(
 ) -> Result<Vec<ChromiumDatasetDetailed>, ErrorInner> {
     static SELECT_DETAILED_CHROMIUM_DATASETS: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
-
-    push_distinct_on_id(query);
 
     let sql = SELECT_DETAILED_CHROMIUM_DATASETS.finish_with_query(query);
 

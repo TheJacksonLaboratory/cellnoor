@@ -42,8 +42,6 @@ async fn select_chromium_datasets_compact(
     static SELECT_COMPACT_CHROMIUM_DATASETS: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
 
-    push_distinct_on_id(query);
-
     let sql = SELECT_COMPACT_CHROMIUM_DATASETS.finish_with_query(query);
 
     let stream = tx.query_stream_into(sql).await?;
@@ -76,16 +74,6 @@ pub fn chromium_dataset_from_record(record: SavedChromiumDatasetRecord) -> Chrom
         links: chromium_dataset_links(record.id),
         record,
     }
-}
-
-pub(super) fn push_distinct_on_id(query: &mut ChromiumDatasetQuery) {
-    // The first column in the `order by` clause needs to match the `distinct on`
-    // clause
-    let distinct_on = OrderBy {
-        field: ChromiumDatasetField::Id,
-        desc: true,
-    };
-    query.order_by.push_front(distinct_on);
 }
 
 #[cfg(test)]

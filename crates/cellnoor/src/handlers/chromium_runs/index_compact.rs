@@ -42,8 +42,6 @@ async fn select_chromium_runs_compact(
     static SELECT_COMPACT_CHROMIUM_RUNS: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
 
-    push_distinct_on_id(query);
-
     let sql = SELECT_COMPACT_CHROMIUM_RUNS.finish_with_query(query);
 
     let stream = tx.query_stream_into(sql).await?;
@@ -83,17 +81,6 @@ pub fn chromium_run_from_record(record: SavedChromiumRunRecord) -> ChromiumRunCo
         links: chromium_run_links(record.id),
         record,
     }
-}
-
-pub(super) fn push_distinct_on_id(query: &mut ChromiumRunQuery) {
-    // The first column in the `order by` clause needs to match the `distinct on`
-    // clause
-    let distinct_on = OrderBy {
-        field: ChromiumRunField::Id,
-        desc: true,
-    };
-
-    query.order_by.push_front(distinct_on);
 }
 
 #[cfg(test)]

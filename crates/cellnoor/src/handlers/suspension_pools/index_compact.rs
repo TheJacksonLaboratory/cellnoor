@@ -45,8 +45,6 @@ pub(in crate::handlers) async fn select_suspension_pools_compact(
     static SELECT_COMPACT_SUSPENSION_POOL: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
 
-    push_distinct_on_id(query);
-
     let sql = SELECT_COMPACT_SUSPENSION_POOL.finish_with_query(query);
 
     let stream = tx.query_stream_into(sql).await?;
@@ -101,16 +99,6 @@ pub fn tagged_specimen_from_record(
         multiplexing_tag,
         ocm_barcode_id,
     }
-}
-
-pub(super) fn push_distinct_on_id(query: &mut SuspensionPoolQuery) {
-    // The first column in the `order by` clause needs to match the `distinct on`
-    // clause
-    let distinct_on = OrderBy {
-        field: SuspensionPoolField::Id,
-        desc: true,
-    };
-    query.order_by.push_front(distinct_on);
 }
 
 #[cfg(test)]

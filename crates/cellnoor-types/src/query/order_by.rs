@@ -1,7 +1,5 @@
-use std::collections::VecDeque;
-
 use macro_attributes::base_model;
-use nonempty::NonemptyVecDeque;
+use nonempty::NonemptyVec;
 
 #[base_model]
 #[derive(Copy)]
@@ -35,7 +33,7 @@ where
     T: Default,
 {
     One(OrderBy<T>),
-    Many(NonemptyVecDeque<OrderBy<T>>),
+    Many(NonemptyVec<OrderBy<T>>),
 }
 
 impl<T> Default for OrderBySet<T>
@@ -44,20 +42,5 @@ where
 {
     fn default() -> Self {
         Self::One(OrderBy::default())
-    }
-}
-
-impl<T> OrderBySet<T>
-where
-    T: std::fmt::Debug + Default + Copy,
-{
-    pub fn push_front(&mut self, value: OrderBy<T>) {
-        match self {
-            Self::One(original) => {
-                let v = VecDeque::from([value, *original]);
-                *self = Self::Many(NonemptyVecDeque::new(v).unwrap());
-            }
-            Self::Many(originals) => originals.push_front(value),
-        };
     }
 }

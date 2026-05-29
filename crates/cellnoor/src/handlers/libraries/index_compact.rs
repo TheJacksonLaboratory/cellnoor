@@ -29,16 +29,6 @@ pub fn library_from_record(record: SavedLibraryRecord) -> LibraryCompact {
     }
 }
 
-pub(super) fn push_distinct_on_id(query: &mut LibraryQuery) {
-    // The first column in the `order by` clause needs to match the `distinct on`
-    // clause
-    let distinct_on = OrderBy {
-        field: LibraryField::Id,
-        desc: true,
-    };
-    query.order_by.push_front(distinct_on);
-}
-
 pub async fn index_libraries(
     State(state): State<AppState>,
     user: AuthUser,
@@ -60,8 +50,6 @@ async fn select_libraries_compact(
 ) -> Result<Vec<LibraryCompact>, ErrorInner> {
     static SELECT_COMPACT_LIBRARIES: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
-
-    push_distinct_on_id(query);
 
     let sql = SELECT_COMPACT_LIBRARIES.finish_with_query(query);
 
