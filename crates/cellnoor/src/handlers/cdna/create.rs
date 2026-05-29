@@ -140,7 +140,7 @@ pub mod test {
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
-    pub async fn insert_test_cdna<F>(
+    pub async fn insert_test_cdna_and_chromium_run<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
     ) -> Result<(NewCdna, CdnaDetailed), ErrorInner>
@@ -189,6 +189,8 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        insert_test_cdna(&tx, |_| ()).await.unwrap();
+        insert_test_cdna_and_chromium_run(&tx, |_| ())
+            .await
+            .unwrap();
     }
 }

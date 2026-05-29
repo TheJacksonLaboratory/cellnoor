@@ -82,7 +82,9 @@ mod test {
     use pretty_assertions::assert_eq;
 
     use crate::{
-        handlers::cdna::{create::test::insert_test_cdna, index_compact::select_cdna_compact},
+        handlers::cdna::{
+            create::test::insert_test_cdna_and_chromium_run, index_compact::select_cdna_compact,
+        },
         state::test_util::db_client_as_admin,
     };
 
@@ -91,7 +93,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, inserted) = insert_test_cdna(&tx, |_| ()).await.unwrap();
+        let (_, inserted) = insert_test_cdna_and_chromium_run(&tx, |_| ())
+            .await
+            .unwrap();
 
         let cdnas = select_cdna_compact(
             &tx,

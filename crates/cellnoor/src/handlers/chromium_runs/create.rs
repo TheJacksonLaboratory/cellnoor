@@ -167,10 +167,10 @@ pub mod test {
     where
         F: FnMut(&mut NewChromiumRun),
     {
-        let (_, pool1) = insert_test_suspension_pool_and_suspensions(tx, |_| ()).await?;
-        let (_, pool2) = insert_test_suspension_pool_and_suspensions(tx, |_| ()).await?;
+        let (_, suspension) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+        let (_, pool) = insert_test_suspension_pool_and_suspensions(tx, |_| ()).await?;
 
-        let person_id = pool1.preparers[0];
+        let person_id = suspension.preparers[0];
 
         let (_, assay) = insert_test_chromium_assay(tx).await?;
         let assay_id = assay.id;
@@ -179,8 +179,8 @@ pub mod test {
         // GEM wells
         let gem_well1 = NewStandardGemWell {
             readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-            loading: NewStandardChipLoading::SuspensionPool {
-                suspension_pool_id: *pool1.record.id,
+            loading: NewStandardChipLoading::Suspension {
+                suspension_id: *suspension.record.id,
                 common: loading_common(),
             },
         };
@@ -188,7 +188,7 @@ pub mod test {
         let gem_well2 = NewStandardGemWell {
             readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
             loading: NewStandardChipLoading::SuspensionPool {
-                suspension_pool_id: *pool2.record.id,
+                suspension_pool_id: *pool.record.id,
                 common: loading_common(),
             },
         };

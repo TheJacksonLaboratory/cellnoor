@@ -1,4 +1,7 @@
-use std::fmt::Debug;
+use std::{
+    fmt::Debug,
+    ops::{Index, IndexMut},
+};
 
 #[cfg(feature = "postgres-types")]
 use bytes::BytesMut;
@@ -16,6 +19,20 @@ pub struct Error<V, const N: usize>(pub V);
 #[cfg_attr(feature = "serde", serde(try_from = "Vec<T>"))]
 #[cfg_attr(feature = "schemars", schemars(with = "Vec<T>"))]
 pub struct NonemptyBoundedVec<T, const N: usize>(Vec<T>);
+
+impl<T, const N: usize> Index<usize> for NonemptyBoundedVec<T, N> {
+    type Output = <Vec<T> as Index<usize>>::Output;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        self.0.index(index)
+    }
+}
+
+impl<T, const N: usize> IndexMut<usize> for NonemptyBoundedVec<T, N> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        self.0.index_mut(index)
+    }
+}
 
 impl<T, const N: usize> From<T> for NonemptyBoundedVec<T, N> {
     fn from(value: T) -> Self {

@@ -1,3 +1,3 @@
-select cdna from cdna_to_specimen
+select cdna from chromium_cdna_to_specimen
 /* {where} */
 group by cdna

@@ -32,7 +32,7 @@ pub async fn index_cdna_detailed(
     Ok(response)
 }
 
-pub(super) async fn select_cdna_detailed(
+pub(in crate::handlers) async fn select_cdna_detailed(
     tx: &db::Transaction<'_>,
     query: &mut CdnaQuery,
 ) -> Result<Vec<CdnaDetailed>, ErrorInner> {

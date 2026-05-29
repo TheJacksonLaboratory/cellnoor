@@ -4,4 +4,6 @@ chromium dataset raw file support (rsync)
 
 add csvranger and use to parse files
 
-api keys
+api keys and api key permissions
+
+update update-cellnoor script (or rewrite)

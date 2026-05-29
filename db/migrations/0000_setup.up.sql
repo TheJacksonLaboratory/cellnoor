@@ -65,7 +65,7 @@ create or replace function create_person_user_if_not_exists(
         execute format('grant select on institution, person_public, project, project_access, project_detailed, specimen,
         specimen_measurement, specimen_detailed, tenx_assay, index_kit, single_index_set, dual_index_set,
         library_type_specification, suspension, suspension_detailed, suspension_pool_to_specimen, gem_well_to_specimen,
-        cdna_to_specimen, library_to_specimen, chromium_dataset_to_specimen to %I', username);
+        chromium_cdna_to_specimen, cdna_preparer, cdna_measurement, chromium_library_to_specimen, chromium_dataset_to_specimen to %I', username);
         -- The db user 'app' needs to be able to do `set role username`, but it shouldn't inherit that user's privileges
         execute format('grant %I to app with inherit false', username);
     end;

@@ -328,7 +328,8 @@ pub mod test {
         assert_eq!(error, ErrorInner::PermissionDenied);
     }
 
-    // We only test this once in the earliest place in the "chain"
+    // This test just ensures that the correct error is returned when there's an
+    // invalid foreign key
     #[tokio::test(flavor = "multi_thread")]
     async fn invalid_reference_error() {
         let mut client = db_client_as_admin().await;

@@ -72,7 +72,9 @@ mod test {
     use uuid::Uuid;
 
     use crate::{
-        handlers::cdna::{create::test::insert_test_cdna, update::update_cdna_by_id},
+        handlers::cdna::{
+            create::test::insert_test_cdna_and_chromium_run, update::update_cdna_by_id,
+        },
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
@@ -81,7 +83,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (insert_input, inserted) = insert_test_cdna(&tx, |_| ()).await.unwrap();
+        let (insert_input, inserted) = insert_test_cdna_and_chromium_run(&tx, |_| ())
+            .await
+            .unwrap();
         let id = *inserted.record.id;
 
         let pre_update = CdnaUpdate {

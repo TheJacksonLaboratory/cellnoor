@@ -11,6 +11,6 @@ select
         select prep.prepared_by from cdna_preparer as prep
         where prep.cdna_id = (cdna).id
     ) as preparers
-from cdna_to_specimen
+from chromium_cdna_to_specimen
 /* {where} */
 group by cdna

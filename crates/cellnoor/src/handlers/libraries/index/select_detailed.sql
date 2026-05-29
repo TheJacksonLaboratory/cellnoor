@@ -11,6 +11,6 @@ select
         select prep.prepared_by from library_preparer as prep
         where prep.library_id = (library).id
     ) as preparers
-from library_to_specimen
+from chromium_library_to_specimen
 /* {where} */
 group by library

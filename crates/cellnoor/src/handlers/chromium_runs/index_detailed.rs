@@ -124,18 +124,19 @@ mod test {
         let mut specimens = gem_wells[0].specimens.clone();
         specimens.extend_from_slice(&gem_wells[1].specimens);
 
-        assert_eq!(specimens.len(), 4);
+        assert_eq!(specimens.len(), 3);
 
         let set: HashSet<_, RandomState> =
             HashSet::from_iter(specimens.iter().map(|s| s.specimen.record.id));
-        assert_eq!(set.len(), 4);
+        assert_eq!(set.len(), 3);
 
         let set: HashSet<_, RandomState> = HashSet::from_iter(
             specimens
                 .iter()
-                .map(|s| s.multiplexing_tag.as_ref().unwrap().id),
+                .filter_map(|s| s.multiplexing_tag.as_ref())
+                .map(|t| t.id),
         );
-        assert_eq!(set.len(), 4);
+        assert_eq!(set.len(), 2);
     }
 
     #[tokio::test(flavor = "multi_thread")]

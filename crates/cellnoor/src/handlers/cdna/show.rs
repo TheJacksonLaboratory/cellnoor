@@ -31,7 +31,7 @@ pub async fn show_cdna(
     Ok(response)
 }
 
-pub(super) async fn select_cdna_by_id(
+pub(in crate::handlers) async fn select_cdna_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<CdnaDetailed, ErrorInner> {

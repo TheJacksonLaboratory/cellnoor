@@ -142,7 +142,7 @@ pub mod test {
         db,
         error::ErrorInner,
         handlers::{
-            cdna::create::test::insert_test_cdna, index_sets::DUAL_INDEX_SET_NAME,
+            cdna::create::test::insert_test_cdna_and_chromium_run, index_sets::DUAL_INDEX_SET_NAME,
             libraries::create::insert_library,
         },
         state::test_util::{ToNonemptyString, db_client_as_admin},
@@ -155,7 +155,7 @@ pub mod test {
     where
         F: FnMut(&mut NewLibrary),
     {
-        let (_, cdna) = insert_test_cdna(tx, |_| ()).await?;
+        let (_, cdna) = insert_test_cdna_and_chromium_run(tx, |_| ()).await?;
 
         let person_id = cdna.preparers[0];
 

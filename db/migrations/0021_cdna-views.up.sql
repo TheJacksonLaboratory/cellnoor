@@ -1,4 +1,4 @@
-create view cdna_to_specimen as (
+create view chromium_cdna_to_specimen as (
     select
         cdna,
         gw_ts.specimen,
