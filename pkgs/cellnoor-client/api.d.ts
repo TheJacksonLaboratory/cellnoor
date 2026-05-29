@@ -3902,7 +3902,9 @@ export interface components {
         };
         ParsedMetricsData: {
             [key: string]: components["schemas"]["TenxCsvValue"];
-        }[] | components["schemas"]["Row"][];
+        } | components["schemas"]["Row"][] | {
+            [key: string]: components["schemas"]["TenxCsvValue"];
+        }[];
         Person: {
             email?: string | null;
             /** Format: uuid */
