@@ -11,10 +11,10 @@ use cellnoor_models::{
     },
 };
 use cellnoor_schema::chromium_dataset_raw_files;
+use csvranger::TenxCsvValue;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use headers::ContentEncoding;
-use serde_json::{Number, Value};
 use uuid::Uuid;
 
 use crate::{
@@ -221,9 +221,9 @@ impl NewRawFile {
 
 impl ParsedChromiumDatasetFile {
     fn from_csv(dataset_id: Uuid, path: String, raw_content: &[u8]) -> Result<Self, db::DataError> {
-        parse_single_row_csv(raw_content)
+        parse_ranger_csv(raw_content)
             .map(ParsedMetricsData::KeyValue)
-            .or_else(|_| parse_multi_row_csv(raw_content).map(ParsedMetricsData::Tabular))
+            .or_else(|_| parse_cellrangermulti_csv(raw_content).map(ParsedMetricsData::Tabular))
             .map(|data| Self {
                 dataset_id,
                 path,
@@ -247,52 +247,45 @@ impl ParsedChromiumDatasetFile {
     }
 }
 
-fn parse_single_row_csv(raw_content: &[u8]) -> Result<HashMap<String, Value>, db::DataError> {
+fn parse_ranger_csv(
+    raw_content: &[u8],
+) -> Result<Vec<HashMap<String, TenxCsvValue>>, db::DataError> {
     let mut csv = csv::Reader::from_reader(raw_content);
 
-    let header: Vec<_> = csv
-        .headers()
-        .map_err(|e| db::DataError::new_other(&format!("failed to parse CSV headers: {e}")))?
-        .into_iter()
-        .map(str::to_owned)
-        .collect();
-    let header_len = header.len();
-    let mut records = csv.records();
+    csv.deserialize()
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| db::DataError::Other {
+            message: e.to_string(),
+        })
 
-    let n_rows_err = Err(db::DataError::new_other("expected exactly one row in CSV"));
+    // let header: Vec<_> = csv
+    //     .headers()
+    //     .map_err(|e| db::DataError::new_other(&format!("failed to parse CSV headers: {e}")))?
+    //     .into_iter()
+    //     .map(str::to_owned)
+    //     .collect();
+    // let header_len = header.len();
+    // let mut records = csv.records();
 
-    let first_record = match records.next() {
-        Some(rec) => {
-            rec.map_err(|e| db::DataError::new_other(&format!("failed to parse CSV row: {e}")))?
-        }
-        None => {
-            return n_rows_err;
-        }
-    };
+    // let mut parsed_data = HashMap::with_capacity(header_len);
 
-    if records.next().is_some() {
-        return n_rows_err;
-    }
+    // // Manual insertion into the map is preferred over `collect` because the latter
+    // // would require an extra iteration to transform `Vec<Result<_>>` to
+    // // `Result<Vec<_>>` before constructing the two-tuple
+    // for (field_name, field_value) in header.into_iter().zip(first_record.iter()) {
+    //     // Some of the fields of these CSVs have strings instead of numbers. If that's
+    //     // the case, then we just insert the original string
+    //     parsed_data.insert(
+    //         field_name,
+    //         parse_str_as_number(field_value)
+    //             .map_or_else(|_| Value::String(field_value.to_owned()), Value::Number),
+    //     );
+    // }
 
-    let mut parsed_data = HashMap::with_capacity(header_len);
-
-    // Manual insertion into the map is preferred over `collect` because the latter
-    // would require an extra iteration to transform `Vec<Result<_>>` to
-    // `Result<Vec<_>>` before constructing the two-tuple
-    for (field_name, field_value) in header.into_iter().zip(first_record.iter()) {
-        // Some of the fields of these CSVs have strings instead of numbers. If that's
-        // the case, then we just insert the original string
-        parsed_data.insert(
-            field_name,
-            parse_str_as_number(field_value)
-                .map_or_else(|_| Value::String(field_value.to_owned()), Value::Number),
-        );
-    }
-
-    Ok(parsed_data)
+    // Ok(parsed_data)
 }
 
-fn parse_multi_row_csv(raw_content: &[u8]) -> Result<Vec<multi_row_csv::Row>, db::DataError> {
+fn parse_cellrangermulti_csv(raw_content: &[u8]) -> Result<Vec<multi_row_csv::Row>, db::DataError> {
     let mut csv = csv::Reader::from_reader(raw_content);
 
     let map_err = |e| db::DataError::new_other(&format!("failed to parse multi-row CSV: {e}"));
@@ -315,32 +308,13 @@ fn parse_multi_row_csv(raw_content: &[u8]) -> Result<Vec<multi_row_csv::Row>, db
             None => metric_value_str,
         };
 
-        let metric_value = parse_str_as_number(extracted_metric_value).map_or_else(
-            |_| Value::String(metric_value_str.to_owned()),
-            Value::Number,
-        );
-
-        parsed_data.push(multi_row_csv::Row::new(simple_fields, metric_value));
+        parsed_data.push(multi_row_csv::Row::new(
+            simple_fields,
+            TenxCsvValue::from_legacy_csv_value(extracted_metric_value),
+        ));
     }
 
     Ok(parsed_data)
-}
-
-fn parse_str_as_number(value: &str) -> Result<Number, <Number as FromStr>::Err> {
-    if let Ok(value) = value.parse() {
-        return Ok(value);
-    }
-
-    let original_str_value = value;
-    let value_without_shit = value.replace([',', '%', '"'], "");
-
-    let mut value_as_number = Number::from_str(&value_without_shit)?;
-    if original_str_value.contains('%') {
-        value_as_number =
-            Number::from_f64(value_as_number.as_f64().map(|f| f / 100.0).unwrap()).unwrap();
-    }
-
-    Ok(value_as_number)
 }
 
 #[derive(Debug, Clone, Copy, strum::EnumString, strum::IntoStaticStr, PartialEq)]
@@ -428,7 +402,7 @@ mod tests {
     use pretty_assertions::assert_eq;
     use rstest::rstest;
 
-    use super::{extract_path, parse_multi_row_csv, parse_single_row_csv};
+    use super::{extract_path, parse_cellrangermulti_csv, parse_ranger_csv};
 
     #[rstest]
     fn empty_filename() {
@@ -454,7 +428,8 @@ mod tests {
     #[rstest]
     fn cellranger_count() {
         let raw_content = include_bytes!("test-data/cellranger_count.csv");
-        let parsed_data = parse_single_row_csv(raw_content).unwrap();
+        let parsed_data = parse_ranger_csv(raw_content).unwrap();
+        let parsed_data = &parsed_data[0];
 
         assert_eq!(
             parsed_data["Estimated Number of Cells"].as_i64().unwrap(),
@@ -467,7 +442,8 @@ mod tests {
     #[rstest]
     fn cellranger_arc_count() {
         let raw_content = include_bytes!("test-data/cellranger-arc_count.csv");
-        let parsed_data = parse_single_row_csv(raw_content).unwrap();
+        let parsed_data = parse_ranger_csv(raw_content).unwrap();
+        let parsed_data = &parsed_data[0];
 
         assert_eq!(
             parsed_data["Estimated number of cells"].as_i64().unwrap(),
@@ -487,7 +463,7 @@ mod tests {
     #[rstest]
     fn cellranger_multi() {
         let raw_content = include_bytes!("test-data/cellranger_multi.csv");
-        let parsed_data = parse_multi_row_csv(raw_content).unwrap();
+        let parsed_data = parse_cellrangermulti_csv(raw_content).unwrap();
 
         let row = &parsed_data[0];
         assert_eq!(row.metric_value.as_i64().unwrap(), 1866);
@@ -502,5 +478,14 @@ mod tests {
         );
 
         assert_eq!(row.metric_value.as_i64().unwrap(), 1866);
+    }
+
+    #[test]
+    fn cellranger_multi10() {
+        let raw_content = include_bytes!("test-data/cellranger_multi.10.qc_sample_metrics.csv");
+        let parsed_data = parse_ranger_csv(raw_content).unwrap();
+
+        let row = &parsed_data[0];
+        assert_eq!(row["GEX: Cells"].as_i64().unwrap(), 16410);
     }
 }

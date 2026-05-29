@@ -15,6 +15,7 @@ resolver = "3"
 edition = "2024"
 
 [workspace.dependencies]
+csvranger = { version = "0.1.2", features = ["legacy", "serde", "schemars"] }
 aide = { version = "0.16.0-alpha.4", features = [
   "axum",
   "axum-json",
