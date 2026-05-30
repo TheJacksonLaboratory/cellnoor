@@ -27,10 +27,7 @@ pub async fn delete_institution(
     Ok(response)
 }
 
-pub async fn delete_institution_by_id(
-    tx: &db::Transaction<'_>,
-    id: Uuid,
-) -> Result<(), ErrorInner> {
+async fn delete_institution_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
     db::delete_by_id(tx, "institution", id).await
 }
 

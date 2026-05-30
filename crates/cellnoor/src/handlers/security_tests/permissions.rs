@@ -1,11 +1,12 @@
-use cellnoor_types::query::ComplexQuery;
+use std::fmt::Debug;
+
 use uuid::Uuid;
 
 use crate::{
     db,
     error::ErrorInner,
     handlers::{
-        institutions::index::select_institutions,
+        institutions::show::select_institution_by_id,
         people::create::test::insert_test_person_and_institution,
     },
     state::test_util::{db_client_as_admin, db_client_as_user},
@@ -24,13 +25,16 @@ async fn create_test_user() -> Uuid {
     *person.record.id
 }
 
-async fn test_no_error<F, Pred, OrderField, Return>(tx: &db::Transaction<'_>, select_fn: F)
+async fn test_no_error<F, T>(tx: &db::Transaction<'_>, select_fn: F)
 where
-    F: AsyncFn(&db::Transaction, &mut ComplexQuery<Pred, OrderField>) -> Result<Return, ErrorInner>,
-    OrderField: Default,
+    T: Debug,
+    F: AsyncFn(&db::Transaction, Uuid) -> Result<T, ErrorInner>,
 {
-    // For this test, we just want to see no error
-    select_fn(tx, &mut ComplexQuery::default()).await.unwrap();
+    static RANDOM_ID: Uuid = Uuid::max();
+
+    // In this test, we just want to see that we don't get a PermissionDenied
+    let err = select_fn(tx, RANDOM_ID).await.unwrap_err();
+    pretty_assertions::assert_eq!(err, ErrorInner::ResourceNotFound)
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -40,5 +44,5 @@ async fn user_can_access_every_view() {
     let mut client = db_client_as_user(user_id).await;
     let tx = &client.begin().await.unwrap();
 
-    tokio::join!(test_no_error(tx, select_institutions));
+    tokio::join!(test_no_error(tx, select_institution_by_id));
 }

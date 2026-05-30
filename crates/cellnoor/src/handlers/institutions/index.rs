@@ -28,7 +28,7 @@ pub async fn index_institutions(
     Ok(response)
 }
 
-pub async fn select_institutions(
+pub(super) async fn select_institutions(
     tx: &db::Transaction<'_>,
     query: &mut InstitutionQuery,
 ) -> Result<Vec<Institution>, ErrorInner> {
