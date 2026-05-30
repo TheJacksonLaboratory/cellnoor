@@ -46,13 +46,7 @@ pub async fn update_cdna_by_id(
 ) -> Result<CdnaDetailed, ErrorInner> {
     db::update(tx, "cdna", id, record).await?;
 
-    let preparer_insertions = async {
-        if !preparers.is_empty() {
-            insert_cdna_preparers(tx, id, preparers).await
-        } else {
-            Ok(())
-        }
-    };
+    let preparer_insertions = insert_cdna_preparers(tx, id, preparers);
 
     let measurement_insertions = futures::future::try_join_all(
         measurements

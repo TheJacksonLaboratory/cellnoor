@@ -32,7 +32,6 @@ pub type NewProjectRecord = ProjectRecord<NoId>;
 pub struct NewProject {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: NewProjectRecord,
-    #[cfg_attr(feature = "serde", serde(default))]
     pub people: Vec<Uuid>,
 }
 

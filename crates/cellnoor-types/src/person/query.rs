@@ -1,7 +1,7 @@
 use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
-    operator::{StringOperator, UuidOperator},
+    operator::{BoolOperator, StringOperator, UuidOperator},
     query::{ComplexQuery, SimpleQuery},
 };
 
@@ -13,6 +13,7 @@ pub enum PersonPredicate {
     Name(StringOperator),
     Email(StringOperator),
     InstitutionId(UuidOperator),
+    IsStaff(BoolOperator),
     Orcid(StringOperator),
 }
 

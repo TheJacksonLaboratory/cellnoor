@@ -45,50 +45,10 @@ select create_user_with_password_from_file('auth', '/run/secrets/auth_db_passwor
 
 -- Create a user who's an actual person, meaning they need some privileges
 create or replace function create_person_user_if_not_exists(
-    username text, is_staff boolean
+    username text
 ) returns void language plpgsql volatile strict as $$
     begin
         perform create_user_if_not_exists(username);
-        -- The nice thing here is that if a user already exists in the db, their staff-privilege will be set correctly no matter what
-        if is_staff then
-            -- Staff should be able to see everything
-            execute format('alter user %I with bypassrls', username);
-        else
-            -- Demote a user back to row-level-security if they were previously staff
-            execute format('alter user %I with nobypassrls', username);
-        end if;
-        -- Because of how RLS works with views, and the fact that each view builds upon another, we only need to grant
-        -- select permissions on the tables that our application queries directly (that is, without a view) and on
-        -- the views our application uses. Any view that itself queries another view with security_invoker = true will
-        -- be subject to RLS. As such, we only need to enable RLS down the chain to `suspension_detailed`, as every
-        -- other view eventually leads to this one
-        execute format('grant select on
-        institution,
-        person_public,
-        project,
-        project_access,
-        project_detailed,
-        specimen,
-        specimen_measurement,
-        specimen_detailed,
-        tenx_assay,
-        index_kit,
-        single_index_set,
-        dual_index_set,
-        library_type_specification,
-        suspension,
-        suspension_detailed,
-        suspension_pool_to_specimen,
-        gem_well_to_specimen,
-        chromium_cdna_to_specimen,
-        cdna_preparer,
-        cdna_measurement,
-        chromium_library_to_specimen,
-        library_preparer,
-        library_measurement,
-        chromium_dataset_to_specimen,
-        chromium_dataset_raw_file,
-        chromium_dataset_parsed_file to %I', username);
         -- The db user 'app' needs to be able to do `set role username`, but it shouldn't inherit that user's privileges
         execute format('grant %I to app with inherit false', username);
     end;

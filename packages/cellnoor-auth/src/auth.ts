@@ -88,7 +88,7 @@ export const auth = betterAuth({
           // Create a db user for the new person too
           const dbClient = await getDbClient();
           await dbClient.query(
-            "select create_person_user_if_not_exists($1::text, false)",
+            "select create_person_user_if_not_exists($1::text)",
             [id],
           );
         },

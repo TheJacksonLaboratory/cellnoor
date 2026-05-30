@@ -37,7 +37,6 @@ pub async fn insert_person(
     tx: &db::Transaction<'_>,
     NewPerson {
         record,
-        is_staff,
         permissions_to_grant,
         permissions_to_revoke,
     }: &NewPerson,
@@ -47,21 +46,15 @@ pub async fn insert_person(
     let id = db::insert_into(tx, "person", record).await?;
 
     let (_, person) = tokio::try_join!(
-        provision_db_user(
-            tx,
-            id,
-            *is_staff,
-            permissions_to_grant,
-            permissions_to_revoke
-        ),
+        provision_db_user(tx, id, permissions_to_grant, permissions_to_revoke),
         select_person_by_id(tx, id)
     )?;
 
     Ok(person)
 }
 
-impl AsFieldValuePairs<PersonField, 4> for NewPersonRecord {
-    fn as_field_value_pairs(&self) -> db::FieldValuePairs<'_, PersonField, 4> {
+impl AsFieldValuePairs<PersonField, 5> for NewPersonRecord {
+    fn as_field_value_pairs(&self) -> db::FieldValuePairs<'_, PersonField, 5> {
         use PersonField::*;
 
         let Self {
@@ -69,6 +62,7 @@ impl AsFieldValuePairs<PersonField, 4> for NewPersonRecord {
             name,
             email,
             institution_id,
+            is_staff,
             orcid,
         } = self;
 
@@ -76,6 +70,7 @@ impl AsFieldValuePairs<PersonField, 4> for NewPersonRecord {
             (Name, name),
             (InstitutionId, institution_id),
             (Email, email),
+            (IsStaff, is_staff),
             (Orcid, orcid),
         ]
     }
@@ -108,29 +103,24 @@ pub(super) fn validate_email(email: Option<&str>) -> Result<(), ErrorInner> {
 pub(super) async fn provision_db_user(
     tx: &db::Transaction<'_>,
     person_id: Uuid,
-    is_staff: bool,
     permissions_to_grant: &PermissionsToGrant,
     permissions_to_revoke: &PermissionsToRevoke,
 ) -> Result<(), ErrorInner> {
     tx.acquire_user_permisssions_lock().await?;
 
-    create_db_user(tx, person_id, is_staff).await?;
+    create_db_user(tx, person_id).await?;
     grant_permissions_to_db_user(tx, person_id, permissions_to_grant).await?;
     revoke_permissions_from_db_user(tx, person_id, permissions_to_revoke).await?;
 
     Ok(())
 }
 
-async fn create_db_user(
-    tx: &db::Transaction<'_>,
-    user_id: Uuid,
-    is_staff: bool,
-) -> Result<(), ErrorInner> {
+async fn create_db_user(tx: &db::Transaction<'_>, user_id: Uuid) -> Result<(), ErrorInner> {
     static PROVISION_USER: SqlBuilder =
-        SqlBuilder::new("select create_person_user_if_not_exists($1, $2)");
+        SqlBuilder::new("select create_person_user_if_not_exists($1)");
 
     let user_id = user_id.to_string();
-    let sql = PROVISION_USER.finish_with_params(vec![&user_id, &is_staff]);
+    let sql = PROVISION_USER.finish_with_params(vec![&user_id]);
 
     tx.execute(&sql).await?;
 
@@ -267,9 +257,9 @@ pub mod test {
                 name: Uuid::new_v4().to_string().to_nonempty_string(),
                 institution_id: *institution.record.id,
                 email: Some(format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string()),
+                is_staff: false,
                 orcid: None,
             },
-            is_staff: false,
             permissions_to_grant: vec![].into(),
             permissions_to_revoke: vec![].into(),
         };

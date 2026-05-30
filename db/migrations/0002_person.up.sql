@@ -15,6 +15,7 @@ create table person (
     image text,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now(),
+    is_staff boolean not null default false,
     orcid case_insensitive_text unique
 );
 

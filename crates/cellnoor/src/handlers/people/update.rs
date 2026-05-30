@@ -41,7 +41,6 @@ pub async fn update_person_by_id(
     id: Uuid,
     NewPerson {
         record,
-        is_staff,
         permissions_to_grant,
         permissions_to_revoke,
     }: &NewPerson,
@@ -51,13 +50,7 @@ pub async fn update_person_by_id(
     db::update(tx, "person", id, record).await?;
 
     let (_, person) = tokio::try_join!(
-        provision_db_user(
-            tx,
-            id,
-            *is_staff,
-            permissions_to_grant,
-            permissions_to_revoke
-        ),
+        provision_db_user(tx, id, permissions_to_grant, permissions_to_revoke),
         select_person_by_id(tx, id)
     )?;
 

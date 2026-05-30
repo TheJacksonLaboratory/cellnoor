@@ -5,6 +5,7 @@
   },
   "admin": {
     "name": "Ahmed Said",
-    "email": ""
+    "email": "",
+    "is_staff": true
   }
 }
