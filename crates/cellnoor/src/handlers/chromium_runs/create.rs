@@ -33,7 +33,7 @@ pub async fn create_chromium_run(
     Ok(response)
 }
 
-pub async fn insert_chromium_run(
+async fn insert_chromium_run(
     tx: &db::Transaction<'_>,
     new: NewChromiumRun,
 ) -> Result<ChromiumRunDetailed, ErrorInner> {

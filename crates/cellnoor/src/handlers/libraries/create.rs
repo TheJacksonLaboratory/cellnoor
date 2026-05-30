@@ -28,7 +28,7 @@ pub async fn create_library(
     Ok(response)
 }
 
-pub async fn insert_library(
+async fn insert_library(
     tx: &db::Transaction<'_>,
     NewLibrary {
         record,

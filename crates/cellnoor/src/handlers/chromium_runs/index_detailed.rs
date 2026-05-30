@@ -34,7 +34,7 @@ pub async fn index_chromium_runs_detailed(
     Ok(response)
 }
 
-pub(super) async fn select_chromium_runs_detailed(
+pub(in super::super) async fn select_chromium_runs_detailed(
     tx: &db::Transaction<'_>,
     query: &mut ChromiumRunQuery,
 ) -> Result<Vec<ChromiumRunDetailed>, ErrorInner> {
@@ -88,12 +88,9 @@ mod test {
     use crate::{
         handlers::{
             chromium_runs::{
-                create::{
-                    insert_chromium_run,
-                    test::{
-                        insert_test_mixed_chromium_run, insert_test_ocm_chromium_run,
-                        insert_test_standard_chromium_run, loading_common, new_common,
-                    },
+                create::test::{
+                    insert_test_mixed_chromium_run, insert_test_ocm_chromium_run,
+                    insert_test_standard_chromium_run, loading_common, new_common,
                 },
                 show::select_chromium_run_by_id,
             },
@@ -285,7 +282,9 @@ mod test {
             .unwrap(),
         };
 
-        let run = insert_chromium_run(&tx, new).await.unwrap();
+        let (_, run) = insert_test_ocm_chromium_run(&tx, |run| *run = new.clone())
+            .await
+            .unwrap();
 
         let detailed = select_chromium_run_by_id(&tx, *run.record.id)
             .await

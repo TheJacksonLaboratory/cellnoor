@@ -10,7 +10,7 @@ pub mod multiplexing_tags;
 pub mod people;
 pub mod projects;
 #[cfg(test)]
-mod rls_tests;
+mod security_tests;
 pub mod specimens;
 pub mod suspension_pools;
 pub mod suspensions;

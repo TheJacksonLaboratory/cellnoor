@@ -31,7 +31,7 @@ pub async fn update_institution(
     Ok(response)
 }
 
-pub async fn update_institution_by_id(
+async fn update_institution_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     updated_record: &NewInstitution,

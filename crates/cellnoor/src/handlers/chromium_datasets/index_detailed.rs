@@ -41,7 +41,7 @@ pub async fn index_chromium_datasets_detailed(
     Ok(response)
 }
 
-pub(super) async fn select_chromium_datasets_detailed(
+pub(in super::super) async fn select_chromium_datasets_detailed(
     tx: &db::Transaction<'_>,
     raw_files_url: &str,
     query: &mut ChromiumDatasetQuery,

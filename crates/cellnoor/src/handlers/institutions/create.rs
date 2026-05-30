@@ -25,7 +25,7 @@ pub async fn create_institution(
     Ok(response)
 }
 
-pub async fn insert_institution(
+async fn insert_institution(
     tx: &db::Transaction<'_>,
     new_record: &NewInstitution,
 ) -> Result<Institution, ErrorInner> {

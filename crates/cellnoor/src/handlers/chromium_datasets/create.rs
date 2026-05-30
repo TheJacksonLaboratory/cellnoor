@@ -30,7 +30,7 @@ pub async fn create_chromium_dataset(
     Ok(response)
 }
 
-pub async fn insert_chromium_dataset(
+async fn insert_chromium_dataset(
     tx: &db::Transaction<'_>,
     raw_files_url: &str,
     NewChromiumDataset {

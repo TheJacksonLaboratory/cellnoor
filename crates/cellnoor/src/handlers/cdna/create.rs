@@ -26,7 +26,7 @@ pub async fn create_cdna(
     Ok(response)
 }
 
-pub async fn insert_cdna(
+async fn insert_cdna(
     tx: &db::Transaction<'_>,
     NewCdna {
         record,

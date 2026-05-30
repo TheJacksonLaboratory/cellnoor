@@ -13,17 +13,6 @@ use crate::{
     state::AppState,
 };
 
-pub fn institution_simple_links(id: Id) -> SimpleLinks {
-    SimpleLinks::from_str_and_id("/institutions", id)
-}
-
-pub fn institution_from_record(record: SavedInstitutionRecord) -> Institution {
-    Institution {
-        links: institution_simple_links(record.id),
-        record,
-    }
-}
-
 pub async fn index_institutions(
     State(state): State<AppState>,
     user: AuthUser,
@@ -53,6 +42,17 @@ pub async fn select_institutions(
         .await
         .map(async |stream| stream.map(institution_from_record).collect().await)?
         .await)
+}
+
+fn institution_simple_links(id: Id) -> SimpleLinks {
+    SimpleLinks::from_str_and_id("/institutions", id)
+}
+
+fn institution_from_record(record: SavedInstitutionRecord) -> Institution {
+    Institution {
+        links: institution_simple_links(record.id),
+        record,
+    }
 }
 
 impl AsPredicate for InstitutionPredicate {

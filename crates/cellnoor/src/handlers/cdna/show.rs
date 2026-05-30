@@ -31,7 +31,8 @@ pub async fn show_cdna(
     Ok(response)
 }
 
-pub(in crate::handlers) async fn select_cdna_by_id(
+// Visibility required for RLS tests
+pub(in super::super) async fn select_cdna_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<CdnaDetailed, ErrorInner> {

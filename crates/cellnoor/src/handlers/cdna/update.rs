@@ -35,7 +35,7 @@ pub async fn update_cdna(
     Ok(response)
 }
 
-pub async fn update_cdna_by_id(
+async fn update_cdna_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     CdnaUpdate {
