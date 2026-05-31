@@ -127,12 +127,11 @@ impl<'a> Transaction<'a> {
     }
 
     pub async fn acquire_user_permisssions_lock(&self) -> Result<(), TokioPgError> {
-        let sql = Sql(
-            "select pg_advisory_xact_lock(hashtext($1))".to_string(),
-            vec![&"user_permissions"],
-        );
-
-        self.execute(&sql).await?;
+        self.execute_raw_sql(
+            &"select pg_advisory_xact_lock(hashtext($1))",
+            &[&"user_permissions"],
+        )
+        .await?;
 
         Ok(())
     }

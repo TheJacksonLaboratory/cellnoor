@@ -133,6 +133,7 @@ pub mod tests {
     use std::collections::HashMap;
 
     use cellnoor_types::index_set::NewDualIndexSet;
+    use postgres_types::ToSql;
 
     use crate::{
         db::{self, SqlBuilder},
@@ -148,14 +149,10 @@ pub mod tests {
     ) -> Result<String, ErrorInner> {
         let name = DUAL_INDEX_SET_NAME.to_owned();
 
-        // Start a savepoint (manually) so we can acquire a lock that releases when we
-        // commit because running this helper concurrently causes issues. Use raw SQL
-        // instead of tx.begin() because that requires taking &mut db::Transaction<'_>,
-        // which would infect all the tests unecessarily
-        tx.execute_raw_sql("begin", &[]).await.unwrap();
-        tx.execute_raw_sql("lock table only index_kit, dual_index_set", &[])
-            .await
-            .unwrap();
+        // Acquire a db lock to prevent a concurrency bug during testing
+        let lock_param: &[&(dyn ToSql + Sync)] = &[&"dual_index_set"];
+        tx.execute_raw_sql("select pg_advisory_xact_lock(hashtext($1))", lock_param)
+            .await?;
 
         let sql =
             SqlBuilder::new("select count(*) from dual_index_set").finish_with_params(Vec::new());
@@ -163,7 +160,6 @@ pub mod tests {
         let n: i64 = tx.query_one_into(&sql).await.unwrap();
 
         if n > 0 {
-            tx.execute_raw_sql("commit", &[]).await.unwrap();
             return Ok(name);
         }
 
@@ -179,8 +175,6 @@ pub mod tests {
             )]),
         )
         .await?;
-
-        tx.execute_raw_sql("commit", &[]).await.unwrap();
 
         Ok(name)
     }

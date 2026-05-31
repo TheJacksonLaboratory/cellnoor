@@ -32,7 +32,8 @@ mod record {
 
 #[unit_enum]
 pub enum Action {
-    #[strum(serialize = "insert")]
+    // For most insertions, we add a returning clause, which requires the select privilege
+    #[strum(serialize = "select, insert")]
     Create,
     Update,
     Delete,

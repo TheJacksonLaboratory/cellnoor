@@ -1,41 +1,30 @@
+use jiff::Timestamp;
 use macro_attributes::{base_model, select};
+use nonempty::NonemptyString;
 pub use query::{ProjectField, ProjectPredicate, ProjectQuery, SimpleProjectQuery};
 use uuid::Uuid;
 
-use crate::{
-    id::{Id, NoId},
-    project::record::ProjectRecord,
-    simple_links::SimpleLinks,
-};
+use crate::simple_links::SimpleLinks;
 
 mod query;
 
-mod record {
-    use jiff::Timestamp;
-    use macro_attributes::select;
-    use nonempty::NonemptyString;
-
-    #[select]
-    #[cfg_attr(feature = "postgres-types", postgres(name = "project"))]
-    pub struct ProjectRecord<T> {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        pub id: T,
-        pub name: NonemptyString,
-        pub started_at: Timestamp,
-        pub ended_at: Timestamp,
-    }
-}
-
-pub type NewProjectRecord = ProjectRecord<NoId>;
-
 #[base_model]
 pub struct NewProject {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: NewProjectRecord,
+    pub name: NonemptyString,
+    pub started_at: Timestamp,
+    pub ended_at: Timestamp,
     pub people: Vec<Uuid>,
 }
 
-pub type SavedProjectRecord = ProjectRecord<Id>;
+#[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "project"))]
+pub struct SavedProjectRecord {
+    pub id: Uuid,
+    pub name: NonemptyString,
+    pub created_by: Uuid,
+    pub started_at: Timestamp,
+    pub ended_at: Timestamp,
+}
 
 // We don't particularly need a "detailed" view of a project, but this is a good
 // exercise in implementing patterns we will use for libraries and Chromium

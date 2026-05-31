@@ -1,6 +1,6 @@
 use cellnoor_types::{
     operator::UuidOperator,
-    project::ProjectPredicate,
+    project::{NewProject, ProjectDetailed, ProjectPredicate},
     specimen::{SpecimenDetailed, SpecimenPredicate, SpecimenQuery, creation::NewSpecimen},
 };
 use pretty_assertions::assert_eq;
@@ -9,8 +9,7 @@ use uuid::Uuid;
 use crate::{
     db,
     handlers::{
-        projects::index_detailed::select_projects_detailed,
-        security_tests::rls::project::insert_inaccessible_project,
+        projects::{create::test::insert_test_project, index_detailed::select_projects_detailed},
         specimens::{
             create::test::insert_test_specimen_and_project,
             index_detailed::select_specimens_detailed,
@@ -25,13 +24,19 @@ async fn insert_accessible_specimen(tx: &db::Transaction<'_>) -> (NewSpecimen, S
     insert_test_specimen_and_project(&tx, |_| ()).await.unwrap()
 }
 
+async fn insert_inaccessible_project(tx: &db::Transaction<'_>) -> (NewProject, ProjectDetailed) {
+    insert_test_project(tx, |p| p.people = vec![])
+        .await
+        .unwrap()
+}
+
 pub async fn insert_inaccessible_specimen(
     tx: &db::Transaction<'_>,
 ) -> (NewSpecimen, SpecimenDetailed) {
     let (_, project) = insert_inaccessible_project(tx).await;
 
     insert_test_specimen_and_project(&tx, |s| {
-        s.common_mut().project_id = *project.record.project.id
+        s.common_mut().project_id = project.record.project.id
     })
     .await
     .unwrap()

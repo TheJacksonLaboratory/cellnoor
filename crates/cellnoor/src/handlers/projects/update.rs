@@ -35,11 +35,11 @@ pub async fn update_project(
 async fn update_project_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-    NewProject { record, people }: &NewProject,
+    updated_project: &NewProject,
 ) -> Result<ProjectDetailed, ErrorInner> {
-    db::update(tx, "project", id, record).await?;
+    db::update(tx, "project", id, updated_project).await?;
 
-    insert_project_accesses(tx, id, people).await?;
+    insert_project_accesses(tx, id, &updated_project.people).await?;
 
     select_project_by_id(tx, id).await
 }
@@ -58,10 +58,10 @@ mod tests {
 
         let (pre_update, inserted) = insert_test_project(&tx, |_| ()).await.unwrap();
         let mut update = pre_update;
-        update.record.name = "updated".to_nonempty_string();
+        update.name = "updated".to_nonempty_string();
         update.people = vec![];
 
-        update_project_by_id(&tx, *inserted.record.project.id, &update)
+        update_project_by_id(&tx, inserted.record.project.id, &update)
             .await
             .unwrap();
     }

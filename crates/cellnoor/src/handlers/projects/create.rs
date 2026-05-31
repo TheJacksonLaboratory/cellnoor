@@ -1,5 +1,5 @@
 use axum::{Json, extract::State};
-use cellnoor_types::project::{NewProject, NewProjectRecord, ProjectDetailed, ProjectField};
+use cellnoor_types::project::{NewProject, ProjectDetailed, ProjectField};
 
 use crate::{
     auth::AuthUser,
@@ -27,24 +27,24 @@ pub async fn create_project(
 
 async fn insert_project(
     tx: &db::Transaction<'_>,
-    NewProject { record, people }: &NewProject,
+    project: &NewProject,
 ) -> Result<ProjectDetailed, ErrorInner> {
-    let id = db::insert_into(tx, "project", record).await?;
+    let id = db::insert_into(tx, "project", project).await?;
 
-    insert_project_accesses(tx, id, people).await?;
+    insert_project_accesses(tx, id, &project.people).await?;
 
     select_project_by_id(tx, id).await
 }
 
-impl AsFieldValuePairs<ProjectField, 3> for NewProjectRecord {
+impl AsFieldValuePairs<ProjectField, 3> for NewProject {
     fn as_field_value_pairs(&self) -> FieldValuePairs<'_, ProjectField, 3> {
         use ProjectField::*;
 
         let Self {
-            id: _,
             name,
             started_at,
             ended_at,
+            people: _,
         } = self;
 
         [(Name, name), (StartedAt, started_at), (EndedAt, ended_at)]
@@ -54,10 +54,7 @@ impl AsFieldValuePairs<ProjectField, 3> for NewProjectRecord {
 #[cfg(test)]
 pub mod test {
 
-    use cellnoor_types::{
-        id::NoId,
-        project::{NewProject, NewProjectRecord, ProjectDetailed},
-    };
+    use cellnoor_types::project::{NewProject, ProjectDetailed};
     use jiff::Timestamp;
     use uuid::Uuid;
 
@@ -83,12 +80,9 @@ pub mod test {
         let person_id = *person.record.id;
 
         let mut new = NewProject {
-            record: NewProjectRecord {
-                id: NoId {},
-                name: Uuid::new_v4().to_string().to_nonempty_string(),
-                started_at: Timestamp::now(),
-                ended_at: Timestamp::now(),
-            },
+            name: Uuid::new_v4().to_string().to_nonempty_string(),
+            started_at: Timestamp::now(),
+            ended_at: Timestamp::now(),
             people: vec![person_id],
         };
 

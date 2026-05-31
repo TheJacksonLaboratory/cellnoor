@@ -45,7 +45,7 @@ mod test {
         let tx = client.begin().await.unwrap();
 
         let (_, inserted) = insert_test_project(&tx, |_| ()).await.unwrap();
-        delete_project_by_id(&tx, *inserted.record().id)
+        delete_project_by_id(&tx, inserted.record().id)
             .await
             .unwrap();
     }

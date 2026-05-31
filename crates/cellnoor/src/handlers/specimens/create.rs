@@ -131,7 +131,7 @@ pub mod test {
                 name: Uuid::new_v4().to_string().to_nonempty_string(),
                 submitted_by: people[0],
                 received_at: Timestamp::now(),
-                project_id: *project.id,
+                project_id: project.id,
                 species: Species::MusMusculus,
                 host_species: None,
                 returned_by: None,

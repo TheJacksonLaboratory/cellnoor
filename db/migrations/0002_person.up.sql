@@ -38,10 +38,9 @@ create table person_account (
 -- with Postgres's row-level security
 create table service_account (
     id uuid primary key default uuidv7(),
-    name text not null,
     description text,
     owned_by uuid references person_account not null,
-    created_at timestamptz not null
+    created_at timestamptz not null default now()
 );
 
 create table service_account_access (

@@ -1,10 +1,10 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
-    id::Id,
     project::{ProjectCompact, ProjectPredicate, ProjectQuery, SavedProjectRecord},
 };
 use futures::StreamExt;
+use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
@@ -58,8 +58,8 @@ impl AsPredicate for ProjectPredicate {
     }
 }
 
-pub(super) fn project_simple_links(id: Id) -> SimpleLinks {
-    SimpleLinks::from_str_and_id("/projects", id)
+pub(super) fn project_simple_links(id: Uuid) -> SimpleLinks {
+    SimpleLinks::from_str_and_id("/projects", id.into())
 }
 
 pub fn project_from_record(record: SavedProjectRecord) -> ProjectCompact {
@@ -98,6 +98,6 @@ mod test {
         let selected = select_projects_compact(&tx, &mut query).await.unwrap();
 
         assert_eq!(selected.len(), 1);
-        assert_eq!(*selected[0].record.id, *inserted.record().id);
+        assert_eq!(selected[0].record.id, inserted.record().id);
     }
 }

@@ -51,7 +51,6 @@ async fn insert_person(
     validate_email(record.email.as_ref().map(NonemptyString::as_ref))?;
 
     let id = db::insert_into(tx, "person", record).await?;
-    println!("successfully inserted person");
 
     let (_, person) = tokio::try_join!(
         provision_db_user(tx, id, permissions_to_grant, permissions_to_revoke),
@@ -70,18 +69,13 @@ pub(super) async fn provision_db_user(
     tx.acquire_user_permisssions_lock().await?;
 
     create_db_user(tx, person_id).await?;
-    println!("successfully created db user");
     // In order to determine whether we should allow this user to grant permissions
     // to others, we grant/revoke create person permissions first
     let can_grant_to_others =
         modify_person_permissions(tx, person_id, permissions_to_grant, permissions_to_revoke)
             .await?;
-    println!("successfully modified person permissions");
     grant_permissions_to_db_user(tx, person_id, permissions_to_grant, can_grant_to_others).await?;
-    println!("successfully granted other permissions");
     revoke_permissions_from_db_user(tx, person_id, permissions_to_revoke).await?;
-    println!("successfully revoked other permissions");
-    println!("successfully provisioned db user");
 
     Ok(())
 }
@@ -198,6 +192,7 @@ pub mod test {
         // Create a new person with permissions to create every entity in the chain from
         // an institution to a Chromium dataset
         let (_, person) = insert_test_person_and_institution(&tx, |p| {
+            p.record.is_staff = false;
             p.permissions_to_grant = vec![
                 ResourcePermission::Institution(vec![Action::Create]),
                 ResourcePermission::Person(vec![Action::Create]),
@@ -219,13 +214,9 @@ pub mod test {
         let mut client = db_client_as_user(*person.record.id).await;
         let tx = client.begin().await.unwrap();
 
-        // TODO: once we have `insert_test_chromium_dataset`, use that to ensure the
-        // user can insert everything required in the chain from an institution to a
-        // Chromium dataset
-
-        // Check that they cannot insert a project
-        let error = insert_test_project(&tx, |_| ()).await.unwrap_err();
-        std::assert_matches!(error, ErrorInner::PermissionDenied { .. });
+        // Ensure they can insert an institution (since they were granted permission to
+        // do so)
+        insert_test_institution(&tx, |_| ()).await.unwrap();
     }
 
     // This test just ensures that the correct error is returned when there's an
@@ -271,20 +262,26 @@ pub mod test {
 
         tx.commit().await.unwrap();
 
-        // Log in as the created person and create another person with that permission
+        // Log in as the created person
         let mut client = db_client_as_user(*person.record.id).await;
         let tx = client.begin().await.unwrap();
 
-        insert_test_person_and_institution(&tx, grant_create_person)
-            .await
-            .unwrap();
-
-        // Also try to grant a permission that this user doesn't actually have
-        let error = insert_test_person_and_institution(&tx, |p| {
+        // The newly created person should be able to create another person, but giving
+        // them permissions to create a project should silently fail
+        let (_, person) = insert_test_person_and_institution(&tx, |p| {
             p.permissions_to_grant = vec![ResourcePermission::Project(vec![Action::Create])].into()
         })
         .await
-        .unwrap_err();
+        .unwrap();
+
+        tx.commit().await.unwrap();
+
+        // Finally, log in as the most newly created person
+        let mut client = db_client_as_user(*person.record.id).await;
+        let tx = client.begin().await.unwrap();
+
+        // Ensure that they can't create a project
+        let error = insert_test_project(&tx, |_| ()).await.unwrap_err();
 
         std::assert_matches!(error, ErrorInner::PermissionDenied { .. });
     }

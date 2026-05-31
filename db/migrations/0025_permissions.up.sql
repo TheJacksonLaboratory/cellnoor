@@ -43,6 +43,8 @@ grant insert, select, update on person, person_account to auth;
 grant select on institution to auth;
 alter user auth with createrole;
 
+-- Only grant select on the tables and views a user accesses directly to prevent the developer from forgetting that
+-- there are convenient views already made
 grant select on institution,
 person_public,
 service_account,
@@ -75,15 +77,67 @@ chromium_dataset_to_specimen,
 chromium_dataset_raw_file,
 chromium_dataset_parsed_file to public;
 
-grant insert, update, delete on service_account, service_account_access, api_key to public;
+grant insert (description, owned_by), update (description, owned_by), delete on service_account to public;
+
+create or replace function current_user_has_access_to_service_account(
+    service_account_id_to_check uuid
+) returns boolean language plpgsql volatile strict as $$
+    declare
+        has_access boolean;
+        current_user_id uuid = current_user::uuid;
+    begin
+        select exists (select 1 from service_account_access where current_user_id = service_account_access.person_id and service_account_access.service_account_id = service_account_id_to_check) into has_access;
+
+        return has_access;
+    end;
+$$;
 
 alter table service_account enable row level security;
-create policy service_account_access on service_account using (
-    service_account.id in (
-        select service_account_access.service_account_id from service_account_access
-        where service_account_access.person_id = current_user::uuid
-    )
+create policy anyone_can_create_service_account on service_account for insert with check (true);
+create policy only_owner_can_update_service_account on service_account for update using (current_user::uuid = owned_by);
+create policy select_service_account on service_account for select using (
+    current_user::uuid = owned_by or current_user_has_access_to_service_account(service_account.id)
 );
+create policy delete_service_account on service_account for delete using (current_user::uuid = owned_by);
+
+grant insert (description, hashed_key, person_id, service_account_id, expires_at),
+update (description, hashed_key, person_id, service_account_id, expires_at),
+delete on api_key to public;
+alter table api_key enable row level security;
+create policy api_key_access on api_key using (
+    current_user::uuid = person_id or (current_user_has_access_to_service_account(api_key.service_account_id))
+);
+
+create or replace function current_user_is_staff() returns boolean language plpgsql volatile strict as $$
+    declare
+        user_is_staff boolean;
+        current_user_id uuid = current_user::uuid;
+    begin
+        select is_staff from person_public where id = current_user_id into user_is_staff;
+        return user_is_staff;
+    end;
+$$;
+
+create or replace function current_user_is_project_creator(
+    project_id_to_check uuid
+) returns boolean language plpgsql volatile strict as $$
+    declare
+        project_creator uuid;
+        current_user_id uuid = current_user::uuid;
+    begin
+        select created_by from project where id = project_id_to_check into project_creator;
+
+        return project_creator = current_user_id;
+    end;
+$$;
+
+create or replace function current_user_is_staff_or_project_creator(
+    project_id_to_check uuid
+) returns boolean language plpgsql volatile strict as $$
+    begin
+        return current_user_is_staff() or current_user_is_project_creator(project_id_to_check);
+    end;
+$$;
 
 create or replace function current_user_has_access_to_project(
     project_id_to_check uuid
@@ -92,20 +146,26 @@ create or replace function current_user_has_access_to_project(
         has_access boolean;
         current_user_id uuid = current_user::uuid;
     begin
-        select is_staff from person_public where id = current_user_id into has_access;
-        if has_access then
-            return has_access;
-        end if;
-
         select exists (select 1 from project_access where current_user_id in (project_access.person_id, project_access.api_key_id) and project_access.project_id = project_id_to_check) into has_access;
+
         return has_access;
     end;
 $$;
 
--- Enable row-level security. Note that because every view comes back to specimen, and specimen has
--- `security_invoker = true`, we don't need to enable it for any experimental entities besides projects and specimens
-alter table project enable row level security;
-create policy project_access on project using (current_user_has_access_to_project(project.id));
+-- Note that we don't enable RLS for projects because that would cause infinite recursion
+alter table project_access enable row level security;
+create policy anyone_can_see_project_membership on project_access for select using (true);
+create policy only_staff_or_creator_can_add_others on project_access for insert with check (
+    current_user_is_staff_or_project_creator(project_access.project_id)
+);
+create policy only_staff_or_creator_can_remove_others on project_access for delete using (
+    current_user_is_staff_or_project_creator(project_access.project_id)
+);
 
+-- Enable row-level security. Note that because every view comes back to specimen, and specimen has
+-- `security_invoker = true`, we don't need to enable it for anything else
 alter table specimen enable row level security;
-create policy specimen_access on specimen using (current_user_has_access_to_project(specimen.project_id));
+create policy only_project_members_can_see_specimen on specimen using (
+    current_user_is_staff_or_project_creator(specimen.project_id)
+    or current_user_has_access_to_project(specimen.project_id)
+);

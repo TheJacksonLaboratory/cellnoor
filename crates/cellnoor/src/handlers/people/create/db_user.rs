@@ -184,7 +184,7 @@ fn permission_as_tableset(permission: &ResourcePermission) -> &'static str {
     match permission {
         ResourcePermission::Institution(_) => "institution",
         ResourcePermission::Person(_) => "person",
-        ResourcePermission::Project(_) => "project",
+        ResourcePermission::Project(_) => "project, project_access",
         ResourcePermission::Specimen(_) => "specimen",
         ResourcePermission::AssayConstantData(_) => {
             "tenx_assay, index_kit, single_index_set, dual_index_set, library_type_specification, \

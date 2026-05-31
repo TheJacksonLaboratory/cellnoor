@@ -1,6 +1,7 @@
 create table project (
     id uuid primary key default uuidv7(),
     name case_insensitive_text unique not null,
+    created_by uuid references person not null default current_user::uuid,
     started_at timestamptz not null,
     ended_at timestamptz not null,
 
