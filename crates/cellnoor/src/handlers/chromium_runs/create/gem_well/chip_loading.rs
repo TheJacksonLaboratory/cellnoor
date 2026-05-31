@@ -10,7 +10,7 @@ use crate::{
     error::ErrorInner,
 };
 
-pub async fn insert_standard_chip_loading(
+pub(super) async fn insert_standard_chip_loading(
     tx: &db::Transaction<'_>,
     loading: &NewStandardChipLoading,
     gem_well_id: Uuid,
@@ -20,7 +20,7 @@ pub async fn insert_standard_chip_loading(
     insert_chip_loading(tx, &chip_loading).await
 }
 
-pub async fn insert_ocm_chip_loading(
+pub(super) async fn insert_ocm_chip_loading(
     tx: &db::Transaction<'_>,
     loading: &NewOcmChipLoading,
     gem_well_id: Uuid,

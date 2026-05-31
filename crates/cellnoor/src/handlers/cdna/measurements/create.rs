@@ -32,7 +32,7 @@ pub async fn create_cdna_measurement(
     Ok(response)
 }
 
-pub async fn insert_cdna_measurement(
+pub(in super::super) async fn insert_cdna_measurement(
     tx: &db::Transaction<'_>,
     cdna_id: Uuid,
     record: &NewNucleicAcidMeasurement,

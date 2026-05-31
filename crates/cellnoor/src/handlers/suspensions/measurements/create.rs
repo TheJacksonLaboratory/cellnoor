@@ -32,7 +32,7 @@ pub async fn create_suspension_measurement(
     Ok(response)
 }
 
-pub async fn insert_suspension_measurement(
+pub(in super::super) async fn insert_suspension_measurement(
     tx: &db::Transaction<'_>,
     suspension_id: Uuid,
     record: &NewSuspensionMeasurement,

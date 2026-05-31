@@ -32,7 +32,7 @@ pub async fn create_library_measurement(
     Ok(response)
 }
 
-pub async fn insert_library_measurement(
+pub(in super::super) async fn insert_library_measurement(
     tx: &db::Transaction<'_>,
     library_id: Uuid,
     record: &NewNucleicAcidMeasurement,

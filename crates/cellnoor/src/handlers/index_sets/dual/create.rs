@@ -31,7 +31,7 @@ pub async fn create_dual_index_sets(
     Ok(Json(()))
 }
 
-pub async fn insert_dual_index_sets(
+async fn insert_dual_index_sets(
     tx: &db::Transaction<'_>,
     sets: &HashMap<String, NewDualIndexSet>,
 ) -> Result<(), ErrorInner> {

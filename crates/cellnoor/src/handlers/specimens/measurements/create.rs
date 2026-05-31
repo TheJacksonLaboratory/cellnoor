@@ -32,7 +32,7 @@ pub async fn create_specimen_measurement(
     Ok(response)
 }
 
-pub async fn insert_specimen_measurement(
+pub(in super::super) async fn insert_specimen_measurement(
     tx: &db::Transaction<'_>,
     specimen_id: Uuid,
     record: &NewSpecimenMeasurement,

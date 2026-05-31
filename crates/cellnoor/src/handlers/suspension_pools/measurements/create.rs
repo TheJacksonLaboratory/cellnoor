@@ -32,7 +32,7 @@ pub async fn create_suspension_pool_measurement(
     Ok(response)
 }
 
-pub async fn insert_suspension_pool_measurement(
+pub(in super::super) async fn insert_suspension_pool_measurement(
     tx: &db::Transaction<'_>,
     pool_id: Uuid,
     record: &NewSuspensionPoolMeasurement,

@@ -16,7 +16,7 @@ use crate::{
 
 mod chip_loading;
 
-pub async fn insert_standard_gem_well(
+pub(super) async fn insert_standard_gem_well(
     tx: &db::Transaction<'_>,
     NewStandardGemWell {
         readable_id,
@@ -35,7 +35,7 @@ pub async fn insert_standard_gem_well(
     Ok(())
 }
 
-pub async fn insert_ocm_gem_well(
+pub(super) async fn insert_ocm_gem_well(
     tx: &db::Transaction<'_>,
     NewOcmGemWell {
         readable_id,
@@ -58,7 +58,7 @@ pub async fn insert_ocm_gem_well(
     Ok(())
 }
 
-pub async fn insert_mixed_gem_well(
+pub(super) async fn insert_mixed_gem_well(
     tx: &db::Transaction<'_>,
     NewMixedGemWell {
         readable_id,

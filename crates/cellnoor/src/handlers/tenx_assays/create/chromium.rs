@@ -9,7 +9,7 @@ use crate::{
     },
 };
 
-pub async fn insert_chromium_assay(
+pub(super) async fn insert_chromium_assay(
     tx: &db::Transaction<'_>,
     assay: &NewChromiumAssay,
 ) -> Result<Uuid, ErrorInner> {

@@ -28,7 +28,7 @@ pub async fn create_single_index_sets(
     Ok(Json(()))
 }
 
-pub async fn insert_single_index_sets(
+async fn insert_single_index_sets(
     tx: &db::Transaction<'_>,
     sets: &[(String, [String; 4])],
 ) -> Result<(), ErrorInner> {

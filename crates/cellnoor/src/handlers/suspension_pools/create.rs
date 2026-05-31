@@ -112,7 +112,7 @@ pub(super) async fn insert_suspension_pool_preparers(
     Ok(())
 }
 
-pub(super) async fn insert_suspension_poolings(
+async fn insert_suspension_poolings(
     tx: &db::Transaction<'_>,
     pool_id: Uuid,
     suspensions: &[(Uuid, Option<Uuid>)],

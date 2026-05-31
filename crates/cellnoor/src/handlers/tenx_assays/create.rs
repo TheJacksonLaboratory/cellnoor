@@ -35,7 +35,7 @@ pub async fn create_tenx_assay(
     Ok(response)
 }
 
-pub async fn insert_tenx_assay(
+async fn insert_tenx_assay(
     tx: &db::Transaction<'_>,
     new: &NewTenxAssay,
 ) -> Result<TenxAssay, ErrorInner> {
