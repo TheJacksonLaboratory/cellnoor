@@ -67,6 +67,10 @@ impl PermissionsToGrant {
     pub fn iter(&self) -> Iter<'_, ResourcePermission> {
         self.0.iter()
     }
+
+    pub fn contains(&self, x: &ResourcePermission) -> bool {
+        self.0.contains(x)
+    }
 }
 
 impl From<Vec<ResourcePermission>> for PermissionsToGrant {
@@ -82,6 +86,10 @@ pub struct PermissionsToRevoke(Vec<ResourcePermission>);
 impl PermissionsToRevoke {
     pub fn iter(&self) -> Iter<'_, ResourcePermission> {
         self.0.iter()
+    }
+
+    pub fn contains(&self, x: &ResourcePermission) -> bool {
+        self.0.contains(x)
     }
 }
 

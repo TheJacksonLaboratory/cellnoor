@@ -109,7 +109,14 @@ pub(super) async fn provision_db_user(
     tx.acquire_user_permisssions_lock().await?;
 
     create_db_user(tx, person_id).await?;
-    grant_permissions_to_db_user(tx, person_id, permissions_to_grant).await?;
+    let can_create_person = modify_create_person_permissions(
+        tx,
+        person_id,
+        permissions_to_grant,
+        permissions_to_revoke,
+    )
+    .await?;
+    grant_permissions_to_db_user(tx, person_id, permissions_to_grant, can_create_person).await?;
     revoke_permissions_from_db_user(tx, person_id, permissions_to_revoke).await?;
 
     Ok(())
@@ -127,14 +134,55 @@ async fn create_db_user(tx: &db::Transaction<'_>, user_id: Uuid) -> Result<(), E
     Ok(())
 }
 
+async fn modify_create_person_permissions(
+    tx: &db::Transaction<'_>,
+    user_id: Uuid,
+    grant_permissions: &PermissionsToGrant,
+    revoke_permissions: &PermissionsToRevoke,
+) -> Result<bool, ErrorInner> {
+    let filter_person_creation_perms = |p: &&ResourcePermission| matches!(*p, ResourcePermission::Person(a) if a.contains(&Action::Create));
+
+    let grant_create_person = grant_permissions
+        .iter()
+        .filter(filter_person_creation_perms)
+        .map(Clone::clone)
+        .collect::<Vec<_>>()
+        .into();
+
+    let revoke_create_person = revoke_permissions
+        .iter()
+        .filter(filter_person_creation_perms)
+        .map(Clone::clone)
+        .collect::<Vec<_>>()
+        .into();
+
+    // We pass false here because we haven't run the complete set of operations that
+    // may revoke the user's 'create person' privilege. This will be remedied
+    // because we run another set of grants later
+    grant_permissions_to_db_user(tx, user_id, &grant_create_person, false).await?;
+    revoke_permissions_from_db_user(tx, user_id, &revoke_create_person).await?;
+
+    let can_create_person = user_can_create_person(tx, user_id).await?;
+    if can_create_person {
+        tx.execute_raw_sql(&format!(r#"alter user "{user_id}" with createrole"#), &[])
+            .await?;
+    } else {
+        tx.execute_raw_sql(&format!(r#"alter user "{user_id}" with nocreaterole"#), &[])
+            .await?;
+    };
+
+    Ok(can_create_person)
+}
+
 async fn grant_permissions_to_db_user(
     tx: &db::Transaction<'_>,
     user_id: Uuid,
     permissions: &PermissionsToGrant,
+    can_grant_to_others: bool,
 ) -> Result<(), ErrorInner> {
     let grant_stmts: Vec<_> = permissions
         .iter()
-        .map(|p| construct_grant_or_revoke_statement(GrantOrRevoke::Grant, user_id, p))
+        .map(|p| construct_grant_statement(user_id, p, can_grant_to_others))
         .collect();
 
     let grant_ops = grant_stmts.iter().map(|s| tx.execute_raw_sql(s, &[]));
@@ -148,23 +196,36 @@ async fn revoke_permissions_from_db_user(
     user_id: Uuid,
     permissions: &PermissionsToRevoke,
 ) -> Result<(), ErrorInner> {
-    let revoke_stmt: Vec<_> = permissions
+    let revoke_stmts: Vec<_> = permissions
         .iter()
-        .map(|p| construct_grant_or_revoke_statement(GrantOrRevoke::Revoke, user_id, p))
+        .map(|p| construct_revoke_statement(user_id, p))
         .collect();
 
-    let revoke_ops = revoke_stmt.iter().map(|s| tx.execute_raw_sql(s, &[]));
+    let revoke_ops = revoke_stmts.iter().map(|s| tx.execute_raw_sql(s, &[]));
     futures::future::try_join_all(revoke_ops).await?;
 
     Ok(())
 }
 
-#[derive(Clone, Copy, strum::Display)]
+async fn user_can_create_person(
+    tx: &db::Transaction<'_>,
+    user_id: Uuid,
+) -> Result<bool, ErrorInner> {
+    static SELECT_HAS_TABLE_PRIVILEGE: SqlBuilder =
+        SqlBuilder::new("select has_table_privilege($1, 'person', 'insert')");
+
+    Ok(tx
+        .query_one_into(&SELECT_HAS_TABLE_PRIVILEGE.finish_with_params(vec![&user_id.to_string()]))
+        .await?)
+}
+
+#[derive(Clone, Copy, strum::Display, PartialEq)]
 #[strum(serialize_all = "snake_case")]
 enum GrantOrRevoke {
     Grant,
     Revoke,
 }
+
 impl GrantOrRevoke {
     fn preposition(self) -> &'static str {
         match self {
@@ -174,10 +235,28 @@ impl GrantOrRevoke {
     }
 }
 
+fn construct_grant_statement(
+    user_id: Uuid,
+    resource_permissions: &ResourcePermission,
+    can_grant_to_others: bool,
+) -> String {
+    construct_grant_or_revoke_statement(
+        GrantOrRevoke::Grant,
+        user_id,
+        resource_permissions,
+        can_grant_to_others,
+    )
+}
+
+fn construct_revoke_statement(user_id: Uuid, resource_permissions: &ResourcePermission) -> String {
+    construct_grant_or_revoke_statement(GrantOrRevoke::Revoke, user_id, resource_permissions, false)
+}
+
 fn construct_grant_or_revoke_statement(
     grant_or_revoke: GrantOrRevoke,
     user_id: Uuid,
     resource_permissions: &ResourcePermission,
+    with_grant: bool,
 ) -> String {
     let resource_names = permission_as_tableset(resource_permissions);
     let actions = match resource_permissions {
@@ -193,8 +272,14 @@ fn construct_grant_or_revoke_statement(
     let actions: Vec<_> = actions.iter().map(Action::as_str).collect();
     let actions = actions.join(", ");
 
+    let suffix = if with_grant && grant_or_revoke == GrantOrRevoke::Grant {
+        "with grant option"
+    } else {
+        ""
+    };
+
     format!(
-        r#"{grant_or_revoke} {actions} on {resource_names} {} "{user_id}""#,
+        r#"{grant_or_revoke} {actions} on {resource_names} {} "{user_id}" {suffix}"#,
         grant_or_revoke.preposition()
     )
 }
@@ -224,7 +309,6 @@ fn permission_as_tableset(permission: &ResourcePermission) -> &'static str {
 
 #[cfg(test)]
 pub mod test {
-
     use cellnoor_types::{
         id::NoId,
         person::{Action, NewPerson, NewPersonRecord, Person, ResourcePermission},
@@ -337,5 +421,45 @@ pub mod test {
                 referencing_field: "institution_id".to_owned(),
             },
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn user_can_grant_to_others() {
+        let create = vec![Action::Create];
+
+        let grant_create_person = |p: &mut NewPerson| {
+            p.permissions_to_grant = vec![
+                ResourcePermission::Institution(create.clone()),
+                ResourcePermission::Person(create.clone()),
+            ]
+            .into()
+        };
+
+        // First, create a person that can create other people
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let (_, person) = insert_test_person_and_institution(&tx, grant_create_person)
+            .await
+            .unwrap();
+
+        tx.commit().await.unwrap();
+
+        // Log in as the created person and create another person with that permission
+        let mut client = db_client_as_user(*person.record.id).await;
+        let tx = client.begin().await.unwrap();
+
+        insert_test_person_and_institution(&tx, grant_create_person)
+            .await
+            .unwrap();
+
+        // Also try to grant a permission that this user doesn't actually have
+        let error = insert_test_person_and_institution(&tx, |p| {
+            p.permissions_to_grant = vec![ResourcePermission::Project(vec![Action::Create])].into()
+        })
+        .await
+        .unwrap_err();
+
+        std::assert_matches!(error, ErrorInner::PermissionDenied { .. });
     }
 }

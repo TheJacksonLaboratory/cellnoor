@@ -24,12 +24,12 @@ pub async fn update_person(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(person): Json<NewPerson>,
+    Json(mut person): Json<NewPerson>,
 ) -> Result<Json<Person>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = update_person_by_id(&tx, id, &person).await.map(Json)?;
+    let response = update_person_by_id(&tx, id, &mut person).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -43,7 +43,7 @@ async fn update_person_by_id(
         record,
         permissions_to_grant,
         permissions_to_revoke,
-    }: &NewPerson,
+    }: &mut NewPerson,
 ) -> Result<Person, ErrorInner> {
     validate_email(record.email.as_ref().map(NonemptyString::as_ref))?;
 
@@ -85,6 +85,8 @@ mod test {
             .unwrap();
         pre_update.record.name = "updated".to_nonempty_string();
 
-        update_person_by_id(&tx, *id, &pre_update).await.unwrap();
+        update_person_by_id(&tx, *id, &mut pre_update)
+            .await
+            .unwrap();
     }
 }
