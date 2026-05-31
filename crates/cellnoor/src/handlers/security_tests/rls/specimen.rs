@@ -8,7 +8,6 @@ use uuid::Uuid;
 
 use crate::{
     db,
-    error::ErrorInner,
     handlers::{
         projects::index_detailed::select_projects_detailed,
         security_tests::rls::project::insert_inaccessible_project,

@@ -7,7 +7,6 @@ use uuid::Uuid;
 
 use crate::{
     db,
-    error::ErrorInner,
     handlers::projects::{
         create::test::insert_test_project, index_detailed::select_projects_detailed,
     },

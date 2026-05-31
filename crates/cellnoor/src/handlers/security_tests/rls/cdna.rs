@@ -8,7 +8,6 @@ use uuid::Uuid;
 
 use crate::{
     db,
-    error::ErrorInner,
     handlers::{
         cdna::{
             create::test::insert_test_cdna_and_chromium_run, index_detailed::select_cdna_detailed,
