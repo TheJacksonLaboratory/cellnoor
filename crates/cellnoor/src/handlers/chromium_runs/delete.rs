@@ -27,10 +27,7 @@ pub async fn delete_chromium_run(
     Ok(response)
 }
 
-async fn delete_chromium_run_by_id(
-    tx: &db::Transaction<'_>,
-    id: Uuid,
-) -> Result<(), ErrorInner> {
+async fn delete_chromium_run_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
     db::delete_by_id(tx, "chromium_run", id).await
 }
 

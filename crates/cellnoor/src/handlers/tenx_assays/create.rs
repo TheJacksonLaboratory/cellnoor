@@ -9,10 +9,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{
-        self, AsFieldValuePairs, FieldValuePairs, SqlBuilder,
-        insert_into_no_returning,
-    },
+    db::{self, AsFieldValuePairs, FieldValuePairs, SqlBuilder, insert_into_no_returning},
     error::{Error, ErrorInner},
     handlers::tenx_assays::create::chromium::insert_chromium_assay,
     state::AppState,

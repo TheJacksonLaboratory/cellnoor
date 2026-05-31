@@ -2,8 +2,8 @@ use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
     chromium_dataset::{
-        ChromiumDatasetCompact, ChromiumDatasetPredicate,
-        ChromiumDatasetPredicateInner, ChromiumDatasetQuery, SavedChromiumDatasetRecord,
+        ChromiumDatasetCompact, ChromiumDatasetPredicate, ChromiumDatasetPredicateInner,
+        ChromiumDatasetQuery, SavedChromiumDatasetRecord,
     },
     id::Id,
 };

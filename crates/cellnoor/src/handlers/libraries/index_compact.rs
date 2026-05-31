@@ -3,8 +3,7 @@ use cellnoor_types::{
     SimpleLinks,
     id::Id,
     library::{
-        LibraryCompact, LibraryPredicate, LibraryPredicateInner, LibraryQuery,
-        SavedLibraryRecord,
+        LibraryCompact, LibraryPredicate, LibraryPredicateInner, LibraryQuery, SavedLibraryRecord,
     },
 };
 use futures::StreamExt;

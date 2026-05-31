@@ -3,8 +3,9 @@ use cellnoor_types::{
     SimpleLinks,
     id::Id,
     suspension_pool::{
-        SavedSuspensionPoolRecord, SavedTaggedSpecimenRecord, SuspensionPoolCompact, SuspensionPoolLinks, SuspensionPoolPredicate,
-        SuspensionPoolPredicateInner, SuspensionPoolQuery, TaggedSpecimen,
+        SavedSuspensionPoolRecord, SavedTaggedSpecimenRecord, SuspensionPoolCompact,
+        SuspensionPoolLinks, SuspensionPoolPredicate, SuspensionPoolPredicateInner,
+        SuspensionPoolQuery, TaggedSpecimen,
     },
 };
 use futures::StreamExt;
