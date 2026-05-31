@@ -33,7 +33,8 @@ pub async fn index_suspension_pools_detailed(
     Ok(response)
 }
 
-pub(super) async fn select_suspension_pools_detailed(
+// Visibility required for tests
+pub(in super::super) async fn select_suspension_pools_detailed(
     tx: &db::Transaction<'_>,
     query: &mut SuspensionPoolQuery,
 ) -> Result<Vec<SuspensionPoolDetailed>, ErrorInner> {

@@ -27,6 +27,6 @@ pub async fn delete_library(
     Ok(response)
 }
 
-pub async fn delete_library_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
+async fn delete_library_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
     db::delete_by_id(tx, "library", id).await
 }

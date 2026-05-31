@@ -29,7 +29,7 @@ pub async fn create_specimen(
     Ok(response)
 }
 
-pub async fn insert_specimen(
+async fn insert_specimen(
     tx: &db::Transaction<'_>,
     record: NewSpecimen,
 ) -> Result<SpecimenDetailed, ErrorInner> {

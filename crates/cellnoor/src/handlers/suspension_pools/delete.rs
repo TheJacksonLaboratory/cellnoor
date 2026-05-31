@@ -27,7 +27,7 @@ pub async fn delete_suspension_pool(
     Ok(response)
 }
 
-pub async fn delete_suspension_pool_by_id(
+async fn delete_suspension_pool_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<(), ErrorInner> {

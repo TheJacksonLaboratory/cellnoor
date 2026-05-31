@@ -25,8 +25,8 @@ pub async fn index_projects_detailed(
     Ok(response)
 }
 
-// This visibility is necessary for RLS tests
-pub(in crate::handlers) async fn select_projects_detailed(
+// Visibility required for tests
+pub(in super::super) async fn select_projects_detailed(
     tx: &db::Transaction<'_>,
     query: &mut ProjectQuery,
 ) -> Result<Vec<ProjectDetailed>, ErrorInner> {

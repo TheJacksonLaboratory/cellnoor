@@ -34,7 +34,7 @@ pub async fn update_specimen(
     Ok(response)
 }
 
-pub async fn update_specimen_by_id(
+async fn update_specimen_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     record: NewSpecimen,

@@ -24,7 +24,7 @@ pub async fn create_multiplexing_tag(
     Ok(Json(id))
 }
 
-pub async fn insert_multiplexing_tag(
+async fn insert_multiplexing_tag(
     tx: &db::Transaction<'_>,
     new: &NewMultiplexingTag,
 ) -> Result<Uuid, ErrorInner> {

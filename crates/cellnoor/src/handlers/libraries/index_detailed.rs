@@ -32,7 +32,8 @@ pub async fn index_libraries_detailed(
     Ok(response)
 }
 
-pub(super) async fn select_libraries_detailed(
+// Visibility required for tests
+pub(in super::super) async fn select_libraries_detailed(
     tx: &db::Transaction<'_>,
     query: &mut LibraryQuery,
 ) -> Result<Vec<LibraryDetailed>, ErrorInner> {

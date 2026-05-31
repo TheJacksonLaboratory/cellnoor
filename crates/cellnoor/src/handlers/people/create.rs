@@ -33,7 +33,7 @@ pub async fn create_person(
     Ok(response)
 }
 
-pub async fn insert_person(
+async fn insert_person(
     tx: &db::Transaction<'_>,
     NewPerson {
         record,

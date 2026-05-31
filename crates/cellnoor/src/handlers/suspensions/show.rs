@@ -31,8 +31,8 @@ pub async fn show_suspension(
     Ok(response)
 }
 
-// This visibility is necessary for RLS tests
-pub(in crate::handlers) async fn select_suspension_by_id(
+// Visibility required for tests
+pub(in super::super) async fn select_suspension_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<SuspensionDetailed, ErrorInner> {

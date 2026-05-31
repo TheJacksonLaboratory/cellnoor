@@ -36,7 +36,7 @@ pub async fn update_person(
     Ok(response)
 }
 
-pub async fn update_person_by_id(
+async fn update_person_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     NewPerson {

@@ -27,7 +27,7 @@ pub async fn delete_project(
     Ok(response)
 }
 
-pub async fn delete_project_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
+async fn delete_project_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
     db::delete_by_id(tx, "project", id).await
 }
 

@@ -28,7 +28,7 @@ pub async fn delete_person(
     Ok(response)
 }
 
-pub async fn delete_person_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
+async fn delete_person_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
     tokio::try_join!(db::delete_by_id(tx, "person", id), drop_db_user(tx, id))?;
 
     Ok(())

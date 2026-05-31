@@ -32,8 +32,8 @@ pub async fn index_suspensions_detailed(
     Ok(response)
 }
 
-// This visibility is necessary for RLS tests
-pub(in crate::handlers) async fn select_suspensions_detailed(
+// Visibility required for tests
+pub(in super::super) async fn select_suspensions_detailed(
     tx: &db::Transaction<'_>,
     query: &mut SuspensionQuery,
 ) -> Result<Vec<SuspensionDetailed>, ErrorInner> {

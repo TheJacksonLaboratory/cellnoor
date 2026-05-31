@@ -27,6 +27,6 @@ pub async fn delete_specimen(
     Ok(response)
 }
 
-pub async fn delete_specimen_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
+async fn delete_specimen_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
     db::delete_by_id(tx, "specimen", id).await
 }

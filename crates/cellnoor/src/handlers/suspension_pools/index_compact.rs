@@ -35,8 +35,7 @@ pub async fn index_suspension_pools(
     Ok(response)
 }
 
-// This visibility is necessary for RLS tests
-pub(in crate::handlers) async fn select_suspension_pools_compact(
+async fn select_suspension_pools_compact(
     tx: &db::Transaction<'_>,
     query: &mut SuspensionPoolQuery,
 ) -> Result<Vec<SuspensionPoolCompact>, ErrorInner> {

@@ -28,8 +28,8 @@ pub async fn index_specimens_detailed(
     Ok(response)
 }
 
-// This visibility is necessary for RLS tests
-pub(in crate::handlers) async fn select_specimens_detailed(
+// Visibility required for tests
+pub(in super::super) async fn select_specimens_detailed(
     tx: &db::Transaction<'_>,
     query: &mut SpecimenQuery,
 ) -> Result<Vec<SpecimenDetailed>, ErrorInner> {

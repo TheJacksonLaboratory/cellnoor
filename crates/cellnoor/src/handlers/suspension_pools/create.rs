@@ -32,7 +32,7 @@ pub async fn create_suspension_pool(
     Ok(response)
 }
 
-pub async fn insert_suspension_pool(
+async fn insert_suspension_pool(
     tx: &db::Transaction<'_>,
     new: NewSuspensionPool,
 ) -> Result<SuspensionPoolDetailed, ErrorInner> {

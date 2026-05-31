@@ -32,6 +32,7 @@ pub async fn index_cdna_detailed(
     Ok(response)
 }
 
+// Visibility required for tests
 pub(in super::super) async fn select_cdna_detailed(
     tx: &db::Transaction<'_>,
     query: &mut CdnaQuery,

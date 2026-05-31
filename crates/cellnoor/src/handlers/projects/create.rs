@@ -25,7 +25,7 @@ pub async fn create_project(
     Ok(response)
 }
 
-pub async fn insert_project(
+async fn insert_project(
     tx: &db::Transaction<'_>,
     NewProject { record, people }: &NewProject,
 ) -> Result<ProjectDetailed, ErrorInner> {

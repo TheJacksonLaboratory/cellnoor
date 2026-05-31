@@ -34,6 +34,7 @@ pub async fn index_chromium_runs_detailed(
     Ok(response)
 }
 
+// Visibility required for tests
 pub(in super::super) async fn select_chromium_runs_detailed(
     tx: &db::Transaction<'_>,
     query: &mut ChromiumRunQuery,

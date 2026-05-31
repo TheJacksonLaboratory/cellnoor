@@ -32,7 +32,7 @@ pub async fn update_project(
     Ok(response)
 }
 
-pub async fn update_project_by_id(
+async fn update_project_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     NewProject { record, people }: &NewProject,

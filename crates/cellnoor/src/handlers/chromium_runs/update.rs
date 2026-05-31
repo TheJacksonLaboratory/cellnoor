@@ -31,7 +31,7 @@ pub async fn update_chromium_run(
     Ok(response)
 }
 
-pub async fn update_chromium_run_by_id(
+async fn update_chromium_run_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     update: &ChromiumRunUpdate,

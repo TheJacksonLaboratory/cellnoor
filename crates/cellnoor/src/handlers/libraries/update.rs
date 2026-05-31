@@ -35,7 +35,7 @@ pub async fn update_library(
     Ok(response)
 }
 
-pub async fn update_library_by_id(
+async fn update_library_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     LibraryUpdate {

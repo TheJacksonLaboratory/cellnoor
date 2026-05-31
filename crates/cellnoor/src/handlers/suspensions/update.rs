@@ -35,7 +35,7 @@ pub async fn update_suspension(
     Ok(response)
 }
 
-pub async fn update_suspension_by_id(
+async fn update_suspension_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     SuspensionUpdate {

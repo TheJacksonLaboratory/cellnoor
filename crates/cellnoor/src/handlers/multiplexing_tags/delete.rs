@@ -27,7 +27,7 @@ pub async fn delete_multiplexing_tag(
     Ok(response)
 }
 
-pub async fn delete_multiplexing_tag_by_id(
+async fn delete_multiplexing_tag_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<(), ErrorInner> {

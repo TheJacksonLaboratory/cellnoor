@@ -27,6 +27,6 @@ pub async fn delete_cdna(
     Ok(response)
 }
 
-pub async fn delete_cdna_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
+async fn delete_cdna_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
     db::delete_by_id(tx, "cdna", id).await
 }

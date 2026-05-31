@@ -31,7 +31,7 @@ pub async fn update_chromium_dataset(
     Ok(response)
 }
 
-pub async fn update_chromium_dataset_by_id(
+async fn update_chromium_dataset_by_id(
     tx: &db::Transaction<'_>,
     raw_files_url: &str,
     id: Uuid,

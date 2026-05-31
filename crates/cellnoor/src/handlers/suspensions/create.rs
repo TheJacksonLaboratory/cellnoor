@@ -30,7 +30,7 @@ pub async fn create_suspension(
     Ok(response)
 }
 
-pub async fn insert_suspension(
+async fn insert_suspension(
     tx: &db::Transaction<'_>,
     NewSuspension {
         record,
