@@ -1,6 +1,7 @@
 use cellnoor_types::{
-    cdna::{CdnaDetailed, CdnaQuery, NewCdna},
+    cdna::{CdnaDetailed, CdnaPredicate, CdnaPredicateInner, CdnaQuery, NewCdna},
     chromium_run::creation::{NewChromiumRun, standard::NewStandardChipLoading},
+    operator::UuidOperator,
 };
 use nonempty::NonemptyBoundedVec;
 use uuid::Uuid;
@@ -11,11 +12,9 @@ use crate::{
     handlers::{
         cdna::{
             create::test::insert_test_cdna_and_chromium_run, index_detailed::select_cdna_detailed,
-            show::select_cdna_by_id,
         },
         chromium_runs::create::test::insert_test_standard_chromium_run,
-        security_tests::rls::specimen::{get_user_id_from_specimen, insert_inaccessible_specimen},
-        specimens::show::select_specimen_by_id,
+        security_tests::rls::specimen::insert_inaccessible_specimen,
         suspensions::create::test::insert_test_suspension_and_specimen,
     },
     state::test_util::{db_client_as_admin, db_client_as_user},
@@ -71,9 +70,8 @@ async fn insert_inaccessible_cdna(tx: &db::Transaction<'_>) -> (NewCdna, CdnaDet
         .unwrap()
 }
 
-async fn get_user_id_from_cdna(tx: &db::Transaction<'_>, cdna: &CdnaDetailed) -> Uuid {
-    let specimen_id = *cdna.specimens[0].specimen.record.id;
-    get_user_id_from_specimen(tx, &select_specimen_by_id(tx, specimen_id).await.unwrap()).await
+async fn get_user_id_from_cdna(cdna: &CdnaDetailed) -> Uuid {
+    cdna.preparers[0]
 }
 
 async fn test_user_can_only_see_accessible_cdna(
@@ -84,19 +82,18 @@ async fn test_user_can_only_see_accessible_cdna(
         .await
         .unwrap();
 
-    assert_eq!(cdnas, vec![accessible_cdna]);
+    assert_eq!(cdnas, [accessible_cdna]);
 }
 
 async fn test_user_cannot_see_inaccessible_cdna(
     tx: &db::Transaction<'_>,
     inaccessible_cdna_id: Uuid,
 ) {
-    // Check that the inaccessible project causes a `ResourceNotFound`
-    let error = select_cdna_by_id(&tx, inaccessible_cdna_id)
-        .await
-        .unwrap_err();
+    let pred: CdnaPredicate = CdnaPredicateInner::Id(UuidOperator::Eq(inaccessible_cdna_id)).into();
 
-    assert_eq!(error, ErrorInner::ResourceNotFound);
+    let res = select_cdna_detailed(&tx, &mut pred.into()).await.unwrap();
+
+    assert_eq!(res, []);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -107,7 +104,7 @@ async fn row_level_security_for_cdna() {
     // Insert a cDNA the user can access and one the user cannot
     let ((_, accessible_cdna), (_, inaccessible_cdna)) =
         tokio::join!(insert_accessible_cdna(&tx), insert_inaccessible_cdna(&tx));
-    let user_id = get_user_id_from_cdna(&tx, &accessible_cdna).await;
+    let user_id = get_user_id_from_cdna(&accessible_cdna).await;
 
     // Commit this transaction so the change persists for the next part of the test
     tx.commit().await.unwrap();

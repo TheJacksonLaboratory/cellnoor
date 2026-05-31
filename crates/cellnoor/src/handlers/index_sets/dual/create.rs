@@ -40,8 +40,16 @@ async fn insert_dual_index_sets(
     };
 
     let first_kit_name = first_index_set_name?.kit_name();
-    let mut index_set_insertions = Vec::with_capacity(sets.len());
 
+    insert_index_kit(
+        tx,
+        &NewIndexKit {
+            name: first_kit_name,
+        },
+    )
+    .await?;
+
+    let mut index_set_insertions = Vec::with_capacity(sets.len());
     for (
         index_set_name,
         NewDualIndexSet {
@@ -74,14 +82,6 @@ async fn insert_dual_index_sets(
 
         index_set_insertions.push(insert_dual_index_set(tx, record));
     }
-
-    insert_index_kit(
-        tx,
-        &NewIndexKit {
-            name: first_kit_name,
-        },
-    )
-    .await?;
 
     futures::future::try_join_all(index_set_insertions).await?;
 
@@ -148,12 +148,22 @@ pub mod tests {
     ) -> Result<String, ErrorInner> {
         let name = DUAL_INDEX_SET_NAME.to_owned();
 
+        // Start a savepoint (manually) so we can acquire a lock that releases when we
+        // commit because running this helper concurrently causes issues. Use raw SQL
+        // instead of tx.begin() because that requires taking &mut db::Transaction<'_>,
+        // which would infect all the tests unecessarily
+        tx.execute_raw_sql("begin", &[]).await.unwrap();
+        tx.execute_raw_sql("lock table only index_kit, dual_index_set", &[])
+            .await
+            .unwrap();
+
         let sql =
             SqlBuilder::new("select count(*) from dual_index_set").finish_with_params(Vec::new());
 
         let n: i64 = tx.query_one_into(&sql).await.unwrap();
 
         if n > 0 {
+            tx.execute_raw_sql("commit", &[]).await.unwrap();
             return Ok(name);
         }
 
@@ -169,6 +179,8 @@ pub mod tests {
             )]),
         )
         .await?;
+
+        tx.execute_raw_sql("commit", &[]).await.unwrap();
 
         Ok(name)
     }

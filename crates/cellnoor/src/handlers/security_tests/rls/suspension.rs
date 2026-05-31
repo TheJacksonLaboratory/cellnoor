@@ -1,16 +1,20 @@
-use cellnoor_types::suspension::{NewSuspension, SuspensionDetailed, SuspensionQuery};
+use cellnoor_types::{
+    operator::UuidOperator,
+    suspension::{
+        NewSuspension, SuspensionDetailed, SuspensionPredicate, SuspensionPredicateInner,
+        SuspensionQuery,
+    },
+};
 use pretty_assertions::assert_eq;
 use uuid::Uuid;
 
 use crate::{
     db,
-    error::ErrorInner,
     handlers::{
-        projects::show::select_project_by_id,
         security_tests::rls::specimen::insert_inaccessible_specimen,
         suspensions::{
             create::test::insert_test_suspension_and_specimen,
-            index_detailed::select_suspensions_detailed, show::select_suspension_by_id,
+            index_detailed::select_suspensions_detailed,
         },
     },
     state::test_util::{db_client_as_admin, db_client_as_user},
@@ -36,15 +40,8 @@ async fn insert_inaccessible_suspension(
         .unwrap()
 }
 
-async fn get_user_id_from_suspension(
-    tx: &db::Transaction<'_>,
-    suspension: &SuspensionDetailed,
-) -> Uuid {
-    let project = select_project_by_id(&tx, suspension.specimen.record.project_id)
-        .await
-        .unwrap();
-
-    project.record.people[0]
+async fn get_user_id_from_suspension(suspension: &SuspensionDetailed) -> Uuid {
+    suspension.preparers[0]
 }
 
 async fn test_user_can_only_see_accessible_suspension(
@@ -58,19 +55,22 @@ async fn test_user_can_only_see_accessible_suspension(
         .await
         .unwrap();
 
-    assert_eq!(suspensions, vec![accessible_suspension]);
+    assert_eq!(suspensions, [accessible_suspension]);
 }
 
 async fn test_user_cannot_see_inaccessible_suspension(
     tx: &db::Transaction<'_>,
     inaccessible_suspension_id: Uuid,
 ) {
-    // Check that the inaccessible project causes a `ResourceNotFound`
-    let error = select_suspension_by_id(&tx, inaccessible_suspension_id)
-        .await
-        .unwrap_err();
+    let pred: SuspensionPredicate =
+        SuspensionPredicateInner::Id(UuidOperator::Eq(inaccessible_suspension_id)).into();
 
-    assert_eq!(error, ErrorInner::ResourceNotFound);
+    // Check that the inaccessible project causes a `ResourceNotFound`
+    let res = select_suspensions_detailed(&tx, &mut pred.into())
+        .await
+        .unwrap();
+
+    assert_eq!(res, []);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -83,7 +83,7 @@ async fn row_level_security_for_suspensions() {
         insert_accessible_suspension(&tx),
         insert_inaccessible_suspension(&tx)
     );
-    let user_id = get_user_id_from_suspension(&tx, &accessible_suspension).await;
+    let user_id = get_user_id_from_suspension(&accessible_suspension).await;
 
     // Commit this transaction so the change persists for the next part of the test
     tx.commit().await.unwrap();

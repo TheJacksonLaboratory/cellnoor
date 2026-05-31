@@ -31,7 +31,9 @@ pub async fn show_person(
     Ok(response)
 }
 
-// Visibility required for tests
-pub(in super::super) async fn select_person_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<Person, ErrorInner> {
+pub(super) async fn select_person_by_id(
+    tx: &db::Transaction<'_>,
+    id: Uuid,
+) -> Result<Person, ErrorInner> {
     db::select_one(tx, PersonPredicate::Id(UuidOperator::Eq(id)), select_people).await
 }

@@ -31,8 +31,7 @@ pub async fn show_specimen(
     Ok(response)
 }
 
-// Visibility required for tests
-pub(in super::super) async fn select_specimen_by_id(
+pub(super) async fn select_specimen_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<SpecimenDetailed, ErrorInner> {

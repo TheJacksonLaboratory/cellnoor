@@ -1,4 +1,7 @@
-use cellnoor_types::project::{NewProject, ProjectDetailed, ProjectQuery};
+use cellnoor_types::{
+    operator::UuidOperator,
+    project::{NewProject, ProjectDetailed, ProjectPredicate, ProjectQuery},
+};
 use pretty_assertions::assert_eq;
 use uuid::Uuid;
 
@@ -7,7 +10,6 @@ use crate::{
     error::ErrorInner,
     handlers::projects::{
         create::test::insert_test_project, index_detailed::select_projects_detailed,
-        show::select_project_by_id,
     },
     state::test_util::{db_client_as_admin, db_client_as_user},
 };
@@ -32,19 +34,21 @@ async fn test_user_can_only_see_accessible_project(
         .await
         .unwrap();
 
-    assert_eq!(projects, vec![accessible_project]);
+    assert_eq!(projects, [accessible_project]);
 }
 
 async fn test_user_cannot_see_inaccessible_project(
     tx: &db::Transaction<'_>,
     inaccessible_project_id: Uuid,
 ) {
-    // Check that the inaccessible project causes a `ResourceNotFound`
-    let error = select_project_by_id(&tx, inaccessible_project_id)
-        .await
-        .unwrap_err();
+    let res = select_projects_detailed(
+        &tx,
+        &mut ProjectPredicate::Id(UuidOperator::Eq(inaccessible_project_id)).into(),
+    )
+    .await
+    .unwrap();
 
-    assert_eq!(error, ErrorInner::ResourceNotFound);
+    assert_eq!(res, []);
 }
 
 #[tokio::test(flavor = "multi_thread")]

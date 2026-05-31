@@ -315,7 +315,7 @@ pub mod test {
 
         // Check that they cannot insert a project
         let error = insert_test_project(&tx, |_| ()).await.unwrap_err();
-        assert_eq!(error, ErrorInner::PermissionDenied);
+        std::assert_matches!(error, ErrorInner::PermissionDenied { .. });
     }
 
     // This test just ensures that the correct error is returned when there's an

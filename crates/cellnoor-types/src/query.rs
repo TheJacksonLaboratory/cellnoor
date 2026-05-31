@@ -79,3 +79,12 @@ where
         }
     }
 }
+
+impl<P, O> From<P> for ComplexQuery<P, O>
+where
+    O: Default,
+{
+    fn from(pred: P) -> Self {
+        Self::from_filter(pred)
+    }
+}

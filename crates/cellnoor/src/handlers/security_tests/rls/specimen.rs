@@ -1,4 +1,8 @@
-use cellnoor_types::specimen::{SpecimenDetailed, SpecimenQuery, creation::NewSpecimen};
+use cellnoor_types::{
+    operator::UuidOperator,
+    project::ProjectPredicate,
+    specimen::{SpecimenDetailed, SpecimenPredicate, SpecimenQuery, creation::NewSpecimen},
+};
 use pretty_assertions::assert_eq;
 use uuid::Uuid;
 
@@ -6,11 +10,11 @@ use crate::{
     db,
     error::ErrorInner,
     handlers::{
-        projects::show::select_project_by_id,
+        projects::index_detailed::select_projects_detailed,
         security_tests::rls::project::insert_inaccessible_project,
         specimens::{
             create::test::insert_test_specimen_and_project,
-            index_detailed::select_specimens_detailed, show::select_specimen_by_id,
+            index_detailed::select_specimens_detailed,
         },
     },
     state::test_util::{db_client_as_admin, db_client_as_user},
@@ -38,11 +42,14 @@ pub async fn get_user_id_from_specimen(
     tx: &db::Transaction<'_>,
     specimen: &SpecimenDetailed,
 ) -> Uuid {
-    let project = select_project_by_id(&tx, specimen.record.project_id)
-        .await
-        .unwrap();
+    let projects = select_projects_detailed(
+        tx,
+        &mut ProjectPredicate::Id(UuidOperator::Eq(specimen.record.project_id)).into(),
+    )
+    .await
+    .unwrap();
 
-    project.record.people[0]
+    projects[0].record.people[0]
 }
 
 async fn test_user_can_only_see_accessible_specimen(
@@ -53,7 +60,7 @@ async fn test_user_can_only_see_accessible_specimen(
         .await
         .unwrap();
 
-    assert_eq!(specimens, vec![accessible_specimen]);
+    assert_eq!(specimens, [accessible_specimen]);
 }
 
 async fn test_user_cannot_see_inaccessible_specimen(
@@ -61,11 +68,14 @@ async fn test_user_cannot_see_inaccessible_specimen(
     inaccessible_specimen_id: Uuid,
 ) {
     // Check that the inaccessible project causes a `ResourceNotFound`
-    let error = select_specimen_by_id(&tx, inaccessible_specimen_id)
-        .await
-        .unwrap_err();
+    let res = select_specimens_detailed(
+        &tx,
+        &mut SpecimenPredicate::Id(UuidOperator::Eq(inaccessible_specimen_id)).into(),
+    )
+    .await
+    .unwrap();
 
-    assert_eq!(error, ErrorInner::ResourceNotFound);
+    assert_eq!(res, []);
 }
 
 #[tokio::test(flavor = "multi_thread")]

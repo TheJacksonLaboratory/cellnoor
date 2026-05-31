@@ -32,7 +32,7 @@ pub async fn show_chromium_run(
 }
 
 // Visibility required for tests
-pub(in super::super) async fn select_chromium_run_by_id(
+pub(super) async fn select_chromium_run_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<ChromiumRunDetailed, ErrorInner> {

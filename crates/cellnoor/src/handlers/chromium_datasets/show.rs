@@ -35,8 +35,7 @@ pub async fn show_chromium_dataset(
     Ok(response)
 }
 
-// Visibility required for tests
-pub(in super::super) async fn select_chromium_dataset_by_id(
+pub(super) async fn select_chromium_dataset_by_id(
     tx: &db::Transaction<'_>,
     raw_files_url: &str,
     id: Uuid,

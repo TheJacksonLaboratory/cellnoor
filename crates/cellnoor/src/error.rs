@@ -52,31 +52,13 @@ pub enum ErrorInner {
         detail: Option<String>,
     },
     #[error("permission denied")]
-    PermissionDenied,
+    PermissionDenied { message: String },
     #[error("{message} (SQL State - {})", sql_state.as_ref().map(|s| s.code()).unwrap_or_default())]
     Other {
         message: String,
         #[serde(skip)]
         sql_state: Option<SqlState>,
     },
-}
-
-impl ErrorInner {
-    pub fn is_concurrency_error(&self) -> bool {
-        let ErrorInner::Other {
-            sql_state: Some(SqlState::INTERNAL_ERROR),
-            message,
-        } = self
-        else {
-            return false;
-        };
-
-        if message.contains("concurrent") {
-            return true;
-        }
-
-        false
-    }
 }
 
 impl IntoResponse for Error {
@@ -100,7 +82,7 @@ impl IntoResponse for Error {
             | ErrorInner::ExpiredApiKey { .. }
             | ErrorInner::NoAuthFound { .. }
             | ErrorInner::InvalidAuthToken
-            | ErrorInner::PermissionDenied => StatusCode::UNAUTHORIZED,
+            | ErrorInner::PermissionDenied { .. } => StatusCode::UNAUTHORIZED,
             ErrorInner::Other { .. } => StatusCode::INTERNAL_SERVER_ERROR,
         };
 
@@ -119,7 +101,9 @@ impl From<TokioPgError> for ErrorInner {
 
         // TODO: complete this with the relevant SQL states
         match db_error.code().clone() {
-            SqlState::INSUFFICIENT_PRIVILEGE => ErrorInner::PermissionDenied,
+            SqlState::INSUFFICIENT_PRIVILEGE => ErrorInner::PermissionDenied {
+                message: db_error.message().replace("table", "resource"),
+            },
             SqlState::FOREIGN_KEY_VIOLATION => {
                 let referencing_resource = db_error.table().map(str::to_owned).unwrap();
                 let referencing_field_prefix = format!("{referencing_resource}_");

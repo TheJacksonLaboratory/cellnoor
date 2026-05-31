@@ -31,8 +31,7 @@ pub async fn show_institution(
     Ok(response)
 }
 
-// Visibility required for tests
-pub(in super::super) async fn select_institution_by_id(
+pub(super) async fn select_institution_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<Institution, ErrorInner> {
