@@ -77,6 +77,15 @@ chromium_dataset_to_specimen,
 chromium_dataset_raw_file,
 chromium_dataset_parsed_file to public;
 
+create or replace function current_user_is_staff() returns boolean language plpgsql volatile strict as $$
+    declare
+        user_is_staff boolean;
+        current_user_id uuid = current_user::uuid;
+    begin
+        select is_staff from person_public where id = current_user_id into user_is_staff;
+        return user_is_staff;
+    end;
+$$;
 
 create or replace function current_user_has_access_to_service_account(
     service_account_id_to_check uuid
@@ -91,32 +100,41 @@ create or replace function current_user_has_access_to_service_account(
     end;
 $$;
 
+create or replace function current_user_is_service_account_owner(
+    service_account_id_to_check uuid
+) returns boolean language plpgsql volatile strict as $$
+    declare
+        account_owner uuid;
+        current_user_id uuid = current_user::uuid;
+    begin
+        select owned_by from service_account where id = service_account_id_to_check into account_owner;
+
+        return account_owner = current_user_id;
+    end;
+$$;
+
 grant insert (description, owned_by), update (description, owned_by), delete on service_account to public;
 alter table service_account enable row level security;
 -- 'with check' applies to inserts and updates
-create policy only_owner_can_update_service_account on service_account with check (current_user::uuid = owned_by);
+create policy only_owner_can_update_service_account on service_account with check (current_user_is_service_account_owner(service_account.id));
 create policy select_service_account on service_account for select using (
-    current_user::uuid = owned_by or current_user_has_access_to_service_account(service_account.id)
+    current_user_is_service_account_owner(service_account.id) or current_user_has_access_to_service_account(service_account.id)
 );
-create policy delete_service_account on service_account for delete using (current_user::uuid = owned_by);
+create policy delete_service_account on service_account for delete using (current_user_is_service_account_owner(service_account.id));
+
+grant insert, delete on service_account_access to public;
+alter table service_account_access enable row level security;
+create policy anyone_can_see_service_account_access on service_account_access for select using (true);
+create policy only_owner_can_add_others on service_account_access for insert with check (current_user_is_service_account_owner(service_account_id));
+create policy only_owner_can_remove_others on service_account_access for delete using (current_user_is_service_account_owner(service_account_id));
 
 grant insert (description, hashed_key, person_id, service_account_id, expires_at),
-update (description, hashed_key, person_id, service_account_id, expires_at),
+update (description, expires_at),
 delete on api_key to public;
 alter table api_key enable row level security;
 create policy api_key_access on api_key using (
     current_user::uuid = person_id or current_user_has_access_to_service_account(api_key.service_account_id)
 );
-
-create or replace function current_user_is_staff() returns boolean language plpgsql volatile strict as $$
-    declare
-        user_is_staff boolean;
-        current_user_id uuid = current_user::uuid;
-    begin
-        select is_staff from person_public where id = current_user_id into user_is_staff;
-        return user_is_staff;
-    end;
-$$;
 
 create or replace function current_user_is_project_creator(
     project_id_to_check uuid

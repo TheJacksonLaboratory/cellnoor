@@ -70,7 +70,7 @@ impl ApiKeyRecord {
     }
 }
 
-fn hash_api_key(api_key: &[u8]) -> [u8; 32] {
+pub fn hash_api_key(api_key: &[u8]) -> [u8; 32] {
     let mut hasher = sha3::Sha3_256::new();
 
     hasher.update(api_key);

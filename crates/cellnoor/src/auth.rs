@@ -1,4 +1,5 @@
 use aide::OperationIo;
+pub use api_key::hash_api_key;
 use axum::{extract::FromRequestParts, http::HeaderValue};
 use deadpool_postgres::PoolError;
 use uuid::Uuid;
