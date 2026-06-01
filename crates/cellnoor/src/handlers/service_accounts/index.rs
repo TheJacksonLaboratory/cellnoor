@@ -37,12 +37,12 @@ pub(in super::super) async fn select_service_accounts(
 
     let sql = SELECT_SERVICE_ACCOUNTS.finish_with_query(query);
 
-    let stream = tx.query_stream_into::<ServiceAccount>(sql).await?;
+    let stream = tx.query_stream_into(sql).await?;
     Ok(stream.collect().await)
 }
 
-// Internal helper used to build the response after an insert/update. There is deliberately no
-// public `show` handler for service accounts.
+// Even though there's no service-accounts/{id} route, this function is still
+// helpful
 pub(super) async fn select_service_account_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,

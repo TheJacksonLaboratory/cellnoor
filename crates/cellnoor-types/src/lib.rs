@@ -1,6 +1,7 @@
 #![allow(uncommon_codepoints)]
 pub use simple_links::SimpleLinks;
 
+pub mod api_key;
 pub mod cdna;
 pub mod chromium_dataset;
 pub mod chromium_run;

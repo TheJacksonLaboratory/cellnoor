@@ -126,15 +126,21 @@ $$;
 grant insert, delete on service_account_access to public;
 alter table service_account_access enable row level security;
 create policy anyone_can_see_service_account_access on service_account_access for select using (true);
-create policy owner_can_add_others on service_account_access for insert with check (current_user_is_service_account_owner(service_account_id));
-create policy owner_can_remove_others on service_account_access for delete using (current_user_is_service_account_owner(service_account_id));
+create policy owner_can_add_others on service_account_access for insert with check (
+    current_user_is_service_account_owner(service_account_id)
+);
+create policy owner_can_remove_others on service_account_access for delete using (
+    current_user_is_service_account_owner(service_account_id)
+);
 
 grant insert (description, hashed_key, person_id, service_account_id, expires_at),
 update (description, expires_at),
 delete on api_key to public;
 alter table api_key enable row level security;
 create policy api_key_access on api_key using (
-    current_user::uuid = person_id or current_user_has_access_to_service_account(api_key.service_account_id)
+    current_user::uuid = person_id
+    or current_user_is_service_account_owner(api_key.service_account_id)
+    or current_user_has_access_to_service_account(api_key.service_account_id)
 );
 
 create or replace function current_user_has_access_to_project(
@@ -151,8 +157,12 @@ create or replace function current_user_has_access_to_project(
 $$;
 
 alter table project enable row level security;
-create policy staff_and_members_can_view_project on project for select using (current_user_is_staff() or created_by = current_user::uuid or current_user_has_access_to_project(project.id));
-create policy staff_and_creator_can_create_project on project for insert with check (current_user_is_staff() or created_by = current_user::uuid);
+create policy staff_and_members_can_view_project on project for select using (
+    current_user_is_staff() or created_by = current_user::uuid or current_user_has_access_to_project(project.id)
+);
+create policy staff_and_creator_can_create_project on project for insert with check (
+    current_user_is_staff() or created_by = current_user::uuid
+);
 create policy staff_can_update_project on project for update using (current_user_is_staff());
 create policy staff_can_delete_project on project for delete using (current_user_is_staff());
 

@@ -105,6 +105,13 @@ pub struct NewPerson {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: NewPersonRecord,
     pub permissions_to_grant: PermissionsToGrant,
+}
+
+#[base_model]
+pub struct PersonUpdate {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: NewPersonRecord,
+    pub permissions_to_grant: PermissionsToGrant,
     pub permissions_to_revoke: PermissionsToRevoke,
 }
 

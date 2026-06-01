@@ -2,7 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::person::{NewPerson, Person};
+use cellnoor_types::person::{Person, PersonUpdate};
 use nonempty::NonemptyString;
 use uuid::Uuid;
 
@@ -24,7 +24,7 @@ pub async fn update_person(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(mut person): Json<NewPerson>,
+    Json(mut person): Json<PersonUpdate>,
 ) -> Result<Json<Person>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
@@ -39,11 +39,11 @@ pub async fn update_person(
 async fn update_person_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-    NewPerson {
+    PersonUpdate {
         record,
         permissions_to_grant,
         permissions_to_revoke,
-    }: &mut NewPerson,
+    }: &PersonUpdate,
 ) -> Result<Person, ErrorInner> {
     validate_email(record.email.as_ref().map(NonemptyString::as_ref))?;
 
@@ -60,7 +60,7 @@ async fn update_person_by_id(
 #[cfg(test)]
 mod test {
 
-    use cellnoor_types::person::{Person, SavedPersonRecord};
+    use cellnoor_types::person::{Person, PersonUpdate, SavedPersonRecord};
 
     use crate::{
         handlers::people::{
@@ -83,9 +83,15 @@ mod test {
         ) = insert_test_person_and_institution(&tx, |_| ())
             .await
             .unwrap();
-        pre_update.record.name = "updated".to_nonempty_string();
 
-        update_person_by_id(&tx, *id, &mut pre_update)
+        pre_update.record.name = "updated".to_nonempty_string();
+        let update_to_apply = PersonUpdate {
+            record: pre_update.record,
+            permissions_to_grant: pre_update.permissions_to_grant,
+            permissions_to_revoke: vec![].into(),
+        };
+
+        update_person_by_id(&tx, *id, &update_to_apply)
             .await
             .unwrap();
     }

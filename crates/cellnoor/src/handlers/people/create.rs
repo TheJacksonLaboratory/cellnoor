@@ -45,15 +45,15 @@ async fn insert_person(
     NewPerson {
         record,
         permissions_to_grant,
-        permissions_to_revoke,
     }: &NewPerson,
 ) -> Result<Person, ErrorInner> {
     validate_email(record.email.as_ref().map(NonemptyString::as_ref))?;
 
     let id = db::insert_into(tx, "person", record).await?;
 
+    let revoke = PermissionsToRevoke::default();
     let (_, person) = tokio::try_join!(
-        provision_db_user(tx, id, permissions_to_grant, permissions_to_revoke),
+        provision_db_user(tx, id, permissions_to_grant, &revoke),
         select_person_by_id(tx, id)
     )?;
 
@@ -164,7 +164,6 @@ pub mod test {
                 orcid: None,
             },
             permissions_to_grant: vec![].into(),
-            permissions_to_revoke: vec![].into(),
         };
 
         modify(&mut new);

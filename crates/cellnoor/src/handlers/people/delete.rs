@@ -34,7 +34,10 @@ async fn delete_person_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), E
     Ok(())
 }
 
-async fn drop_db_user(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
+pub(in super::super) async fn drop_db_user(
+    tx: &db::Transaction<'_>,
+    id: Uuid,
+) -> Result<(), ErrorInner> {
     tx.acquire_user_permisssions_lock().await?;
 
     let revoke_result = tx
