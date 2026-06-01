@@ -5,7 +5,9 @@ use crate::{
     auth::AuthUser,
     db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
-    handlers::service_accounts::index::select_service_account_by_id,
+    handlers::service_accounts::{
+        access::add_people::insert_service_account_accesses, index::select_service_account_by_id,
+    },
     state::AppState,
 };
 
@@ -33,16 +35,22 @@ async fn insert_service_account(
 ) -> Result<ServiceAccount, ErrorInner> {
     let id = db::insert_into(tx, "service_account", new_record).await?;
 
+    insert_service_account_accesses(tx, id, &new_record.people).await?;
+
     select_service_account_by_id(tx, id).await
 }
 
-// `owned_by` is intentionally omitted: the database fills it from `current_user::uuid`, and RLS
-// guarantees it equals the caller. The only column a user writes on create is `description`.
+// `owned_by` is intentionally omitted: the database fills it from
+// `current_user::uuid`, and RLS guarantees it equals the caller. The only
+// column a user writes on create is `description`.
 impl AsFieldValuePairs<ServiceAccountField, 1> for NewServiceAccount {
     fn as_field_value_pairs(&self) -> FieldValuePairs<'_, ServiceAccountField, 1> {
         use ServiceAccountField::*;
 
-        let Self { description } = self;
+        let Self {
+            description,
+            people: _,
+        } = self;
 
         [(Description, description)]
     }
@@ -69,6 +77,7 @@ pub mod test {
     {
         let mut new = NewServiceAccount {
             description: Some(Uuid::new_v4().to_string().to_nonempty_string()),
+            people: vec![Uuid::nil()],
         };
 
         modify(&mut new);

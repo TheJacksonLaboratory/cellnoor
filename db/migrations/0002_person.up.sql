@@ -44,8 +44,8 @@ create table service_account (
 );
 
 create table service_account_access (
-    service_account_id uuid references service_account not null,
-    person_id uuid references person not null,
+    service_account_id uuid references service_account on delete cascade not null,
+    person_id uuid references person on delete cascade not null,
 
     primary key (service_account_id, person_id)
 );

@@ -11,6 +11,8 @@ mod query;
 #[base_model]
 pub struct NewServiceAccount {
     pub description: Option<NonemptyString>,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub people: Vec<Uuid>,
 }
 
 #[select]

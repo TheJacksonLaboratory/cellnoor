@@ -9,7 +9,13 @@ use crate::{
     auth::AuthUser,
     db::{self},
     error::{Error, ErrorInner},
-    handlers::{IdParam, service_accounts::index::select_service_account_by_id},
+    handlers::{
+        IdParam,
+        service_accounts::{
+            access::add_people::insert_service_account_accesses,
+            index::select_service_account_by_id,
+        },
+    },
     state::AppState,
 };
 
@@ -38,6 +44,8 @@ pub(in super::super) async fn update_service_account_by_id(
 ) -> Result<ServiceAccount, ErrorInner> {
     db::update(tx, "service_account", id, updated_record).await?;
 
+    insert_service_account_accesses(tx, id, &updated_record.people).await?;
+
     select_service_account_by_id(tx, id).await
 }
 
@@ -61,6 +69,7 @@ mod test {
 
         let update = NewServiceAccount {
             description: Some("updated".to_nonempty_string()),
+            people: vec![],
         };
 
         update_service_account_by_id(&tx, inserted.id, &update)
