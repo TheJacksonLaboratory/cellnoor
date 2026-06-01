@@ -1,5 +1,6 @@
 use uuid::Uuid;
 
+pub mod api_keys;
 pub mod cdna;
 pub mod chromium_datasets;
 pub mod chromium_runs;

@@ -6,8 +6,13 @@ edition = "2024"
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+[[bin]]
+name = "openapi"
+required-features = ["ssr"]
+
 [dependencies]
 aide = {workspace = true, optional = true}
+csvranger = { workspace = true, optional = true }
 jsonwebtoken = {workspace = true, optional = true}
 serde.workspace = true
 deadpool-postgres = {workspace = true, optional = true}
@@ -50,7 +55,7 @@ ssr = [
     "dep:anyhow",
     "dep:postgres-types",
     "dep:aide",
-
+    "dep:csvranger",
     "dep:deadpool-postgres",
     "dep:camino",
     "dep:clap",

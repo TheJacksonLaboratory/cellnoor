@@ -11,6 +11,7 @@ resolver = "3"
 edition = "2024"
 
 [workspace.dependencies]
+csvranger = { version = "0.2.0", features = ["legacy", "schemars"] }
 regex = {version = "1.12.3"}
 aide = { version = "0.16.0-alpha.4", features = [
   "axum",

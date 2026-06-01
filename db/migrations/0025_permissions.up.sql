@@ -77,7 +77,6 @@ chromium_dataset_to_specimen,
 chromium_dataset_raw_file,
 chromium_dataset_parsed_file to public;
 
-grant insert (description, owned_by), update (description, owned_by), delete on service_account to public;
 
 create or replace function current_user_has_access_to_service_account(
     service_account_id_to_check uuid
@@ -92,6 +91,7 @@ create or replace function current_user_has_access_to_service_account(
     end;
 $$;
 
+grant insert (description, owned_by), update (description, owned_by), delete on service_account to public;
 alter table service_account enable row level security;
 -- 'with check' applies to inserts and updates
 create policy only_owner_can_update_service_account on service_account with check (current_user::uuid = owned_by);
@@ -105,7 +105,7 @@ update (description, hashed_key, person_id, service_account_id, expires_at),
 delete on api_key to public;
 alter table api_key enable row level security;
 create policy api_key_access on api_key using (
-    current_user::uuid = person_id or (current_user_has_access_to_service_account(api_key.service_account_id))
+    current_user::uuid = person_id or current_user_has_access_to_service_account(api_key.service_account_id)
 );
 
 create or replace function current_user_is_staff() returns boolean language plpgsql volatile strict as $$

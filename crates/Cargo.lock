@@ -368,6 +368,7 @@ dependencies = [
  "clap",
  "config",
  "console_error_panic_hook",
+ "csvranger",
  "deadpool-postgres",
  "dotenvy",
  "futures",
@@ -667,6 +668,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77727bb15fa921304124b128af125e7e3b968275d1b108b379190264f4423710"
 dependencies = [
  "hybrid-array",
+]
+
+[[package]]
+name = "csvranger"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7be6ced853961cb1c383c9a81e8909dcd8a39b44014d6eb9f0527924d34f02ce"
+dependencies = [
+ "regex",
+ "schemars",
+ "serde",
 ]
 
 [[package]]
