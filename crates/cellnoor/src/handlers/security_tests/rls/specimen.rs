@@ -25,7 +25,7 @@ async fn insert_accessible_specimen(tx: &db::Transaction<'_>) -> (NewSpecimen, S
 }
 
 async fn insert_inaccessible_project(tx: &db::Transaction<'_>) -> (NewProject, ProjectDetailed) {
-    insert_test_project(tx, |p| p.people = vec![])
+    insert_test_project(tx, |p| p.members = vec![])
         .await
         .unwrap()
 }
@@ -53,7 +53,7 @@ pub async fn get_user_id_from_specimen(
     .await
     .unwrap();
 
-    projects[0].record.people[0]
+    projects[0].record.members[0]
 }
 
 async fn test_user_can_only_see_accessible_specimen(

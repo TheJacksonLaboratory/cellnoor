@@ -13,7 +13,7 @@ pub struct NewProject {
     pub name: NonemptyString,
     pub started_at: Timestamp,
     pub ended_at: Timestamp,
-    pub people: Vec<Uuid>,
+    pub members: Vec<Uuid>,
 }
 
 #[select]
@@ -34,7 +34,7 @@ pub struct SavedProjectRecord {
 pub struct SavedProjectRecordDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub project: SavedProjectRecord,
-    pub people: Vec<Uuid>,
+    pub members: Vec<Uuid>,
 }
 
 #[base_model]

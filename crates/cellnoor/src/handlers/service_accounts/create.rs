@@ -35,7 +35,7 @@ async fn insert_service_account(
 ) -> Result<ServiceAccount, ErrorInner> {
     let id = db::insert_into(tx, "service_account", new_record).await?;
 
-    insert_service_account_accesses(tx, id, &new_record.people).await?;
+    insert_service_account_accesses(tx, id, &new_record.users).await?;
 
     select_service_account_by_id(tx, id).await
 }
@@ -49,7 +49,7 @@ impl AsFieldValuePairs<ServiceAccountField, 1> for NewServiceAccount {
 
         let Self {
             description,
-            people: _,
+            users: _,
         } = self;
 
         [(Description, description)]
@@ -77,7 +77,7 @@ pub mod test {
     {
         let mut new = NewServiceAccount {
             description: Some(Uuid::new_v4().to_string().to_nonempty_string()),
-            people: vec![Uuid::nil()],
+            users: vec![Uuid::nil()],
         };
 
         modify(&mut new);

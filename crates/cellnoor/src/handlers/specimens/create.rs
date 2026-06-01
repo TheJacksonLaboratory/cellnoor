@@ -123,13 +123,13 @@ pub mod test {
         F: FnMut(&mut NewSpecimen),
     {
         let (_, inserted_project) = insert_test_project(tx, |_| ()).await?;
-        let SavedProjectRecordDetailed { project, people } = inserted_project.record;
+        let SavedProjectRecordDetailed { project, members } = inserted_project.record;
 
         let mut new = NewSpecimen::Block(NewBlock::CarboxymethylCellulose {
             common: NewSpecimenCommonFields {
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 name: Uuid::new_v4().to_string().to_nonempty_string(),
-                submitted_by: people[0],
+                submitted_by: members[0],
                 received_at: Timestamp::now(),
                 project_id: project.id,
                 species: Species::MusMusculus,
@@ -139,7 +139,7 @@ pub mod test {
                 tissue: "tissue".to_nonempty_string(),
                 additional_data: None,
                 measurements: vec![NewSpecimenMeasurement {
-                    measured_by: people[0],
+                    measured_by: members[0],
                     measured_at: Timestamp::now(),
                     data: Json(SpecimenMeasurementData::Rin {
                         instrument_name: None,

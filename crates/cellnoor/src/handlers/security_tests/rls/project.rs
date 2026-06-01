@@ -20,7 +20,7 @@ async fn insert_accessible_project(tx: &db::Transaction<'_>) -> (NewProject, Pro
 pub async fn insert_inaccessible_project(
     tx: &db::Transaction<'_>,
 ) -> (NewProject, ProjectDetailed) {
-    insert_test_project(&tx, |p| p.people = vec![])
+    insert_test_project(&tx, |p| p.members = vec![])
         .await
         .unwrap()
 }
@@ -65,7 +65,7 @@ async fn row_level_security_for_projects() {
     // of the test
     tx.commit().await.unwrap();
 
-    let person_id = accessible_project.record.people[0];
+    let person_id = accessible_project.record.members[0];
 
     // Log in as the new user
     let mut client = db_client_as_user(person_id).await;

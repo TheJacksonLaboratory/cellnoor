@@ -44,7 +44,7 @@ pub(in super::super) async fn update_service_account_by_id(
 ) -> Result<ServiceAccount, ErrorInner> {
     db::update(tx, "service_account", id, updated_record).await?;
 
-    insert_service_account_accesses(tx, id, &updated_record.people).await?;
+    insert_service_account_accesses(tx, id, &updated_record.users).await?;
 
     select_service_account_by_id(tx, id).await
 }
@@ -69,7 +69,7 @@ mod test {
 
         let update = NewServiceAccount {
             description: Some("updated".to_nonempty_string()),
-            people: vec![],
+            users: vec![],
         };
 
         update_service_account_by_id(&tx, inserted.id, &update)

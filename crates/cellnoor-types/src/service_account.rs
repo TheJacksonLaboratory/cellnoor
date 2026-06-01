@@ -12,7 +12,7 @@ mod query;
 pub struct NewServiceAccount {
     pub description: Option<NonemptyString>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub people: Vec<Uuid>,
+    pub users: Vec<Uuid>,
 }
 
 #[select]

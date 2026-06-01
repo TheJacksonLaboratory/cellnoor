@@ -63,7 +63,7 @@ async fn row_level_security_for_service_accounts() {
         user2_svc_acct,
         &NewServiceAccount {
             description: Some("updated".to_nonempty_string()),
-            people: vec![],
+            users: vec![],
         },
     )
     .await

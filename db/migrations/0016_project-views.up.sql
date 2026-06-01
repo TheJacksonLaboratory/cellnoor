@@ -7,6 +7,6 @@ create view project_detailed with (security_invoker = true) as (
             select proj_acc.person_id
             from project_access as proj_acc
             where proj_acc.project_id = project.id
-        ) as people
+        ) as members
     from project
 );

@@ -31,7 +31,7 @@ async fn insert_project(
 ) -> Result<ProjectDetailed, ErrorInner> {
     let id = db::insert_into(tx, "project", project).await?;
 
-    insert_project_accesses(tx, id, &project.people).await?;
+    insert_project_accesses(tx, id, &project.members).await?;
 
     select_project_by_id(tx, id).await
 }
@@ -44,7 +44,7 @@ impl AsFieldValuePairs<ProjectField, 3> for NewProject {
             name,
             started_at,
             ended_at,
-            people: _,
+            members: _,
         } = self;
 
         [(Name, name), (StartedAt, started_at), (EndedAt, ended_at)]
@@ -83,7 +83,7 @@ pub mod test {
             name: Uuid::new_v4().to_string().to_nonempty_string(),
             started_at: Timestamp::now(),
             ended_at: Timestamp::now(),
-            people: vec![person_id],
+            members: vec![person_id],
         };
 
         modify(&mut new);
