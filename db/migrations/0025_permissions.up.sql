@@ -93,8 +93,8 @@ create or replace function current_user_has_access_to_service_account(
 $$;
 
 alter table service_account enable row level security;
-create policy anyone_can_create_service_account on service_account for insert with check (true);
-create policy only_owner_can_update_service_account on service_account for update using (current_user::uuid = owned_by);
+-- 'with check' applies to inserts and updates
+create policy only_owner_can_update_service_account on service_account with check (current_user::uuid = owned_by);
 create policy select_service_account on service_account for select using (
     current_user::uuid = owned_by or current_user_has_access_to_service_account(service_account.id)
 );
