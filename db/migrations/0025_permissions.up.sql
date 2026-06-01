@@ -100,6 +100,16 @@ create or replace function current_user_has_access_to_service_account(
     end;
 $$;
 
+grant insert (description, owned_by), update (description, owned_by), delete on service_account to public;
+alter table service_account enable row level security;
+create policy owner_can_insert_service_account on service_account for insert with check (owned_by = current_user::uuid);
+create policy owner_can_update_service_account on service_account for update using (owned_by = current_user::uuid);
+create policy select_service_account on service_account for select using (
+    owned_by = current_user::uuid or current_user_has_access_to_service_account(service_account.id)
+);
+create policy delete_service_account on service_account for delete using (owned_by = current_user::uuid);
+
+-- We can't use this function in the RLS policies for service_account because it would cause infinite recursion
 create or replace function current_user_is_service_account_owner(
     service_account_id_to_check uuid
 ) returns boolean language plpgsql volatile strict as $$
@@ -113,20 +123,11 @@ create or replace function current_user_is_service_account_owner(
     end;
 $$;
 
-grant insert (description, owned_by), update (description, owned_by), delete on service_account to public;
-alter table service_account enable row level security;
--- 'with check' applies to inserts and updates
-create policy only_owner_can_update_service_account on service_account with check (current_user_is_service_account_owner(service_account.id));
-create policy select_service_account on service_account for select using (
-    current_user_is_service_account_owner(service_account.id) or current_user_has_access_to_service_account(service_account.id)
-);
-create policy delete_service_account on service_account for delete using (current_user_is_service_account_owner(service_account.id));
-
 grant insert, delete on service_account_access to public;
 alter table service_account_access enable row level security;
 create policy anyone_can_see_service_account_access on service_account_access for select using (true);
-create policy only_owner_can_add_others on service_account_access for insert with check (current_user_is_service_account_owner(service_account_id));
-create policy only_owner_can_remove_others on service_account_access for delete using (current_user_is_service_account_owner(service_account_id));
+create policy owner_can_add_others on service_account_access for insert with check (current_user_is_service_account_owner(service_account_id));
+create policy owner_can_remove_others on service_account_access for delete using (current_user_is_service_account_owner(service_account_id));
 
 grant insert (description, hashed_key, person_id, service_account_id, expires_at),
 update (description, expires_at),
@@ -136,6 +137,26 @@ create policy api_key_access on api_key using (
     current_user::uuid = person_id or current_user_has_access_to_service_account(api_key.service_account_id)
 );
 
+create or replace function current_user_has_access_to_project(
+    project_id_to_check uuid
+) returns boolean language plpgsql volatile strict as $$
+    declare
+        has_access boolean;
+        current_user_id uuid = current_user::uuid;
+    begin
+        select exists (select 1 from project_access where current_user_id in (project_access.person_id, project_access.api_key_id) and project_access.project_id = project_id_to_check) into has_access;
+
+        return has_access;
+    end;
+$$;
+
+alter table project enable row level security;
+create policy staff_and_members_can_view_project on project for select using (current_user_is_staff() or created_by = current_user::uuid or current_user_has_access_to_project(project.id));
+create policy staff_and_creator_can_create_project on project for insert with check (current_user_is_staff() or created_by = current_user::uuid);
+create policy staff_can_update_project on project for update using (current_user_is_staff());
+create policy staff_can_delete_project on project for delete using (current_user_is_staff());
+
+-- Again, we can't use this function for RLS policies on project because it'd cause infinite recursion
 create or replace function current_user_is_project_creator(
     project_id_to_check uuid
 ) returns boolean language plpgsql volatile strict as $$
@@ -157,26 +178,13 @@ create or replace function current_user_is_staff_or_project_creator(
     end;
 $$;
 
-create or replace function current_user_has_access_to_project(
-    project_id_to_check uuid
-) returns boolean language plpgsql volatile strict as $$
-    declare
-        has_access boolean;
-        current_user_id uuid = current_user::uuid;
-    begin
-        select exists (select 1 from project_access where current_user_id in (project_access.person_id, project_access.api_key_id) and project_access.project_id = project_id_to_check) into has_access;
-
-        return has_access;
-    end;
-$$;
-
 -- Note that we don't enable RLS for projects because that would cause infinite recursion
 alter table project_access enable row level security;
 create policy anyone_can_see_project_membership on project_access for select using (true);
-create policy only_staff_or_creator_can_add_others on project_access for insert with check (
+create policy staff_and_creator_can_add_others on project_access for insert with check (
     current_user_is_staff_or_project_creator(project_access.project_id)
 );
-create policy only_staff_or_creator_can_remove_others on project_access for delete using (
+create policy staff_and_creator_can_remove_others on project_access for delete using (
     current_user_is_staff_or_project_creator(project_access.project_id)
 );
 

@@ -17,6 +17,7 @@ mod libraries;
 mod multiplexing_tags;
 mod people;
 mod projects;
+mod service_accounts;
 mod specimens;
 mod suspension_pools;
 mod suspensions;
@@ -35,6 +36,7 @@ pub fn router() -> (OpenApi, Router<AppState>) {
         .nest("/institutions", institutions::router())
         .nest("/people", people::router())
         .nest("/projects", projects::router())
+        .nest("/service-accounts", service_accounts::router())
         .nest("/specimens", specimens::router())
         .nest("/suspensions", suspensions::router())
         .nest("/suspension-pools", suspension_pools::router())

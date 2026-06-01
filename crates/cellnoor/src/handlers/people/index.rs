@@ -28,7 +28,7 @@ pub async fn index_people(
     Ok(response)
 }
 
-pub async fn select_people(
+pub(in super::super) async fn select_people(
     tx: &db::Transaction<'_>,
     query: &mut PersonQuery,
 ) -> Result<Vec<Person>, ErrorInner> {
