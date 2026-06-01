@@ -35,6 +35,15 @@ enum DbUser {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, OperationIo)]
 pub struct AuthUser(DbUser);
 
+impl AuthUser {
+    pub fn id(&self) -> Option<Uuid> {
+        match self.0 {
+            DbUser::App => None,
+            DbUser::Person(id) | DbUser::Service(id) => Some(id),
+        }
+    }
+}
+
 impl std::fmt::Display for AuthUser {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.0 {

@@ -60,22 +60,21 @@ async fn insert_person(
     Ok(person)
 }
 
-pub(super) async fn provision_db_user(
+pub(in super::super) async fn provision_db_user(
     tx: &db::Transaction<'_>,
-    person_id: Uuid,
+    user_id: Uuid,
     permissions_to_grant: &PermissionsToGrant,
     permissions_to_revoke: &PermissionsToRevoke,
 ) -> Result<(), ErrorInner> {
     tx.acquire_user_permisssions_lock().await?;
 
-    create_db_user(tx, person_id).await?;
+    create_db_user(tx, user_id).await?;
     // In order to determine whether we should allow this user to grant permissions
     // to others, we grant/revoke create person permissions first
     let can_grant_to_others =
-        modify_person_permissions(tx, person_id, permissions_to_grant, permissions_to_revoke)
-            .await?;
-    grant_permissions_to_db_user(tx, person_id, permissions_to_grant, can_grant_to_others).await?;
-    revoke_permissions_from_db_user(tx, person_id, permissions_to_revoke).await?;
+        modify_person_permissions(tx, user_id, permissions_to_grant, permissions_to_revoke).await?;
+    grant_permissions_to_db_user(tx, user_id, permissions_to_grant, can_grant_to_others).await?;
+    revoke_permissions_from_db_user(tx, user_id, permissions_to_revoke).await?;
 
     Ok(())
 }

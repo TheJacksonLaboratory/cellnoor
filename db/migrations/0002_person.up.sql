@@ -62,5 +62,5 @@ create table api_key (
     expires_at timestamptz not null,
 
     constraint has_account check ((person_id is null) != (service_account_id is null)),
-    constraint created_before_expires check (created_at < expires_at)
+    constraint created_before_expires check (created_at <= expires_at)
 );

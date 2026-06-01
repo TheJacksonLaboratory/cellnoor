@@ -25,7 +25,7 @@ pub async fn insert_inaccessible_project(
         .unwrap()
 }
 
-async fn test_user_can_only_see_accessible_project(
+async fn user_can_only_see_accessible_project(
     tx: &db::Transaction<'_>,
     accessible_project: ProjectDetailed,
 ) {
@@ -36,7 +36,7 @@ async fn test_user_can_only_see_accessible_project(
     assert_eq!(projects, [accessible_project]);
 }
 
-async fn test_user_cannot_see_inaccessible_project(
+async fn user_cannot_see_inaccessible_project(
     tx: &db::Transaction<'_>,
     inaccessible_project_id: Uuid,
 ) {
@@ -71,6 +71,6 @@ async fn row_level_security_for_projects() {
     let mut client = db_client_as_user(person_id).await;
     let tx = client.begin().await.unwrap();
 
-    test_user_can_only_see_accessible_project(&tx, accessible_project).await;
-    test_user_cannot_see_inaccessible_project(&tx, inaccessible_project.record.project.id).await;
+    user_can_only_see_accessible_project(&tx, accessible_project).await;
+    user_cannot_see_inaccessible_project(&tx, inaccessible_project.record.project.id).await;
 }
