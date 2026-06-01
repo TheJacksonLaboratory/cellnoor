@@ -1,11 +1,10 @@
 use std::assert_matches;
 
 use cellnoor_types::{
-    api_key::{ApiKey, ApiKeyRecord, ApiKeyUpdate},
-    person::{Action, NewPerson, ResourcePermission},
+    api_key::{ApiKey, ApiKeyPredicate, ApiKeyRecord, ApiKeyUpdate},
+    operator::UuidOperator,
     service_account::ServiceAccount,
 };
-use jiff::Timestamp;
 use pretty_assertions::assert_eq;
 use uuid::Uuid;
 
@@ -15,8 +14,7 @@ use crate::{
     error::ErrorInner,
     handlers::{
         api_keys::{
-            create::test::insert_test_api_key, index::select_api_key_record_by_id,
-            update::update_api_key_by_id,
+            create::test::insert_test_api_key, index::select_api_keys, update::update_api_key_by_id,
         },
         people::create::test::insert_test_person_and_institution,
         service_accounts::{
@@ -79,19 +77,27 @@ async fn user_cannot_update_unowned_api_key(client: &mut db::Client, api_key_id:
 async fn user_cannot_see_inaccessible_api_key(client: &mut db::Client, api_key_id: Uuid) {
     let tx = client.begin().await.unwrap();
 
-    let error = select_api_key_record_by_id(&tx, api_key_id)
-        .await
-        .unwrap_err();
+    let inaccessible = select_api_keys(
+        &tx,
+        &mut ApiKeyPredicate::Id(UuidOperator::Eq(api_key_id)).into(),
+    )
+    .await
+    .unwrap();
 
-    assert_matches!(error, ErrorInner::ResourceNotFound);
+    assert_eq!(inaccessible, []);
 }
 
-async fn user_can_see_accessible_api_key(client: &mut db::Client, expected: &ApiKeyRecord) {
+async fn user_can_see_accessible_api_key(client: &mut db::Client, api_key: ApiKeyRecord) {
     let tx = client.begin().await.unwrap();
 
-    let record = select_api_key_record_by_id(&tx, expected.id).await.unwrap();
+    let accessible = select_api_keys(
+        &tx,
+        &mut ApiKeyPredicate::Id(UuidOperator::Eq(api_key.id)).into(),
+    )
+    .await
+    .unwrap();
 
-    assert_eq!(&record, expected);
+    assert_eq!(accessible, [api_key]);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -99,17 +105,10 @@ async fn row_level_security_for_api_keys() {
     let mut admin = db_client_as_admin().await;
     let tx = admin.begin().await.unwrap();
 
-    // Both users need permission to create people so that they hold the
-    // `createrole` privilege required to provision the database user backing an
-    // API key
-    let grant_create_person = |p: &mut NewPerson| {
-        p.permissions_to_grant = vec![ResourcePermission::Person(vec![Action::Create])].into();
-    };
-
-    let (_, user1) = insert_test_person_and_institution(&tx, grant_create_person)
+    let (_, user1) = insert_test_person_and_institution(&tx, |_| ())
         .await
         .unwrap();
-    let (_, user2) = insert_test_person_and_institution(&tx, grant_create_person)
+    let (_, user2) = insert_test_person_and_institution(&tx, |_| ())
         .await
         .unwrap();
 
@@ -140,5 +139,5 @@ async fn row_level_security_for_api_keys() {
         .unwrap();
     tx.commit().await.unwrap();
 
-    user_can_see_accessible_api_key(&mut user2_client, &service_account_api_key.record).await;
+    user_can_see_accessible_api_key(&mut user2_client, service_account_api_key.record).await;
 }

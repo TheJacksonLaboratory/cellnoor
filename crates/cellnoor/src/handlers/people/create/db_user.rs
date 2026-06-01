@@ -58,16 +58,9 @@ pub(super) async fn modify_person_permissions(
     .await?;
     revoke_permissions_from_db_user(tx, user_id, &revoke_create_person).await?;
 
-    let can_create_person = user_can_create_person(tx, user_id).await?;
-    if can_create_person {
-        tx.execute_raw_sql(&format!(r#"alter user "{user_id}" with createrole"#), &[])
-            .await?;
-    } else {
-        tx.execute_raw_sql(&format!(r#"alter user "{user_id}" with nocreaterole"#), &[])
-            .await?;
-    };
-
-    Ok(UserCanCreatePerson(can_create_person))
+    user_can_create_person(tx, user_id)
+        .await
+        .map(UserCanCreatePerson)
 }
 
 pub(super) async fn grant_permissions_to_db_user(
@@ -99,6 +92,16 @@ pub(super) async fn revoke_permissions_from_db_user(
 
     let revoke_ops = revoke_stmts.iter().map(|s| tx.execute_raw_sql(s, &[]));
     futures::future::try_join_all(revoke_ops).await?;
+
+    Ok(())
+}
+
+pub(super) async fn grant_createrole(
+    tx: &db::Transaction<'_>,
+    user_id: Uuid,
+) -> Result<(), ErrorInner> {
+    tx.execute_raw_sql(&format!(r#"alter user "{user_id}" with createrole"#), &[])
+        .await?;
 
     Ok(())
 }

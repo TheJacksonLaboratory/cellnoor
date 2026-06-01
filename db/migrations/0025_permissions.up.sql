@@ -43,6 +43,9 @@ grant insert, select, update on person, person_account to auth;
 grant select on institution to auth;
 alter user auth with createrole;
 
+-- 'app' needs to be able to read API keys directly to authenticate people
+grant select on api_key to app;
+
 -- Only grant select on the tables and views a user accesses directly to prevent the developer from forgetting that
 -- there are convenient views already made
 grant select on institution,
@@ -134,6 +137,7 @@ create policy owner_can_remove_others on service_account_access for delete using
 );
 
 grant insert (description, hashed_key, person_id, service_account_id, expires_at),
+select (id, description, person_id, service_account_id, created_at, expires_at),
 update (description, expires_at),
 delete on api_key to public;
 alter table api_key enable row level security;

@@ -5,7 +5,7 @@ use deadpool_postgres::PoolError;
 use uuid::Uuid;
 
 use crate::{
-    auth::api_key::fetch_api_key_record,
+    auth::api_key::{ApiKeyExt, fetch_api_key_record},
     db,
     error::{Error, ErrorInner},
     state::{AppState, DevState},

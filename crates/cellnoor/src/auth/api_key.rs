@@ -1,5 +1,5 @@
+use cellnoor_types::api_key::ApiKeyRecord;
 use sha3::Digest;
-use uuid::Uuid;
 
 use crate::{
     auth::{AuthUser, DbUser},
@@ -7,21 +7,24 @@ use crate::{
     error::ErrorInner,
 };
 
-const API_KEY_LENGTH: usize = 22;
-
-pub struct ApiKeyRecord {
-    id: Uuid,
-    person_id: Option<Uuid>,
-    service_account_id: Option<Uuid>,
-    expires_at: jiff::Timestamp,
-}
-
-enum ApiKeyUserType {
+pub enum ApiKeyUserType {
     Person,
     Service,
 }
 
-impl ApiKeyRecord {
+pub trait ApiKeyExt {
+    fn is_for_person(&self) -> bool;
+
+    fn is_for_service(&self) -> bool;
+
+    fn api_key_type(&self) -> Result<ApiKeyUserType, ErrorInner>;
+
+    fn is_expired(&self) -> bool;
+
+    fn to_user(&self) -> Result<AuthUser, ErrorInner>;
+}
+
+impl ApiKeyExt for ApiKeyRecord {
     fn is_for_person(&self) -> bool {
         self.person_id.is_some()
     }
@@ -54,7 +57,7 @@ impl ApiKeyRecord {
         self.expires_at < jiff::Timestamp::now()
     }
 
-    pub fn to_user(&self) -> Result<AuthUser, ErrorInner> {
+    fn to_user(&self) -> Result<AuthUser, ErrorInner> {
         if self.is_expired() {
             return Err(ErrorInner::ExpiredApiKey {
                 expired_at: self.expires_at,
@@ -81,13 +84,7 @@ pub async fn fetch_api_key_record(
     api_key: &[u8],
     mut db_client: db::Client,
 ) -> Result<ApiKeyRecord, ErrorInner> {
-    static SELECT_API_KEY: SqlBuilder = SqlBuilder::new(
-        "select (id, person_id, service_account_id, expires_at) from api_key where hashed_key = $1",
-    );
-
-    if api_key.len() != API_KEY_LENGTH {
-        return Err(ErrorInner::InvalidApiKey);
-    }
+    static SELECT_API_KEY: SqlBuilder = SqlBuilder::new(include_str!("select_api_key.sql"));
 
     let hashed_key = hash_api_key(api_key);
 
@@ -95,13 +92,7 @@ pub async fn fetch_api_key_record(
 
     let sql = SELECT_API_KEY.finish_with_params(vec![&hashed_key]);
 
-    // We manually map the fields from the database record into the struct we return
-    let hashed_api_key = tx.query_one(&sql).await.map(|r| ApiKeyRecord {
-        id: r.get("id"),
-        person_id: r.get("person_id"),
-        service_account_id: r.get("service_account_id"),
-        expires_at: r.get("expires_at"),
-    })?;
+    let api_key_record = tx.query_one_into(&sql).await?;
 
-    Ok(hashed_api_key)
+    Ok(api_key_record)
 }

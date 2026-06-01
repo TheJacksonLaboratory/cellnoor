@@ -102,7 +102,7 @@ impl AsFieldValuePairs<&'static str, 5> for NewApiKeyRecord<'_> {
 fn generate_secret() -> String {
     // This gets 128 bits of entropy
     const SECRET_LEN: usize = 22;
-    static PREFIX: &str = "cn_";
+    static PREFIX: &str = "cellnoor_";
 
     let rng = rand::rng();
 
@@ -126,8 +126,11 @@ pub mod test {
     use uuid::Uuid;
 
     use crate::{
-        auth::AuthUser, db, error::ErrorInner, handlers::api_keys::create::insert_api_key,
-        state::test_util::ToNonemptyString,
+        auth::AuthUser,
+        db,
+        error::ErrorInner,
+        handlers::api_keys::create::insert_api_key,
+        state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
     pub async fn insert_test_api_key<F>(
@@ -149,5 +152,15 @@ pub mod test {
 
         let inserted = insert_api_key(tx, user, &new).await?;
         Ok((new, inserted))
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn insert() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        insert_test_api_key(&tx, AuthUser::new_as_admin(), |_| ())
+            .await
+            .unwrap();
     }
 }

@@ -14,8 +14,8 @@ use crate::{
     error::{Error, ErrorInner},
     handlers::people::{
         create::db_user::{
-            create_db_user, grant_permissions_to_db_user, modify_person_permissions,
-            revoke_permissions_from_db_user,
+            create_db_user, grant_createrole, grant_permissions_to_db_user,
+            modify_person_permissions, revoke_permissions_from_db_user,
         },
         show::select_person_by_id,
     },
@@ -69,6 +69,10 @@ pub(in super::super) async fn provision_db_user(
     tx.acquire_user_permisssions_lock().await?;
 
     create_db_user(tx, user_id).await?;
+    // It's necessary for a user to have this permission so they can create API keys
+    // for themselves. It's totally secure because they can't grant permissions they
+    // don't have to a role they create
+    grant_createrole(tx, user_id).await?;
     // In order to determine whether we should allow this user to grant permissions
     // to others, we grant/revoke create person permissions first
     let can_grant_to_others =

@@ -54,7 +54,7 @@ create table service_account_access (
 -- it's a bit clunky for our usecase
 create table api_key (
     id uuid primary key default uuidv7(),
-    description text,
+    description case_insensitive_text,
     hashed_key bytea unique not null,
     person_id uuid references person on delete cascade,
     service_account_id uuid references service_account on delete cascade,

@@ -41,7 +41,7 @@ pub(in super::super) async fn select_api_keys(
     Ok(stream.collect().await)
 }
 
-pub(in super::super) async fn select_api_key_record_by_id(
+pub(super) async fn select_api_key_record_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<ApiKeyRecord, ErrorInner> {

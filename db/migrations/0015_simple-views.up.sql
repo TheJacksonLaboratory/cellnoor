@@ -17,7 +17,7 @@ create view person_public as (
     from person
 );
 
-create view api_key_public as (
+create view api_key_public with (security_invoker = true) as (
     select
         id,
         description,
