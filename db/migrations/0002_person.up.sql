@@ -39,7 +39,7 @@ create table person_account (
 create table service_account (
     id uuid primary key default uuidv7(),
     description text,
-    owned_by uuid references person_account not null default current_user::uuid,
+    owned_by uuid references person not null default current_user::uuid,
     created_at timestamptz not null default now()
 );
 
