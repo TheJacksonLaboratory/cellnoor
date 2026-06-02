@@ -8,7 +8,7 @@ pub async fn insert_into<F, T, const N: usize>(
     data: &T,
 ) -> Result<Uuid, deadpool_postgres::tokio_postgres::Error>
 where
-    F: Copy + AsRef<str>,
+    F: Copy + Into<&'static str>,
     T: AsFieldValuePairs<F, N>,
 {
     let record = data.as_field_value_pairs();
@@ -23,7 +23,7 @@ pub async fn insert_into_no_returning<F, T, const N: usize>(
     data: &T,
 ) -> Result<(), deadpool_postgres::tokio_postgres::Error>
 where
-    F: Copy + AsRef<str>,
+    F: Copy + Into<&'static str>,
     T: AsFieldValuePairs<F, N>,
 {
     let record = data.as_field_value_pairs();
@@ -40,14 +40,16 @@ fn convert_record_to_insert_stmt<'a, F, const N: usize>(
     returning: Option<&str>,
 ) -> Sql<'a>
 where
-    F: Copy + AsRef<str>,
+    F: Copy + Into<&'static str>,
 {
     let mut fieldnames = Vec::with_capacity(N);
     let mut placeholders = Vec::with_capacity(N);
     let mut params = Vec::with_capacity(N);
 
     for (i, (field, value)) in field_value_pairs.iter().enumerate() {
-        fieldnames.push(field.as_ref().split('.').last().unwrap());
+        let field: &str = field.clone().into();
+
+        fieldnames.push(field.split('.').last().unwrap());
         placeholders.push(format!("${}", i + 1));
         params.push(*value);
     }

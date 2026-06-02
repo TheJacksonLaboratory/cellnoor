@@ -105,7 +105,7 @@ impl FilterableSqlBuilder {
     ) -> Sql<'a>
     where
         P: AsPredicate,
-        O: Default + Copy + AsRef<str>,
+        O: Default + Copy + Into<&'static str>,
     {
         // Still tiny but should be more than enough inshallah
         let mut stmt = String::with_capacity(2048);
@@ -199,7 +199,7 @@ fn write_order_by_fields<'a, O>(
     order_by_set: &OrderBySet<O>,
 ) -> Option<&'a mut String>
 where
-    O: Default + AsRef<str> + Copy,
+    O: Default + Into<&'static str> + Copy,
 {
     fn direction(desc: bool) -> &'static str {
         if desc { "desc" } else { "asc" }
@@ -207,7 +207,8 @@ where
 
     match order_by_set {
         OrderBySet::One(OrderBy { field, desc }) => {
-            write!(clause, "{} {}", field.as_ref(), direction(*desc)).unwrap();
+            let field: &str = field.clone().into();
+            write!(clause, "{} {}", field, direction(*desc)).unwrap();
         }
         OrderBySet::Many(fields) => {
             for (i, order_by) in fields.iter().copied().enumerate() {

@@ -14,7 +14,7 @@ pub async fn update<F, T, const N: usize>(
     data: &T,
 ) -> Result<(), ErrorInner>
 where
-    F: Copy + AsRef<str>,
+    F: Copy + Into<&'static str>,
     T: AsFieldValuePairs<F, N>,
 {
     let record = data.as_field_value_pairs();
@@ -35,7 +35,7 @@ fn convert_record_to_update_stmt<'a, F, const N: usize>(
     record: &'a FieldValuePairs<F, N>,
 ) -> Result<Sql<'a>, ErrorInner>
 where
-    F: Copy + AsRef<str>,
+    F: Copy + Into<&'static str>,
 {
     fn map_err(e: std::fmt::Error) -> ErrorInner {
         ErrorInner::Other {
@@ -63,10 +63,11 @@ where
             update_clause.push_str(", ");
         }
 
+        let field: &str = field.clone().into();
         write!(
             update_clause,
             "{} = ${}",
-            field.as_ref().split(".").last().unwrap(),
+            field.split(".").last().unwrap(),
             i + 1
         )
         .map_err(map_err)?;

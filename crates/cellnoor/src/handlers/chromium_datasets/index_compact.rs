@@ -78,12 +78,18 @@ pub fn chromium_dataset_from_record(record: SavedChromiumDatasetRecord) -> Chrom
 #[cfg(test)]
 mod test {
     use cellnoor_types::{
-        chromium_dataset::{ChromiumDatasetPredicateInner, ChromiumDatasetQuery},
+        chromium_dataset::{
+            ChromiumDatasetField, ChromiumDatasetPredicateInner, ChromiumDatasetQuery,
+        },
+        library::LibraryField,
         operator::UuidOperator,
+        specimen::SpecimenField,
+        tenx_assay::TenxAssayField,
     };
     use pretty_assertions::assert_eq;
 
     use crate::{
+        db::test_utils::ensure_fields_are_selectable,
         handlers::chromium_datasets::{
             create::test::insert_test_chromium_dataset,
             index_compact::select_chromium_datasets_compact,
@@ -109,5 +115,20 @@ mod test {
 
         assert_eq!(datasets.len(), 1);
         assert_eq!(datasets[0].record, inserted.record);
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn select_field() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let view = "chromium_dataset_to_specimen";
+
+        tokio::join!(
+            ensure_fields_are_selectable::<SpecimenField>(&tx, view),
+            ensure_fields_are_selectable::<TenxAssayField>(&tx, view),
+            ensure_fields_are_selectable::<LibraryField>(&tx, view),
+            ensure_fields_are_selectable::<ChromiumDatasetField>(&tx, view),
+        );
     }
 }

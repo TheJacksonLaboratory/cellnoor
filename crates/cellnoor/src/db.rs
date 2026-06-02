@@ -11,6 +11,8 @@ mod delete;
 mod insert;
 mod select;
 mod stmt;
+#[cfg(test)]
+pub mod test_utils;
 mod update;
 
 type FieldValuePair<'a, F> = (F, &'a (dyn ToSql + Sync));
