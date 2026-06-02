@@ -3,7 +3,7 @@ FROM oven/bun:1 AS build
 WORKDIR /usr/src/app
 
 COPY * .
-RUN bun install --frozen-lockfile && bun build --compile --minify --bytecode --sourcemap --format esm --define Bun.env.READ_SECRET_FILE=true index.ts --outfile cellnoor-auth
+RUN bun install --frozen-lockfile && bun build --compile --minify --bytecode --sourcemap --format esm --define Bun.env.READ_SECRET_FILE=true src/index.ts --outfile cellnoor-auth
 
 
 FROM debian:trixie AS final
