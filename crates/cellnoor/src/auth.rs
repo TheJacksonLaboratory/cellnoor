@@ -5,16 +5,14 @@ use deadpool_postgres::PoolError;
 use uuid::Uuid;
 
 use crate::{
-    auth::api_key::{ApiKeyExt, fetch_api_key_record},
+    auth::api_key::authenticate_with_api_key,
     db,
     error::{Error, ErrorInner},
     state::{AppState, DevState},
 };
 
 mod api_key;
-
-/// An alias to [db::User] for convenience.
-// pub type AuthUser = db::User;
+mod jwt;
 
 /// A database user.
 ///
@@ -75,10 +73,7 @@ impl FromRequestParts<AppState> for AuthUser {
             .into());
         };
 
-        let api_key_record =
-            fetch_api_key_record(api_key, state.db_client(Self(DbUser::App)).await?).await?;
-
-        api_key_record.to_user().map_err(Error::from)
+        Ok(authenticate_with_api_key(state, api_key).await?)
     }
 }
 

@@ -20,12 +20,6 @@ pub struct Error {
     pub error: ErrorInner,
 }
 
-impl From<ErrorInner> for Error {
-    fn from(error: ErrorInner) -> Self {
-        Self { error }
-    }
-}
-
 #[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema, PartialEq, Eq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ErrorInner {
@@ -136,6 +130,21 @@ impl From<TokioPgError> for ErrorInner {
     }
 }
 
+impl From<ErrorInner> for Error {
+    fn from(error: ErrorInner) -> Self {
+        Self { error }
+    }
+}
+
+impl From<DeadpoolPgError> for ErrorInner {
+    fn from(err: DeadpoolPgError) -> Self {
+        Self::Other {
+            message: err.to_string(),
+            sql_state: None,
+        }
+    }
+}
+
 impl From<TokioPgError> for Error {
     fn from(err: TokioPgError) -> Self {
         Self { error: err.into() }
@@ -144,11 +153,6 @@ impl From<TokioPgError> for Error {
 
 impl From<DeadpoolPgError> for Error {
     fn from(err: DeadpoolPgError) -> Self {
-        Self {
-            error: ErrorInner::Other {
-                message: err.to_string(),
-                sql_state: None,
-            },
-        }
+        Self { error: err.into() }
     }
 }
