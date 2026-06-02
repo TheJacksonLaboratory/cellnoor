@@ -118,7 +118,7 @@ mod test {
     }
 
     #[tokio::test(flavor = "multi_thread")]
-    async fn select_field() {
+    async fn select_fields() {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 

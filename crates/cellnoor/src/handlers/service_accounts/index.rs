@@ -76,11 +76,12 @@ impl AsPredicate for ServiceAccountPredicate {
 mod test {
     use cellnoor_types::{
         operator::UuidOperator,
-        service_account::{ServiceAccountPredicate, ServiceAccountQuery},
+        service_account::{ServiceAccountField, ServiceAccountPredicate, ServiceAccountQuery},
     };
     use pretty_assertions::assert_eq;
 
     use crate::{
+        db::test_utils::ensure_fields_are_selectable,
         handlers::service_accounts::{
             create::test::insert_test_service_account, index::select_service_accounts,
         },
@@ -101,5 +102,13 @@ mod test {
 
         assert_eq!(selected.len(), 1);
         assert_eq!(selected[0].id, inserted.id);
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn select_fields() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        ensure_fields_are_selectable::<ServiceAccountField>(&tx, "service_account").await;
     }
 }

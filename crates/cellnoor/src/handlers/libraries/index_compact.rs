@@ -82,12 +82,14 @@ impl AsPredicate for LibraryPredicate {
 #[cfg(test)]
 mod test {
     use cellnoor_types::{
-        library::{LibraryPredicateInner, LibraryQuery},
+        library::{LibraryField, LibraryPredicateInner, LibraryQuery},
         operator::UuidOperator,
+        specimen::SpecimenField,
     };
     use pretty_assertions::assert_eq;
 
     use crate::{
+        db::test_utils::ensure_fields_are_selectable,
         handlers::libraries::{
             create::test::insert_test_library, index_compact::select_libraries_compact,
         },
@@ -112,5 +114,18 @@ mod test {
 
         assert_eq!(libraries.len(), 1);
         assert_eq!(libraries[0].record, inserted.record);
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn select_fields() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let view = "chromium_library_to_specimen";
+
+        tokio::join!(
+            ensure_fields_are_selectable::<SpecimenField>(&tx, view),
+            ensure_fields_are_selectable::<LibraryField>(&tx, view),
+        );
     }
 }

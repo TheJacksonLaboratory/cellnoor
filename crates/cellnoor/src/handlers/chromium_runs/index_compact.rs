@@ -85,11 +85,14 @@ pub fn chromium_run_from_record(record: SavedChromiumRunRecord) -> ChromiumRunCo
 #[cfg(test)]
 mod test {
     use cellnoor_types::{
-        chromium_run::{ChromiumRunPredicateInner, ChromiumRunQuery},
+        chromium_run::{ChromiumRunField, ChromiumRunPredicateInner, ChromiumRunQuery},
         operator::UuidOperator,
+        specimen::SpecimenField,
+        tenx_assay::TenxAssayField,
     };
 
     use crate::{
+        db::test_utils::ensure_fields_are_selectable,
         handlers::chromium_runs::{
             create::test::insert_test_standard_chromium_run,
             index_compact::select_chromium_runs_compact,
@@ -111,5 +114,19 @@ mod test {
             ChromiumRunPredicateInner::Id(UuidOperator::Eq(id)).into(),
         );
         select_chromium_runs_compact(&tx, &mut query).await.unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn select_fields() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let view = "gem_well_to_specimen";
+
+        tokio::join!(
+            ensure_fields_are_selectable::<SpecimenField>(&tx, view),
+            ensure_fields_are_selectable::<TenxAssayField>(&tx, view),
+            ensure_fields_are_selectable::<ChromiumRunField>(&tx, view),
+        );
     }
 }

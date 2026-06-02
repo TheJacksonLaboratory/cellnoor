@@ -49,7 +49,10 @@ impl AsPredicate for TenxAssayPredicate {
 
 #[cfg(test)]
 mod test {
+    use cellnoor_types::tenx_assay::TenxAssayField;
+
     use crate::{
+        db::test_utils::ensure_fields_are_selectable,
         handlers::tenx_assays::create::insert_test_chromium_assay,
         state::test_util::db_client_as_admin,
     };
@@ -60,5 +63,13 @@ mod test {
         let tx = client.begin().await.unwrap();
 
         insert_test_chromium_assay(&tx).await.unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn select_fields() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        ensure_fields_are_selectable::<TenxAssayField>(&tx, "tenx_assay").await;
     }
 }

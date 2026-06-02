@@ -76,12 +76,14 @@ pub fn cdna_from_record(record: SavedCdnaRecord) -> CdnaCompact {
 #[cfg(test)]
 mod test {
     use cellnoor_types::{
-        cdna::{CdnaPredicateInner, CdnaQuery},
+        cdna::{CdnaField, CdnaPredicateInner, CdnaQuery},
         operator::UuidOperator,
+        specimen::SpecimenField,
     };
     use pretty_assertions::assert_eq;
 
     use crate::{
+        db::test_utils::ensure_fields_are_selectable,
         handlers::cdna::{
             create::test::insert_test_cdna_and_chromium_run, index_compact::select_cdna_compact,
         },
@@ -108,5 +110,18 @@ mod test {
 
         assert_eq!(cdnas.len(), 1);
         assert_eq!(cdnas[0].record, inserted.record);
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn select_fields() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let view = "chromium_cdna_to_specimen";
+
+        tokio::join!(
+            ensure_fields_are_selectable::<SpecimenField>(&tx, view),
+            ensure_fields_are_selectable::<CdnaField>(&tx, view),
+        );
     }
 }

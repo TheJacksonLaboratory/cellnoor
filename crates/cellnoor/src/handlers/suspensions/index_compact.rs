@@ -87,11 +87,13 @@ pub fn suspension_from_record(record: SavedSuspensionRecord) -> SuspensionCompac
 mod test {
     use cellnoor_types::{
         operator::UuidOperator,
-        suspension::{SuspensionPredicateInner, SuspensionQuery},
+        specimen::SpecimenField,
+        suspension::{SuspensionField, SuspensionPredicateInner, SuspensionQuery},
     };
     use pretty_assertions::assert_eq;
 
     use crate::{
+        db::test_utils::ensure_fields_are_selectable,
         handlers::suspensions::{
             create::test::insert_test_suspension_and_specimen,
             index_compact::select_suspensions_compact,
@@ -119,5 +121,18 @@ mod test {
 
         assert_eq!(suspensions.len(), 1);
         assert_eq!(suspensions[0].record, inserted.record);
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn select_fields() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let view = "suspension_to_specimen";
+
+        tokio::join!(
+            ensure_fields_are_selectable::<SpecimenField>(&tx, view),
+            ensure_fields_are_selectable::<SuspensionField>(&tx, view),
+        );
     }
 }

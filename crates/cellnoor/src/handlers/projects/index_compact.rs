@@ -74,11 +74,12 @@ mod test {
 
     use cellnoor_types::{
         operator::SimpleStringOperator,
-        project::{ProjectPredicate, ProjectQuery},
+        project::{ProjectField, ProjectPredicate, ProjectQuery},
     };
     use pretty_assertions::assert_eq;
 
     use crate::{
+        db::test_utils::ensure_fields_are_selectable,
         handlers::projects::{
             create::test::insert_test_project, index_compact::select_projects_compact,
         },
@@ -99,5 +100,13 @@ mod test {
 
         assert_eq!(selected.len(), 1);
         assert_eq!(selected[0].record.id, inserted.record().id);
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn select_fields() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        ensure_fields_are_selectable::<ProjectField>(&tx, "project").await;
     }
 }

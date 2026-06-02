@@ -82,11 +82,12 @@ mod test {
 
     use cellnoor_types::{
         operator::StringOperator,
-        person::{PersonPredicate, PersonQuery},
+        person::{PersonField, PersonPredicate, PersonQuery},
     };
     use pretty_assertions::assert_eq;
 
     use crate::{
+        db::test_utils::ensure_fields_are_selectable,
         handlers::people::{
             create::test::insert_test_person_and_institution, index::select_people,
         },
@@ -113,5 +114,13 @@ mod test {
 
         assert_eq!(selected_records.len(), 1);
         assert_eq!(*selected_records[0].record.id, *inserted.record.id);
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn select_fields() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        ensure_fields_are_selectable::<PersonField>(&tx, "person_public").await;
     }
 }

@@ -75,13 +75,14 @@ impl AsPredicate for ApiKeyPredicate {
 #[cfg(test)]
 mod test {
     use cellnoor_types::{
-        api_key::{ApiKeyPredicate, ApiKeyQuery},
+        api_key::{ApiKeyField, ApiKeyPredicate, ApiKeyQuery},
         operator::UuidOperator,
     };
     use pretty_assertions::assert_eq;
 
     use crate::{
         auth::AuthUser,
+        db::test_utils::ensure_fields_are_selectable,
         handlers::api_keys::{create::test::insert_test_api_key, index::select_api_keys},
         state::test_util::db_client_as_admin,
     };
@@ -101,5 +102,13 @@ mod test {
 
         assert_eq!(selected.len(), 1);
         assert_eq!(selected[0].id, inserted.record.id);
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn select_fields() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        ensure_fields_are_selectable::<ApiKeyField>(&tx, "api_key_public").await;
     }
 }

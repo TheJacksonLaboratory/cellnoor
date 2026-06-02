@@ -77,11 +77,12 @@ pub fn specimen_from_record(record: SavedSpecimenRecord) -> SpecimenCompact {
 mod test {
     use cellnoor_types::{
         operator::UuidOperator,
-        specimen::{SpecimenPredicate, SpecimenQuery},
+        specimen::{SpecimenField, SpecimenPredicate, SpecimenQuery},
     };
     use pretty_assertions::assert_eq;
 
     use crate::{
+        db::test_utils::ensure_fields_are_selectable,
         handlers::specimens::{
             create::test::insert_test_specimen_and_project, index_compact::select_specimens_compact,
         },
@@ -106,5 +107,13 @@ mod test {
 
         assert_eq!(specimens.len(), 1);
         assert_eq!(specimens[0].record, inserted.record);
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn select_fields() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        ensure_fields_are_selectable::<SpecimenField>(&tx, "specimen").await;
     }
 }
