@@ -72,6 +72,7 @@ pub fn router() -> (OpenApi, Router<AppState>) {
     (api_docs, router)
 }
 
+#[axum::debug_handler]
 async fn show_api_docs(Extension(api_docs): Extension<Arc<OpenApi>>) -> Json<Arc<OpenApi>> {
     Json(api_docs)
 }

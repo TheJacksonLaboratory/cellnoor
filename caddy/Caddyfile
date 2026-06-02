@@ -1,7 +1,31 @@
-{$PUBLIC_URL} {
+{$PUBLIC_AUTH_URL} {
     encode
     {$TLS_SETTINGS}
-    reverse_proxy /api/auth/* {$UI_HOST}:{$UI_PORT}
-    reverse_proxy /api/* h2c://{$API_HOST}:{$API_PORT}
-    reverse_proxy /* {$UI_HOST}:{$UI_PORT}
+    reverse_proxy unix/{$AUTH_SOCKET}
+}
+
+{$PUBLIC_API_URL} {
+    encode
+    {$TLS_SETTINGS}
+    reverse_proxy unix+h2c/{$API_SOCKET}
+}
+
+{$PUBLIC_UI_URL} {
+    encode
+    {$TLS_SETTINGS}
+    reverse_proxy /* unix/{$UI_SOCKET}
+}
+
+{$PUBLIC_FILES_URL} {
+    encode
+    {$TLS_SETTINGS}
+
+    forward_auth {
+        unix+h2c/{$API_SOCKET}
+    }
+
+    root {$STATIC_FILES_DIR}
+    file_server browse {
+        precompressed
+    }
 }

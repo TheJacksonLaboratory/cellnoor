@@ -1,6 +1,5 @@
 use anyhow::Context;
 use axum::{Router, serve::Listener};
-use camino::Utf8Path;
 pub use routes::router;
 use tokio::net::{TcpListener, UnixListener};
 
@@ -8,10 +7,10 @@ use crate::{settings::Settings, state::AppState};
 
 mod routes;
 
-pub async fn serve(config_path: Option<&Utf8Path>) -> anyhow::Result<()> {
-    let settings = Settings::read(config_path).context("failed to read app settings")?;
+pub async fn serve() -> anyhow::Result<()> {
+    let settings = Settings::read().context("failed to read app settings")?;
 
-    let app_addr = settings.address().to_owned();
+    let app_addr = settings.listen_on().to_owned();
 
     let app_state = AppState::initialize(&settings).context("failed to initialize app state")?;
 
@@ -39,8 +38,6 @@ async fn serve_with_listener<L: Listener>(listener: L, app: Router) -> anyhow::R
 where
     L::Addr: std::fmt::Debug,
 {
-    leptos::logging::log!("cellnoor listening on {:?}", listener.local_addr()?);
-
     axum::serve(listener, app)
         .await
         .context("failed to serve app")?;

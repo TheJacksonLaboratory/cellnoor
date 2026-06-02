@@ -71,7 +71,8 @@ impl FromRequestParts<AppState> for AuthUser {
             let (secret, validation) = state.jwt_decoding_info();
             match authenticate_with_jwt(encoded_jwt.as_bytes(), secret, validation) {
                 Ok(user) => return Ok(user),
-                Err(e) => leptos::logging::warn!("failed to parse JWT: {e}"),
+                // Do nothing with the error for now
+                Err(_) => (),
             }
         }
 
@@ -80,7 +81,7 @@ impl FromRequestParts<AppState> for AuthUser {
         // need that
         let Some(api_key) = parts.headers.get("x-api-key").map(HeaderValue::as_bytes) else {
             return Err(ErrorInner::NoAuthFound {
-                message: "API key must be located in header 'x-api-key'",
+                message: "failed to authenticate with JWT at cookie 'cellnoor-auth.session_data' and API key at header 'x-api-key'",
             }
             .into());
         };

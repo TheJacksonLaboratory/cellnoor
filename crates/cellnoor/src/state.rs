@@ -51,11 +51,8 @@ pub enum AppState {
 impl AppState {
     pub fn initialize(settings: &Settings) -> anyhow::Result<Self> {
         let inner = StateCommon {
-            db_pool: db::Pool::new(
-                settings.db_url().expose_secret(),
-                settings.max_db_pool_size(),
-            )?,
-            raw_files_url: settings.raw_files_url().to_owned(),
+            db_pool: db::Pool::new(settings.db_config().to_owned(), settings.max_db_pool_size())?,
+            raw_files_url: settings.public_files_url().to_owned(),
         };
 
         let state = if settings.with_auth() {
@@ -117,12 +114,10 @@ pub mod test_util {
 
         dotenvy::dotenv().ok();
 
-        let db_pool = db::Pool::new(
+        let db_pool = db::Pool::from_url(
             &env::var("CELLNOOR_TEST_DB_URL")
                 .expect("environment variables 'CELLNOOR_TEST_DB_URL' required for test"),
-            None,
-        )
-        .unwrap();
+        );
 
         // Unit-tests don't use JSON web tokens, so we pass in an empty secret
         ProdState {

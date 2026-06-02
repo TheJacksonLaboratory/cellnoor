@@ -57,8 +57,7 @@ pub enum ErrorInner {
 
 impl IntoResponse for Error {
     fn into_response(mut self) -> axum::response::Response {
-        leptos::logging::error!("error: {self}");
-
+        // TODO: add logging
         if let ErrorInner::Other {
             message,
             sql_state: _,

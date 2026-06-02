@@ -21,7 +21,6 @@ cellnoor-types = {path = "../cellnoor-types", features = ["serde"]}
 axum = {workspace = true, optional = true}
 axum-extra= {workspace = true, optional = true}
 anyhow = {workspace = true, optional = true}
-camino = {workspace = true, optional = true}
 clap = {workspace = true, optional = true}
 uuid = {workspace = true, optional = true}
 schemars = {workspace = true, optional = true}
@@ -32,13 +31,7 @@ jiff = {workspace = true, optional = true}
 dotenvy = {workspace = true, optional = true}
 thiserror = {workspace = true, optional = true}
 config = {workspace = true, optional = true}
-leptos.workspace = true
-leptos_axum = {workspace = true, optional = true}
-leptos_meta = {workspace = true}
-leptos_router.workspace = true
-console_error_panic_hook = {workspace = true, optional = true}
 tokio = { workspace = true, optional = true }
-wasm-bindgen = { workspace = true, optional = true }
 strum.workspace = true
 sha3.workspace = true
 regex.workspace = true
@@ -47,18 +40,12 @@ serde_json.workspace = true
 nonempty = { path = "../nonempty" }
 
 [features]
-hydrate = [
-    "leptos/hydrate",
-    "dep:console_error_panic_hook",
-    "dep:wasm-bindgen",
-]
 ssr = [
     "dep:anyhow",
     "dep:postgres-types",
     "dep:aide",
     "dep:csvranger",
     "dep:deadpool-postgres",
-    "dep:camino",
     "dep:clap",
     "dep:config",
     "dep:jiff",
@@ -70,10 +57,6 @@ ssr = [
     "dep:axum-extra",
     "dep:tokio",
     "dep:rand",
-    "dep:leptos_axum",
-    "leptos/ssr",
-    "leptos_meta/ssr",
-    "leptos_router/ssr",
     "dep:uuid",
     "dep:schemars",
     "dep:headers",
@@ -86,59 +69,3 @@ nonempty = { path = "../nonempty", features = ["postgres-types"] }
 uuid = {workspace = true, features = ["v4"]}
 pretty_assertions.workspace = true
 positive = {path = "../positive", features = ["postgres-types"]}
-
-[package.metadata.leptos]
-# The name used by wasm-bindgen/cargo-leptos for the JS/WASM bundle. Defaults to the crate name
-output-name = "cellnoor"
-
-# The site root folder is where cargo-leptos generate all output. WARNING: all content of this folder will be erased on a rebuild. Use it in your server setup.
-site-root = "target/site"
-
-# The site-root relative folder where all compiled output (JS, WASM and CSS) is written
-# Defaults to pkg
-site-pkg-dir = "pkg"
-
-# [Optional] The source CSS file. If it ends with .sass or .scss then it will be compiled by dart-sass into CSS. The CSS is optimized by Lightning CSS before being written to <site-root>/<site-pkg>/cellnoor.css
-style-file = "style/main.css"
-# Assets source dir. All files found here will be copied and synchronized to site-root.
-# The assets-dir cannot have a sub directory with the same name/path as site-pkg-dir.
-#
-# Optional. Env: LEPTOS_ASSETS_DIR.
-assets-dir = "public"
-
-# The IP and port (ex: 127.0.0.1:3000) where the server serves the content. Use it in your server setup.
-site-addr = "127.0.0.1:3000"
-
-# The port to use for automatic reload monitoring
-reload-port = 3001
-
-#  The browserlist query used for optimizing the CSS.
-browserquery = "defaults"
-
-# The environment Leptos will run in, usually either "DEV" or "PROD"
-env = "DEV"
-
-# The features to use when compiling the bin target
-#
-# Optional. Can be over-ridden with the command line parameter --bin-features
-bin-features = ["ssr"]
-
-# If the --no-default-features flag should be used when compiling the bin target
-#
-# Optional. Defaults to false.
-bin-default-features = false
-
-# The features to use when compiling the lib target
-#
-# Optional. Can be over-ridden with the command line parameter --lib-features
-lib-features = ["hydrate"]
-
-# If the --no-default-features flag should be used when compiling the lib target
-#
-# Optional. Defaults to false.
-lib-default-features = false
-
-# The profile to use for the lib target when compiling for release
-#
-# Optional. Defaults to "release".
-lib-profile-release = "wasm-release"

@@ -1,6 +1,7 @@
+use std::fs;
+
 use anyhow::Context;
-use camino::Utf8Path;
-use secrecy::SecretString;
+use secrecy::{ExposeSecret, SecretString};
 
 fn default_with_auth() -> bool {
     true
@@ -12,53 +13,49 @@ fn default_address() -> String {
 
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct Settings {
-    db_url: SecretString,
+    db: deadpool_postgres::Config,
+    #[serde(default)]
     auth_secret: SecretString,
     max_db_pool_size: Option<usize>,
     #[serde(default = "default_address")]
     listen_on: String,
-    raw_files_url: String,
+    public_fiels_url: String,
     #[serde(default = "default_with_auth")]
     with_auth: bool,
 }
 
 impl Settings {
-    pub fn read(config_path: Option<&Utf8Path>) -> anyhow::Result<Self> {
+    pub fn read() -> anyhow::Result<Self> {
         use config::Config;
 
         let mut settings = Config::builder();
 
-        if let Some(config_path) = config_path {
-            settings = settings.add_source(config::File::new(
-                config_path.as_str(),
-                config::FileFormat::Toml,
-            ));
+        settings = settings
+            .add_source(config::Environment::with_prefix("CELLNOOR").separator("_"))
+            .add_source(config::Environment::with_prefix("").separator("__"));
+
+        let mut settings: Settings = settings
+            .build().context("failed to read app configuration from environment. All settings set in environment must have a prefix of 'CELLNOOR'")
+            .map(Config::try_deserialize)??;
+
+        if settings.db.password.is_none() {
+            settings.db.password = fs::read_to_string("/run/secrets/cellnoor_db_url").ok();
         }
 
-        settings = settings.add_source(config::Environment::with_prefix("CELLNOOR"));
+        if settings.auth_secret.expose_secret().is_empty() {
+            settings.auth_secret = fs::read_to_string("/run/secrets/cellnoor_auth_secret")
+                .map(SecretString::from)
+                .context("failed to read auth secret from environment and/or secret file")?;
+        }
 
-        let err_message = if let Some(config_path) = config_path {
-            format!(
-                "failed to read app configuration from {config_path} and environment. All \
-                 settings set in environment should have a prefix of 'CELLNOOR'"
-            )
-        } else {
-            "failed to read app configuration from environment. All settings set in environment \
-             should have a prefix of 'CELLNOOR'"
-                .to_string()
-        };
-
-        let settings = settings
-            .build()
-            .context(err_message)
-            .map(Config::try_deserialize)??;
+        settings.db.user.get_or_insert("app".to_owned());
 
         Ok(settings)
     }
 
     #[must_use]
-    pub fn db_url(&self) -> &SecretString {
-        &self.db_url
+    pub fn db_config(&self) -> &deadpool_postgres::Config {
+        &self.db
     }
 
     #[must_use]
@@ -67,7 +64,7 @@ impl Settings {
     }
 
     #[must_use]
-    pub fn address(&self) -> &str {
+    pub fn listen_on(&self) -> &str {
         &self.listen_on
     }
 
@@ -82,7 +79,7 @@ impl Settings {
     }
 
     #[must_use]
-    pub fn raw_files_url(&self) -> &str {
-        &self.raw_files_url
+    pub fn public_files_url(&self) -> &str {
+        &self.public_fiels_url
     }
 }

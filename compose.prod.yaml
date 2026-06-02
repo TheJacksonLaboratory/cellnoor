@@ -1,33 +1,38 @@
 services:
-  cellnoor-api:
+  cellnoor-auth:
     build: !reset null
-    image: ghcr.io/thejacksonlaboratory/cellnoor-api:latest
+    image: ghcr.io/thejacksonlaboratory/cellnoor:latest
     pull_policy: always
     environment:
-      JWT_ISSUER: &public_url https://cellnoor.jax.org
-      JWT_AUDIENCE: &jwt_audience https://cellnoor.jax.org/api
-      CELLNOOR_LOG_DIR: logs
-    secrets:
-      - source: initial_data
-        uid: "10001"
+      PUBLIC_AUTH_URL: &public_auth_url https://cellnoor.jax.org/auth
+  cellnoor:
+    build: !reset null
+    image: ghcr.io/thejacksonlaboratory/cellnoor:latest
+    pull_policy: always
+    environment:
+      MAX_DB_POOL_SIZE: "4"
+      PUBLIC_AUTH_URL: *public_auth_url
+      PUBLIC_FILES_URL: &public_files_url https://cellnoor.jax.org/files
   cellnoor-ui:
     build: !reset null
     image: ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
     pull_policy: always
     environment:
-      JWT_ISSUER: *public_url
-      JWT_AUDIENCE: *jwt_audience
-      PUBLIC_URL: *public_url
+      PUBLIC_AUTH_URL: *public_auth_url
+      PUBLIC_API_URL: &public_api_url https://cellnoor.jax.org/api
+      PUBLIC_UI_URL: &public_ui_url https://cellnoor.jax.org/ui
+      PUBLIC_FILES_URL: *public_files_url
   caddy:
     environment:
-      PUBLIC_URL: *public_url
+      PUBLIC_AUTH_URL: *public_auth_url
+      PUBLIC_API_URL: *public_api_url
+      PUBLIC_UI_URL: *public_ui_url
+      PUBLIC_FILES_URL: *public_files_url
       TLS_SETTINGS: tls /run/secrets/tls_certificate /run/secrets/tls_key
     secrets:
       - tls_certificate
       - tls_key
 secrets:
-  initial_data:
-    file: ${CELLNOOR_INITIAL_DATA_PATH}
   tls_certificate:
     file: ${CELLNOOR_TLS_CERTIFICATE_PATH}
   tls_key:

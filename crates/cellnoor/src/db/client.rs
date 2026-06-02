@@ -13,16 +13,25 @@ pub struct Pool(InnerPool);
 
 impl Pool {
     // Use `anyhow::Result` because we only make the pool once at app-startup
-    pub fn new(db_url: &str, max_size: Option<usize>) -> anyhow::Result<Self> {
-        let mut cfg = deadpool_postgres::Config::new();
-        cfg.url = db_url.to_owned().into();
-
+    pub fn new(cfg: deadpool_postgres::Config, max_size: Option<usize>) -> anyhow::Result<Self> {
         let mut builder = cfg.builder(deadpool_postgres::tokio_postgres::NoTls)?;
         if let Some(max_size) = max_size {
             builder = builder.max_size(max_size);
         }
 
         Ok(builder.build().map(Self)?)
+    }
+
+    #[cfg(test)]
+    pub fn from_url(db_url: &str) -> Self {
+        let mut cfg = deadpool_postgres::Config::new();
+
+        cfg.url = db_url.to_owned().into();
+        let builder = cfg
+            .builder(deadpool_postgres::tokio_postgres::NoTls)
+            .unwrap();
+
+        builder.build().map(Self).unwrap()
     }
 
     pub async fn get(&self, user: AuthUser) -> Result<Client, PoolError> {

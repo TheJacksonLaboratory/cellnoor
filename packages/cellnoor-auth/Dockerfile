@@ -10,7 +10,7 @@ FROM debian:trixie AS final
 
 COPY --from=build /usr/src/app/cellnoor-auth /bin/cellnoor-auth
 
-# We make sure to create the socket directory and then remove the socket fie if it already exists
+# We make sure to create the socket directory and then remove the socket file if it already exists
 RUN mkdir -p /run/cellnoor-auth
 
 # TODO: switch to an unprivileged user

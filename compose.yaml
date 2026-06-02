@@ -7,6 +7,9 @@ volumes:
   db-data:
   db-socket:
   auth-socket:
+  api-socket:
+  caddy-data:
+  caddy-config:
 secrets:
   root_db_password:
     environment: CELLNOOR_ROOT_DB_PASSWORD
@@ -72,3 +75,49 @@ services:
       ]
     volumes:
       [*db_socket_volume, &auth_socket_volume auth-socket:/run/cellnoor-auth]
+  cellnoor:
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    build:
+      context: crates
+      target: final
+      args:
+        UID: "10001"
+        SOCKET: &api_socket /run/cellnoor/cellnoor.sock
+    environment:
+      DB_HOST: *db_host
+      LISTEN_ON: *api_socket
+    secrets: [auth_secret, app_db_password]
+    volumes:
+      - *db_socket_volume
+      - &api_socket_volume api-socket:/run/cellnoor
+    healthcheck:
+      test: curl --fail --unix-socket /run/cellnoor-api/cellnoor-api.sock http://localhost/api/health || exit 1
+      interval: 1s
+      start_period: 10s
+      start_interval: 1s
+      timeout: 5s
+      retries: 10
+  caddy:
+    image: caddy:2-alpine
+    environment:
+      API_SOCKET: *api_socket
+    restart: always
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      [
+        ./caddy:/etc/caddy,
+        caddy-data:/data,
+        caddy-config:/config,
+        *api_socket_volume,
+      ]
+    pull_policy: always
+    depends_on:
+      cellnoor:
+        condition: service_healthy
