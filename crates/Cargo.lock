@@ -673,9 +673,9 @@ dependencies = [
 
 [[package]]
 name = "csvranger"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7be6ced853961cb1c383c9a81e8909dcd8a39b44014d6eb9f0527924d34f02ce"
+checksum = "3657552314305afac6dfefa9244a8c9f48b5ea14aae4fdce7ab1efb9ab55c325"
 dependencies = [
  "regex",
  "schemars",

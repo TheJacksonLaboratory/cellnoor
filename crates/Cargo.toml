@@ -12,7 +12,7 @@ edition = "2024"
 
 [workspace.dependencies]
 rand = { version = "0.10.1" }
-csvranger = { version = "0.2.0", features = ["legacy", "schemars"] }
+csvranger = { version = "0.3.0", features = ["legacy", "schemars"] }
 regex = {version = "1.12.3"}
 aide = { version = "0.16.0-alpha.4", features = [
   "axum",
