@@ -29,7 +29,7 @@ impl DevState {
 #[derive(Clone)]
 pub struct ProdState {
     inner: StateCommon,
-    jwt_decoding_key: Arc<jsonwebtoken::DecodingKey>,
+    jwt_decoding_info: Arc<(jsonwebtoken::DecodingKey, jsonwebtoken::Validation)>,
 }
 
 impl ProdState {
@@ -37,8 +37,8 @@ impl ProdState {
         self.inner.db_pool.get(user).await
     }
 
-    pub fn jwt_decoding_key(&self) -> &jsonwebtoken::DecodingKey {
-        &self.jwt_decoding_key
+    pub fn jwt_decoding_info(&self) -> &(jsonwebtoken::DecodingKey, jsonwebtoken::Validation) {
+        &self.jwt_decoding_info
     }
 }
 
@@ -61,8 +61,11 @@ impl AppState {
         let state = if settings.with_auth() {
             Self::Prod(ProdState {
                 inner,
-                jwt_decoding_key: Arc::new(jsonwebtoken::DecodingKey::from_secret(
-                    settings.auth_secret().expose_secret().as_bytes(),
+                jwt_decoding_info: Arc::new((
+                    jsonwebtoken::DecodingKey::from_secret(
+                        settings.auth_secret().expose_secret().as_bytes(),
+                    ),
+                    jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::HS256),
                 )),
             })
         } else {
@@ -128,7 +131,11 @@ pub mod test_util {
                 raw_files_url: String::new(),
             },
 
-            jwt_decoding_key: Arc::new(jsonwebtoken::DecodingKey::from_secret(&[])),
+            jwt_decoding_info: Arc::new((
+                jsonwebtoken::DecodingKey::from_secret(&[]),
+                // better-auth uses HS256 by default
+                jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::HS256),
+            )),
         }
     }
 

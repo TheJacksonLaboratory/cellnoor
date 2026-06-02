@@ -34,8 +34,8 @@ pub enum ErrorInner {
     },
     #[error("API key expired at {expired_at}")]
     ExpiredApiKey { expired_at: jiff::Timestamp },
-    #[error("invalid auth token")]
-    InvalidAuthToken,
+    #[error("invalid auth token: {message}")]
+    InvalidAuthToken { message: String },
     #[error("{message}")]
     NoAuthFound { message: &'static str },
     #[error("invalid data in field {} for {} - {} ({})", field.clone().unwrap_or_default(), resource.clone().unwrap_or_default(), message, detail.clone().unwrap_or_default())]
@@ -75,7 +75,7 @@ impl IntoResponse for Error {
             ErrorInner::InvalidApiKey
             | ErrorInner::ExpiredApiKey { .. }
             | ErrorInner::NoAuthFound { .. }
-            | ErrorInner::InvalidAuthToken
+            | ErrorInner::InvalidAuthToken { .. }
             | ErrorInner::PermissionDenied { .. } => StatusCode::UNAUTHORIZED,
             ErrorInner::Other { .. } => StatusCode::INTERNAL_SERVER_ERROR,
         };

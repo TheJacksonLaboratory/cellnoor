@@ -10,7 +10,7 @@ Bun.serve({
     "/sign-in": signIn,
     "/api/auth/*": auth.handler,
   },
-  async fetch({ url }) {
+  async fetch() {
     return Response.redirect("/sign-in");
   },
 });

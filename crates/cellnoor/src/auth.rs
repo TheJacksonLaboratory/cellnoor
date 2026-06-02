@@ -1,11 +1,12 @@
 use aide::OperationIo;
 pub use api_key::hash_api_key;
-use axum::{extract::FromRequestParts, http::HeaderValue};
+use axum::{RequestPartsExt, extract::FromRequestParts, http::HeaderValue};
+use axum_extra::extract::{CookieJar, cookie::Cookie};
 use deadpool_postgres::PoolError;
 use uuid::Uuid;
 
 use crate::{
-    auth::api_key::authenticate_with_api_key,
+    auth::{api_key::authenticate_with_api_key, jwt::authenticate_with_jwt},
     db,
     error::{Error, ErrorInner},
     state::{AppState, DevState},
@@ -62,6 +63,17 @@ impl FromRequestParts<AppState> for AuthUser {
             // The nil UUID corresponds to the admin user
             return Ok(Self(DbUser::Person(Uuid::nil())));
         };
+
+        let cookies = parts.extract::<CookieJar>().await.unwrap();
+        // We know the name of the cookie because it's set in
+        // packages/cellnoor-auth/src/auth.ts
+        if let Some(encoded_jwt) = cookies.get("cellnoor-auth.session_data").map(Cookie::value) {
+            let (secret, validation) = state.jwt_decoding_info();
+            match authenticate_with_jwt(encoded_jwt.as_bytes(), secret, validation) {
+                Ok(user) => return Ok(user),
+                Err(e) => leptos::logging::warn!("failed to parse JWT: {e}"),
+            }
+        }
 
         // Eventually, we'll also decode the JWT that better-auth sets, so we will have
         // both UI auth and API auth mechanisms consolidated here. For now, we don't

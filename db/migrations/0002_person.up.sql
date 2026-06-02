@@ -25,8 +25,6 @@ create table person (
 create table person_account (
     id uuid primary key default uuidv7(),
     person_id uuid references person on delete cascade not null,
-    -- Technically, `auth_provider_id` and `auth_provider_user_id` should be 'not null', but we leave them nullable so
-    -- we can insert the admin user without knowing these things
     auth_provider_name text not null,
     auth_provider_user_id text not null,
     scope text,

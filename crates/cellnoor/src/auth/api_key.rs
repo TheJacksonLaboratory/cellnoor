@@ -1,5 +1,4 @@
 use cellnoor_types::api_key::ApiKeyRecord;
-use futures::StreamExt;
 use sha3::Digest;
 
 use crate::{

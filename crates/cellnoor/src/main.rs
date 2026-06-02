@@ -5,6 +5,8 @@ async fn main() -> anyhow::Result<()> {
     use cellnoor::api;
     use clap::Parser;
 
+    dotenvy::dotenv().unwrap_or_default();
+
     #[derive(Debug, clap::Parser)]
     struct Cli {
         #[clap(short, long)]

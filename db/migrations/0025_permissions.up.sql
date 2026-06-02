@@ -16,11 +16,12 @@ with initial_data as (
     select json(pg_read_file('/initial-data.json')) -> 'admin' as admin_person
 )
 
-insert into person (id, name, email, institution_id, is_staff, orcid)
+insert into person (id, name, email, email_verified, institution_id, is_staff, orcid)
 select
     uuid_nil(),
     admin_person ->> 'name',
     admin_person ->> 'email',
+    true,
     uuid_nil(),
     (admin_person ->> 'is_staff')::boolean,
     admin_person ->> 'orcid'
@@ -41,6 +42,7 @@ $$;
 -- 'auth' only needs to create and read people
 grant insert, select, update on person, person_account to auth;
 grant select on institution to auth;
+grant execute on function create_person_user_if_not_exists to auth;
 alter user auth with createrole;
 
 -- 'app' needs to be able to read API keys directly to authenticate people

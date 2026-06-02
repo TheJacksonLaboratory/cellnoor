@@ -2,4 +2,5 @@
 
 set -euo pipefail
 
-bun --cwd=packages/cellnoor-auth --install=force --env-file=../../.env.rewrite src/index.ts
+cd packages/cellnoor-auth
+bun install && bun --env-file=../../.env src/index.ts

@@ -2,7 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use deadpool_postgres::tokio_postgres::error::SqlState;
+use deadpool_postgres::tokio_postgres::error::{DbError, SqlState};
 use uuid::Uuid;
 
 use crate::{
@@ -48,7 +48,7 @@ pub(in super::super) async fn drop_db_user(
         .await;
 
     if let Err(e) = revoke_result {
-        let Some(&SqlState::UNDEFINED_OBJECT) = e.as_db_error().map(|inner| inner.code()) else {
+        let Some(&SqlState::UNDEFINED_OBJECT) = e.as_db_error().map(DbError::code) else {
             return Err(e.into());
         };
 

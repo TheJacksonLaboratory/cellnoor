@@ -1,10 +1,11 @@
-import { type Account, betterAuth, z } from "better-auth";
+import { type Account, betterAuth } from "better-auth";
 import { readConfig } from "./config";
 import { getDbClient } from "./db";
 
 const {
   publicAuthUrl,
-  publicAppUrl,
+  publicApiUrl,
+  publicUiUrl,
   authSecret,
   microsoftEntraTenantId,
   microsoftEntraClientId,
@@ -24,10 +25,19 @@ async function deleteUnnecessaryAccountFields(
   return account;
 }
 
+async function provisionDbUser({ id }: { id: string }) {
+  const dbClient = await getDbClient();
+  await dbClient.query(
+    "select create_person_user_if_not_exists($1)",
+    [id],
+  );
+}
+
+
 export const auth = betterAuth({
   baseURL: publicAuthUrl,
   secret: authSecret,
-  trustedOrigins: [publicAppUrl],
+  trustedOrigins: [publicApiUrl, publicUiUrl],
   database: await getDbClient(),
   // We need to supply secondary storage to make better-auth forget about our database, so we just provide a dummy implementation
   secondaryStorage: {
@@ -55,7 +65,6 @@ export const auth = betterAuth({
       maxAge: 7 * 24 * 60 * 60, // 1 week
       refreshCache: true,
     },
-    // Despite setting the fact that you are telling better-auth to store sessions as JWTs in cookies AND to not store them in the database, you still have to provide a secondary storage
     storeSessionInDatabase: false,
   },
   account: {
@@ -83,15 +92,11 @@ export const auth = betterAuth({
       },
     },
     user: {
+      update: {
+        after: provisionDbUser
+      },
       create: {
-        async after({ id }) {
-          // Create a db user for the new person too
-          const dbClient = await getDbClient();
-          await dbClient.query(
-            "select create_person_user_if_not_exists($1::text)",
-            [id],
-          );
-        },
+        after: provisionDbUser
       },
     },
   },

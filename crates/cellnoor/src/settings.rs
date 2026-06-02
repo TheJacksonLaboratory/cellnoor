@@ -14,13 +14,9 @@ fn default_address() -> String {
 pub struct Settings {
     db_url: SecretString,
     auth_secret: SecretString,
-    #[allow(dead_code)]
-    auth_url: String,
     max_db_pool_size: Option<usize>,
     #[serde(default = "default_address")]
-    address: String,
-    #[allow(dead_code)]
-    app_url: String,
+    listen_on: String,
     raw_files_url: String,
     #[serde(default = "default_with_auth")]
     with_auth: bool,
@@ -72,7 +68,7 @@ impl Settings {
 
     #[must_use]
     pub fn address(&self) -> &str {
-        &self.address
+        &self.listen_on
     }
 
     #[must_use]
