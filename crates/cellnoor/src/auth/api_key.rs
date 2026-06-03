@@ -20,52 +20,13 @@ pub(super) async fn authenticate_with_api_key(
     api_key_record.to_user()
 }
 
-enum ApiKeyUserType {
-    Person,
-    Service,
-}
-
 trait ApiKeyExt {
-    fn is_for_person(&self) -> bool;
-
-    fn is_for_service(&self) -> bool;
-
-    fn api_key_type(&self) -> Result<ApiKeyUserType, ErrorInner>;
-
     fn is_expired(&self) -> bool;
 
     fn to_user(&self) -> Result<AuthUser, ErrorInner>;
 }
 
 impl ApiKeyExt for ApiKeyRecord {
-    fn is_for_person(&self) -> bool {
-        self.person_id.is_some()
-    }
-
-    fn is_for_service(&self) -> bool {
-        self.service_account_id.is_some()
-    }
-
-    // Technically, the db ensures we don't have both a `person_id` and
-    // `service_account_id`, but it's easy to be certain of that at compile time
-    fn api_key_type(&self) -> Result<ApiKeyUserType, ErrorInner> {
-        let user_type = if self.is_for_person() && !self.is_for_service() {
-            ApiKeyUserType::Person
-        } else if !self.is_for_person() && self.is_for_service() {
-            ApiKeyUserType::Service
-        } else {
-            return Err(ErrorInner::Other {
-                message: format!(
-                    "API key {} is assigned both to a person and a service account",
-                    self.id
-                ),
-                sql_state: None,
-            });
-        };
-
-        Ok(user_type)
-    }
-
     fn is_expired(&self) -> bool {
         self.expires_at < jiff::Timestamp::now()
     }
@@ -77,12 +38,7 @@ impl ApiKeyExt for ApiKeyRecord {
             });
         }
 
-        let user = match self.api_key_type()? {
-            ApiKeyUserType::Person => AuthUser(DbUser::Person(self.id)),
-            ApiKeyUserType::Service => AuthUser(DbUser::Service(self.id)),
-        };
-
-        Ok(user)
+        Ok(AuthUser(DbUser::ApiKey(self.id)))
     }
 }
 

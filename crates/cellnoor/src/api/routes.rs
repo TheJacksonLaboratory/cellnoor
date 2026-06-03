@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
 use aide::{
-    axum::ApiRouter,
+    axum::{ApiRouter, routing::get as aide_get},
     openapi::{ApiKeyLocation, OpenApi, SecurityScheme},
     redoc::Redoc,
 };
 use axum::{Extension, Json, Router, routing::get};
 
-use crate::state::AppState;
+use crate::{handlers::files::authenticate_file_request, state::AppState};
 
 mod api_keys;
 mod cdna;
@@ -31,7 +31,7 @@ pub fn router() -> (OpenApi, Router<AppState>) {
         .route(
             "/docs/redoc",
             get(Redoc::new("/api/openapi.json")
-                .with_title("cellnoor REST API")
+                .with_title("cellnoor RESTful API")
                 .axum_handler()),
         )
         .nest("/institutions", institutions::router())
@@ -47,7 +47,8 @@ pub fn router() -> (OpenApi, Router<AppState>) {
         .nest("/multiplexing-tags", multiplexing_tags::router())
         .nest("/cdna", cdna::router())
         .nest("/libraries", libraries::router())
-        .nest("/chromium-datasets", chromium_datasets::router());
+        .nest("/chromium-datasets", chromium_datasets::router())
+        .route("/files/forward-auth", aide_get(authenticate_file_request));
 
     let mut api_docs = OpenApi::default();
 

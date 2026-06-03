@@ -26,7 +26,7 @@ pub async fn show_chromium_dataset(
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_chromium_dataset_by_id(&tx, state.raw_files_url(), id)
+    let response = select_chromium_dataset_by_id(&tx, state.public_files_url(), id)
         .await
         .map(Json)?;
 

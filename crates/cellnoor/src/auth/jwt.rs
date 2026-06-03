@@ -19,8 +19,21 @@ pub(super) fn authenticate_with_jwt(
 }
 
 impl AuthUser {
-    fn from_token_data(TokenData { header: _, claims }: TokenData<Claims>) -> Self {
-        AuthUser(DbUser::Person(claims.user.id))
+    fn from_token_data(
+        TokenData {
+            header: _,
+            claims:
+                Claims {
+                    user: UserClaims { id, is_staff },
+                    iat: _,
+                    exp: _,
+                },
+        }: TokenData<Claims>,
+    ) -> Self {
+        AuthUser(DbUser::Jwt {
+            user_id: id,
+            is_staff,
+        })
     }
 }
 
@@ -36,4 +49,5 @@ struct Claims {
 #[derive(serde::Deserialize)]
 struct UserClaims {
     id: Uuid,
+    is_staff: bool,
 }

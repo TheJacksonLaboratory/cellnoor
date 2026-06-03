@@ -4,8 +4,6 @@ import { getDbClient } from "./db";
 
 const {
   publicAuthUrl,
-  publicApiUrl,
-  publicUiUrl,
   authSecret,
   microsoftEntraTenantId,
   microsoftEntraClientId,
@@ -37,7 +35,6 @@ async function provisionDbUser({ id }: { id: string }) {
 export const auth = betterAuth({
   baseURL: publicAuthUrl,
   secret: authSecret,
-  trustedOrigins: [publicApiUrl, publicUiUrl],
   database: await getDbClient(),
   // We need to supply secondary storage to make better-auth forget about our database, so we just provide a dummy implementation
   secondaryStorage: {
@@ -56,6 +53,9 @@ export const auth = betterAuth({
       institution_id: {
         type: "string",
       },
+      is_staff: {
+        type: "boolean"
+      }
     },
   },
   session: {
@@ -107,8 +107,10 @@ export const auth = betterAuth({
       clientSecret: microsoftEntraClientSecret,
       async mapProfileToUser({ tid }) {
         const dbClient = await getDbClient();
+
         const { rows: [{ institution_id }] } = await dbClient.query(
-          "select id as institution_id from institution where microsoft_entra_tenant_id = $1::uuid",
+          `select institution.id as institution_id from institution
+          where institution.microsoft_entra_tenant_id = $1::uuid`,
           [tid],
         );
 
@@ -118,6 +120,11 @@ export const auth = betterAuth({
   },
   advanced: {
     cookiePrefix: "cellnoor-auth",
+    // We expect this app to be served at something like auth.cellnoor.jax.org, so cross-subdomain cookies need to be
+    // enabled so that api.cellnoor.jax.org and app.cellnoor.jax.org also get the neceessary cookies. Note that
+    // `publicAuthUrl.split(".").toSpliced(0,1).join(".")` returns a string with the first subdomain removed, so we get
+    // "cellnoor.jax.org" if publicAuthUrl === "auth.cellnoor.jax.org"
+    crossSubDomainCookies: { enabled: true, domain: publicAuthUrl.split(".").toSpliced(0,1).join(".") },
     database: { generateId: "uuid" },
   },
 });

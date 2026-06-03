@@ -22,7 +22,7 @@ pub async fn update_chromium_dataset(
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = update_chromium_dataset_by_id(&tx, state.raw_files_url(), id, &record)
+    let response = update_chromium_dataset_by_id(&tx, state.public_files_url(), id, &record)
         .await
         .map(Json)?;
 

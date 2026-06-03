@@ -32,7 +32,7 @@ pub async fn index_chromium_datasets_detailed(
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_chromium_datasets_detailed(&tx, state.raw_files_url(), &mut query)
+    let response = select_chromium_datasets_detailed(&tx, state.public_files_url(), &mut query)
         .await
         .map(Json)?;
 
@@ -78,7 +78,7 @@ fn map_detailed_row(raw_files_url: &str, row: Row) -> ChromiumDatasetDetailed {
 }
 
 fn chromium_dataset_detailed_links(
-    raw_files_url: &str,
+    public_files_url: &str,
     id: Id,
     raw_file_paths: &[NonemptyString],
 ) -> ChromiumDatasetDetailedLinks {
@@ -86,7 +86,7 @@ fn chromium_dataset_detailed_links(
         simple: chromium_dataset_links(id),
         raw_files: raw_file_paths
             .iter()
-            .map(|p| format!("{raw_files_url}/{p}"))
+            .map(|p| format!("{public_files_url}/{p}"))
             .collect(),
     }
 }

@@ -5,17 +5,16 @@ services:
       - "5432:5432"
   cellnoor-auth:
     environment:
-      PUBLIC_AUTH_URL: &public_auth_url https://localhost/auth
+      PUBLIC_AUTH_URL: &public_auth_url https://auth.cellnoor.localhost
   cellnoor:
     build:
       args:
         BUILD_PROFILE: dev
     environment:
-      PUBLIC_AUTH_URL: *public_auth_url
-      PUBLIC_FILES_URL: &public_files_url https://localhost/files
+      PUBLIC_FILES_URL: &public_files_url https://files.localhost
   caddy:
     environment:
       PUBLIC_AUTH_URL: *public_auth_url
-      PUBLIC_API_URL: https://localhost/api
-      PUBLIC_UI_URL: "TODO"
+      PUBLIC_API_URL: https://api.cellnoor.localhost
+      PUBLIC_UI_URL: https://app.cellnoor.localhost
       PUBLIC_FILES_URL: *public_files_url

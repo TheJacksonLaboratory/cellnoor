@@ -7,9 +7,7 @@ use crate::{settings::Settings, state::AppState};
 
 mod routes;
 
-pub async fn serve() -> anyhow::Result<()> {
-    let settings = Settings::read().context("failed to read app settings")?;
-
+pub async fn serve(settings: &Settings) -> anyhow::Result<()> {
     let app_addr = settings.listen_on().to_owned();
 
     let app_state = AppState::initialize(&settings).context("failed to initialize app state")?;
@@ -38,6 +36,8 @@ async fn serve_with_listener<L: Listener>(listener: L, app: Router) -> anyhow::R
 where
     L::Addr: std::fmt::Debug,
 {
+    println!("cellnoor listening on {:?}", listener.local_addr()?);
+
     axum::serve(listener, app)
         .await
         .context("failed to serve app")?;
@@ -48,5 +48,6 @@ where
 fn api(app_state: AppState) -> Router {
     let (_, api_router) = routes::router();
 
-    Router::new().nest("/api", api_router.with_state(app_state))
+    // For now, since there's no frontend application, we just serve the app from the root (because we expect that the reverse proxy will serve this app behind api.cellnoor.jax.org)
+    Router::new().merge(api_router.with_state(app_state))
 }

@@ -1,17 +1,18 @@
 #[cfg(feature = "ssr")]
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    use cellnoor::api;
+    use anyhow::Context;
+    use cellnoor::{api, settings::Settings};
 
     dotenvy::dotenv().unwrap_or_default();
+    let settings = Settings::read().context("failed to read app configuration")?;
 
-    api::serve().await?;
+    api::serve(&settings).await?;
 
     Ok(())
 }
 
 // #[cfg(feature = "ssr")]
-// #[allow(dead_code)]
 // async fn leptos_main() {
 //     use axum::Router;
 //     use camino::Utf8PathBuf;
@@ -48,10 +49,3 @@ async fn main() -> anyhow::Result<()> {
 //         .await
 //         .unwrap();
 // }
-
-#[cfg(not(feature = "ssr"))]
-pub fn main() {
-    // no client-side main function
-    // unless we want this to work with e.g., Trunk for pure client-side testing
-    // see lib.rs for hydration function instead
-}

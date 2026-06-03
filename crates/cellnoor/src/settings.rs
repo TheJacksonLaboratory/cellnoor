@@ -19,31 +19,29 @@ pub struct Settings {
     max_db_pool_size: Option<usize>,
     #[serde(default = "default_address")]
     listen_on: String,
-    public_fiels_url: String,
+    public_files_url: String,
     #[serde(default = "default_with_auth")]
     with_auth: bool,
 }
 
 impl Settings {
     pub fn read() -> anyhow::Result<Self> {
-        use config::Config;
+        use config::{Config, Environment};
 
-        let mut settings = Config::builder();
-
-        settings = settings
-            .add_source(config::Environment::with_prefix("CELLNOOR").separator("_"))
-            .add_source(config::Environment::with_prefix("").separator("__"));
-
-        let mut settings: Settings = settings
-            .build().context("failed to read app configuration from environment. All settings set in environment must have a prefix of 'CELLNOOR'")
+        let separator = "__";
+        let mut settings: Settings = Config::builder()
+            .add_source(Environment::with_prefix("CELLNOOR_APP").separator(separator))
+            .add_source(Environment::with_prefix("CELLNOOR").separator(separator))
+            .add_source(Environment::default().separator(separator))
+            .build()
             .map(Config::try_deserialize)??;
 
         if settings.db.password.is_none() {
-            settings.db.password = fs::read_to_string("/run/secrets/cellnoor_db_url").ok();
+            settings.db.password = fs::read_to_string("/run/secrets/app_db_password").ok();
         }
 
         if settings.auth_secret.expose_secret().is_empty() {
-            settings.auth_secret = fs::read_to_string("/run/secrets/cellnoor_auth_secret")
+            settings.auth_secret = fs::read_to_string("/run/secrets/auth_secret")
                 .map(SecretString::from)
                 .context("failed to read auth secret from environment and/or secret file")?;
         }
@@ -80,6 +78,6 @@ impl Settings {
 
     #[must_use]
     pub fn public_files_url(&self) -> &str {
-        &self.public_fiels_url
+        &self.public_files_url
     }
 }

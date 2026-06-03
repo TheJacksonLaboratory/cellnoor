@@ -21,7 +21,7 @@ pub async fn create_chromium_dataset(
 
     let tx = client.begin().await?;
 
-    let response = insert_chromium_dataset(&tx, state.raw_files_url(), record)
+    let response = insert_chromium_dataset(&tx, state.public_files_url(), record)
         .await
         .map(Json)?;
 

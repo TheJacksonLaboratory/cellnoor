@@ -1,32 +1,24 @@
 services:
   cellnoor-auth:
     build: !reset null
-    image: ghcr.io/thejacksonlaboratory/cellnoor:latest
+    image: ghcr.io/thejacksonlaboratory/cellnoor-auth:latest
     pull_policy: always
-    environment:
-      PUBLIC_AUTH_URL: &public_auth_url https://cellnoor.jax.org/auth
   cellnoor:
     build: !reset null
     image: ghcr.io/thejacksonlaboratory/cellnoor:latest
     pull_policy: always
     environment:
       MAX_DB_POOL_SIZE: "4"
-      PUBLIC_AUTH_URL: *public_auth_url
       PUBLIC_FILES_URL: &public_files_url https://cellnoor.jax.org/files
   cellnoor-ui:
     build: !reset null
     image: ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
     pull_policy: always
-    environment:
-      PUBLIC_AUTH_URL: *public_auth_url
-      PUBLIC_API_URL: &public_api_url https://cellnoor.jax.org/api
-      PUBLIC_UI_URL: &public_ui_url https://cellnoor.jax.org/ui
-      PUBLIC_FILES_URL: *public_files_url
   caddy:
     environment:
-      PUBLIC_AUTH_URL: *public_auth_url
-      PUBLIC_API_URL: *public_api_url
-      PUBLIC_UI_URL: *public_ui_url
+      PUBLIC_AUTH_URL: https://cellnoor.jax.org:3000
+      PUBLIC_API_URL: https://cellnoor.jax.org:3001
+      PUBLIC_UI_URL: https://cellnoor.jax.org
       PUBLIC_FILES_URL: *public_files_url
       TLS_SETTINGS: tls /run/secrets/tls_certificate /run/secrets/tls_key
     secrets:

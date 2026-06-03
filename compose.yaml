@@ -10,6 +10,7 @@ volumes:
   api-socket:
   caddy-data:
   caddy-config:
+  static-files:
 secrets:
   root_db_password:
     environment: CELLNOOR_ROOT_DB_PASSWORD
@@ -43,7 +44,7 @@ services:
     volumes:
       [
         &db_data_volume db-data:/var/lib/postgresql,
-        &db_socket_volume db-socket:/var/run/postgresql,
+        &db_socket_volume db-socket:/run/postgresql,
         ./initial-data.json:/initial-data.json,
       ]
   migrate:
@@ -63,7 +64,8 @@ services:
       context: packages/cellnoor-auth
       target: final
     environment:
-      DB_HOST: &db_host /var/run/postgresql
+      DB_NAME: &db_name postgres
+      DB_HOST: &db_host /run/postgresql
       UNIX_DOMAIN_SOCKET: &auth_socket /run/cellnoor-auth/cellnoor-auth.sock
     secrets:
       [
@@ -86,14 +88,19 @@ services:
         UID: "10001"
         SOCKET: &api_socket /run/cellnoor/cellnoor.sock
     environment:
-      DB_HOST: *db_host
+      DB__HOST: *db_host
+      # This is hardcoded for simplicity, but it may behoove us to set an explicit dbname in the db service definition
+      # and use that here
+      DB__DBNAME: postgres
+      STATIC_FILES_DIR: &static_files_dir /static-files
       LISTEN_ON: *api_socket
     secrets: [auth_secret, app_db_password]
     volumes:
       - *db_socket_volume
       - &api_socket_volume api-socket:/run/cellnoor
+      - &static_files_volume static-files:/static-files
     healthcheck:
-      test: curl --fail --unix-socket /run/cellnoor-api/cellnoor-api.sock http://localhost/api/health || exit 1
+      test: curl --fail --http2-prior-knowledge --unix-socket /run/cellnoor/cellnoor.sock http://localhost/health || exit 1
       interval: 1s
       start_period: 10s
       start_interval: 1s
@@ -102,7 +109,9 @@ services:
   caddy:
     image: caddy:2-alpine
     environment:
+      AUTH_SOCKET: *auth_socket
       API_SOCKET: *api_socket
+      STATIC_FILES_DIR: *static_files_dir
     restart: always
     cap_add:
       - NET_ADMIN
@@ -115,7 +124,9 @@ services:
         ./caddy:/etc/caddy,
         caddy-data:/data,
         caddy-config:/config,
+        *auth_socket_volume,
         *api_socket_volume,
+        *static_files_volume,
       ]
     pull_policy: always
     depends_on:

@@ -2,6 +2,7 @@ use aide::OperationIo;
 pub use api_key::hash_api_key;
 use axum::{RequestPartsExt, extract::FromRequestParts, http::HeaderValue};
 use axum_extra::extract::{CookieJar, cookie::Cookie};
+
 use deadpool_postgres::PoolError;
 use uuid::Uuid;
 
@@ -23,8 +24,8 @@ mod jwt;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum DbUser {
     App,
-    Person(Uuid),
-    Service(Uuid),
+    ApiKey(Uuid),
+    Jwt { user_id: Uuid, is_staff: bool },
 }
 
 /// An authenticated user.
@@ -38,17 +39,28 @@ impl AuthUser {
     pub fn id(&self) -> Option<Uuid> {
         match self.0 {
             DbUser::App => None,
-            DbUser::Person(id) | DbUser::Service(id) => Some(id),
+            DbUser::Jwt { user_id: id, .. } | DbUser::ApiKey(id) => Some(id),
         }
+    }
+
+    pub fn is_staff(&self) -> Option<bool> {
+        if let Self(DbUser::Jwt {
+            user_id: _,
+            is_staff,
+        }) = self
+        {
+            return Some(*is_staff);
+        }
+
+        None
     }
 }
 
 impl std::fmt::Display for AuthUser {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self.0 {
-            DbUser::App => "app".fmt(f),
-            DbUser::Service(id) | DbUser::Person(id) => id.fmt(f),
-        }
+        self.id()
+            .map(|id| std::fmt::Display::fmt(&id, f))
+            .unwrap_or_else(|| "app".fmt(f))
     }
 }
 
@@ -61,13 +73,17 @@ impl FromRequestParts<AppState> for AuthUser {
     ) -> Result<Self, Self::Rejection> {
         let AppState::Prod(state) = state else {
             // The nil UUID corresponds to the admin user
-            return Ok(Self(DbUser::Person(Uuid::nil())));
+            return Ok(Self(DbUser::ApiKey(Uuid::nil())));
         };
 
         let cookies = parts.extract::<CookieJar>().await.unwrap();
         // We know the name of the cookie because it's set in
         // packages/cellnoor-auth/src/auth.ts
-        if let Some(encoded_jwt) = cookies.get("cellnoor-auth.session_data").map(Cookie::value) {
+        if let Some(encoded_jwt) = cookies
+            .get("__Secure-cellnoor-auth.session_data")
+            .or(cookies.get("cellnoor-auth.session_data"))
+            .map(Cookie::value)
+        {
             let (secret, validation) = state.jwt_decoding_info();
             match authenticate_with_jwt(encoded_jwt.as_bytes(), secret, validation) {
                 Ok(user) => return Ok(user),
@@ -97,11 +113,17 @@ impl AuthUser {
     }
 
     pub fn new_as_admin() -> Self {
-        Self(DbUser::Person(Uuid::nil()))
+        Self(DbUser::Jwt {
+            user_id: Uuid::nil(),
+            is_staff: true,
+        })
     }
 
-    pub fn new_as_user(id: Uuid) -> Self {
-        Self(DbUser::Person(id))
+    pub fn new_as_user(user_id: Uuid) -> Self {
+        Self(DbUser::Jwt {
+            user_id,
+            is_staff: false,
+        })
     }
 }
 
@@ -109,7 +131,7 @@ impl AuthUser {
 impl DevState {
     pub async fn db_client(&self) -> Result<db::Client, PoolError> {
         self.db_pool()
-            .get(AuthUser(DbUser::Person(Uuid::nil())))
+            .get(AuthUser(DbUser::ApiKey(Uuid::nil())))
             .await
     }
 }

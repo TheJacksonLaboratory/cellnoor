@@ -1,7 +1,7 @@
 // This module could be improved but I hate writing TypeScript so it's not worth it
 function readEnvVar(name: string) {
   const key = name.toUpperCase();
-  const val = Bun.env[key] || Bun.env[`CELLNOOR_AUTH_${key}`] || Bun.env[`CELLNOOR_${key}`];
+  const val = Bun.env[key] || Bun.env[`CELLNOOR_AUTH__${key}`] || Bun.env[`CELLNOOR__${key}`]
 
   return val;
 }
@@ -26,8 +26,6 @@ async function readSecret(name: string): Promise<string> {
 
 interface Config {
   publicAuthUrl: string;
-  publicApiUrl: string;
-  publicUiUrl: string;
   unixDomainSocket?: string;
   dbPassword: string;
   dbHost: string;
@@ -61,8 +59,6 @@ export async function readConfig(): Promise<Config> {
 
   return {
     publicAuthUrl: readRequiredEnvVar("public_auth_url"),
-    publicApiUrl: readRequiredEnvVar("public_api_url"),
-    publicUiUrl: readRequiredEnvVar("public_ui_url"),
     unixDomainSocket: readEnvVar("unix_domain_socket"),
     dbPassword: await readSecret("auth_db_password"),
     dbHost: readRequiredEnvVar("db_host"),

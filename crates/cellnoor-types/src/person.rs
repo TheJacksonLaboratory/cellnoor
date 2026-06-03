@@ -62,6 +62,7 @@ pub enum ResourcePermission {
 pub type NewPersonRecord = PersonRecord<NoId>;
 
 #[base_model]
+#[derive(Default)]
 pub struct PermissionsToGrant(Vec<ResourcePermission>);
 
 impl PermissionsToGrant {
@@ -104,6 +105,7 @@ impl From<Vec<ResourcePermission>> for PermissionsToRevoke {
 pub struct NewPerson {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: NewPersonRecord,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub permissions_to_grant: PermissionsToGrant,
 }
 
@@ -111,7 +113,9 @@ pub struct NewPerson {
 pub struct PersonUpdate {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: NewPersonRecord,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub permissions_to_grant: PermissionsToGrant,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub permissions_to_revoke: PermissionsToRevoke,
 }
 

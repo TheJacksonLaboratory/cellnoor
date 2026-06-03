@@ -8,7 +8,7 @@ use crate::{auth::AuthUser, db, settings::Settings};
 #[derive(Clone)]
 struct StateCommon {
     db_pool: db::Pool,
-    raw_files_url: String,
+    public_files_url: String,
 }
 
 #[derive(Clone)]
@@ -22,7 +22,7 @@ impl DevState {
     }
 
     pub fn raw_files_url(&self) -> &str {
-        &self.inner.raw_files_url
+        &self.inner.public_files_url
     }
 }
 
@@ -52,7 +52,7 @@ impl AppState {
     pub fn initialize(settings: &Settings) -> anyhow::Result<Self> {
         let inner = StateCommon {
             db_pool: db::Pool::new(settings.db_config().to_owned(), settings.max_db_pool_size())?,
-            raw_files_url: settings.public_files_url().to_owned(),
+            public_files_url: settings.public_files_url().to_owned(),
         };
 
         let state = if settings.with_auth() {
@@ -88,8 +88,8 @@ impl AppState {
         }
     }
 
-    pub fn raw_files_url(&self) -> &str {
-        &self.inner().raw_files_url
+    pub fn public_files_url(&self) -> &str {
+        &self.inner().public_files_url
     }
 }
 
@@ -123,7 +123,7 @@ pub mod test_util {
         ProdState {
             inner: StateCommon {
                 db_pool,
-                raw_files_url: String::new(),
+                public_files_url: String::new(),
             },
 
             jwt_decoding_info: Arc::new((

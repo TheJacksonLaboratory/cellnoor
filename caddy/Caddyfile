@@ -20,8 +20,8 @@
     encode
     {$TLS_SETTINGS}
 
-    forward_auth {
-        unix+h2c/{$API_SOCKET}
+    forward_auth unix+h2c/{$API_SOCKET} {
+        uri /api/files/forward-auth
     }
 
     root {$STATIC_FILES_DIR}

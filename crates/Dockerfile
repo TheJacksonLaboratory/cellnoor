@@ -17,7 +17,7 @@ RUN --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=cache,target=/app/target/ \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
-    cargo build --profile ${BUILD_PROFILE} --package cellnoor && \
+    cargo build --profile ${BUILD_PROFILE} --package cellnoor --features ssr && \
     if [ ${BUILD_PROFILE} = "dev" ]; then \
         cp ./target/debug/cellnoor /bin/cellnoor; \
     else \
