@@ -25,6 +25,7 @@ mod record {
         pub name: NonemptyString,
         pub email: Option<NonemptyString>,
         pub institution_id: Uuid,
+        #[cfg_attr(feature = "serde", serde(default))]
         pub is_staff: bool,
         pub orcid: Option<NonemptyString>,
     }
