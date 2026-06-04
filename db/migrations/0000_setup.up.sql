@@ -39,7 +39,6 @@ $$;
 -- 'app' is the user as which the main application connects. Before executing a statement, it switches to the database
 -- user representing the person (or API key). It also needs to bypass RLS so it can see everyone's API keys
 select create_user_with_password_from_file('app', '/run/secrets/app_db_password');
-alter user app with bypassrls;
 
 -- 'auth' manages users and API keys, but cannot do anything else
 select create_user_with_password_from_file('auth', '/run/secrets/auth_db_password');
