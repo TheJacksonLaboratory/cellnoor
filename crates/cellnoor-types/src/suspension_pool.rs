@@ -61,15 +61,17 @@ pub enum NewSuspensionPool {
     ExogenousTag {
         #[cfg_attr(feature = "serde", serde(flatten))]
         common: NewSuspensionPoolRecord,
+        #[cfg_attr(feature = "serde", serde(default))]
         measurements: Vec<measurement::NewSuspensionPoolMeasurement>,
-        preparer_ids: NonemptyVec<Uuid>,
+        preparers: NonemptyVec<Uuid>,
         suspensions: NonemptyBoundedVec<TaggedSuspension, MAX_TAGGED_SUSPENSIONS_IN_POOL>,
     },
     Genetic {
         #[cfg_attr(feature = "serde", serde(flatten))]
         common: NewSuspensionPoolRecord,
+        #[cfg_attr(feature = "serde", serde(default))]
         measurements: Vec<measurement::NewSuspensionPoolMeasurement>,
-        preparer_ids: NonemptyVec<Uuid>,
+        preparers: NonemptyVec<Uuid>,
         suspensions: NonemptyVec<Uuid>,
     },
 }

@@ -14,6 +14,7 @@ mod cdna;
 mod chromium_datasets;
 mod chromium_runs;
 mod file_auth;
+mod index_sets;
 mod institutions;
 mod libraries;
 mod multiplexing_tags;
@@ -40,12 +41,13 @@ pub fn router() -> (OpenApi, Router<AppState>) {
         .nest("/service-accounts", service_accounts::router())
         .nest("/api-keys", api_keys::router())
         .nest("/projects", projects::router())
+        .nest("/index-sets", index_sets::router())
+        .nest("/10x-assays", tenx_assays::router())
+        .nest("/multiplexing-tags", multiplexing_tags::router())
         .nest("/specimens", specimens::router())
         .nest("/suspensions", suspensions::router())
         .nest("/suspension-pools", suspension_pools::router())
         .nest("/chromium-runs", chromium_runs::router())
-        .nest("/10x-assays", tenx_assays::router())
-        .nest("/multiplexing-tags", multiplexing_tags::router())
         .nest("/cdna", cdna::router())
         .nest("/libraries", libraries::router())
         .nest("/chromium-datasets", chromium_datasets::router())

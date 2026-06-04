@@ -50,6 +50,7 @@ pub struct NewSpecimenCommonFields {
     pub returned_at: Option<Timestamp>,
     pub tissue: NonemptyString,
     pub additional_data: Option<Value>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub measurements: Vec<NewSpecimenMeasurement>,
 }
 

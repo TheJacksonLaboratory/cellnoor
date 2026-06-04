@@ -45,6 +45,7 @@ pub type SavedCdnaRecord = CdnaRecord<Id>;
 pub struct NewCdna {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: NewCdnaRecord,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub measurements: Vec<NewNucleicAcidMeasurement>,
     pub preparers: NonemptyVec<Uuid>,
 }

@@ -40,12 +40,12 @@ async fn insert_suspension_pool(
         NewSuspensionPool::ExogenousTag {
             common,
             measurements,
-            preparer_ids,
+            preparers,
             suspensions,
         } => (
             common,
             measurements,
-            preparer_ids,
+            preparers,
             suspensions
                 .into_iter()
                 .map(
@@ -59,12 +59,12 @@ async fn insert_suspension_pool(
         NewSuspensionPool::Genetic {
             common,
             measurements,
-            preparer_ids,
+            preparers,
             suspensions,
         } => (
             common,
             measurements,
-            preparer_ids,
+            preparers,
             suspensions
                 .into_iter()
                 .map(|suspension_id| (suspension_id, None))
@@ -263,7 +263,7 @@ pub mod test {
                     value: PositiveBoundedF32::new(0.5).unwrap(),
                 })),
             }],
-            preparer_ids: NonemptyVec::new(vec![person_id]).unwrap(),
+            preparers: NonemptyVec::new(vec![person_id]).unwrap(),
             suspensions: NonemptyBoundedVec::new(vec![
                 TaggedSuspension {
                     suspension_id: suspension1_id,
