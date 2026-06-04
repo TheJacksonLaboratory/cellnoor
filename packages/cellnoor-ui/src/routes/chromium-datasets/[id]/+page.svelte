@@ -1,11 +1,12 @@
 <script lang="ts">
+  import type { SpecimenCompact, TaggedSpecimen } from "$lib/cellnoor-types";
   import { DATE_FORMATTER } from "$lib/date";
   import { type FileNode } from "$lib/file-tree";
-  import type { SpecimenSummary } from "cellnoor-client";
   import * as FileViewer from "../../../components/FileViewer";
   import NiceTable from "../../../components/NiceTable.svelte";
 
   const { data } = $props();
+  const { dataset, project, error } = data;
 
   let activeFile: FileNode | null = $state(null);
 
@@ -30,7 +31,8 @@
       embedded_in,
       fixative,
       thermal_preservation_method,
-    }: SpecimenSummary,
+      multiplexing_tag,
+    }: TaggedSpecimen,
   ) {
     return {
       "Specimen ID": readable_id,
@@ -40,43 +42,35 @@
       "Embedded In": embedded_in,
       Fixative: fixative,
       "Thermal Preservation Method": thermal_preservation_method,
+      "Multiplexing Tag": multiplexing_tag ? multiplexing_tag.tag_id : null,
     }[fieldName];
   }
 </script>
 
-{#if data.error}
-  <p>Something went wrong</p>
+{#if error}
+  {error}
 {:else}
   <div class="flex flex-row w-full">
-    <div class="border-r overflow-y-auto h-screen sticky top-0 shrink-0">
-      <FileViewer.Tree
-        fileTree={data.fileTree}
-        onselect={(node) => {
-          activeFile = node;
-        }}
-      />
-    </div>
-
     <div class="flex flex-col w-screen p-2 gap-2">
       <h1 class="text-2xl">
-        {data.dataset.project.name} / <span class="font-semibold">{data.dataset.name}</span>
+        <!-- TypeScript is so stupid -->
+        {project!.name} / <span class="font-semibold">{dataset!.name}</span>
       </h1>
       <p>
-        {data.dataset.assay.name}
-        <span class="font-extralight">({data.dataset.assay.chemistry_version})</span>
+        {dataset}
+        <span class="font-extralight">({dataset!.assay.chemistry_version})</span>
       </p>
       <p class="text-sm">
-        Delivered on {DATE_FORMATTER.format(new Date(data.dataset.delivered_at))}
+        Delivered on {DATE_FORMATTER.format(new Date(dataset!.delivered_at))}
       </p>
       <div class="divider m-0"></div>
       <h1 class="text-lg font-bold">Specimens in this dataset</h1>
       <NiceTable
-        data={data.specimens!}
+        data={dataset!.specimens}
         fieldNames={specimenTableFieldNames}
         extractDatum={extractSpecimenDatum}
       />
       <div class="divider m-0"></div>
-      <FileViewer.View file={activeFile} />
     </div>
   </div>
 {/if}

@@ -12,6 +12,7 @@ use crate::{
     library::LibraryCompact,
     simple_links::SimpleLinks,
     suspension_pool::TaggedSpecimen,
+    tenx_assay::TenxAssay,
 };
 
 mod query;
@@ -73,6 +74,7 @@ pub struct ChromiumDatasetParsedFile {
 pub struct ChromiumDatasetDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: SavedChromiumDatasetRecord,
+    pub assay: TenxAssay,
     pub links: ChromiumDatasetDetailedLinks,
     pub libraries: Vec<LibraryCompact>,
     pub specimens: Vec<TaggedSpecimen>,

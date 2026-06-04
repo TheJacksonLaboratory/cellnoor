@@ -1,3 +1,13 @@
+use std::{collections::HashMap, str::FromStr};
+
+use axum::extract::{Multipart, Path, State, multipart::Field};
+use bytes::Bytes;
+use camino::Utf8Path;
+use csvranger::TenxCsvValue;
+use nonempty::NonemptyString;
+use strum::VariantNames;
+use uuid::Uuid;
+
 use crate::{
     auth::AuthUser,
     db::{self, AsFieldValuePairs},
@@ -5,14 +15,6 @@ use crate::{
     handlers::IdParam,
     state::AppState,
 };
-use axum::extract::{Multipart, Path, State, multipart::Field};
-use bytes::Bytes;
-use camino::Utf8Path;
-use csvranger::TenxCsvValue;
-use nonempty::NonemptyString;
-use std::{collections::HashMap, str::FromStr};
-use strum::VariantNames;
-use uuid::Uuid;
 
 pub async fn upload_files(
     State(app_state): State<AppState>,
@@ -25,7 +27,6 @@ pub async fn upload_files(
 
     let mut raw_files = Vec::with_capacity(N_FILES);
     let mut parsed_files = Vec::with_capacity(N_FILES);
-    let mut inserted_first = false;
 
     while let Some(field) = files
         .next_field()
@@ -40,27 +41,13 @@ pub async fn upload_files(
             parsed_file,
         } = process_file(field).await?;
 
-        // We want to use the database as a permissions check, so we insert the first file in a blocking manner. If that succeeds, then we can do the rest asynchronously
-        if !inserted_first {
-            // Write to the db in a scoped block so we get rid of the client as fast as possible
-            {
-                let mut client = app_state.db_client(user).await?;
-                let tx = client.begin().await?;
-
-                write_file_to_db(&tx, dataset_id, &path, parsed_file.as_ref()).await?;
-
-                tx.commit().await?;
-            }
-
-            write_file_to_disk(app_state.static_file_dir(), dataset_id, &path, &raw_file)?;
-
-            inserted_first = true;
-        } else {
-            raw_files.push((path.clone(), raw_file));
-            parsed_files.push((path, parsed_file));
-        }
+        raw_files.push((path.clone(), raw_file));
+        parsed_files.push((path, parsed_file));
     }
 
+    // Grab the client as late as possible and get rid of it as early as possible by
+    // putting it in a scoped block. This is performed first to utilize the db's
+    // permissions checks
     {
         let mut client = app_state.db_client(user).await?;
         let tx = client.begin().await?;
@@ -73,9 +60,9 @@ pub async fn upload_files(
         tx.commit().await?;
     }
 
-    for (path, raw_file) in &raw_files {
-        write_file_to_disk(app_state.static_file_dir(), dataset_id, path, raw_file)?;
-    }
+    tokio::task::spawn_blocking(move || {
+        write_fileset_to_disk(app_state.static_file_dir(), dataset_id, &raw_files)
+    });
 
     Ok(())
 }
@@ -94,17 +81,46 @@ async fn write_file_to_db(
     Ok(())
 }
 
+fn write_fileset_to_disk(
+    static_file_dir: &Utf8Path,
+    dataset_id: Uuid,
+    raw_files: &[(NonemptyString, Bytes)],
+) -> Result<(), ErrorInner> {
+    for (path, raw_file) in raw_files {
+        write_file_to_disk(static_file_dir, dataset_id, path, None, raw_file)?;
+
+        let compressed_file = compress_file(raw_file)?;
+        write_file_to_disk(
+            static_file_dir,
+            dataset_id,
+            path,
+            Some("zst"),
+            &compressed_file,
+        )?;
+    }
+
+    Ok(())
+}
+
 fn write_file_to_disk(
     static_file_dir: &Utf8Path,
     dataset_id: Uuid,
     path: &NonemptyString,
-    raw_file: &Bytes,
+    extension: Option<&str>,
+    raw_file: &[u8],
 ) -> Result<(), ErrorInner> {
-    std::fs::write(
-        &format!("{static_file_dir}/chromium-datasets/{dataset_id}/{path}"),
-        &raw_file,
-    )
-    .map_err(|e| ErrorInner::Other {
+    let mut path = static_file_dir
+        .join("chromium-datasets")
+        .join(dataset_id.to_string())
+        .join(path.as_ref());
+
+    if let Some(ext) = extension {
+        path.add_extension(ext);
+    }
+
+    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+
+    std::fs::write(&path, &raw_file).map_err(|e| ErrorInner::Other {
         message: format!("failed to write file: {e}"),
         sql_state: None,
     })?;
@@ -112,10 +128,16 @@ fn write_file_to_disk(
     Ok(())
 }
 
-struct ProcessedFile {
-    path: NonemptyString,
-    raw_file: Bytes,
-    parsed_file: Option<serde_json::Value>,
+fn compress_file(raw_file: &[u8]) -> Result<Vec<u8>, ErrorInner> {
+    let compression_level = if cfg!(debug_assertions) {
+        zstd::DEFAULT_COMPRESSION_LEVEL
+    } else {
+        19
+    };
+
+    zstd::encode_all(raw_file, compression_level).map_err(|e| ErrorInner::FileUpload {
+        message: format!("failed to write compressed file to disk: {e}"),
+    })
 }
 
 async fn process_file(form_field: Field<'_>) -> Result<ProcessedFile, ErrorInner> {
@@ -138,6 +160,12 @@ async fn process_file(form_field: Field<'_>) -> Result<ProcessedFile, ErrorInner
         parsed_file: parse_file(content_type, &raw_data)?,
         raw_file: raw_data,
     })
+}
+
+struct ProcessedFile {
+    path: NonemptyString,
+    raw_file: Bytes,
+    parsed_file: Option<serde_json::Value>,
 }
 
 fn parse_file(
@@ -295,7 +323,7 @@ fn extract_path(filename: Option<&str>) -> Result<&str, ErrorInner> {
 
     let filename_error = Err(ErrorInner::FileUpload {
         message: format!(
-            "uploaded files must have a filename in {:?}",
+            "uploaded files must have a filename which is one of {:?}",
             ALLOWED_FILENAMES
         ),
     });
@@ -330,10 +358,9 @@ fn extract_path(filename: Option<&str>) -> Result<&str, ErrorInner> {
     };
 
     let per_sample_outs_error = Err(ErrorInner::FileUpload {
-        message:
-            "files nested into a directory must be nested into a 'per_sample_outs/sample_name/' \
-            directory"
-                .to_owned(),
+        message: "files nested into a directory must be nested into a \
+                  'per_sample_outs/sample_name/' directory"
+            .to_owned(),
     });
 
     let Some(parent) = parent.parent() else {

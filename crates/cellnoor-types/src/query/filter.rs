@@ -84,6 +84,8 @@ pub type UuidOperator = Operator<Uuid>;
 
 pub type TimestampOperator = Operator<jiff::Timestamp>;
 
+pub type SimpleArrayOperator<T> = Operator<Vec<T>>;
+
 pub type SimpleJsonOperator = Operator<serde_json::Value>;
 
 /// A comparison operator for string values.
@@ -96,16 +98,15 @@ pub type SimpleJsonOperator = Operator<serde_json::Value>;
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
-#[cfg_attr(feature = "schemars", schemars(inline))]
 pub enum StringOperator {
     /// PostgreSQL like
     Like(String),
     /// PostgreSQL like any
     LikeAny(Vec<String>),
     /// PostgreSQL trigram similar to (%)
-    TrgmSim(String),
+    Trgrm(String),
     /// PostgreSQL trigram similar to any (% any)
-    TrgmSimAny(Vec<String>),
+    TrgmAny(Vec<String>),
     /// All other operators
     #[cfg_attr(feature = "serde", serde(untagged))]
     Simple(SimpleStringOperator),
@@ -117,8 +118,8 @@ impl StringOperator {
         match self {
             Self::Like(s) => ("like", s),
             Self::LikeAny(s) => ("like any", s),
-            Self::TrgmSim(s) => ("%", s),
-            Self::TrgmSimAny(s) => ("% any", s),
+            Self::Trgrm(s) => ("%", s),
+            Self::TrgmAny(s) => ("% any", s),
             Self::Simple(op) => op.as_sql_operator_and_value(),
         }
     }
@@ -134,7 +135,44 @@ impl From<SimpleStringOperator> for StringOperator {
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
-#[cfg_attr(feature = "schemars", schemars(inline))]
+#[cfg_attr(feature = "schemars", schemars(rename = "{T}ArrayOperator"))]
+pub enum ArrayOperator<T> {
+    /// PostgreSQL contains (@>)
+    Contains(Vec<T>),
+    /// PostgreSQL is contained in (<@)
+    IsContainedIn(Vec<T>),
+    /// PostgreSQL overlaps (&&)
+    Overlaps(Vec<T>),
+    /// All other operators
+    #[cfg_attr(feature = "serde", serde(untagged))]
+    Simple(SimpleArrayOperator<T>),
+}
+
+#[cfg(feature = "postgres-types")]
+impl<T> ArrayOperator<T>
+where
+    T: ToSql + Sync,
+{
+    pub fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
+        match self {
+            Self::Contains(v) => ("@>", v),
+            Self::IsContainedIn(v) => ("<@", v),
+            Self::Overlaps(v) => ("&&", v),
+            Self::Simple(op) => op.as_sql_operator_and_value(),
+        }
+    }
+}
+
+impl<T> From<SimpleArrayOperator<T>> for ArrayOperator<T> {
+    fn from(value: SimpleArrayOperator<T>) -> Self {
+        Self::Simple(value)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub enum JsonOperator {
     /// PostgreSQL contains (@>)
     Contains(serde_json::Value),

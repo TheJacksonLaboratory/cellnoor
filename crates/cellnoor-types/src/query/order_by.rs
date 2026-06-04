@@ -4,7 +4,7 @@ use nonempty::NonemptyVec;
 #[base_model]
 #[derive(Copy)]
 #[cfg_attr(feature = "serde", serde(default))]
-#[cfg_attr(feature = "schemars", schemars(inline))]
+#[cfg_attr(feature = "schemars", schemars(rename = "OrderBy{T}"))]
 pub struct OrderBy<T>
 where
     T: Default,
@@ -27,7 +27,7 @@ where
 
 #[base_model]
 #[cfg_attr(feature = "serde", serde(untagged))]
-#[cfg_attr(feature = "schemars", schemars(inline))]
+#[cfg_attr(feature = "schemars", schemars(rename = "OrderBy{T}Set"))]
 pub enum OrderBySet<T>
 where
     T: Default,

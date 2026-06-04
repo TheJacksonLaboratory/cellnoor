@@ -23,6 +23,7 @@ pub enum SuspensionPoolPredicateInner {
 }
 
 #[base_model]
+#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[derive(strum::IntoStaticStr)]
 pub enum SuspensionPoolPredicate {
     #[strum(transparent)]

@@ -1,5 +1,6 @@
 select
     chromium_dataset,
+    tenx_assay as assay,
     array_agg(distinct(
         specimen, multiplexing_tag, ocm_barcode_id
     )::tagged_specimen) as specimens,
@@ -14,4 +15,4 @@ select
     ) as data
 from chromium_dataset_to_specimen
 /* {where} */
-group by chromium_dataset
+group by chromium_dataset, assay

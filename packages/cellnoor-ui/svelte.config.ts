@@ -11,6 +11,7 @@ const config: Config = {
   preprocess: vitePreprocess(),
   kit: {
     adapter: adapter(),
+    experimental: {explicitEnvironmentVariables: true, remoteFunctions: true},
     csp: {
       directives: {
         "base-uri": ["self"],

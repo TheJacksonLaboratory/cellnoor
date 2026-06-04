@@ -1,6 +1,12 @@
 use macro_attributes::{predicate_enum, sort_field_enum};
 
-use crate::operator::{StringOperator, UuidOperator};
+use crate::{
+    operator::{StringOperator, UuidOperator},
+    query::filter::{ArrayOperator, Operator},
+    tenx_assay::{LibraryType, SampleMultiplexing},
+};
+
+pub type SampleMultiplexingOperator = Operator<SampleMultiplexing>;
 
 #[predicate_enum]
 #[strum(prefix = "(tenx_assay).")]
@@ -8,7 +14,10 @@ use crate::operator::{StringOperator, UuidOperator};
 pub enum TenxAssayPredicate {
     Id(UuidOperator),
     Name(StringOperator),
+    LibraryTypes(ArrayOperator<LibraryType>),
+    SampleMultiplexing(SampleMultiplexingOperator),
     ChemistryVersion(StringOperator),
+    ChromiumChip(StringOperator),
     ProtocolUrl(StringOperator),
 }
 

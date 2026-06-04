@@ -1,37 +1,42 @@
 <script lang="ts">
-  import {
-    emptyAssayFilter,
-    emptySpecimenFilter,
-    type Query,
-    toQueryString,
-  } from "$lib/query-utils.svelte";
   import InputList from "../../components/InputList.svelte";
-  import type {
-    ChromiumDatasetFilter,
-    ChromiumDatasetOrderBy,
-    LibraryType,
-    SampleMultiplexing,
-    Species,
-  } from "cellnoor-client";
   import ChromiumDataset from "./ChromiumDataset.svelte";
   import Fieldset from "../../components/Fieldset.svelte";
   import SortAndLimit from "../../components/SortAndLimit.svelte";
+  import {
+    type LibraryType,
+    type Species,
+    type ChromiumDatasetPredicate,
+    type ChromiumDatasetPredicateQuery,
+    type SpecimenPredicate,
+    type TenxAssayPredicate,
+    libraryTypeValues,
+    type OrderByChromiumDatasetField,
+  } from "$lib/cellnoor-types";
+  import { isNonempty } from "$lib/query-utils";
 
   const { data } = $props();
-  const { assays, chromiumDatasets, projects, error } = $derived(data);
+  const { assays, datasets, projects, error } = data;
 
   let filterForm: HTMLFormElement | undefined = $state();
-  const query: Query<ChromiumDatasetFilter, ChromiumDatasetOrderBy> = $state({
+
+  const specimenNamePred = $state({ name: { trgm_any: [] } }) satisfies SpecimenPredicate;
+  const speciesPred = $state({ species: { in: [] } }) satisfies SpecimenPredicate;
+  const tissuePred = $state({ tissue: { trgm_any: [] } }) satisfies SpecimenPredicate;
+
+  const predicates = $derived([
+    { specimen: specimenNamePred },
+    { specimen: speciesPred },
+    { specimen: tissuePred },
+  ]) satisfies ChromiumDatasetPredicate[];
+
+  const query = $derived({
     filter: {
-      ids: [],
-      names: [],
-      project_ids: [],
-      assay: emptyAssayFilter,
-      specimen: emptySpecimenFilter,
+      all_of: predicates.filter(isNonempty),
     },
-    limit: 10_000,
-    order_by: [{ field: "delivered_at", descending: true }],
-  });
+  }) satisfies ChromiumDatasetPredicateQuery;
+
+  const stringifiedQuery = JSON.stringify(query);
 
   let advancedQuery = $state("");
   let advancedQueryError = $derived.by(() => {
@@ -46,108 +51,23 @@
     }
   });
 
-  let stringifiedSimpleQuery = $derived(toQueryString(query));
-
-  let stringifiedQuery = $derived.by(() => advancedQuery || stringifiedSimpleQuery);
-
-  const exampleAdvancedQuery = JSON.stringify(
-    {
-      filter: {
-        names: ["super scientific science"],
-        delivered_before: "3000-12-31T00:00Z",
-        delivered_after: "1999-01-01T00:00Z",
-        assay: {
-          names: ["Universal 3' Gene Expression"],
-          chemistry_versions: ["v4 - GEM-X"],
-          sample_multiplexing: [
-            "singleplex",
-            "on_chip_multiplexing",
-            "cellplex",
-            "flex_barcode",
-            "hashtag",
-          ],
-          chromium_chips: ["GEM-X FX"],
-          library_types_flat: ["gene_expression", "chromatin_accessibility"],
-          library_types: [["gene_expression", "chromatin_accessibility"], ["gene_expression"]],
-        },
-        specimen: {
-          names: ["some cool sample", "another cool sample"],
-          species: ["mus_musculus", "homo_sapiens"],
-          host_species: ["mus_musculus"],
-          fixatives: ["formaldehyde_derivative", "dithiobis_succinimidylpropionate"],
-          embedded_in: [
-            "paraffin",
-            "optimal_cutting_temperature_compound",
-            "carboxymethyl_cellulose",
-          ],
-          tissues: ["kleenex"],
-          fresh: false,
-          received_before: "3000-12-31T00:00Z",
-          received_after: "1999-01-01T00:00Z",
-          returned_before: "3000-12-31T00:00Z",
-          returned_after: "1999-01-01T00:00Z",
-          types: ["block", "cell_pellet", "suspension", "tissue"],
-          thermal_preservation_methods: ["controlled_rate_freezing", "flash_freezing"],
-        },
-      },
-    },
-    null,
-    2,
-  );
-  const advancedQueryPlaceholder = `{
-    "filter": {
-      "names": []
-    }
-}`;
-
   function toLowercaseChoice(s: string) {
     return { label: s.replaceAll("_", " "), value: s };
   }
 
-  const species: Species[] = [
-    "ambystoma_mexicanum",
-    "callithrix_jacchus",
-    "canis_familiaris",
-    "drosophila_melanogaster",
-    "gasterosteus_aculeatus",
-    "homo_sapiens",
-    "mus_musculus",
-    "rattus_norvegicus",
-    "sminthopsis_crassicaudata",
-  ];
-  const speciesChoices = species.map(toLowercaseChoice);
-
-  const plexy: SampleMultiplexing[] = [
-    "cellplex",
-    "flex_barcode",
-    "hashtag",
-    "on_chip_multiplexing",
-    "singleplex",
-  ];
-  const plexyChoices = plexy.map(toLowercaseChoice);
-
-  const libraryTypes: LibraryType[] = [
-    "antibody_capture",
-    "antigen_capture",
-    "chromatin_accessibility",
-    "crispr_guide_capture",
-    "custom",
-    "gene_expression",
-    "multiplexing_capture",
-    "vdj",
-  ];
-  const libraryTypeChoices = libraryTypes.map(toLowercaseChoice);
-
-  const orderByValues: ChromiumDatasetOrderBy[] = [{ field: "delivered_at" }, { field: "name" }];
+  const orderByValues = [
+    { field: "delivered_at" },
+    { field: "name" },
+  ] satisfies OrderByChromiumDatasetField[];
   const orderByChoices = orderByValues.map(({ field }) => field).map(toLowercaseChoice);
 </script>
 
 <div class="drawer drawer-open">
   <input id="filter-drawer" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content mt-4 px-4 flex flex-col items-stretch">
-    {#if chromiumDatasets && chromiumDatasets.length != 0}
+    {#if datasets && datasets.length != 0}
       <div class="mb-2 flex flex-row justify-between align-middle">
-        <p class="text-lg">{chromiumDatasets.length} results</p>
+        <p class="text-lg">{datasets.length} results</p>
         <SortAndLimit
           bind:orderByField={query.order_by![0]!.field}
           bind:orderByDescending={query.order_by![0]!.descending!}

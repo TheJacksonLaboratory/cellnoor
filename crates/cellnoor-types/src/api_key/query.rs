@@ -7,7 +7,11 @@ use crate::{
 
 #[predicate_enum]
 #[strum(prefix = "(api_key_public).")]
-#[strum_discriminants(name(ApiKeyField), sort_field_enum, strum(prefix = "(api_key_public)."))]
+#[strum_discriminants(
+    name(ApiKeyField),
+    sort_field_enum,
+    strum(prefix = "(api_key_public).")
+)]
 pub enum ApiKeyPredicate {
     Id(UuidOperator),
     Description(StringOperator),

@@ -49,7 +49,8 @@ pub async fn authorize_dataset_dir_access(
         .ok_or(ErrorInner::ResourceNotFound.into())
 }
 
-// Postgres row-level security will automatically hide what the user can't see (and it takes into account whether a user is staff)
+// Postgres row-level security will automatically hide what the user can't see
+// (and it takes into account whether a user is staff)
 async fn dataset_exists(
     tx: db::Transaction<'_>,
     dataset_type: DatasetType,
@@ -66,9 +67,11 @@ async fn chromium_dataset_exists(
     tx: db::Transaction<'_>,
     dataset_id: Uuid,
 ) -> Result<bool, ErrorInner> {
-    // We query chromium_dataset_to_specimen because that's accessible and has row-level security enabled
+    // We query chromium_dataset_to_specimen because that's accessible and has
+    // row-level security enabled
     static SELECT_DATASET: SqlBuilder = SqlBuilder::new(
-        "select exists (select 1 from chromium_dataset_to_specimen where (chromium_dataset).id = $1)",
+        "select exists (select 1 from chromium_dataset_to_specimen where (chromium_dataset).id = \
+         $1)",
     );
 
     Ok(tx

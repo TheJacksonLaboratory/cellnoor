@@ -24,7 +24,7 @@ where
 
 #[base_model]
 #[cfg_attr(feature = "serde", serde(default))]
-#[cfg_attr(feature = "schemars", schemars(inline))]
+#[cfg_attr(feature = "schemars", schemars(rename = "{P}Query"))]
 pub struct ComplexQuery<P, O>
 where
     O: Default,

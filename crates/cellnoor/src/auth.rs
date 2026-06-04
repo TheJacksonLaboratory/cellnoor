@@ -2,7 +2,6 @@ use aide::OperationIo;
 pub use api_key::hash_api_key;
 use axum::{RequestPartsExt, extract::FromRequestParts, http::HeaderValue};
 use axum_extra::extract::{CookieJar, cookie::Cookie};
-
 use deadpool_postgres::PoolError;
 use uuid::Uuid;
 
@@ -97,7 +96,8 @@ impl FromRequestParts<AppState> for AuthUser {
         // need that
         let Some(api_key) = parts.headers.get("x-api-key").map(HeaderValue::as_bytes) else {
             return Err(ErrorInner::NoAuthFound {
-                message: "failed to authenticate with JWT at cookie 'cellnoor-auth.session_data' and API key at header 'x-api-key'",
+                message: "failed to authenticate with JWT at cookie 'cellnoor-auth.session_data' \
+                          and API key at header 'x-api-key'",
             }
             .into());
         };

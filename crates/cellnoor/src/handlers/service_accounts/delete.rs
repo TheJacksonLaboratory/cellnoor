@@ -27,7 +27,10 @@ pub async fn delete_service_account(
     Ok(response)
 }
 
-async fn delete_service_account_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
+async fn delete_service_account_by_id(
+    tx: &db::Transaction<'_>,
+    id: Uuid,
+) -> Result<(), ErrorInner> {
     db::delete_by_id(tx, "service_account", id).await
 }
 

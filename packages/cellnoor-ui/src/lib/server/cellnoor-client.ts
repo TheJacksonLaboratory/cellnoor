@@ -1,22 +1,25 @@
-import { readConfig } from "$lib/server/config";
-import { auth } from "../auth";
-import * as jose from "jose";
+import createClient, { type Client, type ClientOptions, type Middleware } from "openapi-fetch";
+import type { paths } from "$lib/cellnoor-types";
 import { getRequestEvent } from "$app/server";
-import { type CellnoorClient, createCellnoorClient } from "cellnoor-client";
-import type { Middleware } from "openapi-fetch";
+import { API_URL, API_SOCKET } from "$app/env/private";
+
+export type CellnoorClient = Client<paths>;
 
 const apiClient: CellnoorClient | null = null;
 
-export async function getApiClient() {
+function createCellnoorClient(options?: ClientOptions) {
+  return createClient<paths>(options);
+}
+
+export function getApiClient() {
   if (apiClient !== null) {
     return apiClient;
   }
 
-  const { apiUrl, apiSocket } = await readConfig();
   const client = createCellnoorClient({
-    baseUrl: apiUrl,
+    baseUrl: API_URL,
     fetch: async (request) => {
-      return fetch(request, { unix: apiSocket });
+      return fetch(request, { unix: API_SOCKET });
     },
   });
 
@@ -27,59 +30,16 @@ export async function getApiClient() {
 
 const middleware: Middleware = {
   async onRequest({ request }) {
-    await reauthenticate();
-
-    const { apiUrl, publicUrl } = await readConfig();
     const { cookies } = getRequestEvent();
 
-    if (!apiUrl.startsWith(publicUrl || "")) {
-      request.headers.set(
-        "Cookie",
-        `${API_TOKEN_COOKIE_NAME}=${cookies.get(API_TOKEN_COOKIE_NAME)}`,
-      );
+    // We have to manually copy cookies since we're not using SvelteKit's fetch (because only Bun's works with Unix domain sockets)
+    const securePrefix = "__Secure-";
+    const authCookieName = "cellnoor-auth.session_data"
+    for (const cookieName of [authCookieName, `${securePrefix}${authCookieName}`]) {
+      const cookieValue = cookies.get(cookieName);
+      if (cookieValue) {
+        request.headers.set(cookieName, cookieValue);
+      }
     }
-  },
+  }
 };
-
-export async function reauthenticate() {
-  const apiToken = await getApiTokenFromCookies();
-
-  if (!apiToken) {
-    await setNewApiToken();
-  } else {
-    await refreshApiToken(apiToken);
-  }
-}
-
-async function getApiTokenFromCookies() {
-  const { cookies } = getRequestEvent();
-  return cookies.get(API_TOKEN_COOKIE_NAME);
-}
-
-async function setNewApiToken() {
-  const {
-    request: { headers },
-    cookies,
-  } = getRequestEvent();
-
-  const { token: newToken } = await auth.api.getToken({ headers });
-  const { exp } = jose.decodeJwt(newToken);
-
-  cookies.set(API_TOKEN_COOKIE_NAME, newToken, {
-    path: "/",
-    expires: new Date(exp! * 1000),
-    secure: true,
-    sameSite: "strict",
-    httpOnly: true,
-  });
-}
-
-async function refreshApiToken(apiToken: string) {
-  // We don't actually need to verify the JWT because the REST API will do that for us
-  const { exp } = jose.decodeJwt(apiToken);
-  if (exp! * 1000 < Date.now()) {
-    await setNewApiToken();
-  }
-}
-
-export const API_TOKEN_COOKIE_NAME = "cellnoor-ui.api_token";

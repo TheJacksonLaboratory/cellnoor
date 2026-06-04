@@ -38,9 +38,12 @@ impl AsPredicate for TenxAssayPredicate {
     ) {
         let sql = match self {
             Self::Id(u) => u.as_sql_operator_and_value(),
-            Self::Name(s) | Self::ChemistryVersion(s) | Self::ProtocolUrl(s) => {
-                s.as_sql_operator_and_value()
-            }
+            Self::LibraryTypes(l) => l.as_sql_operator_and_value(),
+            Self::SampleMultiplexing(m) => m.as_sql_operator_and_value(),
+            Self::Name(s)
+            | Self::ChemistryVersion(s)
+            | Self::ProtocolUrl(s)
+            | Self::ChromiumChip(s) => s.as_sql_operator_and_value(),
         };
 
         (self.field_name(), sql)

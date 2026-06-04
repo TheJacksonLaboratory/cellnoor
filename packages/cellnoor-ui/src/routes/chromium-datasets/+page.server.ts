@@ -1,13 +1,13 @@
+import { type ChromiumDatasetCompact, type ProjectCompact, type TenxAssay } from "$lib/cellnoor-types";
 import { getApiClient } from "$lib/server/cellnoor-client";
-import type { ApiErrorResponse, ChromiumDataset, Project, TenxAssay } from "cellnoor-client";
 
 type ReturnType =
   | {
-      chromiumDatasets: ChromiumDataset[];
+      datasets: ChromiumDatasetCompact[],
       assays: TenxAssay[];
-      projects: Project[];
+      projects: ProjectCompact[];
     }
-  | { error: ApiErrorResponse };
+  | { error: string };
 
 export async function load({ url }) {
   return await loadData(url.searchParams.get("q") || `{"limit": 5000}`);
@@ -21,33 +21,23 @@ export const actions = {
 };
 
 async function loadData(q?: string): Promise<ReturnType> {
-  const apiClient = await getApiClient();
+  const client = await getApiClient();
+
+  // We don't care whatsoever what the actual query is because the API will validate it. Since the client is type-safe anyways this is fine
+  const getDatasets = client.POST("/chromium-datasets/search", { body: q ? JSON.parse(q) : {} });
 
   const [chromiumDatasets, assays, projects] = await Promise.all([
-    apiClient.GET("/chromium-datasets", {
-      params: {
-        query: {
-          q,
-        },
-      },
-    }),
-    apiClient.GET("/10x-assays"),
-    apiClient.GET("/projects"),
+    getDatasets,
+    client.GET("/10x-assays"),
+    client.GET("/projects"),
   ]);
 
   if (!chromiumDatasets.data || !assays.data || !projects.data) {
-    return {
-      error: chromiumDatasets.error ||
-        assays.error || {
-          error: { type: "other", message: "something went wrong :(" },
-        },
-    };
+    return { error: "something went wrong" };
   }
 
-  // In theory, mutating each dataset and just adding the `files` property would be more performant, as this probably
-  // involves a copy, but I don't think it matters.
   return {
-    chromiumDatasets: chromiumDatasets.data,
+    datasets: chromiumDatasets.data,
     assays: assays.data,
     projects: projects.data,
   };

@@ -48,6 +48,8 @@ where
 fn api(app_state: AppState) -> Router {
     let (_, api_router) = routes::router();
 
-    // For now, since there's no frontend application, we just serve the app from the root (because we expect that the reverse proxy will serve this app behind api.cellnoor.jax.org)
+    // For now, since there's no frontend application, we just serve the app from
+    // the root (because we expect that the reverse proxy will serve this app behind
+    // api.cellnoor.jax.org)
     Router::new().merge(api_router.with_state(app_state))
 }

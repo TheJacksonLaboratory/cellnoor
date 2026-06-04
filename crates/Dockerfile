@@ -26,7 +26,6 @@ RUN --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
 
 FROM debian:trixie AS final
 
-# TODO: remove zstd if we end up using a pure Rust version
 RUN apt update && \
     apt install adduser ca-certificates curl zstd --yes
 

@@ -99,7 +99,7 @@ create or replace function current_user_is_staff() returns boolean language plpg
         -- The next case: it's a person using an API key
         select pers.is_staff
         from api_key as ak
-        join person_public as per on ak.person_id = pers.id
+        join person_public as pers on ak.person_id = pers.id
         where ak.id = current_user_id
         into user_is_staff;
 
