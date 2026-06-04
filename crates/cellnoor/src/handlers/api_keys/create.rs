@@ -76,7 +76,7 @@ struct NewApiKeyRecord<'a> {
     hashed_key: [u8; 32],
     person_id: Option<Uuid>,
     service_account_id: Option<Uuid>,
-    expires_at: Timestamp,
+    expires_at: Option<Timestamp>,
 }
 
 impl AsFieldValuePairs<&'static str, 5> for NewApiKeyRecord<'_> {
@@ -144,7 +144,7 @@ pub mod test {
         let mut new = NewApiKey {
             description: Some(Uuid::new_v4().to_string().to_nonempty_string()),
             service_account_id: None,
-            expires_at: "2999-12-31T23:59:59Z".parse().unwrap(),
+            expires_at: None,
             permissions_to_grant: vec![].into(),
         };
 

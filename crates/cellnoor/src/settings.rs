@@ -20,6 +20,7 @@ pub struct Settings {
     #[serde(default = "default_address")]
     listen_on: String,
     public_files_url: String,
+    static_file_dir: String,
     #[serde(default = "default_with_auth")]
     with_auth: bool,
 }
@@ -79,5 +80,10 @@ impl Settings {
     #[must_use]
     pub fn public_files_url(&self) -> &str {
         &self.public_files_url
+    }
+
+    #[must_use]
+    pub fn static_file_dir(&self) -> &str {
+        &self.static_file_dir
     }
 }

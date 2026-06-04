@@ -11,10 +11,13 @@ name = "openapi"
 required-features = ["ssr"]
 
 [dependencies]
+csv = {workspace = true, optional = true }
+camino = { workspace = true, optional = true }
 rand = {workspace = true, optional = true}
 aide = {workspace = true, optional = true}
 csvranger = { workspace = true, optional = true }
 jsonwebtoken = {workspace = true, optional = true}
+bytes = {workspace = true, optional = true}
 serde.workspace = true
 deadpool-postgres = {workspace = true, optional = true}
 cellnoor-types = {path = "../cellnoor-types", features = ["serde"]}
@@ -41,6 +44,9 @@ nonempty = { path = "../nonempty" }
 
 [features]
 ssr = [
+    "dep:bytes",
+    "dep:camino",
+    "dep:csv",
     "dep:anyhow",
     "dep:postgres-types",
     "dep:aide",

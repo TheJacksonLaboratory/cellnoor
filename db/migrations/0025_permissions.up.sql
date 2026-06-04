@@ -222,7 +222,6 @@ create or replace function current_user_is_staff_or_project_creator(
     end;
 $$;
 
--- Note that we don't enable RLS for projects because that would cause infinite recursion
 alter table project_access enable row level security;
 create policy anyone_can_see_project_membership on project_access for select using (true);
 create policy staff_and_creator_can_add_others on project_access for insert with check (

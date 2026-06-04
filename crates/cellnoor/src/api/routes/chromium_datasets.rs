@@ -16,6 +16,7 @@ use crate::{
     handlers::chromium_datasets::{
         create_chromium_dataset, delete_chromium_dataset, index_chromium_datasets,
         index_chromium_datasets_detailed, show_chromium_dataset, update_chromium_dataset,
+        upload_files,
     },
     state::AppState,
 };
@@ -32,12 +33,15 @@ pub(super) fn router() -> ApiRouter<AppState> {
 }
 
 fn id_router() -> ApiRouter<AppState> {
-    ApiRouter::new().api_route(
-        "/",
-        get(show_chromium_dataset)
-            .put(update_chromium_dataset)
-            .delete(delete_chromium_dataset),
-    )
+    ApiRouter::new()
+        .api_route(
+            "/",
+            get(show_chromium_dataset)
+                .put(update_chromium_dataset)
+                .delete(delete_chromium_dataset),
+        )
+        // Unfortunately we don't get openAPI documentation for this route
+        .route("/files", axum::routing::post(upload_files))
 }
 
 async fn index_chromium_datasets_simple(

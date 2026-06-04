@@ -12,15 +12,18 @@ mod query;
 pub struct NewApiKey {
     pub description: Option<NonemptyString>,
     pub service_account_id: Option<Uuid>,
-    pub expires_at: Timestamp,
+    pub expires_at: Option<Timestamp>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub permissions_to_grant: PermissionsToGrant,
 }
 
 #[base_model]
 pub struct ApiKeyUpdate {
     pub description: Option<NonemptyString>,
-    pub expires_at: Timestamp,
+    pub expires_at: Option<Timestamp>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub permissions_to_grant: PermissionsToGrant,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub permissions_to_revoke: PermissionsToRevoke,
 }
 
@@ -32,7 +35,7 @@ pub struct ApiKeyRecord {
     pub person_id: Option<Uuid>,
     pub service_account_id: Option<Uuid>,
     pub created_at: Timestamp,
-    pub expires_at: Timestamp,
+    pub expires_at: Option<Timestamp>,
 }
 
 #[derive(Clone, PartialEq)]

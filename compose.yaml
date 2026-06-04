@@ -92,7 +92,7 @@ services:
       # This is hardcoded for simplicity, but it may behoove us to set an explicit dbname in the db service definition
       # and use that here
       DB__DBNAME: postgres
-      STATIC_FILES_DIR: &static_files_dir /static-files
+      STATIC_FILE_DIR: &static_files_dir /static-files
       LISTEN_ON: *api_socket
     secrets: [auth_secret, app_db_password]
     volumes:

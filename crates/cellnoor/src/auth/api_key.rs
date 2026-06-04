@@ -28,13 +28,13 @@ trait ApiKeyExt {
 
 impl ApiKeyExt for ApiKeyRecord {
     fn is_expired(&self) -> bool {
-        self.expires_at < jiff::Timestamp::now()
+        self.expires_at.is_some_and(|e| e < jiff::Timestamp::now())
     }
 
     fn to_user(&self) -> Result<AuthUser, ErrorInner> {
         if self.is_expired() {
             return Err(ErrorInner::ExpiredApiKey {
-                expired_at: self.expires_at,
+                expired_at: self.expires_at.unwrap(),
             });
         }
 

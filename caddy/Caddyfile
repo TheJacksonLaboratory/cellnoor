@@ -21,11 +21,11 @@
     {$TLS_SETTINGS}
 
     forward_auth unix+h2c/{$API_SOCKET} {
-        uri /api/files/forward-auth
+        uri /file-auth
     }
 
-    root {$STATIC_FILES_DIR}
     file_server browse {
+        root {$STATIC_FILES_DIR}
         precompressed
     }
 }

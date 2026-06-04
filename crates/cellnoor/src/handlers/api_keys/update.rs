@@ -67,7 +67,6 @@ impl AsFieldValuePairs<&'static str, 2> for ApiKeyUpdate {
 #[cfg(test)]
 mod test {
     use cellnoor_types::api_key::ApiKeyUpdate;
-    use jiff::Timestamp;
 
     use crate::{
         auth::AuthUser,
@@ -86,7 +85,7 @@ mod test {
 
         let update = ApiKeyUpdate {
             description: Some("updated".to_nonempty_string()),
-            expires_at: "2999-12-31T23:59:59Z".parse::<Timestamp>().unwrap(),
+            expires_at: None,
             permissions_to_grant: vec![].into(),
             permissions_to_revoke: vec![].into(),
         };

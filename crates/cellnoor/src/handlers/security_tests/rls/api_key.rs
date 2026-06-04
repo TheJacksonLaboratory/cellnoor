@@ -63,7 +63,7 @@ async fn user_cannot_update_unowned_api_key(client: &mut db::Client, api_key_id:
         api_key_id,
         &ApiKeyUpdate {
             description: Some("updated".to_nonempty_string()),
-            expires_at: "2999-12-31T23:59:59Z".parse().unwrap(),
+            expires_at: None,
             permissions_to_grant: vec![].into(),
             permissions_to_revoke: vec![].into(),
         },

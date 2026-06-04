@@ -86,7 +86,7 @@ fn chromium_dataset_detailed_links(
         simple: chromium_dataset_links(id),
         raw_files: raw_file_paths
             .iter()
-            .map(|p| format!("{public_files_url}/{p}"))
+            .map(|p| format!("{public_files_url}/chromium-datasets/{id}/{p}"))
             .collect(),
     }
 }

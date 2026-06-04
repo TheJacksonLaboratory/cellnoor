@@ -47,6 +47,8 @@ pub enum ErrorInner {
     },
     #[error("permission denied")]
     PermissionDenied { message: String },
+    #[error("failed to parse uploaded file: {message}")]
+    FileUpload { message: String },
     #[error("{message} (SQL State - {})", sql_state.as_ref().map(|s| s.code()).unwrap_or_default())]
     Other {
         message: String,
@@ -68,9 +70,9 @@ impl IntoResponse for Error {
 
         let status = match &self.error {
             ErrorInner::ResourceNotFound => StatusCode::NOT_FOUND,
-            ErrorInner::DataConstraint { .. } | ErrorInner::InvalidReference { .. } => {
-                StatusCode::UNPROCESSABLE_ENTITY
-            }
+            ErrorInner::DataConstraint { .. }
+            | ErrorInner::InvalidReference { .. }
+            | ErrorInner::FileUpload { .. } => StatusCode::UNPROCESSABLE_ENTITY,
             ErrorInner::InvalidApiKey
             | ErrorInner::ExpiredApiKey { .. }
             | ErrorInner::NoAuthFound { .. }

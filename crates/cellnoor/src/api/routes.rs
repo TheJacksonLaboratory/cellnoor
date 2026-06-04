@@ -1,18 +1,19 @@
 use std::sync::Arc;
 
 use aide::{
-    axum::{ApiRouter, routing::get as aide_get},
+    axum::ApiRouter,
     openapi::{ApiKeyLocation, OpenApi, SecurityScheme},
     redoc::Redoc,
 };
 use axum::{Extension, Json, Router, routing::get};
 
-use crate::{handlers::files::authenticate_file_request, state::AppState};
+use crate::state::AppState;
 
 mod api_keys;
 mod cdna;
 mod chromium_datasets;
 mod chromium_runs;
+mod file_auth;
 mod institutions;
 mod libraries;
 mod multiplexing_tags;
@@ -48,7 +49,7 @@ pub fn router() -> (OpenApi, Router<AppState>) {
         .nest("/cdna", cdna::router())
         .nest("/libraries", libraries::router())
         .nest("/chromium-datasets", chromium_datasets::router())
-        .route("/files/forward-auth", aide_get(authenticate_file_request));
+        .nest("/file-auth", file_auth::router());
 
     let mut api_docs = OpenApi::default();
 
