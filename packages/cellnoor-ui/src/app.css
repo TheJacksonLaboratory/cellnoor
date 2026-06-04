@@ -1,0 +1,7 @@
+@import "@fontsource-variable/comfortaa";
+@import "tailwindcss";
+@plugin "daisyui";
+
+@theme {
+  --font-comfortaa: "Comfortaa Variable", sans-serif;
+}
