@@ -57,7 +57,6 @@ pub enum SuspensionContent {
 pub struct NewSuspension {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: NewSuspensionRecord,
-    #[cfg_attr(feature = "serde", serde(default))]
     pub measurements: Vec<NewSuspensionMeasurement>,
     pub preparers: NonemptyVec<Uuid>,
 }
@@ -66,10 +65,8 @@ pub struct NewSuspension {
 pub struct SuspensionUpdate {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: NewSuspensionRecord,
-    #[cfg_attr(feature = "serde", serde(default))]
-    pub measurements: Vec<NewSuspensionMeasurement>,
-    #[cfg_attr(feature = "serde", serde(default))]
-    pub preparers: Vec<Uuid>,
+    pub measurements: Option<Vec<NewSuspensionMeasurement>>,
+    pub preparers: Option<Vec<Uuid>>,
 }
 
 #[select]

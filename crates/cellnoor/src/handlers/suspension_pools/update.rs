@@ -50,7 +50,7 @@ async fn update_suspension_pool_by_id(
     db::update(tx, "suspension_pool", id, record).await?;
 
     let preparer_insertions = async {
-        if !preparers.is_empty() {
+        if let Some(preparers) = preparers {
             insert_suspension_pool_preparers(tx, id, preparers).await
         } else {
             Ok(())
@@ -60,6 +60,7 @@ async fn update_suspension_pool_by_id(
     let measurement_insertions = futures::future::try_join_all(
         measurements
             .iter()
+            .flatten()
             .map(|m| insert_suspension_pool_measurement(tx, id, m)),
     );
 

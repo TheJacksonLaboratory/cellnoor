@@ -46,11 +46,18 @@ async fn update_cdna_by_id(
 ) -> Result<CdnaDetailed, ErrorInner> {
     db::update(tx, "cdna", id, record).await?;
 
-    let preparer_insertions = insert_cdna_preparers(tx, id, preparers);
+    let preparer_insertions = async {
+        if let Some(preparers) = preparers {
+            insert_cdna_preparers(tx, id, preparers).await
+        } else {
+            Ok(())
+        }
+    };
 
     let measurement_insertions = futures::future::try_join_all(
         measurements
             .iter()
+            .flatten()
             .map(|m| insert_cdna_measurement(tx, id, m)),
     );
 
@@ -88,8 +95,8 @@ mod test {
                 n_amplification_cycles: PositiveI32::new(15).unwrap(),
                 ..insert_input.record
             },
-            measurements: vec![],
-            preparers: vec![],
+            measurements: None,
+            preparers: None,
         };
 
         update_cdna_by_id(&tx, id, &pre_update).await.unwrap();

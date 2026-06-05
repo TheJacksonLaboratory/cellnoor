@@ -13,7 +13,6 @@ pub(super) async fn create_db_user(
     static PROVISION_USER: SqlBuilder =
         SqlBuilder::new("select create_person_user_if_not_exists($1)");
 
-    let user_id = user_id.to_string();
     let sql = PROVISION_USER.finish_with_params(vec![&user_id]);
 
     tx.execute(&sql).await?;

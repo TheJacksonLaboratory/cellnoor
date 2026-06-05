@@ -13,7 +13,6 @@ pub struct NewProject {
     pub name: NonemptyString,
     pub started_at: Timestamp,
     pub ended_at: Timestamp,
-    #[cfg_attr(feature = "serde", serde(default))]
     pub members: Vec<Uuid>,
 }
 

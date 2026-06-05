@@ -45,12 +45,12 @@ select create_user_with_password_from_file('auth', '/run/secrets/auth_db_passwor
 
 -- Create a user who's an actual person, meaning they need some privileges
 create or replace function create_person_user_if_not_exists(
-    username text
+    user_id uuid
 ) returns void language plpgsql volatile strict as $$
     begin
-        perform create_user_if_not_exists(username);
+        perform create_user_if_not_exists(user_id::text);
         -- The db user 'app' needs to be able to do `set role username`, but it shouldn't inherit that user's privileges
-        execute format('grant %I to app with inherit false', username);
+        execute format('grant %I to app with inherit false', user_id);
     end;
 $$;
 

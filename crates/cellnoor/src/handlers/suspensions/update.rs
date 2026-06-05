@@ -47,7 +47,7 @@ async fn update_suspension_by_id(
     db::update(tx, "suspension", id, record).await?;
 
     let preparer_insertions = async {
-        if !preparers.is_empty() {
+        if let Some(preparers) = preparers {
             insert_suspension_preparers(tx, id, preparers).await
         } else {
             Ok(())
@@ -57,6 +57,7 @@ async fn update_suspension_by_id(
     let measurement_insertions = futures::future::try_join_all(
         measurements
             .iter()
+            .flatten()
             .map(|m| insert_suspension_measurement(tx, id, m)),
     );
 
@@ -95,8 +96,8 @@ mod test {
                 content: SuspensionContent::Nuclei,
                 ..insert_input.record
             },
-            measurements: vec![],
-            preparers: vec![],
+            measurements: None,
+            preparers: None,
         };
         pre_update.record.created_at = Some(Timestamp::now());
 

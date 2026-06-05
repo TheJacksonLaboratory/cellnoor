@@ -47,7 +47,7 @@ async fn update_library_by_id(
     db::update(tx, "library", id, record).await?;
 
     let preparer_insertions = async {
-        if !preparers.is_empty() {
+        if let Some(preparers) = preparers {
             insert_library_preparers(tx, id, preparers).await
         } else {
             Ok(())
@@ -57,6 +57,7 @@ async fn update_library_by_id(
     let measurement_insertions = futures::future::try_join_all(
         measurements
             .iter()
+            .flatten()
             .map(|m| insert_library_measurement(tx, id, m)),
     );
 
@@ -90,8 +91,8 @@ mod test {
                 number_of_sample_index_pcr_cycles: PositiveI32::new(12).unwrap(),
                 ..insert_input.record
             },
-            measurements: vec![],
-            preparers: vec![],
+            measurements: None,
+            preparers: None,
         };
 
         update_library_by_id(&tx, id, &pre_update).await.unwrap();

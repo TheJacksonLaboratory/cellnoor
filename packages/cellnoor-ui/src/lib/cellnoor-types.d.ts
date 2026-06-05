@@ -4755,10 +4755,8 @@ export interface components {
             description?: string | null;
             /** Format: date-time */
             expires_at?: string | null;
-            /** @default [] */
-            permissions_to_grant?: components["schemas"]["PermissionsToGrant"];
-            /** @default [] */
-            permissions_to_revoke?: components["schemas"]["PermissionsToRevoke"];
+            permissions_to_grant?: components["schemas"]["PermissionsToGrant"] | null;
+            permissions_to_revoke?: components["schemas"]["PermissionsToRevoke"] | null;
         };
         /** @description A comparison operator for any scalar value. */
         Array_of_LibraryTypeOperator: {
@@ -4887,14 +4885,12 @@ export interface components {
             /** Format: uuid */
             gem_well_id?: string | null;
             library_type: components["schemas"]["LibraryType"];
-            /** @default [] */
-            measurements?: components["schemas"]["NewNucleicAcidMeasurement"][];
+            measurements?: components["schemas"]["NewNucleicAcidMeasurement"][] | null;
             /** Format: int32 */
             n_amplification_cycles: number;
             /** Format: date-time */
             prepared_at: string;
-            /** @default [] */
-            preparers?: string[];
+            preparers?: string[] | null;
             readable_id: string;
         };
         /** @enum {string} */
@@ -5535,14 +5531,12 @@ export interface components {
             /** Format: uuid */
             cdna_id: string;
             dual_index_set_name?: string | null;
-            /** @default [] */
-            measurements?: components["schemas"]["NewNucleicAcidMeasurement"][];
+            measurements?: components["schemas"]["NewNucleicAcidMeasurement"][] | null;
             /** Format: int32 */
             number_of_sample_index_pcr_cycles: number;
             /** Format: date-time */
             prepared_at: string;
-            /** @default [] */
-            preparers?: string[];
+            preparers?: string[] | null;
             readable_id: string;
             single_index_set_name?: string | null;
             /** Format: int32 */
@@ -5653,8 +5647,7 @@ export interface components {
             description?: string | null;
             /** Format: date-time */
             expires_at?: string | null;
-            /** @default [] */
-            permissions_to_grant?: components["schemas"]["PermissionsToGrant"];
+            permissions_to_grant: components["schemas"]["PermissionsToGrant"];
             /** Format: uuid */
             service_account_id?: string | null;
         };
@@ -5664,8 +5657,7 @@ export interface components {
             embedded_in: "optimal_cutting_temperature_compound";
             fixative?: components["schemas"]["BlockFixative"] | null;
             host_species?: components["schemas"]["Species"] | null;
-            /** @default [] */
-            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
+            measurements: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** Format: uuid */
             project_id: string;
@@ -5686,8 +5678,7 @@ export interface components {
             embedded_in: "carboxymethyl_cellulose";
             fixative?: components["schemas"]["BlockFixative"] | null;
             host_species?: components["schemas"]["Species"] | null;
-            /** @default [] */
-            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
+            measurements: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** Format: uuid */
             project_id: string;
@@ -5708,8 +5699,7 @@ export interface components {
             embedded_in: "paraffin";
             fixative: components["schemas"]["BlockFixative"];
             host_species?: components["schemas"]["Species"] | null;
-            /** @default [] */
-            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
+            measurements: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** Format: uuid */
             project_id: string;
@@ -5730,8 +5720,7 @@ export interface components {
             /** Format: uuid */
             gem_well_id?: string | null;
             library_type: components["schemas"]["LibraryType"];
-            /** @default [] */
-            measurements?: components["schemas"]["NewNucleicAcidMeasurement"][];
+            measurements: components["schemas"]["NewNucleicAcidMeasurement"][];
             /** Format: int32 */
             n_amplification_cycles: number;
             /** Format: date-time */
@@ -5742,8 +5731,7 @@ export interface components {
         NewCellPellet: {
             additional_data?: unknown;
             host_species?: components["schemas"]["Species"] | null;
-            /** @default [] */
-            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
+            measurements: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** Format: uuid */
             project_id: string;
@@ -5830,8 +5818,7 @@ export interface components {
             /** Format: uuid */
             cdna_id: string;
             dual_index_set_name?: string | null;
-            /** @default [] */
-            measurements?: components["schemas"]["NewNucleicAcidMeasurement"][];
+            measurements: components["schemas"]["NewNucleicAcidMeasurement"][];
             /** Format: int32 */
             number_of_sample_index_pcr_cycles: number;
             /** Format: date-time */
@@ -5881,22 +5868,19 @@ export interface components {
             is_staff?: boolean;
             name: string;
             orcid?: string | null;
-            /** @default [] */
-            permissions_to_grant?: components["schemas"]["PermissionsToGrant"];
+            permissions_to_grant: components["schemas"]["PermissionsToGrant"];
         };
         NewProject: {
             /** Format: date-time */
             ended_at: string;
-            /** @default [] */
-            members?: string[];
+            members: string[];
             name: string;
             /** Format: date-time */
             started_at: string;
         };
         NewServiceAccount: {
             description?: string | null;
-            /** @default [] */
-            users?: string[];
+            users: string[];
         };
         NewSpecimen: ({
             /** @constant */
@@ -5917,8 +5901,7 @@ export interface components {
         NewSpecimenCommonFields: {
             additional_data?: unknown;
             host_species?: components["schemas"]["Species"] | null;
-            /** @default [] */
-            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
+            measurements: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** Format: uuid */
             project_id: string;
@@ -5965,8 +5948,7 @@ export interface components {
             created_at?: string | null;
             /** Format: float */
             lysis_duration_minutes?: number | null;
-            /** @default [] */
-            measurements?: components["schemas"]["NewSuspensionMeasurement"][];
+            measurements: components["schemas"]["NewSuspensionMeasurement"][];
             preparers: string[];
             readable_id: string;
             /** Format: uuid */
@@ -5983,8 +5965,7 @@ export interface components {
         };
         NewSuspensionPool: {
             additional_data?: unknown;
-            /** @default [] */
-            measurements?: components["schemas"]["NewSuspensionPoolMeasurement"][];
+            measurements: components["schemas"]["NewSuspensionPoolMeasurement"][];
             /** @constant */
             multiplexing_type: "exogenous_tag";
             name: string;
@@ -5995,8 +5976,7 @@ export interface components {
             suspensions: components["schemas"]["TaggedSuspension"][];
         } | {
             additional_data?: unknown;
-            /** @default [] */
-            measurements?: components["schemas"]["NewSuspensionPoolMeasurement"][];
+            measurements: components["schemas"]["NewSuspensionPoolMeasurement"][];
             /** @constant */
             multiplexing_type: "genetic";
             name: string;
@@ -6017,8 +5997,7 @@ export interface components {
             additional_data?: unknown;
             fixative: components["schemas"]["Fixative"];
             host_species?: components["schemas"]["Species"] | null;
-            /** @default [] */
-            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
+            measurements: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** @constant */
             preservation_state: "fixed";
@@ -6041,8 +6020,7 @@ export interface components {
         } & components["schemas"]["NewSpecimenCommonFields"]) | {
             additional_data?: unknown;
             host_species?: components["schemas"]["Species"] | null;
-            /** @default [] */
-            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
+            measurements: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** @constant */
             preservation_state: "thermally_preserved";
@@ -6069,8 +6047,7 @@ export interface components {
             additional_data?: unknown;
             fixative: components["schemas"]["Fixative"];
             host_species?: components["schemas"]["Species"] | null;
-            /** @default [] */
-            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
+            measurements: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** @constant */
             preservation_state: "fixed";
@@ -6090,8 +6067,7 @@ export interface components {
         } | {
             additional_data?: unknown;
             host_species?: components["schemas"]["Species"] | null;
-            /** @default [] */
-            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
+            measurements: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** @constant */
             preservation_state: "fresh";
@@ -6111,8 +6087,7 @@ export interface components {
         } | {
             additional_data?: unknown;
             host_species?: components["schemas"]["Species"] | null;
-            /** @default [] */
-            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
+            measurements: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** @constant */
             preservation_state: "thermally_preserved";
@@ -6880,10 +6855,8 @@ export interface components {
             is_staff?: boolean;
             name: string;
             orcid?: string | null;
-            /** @default [] */
-            permissions_to_grant?: components["schemas"]["PermissionsToGrant"];
-            /** @default [] */
-            permissions_to_revoke?: components["schemas"]["PermissionsToRevoke"];
+            permissions_to_grant?: components["schemas"]["PermissionsToGrant"] | null;
+            permissions_to_revoke?: components["schemas"]["PermissionsToRevoke"] | null;
         };
         /** @enum {string} */
         Picogram: "picogram";
@@ -7792,14 +7765,12 @@ export interface components {
         };
         SuspensionPoolUpdate: {
             additional_data?: unknown;
-            /** @default [] */
-            measurements?: components["schemas"]["NewSuspensionPoolMeasurement"][];
+            measurements?: components["schemas"]["NewSuspensionPoolMeasurement"][] | null;
             multiplexing_type: string;
             name: string;
             /** Format: date-time */
             pooled_at: string;
-            /** @default [] */
-            preparers?: string[];
+            preparers?: string[] | null;
             readable_id: string;
         };
         SuspensionPredicate: {
@@ -7852,10 +7823,8 @@ export interface components {
             created_at?: string | null;
             /** Format: float */
             lysis_duration_minutes?: number | null;
-            /** @default [] */
-            measurements?: components["schemas"]["NewSuspensionMeasurement"][];
-            /** @default [] */
-            preparers?: string[];
+            measurements?: components["schemas"]["NewSuspensionMeasurement"][] | null;
+            preparers?: string[] | null;
             readable_id: string;
             /** Format: uuid */
             specimen_id: string;

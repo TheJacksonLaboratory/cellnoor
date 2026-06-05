@@ -13,7 +13,6 @@ pub struct NewApiKey {
     pub description: Option<NonemptyString>,
     pub service_account_id: Option<Uuid>,
     pub expires_at: Option<Timestamp>,
-    #[cfg_attr(feature = "serde", serde(default))]
     pub permissions_to_grant: PermissionsToGrant,
 }
 
@@ -21,10 +20,8 @@ pub struct NewApiKey {
 pub struct ApiKeyUpdate {
     pub description: Option<NonemptyString>,
     pub expires_at: Option<Timestamp>,
-    #[cfg_attr(feature = "serde", serde(default))]
-    pub permissions_to_grant: PermissionsToGrant,
-    #[cfg_attr(feature = "serde", serde(default))]
-    pub permissions_to_revoke: PermissionsToRevoke,
+    pub permissions_to_grant: Option<PermissionsToGrant>,
+    pub permissions_to_revoke: Option<PermissionsToRevoke>,
 }
 
 #[select]

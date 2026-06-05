@@ -29,12 +29,12 @@ from initial_data;
 -- noqa: enable=AL03
 
 -- Create a db user for admin user
-select create_person_user_if_not_exists(uuid_nil()::text);
+select create_person_user_if_not_exists(uuid_nil());
 
 -- Grant them permissions on everything
 do $$
     begin
-        execute format('grant all on all tables in schema public to %I with grant option', uuid_nil()::text);
-        execute format('alter user %I with createrole', uuid_nil()::text);
+        execute format('grant all on all tables in schema public to %I with grant option', uuid_nil());
+        execute format('alter user %I with createrole', uuid_nil());
     end;
 $$;

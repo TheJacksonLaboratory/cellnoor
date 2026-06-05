@@ -2,7 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::person::{Person, PersonUpdate};
+use cellnoor_types::person::{PermissionsToGrant, PermissionsToRevoke, Person, PersonUpdate};
 use nonempty::NonemptyString;
 use uuid::Uuid;
 
@@ -49,8 +49,14 @@ async fn update_person_by_id(
 
     db::update(tx, "person", id, record).await?;
 
+    let no_grants = PermissionsToGrant::default();
+    let no_revocations = PermissionsToRevoke::default();
+
+    let permissions_to_grant = permissions_to_grant.as_ref().unwrap_or(&no_grants);
+    let permissions_to_revoke = permissions_to_revoke.as_ref().unwrap_or(&no_revocations);
+
     let (_, person) = tokio::try_join!(
-        provision_db_user(tx, id, permissions_to_grant, permissions_to_revoke),
+        provision_db_user(tx, id, &permissions_to_grant, &permissions_to_revoke),
         select_person_by_id(tx, id)
     )?;
 
@@ -87,8 +93,8 @@ mod test {
         pre_update.record.name = "updated".to_nonempty_string();
         let update_to_apply = PersonUpdate {
             record: pre_update.record,
-            permissions_to_grant: pre_update.permissions_to_grant,
-            permissions_to_revoke: vec![].into(),
+            permissions_to_grant: Some(pre_update.permissions_to_grant),
+            permissions_to_revoke: None,
         };
 
         update_person_by_id(&tx, *id, &update_to_apply)

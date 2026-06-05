@@ -47,7 +47,6 @@ pub type SavedLibraryRecord = LibraryRecord<Id>;
 pub struct NewLibrary {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: NewLibraryRecord,
-    #[cfg_attr(feature = "serde", serde(default))]
     pub measurements: Vec<NewNucleicAcidMeasurement>,
     pub preparers: NonemptyVec<Uuid>,
 }
@@ -56,10 +55,8 @@ pub struct NewLibrary {
 pub struct LibraryUpdate {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: NewLibraryRecord,
-    #[cfg_attr(feature = "serde", serde(default))]
-    pub measurements: Vec<NewNucleicAcidMeasurement>,
-    #[cfg_attr(feature = "serde", serde(default))]
-    pub preparers: Vec<Uuid>,
+    pub measurements: Option<Vec<NewNucleicAcidMeasurement>>,
+    pub preparers: Option<Vec<Uuid>>,
 }
 
 #[base_model]
