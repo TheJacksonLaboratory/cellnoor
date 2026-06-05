@@ -1463,6 +1463,351 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/index-sets/single": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": [
+                        string,
+                        string[]
+                    ][];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": null;
+                    };
+                };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/index-sets/dual": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        [key: string]: components["schemas"]["NewDualIndexSet"];
+                    };
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": null;
+                    };
+                };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/10x-assays": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TenxAssay"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewTenxAssay"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TenxAssay"];
+                    };
+                };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/multiplexing-tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            tag_id: string;
+                            type_: components["schemas"]["MultiplexingTagType"];
+                        }[];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        tag_id: string;
+                        type_: components["schemas"]["MultiplexingTagType"];
+                    };
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": string;
+                    };
+                };
+                /** @description Failed to parse the request body as JSON */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Expected request with `Content-Type: application/json` */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+                /** @description Failed to deserialize the JSON body into the target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": string;
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/multiplexing-tags/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": null;
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/specimens": {
         parameters: {
             query?: never;
@@ -2937,216 +3282,6 @@ export interface paths {
                 };
             };
         };
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": null;
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/10x-assays": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["TenxAssay"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewTenxAssay"];
-                };
-            };
-            responses: {
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["TenxAssay"];
-                    };
-                };
-                /** @description Failed to parse the request body as JSON */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                    };
-                };
-                /** @description Expected request with `Content-Type: application/json` */
-                415: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                    };
-                };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/multiplexing-tags": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** Format: uuid */
-                            id: string;
-                            tag_id: string;
-                            type_: components["schemas"]["MultiplexingTagType"];
-                        }[];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        tag_id: string;
-                        type_: components["schemas"]["MultiplexingTagType"];
-                    };
-                };
-            };
-            responses: {
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": string;
-                    };
-                };
-                /** @description Failed to parse the request body as JSON */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                    };
-                };
-                /** @description Expected request with `Content-Type: application/json` */
-                415: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                    };
-                };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/multiplexing-tags/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
         post?: never;
         delete: {
             parameters: {
@@ -4983,18 +5118,6 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        Concentration: {
-            denominator_unit: components["schemas"]["Microliter"];
-            numerator_unit: components["schemas"]["Picogram"];
-            /** Format: int32 */
-            value: number;
-        };
-        Concentration2: {
-            denominator_unit: components["schemas"]["Microliter"];
-            numerator_unit: components["schemas"]["Nanogram"];
-            /** Format: int32 */
-            value: number;
-        };
         /** @description Contact information for the exposed API. */
         Contact: {
             /**
@@ -5520,6 +5643,12 @@ export interface components {
         MultiplexingTagType: "flex_barcode" | "flex_oligonucleotide_barcode" | "on_chip_multiplexing" | "TotalSeq-A" | "TotalSeq-B" | "TotalSeq-C";
         /** @enum {string} */
         Nanogram: "nanogram";
+        NanogramConcentration: {
+            denominator_unit: components["schemas"]["Microliter"];
+            numerator_unit: components["schemas"]["Nanogram"];
+            /** Format: int32 */
+            value: number;
+        };
         NewApiKey: {
             description?: string | null;
             /** Format: date-time */
@@ -5535,7 +5664,8 @@ export interface components {
             embedded_in: "optimal_cutting_temperature_compound";
             fixative?: components["schemas"]["BlockFixative"] | null;
             host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
+            /** @default [] */
+            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** Format: uuid */
             project_id: string;
@@ -5556,7 +5686,8 @@ export interface components {
             embedded_in: "carboxymethyl_cellulose";
             fixative?: components["schemas"]["BlockFixative"] | null;
             host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
+            /** @default [] */
+            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** Format: uuid */
             project_id: string;
@@ -5577,7 +5708,8 @@ export interface components {
             embedded_in: "paraffin";
             fixative: components["schemas"]["BlockFixative"];
             host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
+            /** @default [] */
+            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** Format: uuid */
             project_id: string;
@@ -5598,7 +5730,8 @@ export interface components {
             /** Format: uuid */
             gem_well_id?: string | null;
             library_type: components["schemas"]["LibraryType"];
-            measurements: components["schemas"]["NewNucleicAcidMeasurement"][];
+            /** @default [] */
+            measurements?: components["schemas"]["NewNucleicAcidMeasurement"][];
             /** Format: int32 */
             n_amplification_cycles: number;
             /** Format: date-time */
@@ -5609,7 +5742,8 @@ export interface components {
         NewCellPellet: {
             additional_data?: unknown;
             host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
+            /** @default [] */
+            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** Format: uuid */
             project_id: string;
@@ -5681,6 +5815,11 @@ export interface components {
             run_by: string;
             succeeded: boolean;
         };
+        NewDualIndexSet: {
+            index2_workflow_a_i5: string;
+            index2_workflow_b_i5: string;
+            index_i7: string;
+        };
         NewInstitution: {
             /** Format: uuid */
             microsoft_entra_tenant_id: string;
@@ -5691,7 +5830,8 @@ export interface components {
             /** Format: uuid */
             cdna_id: string;
             dual_index_set_name?: string | null;
-            measurements: components["schemas"]["NewNucleicAcidMeasurement"][];
+            /** @default [] */
+            measurements?: components["schemas"]["NewNucleicAcidMeasurement"][];
             /** Format: int32 */
             number_of_sample_index_pcr_cycles: number;
             /** Format: date-time */
@@ -5747,7 +5887,8 @@ export interface components {
         NewProject: {
             /** Format: date-time */
             ended_at: string;
-            members: string[];
+            /** @default [] */
+            members?: string[];
             name: string;
             /** Format: date-time */
             started_at: string;
@@ -5776,7 +5917,8 @@ export interface components {
         NewSpecimenCommonFields: {
             additional_data?: unknown;
             host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
+            /** @default [] */
+            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** Format: uuid */
             project_id: string;
@@ -5841,24 +5983,26 @@ export interface components {
         };
         NewSuspensionPool: {
             additional_data?: unknown;
-            measurements: components["schemas"]["NewSuspensionPoolMeasurement"][];
+            /** @default [] */
+            measurements?: components["schemas"]["NewSuspensionPoolMeasurement"][];
             /** @constant */
             multiplexing_type: "exogenous_tag";
             name: string;
             /** Format: date-time */
             pooled_at: string;
-            preparer_ids: string[];
+            preparers: string[];
             readable_id: string;
             suspensions: components["schemas"]["TaggedSuspension"][];
         } | {
             additional_data?: unknown;
-            measurements: components["schemas"]["NewSuspensionPoolMeasurement"][];
+            /** @default [] */
+            measurements?: components["schemas"]["NewSuspensionPoolMeasurement"][];
             /** @constant */
             multiplexing_type: "genetic";
             name: string;
             /** Format: date-time */
             pooled_at: string;
-            preparer_ids: string[];
+            preparers: string[];
             readable_id: string;
             suspensions: string[];
         };
@@ -5873,7 +6017,8 @@ export interface components {
             additional_data?: unknown;
             fixative: components["schemas"]["Fixative"];
             host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
+            /** @default [] */
+            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** @constant */
             preservation_state: "fixed";
@@ -5896,7 +6041,8 @@ export interface components {
         } & components["schemas"]["NewSpecimenCommonFields"]) | {
             additional_data?: unknown;
             host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
+            /** @default [] */
+            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** @constant */
             preservation_state: "thermally_preserved";
@@ -5923,7 +6069,8 @@ export interface components {
             additional_data?: unknown;
             fixative: components["schemas"]["Fixative"];
             host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
+            /** @default [] */
+            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** @constant */
             preservation_state: "fixed";
@@ -5943,7 +6090,8 @@ export interface components {
         } | {
             additional_data?: unknown;
             host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
+            /** @default [] */
+            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** @constant */
             preservation_state: "fresh";
@@ -5963,7 +6111,8 @@ export interface components {
         } | {
             additional_data?: unknown;
             host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
+            /** @default [] */
+            measurements?: components["schemas"]["NewSpecimenMeasurement"][];
             name: string;
             /** @constant */
             preservation_state: "thermally_preserved";
@@ -5983,7 +6132,7 @@ export interface components {
             tissue: string;
         };
         NucleicAcidMeasurementData: {
-            concentration: components["schemas"]["Concentration"];
+            concentration: components["schemas"]["PicogramConcentration"];
             instrument_name: string;
             /** Format: int32 */
             mean_size_bp?: number | null;
@@ -5994,7 +6143,7 @@ export interface components {
             /** @constant */
             type: "Electrophoretic";
         } | {
-            concentration: components["schemas"]["Concentration2"];
+            concentration: components["schemas"]["NanogramConcentration"];
             instrument_name: string;
             /** @constant */
             type: "Fluorometric";
@@ -6738,6 +6887,12 @@ export interface components {
         };
         /** @enum {string} */
         Picogram: "picogram";
+        PicogramConcentration: {
+            denominator_unit: components["schemas"]["Microliter"];
+            numerator_unit: components["schemas"]["Picogram"];
+            /** Format: int32 */
+            value: number;
+        };
         ProjectCompact: {
             /** Format: uuid */
             created_by: string;
@@ -7990,8 +8145,6 @@ export type ChromiumRunPredicateInner = components['schemas']['ChromiumRunPredic
 export type ChromiumRunPredicateQuery = components['schemas']['ChromiumRunPredicateQuery'];
 export type ChromiumRunRecord = components['schemas']['ChromiumRunRecord'];
 export type Components = components['schemas']['Components'];
-export type Concentration = components['schemas']['Concentration'];
-export type Concentration2 = components['schemas']['Concentration2'];
 export type Contact = components['schemas']['Contact'];
 export type CookieStyle = components['schemas']['CookieStyle'];
 export type CountingMethod = components['schemas']['CountingMethod'];
@@ -8033,6 +8186,7 @@ export type Micrometer = components['schemas']['Micrometer'];
 export type Milliliter = components['schemas']['Milliliter'];
 export type MultiplexingTagType = components['schemas']['MultiplexingTagType'];
 export type Nanogram = components['schemas']['Nanogram'];
+export type NanogramConcentration = components['schemas']['NanogramConcentration'];
 export type NewApiKey = components['schemas']['NewApiKey'];
 export type NewBlock = components['schemas']['NewBlock'];
 export type NewCdna = components['schemas']['NewCdna'];
@@ -8040,6 +8194,7 @@ export type NewCellPellet = components['schemas']['NewCellPellet'];
 export type NewChromiumAssay = components['schemas']['NewChromiumAssay'];
 export type NewChromiumDataset = components['schemas']['NewChromiumDataset'];
 export type NewChromiumRun = components['schemas']['NewChromiumRun'];
+export type NewDualIndexSet = components['schemas']['NewDualIndexSet'];
 export type NewInstitution = components['schemas']['NewInstitution'];
 export type NewLibrary = components['schemas']['NewLibrary'];
 export type NewMixedChipLoading = components['schemas']['NewMixedChipLoading'];
@@ -8105,6 +8260,7 @@ export type PersonPredicateFilter = components['schemas']['PersonPredicateFilter
 export type PersonPredicateQuery = components['schemas']['PersonPredicateQuery'];
 export type PersonUpdate = components['schemas']['PersonUpdate'];
 export type Picogram = components['schemas']['Picogram'];
+export type PicogramConcentration = components['schemas']['PicogramConcentration'];
 export type ProjectCompact = components['schemas']['ProjectCompact'];
 export type ProjectDetailed = components['schemas']['ProjectDetailed'];
 export type ProjectField = components['schemas']['ProjectField'];
