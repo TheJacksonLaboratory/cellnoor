@@ -6,6 +6,6 @@
   "admin": {
     "name": "Ahmed Said",
     "email": "",
-    "is_staff": true
+    "can_admin_all_projects": true
   }
 }

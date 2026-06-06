@@ -2,7 +2,9 @@
 use std::slice::Iter;
 
 use macro_attributes::{base_model, unit_enum};
+use nonempty::NonemptyString;
 pub use query::{PersonField, PersonPredicate, PersonQuery, SimplePersonQuery};
+use uuid::Uuid;
 
 use crate::{
     id::{Id, NoId},
@@ -25,8 +27,8 @@ mod record {
         pub name: NonemptyString,
         pub email: Option<NonemptyString>,
         pub institution_id: Uuid,
-        #[cfg_attr(feature = "serde", serde(default))]
-        pub is_staff: bool,
+        pub can_admin_all_projects: bool,
+        pub can_admin_users: bool,
         pub orcid: Option<NonemptyString>,
     }
 }
@@ -46,10 +48,11 @@ impl Action {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, strum::Display)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
+#[strum(serialize_all = "snake_case")]
 pub enum ResourcePermission {
     Institution(Vec<Action>),
     Person(Vec<Action>),

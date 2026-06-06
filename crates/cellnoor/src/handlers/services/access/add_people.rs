@@ -12,18 +12,16 @@ use crate::{
     state::AppState,
 };
 
-pub async fn add_people_to_service_account(
+pub async fn add_people_to_service(
     State(state): State<AppState>,
     user: AuthUser,
-    Path(IdParam {
-        id: service_account_id,
-    }): Path<IdParam>,
+    Path(IdParam { id: service_id }): Path<IdParam>,
     Json(people): Json<Vec<Uuid>>,
 ) -> Result<Json<()>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = insert_service_account_accesses(&tx, service_account_id, &people)
+    let response = insert_service_accesses(&tx, service_id, &people)
         .await
         .map(Json)?;
 
@@ -32,15 +30,15 @@ pub async fn add_people_to_service_account(
     Ok(response)
 }
 
-pub(in super::super::super) async fn insert_service_account_accesses(
+pub(in super::super::super) async fn insert_service_accesses(
     tx: &db::Transaction<'_>,
-    service_account_id: Uuid,
+    service_id: Uuid,
     people: &[Uuid],
 ) -> Result<(), ErrorInner> {
     let accesses: Vec<_> = people
         .iter()
-        .map(|&person_id| NewServiceAccountAccess {
-            service_account_id,
+        .map(|&person_id| NewServiceAccess {
+            service_id,
             person_id,
         })
         .collect();
@@ -48,29 +46,26 @@ pub(in super::super::super) async fn insert_service_account_accesses(
     futures::future::try_join_all(
         accesses
             .iter()
-            .map(|a| db::insert_into_no_returning(tx, "service_account_access", a)),
+            .map(|a| db::insert_into_no_returning(tx, "service_access", a)),
     )
     .await?;
 
     Ok(())
 }
 
-struct NewServiceAccountAccess {
-    service_account_id: Uuid,
+struct NewServiceAccess {
+    service_id: Uuid,
     person_id: Uuid,
 }
 
-impl AsFieldValuePairs<&'static str, 2> for NewServiceAccountAccess {
+impl AsFieldValuePairs<&'static str, 2> for NewServiceAccess {
     fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 2> {
         let Self {
-            service_account_id,
+            service_id,
             person_id,
         } = self;
 
-        [
-            ("service_account_id", service_account_id),
-            ("person_id", person_id),
-        ]
+        [("service_id", service_id), ("person_id", person_id)]
     }
 }
 
@@ -79,9 +74,8 @@ mod test {
     use crate::{
         handlers::{
             people::create::test::insert_test_person_and_institution,
-            service_accounts::{
-                access::add_people::insert_service_account_accesses,
-                create::test::insert_test_service_account,
+            services::{
+                access::add_people::insert_service_accesses, create::test::insert_test_service,
             },
         },
         state::test_util::db_client_as_admin,
@@ -92,12 +86,12 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, service_account) = insert_test_service_account(&tx, |_| ()).await.unwrap();
+        let (_, service) = insert_test_service(&tx, |_| ()).await.unwrap();
         let (_, person) = insert_test_person_and_institution(&tx, |_| ())
             .await
             .unwrap();
 
-        insert_service_account_accesses(&tx, service_account.id, &[*person.record.id])
+        insert_service_accesses(&tx, *service.id, &[*person.record.id])
             .await
             .unwrap();
     }

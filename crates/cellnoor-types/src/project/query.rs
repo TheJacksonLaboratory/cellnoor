@@ -11,6 +11,8 @@ use crate::{
 pub enum ProjectPredicate {
     Id(UuidOperator),
     Name(StringOperator),
+    CreatedByPerson(UuidOperator),
+    CreatedByService(UuidOperator),
     StartedAt(TimestampOperator),
     EndedAt(TimestampOperator),
 }

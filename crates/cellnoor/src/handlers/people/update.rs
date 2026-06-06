@@ -8,12 +8,12 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self},
+    db,
     error::{Error, ErrorInner},
     handlers::{
         IdParam,
         people::{
-            create::{provision_db_user, validate_email},
+            create::{permission_to_permission_set, validate_email},
             show::select_person_by_id,
         },
     },
@@ -56,11 +56,61 @@ async fn update_person_by_id(
     let permissions_to_revoke = permissions_to_revoke.as_ref().unwrap_or(&no_revocations);
 
     let (_, person) = tokio::try_join!(
-        provision_db_user(tx, id, &permissions_to_grant, &permissions_to_revoke),
+        update_permissions(tx, id, &permissions_to_grant, &permissions_to_revoke),
         select_person_by_id(tx, id)
     )?;
 
     Ok(person)
+}
+
+async fn update_permissions(
+    tx: &db::Transaction<'_>,
+    user_id: Uuid,
+    permissions_to_grant: &PermissionsToGrant,
+    permissions_to_revoke: &PermissionsToRevoke,
+) -> Result<(), ErrorInner> {
+    grant_permissions(tx, user_id, permissions_to_grant).await?;
+    revoke_permissions(tx, user_id, permissions_to_revoke).await?;
+
+    Ok(())
+}
+
+async fn grant_permissions(
+    tx: &db::Transaction<'_>,
+    user_id: Uuid,
+    permissions_to_grant: &PermissionsToGrant,
+) -> Result<(), ErrorInner> {
+    let permissions_to_grant: Vec<_> = permissions_to_grant
+        .iter()
+        .map(permission_to_permission_set)
+        .collect();
+
+    tx.execute_raw_sql(
+        "grant_permissions_to_person($1, $2)",
+        &[&user_id, &permissions_to_grant],
+    )
+    .await?;
+
+    Ok(())
+}
+
+async fn revoke_permissions(
+    tx: &db::Transaction<'_>,
+    user_id: Uuid,
+    permissions_to_revoke: &PermissionsToRevoke,
+) -> Result<(), ErrorInner> {
+    let permissions_to_revoke: Vec<_> = permissions_to_revoke
+        .iter()
+        .map(permission_to_permission_set)
+        .collect();
+
+    tx.execute_raw_sql(
+        "revoke_permissions_from_person($1, $2)",
+        &[&user_id, &permissions_to_revoke],
+    )
+    .await?;
+
+    Ok(())
 }
 
 #[cfg(test)]

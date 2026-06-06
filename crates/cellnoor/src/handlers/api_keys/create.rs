@@ -1,7 +1,7 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
     api_key::{ApiKey, NewApiKey},
-    person::PermissionsToRevoke,
+    person::{PermissionsToGrant, PermissionsToRevoke},
 };
 use jiff::Timestamp;
 use nonempty::NonemptyString;
@@ -12,7 +12,7 @@ use crate::{
     auth::{AuthUser, hash_api_key},
     db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
-    handlers::{api_keys::index::select_api_key_record_by_id, people::create::provision_db_user},
+    handlers::api_keys::index::select_api_key_record_by_id,
     state::AppState,
 };
 
@@ -37,14 +37,13 @@ async fn insert_api_key(
     user: AuthUser,
     NewApiKey {
         description,
-        service_account_id,
+        service_id,
         expires_at,
-        permissions_to_grant: grant_permissions,
     }: &NewApiKey,
 ) -> Result<ApiKey, ErrorInner> {
     let secret = generate_secret();
 
-    let person_id = match service_account_id {
+    let person_id = match service_id {
         Some(_) => None,
         None => Some(user.id().ok_or(ErrorInner::Other {
             message: "something went wrong".to_owned(),
@@ -56,17 +55,13 @@ async fn insert_api_key(
         description: description.as_ref(),
         hashed_key: hash_api_key(secret.as_bytes()),
         person_id,
-        service_account_id: *service_account_id,
+        service_id: *service_id,
         expires_at: *expires_at,
     };
 
     let id = db::insert_into(tx, "api_key", &record).await?;
 
-    let revoke_permissions = PermissionsToRevoke::default();
-    let (_, record) = tokio::try_join!(
-        provision_db_user(tx, id, grant_permissions, &revoke_permissions),
-        select_api_key_record_by_id(tx, id),
-    )?;
+    let record = select_api_key_record_by_id(tx, id).await?;
 
     Ok(ApiKey { record, secret })
 }
@@ -75,7 +70,7 @@ struct NewApiKeyRecord<'a> {
     description: Option<&'a NonemptyString>,
     hashed_key: [u8; 32],
     person_id: Option<Uuid>,
-    service_account_id: Option<Uuid>,
+    service_id: Option<Uuid>,
     expires_at: Option<Timestamp>,
 }
 
@@ -85,7 +80,7 @@ impl AsFieldValuePairs<&'static str, 5> for NewApiKeyRecord<'_> {
             description,
             hashed_key,
             person_id,
-            service_account_id,
+            service_id,
             expires_at,
         } = self;
 
@@ -93,7 +88,7 @@ impl AsFieldValuePairs<&'static str, 5> for NewApiKeyRecord<'_> {
             ("description", description),
             ("hashed_key", hashed_key),
             ("person_id", person_id),
-            ("service_account_id", service_account_id),
+            ("service_id", service_id),
             ("expires_at", expires_at),
         ]
     }
@@ -143,9 +138,8 @@ pub mod test {
     {
         let mut new = NewApiKey {
             description: Some(Uuid::new_v4().to_string().to_nonempty_string()),
-            service_account_id: None,
+            service_id: None,
             expires_at: None,
-            permissions_to_grant: vec![].into(),
         };
 
         modify(&mut new);

@@ -2,12 +2,13 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use cellnoor_types::person::{PermissionsToGrant, PermissionsToRevoke};
 use deadpool_postgres::tokio_postgres::error::{DbError, SqlState};
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db,
+    db::{self},
     error::{Error, ErrorInner},
     handlers::IdParam,
     state::AppState,
@@ -34,28 +35,8 @@ async fn delete_person_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), E
     Ok(())
 }
 
-pub(in super::super) async fn drop_db_user(
-    tx: &db::Transaction<'_>,
-    id: Uuid,
-) -> Result<(), ErrorInner> {
-    tx.acquire_user_permisssions_lock().await?;
-
-    let revoke_result = tx
-        .execute_raw_sql(
-            &format!(r#"revoke all on all tables in schema public from "{id}""#),
-            &[],
-        )
-        .await;
-
-    if let Err(e) = revoke_result {
-        let Some(&SqlState::UNDEFINED_OBJECT) = e.as_db_error().map(DbError::code) else {
-            return Err(e.into());
-        };
-
-        return Err(ErrorInner::ResourceNotFound);
-    }
-
-    tx.execute_raw_sql(&format!(r#"drop user if exists "{}""#, id), &[])
+async fn drop_db_user(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
+    tx.execute_raw_sql("select drop_person_user($1)", &[&id])
         .await?;
 
     Ok(())

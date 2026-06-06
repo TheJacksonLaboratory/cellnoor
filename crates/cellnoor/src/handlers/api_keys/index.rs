@@ -61,9 +61,7 @@ impl AsPredicate for ApiKeyPredicate {
         (&'static str, &(dyn postgres_types::ToSql + Sync)),
     ) {
         let sql = match self {
-            Self::Id(u) | Self::PersonId(u) | Self::ServiceAccountId(u) => {
-                u.as_sql_operator_and_value()
-            }
+            Self::Id(u) | Self::PersonId(u) | Self::ServiceId(u) => u.as_sql_operator_and_value(),
             Self::Description(s) => s.as_sql_operator_and_value(),
             Self::CreatedAt(t) | Self::ExpiresAt(t) => t.as_sql_operator_and_value(),
         };

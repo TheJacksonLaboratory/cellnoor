@@ -1,3 +1,4 @@
+use cellnoor_types::person::ResourcePermission;
 use deadpool_postgres::{
     GenericClient, Object as InnerClient, Pool as InnerPool, PoolError,
     Transaction as InnerTransaction,
@@ -5,8 +6,9 @@ use deadpool_postgres::{
 };
 use futures::{Stream, StreamExt};
 use postgres_types::FromSqlOwned;
+use uuid::Uuid;
 
-use crate::{auth::AuthUser, db::Sql};
+use crate::{auth::AuthUser, db::Sql, error::ErrorInner};
 
 #[derive(Debug, Clone)]
 pub struct Pool(InnerPool);
@@ -69,14 +71,20 @@ pub struct Transaction<'a> {
 }
 
 impl<'a> Transaction<'a> {
-    async fn execute_as_user<T>(
-        &self,
-        operation: impl Future<Output = Result<T, TokioPgError>>,
-    ) -> Result<T, TokioPgError> {
+    async fn set_local_role_as_user(&self) -> Result<(), TokioPgError> {
         let Self { user, inner } = self;
 
         let set_role_stmt = format!(r#"set local role "{user}" "#);
         inner.execute(&set_role_stmt, &[]).await?;
+
+        Ok(())
+    }
+
+    async fn execute_as_user<T>(
+        &self,
+        operation: impl Future<Output = Result<T, TokioPgError>>,
+    ) -> Result<T, TokioPgError> {
+        self.set_local_role_as_user().await?;
 
         operation.await
     }
@@ -133,16 +141,6 @@ impl<'a> Transaction<'a> {
 
     pub async fn commit(self) -> Result<(), TokioPgError> {
         self.inner.commit().await
-    }
-
-    pub async fn acquire_user_permisssions_lock(&self) -> Result<(), TokioPgError> {
-        self.execute_raw_sql(
-            &"select pg_advisory_xact_lock(hashtext($1))",
-            &[&"user_permissions"],
-        )
-        .await?;
-
-        Ok(())
     }
 
     /// Begin a nested transaction, starting a PostgreSQL savepoint

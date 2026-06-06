@@ -3,7 +3,7 @@ use std::assert_matches;
 use cellnoor_types::{
     api_key::{ApiKey, ApiKeyPredicate, ApiKeyRecord, ApiKeyUpdate},
     operator::UuidOperator,
-    service_account::ServiceAccount,
+    service::Service,
 };
 use pretty_assertions::assert_eq;
 use uuid::Uuid;
@@ -17,9 +17,8 @@ use crate::{
             create::test::insert_test_api_key, index::select_api_keys, update::update_api_key_by_id,
         },
         people::create::test::insert_test_person_and_institution,
-        service_accounts::{
-            access::add_people::insert_service_account_accesses,
-            create::test::insert_test_service_account,
+        services::{
+            access::add_people::insert_service_accesses, create::test::insert_test_service,
         },
     },
     state::test_util::{ToNonemptyString, db_client_as_admin, db_client_as_user},
@@ -38,21 +37,21 @@ async fn create_person_api_key_for(user: Uuid) -> ApiKey {
     api_key
 }
 
-async fn create_service_account_api_key_for(user: Uuid) -> (ServiceAccount, ApiKey) {
+async fn create_service_api_key_for(user: Uuid) -> (Service, ApiKey) {
     let mut client = db_client_as_user(user).await;
     let tx = client.begin().await.unwrap();
 
-    let (_, service_account) = insert_test_service_account(&tx, |_| ()).await.unwrap();
+    let (_, service) = insert_test_service(&tx, |_| ()).await.unwrap();
 
     let (_, api_key) = insert_test_api_key(&tx, AuthUser::new_as_user(user), |key| {
-        key.service_account_id = Some(service_account.id);
+        key.service_id = Some(*service.id);
     })
     .await
     .unwrap();
 
     tx.commit().await.unwrap();
 
-    (service_account, api_key)
+    (service, api_key)
 }
 
 async fn user_cannot_update_unowned_api_key(client: &mut db::Client, api_key_id: Uuid) {
@@ -64,8 +63,6 @@ async fn user_cannot_update_unowned_api_key(client: &mut db::Client, api_key_id:
         &ApiKeyUpdate {
             description: Some("updated".to_nonempty_string()),
             expires_at: None,
-            permissions_to_grant: None,
-            permissions_to_revoke: None,
         },
     )
     .await
@@ -125,19 +122,17 @@ async fn row_level_security_for_api_keys() {
 
     // A user can't see an API key unless they've been granted access to its service
     // account
-    let (service_account, service_account_api_key) =
-        create_service_account_api_key_for(user1_id).await;
+    let (service, service_api_key) = create_service_api_key_for(user1_id).await;
 
-    user_cannot_see_inaccessible_api_key(&mut user2_client, service_account_api_key.record.id)
-        .await;
+    user_cannot_see_inaccessible_api_key(&mut user2_client, service_api_key.record.id).await;
 
     // Now user1 grants user2 access to the service account
     let mut user1_client = db_client_as_user(user1_id).await;
     let tx = user1_client.begin().await.unwrap();
-    insert_service_account_accesses(&tx, service_account.id, &[user2_id])
+    insert_service_accesses(&tx, *service.id, &[user2_id])
         .await
         .unwrap();
     tx.commit().await.unwrap();
 
-    user_can_see_accessible_api_key(&mut user2_client, service_account_api_key.record).await;
+    user_can_see_accessible_api_key(&mut user2_client, service_api_key.record).await;
 }

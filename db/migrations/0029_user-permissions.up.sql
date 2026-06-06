@@ -2,8 +2,8 @@
 -- there are convenient views already made
 grant select on institution,
 person_public,
-service_account,
-service_account_access,
+service,
+service_access,
 api_key_public,
 project,
 project_access,
@@ -32,11 +32,11 @@ chromium_dataset_to_specimen,
 chromium_dataset_raw_file,
 chromium_dataset_parsed_file to public;
 
-grant insert (description, owned_by), update (description, owned_by), delete on service_account to public;
+grant insert (description, owned_by), update (description, owned_by), delete on service to public;
 
-grant insert, delete on service_account_access to public;
+grant insert, delete on service_access to public;
 
-grant insert (description, hashed_key, person_id, service_account_id, expires_at),
-select (id, description, person_id, service_account_id, created_at, expires_at),
+grant insert (description, hashed_key, person_id, service_id, expires_at),
+select (id, description, person_id, service_id, created_at, expires_at),
 update (description, expires_at),
 delete on api_key to public;

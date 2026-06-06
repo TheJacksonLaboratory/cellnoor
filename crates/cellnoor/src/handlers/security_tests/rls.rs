@@ -1,6 +1,6 @@
 mod api_key;
 mod cdna;
 mod project;
-mod service_account;
+mod service;
 mod specimen;
 mod suspension;

@@ -26,6 +26,9 @@ create or replace function create_user_if_not_exists(
     end;
 $$;
 
+-- 'user_creator' is a highly privileged role that creates database users. It needs to be highly privileged so it can
+-- own users and grant/revoke any privilege
+select create_user_if_not_exists('user_creator');
 
 create or replace function create_user_with_password_from_file(
     username text, password_file_path text
@@ -44,13 +47,15 @@ select create_user_with_password_from_file('app', '/run/secrets/app_db_password'
 select create_user_with_password_from_file('auth', '/run/secrets/auth_db_password');
 
 -- Create a user who's an actual person, meaning they need some privileges
-create or replace function create_person_user_if_not_exists(
+create or replace function create_app_user_if_not_exists(
     user_id uuid
 ) returns void language plpgsql volatile strict as $$
     begin
         perform create_user_if_not_exists(user_id::text);
         -- The db user 'app' needs to be able to do `set role username`, but it shouldn't inherit that user's privileges
         execute format('grant %I to app with inherit false', user_id);
+        -- In order to create service accounts, every app user needs the createrole privilege
+        execute format('alter user %I with createrole', user_id);
     end;
 $$;
 

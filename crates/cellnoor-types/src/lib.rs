@@ -14,7 +14,7 @@ pub mod nucleic_acid_measurement;
 pub mod person;
 pub mod project;
 pub mod query;
-pub mod service_account;
+pub mod service;
 pub(crate) mod simple_links;
 pub mod specimen;
 pub mod suspension;

@@ -12,9 +12,7 @@ use crate::{
     auth::AuthUser,
     db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
-    handlers::{
-        IdParam, api_keys::index::select_api_key_record_by_id, people::create::provision_db_user,
-    },
+    handlers::{IdParam, api_keys::index::select_api_key_record_by_id},
     state::AppState,
 };
 
@@ -41,21 +39,7 @@ pub(in super::super) async fn update_api_key_by_id(
 ) -> Result<ApiKeyRecord, ErrorInner> {
     db::update(tx, "api_key", id, update).await?;
 
-    let no_grants = PermissionsToGrant::default();
-    let no_revocations = PermissionsToRevoke::default();
-
-    let permissions_to_grant = update.permissions_to_grant.as_ref().unwrap_or(&no_grants);
-    let permissions_to_revoke = update
-        .permissions_to_revoke
-        .as_ref()
-        .unwrap_or(&no_revocations);
-
-    let (_, record) = tokio::try_join!(
-        provision_db_user(tx, id, permissions_to_grant, permissions_to_revoke),
-        select_api_key_record_by_id(tx, id),
-    )?;
-
-    Ok(record)
+    select_api_key_record_by_id(tx, id).await
 }
 
 impl AsFieldValuePairs<&'static str, 2> for ApiKeyUpdate {
@@ -63,8 +47,6 @@ impl AsFieldValuePairs<&'static str, 2> for ApiKeyUpdate {
         let Self {
             description,
             expires_at,
-            permissions_to_grant: _,
-            permissions_to_revoke: _,
         } = self;
 
         [("description", description), ("expires_at", expires_at)]
@@ -93,8 +75,6 @@ mod test {
         let update = ApiKeyUpdate {
             description: Some("updated".to_nonempty_string()),
             expires_at: None,
-            permissions_to_grant: None,
-            permissions_to_revoke: None,
         };
 
         update_api_key_by_id(&tx, api_key.record.id, &update)

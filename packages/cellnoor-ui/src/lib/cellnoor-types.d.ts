@@ -537,7 +537,7 @@ export interface paths {
                     limit?: number;
                     offset?: number;
                     order_by_desc?: boolean;
-                    order_by_field?: components["schemas"]["ServiceAccountField"];
+                    order_by_field?: components["schemas"]["ServiceField"];
                 };
                 header?: never;
                 path?: never;
@@ -550,7 +550,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ServiceAccount"][];
+                        "application/json": components["schemas"]["Service"][];
                     };
                 };
             };
@@ -565,7 +565,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["NewServiceAccount"];
+                    "application/json": components["schemas"]["NewService"];
                 };
             };
             responses: {
@@ -574,7 +574,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ServiceAccount"];
+                        "application/json": components["schemas"]["Service"];
                     };
                 };
                 /** @description Failed to parse the request body as JSON */
@@ -630,7 +630,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["ServiceAccountPredicateQuery"];
+                    "application/json": components["schemas"]["ServicePredicateQuery"];
                 };
             };
             responses: {
@@ -639,7 +639,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ServiceAccount"][];
+                        "application/json": components["schemas"]["Service"][];
                     };
                 };
                 /** @description Failed to parse the request body as JSON */
@@ -696,7 +696,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["NewServiceAccount"];
+                    "application/json": components["schemas"]["NewService"];
                 };
             };
             responses: {
@@ -705,7 +705,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ServiceAccount"];
+                        "application/json": components["schemas"]["Service"];
                     };
                 };
                 /** @description Failed to parse the request body as JSON */
@@ -4695,13 +4695,13 @@ export interface components {
             person_id?: string | null;
             secret: string;
             /** Format: uuid */
-            service_account_id?: string | null;
+            service_id?: string | null;
         };
         /**
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
-        ApiKeyField: "id" | "description" | "person_id" | "service_account_id" | "created_at" | "expires_at";
+        ApiKeyField: "id" | "description" | "person_id" | "service_id" | "created_at" | "expires_at";
         /** @enum {string} */
         ApiKeyLocation: "query" | "header" | "cookie";
         ApiKeyPredicate: {
@@ -4711,7 +4711,7 @@ export interface components {
         } | {
             person_id: components["schemas"]["UuidOperator"];
         } | {
-            service_account_id: components["schemas"]["UuidOperator"];
+            service_id: components["schemas"]["UuidOperator"];
         } | {
             created_at: components["schemas"]["TimestampOperator"];
         } | {
@@ -4749,7 +4749,7 @@ export interface components {
             /** Format: uuid */
             person_id?: string | null;
             /** Format: uuid */
-            service_account_id?: string | null;
+            service_id?: string | null;
         };
         ApiKeyUpdate: {
             description?: string | null;
@@ -5649,7 +5649,7 @@ export interface components {
             expires_at?: string | null;
             permissions_to_grant: components["schemas"]["PermissionsToGrant"];
             /** Format: uuid */
-            service_account_id?: string | null;
+            service_id?: string | null;
         };
         NewBlock: {
             additional_data?: unknown;
@@ -5878,7 +5878,7 @@ export interface components {
             /** Format: date-time */
             started_at: string;
         };
-        NewServiceAccount: {
+        NewService: {
             description?: string | null;
             users: string[];
         };
@@ -6462,12 +6462,12 @@ export interface components {
             field?: components["schemas"]["ProjectField"];
         };
         OrderByProjectFieldSet: components["schemas"]["OrderByProjectField"] | components["schemas"]["OrderByProjectField"][];
-        OrderByServiceAccountField: {
+        OrderByServiceField: {
             /** @default true */
             desc?: boolean;
-            field?: components["schemas"]["ServiceAccountField"];
+            field?: components["schemas"]["ServiceField"];
         };
-        OrderByServiceAccountFieldSet: components["schemas"]["OrderByServiceAccountField"] | components["schemas"]["OrderByServiceAccountField"][];
+        OrderByServiceFieldSet: components["schemas"]["OrderByServiceField"] | components["schemas"]["OrderByServiceField"][];
         OrderBySpecimenField: {
             /** @default true */
             desc?: boolean;
@@ -7327,7 +7327,7 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        ServiceAccount: {
+        Service: {
             /** Format: date-time */
             created_at: string;
             description?: string | null;
@@ -7340,8 +7340,8 @@ export interface components {
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
-        ServiceAccountField: "id" | "description" | "owned_by" | "created_at";
-        ServiceAccountPredicate: {
+        ServiceField: "id" | "description" | "owned_by" | "created_at";
+        ServicePredicate: {
             id: components["schemas"]["UuidOperator"];
         } | {
             description: components["schemas"]["StringOperator"];
@@ -7350,15 +7350,15 @@ export interface components {
         } | {
             created_at: components["schemas"]["TimestampOperator"];
         };
-        ServiceAccountPredicateFilter: {
-            all_of: components["schemas"]["ServiceAccountPredicateFilter"][];
+        ServicePredicateFilter: {
+            all_of: components["schemas"]["ServicePredicateFilter"][];
         } | {
-            any_of: components["schemas"]["ServiceAccountPredicateFilter"][];
+            any_of: components["schemas"]["ServicePredicateFilter"][];
         } | {
-            not: components["schemas"]["ServiceAccountPredicateFilter"];
-        } | components["schemas"]["ServiceAccountPredicate"];
-        ServiceAccountPredicateQuery: {
-            filter?: components["schemas"]["ServiceAccountPredicateFilter"] | null;
+            not: components["schemas"]["ServicePredicateFilter"];
+        } | components["schemas"]["ServicePredicate"];
+        ServicePredicateQuery: {
+            filter?: components["schemas"]["ServicePredicateFilter"] | null;
             /**
              * Format: int64
              * @default null
@@ -7369,7 +7369,7 @@ export interface components {
              * @default 0
              */
             offset?: number;
-            order_by?: components["schemas"]["OrderByServiceAccountFieldSet"];
+            order_by?: components["schemas"]["OrderByServiceFieldSet"];
         };
         /** @enum {string} */
         Species: "ambystoma_mexicanum" | "canis_familiaris" | "callithrix_jacchus" | "drosophila_melanogaster" | "gasterosteus_aculeatus" | "homo_sapiens" | "mus_musculus" | "rattus_norvegicus" | "sminthopsis_crassicaudata";
@@ -8173,7 +8173,7 @@ export type NewOcmChipLoading = components['schemas']['NewOcmChipLoading'];
 export type NewOcmGemWell = components['schemas']['NewOcmGemWell'];
 export type NewPerson = components['schemas']['NewPerson'];
 export type NewProject = components['schemas']['NewProject'];
-export type NewServiceAccount = components['schemas']['NewServiceAccount'];
+export type NewService = components['schemas']['NewService'];
 export type NewSpecimen = components['schemas']['NewSpecimen'];
 export type NewSpecimenCommonFields = components['schemas']['NewSpecimenCommonFields'];
 export type NewSpecimenMeasurement = components['schemas']['NewSpecimenMeasurement'];
@@ -8207,8 +8207,8 @@ export type OrderByPersonField = components['schemas']['OrderByPersonField'];
 export type OrderByPersonFieldSet = components['schemas']['OrderByPersonFieldSet'];
 export type OrderByProjectField = components['schemas']['OrderByProjectField'];
 export type OrderByProjectFieldSet = components['schemas']['OrderByProjectFieldSet'];
-export type OrderByServiceAccountField = components['schemas']['OrderByServiceAccountField'];
-export type OrderByServiceAccountFieldSet = components['schemas']['OrderByServiceAccountFieldSet'];
+export type OrderByServiceField = components['schemas']['OrderByServiceField'];
+export type OrderByServiceFieldSet = components['schemas']['OrderByServiceFieldSet'];
 export type OrderBySpecimenField = components['schemas']['OrderBySpecimenField'];
 export type OrderBySpecimenFieldSet = components['schemas']['OrderBySpecimenFieldSet'];
 export type OrderBySuspensionField = components['schemas']['OrderBySuspensionField'];
@@ -8256,11 +8256,11 @@ export type SchemaObject = components['schemas']['SchemaObject'];
 export type SecurityScheme = components['schemas']['SecurityScheme'];
 export type Server = components['schemas']['Server'];
 export type ServerVariable = components['schemas']['ServerVariable'];
-export type ServiceAccount = components['schemas']['ServiceAccount'];
-export type ServiceAccountField = components['schemas']['ServiceAccountField'];
-export type ServiceAccountPredicate = components['schemas']['ServiceAccountPredicate'];
-export type ServiceAccountPredicateFilter = components['schemas']['ServiceAccountPredicateFilter'];
-export type ServiceAccountPredicateQuery = components['schemas']['ServiceAccountPredicateQuery'];
+export type Service = components['schemas']['Service'];
+export type ServiceField = components['schemas']['ServiceField'];
+export type ServicePredicate = components['schemas']['ServicePredicate'];
+export type ServicePredicateFilter = components['schemas']['ServicePredicateFilter'];
+export type ServicePredicateQuery = components['schemas']['ServicePredicateQuery'];
 export type Species = components['schemas']['Species'];
 export type SpeciesOperator = components['schemas']['SpeciesOperator'];
 export type SpecimenCompact = components['schemas']['SpecimenCompact'];
@@ -8326,7 +8326,7 @@ type ReadonlyArray<T> = [
 export const pathsFileAuthDataset_typeDataset_idGetParametersPathDataset_typeValues: ReadonlyArray<FlattenedDeepRequired<paths>["/file-auth/{dataset_type}/{dataset_id}"]["get"]["parameters"]["path"]["dataset_type"]> = ["chromium-datasets"];
 export const pathsFileAuthDataset_typeDataset_idFile_pathGetParametersPathDataset_typeValues: ReadonlyArray<FlattenedDeepRequired<paths>["/file-auth/{dataset_type}/{dataset_id}/{*file_path}"]["get"]["parameters"]["path"]["dataset_type"]> = ["chromium-datasets"];
 export const actionValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Action"]> = ["create", "update", "delete"];
-export const apiKeyFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ApiKeyField"]> = ["id", "description", "person_id", "service_account_id", "created_at", "expires_at"];
+export const apiKeyFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ApiKeyField"]> = ["id", "description", "person_id", "service_id", "created_at", "expires_at"];
 export const apiKeyLocationValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ApiKeyLocation"]> = ["query", "header", "cookie"];
 export const blockEmbeddingMatrixValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["BlockEmbeddingMatrix"]> = ["carboxymethyl_cellulose", "optimal_cutting_temperature_compound", "paraffin"];
 export const blockFixativeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["BlockFixative"]> = ["formaldehyde_derivative"];
@@ -8353,7 +8353,7 @@ export const picogramValues: ReadonlyArray<FlattenedDeepRequired<components>["sc
 export const projectFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ProjectField"]> = ["id", "name", "started_at", "ended_at"];
 export const queryStyleValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["QueryStyle"]> = ["form", "spaceDelimited", "pipeDelimited", "deepObject"];
 export const sampleMultiplexingValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SampleMultiplexing"]> = ["cellplex", "flex_barcode", "flex_oligonucleotide_barcode", "hashtag", "on_chip_multiplexing", "singleplex"];
-export const serviceAccountFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ServiceAccountField"]> = ["id", "description", "owned_by", "created_at"];
+export const serviceAccountFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ServiceField"]> = ["id", "description", "owned_by", "created_at"];
 export const speciesValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Species"]> = ["ambystoma_mexicanum", "canis_familiaris", "callithrix_jacchus", "drosophila_melanogaster", "gasterosteus_aculeatus", "homo_sapiens", "mus_musculus", "rattus_norvegicus", "sminthopsis_crassicaudata"];
 export const specimenFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SpecimenField"]> = ["id", "readable_id", "name", "submitted_by", "project_id", "received_at", "species", "host_species", "returned_at", "returned_by", "type", "embedded_in", "fixative", "thermal_preservation_method", "tissue", "additional_data"];
 export const specimenTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SpecimenType"]> = ["block", "cell_pellet", "rna_extract", "suspension", "tissue"];

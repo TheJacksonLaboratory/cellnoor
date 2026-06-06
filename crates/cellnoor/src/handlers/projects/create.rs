@@ -1,5 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::project::{NewProject, ProjectDetailed, ProjectField};
+use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
@@ -36,18 +37,35 @@ async fn insert_project(
     select_project_by_id(tx, id).await
 }
 
-impl AsFieldValuePairs<ProjectField, 3> for NewProject {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, ProjectField, 3> {
+struct NewProjectWithCreator<'a> {
+    record: &'a NewProject,
+    created_by_person: Option<Uuid>,
+    created_by_service: Option<Uuid>,
+}
+
+impl AsFieldValuePairs<ProjectField, 5> for NewProjectWithCreator<'_> {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, ProjectField, 5> {
         use ProjectField::*;
 
         let Self {
-            name,
-            started_at,
-            ended_at,
-            members: _,
+            record:
+                NewProject {
+                    name,
+                    started_at,
+                    ended_at,
+                    members: _,
+                },
+            created_by_person,
+            created_by_service,
         } = self;
 
-        [(Name, name), (StartedAt, started_at), (EndedAt, ended_at)]
+        [
+            (Name, name),
+            (StartedAt, started_at),
+            (EndedAt, ended_at),
+            (CreatedByPerson, created_by_person),
+            (CreatedByService, created_by_service),
+        ]
     }
 }
 

@@ -16,7 +16,7 @@ pub enum ApiKeyPredicate {
     Id(UuidOperator),
     Description(StringOperator),
     PersonId(UuidOperator),
-    ServiceAccountId(UuidOperator),
+    ServiceId(UuidOperator),
     CreatedAt(TimestampOperator),
     ExpiresAt(TimestampOperator),
 }

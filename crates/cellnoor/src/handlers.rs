@@ -13,7 +13,7 @@ pub mod people;
 pub mod projects;
 #[cfg(test)]
 mod security_tests;
-pub mod service_accounts;
+pub mod services;
 pub mod specimens;
 pub mod suspension_pools;
 pub mod suspensions;

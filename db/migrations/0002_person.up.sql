@@ -15,7 +15,8 @@ create table person (
     image text,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now(),
-    is_staff boolean not null default false,
+    can_admin_all_projects boolean not null default false,
+    can_admin_users boolean not null default false,
     orcid case_insensitive_text unique
 );
 
@@ -34,18 +35,20 @@ create table person_account (
 
 -- It would be nice to use better-auth's built-in utility for "institution-owned API keys", but it doesn't really work
 -- with Postgres's row-level security
-create table service_account (
+create table service (
     id uuid primary key default uuidv7(),
     description case_insensitive_text,
     owned_by uuid references person not null default current_user::uuid,
+    can_admin_all_projects boolean not null default false,
+    can_admin_users boolean not null default false,
     created_at timestamptz not null default now()
 );
 
-create table service_account_access (
-    service_account_id uuid references service_account on delete cascade not null,
+create table service_access (
+    service_id uuid references service on delete cascade not null,
     person_id uuid references person on delete cascade not null,
 
-    primary key (service_account_id, person_id)
+    primary key (service_id, person_id)
 );
 
 -- Now, an API key can be owned by either a person or a service account. We don't use better-auth's system here because
@@ -55,10 +58,10 @@ create table api_key (
     description case_insensitive_text,
     hashed_key bytea unique not null,
     person_id uuid references person on delete cascade,
-    service_account_id uuid references service_account on delete cascade,
+    service_id uuid references service on delete cascade,
     created_at timestamptz not null default now(),
     expires_at timestamptz,
 
-    constraint has_account check ((person_id is null) != (service_account_id is null)),
+    constraint has_owner check ((person_id is null) != (service_id is null)),
     constraint created_before_expires check (created_at <= expires_at)
 );

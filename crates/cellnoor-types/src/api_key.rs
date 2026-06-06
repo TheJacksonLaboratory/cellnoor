@@ -4,24 +4,19 @@ use nonempty::NonemptyString;
 pub use query::{ApiKeyField, ApiKeyPredicate, ApiKeyQuery, SimpleApiKeyQuery};
 use uuid::Uuid;
 
-use crate::person::{PermissionsToGrant, PermissionsToRevoke};
-
 mod query;
 
 #[base_model]
 pub struct NewApiKey {
     pub description: Option<NonemptyString>,
-    pub service_account_id: Option<Uuid>,
+    pub service_id: Option<Uuid>,
     pub expires_at: Option<Timestamp>,
-    pub permissions_to_grant: PermissionsToGrant,
 }
 
 #[base_model]
 pub struct ApiKeyUpdate {
     pub description: Option<NonemptyString>,
     pub expires_at: Option<Timestamp>,
-    pub permissions_to_grant: Option<PermissionsToGrant>,
-    pub permissions_to_revoke: Option<PermissionsToRevoke>,
 }
 
 #[select]
@@ -30,7 +25,7 @@ pub struct ApiKeyRecord {
     pub id: Uuid,
     pub description: Option<NonemptyString>,
     pub person_id: Option<Uuid>,
-    pub service_account_id: Option<Uuid>,
+    pub service_id: Option<Uuid>,
     pub created_at: Timestamp,
     pub expires_at: Option<Timestamp>,
 }

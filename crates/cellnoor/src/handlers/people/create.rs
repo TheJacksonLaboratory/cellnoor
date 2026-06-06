@@ -2,27 +2,21 @@ use std::sync::LazyLock;
 
 use axum::{Json, extract::State};
 use cellnoor_types::person::{
-    NewPerson, NewPersonRecord, PermissionsToGrant, PermissionsToRevoke, Person, PersonField,
+    Action, NewPerson, NewPersonRecord, PermissionsToGrant, PermissionsToRevoke, Person,
+    PersonField, ResourcePermission,
 };
 use nonempty::NonemptyString;
+use postgres_types::ToSql;
 use regex::Regex;
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs},
+    db::{self, AsFieldValuePairs, SqlBuilder},
     error::{Error, ErrorInner},
-    handlers::people::{
-        create::db_user::{
-            create_db_user, grant_createrole, grant_permissions_to_db_user,
-            modify_person_permissions, revoke_permissions_from_db_user,
-        },
-        show::select_person_by_id,
-    },
+    handlers::people::show::select_person_by_id,
     state::AppState,
 };
-
-mod db_user;
 
 pub async fn create_person(
     State(state): State<AppState>,
@@ -51,40 +45,88 @@ async fn insert_person(
 
     let id = db::insert_into(tx, "person", record).await?;
 
-    let revoke = PermissionsToRevoke::default();
-    let (_, person) = tokio::try_join!(
-        provision_db_user(tx, id, permissions_to_grant, &revoke),
-        select_person_by_id(tx, id)
-    )?;
+    let person = select_person_by_id(&tx, id).await?;
+
+    create_db_user(tx, *person.record.id, permissions_to_grant).await?;
 
     Ok(person)
 }
 
-pub(in super::super) async fn provision_db_user(
+async fn create_db_user(
     tx: &db::Transaction<'_>,
     user_id: Uuid,
-    permissions_to_grant: &PermissionsToGrant,
-    permissions_to_revoke: &PermissionsToRevoke,
+    permissions: &PermissionsToGrant,
 ) -> Result<(), ErrorInner> {
-    tx.acquire_user_permisssions_lock().await?;
+    let permission_sets: Vec<_> = permissions
+        .iter()
+        .map(permission_to_permission_set)
+        .collect();
 
-    create_db_user(tx, user_id).await?;
-    // It's necessary for a user to have this permission so they can create API keys
-    // for themselves. It's totally secure because they can't grant permissions they
-    // don't have to a role they create
-    grant_createrole(tx, user_id).await?;
-    // In order to determine whether we should allow this user to grant permissions
-    // to others, we grant/revoke create person permissions first
-    let can_grant_to_others =
-        modify_person_permissions(tx, user_id, permissions_to_grant, permissions_to_revoke).await?;
-    grant_permissions_to_db_user(tx, user_id, permissions_to_grant, can_grant_to_others).await?;
-    revoke_permissions_from_db_user(tx, user_id, permissions_to_revoke).await?;
+    tx.execute_raw_sql(
+        "select create_person_user_with_permissions($1, $2)",
+        &[&user_id, &permission_sets],
+    )
+    .await?;
 
     Ok(())
 }
 
-impl AsFieldValuePairs<PersonField, 5> for NewPersonRecord {
-    fn as_field_value_pairs(&self) -> db::FieldValuePairs<'_, PersonField, 5> {
+#[derive(Debug, ToSql)]
+#[postgres(name = "permission_set")]
+pub(in super::super) struct PermissionSet {
+    pub tableset: &'static str,
+    pub actions: String,
+}
+
+pub(in super::super) fn permission_to_permission_set(
+    permission: &ResourcePermission,
+) -> PermissionSet {
+    PermissionSet {
+        tableset: permission_as_tableset(permission),
+        actions: action_list_to_str(permission),
+    }
+}
+
+fn permission_as_tableset(permission: &ResourcePermission) -> &'static str {
+    match permission {
+        ResourcePermission::Institution(_) => "institution",
+        ResourcePermission::Person(_) => "person",
+        ResourcePermission::Project(_) => "project, project_access",
+        ResourcePermission::Specimen(_) => "specimen",
+        ResourcePermission::AssayConstantData(_) => {
+            "tenx_assay, index_kit, single_index_set, dual_index_set, library_type_specification, \
+             multiplexing_tag"
+        }
+        ResourcePermission::ChromiumExperimentalData(_) => {
+            "suspension, suspension_measurement, suspension_preparer, suspension_pool, \
+             suspension_pool_measurement, suspension_pool_preparer, chromium_run, gem_well, \
+             chip_loading, cdna, cdna_measurement, cdna_preparer, library, library_measurement, \
+             library_preparer"
+        }
+        ResourcePermission::ChromiumDataset(_) => {
+            "chromium_dataset, chromium_dataset_raw_file, chromium_dataset_parsed_file, \
+             chromium_dataset_library"
+        }
+    }
+}
+
+fn action_list_to_str(permission: &ResourcePermission) -> String {
+    let actions = match permission {
+        ResourcePermission::Institution(a)
+        | ResourcePermission::Person(a)
+        | ResourcePermission::Project(a)
+        | ResourcePermission::Specimen(a)
+        | ResourcePermission::AssayConstantData(a)
+        | ResourcePermission::ChromiumExperimentalData(a)
+        | ResourcePermission::ChromiumDataset(a) => a,
+    };
+
+    let actions: Vec<_> = actions.iter().map(Action::as_str).collect();
+    actions.join(", ")
+}
+
+impl AsFieldValuePairs<PersonField, 6> for NewPersonRecord {
+    fn as_field_value_pairs(&self) -> db::FieldValuePairs<'_, PersonField, 6> {
         use PersonField::*;
 
         let Self {
@@ -92,7 +134,8 @@ impl AsFieldValuePairs<PersonField, 5> for NewPersonRecord {
             name,
             email,
             institution_id,
-            is_staff,
+            can_admin_all_projects,
+            can_admin_users,
             orcid,
         } = self;
 
@@ -100,7 +143,8 @@ impl AsFieldValuePairs<PersonField, 5> for NewPersonRecord {
             (Name, name),
             (InstitutionId, institution_id),
             (Email, email),
-            (IsStaff, is_staff),
+            (CanAdminAllProjects, can_admin_all_projects),
+            (CanAdminUsers, can_admin_users),
             (Orcid, orcid),
         ]
     }
@@ -134,7 +178,9 @@ pub(super) fn validate_email(email: Option<&str>) -> Result<(), ErrorInner> {
 pub mod test {
     use cellnoor_types::{
         id::NoId,
-        person::{Action, NewPerson, NewPersonRecord, Person, ResourcePermission},
+        person::{
+            Action, NewPerson, NewPersonRecord, PermissionsToGrant, Person, ResourcePermission,
+        },
     };
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
@@ -164,7 +210,8 @@ pub mod test {
                 name: Uuid::new_v4().to_string().to_nonempty_string(),
                 institution_id: *institution.record.id,
                 email: Some(format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string()),
-                is_staff: false,
+                can_admin_all_projects: false,
+                can_admin_users: false,
                 orcid: None,
             },
             permissions_to_grant: vec![].into(),
@@ -194,10 +241,10 @@ pub mod test {
         // Create a new person with permissions to create every entity in the chain from
         // an institution to a Chromium dataset
         let (_, person) = insert_test_person_and_institution(&tx, |p| {
-            p.record.is_staff = false;
+            p.record.can_admin_all_projects = false;
             p.permissions_to_grant = vec![
                 ResourcePermission::Institution(vec![Action::Create]),
-                ResourcePermission::Person(vec![Action::Create]),
+                ResourcePermission::Person(vec![Action::Create, Action::Update, Action::Delete]),
                 ResourcePermission::Project(vec![Action::Create]),
                 ResourcePermission::Specimen(vec![Action::Create]),
                 ResourcePermission::AssayConstantData(vec![Action::Create]),

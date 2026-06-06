@@ -2,13 +2,15 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use cellnoor_types::person::{PermissionsToGrant, PermissionsToRevoke};
+use deadpool_postgres::tokio_postgres::error::{DbError, SqlState};
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
     db,
     error::{Error, ErrorInner},
-    handlers::{IdParam, people::delete::drop_db_user},
+    handlers::IdParam,
     state::AppState,
 };
 
@@ -28,7 +30,7 @@ pub async fn delete_api_key(
 }
 
 async fn delete_api_key_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    tokio::try_join!(db::delete_by_id(tx, "api_key", id), drop_db_user(tx, id))?;
+    db::delete_by_id(tx, "api_key", id).await?;
 
     Ok(())
 }
