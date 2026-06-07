@@ -26,10 +26,7 @@ enum DbUser {
     App,
     PersonApiKey(PersonId),
     ServiceApiKey(ServiceId),
-    Jwt {
-        user_id: PersonId,
-        can_read_all_projects: bool,
-    },
+    Jwt { user_id: PersonId, is_staff: bool },
 }
 
 /// An authenticated user.
@@ -54,13 +51,13 @@ impl AuthUser {
         }
     }
 
-    pub fn can_read_all_projects(&self) -> Option<bool> {
+    pub fn is_staff(&self) -> Option<bool> {
         if let Self(DbUser::Jwt {
             user_id: _,
-            can_read_all_projects,
+            is_staff,
         }) = self
         {
-            return Some(*can_read_all_projects);
+            return Some(*is_staff);
         }
 
         None
@@ -129,14 +126,14 @@ impl AuthUser {
     pub fn new_as_admin() -> Self {
         Self(DbUser::Jwt {
             user_id: PersonId::new(Uuid::nil()),
-            can_read_all_projects: true,
+            is_staff: true,
         })
     }
 
     pub fn new_as_user(user_id: Uuid) -> Self {
         Self(DbUser::Jwt {
             user_id: PersonId::new(user_id),
-            can_read_all_projects: false,
+            is_staff: false,
         })
     }
 }

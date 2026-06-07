@@ -65,7 +65,7 @@ impl AsPredicate for ServicePredicate {
         let sql = match self {
             Self::Id(u) | Self::OwnedBy(u) => u.as_sql_operator_and_value(),
             Self::Description(s) => s.as_sql_operator_and_value(),
-            Self::CanReadAllProjects(b) | Self::CanAdminUsers(b) => b.as_sql_operator_and_value(),
+            Self::IsStaff(b) | Self::CanAdminUsers(b) => b.as_sql_operator_and_value(),
             Self::CreatedAt(t) => t.as_sql_operator_and_value(),
         };
 

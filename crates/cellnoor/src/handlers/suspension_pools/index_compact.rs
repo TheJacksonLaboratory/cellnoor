@@ -58,10 +58,8 @@ impl AsPredicate for SuspensionPoolPredicate {
             Self::SuspensionPool(p) => match p {
                 SuspensionPoolPredicateInner::Id(u) => u.as_sql_operator_and_value(),
                 SuspensionPoolPredicateInner::Name(s)
-                | SuspensionPoolPredicateInner::ReadableId(s)
-                | SuspensionPoolPredicateInner::MultiplexingType(s) => {
-                    s.as_sql_operator_and_value()
-                }
+                | SuspensionPoolPredicateInner::ReadableId(s) => s.as_sql_operator_and_value(),
+                SuspensionPoolPredicateInner::MultiplexingType(s) => s.as_sql_operator_and_value(),
                 SuspensionPoolPredicateInner::PooledAt(t) => t.as_sql_operator_and_value(),
                 SuspensionPoolPredicateInner::AdditionalData(j) => j.as_sql_operator_and_value(),
             },

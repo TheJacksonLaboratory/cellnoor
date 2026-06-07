@@ -11,7 +11,7 @@ mod query;
 #[base_model]
 pub struct NewServiceRecord {
     pub description: Option<NonemptyString>,
-    pub can_read_all_projects: bool,
+    pub is_staff: bool,
     pub can_admin_users: bool,
 }
 
@@ -29,7 +29,7 @@ pub struct Service {
     pub id: Uuid,
     pub description: Option<NonemptyString>,
     pub owned_by: Uuid,
-    pub can_read_all_projects: bool,
+    pub is_staff: bool,
     pub can_admin_users: bool,
     pub created_at: Timestamp,
 }

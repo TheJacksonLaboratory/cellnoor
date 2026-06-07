@@ -13,8 +13,7 @@ use crate::{
     db::{self},
     error::{Error, ErrorInner},
     handlers::{
-        IdParam,
-        people::create::permission_to_permission_set,
+        IdParam, people::create::permission_to_permission_set,
         services::index::select_service_by_id,
     },
     state::AppState,
@@ -115,7 +114,7 @@ mod test {
         let update = ServiceUpdate {
             record: NewServiceRecord {
                 description: Some("updated".to_nonempty_string()),
-                can_read_all_projects: false,
+                is_staff: false,
                 can_admin_users: false,
             },
             permissions_to_grant: None,

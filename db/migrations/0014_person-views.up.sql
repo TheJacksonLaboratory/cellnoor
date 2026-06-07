@@ -4,7 +4,7 @@ create view person_public as (
         name,
         email,
         institution_id,
-        can_read_all_projects,
+        is_staff,
         can_admin_users,
         orcid
     from person

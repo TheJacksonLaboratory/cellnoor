@@ -1,10 +1,21 @@
-use macro_attributes::{base_model, predicate_enum, sort_field_enum};
+use macro_attributes::{base_model, predicate_enum, sort_field_enum, unit_enum};
 
 use crate::{
     operator::{JsonOperator, StringOperator, TimestampOperator, UuidOperator},
-    query::{ComplexQuery, SimpleQuery, filter::Filter},
+    query::{
+        ComplexQuery, SimpleQuery,
+        filter::{Filter, Operator},
+    },
     specimen::SpecimenPredicate,
 };
+
+#[unit_enum]
+pub enum MultiplexingType {
+    ExogenousTag,
+    Genetic,
+}
+
+pub type MultiplexingTypeOperator = Operator<MultiplexingType>;
 
 #[predicate_enum]
 #[strum(prefix = "(suspension_pool).")]
@@ -17,7 +28,7 @@ pub enum SuspensionPoolPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),
     Name(StringOperator),
-    MultiplexingType(StringOperator),
+    MultiplexingType(MultiplexingTypeOperator),
     PooledAt(TimestampOperator),
     AdditionalData(JsonOperator),
 }

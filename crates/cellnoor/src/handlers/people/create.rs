@@ -2,8 +2,7 @@ use std::sync::LazyLock;
 
 use axum::{Json, extract::State};
 use cellnoor_types::person::{
-    Action, NewPerson, NewPersonRecord, PermissionsToGrant, Person,
-    PersonField, ResourcePermission,
+    Action, NewPerson, NewPersonRecord, PermissionsToGrant, Person, PersonField, ResourcePermission,
 };
 use nonempty::NonemptyString;
 use postgres_types::ToSql;
@@ -134,7 +133,7 @@ impl AsFieldValuePairs<PersonField, 6> for NewPersonRecord {
             name,
             email,
             institution_id,
-            can_read_all_projects,
+            is_staff,
             can_admin_users,
             orcid,
         } = self;
@@ -143,7 +142,7 @@ impl AsFieldValuePairs<PersonField, 6> for NewPersonRecord {
             (Name, name),
             (InstitutionId, institution_id),
             (Email, email),
-            (CanReadAllProjects, can_read_all_projects),
+            (IsStaff, is_staff),
             (CanAdminUsers, can_admin_users),
             (Orcid, orcid),
         ]
@@ -178,9 +177,7 @@ pub(super) fn validate_email(email: Option<&str>) -> Result<(), ErrorInner> {
 pub mod test {
     use cellnoor_types::{
         id::NoId,
-        person::{
-            Action, NewPerson, NewPersonRecord, Person, ResourcePermission,
-        },
+        person::{Action, NewPerson, NewPersonRecord, Person, ResourcePermission},
     };
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
@@ -209,7 +206,7 @@ pub mod test {
                 name: Uuid::new_v4().to_string().to_nonempty_string(),
                 institution_id: *institution.record.id,
                 email: Some(format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string()),
-                can_read_all_projects: false,
+                is_staff: false,
                 can_admin_users: false,
                 orcid: None,
             },
@@ -240,7 +237,7 @@ pub mod test {
         // Create a new person with permissions to create every entity in the chain from
         // an institution to a Chromium dataset
         let (_, person) = insert_test_person_and_institution(&tx, |p| {
-            p.record.can_read_all_projects = false;
+            p.record.is_staff = false;
             p.permissions_to_grant = vec![
                 ResourcePermission::Institution(vec![Action::Create]),
                 ResourcePermission::Person(vec![Action::Create, Action::Update, Action::Delete]),

@@ -12,7 +12,7 @@ pub enum ServicePredicate {
     Id(UuidOperator),
     Description(StringOperator),
     OwnedBy(UuidOperator),
-    CanReadAllProjects(BoolOperator),
+    IsStaff(BoolOperator),
     CanAdminUsers(BoolOperator),
     CreatedAt(TimestampOperator),
 }

@@ -53,7 +53,7 @@ export const auth = betterAuth({
       institution_id: {
         type: "string",
       },
-      can_read_all_projects: {
+      is_staff: {
         type: "boolean"
       },
       can_admin_users: {

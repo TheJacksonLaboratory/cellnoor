@@ -25,7 +25,7 @@ mod record {
         pub name: NonemptyString,
         pub email: Option<NonemptyString>,
         pub institution_id: Uuid,
-        pub can_read_all_projects: bool,
+        pub is_staff: bool,
         pub can_admin_users: bool,
         pub orcid: Option<NonemptyString>,
     }

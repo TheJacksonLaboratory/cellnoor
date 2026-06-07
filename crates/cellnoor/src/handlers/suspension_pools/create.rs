@@ -3,6 +3,7 @@ use cellnoor_types::suspension_pool::{
     NewSuspensionPool, NewSuspensionPoolCommonFields, SuspensionPoolDetailed, SuspensionPoolField,
     TaggedSuspension,
 };
+use nonempty::NonemptyString;
 use uuid::Uuid;
 
 use crate::{
@@ -36,7 +37,7 @@ async fn insert_suspension_pool(
     tx: &db::Transaction<'_>,
     new: &NewSuspensionPool,
 ) -> Result<SuspensionPoolDetailed, ErrorInner> {
-    let multiplexing_type: &str = new.as_ref();
+    let multiplexing_type = NonemptyString::new(new.as_ref().to_owned()).unwrap();
 
     let (record, measurements, preparer_ids, suspensions) = match new {
         NewSuspensionPool::ExogenousTag {
@@ -79,7 +80,7 @@ async fn insert_suspension_pool(
         "suspension_pool",
         &NewSuspensionPoolRecord {
             record: &record,
-            multiplexing_type,
+            multiplexing_type: &multiplexing_type,
         },
     )
     .await?;
@@ -186,7 +187,7 @@ impl AsFieldValuePairs<&'static str, 3> for NewSuspensionPooling {
 
 struct NewSuspensionPoolRecord<'a> {
     record: &'a NewSuspensionPoolCommonFields,
-    multiplexing_type: &'a str,
+    multiplexing_type: &'a NonemptyString,
 }
 
 impl AsFieldValuePairs<SuspensionPoolField, 5> for NewSuspensionPoolRecord<'_> {
