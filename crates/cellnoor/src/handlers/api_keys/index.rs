@@ -79,7 +79,6 @@ mod test {
     use pretty_assertions::assert_eq;
 
     use crate::{
-        auth::AuthUser,
         db::test_utils::ensure_fields_are_selectable,
         handlers::api_keys::{create::test::insert_test_api_key, index::select_api_keys},
         state::test_util::db_client_as_admin,

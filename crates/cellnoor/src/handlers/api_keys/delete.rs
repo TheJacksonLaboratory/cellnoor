@@ -36,7 +36,6 @@ async fn delete_api_key_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), 
 #[cfg(test)]
 mod test {
     use crate::{
-        auth::AuthUser,
         handlers::api_keys::{create::test::insert_test_api_key, delete::delete_api_key_by_id},
         state::test_util::db_client_as_admin,
     };

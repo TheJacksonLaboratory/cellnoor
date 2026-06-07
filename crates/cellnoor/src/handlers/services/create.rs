@@ -94,7 +94,6 @@ impl AsFieldValuePairs<ServiceField, 3> for NewServiceRecord {
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
-        id::NoId,
         person::PermissionsToGrant,
         service::{NewService, NewServiceRecord, Service},
     };

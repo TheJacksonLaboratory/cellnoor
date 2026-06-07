@@ -98,10 +98,7 @@ async fn revoke_permissions(
 
 #[cfg(test)]
 mod test {
-    use cellnoor_types::{
-        id::NoId,
-        service::{NewService, NewServiceRecord, ServiceUpdate},
-    };
+    use cellnoor_types::service::{NewServiceRecord, ServiceUpdate};
 
     use crate::{
         handlers::services::{create::test::insert_test_service, update::update_service_by_id},

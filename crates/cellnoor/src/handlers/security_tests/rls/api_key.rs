@@ -9,7 +9,6 @@ use pretty_assertions::assert_eq;
 use uuid::Uuid;
 
 use crate::{
-    auth::AuthUser,
     db,
     error::ErrorInner,
     handlers::{

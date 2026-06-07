@@ -1,10 +1,9 @@
 use std::assert_matches;
 
 use cellnoor_types::{
-    id::NoId,
     operator::UuidOperator,
     service::{
-        NewService, NewServiceRecord, Service, ServicePredicate, ServiceQuery, ServiceUpdate,
+        NewServiceRecord, Service, ServicePredicate, ServiceQuery, ServiceUpdate,
     },
 };
 use pretty_assertions::assert_eq;

@@ -78,7 +78,7 @@ pub fn hash_api_key(api_key: &[u8]) -> [u8; 32] {
 #[cfg(test)]
 mod tests {
     use crate::{
-        auth::{AuthUser, api_key::fetch_api_key_record_by_hash},
+        auth::api_key::fetch_api_key_record_by_hash,
         handlers::api_keys::insert_test_api_key,
         state::test_util::{db_client_as_admin, db_client_as_app},
     };

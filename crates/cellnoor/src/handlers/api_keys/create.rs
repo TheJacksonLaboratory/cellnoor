@@ -116,7 +116,6 @@ pub mod test {
     use uuid::Uuid;
 
     use crate::{
-        auth::AuthUser,
         db,
         error::ErrorInner,
         handlers::api_keys::create::insert_api_key,
