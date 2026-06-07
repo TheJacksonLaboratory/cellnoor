@@ -10,7 +10,7 @@ use crate::{
     db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
     handlers::{
-        people::create::{PermissionSet, permission_to_permission_set},
+        people::create::permission_to_permission_set,
         services::{access::add_people::insert_service_accesses, index::select_service_by_id},
     },
     state::AppState,

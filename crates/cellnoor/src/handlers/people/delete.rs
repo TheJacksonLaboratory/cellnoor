@@ -2,8 +2,6 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::person::{PermissionsToGrant, PermissionsToRevoke};
-use deadpool_postgres::tokio_postgres::error::{DbError, SqlState};
 use uuid::Uuid;
 
 use crate::{

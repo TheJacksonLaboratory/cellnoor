@@ -1,6 +1,5 @@
 use cellnoor_types::api_key::PersonId;
 use jsonwebtoken::TokenData;
-use uuid::Uuid;
 
 use crate::{
     auth::{AuthUser, DbUser},

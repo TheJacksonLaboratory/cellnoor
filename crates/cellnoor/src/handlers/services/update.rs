@@ -4,7 +4,7 @@ use axum::{
 };
 use cellnoor_types::{
     person::{PermissionsToGrant, PermissionsToRevoke},
-    service::{NewService, Service, ServiceUpdate},
+    service::{Service, ServiceUpdate},
 };
 use uuid::Uuid;
 
@@ -14,8 +14,8 @@ use crate::{
     error::{Error, ErrorInner},
     handlers::{
         IdParam,
-        people::create::{PermissionSet, permission_to_permission_set},
-        services::{access::add_people::insert_service_accesses, index::select_service_by_id},
+        people::create::permission_to_permission_set,
+        services::index::select_service_by_id,
     },
     state::AppState,
 };

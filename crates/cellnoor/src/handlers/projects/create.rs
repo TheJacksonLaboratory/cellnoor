@@ -3,7 +3,6 @@ use cellnoor_types::{
     api_key::{PersonId, ServiceId},
     project::{NewProject, ProjectDetailed, ProjectField},
 };
-use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,

@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 
 use axum::{Json, extract::State};
 use cellnoor_types::person::{
-    Action, NewPerson, NewPersonRecord, PermissionsToGrant, PermissionsToRevoke, Person,
+    Action, NewPerson, NewPersonRecord, PermissionsToGrant, Person,
     PersonField, ResourcePermission,
 };
 use nonempty::NonemptyString;
@@ -12,7 +12,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, SqlBuilder},
+    db::{self, AsFieldValuePairs},
     error::{Error, ErrorInner},
     handlers::people::show::select_person_by_id,
     state::AppState,

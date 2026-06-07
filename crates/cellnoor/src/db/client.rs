@@ -1,4 +1,3 @@
-use cellnoor_types::person::ResourcePermission;
 use deadpool_postgres::{
     GenericClient, Object as InnerClient, Pool as InnerPool, PoolError,
     Transaction as InnerTransaction,
@@ -6,9 +5,8 @@ use deadpool_postgres::{
 };
 use futures::{Stream, StreamExt};
 use postgres_types::FromSqlOwned;
-use uuid::Uuid;
 
-use crate::{auth::AuthUser, db::Sql, error::ErrorInner};
+use crate::{auth::AuthUser, db::Sql};
 
 #[derive(Debug, Clone)]
 pub struct Pool(InnerPool);

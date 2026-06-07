@@ -2,9 +2,7 @@
 use std::slice::Iter;
 
 use macro_attributes::{base_model, unit_enum};
-use nonempty::NonemptyString;
 pub use query::{PersonField, PersonPredicate, PersonQuery, SimplePersonQuery};
-use uuid::Uuid;
 
 use crate::{
     id::{Id, NoId},

@@ -3,8 +3,7 @@ use axum::{
     extract::{Path, State},
 };
 use cellnoor_types::project::{NewProject, ProjectDetailed, ProjectField};
-use nonempty::NonemptyString;
-use uuid::{Timestamp, Uuid};
+use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,

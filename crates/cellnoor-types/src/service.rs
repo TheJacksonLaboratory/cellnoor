@@ -4,10 +4,7 @@ use nonempty::NonemptyString;
 pub use query::{ServiceField, ServicePredicate, ServiceQuery, SimpleServiceQuery};
 use uuid::Uuid;
 
-use crate::{
-    id::{Id, NoId},
-    person::{PermissionsToGrant, PermissionsToRevoke},
-};
+use crate::person::{PermissionsToGrant, PermissionsToRevoke};
 
 mod query;
 

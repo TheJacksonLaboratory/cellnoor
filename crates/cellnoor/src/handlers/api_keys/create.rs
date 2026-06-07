@@ -1,12 +1,8 @@
 use axum::{Json, extract::State};
-use cellnoor_types::{
-    api_key::{ApiKey, NewApiKey, PersonId, ServiceId},
-    person::{PermissionsToGrant, PermissionsToRevoke},
-};
+use cellnoor_types::api_key::{ApiKey, NewApiKey, PersonId, ServiceId};
 use jiff::Timestamp;
 use nonempty::NonemptyString;
 use rand::{RngExt, distr::Alphanumeric};
-use uuid::Uuid;
 
 use crate::{
     auth::{AuthUser, hash_api_key},
