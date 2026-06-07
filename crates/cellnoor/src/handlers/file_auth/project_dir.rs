@@ -30,7 +30,7 @@ pub async fn authorize_project_dir_access(
 ) -> Result<(), Error> {
     // If we know the user is staff without hitting the db (via the JWT), just
     // return OK
-    if user.is_staff().is_some_and(identity) {
+    if user.can_read_all_projects().is_some_and(identity) {
         return Ok(());
     }
 

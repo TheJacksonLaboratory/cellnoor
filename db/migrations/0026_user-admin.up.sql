@@ -1,13 +1,10 @@
+-- In order for the user `app` to view all the API keys, it needs to bypass RLS and also access them directly
 alter user app with bypassrls;
-
--- 'app' needs to be able to read API keys directly to authenticate people
 grant select on api_key to app;
 
--- In order for permission_grantor to give permissions to other roles, it needs permissions itself
+-- user_creator needs to create roles and have all permissions so that it can grant permissions. It also needs to bypass RLS
 grant all on all tables in schema public to user_creator with grant option;
-
--- It also needs to create roles
-alter user user_creator createrole;
+alter user user_creator createrole bypassrls;
 grant create on schema public to user_creator;
 
 create or replace function user_can_admin_users(user_id uuid) returns boolean language plpgsql volatile strict as $$
@@ -38,15 +35,15 @@ create or replace function _validate_user_can_admin_users(
 ) returns void language plpgsql volatile strict as $$
     begin
         if not user_can_admin_users(user_id) then
-            raise insufficient_privilege using message = 'user cannot admin other users';
+            raise insufficient_privilege using message = 'permission denied to perform admin actions on users';
         end if;
     end;
 $$;
 
-create or replace function _validate_user_is_person(user_id uuid) returns void language plpgsql volatile strict as $$
+create or replace function _validate_target_user_is_person(user_id uuid) returns void language plpgsql volatile strict as $$
     begin
         if not user_is_person(user_id) then
-            raise insufficient_privilege using message = 'user is not person';
+            raise check_violation using message = 'target user is not a person';
         end if;
     end;
 $$;
@@ -60,11 +57,11 @@ create or replace function _grant_permissions_to_person_as_user_creator(
         perm permission_set;
     begin
         perform _validate_user_can_admin_users(current_user_id);
-        perform _validate_user_is_person(target_user_id);
+        perform _validate_target_user_is_person(target_user_id);
 
         foreach perm in array permissions
         loop
-            execute format('grant %I on %I to %I', perm.actions, perm.tableset, target_user_id);
+            execute format('grant %s on %s to %I', perm.actions, perm.tableset, target_user_id);
         end loop;
     end;
 $$;
@@ -74,7 +71,7 @@ create or replace function _create_person_user_as_user_creator(
 ) returns void language plpgsql volatile strict security definer as $$
     begin
         perform _validate_user_can_admin_users(current_user_id);
-        perform _validate_user_is_person(target_user_id);
+        perform _validate_target_user_is_person(target_user_id);
 
         perform create_app_user_if_not_exists(target_user_id);
     end;
@@ -85,7 +82,7 @@ create or replace function _drop_person_user_as_user_creator(
 ) returns void language plpgsql volatile strict security definer as $$
     begin
         perform _validate_user_can_admin_users(current_user_id);
-        perform _validate_user_is_person(target_user_id);
+        perform _validate_target_user_is_person(target_user_id);
 
         execute format('revoke all on all tables in schema public from %I', target_user_id);
         execute format('drop user %I', target_user_id);
@@ -93,16 +90,16 @@ create or replace function _drop_person_user_as_user_creator(
 $$;
 
 create or replace function _revoke_permissions_from_person_as_user_creator(
-    current_user_id uuid, service_id uuid, permissions permission_set []
+    current_user_id uuid, target_user_id uuid, permissions permission_set []
 ) returns void language plpgsql volatile strict security definer as $$
     declare perm permission_set;
     begin
         perform _validate_user_can_admin_users(current_user_id);
-        perform _validate_user_is_person(target_user_id);
+        perform _validate_target_user_is_person(target_user_id);
 
         foreach perm in array permissions
         loop
-            execute format('revoke %I on %I from %I', perm.actions, perm.tableset, service_id);
+            execute format('revoke %s on %s from %I', perm.actions, perm.tableset, target_user_id);
         end loop;
     end;
 $$;
@@ -127,7 +124,7 @@ create or replace function create_person_user_with_permissions(
     end;
 $$;
 
-create or replace function revoke_permissions_from_service(
+create or replace function revoke_permissions_from_person(
     service_id uuid, permissions permission_set []
 ) returns void language plpgsql volatile strict as $$
     begin

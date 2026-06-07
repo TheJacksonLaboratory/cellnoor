@@ -90,9 +90,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, inserted) = insert_test_api_key(&tx, AuthUser::new_as_admin(), |_| ())
-            .await
-            .unwrap();
+        let (_, inserted) = insert_test_api_key(&tx, |_| ()).await.unwrap();
 
         let mut query =
             ApiKeyQuery::from_filter(ApiKeyPredicate::Id(UuidOperator::Eq(inserted.record.id)));

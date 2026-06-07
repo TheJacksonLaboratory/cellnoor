@@ -13,15 +13,15 @@ $$;
 
 alter table service enable row level security;
 
-create policy owner_can_insert_and_update_service on service with check (
-    (owned_by = current_user::uuid)
+create policy owner_can_insert_and_update_service on service using (
+    owned_by = current_user::uuid
     and ((not can_admin_users) or user_can_admin_users(current_user::uuid))
-    and ((not can_admin_all_projects) or current_person_can_admin_all_projects())
+    and ((not can_read_all_projects) or current_person_can_read_all_projects())
 );
+
 create policy select_service on service for select using (
     owned_by = current_user::uuid or current_user_has_access_to_service(service.id)
 );
-create policy delete_service on service for delete using (owned_by = current_user::uuid);
 
 -- This function seems like it'd be useful in the above RLS policies, but it would cause infinite recursion
 create or replace function current_user_is_service_owner(
@@ -40,9 +40,6 @@ $$;
 alter table service_access enable row level security;
 
 create policy anyone_can_see_service_access on service_access for select using (true);
-create policy owner_can_add_others on service_access with check (
-    current_user_is_service_owner(service_id)
-);
-create policy owner_can_remove_others on service_access for delete using (
+create policy owner_can_add_others on service_access using (
     current_user_is_service_owner(service_id)
 );

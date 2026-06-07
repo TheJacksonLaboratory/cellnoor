@@ -1,6 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
-    api_key::{ApiKey, NewApiKey},
+    api_key::{ApiKey, NewApiKey, PersonId, ServiceId},
     person::{PermissionsToGrant, PermissionsToRevoke},
 };
 use jiff::Timestamp;
@@ -25,7 +25,7 @@ pub async fn create_api_key(
 
     let tx = client.begin().await?;
 
-    let response = insert_api_key(&tx, user, &new_api_key).await.map(Json)?;
+    let response = insert_api_key(&tx, &new_api_key).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -34,7 +34,6 @@ pub async fn create_api_key(
 
 async fn insert_api_key(
     tx: &db::Transaction<'_>,
-    user: AuthUser,
     NewApiKey {
         description,
         service_id,
@@ -43,19 +42,19 @@ async fn insert_api_key(
 ) -> Result<ApiKey, ErrorInner> {
     let secret = generate_secret();
 
-    let person_id = match service_id {
-        Some(_) => None,
-        None => Some(user.id().ok_or(ErrorInner::Other {
-            message: "something went wrong".to_owned(),
-            sql_state: None,
-        })?),
+    // Note: we don't use tx.user().service_id() because firstly, it would be
+    // impossible for a service to create an API key for itself without an API key,
+    // and secondly, only people can create API keys
+    let (person_id, service_id) = match service_id {
+        Some(service_id) => (None, Some(*service_id)),
+        None => (tx.user().person_id(), None),
     };
 
     let record = NewApiKeyRecord {
         description: description.as_ref(),
         hashed_key: hash_api_key(secret.as_bytes()),
         person_id,
-        service_id: *service_id,
+        service_id,
         expires_at: *expires_at,
     };
 
@@ -69,8 +68,8 @@ async fn insert_api_key(
 struct NewApiKeyRecord<'a> {
     description: Option<&'a NonemptyString>,
     hashed_key: [u8; 32],
-    person_id: Option<Uuid>,
-    service_id: Option<Uuid>,
+    person_id: Option<PersonId>,
+    service_id: Option<ServiceId>,
     expires_at: Option<Timestamp>,
 }
 
@@ -130,7 +129,6 @@ pub mod test {
 
     pub async fn insert_test_api_key<F>(
         tx: &db::Transaction<'_>,
-        user: AuthUser,
         mut modify: F,
     ) -> Result<(NewApiKey, ApiKey), ErrorInner>
     where
@@ -144,7 +142,7 @@ pub mod test {
 
         modify(&mut new);
 
-        let inserted = insert_api_key(tx, user, &new).await?;
+        let inserted = insert_api_key(tx, &new).await?;
         Ok((new, inserted))
     }
 
@@ -153,8 +151,6 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        insert_test_api_key(&tx, AuthUser::new_as_admin(), |_| ())
-            .await
-            .unwrap();
+        insert_test_api_key(&tx, |_| ()).await.unwrap();
     }
 }

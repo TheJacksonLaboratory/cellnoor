@@ -134,7 +134,7 @@ impl AsFieldValuePairs<PersonField, 6> for NewPersonRecord {
             name,
             email,
             institution_id,
-            can_admin_all_projects,
+            can_read_all_projects,
             can_admin_users,
             orcid,
         } = self;
@@ -143,7 +143,7 @@ impl AsFieldValuePairs<PersonField, 6> for NewPersonRecord {
             (Name, name),
             (InstitutionId, institution_id),
             (Email, email),
-            (CanAdminAllProjects, can_admin_all_projects),
+            (CanReadAllProjects, can_read_all_projects),
             (CanAdminUsers, can_admin_users),
             (Orcid, orcid),
         ]
@@ -210,7 +210,7 @@ pub mod test {
                 name: Uuid::new_v4().to_string().to_nonempty_string(),
                 institution_id: *institution.record.id,
                 email: Some(format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string()),
-                can_admin_all_projects: false,
+                can_read_all_projects: false,
                 can_admin_users: false,
                 orcid: None,
             },
@@ -241,7 +241,7 @@ pub mod test {
         // Create a new person with permissions to create every entity in the chain from
         // an institution to a Chromium dataset
         let (_, person) = insert_test_person_and_institution(&tx, |p| {
-            p.record.can_admin_all_projects = false;
+            p.record.can_read_all_projects = false;
             p.permissions_to_grant = vec![
                 ResourcePermission::Institution(vec![Action::Create]),
                 ResourcePermission::Person(vec![Action::Create, Action::Update, Action::Delete]),
@@ -294,6 +294,7 @@ pub mod test {
         let create = vec![Action::Create];
 
         let grant_create_person = |p: &mut NewPerson| {
+            p.record.can_admin_users = true;
             p.permissions_to_grant = vec![
                 ResourcePermission::Institution(create.clone()),
                 ResourcePermission::Person(create.clone()),
@@ -315,23 +316,22 @@ pub mod test {
         let mut client = db_client_as_user(*person.record.id).await;
         let tx = client.begin().await.unwrap();
 
-        // The newly created person should be able to create another person, but giving
-        // them permissions to create a project should silently fail
+        // The newly created person should be able to create another person with the
+        // requested permissions
         let (_, person) = insert_test_person_and_institution(&tx, |p| {
-            p.permissions_to_grant = vec![ResourcePermission::Project(vec![Action::Create])].into()
+            p.permissions_to_grant =
+                vec![ResourcePermission::Institution(vec![Action::Create])].into()
         })
         .await
         .unwrap();
 
         tx.commit().await.unwrap();
 
-        // Finally, log in as the most newly created person
+        // Finally, log in as the most newly created person and ensure they have
+        // permission to do what they've been granted
         let mut client = db_client_as_user(*person.record.id).await;
         let tx = client.begin().await.unwrap();
 
-        // Ensure that they can't create a project
-        let error = insert_test_project(&tx, |_| ()).await.unwrap_err();
-
-        std::assert_matches!(error, ErrorInner::PermissionDenied { .. });
+        insert_test_institution(&tx, |_| ()).await.unwrap();
     }
 }

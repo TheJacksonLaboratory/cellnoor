@@ -107,6 +107,7 @@ pub mod test_util {
     use std::sync::Arc;
 
     use camino::Utf8PathBuf;
+    use cellnoor_types::api_key::PersonId;
     use nonempty::NonemptyString;
     #[cfg(test)]
     use uuid::Uuid;
@@ -117,15 +118,12 @@ pub mod test_util {
         state::{ProdState, StateCommon},
     };
 
-    fn test_state() -> ProdState {
+    fn new_test_state() -> ProdState {
         use std::env;
 
-        dotenvy::dotenv().ok();
-
-        let db_pool = db::Pool::from_url(
-            &env::var("CELLNOOR_TEST_DB_URL")
-                .expect("environment variables 'CELLNOOR_TEST_DB_URL' required for test"),
-        );
+        // This looks like it won't compile but it will when you run
+        // ./scripts/dev/test.sh
+        let db_pool = db::Pool::from_url(env!("CELLNOOR_TEST_DB_URL"));
 
         // Unit-tests don't use JSON web tokens, so we pass in an empty secret
         ProdState {
@@ -143,21 +141,22 @@ pub mod test_util {
         }
     }
 
-    static TEST_STATE: std::sync::LazyLock<ProdState> = std::sync::LazyLock::new(test_state);
-
     pub async fn db_client_as_app() -> db::Client {
-        TEST_STATE.db_client(AuthUser::new_as_app()).await.unwrap()
+        new_test_state()
+            .db_client(AuthUser::new_as_app())
+            .await
+            .unwrap()
     }
 
     pub async fn db_client_as_user(user: Uuid) -> db::Client {
-        TEST_STATE
+        new_test_state()
             .db_client(AuthUser::new_as_user(user))
             .await
             .unwrap()
     }
 
     pub async fn db_client_as_admin() -> db::Client {
-        TEST_STATE
+        new_test_state()
             .db_client(AuthUser::new_as_admin())
             .await
             .unwrap()

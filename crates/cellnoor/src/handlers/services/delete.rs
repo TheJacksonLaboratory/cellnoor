@@ -28,19 +28,15 @@ pub async fn delete_service(
 }
 
 async fn delete_service_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    tokio::try_join!(db::delete_by_id(tx, "service", id), drop_user(tx, id))?;
+    // These must be done sequentially (not concurrently)
+    drop_user(tx, id).await?;
+    db::delete_by_id(tx, "service", id).await?;
 
     Ok(())
 }
 
 async fn drop_user(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    tx.execute_raw_sql(
-        &format!(r#"revoke all on all tables in schema public from "{id}""#),
-        &[],
-    )
-    .await?;
-
-    tx.execute_raw_sql(&format!(r#"drop user "{id}""#), &[])
+    tx.execute_raw_sql("select drop_service_user($1)", &[&id])
         .await?;
 
     Ok(())
@@ -59,6 +55,6 @@ mod test {
         let tx = client.begin().await.unwrap();
 
         let (_, inserted) = insert_test_service(&tx, |_| ()).await.unwrap();
-        delete_service_by_id(&tx, *inserted.id).await.unwrap();
+        delete_service_by_id(&tx, inserted.id).await.unwrap();
     }
 }

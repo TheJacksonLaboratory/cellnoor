@@ -2,6 +2,7 @@ use aide::OperationIo;
 pub use api_key::hash_api_key;
 use axum::{RequestPartsExt, extract::FromRequestParts, http::HeaderValue};
 use axum_extra::extract::{CookieJar, cookie::Cookie};
+use cellnoor_types::api_key::{PersonId, ServiceId};
 use deadpool_postgres::PoolError;
 use uuid::Uuid;
 
@@ -23,8 +24,12 @@ mod jwt;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum DbUser {
     App,
-    ApiKey(Uuid),
-    Jwt { user_id: Uuid, is_staff: bool },
+    PersonApiKey(PersonId),
+    ServiceApiKey(ServiceId),
+    Jwt {
+        user_id: PersonId,
+        can_read_all_projects: bool,
+    },
 }
 
 /// An authenticated user.
@@ -35,20 +40,27 @@ enum DbUser {
 pub struct AuthUser(DbUser);
 
 impl AuthUser {
-    pub fn id(&self) -> Option<Uuid> {
+    pub fn person_id(&self) -> Option<PersonId> {
         match self.0 {
-            DbUser::App => None,
-            DbUser::Jwt { user_id: id, .. } | DbUser::ApiKey(id) => Some(id),
+            DbUser::App | DbUser::ServiceApiKey(_) => None,
+            DbUser::Jwt { user_id: id, .. } | DbUser::PersonApiKey(id) => Some(id),
         }
     }
 
-    pub fn is_staff(&self) -> Option<bool> {
+    pub fn service_id(&self) -> Option<ServiceId> {
+        match self.0 {
+            DbUser::App | DbUser::Jwt { .. } | DbUser::PersonApiKey(_) => None,
+            DbUser::ServiceApiKey(id) => Some(id),
+        }
+    }
+
+    pub fn can_read_all_projects(&self) -> Option<bool> {
         if let Self(DbUser::Jwt {
             user_id: _,
-            is_staff,
+            can_read_all_projects,
         }) = self
         {
-            return Some(*is_staff);
+            return Some(*can_read_all_projects);
         }
 
         None
@@ -57,9 +69,11 @@ impl AuthUser {
 
 impl std::fmt::Display for AuthUser {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.id()
-            .map(|id| std::fmt::Display::fmt(&id, f))
-            .unwrap_or_else(|| "app".fmt(f))
+        match self.0 {
+            DbUser::App => "app".fmt(f),
+            DbUser::Jwt { user_id, .. } | DbUser::PersonApiKey(user_id) => user_id.fmt(f),
+            DbUser::ServiceApiKey(id) => id.fmt(f),
+        }
     }
 }
 
@@ -72,7 +86,7 @@ impl FromRequestParts<AppState> for AuthUser {
     ) -> Result<Self, Self::Rejection> {
         let AppState::Prod(state) = state else {
             // The nil UUID corresponds to the admin user
-            return Ok(Self(DbUser::ApiKey(Uuid::nil())));
+            return Ok(Self(DbUser::PersonApiKey(PersonId::new(Uuid::nil()))));
         };
 
         let cookies = parts.extract::<CookieJar>().await.unwrap();
@@ -114,15 +128,15 @@ impl AuthUser {
 
     pub fn new_as_admin() -> Self {
         Self(DbUser::Jwt {
-            user_id: Uuid::nil(),
-            is_staff: true,
+            user_id: PersonId::new(Uuid::nil()),
+            can_read_all_projects: true,
         })
     }
 
     pub fn new_as_user(user_id: Uuid) -> Self {
         Self(DbUser::Jwt {
-            user_id,
-            is_staff: false,
+            user_id: PersonId::new(user_id),
+            can_read_all_projects: false,
         })
     }
 }
@@ -131,7 +145,7 @@ impl AuthUser {
 impl DevState {
     pub async fn db_client(&self) -> Result<db::Client, PoolError> {
         self.db_pool()
-            .get(AuthUser(DbUser::ApiKey(Uuid::nil())))
+            .get(AuthUser(DbUser::PersonApiKey(PersonId::new(Uuid::nil()))))
             .await
     }
 }

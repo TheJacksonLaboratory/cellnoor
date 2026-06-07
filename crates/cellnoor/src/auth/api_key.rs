@@ -38,7 +38,18 @@ impl ApiKeyExt for ApiKeyRecord {
             });
         }
 
-        Ok(AuthUser(DbUser::ApiKey(self.id)))
+        let user = match (self.person_id, self.service_id) {
+            (Some(id), None) => DbUser::PersonApiKey(id),
+            (None, Some(id)) => DbUser::ServiceApiKey(id),
+            _ => {
+                return Err(ErrorInner::Other {
+                    message: "API key belongs to both person and service".to_owned(),
+                    sql_state: None,
+                });
+            }
+        };
+
+        Ok(AuthUser(user))
     }
 }
 
@@ -77,9 +88,7 @@ mod tests {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, api_key) = insert_test_api_key(&tx, AuthUser::new_as_admin(), |_| ())
-            .await
-            .unwrap();
+        let (_, api_key) = insert_test_api_key(&tx, |_| ()).await.unwrap();
         tx.commit().await.unwrap();
 
         let mut client = db_client_as_app().await;

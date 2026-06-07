@@ -44,9 +44,8 @@ async fn user_cannot_update_unowned_service(client: &mut db::Client, service_id:
         service_id,
         &ServiceUpdate {
             record: NewServiceRecord {
-                id: NoId {},
                 description: Some("foo".to_nonempty_string()),
-                can_admin_all_projects: false,
+                can_read_all_projects: false,
                 can_admin_users: false,
             },
             permissions_to_grant: None,
@@ -117,14 +116,14 @@ async fn row_level_security_for_services() {
 
     let mut user1_client = db_client_as_user(user1_id).await;
 
-    user_cannot_update_unowned_service(&mut user1_client, *user2_svc_acct.id).await;
-    user_cannot_grant_access_to_unowned_service(&mut user1_client, *user2_svc_acct.id).await;
-    user_cannot_see_inaccessible_services(&mut user1_client, *user2_svc_acct.id).await;
+    user_cannot_update_unowned_service(&mut user1_client, user2_svc_acct.id).await;
+    user_cannot_grant_access_to_unowned_service(&mut user1_client, user2_svc_acct.id).await;
+    user_cannot_see_inaccessible_services(&mut user1_client, user2_svc_acct.id).await;
     user_can_only_see_accessible_services(&mut user1_client, &[user1_svc_acct.clone()]).await;
 
     // Now user1 grants access to user2
     let tx = user1_client.begin().await.unwrap();
-    insert_service_accesses(&tx, *user1_svc_acct.id, &[user2_id])
+    insert_service_accesses(&tx, user1_svc_acct.id, &[user2_id])
         .await
         .unwrap();
     tx.commit().await.unwrap();

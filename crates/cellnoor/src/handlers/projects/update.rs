@@ -2,12 +2,13 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::project::{NewProject, ProjectDetailed};
-use uuid::Uuid;
+use cellnoor_types::project::{NewProject, ProjectDetailed, ProjectField};
+use nonempty::NonemptyString;
+use uuid::{Timestamp, Uuid};
 
 use crate::{
     auth::AuthUser,
-    db::{self},
+    db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
     handlers::{
         IdParam,
@@ -37,11 +38,31 @@ async fn update_project_by_id(
     id: Uuid,
     updated_project: &NewProject,
 ) -> Result<ProjectDetailed, ErrorInner> {
-    db::update(tx, "project", id, updated_project).await?;
+    db::update(tx, "project", id, &ProjectUpdate(updated_project)).await?;
 
     insert_project_accesses(tx, id, &updated_project.members).await?;
 
     select_project_by_id(tx, id).await
+}
+
+// It's tempting to just reuse the `impl` for NewProjectWithCreator (see
+// ../create.rs) but we don't want to change the project creator once it's
+// created
+struct ProjectUpdate<'a>(&'a NewProject);
+
+impl AsFieldValuePairs<ProjectField, 3> for ProjectUpdate<'_> {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, ProjectField, 3> {
+        use ProjectField::*;
+
+        let Self(NewProject {
+            name,
+            started_at,
+            ended_at,
+            members: _,
+        }) = self;
+
+        [(Name, name), (StartedAt, started_at), (EndedAt, ended_at)]
+    }
 }
 
 #[cfg(test)]

@@ -1,3 +1,4 @@
+use cellnoor_types::api_key::PersonId;
 use jsonwebtoken::TokenData;
 use uuid::Uuid;
 
@@ -19,20 +20,14 @@ pub(super) fn authenticate_with_jwt(
 }
 
 impl AuthUser {
-    fn from_token_data(
-        TokenData {
-            header: _,
-            claims:
-                Claims {
-                    user: UserClaims { id, is_staff },
-                    iat: _,
-                    exp: _,
-                },
-        }: TokenData<Claims>,
-    ) -> Self {
+    fn from_token_data(token: TokenData<Claims>) -> Self {
+        let UserClaims {
+            id,
+            can_read_all_projects,
+        } = token.claims.user;
         AuthUser(DbUser::Jwt {
             user_id: id,
-            is_staff,
+            can_read_all_projects,
         })
     }
 }
@@ -48,6 +43,6 @@ struct Claims {
 #[allow(dead_code)]
 #[derive(serde::Deserialize)]
 struct UserClaims {
-    id: Uuid,
-    is_staff: bool,
+    id: PersonId,
+    can_read_all_projects: bool,
 }

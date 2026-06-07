@@ -17,7 +17,7 @@ with initial_data as (
 )
 
 insert into person (
-    id, name, email, email_verified, institution_id, can_admin_all_projects, can_admin_users, orcid
+    id, name, email, email_verified, institution_id, can_read_all_projects, can_admin_users, orcid
 )
 select
     uuid_nil(),
@@ -25,7 +25,7 @@ select
     admin_person ->> 'email',
     true,
     uuid_nil(),
-    (admin_person ->> 'can_admin_all_projects')::boolean,
+    (admin_person ->> 'can_read_all_projects')::boolean,
     true,
     admin_person ->> 'orcid'
 from initial_data;

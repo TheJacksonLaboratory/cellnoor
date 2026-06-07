@@ -15,7 +15,7 @@ create table person (
     image text,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now(),
-    can_admin_all_projects boolean not null default false,
+    can_read_all_projects boolean not null default false,
     can_admin_users boolean not null default false,
     orcid case_insensitive_text unique
 );
@@ -39,7 +39,7 @@ create table service (
     id uuid primary key default uuidv7(),
     description case_insensitive_text,
     owned_by uuid references person not null default current_user::uuid,
-    can_admin_all_projects boolean not null default false,
+    can_read_all_projects boolean not null default false,
     can_admin_users boolean not null default false,
     created_at timestamptz not null default now()
 );

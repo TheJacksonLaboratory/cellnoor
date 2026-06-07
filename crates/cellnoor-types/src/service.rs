@@ -7,27 +7,16 @@ use uuid::Uuid;
 use crate::{
     id::{Id, NoId},
     person::{PermissionsToGrant, PermissionsToRevoke},
-    service::record::ServiceRecord,
 };
 
 mod query;
 
-mod record {
-    use macro_attributes::select;
-    use nonempty::NonemptyString;
-
-    #[select]
-    #[cfg_attr(feature = "postgres-types", postgres(name = "service"))]
-    pub struct ServiceRecord<T> {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        pub id: T,
-        pub description: Option<NonemptyString>,
-        pub can_admin_all_projects: bool,
-        pub can_admin_users: bool,
-    }
+#[base_model]
+pub struct NewServiceRecord {
+    pub description: Option<NonemptyString>,
+    pub can_read_all_projects: bool,
+    pub can_admin_users: bool,
 }
-
-pub type NewServiceRecord = ServiceRecord<NoId>;
 
 #[base_model]
 pub struct NewService {
@@ -37,7 +26,16 @@ pub struct NewService {
     pub permissions_to_grant: PermissionsToGrant,
 }
 
-pub type Service = ServiceRecord<Id>;
+#[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "service"))]
+pub struct Service {
+    pub id: Uuid,
+    pub description: Option<NonemptyString>,
+    pub owned_by: Uuid,
+    pub can_read_all_projects: bool,
+    pub can_admin_users: bool,
+    pub created_at: Timestamp,
+}
 
 #[base_model]
 pub struct ServiceUpdate {

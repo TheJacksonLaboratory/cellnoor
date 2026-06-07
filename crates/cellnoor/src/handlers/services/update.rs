@@ -69,7 +69,7 @@ async fn grant_permissions(
         .collect();
 
     tx.execute_raw_sql(
-        "grant_permissions_to_service($1, $2)",
+        "select grant_permissions_to_service($1, $2)",
         &[&user_id, &permissions_to_grant],
     )
     .await?;
@@ -88,7 +88,7 @@ async fn revoke_permissions(
         .collect();
 
     tx.execute_raw_sql(
-        "revoke_permissions_from_service($1, $2)",
+        "select revoke_permissions_from_service($1, $2)",
         &[&user_id, &permissions_to_revoke],
     )
     .await?;
@@ -117,16 +117,15 @@ mod test {
 
         let update = ServiceUpdate {
             record: NewServiceRecord {
-                id: NoId {},
                 description: Some("updated".to_nonempty_string()),
-                can_admin_all_projects: false,
+                can_read_all_projects: false,
                 can_admin_users: false,
             },
             permissions_to_grant: None,
             permissions_to_revoke: None,
         };
 
-        update_service_by_id(&tx, *inserted.id, &update)
+        update_service_by_id(&tx, inserted.id, &update)
             .await
             .unwrap();
     }

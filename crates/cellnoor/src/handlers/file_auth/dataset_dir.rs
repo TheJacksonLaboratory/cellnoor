@@ -1,3 +1,5 @@
+use std::convert::identity;
+
 use axum::extract::{Path, State};
 use schemars::JsonSchema;
 use serde::Deserialize;
@@ -36,7 +38,7 @@ pub async fn authorize_dataset_dir_access(
     }): Path<DatasetDir>,
 ) -> Result<(), Error> {
     // If we know the user is staff without hitting the db, we can just return early
-    if user.is_staff().is_some_and(|is| is) {
+    if user.can_read_all_projects().is_some_and(identity) {
         return Ok(());
     }
 

@@ -152,4 +152,8 @@ impl<'a> Transaction<'a> {
             inner: inner.transaction().await?,
         })
     }
+
+    pub fn user(&self) -> AuthUser {
+        self.user
+    }
 }

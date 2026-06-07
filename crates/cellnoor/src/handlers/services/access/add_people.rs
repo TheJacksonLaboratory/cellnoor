@@ -91,7 +91,7 @@ mod test {
             .await
             .unwrap();
 
-        insert_service_accesses(&tx, *service.id, &[*person.record.id])
+        insert_service_accesses(&tx, service.id, &[*person.record.id])
             .await
             .unwrap();
     }

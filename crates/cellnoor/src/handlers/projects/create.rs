@@ -1,5 +1,8 @@
 use axum::{Json, extract::State};
-use cellnoor_types::project::{NewProject, ProjectDetailed, ProjectField};
+use cellnoor_types::{
+    api_key::{PersonId, ServiceId},
+    project::{NewProject, ProjectDetailed, ProjectField},
+};
 use uuid::Uuid;
 
 use crate::{
@@ -28,19 +31,29 @@ pub async fn create_project(
 
 async fn insert_project(
     tx: &db::Transaction<'_>,
-    project: &NewProject,
+    new: &NewProject,
 ) -> Result<ProjectDetailed, ErrorInner> {
-    let id = db::insert_into(tx, "project", project).await?;
+    let user = tx.user();
+    let id = db::insert_into(
+        tx,
+        "project",
+        &NewProjectWithCreator {
+            record: new,
+            created_by_person: user.person_id(),
+            created_by_service: user.service_id(),
+        },
+    )
+    .await?;
 
-    insert_project_accesses(tx, id, &project.members).await?;
+    insert_project_accesses(tx, id, &new.members).await?;
 
     select_project_by_id(tx, id).await
 }
 
 struct NewProjectWithCreator<'a> {
     record: &'a NewProject,
-    created_by_person: Option<Uuid>,
-    created_by_service: Option<Uuid>,
+    created_by_person: Option<PersonId>,
+    created_by_service: Option<ServiceId>,
 }
 
 impl AsFieldValuePairs<ProjectField, 5> for NewProjectWithCreator<'_> {

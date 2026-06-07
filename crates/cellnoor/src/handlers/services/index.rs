@@ -65,7 +65,7 @@ impl AsPredicate for ServicePredicate {
         let sql = match self {
             Self::Id(u) | Self::OwnedBy(u) => u.as_sql_operator_and_value(),
             Self::Description(s) => s.as_sql_operator_and_value(),
-            Self::CanAdminAllProjects(b) | Self::CanAdminUsers(b) => b.as_sql_operator_and_value(),
+            Self::CanReadAllProjects(b) | Self::CanAdminUsers(b) => b.as_sql_operator_and_value(),
             Self::CreatedAt(t) => t.as_sql_operator_and_value(),
         };
 
@@ -95,7 +95,7 @@ mod test {
         let (_, inserted) = insert_test_service(&tx, |_| ()).await.unwrap();
 
         let mut query =
-            ServiceQuery::from_filter(ServicePredicate::Id(UuidOperator::Eq(*inserted.id)));
+            ServiceQuery::from_filter(ServicePredicate::Id(UuidOperator::Eq(inserted.id)));
         let selected = select_services(&tx, &mut query).await.unwrap();
 
         assert_eq!(selected.len(), 1);

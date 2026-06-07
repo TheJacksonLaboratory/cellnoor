@@ -1,7 +1,7 @@
 use std::assert_matches;
 
 use cellnoor_types::{
-    api_key::{ApiKey, ApiKeyPredicate, ApiKeyRecord, ApiKeyUpdate},
+    api_key::{ApiKey, ApiKeyPredicate, ApiKeyRecord, ApiKeyUpdate, ServiceId},
     operator::UuidOperator,
     service::Service,
 };
@@ -28,9 +28,7 @@ async fn create_person_api_key_for(user: Uuid) -> ApiKey {
     let mut client = db_client_as_user(user).await;
     let tx = client.begin().await.unwrap();
 
-    let (_, api_key) = insert_test_api_key(&tx, AuthUser::new_as_user(user), |_| ())
-        .await
-        .unwrap();
+    let (_, api_key) = insert_test_api_key(&tx, |_| ()).await.unwrap();
 
     tx.commit().await.unwrap();
 
@@ -43,8 +41,8 @@ async fn create_service_api_key_for(user: Uuid) -> (Service, ApiKey) {
 
     let (_, service) = insert_test_service(&tx, |_| ()).await.unwrap();
 
-    let (_, api_key) = insert_test_api_key(&tx, AuthUser::new_as_user(user), |key| {
-        key.service_id = Some(*service.id);
+    let (_, api_key) = insert_test_api_key(&tx, |key| {
+        key.service_id = Some(ServiceId::new(service.id));
     })
     .await
     .unwrap();
@@ -129,7 +127,7 @@ async fn row_level_security_for_api_keys() {
     // Now user1 grants user2 access to the service account
     let mut user1_client = db_client_as_user(user1_id).await;
     let tx = user1_client.begin().await.unwrap();
-    insert_service_accesses(&tx, *service.id, &[user2_id])
+    insert_service_accesses(&tx, service.id, &[user2_id])
         .await
         .unwrap();
     tx.commit().await.unwrap();

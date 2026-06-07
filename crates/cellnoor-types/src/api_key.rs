@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use jiff::Timestamp;
 use macro_attributes::{base_model, select};
 use nonempty::NonemptyString;
@@ -9,7 +11,7 @@ mod query;
 #[base_model]
 pub struct NewApiKey {
     pub description: Option<NonemptyString>,
-    pub service_id: Option<Uuid>,
+    pub service_id: Option<ServiceId>,
     pub expires_at: Option<Timestamp>,
 }
 
@@ -20,12 +22,54 @@ pub struct ApiKeyUpdate {
 }
 
 #[select]
+#[derive(Copy, Eq)]
+#[cfg_attr(feature = "postgres-types", derive(postgres_types::ToSql))]
+#[cfg_attr(feature = "postgres-types", postgres(transparent))]
+pub struct PersonId(Uuid);
+
+impl PersonId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl Display for PersonId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+#[select]
+#[derive(Copy, Eq)]
+#[cfg_attr(feature = "postgres-types", derive(postgres_types::ToSql))]
+#[cfg_attr(feature = "postgres-types", postgres(transparent))]
+pub struct ServiceId(Uuid);
+
+impl ServiceId {
+    pub fn new(id: Uuid) -> Self {
+        Self(id)
+    }
+}
+
+impl Display for ServiceId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl From<ServiceId> for Uuid {
+    fn from(value: ServiceId) -> Self {
+        value.0
+    }
+}
+
+#[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "api_key_public"))]
 pub struct ApiKeyRecord {
     pub id: Uuid,
     pub description: Option<NonemptyString>,
-    pub person_id: Option<Uuid>,
-    pub service_id: Option<Uuid>,
+    pub person_id: Option<PersonId>,
+    pub service_id: Option<ServiceId>,
     pub created_at: Timestamp,
     pub expires_at: Option<Timestamp>,
 }

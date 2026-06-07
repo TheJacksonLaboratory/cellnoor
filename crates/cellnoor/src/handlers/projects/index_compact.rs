@@ -49,7 +49,9 @@ impl AsPredicate for ProjectPredicate {
         (&'static str, &(dyn postgres_types::ToSql + Sync)),
     ) {
         let sql = match self {
-            Self::Id(u) => u.as_sql_operator_and_value(),
+            Self::Id(u) | Self::CreatedByPerson(u) | Self::CreatedByService(u) => {
+                u.as_sql_operator_and_value()
+            }
             Self::Name(s) => s.as_sql_operator_and_value(),
             Self::StartedAt(t) | Self::EndedAt(t) => t.as_sql_operator_and_value(),
         };
@@ -71,7 +73,6 @@ pub fn project_from_record(record: SavedProjectRecord) -> ProjectCompact {
 
 #[cfg(test)]
 mod test {
-
     use cellnoor_types::{
         operator::SimpleStringOperator,
         project::{ProjectField, ProjectPredicate, ProjectQuery},

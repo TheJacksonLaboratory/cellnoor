@@ -58,7 +58,6 @@ mod test {
     use cellnoor_types::api_key::ApiKeyUpdate;
 
     use crate::{
-        auth::AuthUser,
         handlers::api_keys::{create::test::insert_test_api_key, update::update_api_key_by_id},
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
@@ -68,9 +67,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, api_key) = insert_test_api_key(&tx, AuthUser::new_as_admin(), |_| ())
-            .await
-            .unwrap();
+        let (_, api_key) = insert_test_api_key(&tx, |_| ()).await.unwrap();
 
         let update = ApiKeyUpdate {
             description: Some("updated".to_nonempty_string()),

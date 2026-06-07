@@ -13,7 +13,7 @@ pub enum PersonPredicate {
     Name(StringOperator),
     Email(StringOperator),
     InstitutionId(UuidOperator),
-    CanAdminAllProjects(BoolOperator),
+    CanReadAllProjects(BoolOperator),
     CanAdminUsers(BoolOperator),
     Orcid(StringOperator),
 }

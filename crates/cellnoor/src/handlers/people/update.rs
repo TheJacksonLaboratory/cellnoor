@@ -86,7 +86,7 @@ async fn grant_permissions(
         .collect();
 
     tx.execute_raw_sql(
-        "grant_permissions_to_person($1, $2)",
+        "select grant_permissions_to_person($1, $2)",
         &[&user_id, &permissions_to_grant],
     )
     .await?;
@@ -105,7 +105,7 @@ async fn revoke_permissions(
         .collect();
 
     tx.execute_raw_sql(
-        "revoke_permissions_from_person($1, $2)",
+        "select revoke_permissions_from_person($1, $2)",
         &[&user_id, &permissions_to_revoke],
     )
     .await?;

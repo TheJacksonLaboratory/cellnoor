@@ -54,8 +54,6 @@ create or replace function create_app_user_if_not_exists(
         perform create_user_if_not_exists(user_id::text);
         -- The db user 'app' needs to be able to do `set role username`, but it shouldn't inherit that user's privileges
         execute format('grant %I to app with inherit false', user_id);
-        -- In order to create service accounts, every app user needs the createrole privilege
-        execute format('alter user %I with createrole', user_id);
     end;
 $$;
 

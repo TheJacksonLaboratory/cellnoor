@@ -48,9 +48,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, api_key) = insert_test_api_key(&tx, AuthUser::new_as_admin(), |_| ())
-            .await
-            .unwrap();
+        let (_, api_key) = insert_test_api_key(&tx, |_| ()).await.unwrap();
 
         delete_api_key_by_id(&tx, api_key.record.id).await.unwrap();
     }

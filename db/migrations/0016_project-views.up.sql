@@ -6,7 +6,7 @@ create view project_detailed with (security_invoker = true) as (
         array(
             select proj_acc.person_id
             from project_access as proj_acc
-            where proj_acc.project_id = project.id
+            where proj_acc.project_id = project.id and proj_acc.person_id is not null
         ) as members
     from project
 );
