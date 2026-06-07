@@ -1,4 +1,4 @@
--- We include the multiplexing tag because it's cheap and is useful for consumers
+-- We include the multiplexing tag and OCM barcode because it's cheap and is useful for consumers
 create type tagged_specimen as (
     specimen specimen,
     multiplexing_tag multiplexing_tag,

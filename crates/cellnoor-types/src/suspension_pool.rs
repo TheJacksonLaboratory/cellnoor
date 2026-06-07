@@ -1,5 +1,5 @@
 use jiff::Timestamp;
-use macro_attributes::{base_model, select};
+use macro_attributes::{base_model, select, sort_field_enum};
 use nonempty::{NonemptyBoundedVec, NonemptyString, NonemptyVec};
 pub use query::{
     SimpleSuspensionPoolQuery, SuspensionPoolField, SuspensionPoolPredicate,
@@ -25,47 +25,64 @@ pub struct NewSuspensionPoolCommonFields {
     pub name: NonemptyString,
     pub pooled_at: Timestamp,
     pub additional_data: Option<Value>,
-}
-
-#[select]
-#[cfg_attr(feature = "postgres-types", postgres(name = "suspension_pool"))]
-pub struct SavedSuspensionPoolRecord {
-    pub id: Uuid,
-    pub readable_id: NonemptyString,
-    pub name: NonemptyString,
-    pub multiplexing_type: NonemptyString,
-    pub pooled_at: Timestamp,
-    pub additional_data: Option<Value>,
+    pub measurements: Vec<measurement::NewSuspensionPoolMeasurement>,
+    pub preparers: NonemptyVec<Uuid>,
 }
 
 #[base_model]
 pub struct TaggedSuspension {
     pub suspension_id: Uuid,
-    pub tag_id: Uuid,
+    pub tag_id: NonemptyString,
 }
 
-// https://www.10xgenomics.com/products/flex-gene-expression
-const MAX_TAGGED_SUSPENSIONS_IN_POOL: usize = 384;
+#[base_model]
+pub struct NewTaggedSuspensionPool {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub common: NewSuspensionPoolCommonFields,
+    pub suspensions: NonemptyVec<TaggedSuspension>,
+}
 
 #[base_model]
-#[derive(strum::AsRefStr)]
-#[cfg_attr(feature = "serde", serde(untagged, rename_all = "snake_case"))]
+#[derive(strum::AsRefStr, strum::EnumDiscriminants)]
+#[cfg_attr(
+    feature = "serde",
+    serde(tag = "multiplexing_type", rename_all = "snake_case")
+)]
 #[strum(serialize_all = "snake_case")]
+#[strum_discriminants(name(MultiplexingTagType), sort_field_enum, derive(strum::EnumString))]
 pub enum NewSuspensionPool {
-    ExogenousTag {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: NewSuspensionPoolCommonFields,
-        measurements: Vec<measurement::NewSuspensionPoolMeasurement>,
-        preparers: NonemptyVec<Uuid>,
-        suspensions: NonemptyBoundedVec<TaggedSuspension, MAX_TAGGED_SUSPENSIONS_IN_POOL>,
-    },
+    FlexBarcode(NewTaggedSuspensionPool),
+    FlexOligoNucleotideBarcode(NewTaggedSuspensionPool),
+    #[cfg_attr(feature = "serde", serde(rename = "TotalSeq-A"))]
+    #[strum(serialize = "TotalSeq-A")]
+    TotalSeqA(NewTaggedSuspensionPool),
+    #[cfg_attr(feature = "serde", serde(rename = "TotalSeq-B"))]
+    #[strum(serialize = "TotalSeq-B")]
+    TotalSeqB(NewTaggedSuspensionPool),
+    #[cfg_attr(feature = "serde", serde(rename = "TotalSeq-C"))]
+    #[strum(serialize = "TotalSeq-C")]
+    TotalSeqC(NewTaggedSuspensionPool),
     Genetic {
         #[cfg_attr(feature = "serde", serde(flatten))]
         common: NewSuspensionPoolCommonFields,
-        measurements: Vec<measurement::NewSuspensionPoolMeasurement>,
-        preparers: NonemptyVec<Uuid>,
         suspensions: NonemptyVec<Uuid>,
     },
+}
+
+#[cfg(feature = "postgres-types")]
+impl<'a> postgres_types::FromSql<'a> for MultiplexingTagType {
+    fn from_sql(
+        ty: &postgres_types::Type,
+        raw: &'a [u8],
+    ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
+        use std::str::FromStr;
+
+        NonemptyString::from_sql(ty, raw).map(|s| Self::from_str(s.as_ref()).unwrap())
+    }
+
+    fn accepts(ty: &postgres_types::Type) -> bool {
+        NonemptyString::accepts(ty)
+    }
 }
 
 #[base_model]
@@ -74,6 +91,17 @@ pub struct SuspensionPoolUpdate {
     pub record: NewSuspensionPoolCommonFields,
     pub measurements: Option<Vec<measurement::NewSuspensionPoolMeasurement>>,
     pub preparers: Option<Vec<Uuid>>,
+}
+
+#[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "suspension_pool"))]
+pub struct SavedSuspensionPoolRecord {
+    pub id: Uuid,
+    pub readable_id: NonemptyString,
+    pub name: NonemptyString,
+    pub multiplexing_type: MultiplexingTagType,
+    pub pooled_at: Timestamp,
+    pub additional_data: Option<Value>,
 }
 
 #[base_model]

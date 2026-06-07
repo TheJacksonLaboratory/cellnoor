@@ -40,7 +40,7 @@ async fn insert_suspension_pool(
     let multiplexing_type = NonemptyString::new(new.as_ref().to_owned()).unwrap();
 
     let (record, measurements, preparer_ids, suspensions) = match new {
-        NewSuspensionPool::ExogenousTag {
+        NewSuspensionPool::FlexBarcode {
             common,
             measurements,
             preparers,
@@ -265,7 +265,7 @@ pub mod test {
 
         let person_id = suspension1.specimen.record.submitted_by;
 
-        let mut new = NewSuspensionPool::ExogenousTag {
+        let mut new = NewSuspensionPool::FlexBarcode {
             common: NewSuspensionPoolCommonFields {
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 name: "pool".to_nonempty_string(),

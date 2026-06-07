@@ -28,19 +28,20 @@ create table suspension_pool_preparer (
 );
 
 create table multiplexing_tag (
-    id uuid primary key default uuidv7(),
     tag_id case_insensitive_text not null,
     type case_insensitive_text not null,
 
-    unique (tag_id, type)
+    primary key (tag_id, type)
 );
 
 create table suspension_pooling (
     id uuid primary key default uuidv7(),
     pool_id uuid references suspension_pool on delete cascade not null,
     suspension_id uuid references suspension on delete cascade not null,
-    tag_id uuid references multiplexing_tag,
+    tag_id case_insensitive_text,
+    tag_type case_insensitive_text,
 
-    unique (pool_id, tag_id),
-    unique nulls not distinct (pool_id, suspension_id, tag_id)
+    foreign key (tag_id, tag_type) references multiplexing_tag,
+    unique (pool_id, tag_id, tag_type),
+    unique nulls not distinct (pool_id, suspension_id, tag_id, tag_type),
 );

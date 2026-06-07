@@ -7,15 +7,10 @@ use crate::{
         filter::{Filter, Operator},
     },
     specimen::SpecimenPredicate,
+    suspension_pool::MultiplexingTagType,
 };
 
-#[unit_enum]
-pub enum MultiplexingType {
-    ExogenousTag,
-    Genetic,
-}
-
-pub type MultiplexingTypeOperator = Operator<MultiplexingType>;
+pub type MultiplexingTagTypeOperator = Operator<MultiplexingTagType>;
 
 #[predicate_enum]
 #[strum(prefix = "(suspension_pool).")]
@@ -28,7 +23,7 @@ pub enum SuspensionPoolPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),
     Name(StringOperator),
-    MultiplexingType(MultiplexingTypeOperator),
+    MultiplexingType(MultiplexingTagTypeOperator),
     PooledAt(TimestampOperator),
     AdditionalData(JsonOperator),
 }
