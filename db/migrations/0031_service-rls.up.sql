@@ -15,7 +15,7 @@ alter table service enable row level security;
 
 create policy owner_can_insert_and_update_service on service using (
     owned_by = current_user::uuid
-    and ((not can_admin_users) or user_can_admin_users(current_user::uuid))
+    and ((not can_manage_users) or user_can_manage_users(current_user::uuid))
     and ((not is_staff) or current_person_is_staff())
 );
 

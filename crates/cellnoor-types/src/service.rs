@@ -12,7 +12,7 @@ mod query;
 pub struct NewServiceRecord {
     pub description: Option<NonemptyString>,
     pub is_staff: bool,
-    pub can_admin_users: bool,
+    pub can_manage_users: bool,
 }
 
 #[base_model]
@@ -30,7 +30,7 @@ pub struct Service {
     pub description: Option<NonemptyString>,
     pub owned_by: Uuid,
     pub is_staff: bool,
-    pub can_admin_users: bool,
+    pub can_manage_users: bool,
     pub created_at: Timestamp,
 }
 

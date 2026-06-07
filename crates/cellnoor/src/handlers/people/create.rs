@@ -134,7 +134,7 @@ impl AsFieldValuePairs<PersonField, 6> for NewPersonRecord {
             email,
             institution_id,
             is_staff,
-            can_admin_users,
+            can_manage_users,
             orcid,
         } = self;
 
@@ -143,7 +143,7 @@ impl AsFieldValuePairs<PersonField, 6> for NewPersonRecord {
             (InstitutionId, institution_id),
             (Email, email),
             (IsStaff, is_staff),
-            (CanAdminUsers, can_admin_users),
+            (CanManageUsers, can_manage_users),
             (Orcid, orcid),
         ]
     }
@@ -207,7 +207,7 @@ pub mod test {
                 institution_id: *institution.record.id,
                 email: Some(format!("{}@jax.org", Uuid::new_v4()).to_nonempty_string()),
                 is_staff: false,
-                can_admin_users: false,
+                can_manage_users: false,
                 orcid: None,
             },
             permissions_to_grant: vec![].into(),
@@ -290,7 +290,7 @@ pub mod test {
         let create = vec![Action::Create];
 
         let grant_create_person = |p: &mut NewPerson| {
-            p.record.can_admin_users = true;
+            p.record.can_manage_users = true;
             p.permissions_to_grant = vec![
                 ResourcePermission::Institution(create.clone()),
                 ResourcePermission::Person(create.clone()),

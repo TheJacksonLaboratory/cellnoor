@@ -16,7 +16,7 @@ create table person (
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now(),
     is_staff boolean not null default false,
-    can_admin_users boolean not null default false,
+    can_manage_users boolean not null default false,
     orcid case_insensitive_text unique
 );
 
@@ -40,7 +40,7 @@ create table service (
     description case_insensitive_text,
     owned_by uuid references person not null default current_user::uuid,
     is_staff boolean not null default false,
-    can_admin_users boolean not null default false,
+    can_manage_users boolean not null default false,
     created_at timestamptz not null default now()
 );
 

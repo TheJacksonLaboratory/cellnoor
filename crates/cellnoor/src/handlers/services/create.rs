@@ -80,13 +80,13 @@ impl AsFieldValuePairs<ServiceField, 3> for NewServiceRecord {
         let Self {
             description,
             is_staff,
-            can_admin_users,
+            can_manage_users,
         } = self;
 
         [
             (Description, description),
             (IsStaff, is_staff),
-            (CanAdminUsers, can_admin_users),
+            (CanManageUsers, can_manage_users),
         ]
     }
 }
@@ -117,7 +117,7 @@ pub mod test {
             record: NewServiceRecord {
                 description: Some(Uuid::new_v4().to_string().to_nonempty_string()),
                 is_staff: false,
-                can_admin_users: false,
+                can_manage_users: false,
             },
             users: vec![Uuid::nil()],
             permissions_to_grant: PermissionsToGrant::default(),

@@ -115,7 +115,7 @@ mod test {
             record: NewServiceRecord {
                 description: Some("updated".to_nonempty_string()),
                 is_staff: false,
-                can_admin_users: false,
+                can_manage_users: false,
             },
             permissions_to_grant: None,
             permissions_to_revoke: None,

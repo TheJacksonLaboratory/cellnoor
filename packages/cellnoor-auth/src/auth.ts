@@ -56,7 +56,7 @@ export const auth = betterAuth({
       is_staff: {
         type: "boolean"
       },
-      can_admin_users: {
+      can_manage_users: {
         type: "boolean"
       }
     },

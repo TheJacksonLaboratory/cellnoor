@@ -7,11 +7,11 @@ grant all on all tables in schema public to user_creator with grant option;
 alter user user_creator createrole bypassrls;
 grant create on schema public to user_creator;
 
-create or replace function user_can_admin_users(user_id uuid) returns boolean language plpgsql volatile strict as $$
-    declare can_admin boolean;
+create or replace function user_can_manage_users(user_id uuid) returns boolean language plpgsql volatile strict as $$
+    declare can_manage boolean;
     begin
-        select can_admin_users from person where id = user_id into can_admin;
-        return can_admin;
+        select can_manage_users from person where id = user_id into can_manage;
+        return can_manage;
     end;
 $$;
 
@@ -30,11 +30,11 @@ create type permission_set as (
 
 set role user_creator;
 
-create or replace function _validate_user_can_admin_users(
+create or replace function _validate_user_can_manage_users(
     user_id uuid
 ) returns void language plpgsql volatile strict as $$
     begin
-        if not user_can_admin_users(user_id) then
+        if not user_can_manage_users(user_id) then
             raise insufficient_privilege using message = 'permission denied to perform admin actions on users';
         end if;
     end;
@@ -56,7 +56,7 @@ create or replace function _grant_permissions_to_person_as_user_creator(
         user_is_person boolean;
         perm permission_set;
     begin
-        perform _validate_user_can_admin_users(current_user_id);
+        perform _validate_user_can_manage_users(current_user_id);
         perform _validate_target_user_is_person(target_user_id);
 
         foreach perm in array permissions
@@ -70,7 +70,7 @@ create or replace function _create_person_user_as_user_creator(
     current_user_id uuid, target_user_id uuid
 ) returns void language plpgsql volatile strict security definer as $$
     begin
-        perform _validate_user_can_admin_users(current_user_id);
+        perform _validate_user_can_manage_users(current_user_id);
         perform _validate_target_user_is_person(target_user_id);
 
         perform create_app_user_if_not_exists(target_user_id);
@@ -81,7 +81,7 @@ create or replace function _drop_person_user_as_user_creator(
     current_user_id uuid, target_user_id uuid
 ) returns void language plpgsql volatile strict security definer as $$
     begin
-        perform _validate_user_can_admin_users(current_user_id);
+        perform _validate_user_can_manage_users(current_user_id);
         perform _validate_target_user_is_person(target_user_id);
 
         execute format('revoke all on all tables in schema public from %I', target_user_id);
@@ -94,7 +94,7 @@ create or replace function _revoke_permissions_from_person_as_user_creator(
 ) returns void language plpgsql volatile strict security definer as $$
     declare perm permission_set;
     begin
-        perform _validate_user_can_admin_users(current_user_id);
+        perform _validate_user_can_manage_users(current_user_id);
         perform _validate_target_user_is_person(target_user_id);
 
         foreach perm in array permissions

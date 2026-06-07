@@ -17,7 +17,7 @@ with initial_data as (
 )
 
 insert into person (
-    id, name, email, email_verified, institution_id, is_staff, can_admin_users, orcid
+    id, name, email, email_verified, institution_id, is_staff, can_manage_users, orcid
 )
 select
     uuid_nil(),
