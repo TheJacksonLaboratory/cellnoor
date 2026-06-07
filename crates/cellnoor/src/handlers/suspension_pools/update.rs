@@ -2,12 +2,15 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::suspension_pool::{SuspensionPoolDetailed, SuspensionPoolUpdate};
+use cellnoor_types::suspension_pool::{
+    NewSuspensionPoolCommonFields, SuspensionPoolDetailed, SuspensionPoolField,
+    SuspensionPoolUpdate,
+};
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self},
+    db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
     handlers::{
         IdParam,
@@ -67,4 +70,24 @@ async fn update_suspension_pool_by_id(
     tokio::try_join!(preparer_insertions, measurement_insertions)?;
 
     select_suspension_pool_by_id(tx, id).await
+}
+
+impl AsFieldValuePairs<SuspensionPoolField, 4> for NewSuspensionPoolCommonFields {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, SuspensionPoolField, 4> {
+        use SuspensionPoolField::*;
+
+        let Self {
+            readable_id,
+            name,
+            pooled_at,
+            additional_data,
+        } = self;
+
+        [
+            (ReadableId, readable_id),
+            (Name, name),
+            (PooledAt, pooled_at),
+            (AdditionalData, additional_data),
+        ]
+    }
 }

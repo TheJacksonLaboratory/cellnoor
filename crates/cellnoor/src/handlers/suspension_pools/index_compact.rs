@@ -80,7 +80,7 @@ pub(super) fn suspension_pool_links(id: Id) -> SuspensionPoolLinks {
 
 pub fn suspension_pool_from_record(record: SavedSuspensionPoolRecord) -> SuspensionPoolCompact {
     SuspensionPoolCompact {
-        links: suspension_pool_links(record.id),
+        links: suspension_pool_links(record.id.into()),
         record,
     }
 }

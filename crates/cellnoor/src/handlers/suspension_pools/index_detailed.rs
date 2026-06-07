@@ -55,7 +55,7 @@ fn map_detailed_row(row: Row) -> SuspensionPoolDetailed {
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
 
     SuspensionPoolDetailed {
-        links: suspension_pool_links(record.id),
+        links: suspension_pool_links(record.id.into()),
         record,
         specimens: specimens
             .into_iter()

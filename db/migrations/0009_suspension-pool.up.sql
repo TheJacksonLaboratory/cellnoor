@@ -3,7 +3,7 @@ create table suspension_pool (
     readable_id case_insensitive_text unique not null,
     name case_insensitive_text not null,
     pooled_at timestamptz not null,
-    multiplexing_type text not null,
+    multiplexing_type case_insensitive_text not null,
     additional_data jsonb
 );
 

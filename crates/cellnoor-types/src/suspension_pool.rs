@@ -1,45 +1,42 @@
+use jiff::Timestamp;
 use macro_attributes::{base_model, select};
-use nonempty::{NonemptyBoundedVec, NonemptyVec};
+use nonempty::{NonemptyBoundedVec, NonemptyString, NonemptyVec};
 pub use query::{
     SimpleSuspensionPoolQuery, SuspensionPoolField, SuspensionPoolPredicate,
     SuspensionPoolPredicateInner, SuspensionPoolQuery,
 };
+use serde_json::Value;
 use uuid::Uuid;
 
 use crate::{
     chromium_run::creation::ocm::OcmBarcodeId,
-    id::{Id, NoId},
     multiplexing_tag::MultiplexingTag,
     simple_links::SimpleLinks,
     specimen::{SavedSpecimenRecord, SpecimenCompact},
-    suspension_pool::{measurement::SuspensionPoolMeasurement, record::SuspensionPoolRecord},
+    suspension_pool::measurement::SuspensionPoolMeasurement,
 };
 
 pub mod measurement;
 mod query;
 
-mod record {
-    use jiff::Timestamp;
-    use macro_attributes::select;
-    use nonempty::NonemptyString;
-    use serde_json::Value;
-
-    #[select]
-    #[cfg_attr(feature = "postgres-types", postgres(name = "suspension_pool"))]
-    pub struct SuspensionPoolRecord<T> {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        pub id: T,
-        pub readable_id: NonemptyString,
-        pub name: NonemptyString,
-        pub multiplexing_type: String,
-        pub pooled_at: Timestamp,
-        pub additional_data: Option<Value>,
-    }
+#[base_model]
+pub struct NewSuspensionPoolCommonFields {
+    pub readable_id: NonemptyString,
+    pub name: NonemptyString,
+    pub pooled_at: Timestamp,
+    pub additional_data: Option<Value>,
 }
 
-pub type NewSuspensionPoolRecord = SuspensionPoolRecord<NoId>;
-
-pub type SavedSuspensionPoolRecord = SuspensionPoolRecord<Id>;
+#[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "suspension_pool"))]
+pub struct SavedSuspensionPoolRecord {
+    pub id: Uuid,
+    pub readable_id: NonemptyString,
+    pub name: NonemptyString,
+    pub multiplexing_type: NonemptyString,
+    pub pooled_at: Timestamp,
+    pub additional_data: Option<Value>,
+}
 
 #[base_model]
 pub struct TaggedSuspension {
@@ -52,22 +49,19 @@ const MAX_TAGGED_SUSPENSIONS_IN_POOL: usize = 384;
 
 #[base_model]
 #[derive(strum::AsRefStr)]
-#[cfg_attr(
-    feature = "serde",
-    serde(tag = "multiplexing_type", rename_all = "snake_case")
-)]
+#[cfg_attr(feature = "serde", serde(untagged, rename_all = "snake_case"))]
 #[strum(serialize_all = "snake_case")]
 pub enum NewSuspensionPool {
     ExogenousTag {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        common: NewSuspensionPoolRecord,
+        common: NewSuspensionPoolCommonFields,
         measurements: Vec<measurement::NewSuspensionPoolMeasurement>,
         preparers: NonemptyVec<Uuid>,
         suspensions: NonemptyBoundedVec<TaggedSuspension, MAX_TAGGED_SUSPENSIONS_IN_POOL>,
     },
     Genetic {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        common: NewSuspensionPoolRecord,
+        common: NewSuspensionPoolCommonFields,
         measurements: Vec<measurement::NewSuspensionPoolMeasurement>,
         preparers: NonemptyVec<Uuid>,
         suspensions: NonemptyVec<Uuid>,
@@ -77,7 +71,7 @@ pub enum NewSuspensionPool {
 #[base_model]
 pub struct SuspensionPoolUpdate {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: NewSuspensionPoolRecord,
+    pub record: NewSuspensionPoolCommonFields,
     pub measurements: Option<Vec<measurement::NewSuspensionPoolMeasurement>>,
     pub preparers: Option<Vec<Uuid>>,
 }

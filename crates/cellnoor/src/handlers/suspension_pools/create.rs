@@ -1,6 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::suspension_pool::{
-    NewSuspensionPool, NewSuspensionPoolRecord, SuspensionPoolDetailed, SuspensionPoolField,
+    NewSuspensionPool, NewSuspensionPoolCommonFields, SuspensionPoolDetailed, SuspensionPoolField,
     TaggedSuspension,
 };
 use uuid::Uuid;
@@ -25,7 +25,7 @@ pub async fn create_suspension_pool(
 
     let tx = client.begin().await?;
 
-    let response = insert_suspension_pool(&tx, record).await.map(Json)?;
+    let response = insert_suspension_pool(&tx, &record).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -34,8 +34,10 @@ pub async fn create_suspension_pool(
 
 async fn insert_suspension_pool(
     tx: &db::Transaction<'_>,
-    new: NewSuspensionPool,
+    new: &NewSuspensionPool,
 ) -> Result<SuspensionPoolDetailed, ErrorInner> {
+    let multiplexing_type: &str = new.as_ref();
+
     let (record, measurements, preparer_ids, suspensions) = match new {
         NewSuspensionPool::ExogenousTag {
             common,
@@ -52,7 +54,7 @@ async fn insert_suspension_pool(
                     |TaggedSuspension {
                          suspension_id,
                          tag_id,
-                     }| (suspension_id, Some(tag_id)),
+                     }| (*suspension_id, Some(*tag_id)),
                 )
                 .collect::<Vec<_>>(),
         ),
@@ -67,12 +69,20 @@ async fn insert_suspension_pool(
             preparers,
             suspensions
                 .into_iter()
-                .map(|suspension_id| (suspension_id, None))
+                .map(|suspension_id| (*suspension_id, None))
                 .collect::<Vec<_>>(),
         ),
     };
 
-    let id = db::insert_into(tx, "suspension_pool", &record).await?;
+    let id = db::insert_into(
+        tx,
+        "suspension_pool",
+        &NewSuspensionPoolRecord {
+            record: &record,
+            multiplexing_type,
+        },
+    )
+    .await?;
 
     let measurement_insertions = futures::future::try_join_all(
         measurements
@@ -174,17 +184,24 @@ impl AsFieldValuePairs<&'static str, 3> for NewSuspensionPooling {
     }
 }
 
-impl AsFieldValuePairs<SuspensionPoolField, 5> for NewSuspensionPoolRecord {
+struct NewSuspensionPoolRecord<'a> {
+    record: &'a NewSuspensionPoolCommonFields,
+    multiplexing_type: &'a str,
+}
+
+impl AsFieldValuePairs<SuspensionPoolField, 5> for NewSuspensionPoolRecord<'_> {
     fn as_field_value_pairs(&self) -> FieldValuePairs<'_, SuspensionPoolField, 5> {
         use SuspensionPoolField::*;
 
         let Self {
-            id: _,
-            readable_id,
-            name,
+            record:
+                NewSuspensionPoolCommonFields {
+                    readable_id,
+                    name,
+                    pooled_at,
+                    additional_data,
+                },
             multiplexing_type,
-            pooled_at,
-            additional_data,
         } = self;
 
         [
@@ -203,10 +220,10 @@ pub mod test {
     use std::collections::HashSet;
 
     use cellnoor_types::{
-        id::NoId,
         suspension::measurement::Viability,
         suspension_pool::{
-            NewSuspensionPool, NewSuspensionPoolRecord, SuspensionPoolDetailed, TaggedSuspension,
+            NewSuspensionPool, NewSuspensionPoolCommonFields, SuspensionPoolDetailed,
+            TaggedSuspension,
             measurement::{NewSuspensionPoolMeasurement, SuspensionPoolMeasurementData},
         },
     };
@@ -248,11 +265,9 @@ pub mod test {
         let person_id = suspension1.specimen.record.submitted_by;
 
         let mut new = NewSuspensionPool::ExogenousTag {
-            common: NewSuspensionPoolRecord {
-                id: NoId {},
+            common: NewSuspensionPoolCommonFields {
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 name: "pool".to_nonempty_string(),
-                multiplexing_type: "genetic".to_owned(),
                 pooled_at: Timestamp::now(),
                 additional_data: None,
             },
@@ -279,7 +294,7 @@ pub mod test {
 
         modify(&mut new);
 
-        let inserted = insert_suspension_pool(tx, new.clone()).await?;
+        let inserted = insert_suspension_pool(tx, &new).await?;
         Ok((new, inserted))
     }
 
@@ -329,7 +344,7 @@ pub mod test {
         );
 
         assert_eq!(measurements.len(), 1);
-        assert_eq!(measurements[0].pool_id, *record.id);
+        assert_eq!(measurements[0].pool_id, record.id);
         assert_eq!(
             measurements[0].data.0,
             SuspensionPoolMeasurementData::Viability(Viability {
