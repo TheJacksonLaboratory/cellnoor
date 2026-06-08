@@ -1,4 +1,4 @@
-use cellnoor_types::query::ComplexQuery;
+use cellnoor_types::query::{ComplexQuery, DefaultDesc};
 
 use super::Transaction;
 use crate::error::ErrorInner;
@@ -9,7 +9,7 @@ pub async fn select_one<P, O, T>(
     select_fn: impl AsyncFn(&Transaction, &mut ComplexQuery<P, O>) -> Result<Vec<T>, ErrorInner>,
 ) -> Result<T, ErrorInner>
 where
-    O: Default,
+    O: Default + DefaultDesc,
 {
     let mut records = select_fn(tx, &mut ComplexQuery::from_filter(pred)).await?;
 

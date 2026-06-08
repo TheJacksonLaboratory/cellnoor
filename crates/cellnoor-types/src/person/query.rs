@@ -2,7 +2,7 @@ use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
     operator::{BoolOperator, StringOperator, UuidOperator},
-    query::{ComplexQuery, SimpleQuery},
+    query::{ComplexQuery, DefaultDesc, SimpleQuery},
 };
 
 #[predicate_enum]
@@ -23,6 +23,12 @@ pub enum PersonPredicate {
 impl Default for PersonField {
     fn default() -> Self {
         Self::Name
+    }
+}
+
+impl DefaultDesc for PersonField {
+    fn default_desc() -> bool {
+        false
     }
 }
 

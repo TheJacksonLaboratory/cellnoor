@@ -2,7 +2,7 @@ use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
     operator::{StringOperator, UuidOperator},
-    query::{ComplexQuery, SimpleQuery},
+    query::{ComplexQuery, DefaultDesc, SimpleQuery},
 };
 
 #[predicate_enum]
@@ -23,6 +23,12 @@ pub enum InstitutionPredicate {
 impl Default for InstitutionField {
     fn default() -> Self {
         Self::Name
+    }
+}
+
+impl DefaultDesc for InstitutionField {
+    fn default_desc() -> bool {
+        false
     }
 }
 

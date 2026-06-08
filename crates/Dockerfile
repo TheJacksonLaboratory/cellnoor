@@ -35,6 +35,8 @@ COPY --from=build /bin/cellnoor /bin/
 
 ARG UID=10001
 ARG SOCKET
+ARG STATIC_FILES_DIR
+
 RUN adduser \
     --disabled-password \
     --gecos "" \
@@ -43,7 +45,7 @@ RUN adduser \
     --no-create-home \
     --uid "${UID}" \
     appuser
-RUN mkdir -p "$(dirname ${SOCKET})" && chown appuser "$(dirname ${SOCKET})"
+RUN mkdir -p "$(dirname ${SOCKET})" ${STATIC_FILES_DIR} && chown appuser "$(dirname ${SOCKET})" ${STATIC_FILES_DIR}
 USER appuser
 
 CMD ["/bin/cellnoor"]

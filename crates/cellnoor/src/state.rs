@@ -10,7 +10,7 @@ use crate::{auth::AuthUser, db, settings::Settings};
 struct StateCommon {
     db_pool: db::Pool,
     public_files_url: String,
-    static_file_dir: Utf8PathBuf,
+    static_files_dir: Utf8PathBuf,
 }
 
 #[derive(Clone)]
@@ -55,7 +55,7 @@ impl AppState {
         let inner = StateCommon {
             db_pool: db::Pool::new(settings.db_config().to_owned(), settings.max_db_pool_size())?,
             public_files_url: settings.public_files_url().to_owned(),
-            static_file_dir: Utf8PathBuf::from(settings.static_file_dir()),
+            static_files_dir: Utf8PathBuf::from(settings.static_files_dir()),
         };
 
         let state = if settings.with_auth() {
@@ -95,8 +95,8 @@ impl AppState {
         &self.inner().public_files_url
     }
 
-    pub fn static_file_dir(&self) -> &Utf8Path {
-        &self.inner().static_file_dir
+    pub fn static_files_dir(&self) -> &Utf8Path {
+        &self.inner().static_files_dir
     }
 }
 
@@ -129,7 +129,7 @@ pub mod test_util {
             inner: StateCommon {
                 db_pool,
                 public_files_url: String::new(),
-                static_file_dir: Utf8PathBuf::new(),
+                static_files_dir: Utf8PathBuf::new(),
             },
 
             jwt_decoding_info: Arc::new((

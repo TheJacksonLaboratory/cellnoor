@@ -4,14 +4,20 @@ use nonempty::NonemptyBoundedVec;
 use postgres_types::Json;
 use serde_json::Value;
 
-use crate::chromium_run::{
-    LoadingVolume, NewChromiumRunRecord,
-    creation::{mixed::NewMixedGemWell, ocm::NewOcmGemWell, standard::NewStandardGemWell},
+use crate::{
+    chromium_run::{
+        LoadingVolume,
+        creation::{mixed::NewMixedGemWell, ocm::NewOcmGemWell, standard::NewStandardGemWell},
+        record::ChromiumRunRecord,
+    },
+    id::NoId,
 };
 
 pub mod mixed;
 pub mod ocm;
 pub mod standard;
+
+pub type NewChromiumRunRecord = ChromiumRunRecord<NoId>;
 
 pub const MAX_GEM_WELLS_PER_OCM_RUN: usize = 2;
 pub const MAX_GEM_WELLS_PER_NON_OCM_RUN: usize = 8;

@@ -3,7 +3,7 @@ use macro_attributes::{base_model, predicate_enum, sort_field_enum};
 use crate::{
     library::LibraryPredicate,
     operator::{StringOperator, TimestampOperator, UuidOperator},
-    query::{ComplexQuery, SimpleQuery, filter::Filter},
+    query::{ComplexQuery, DefaultDesc, SimpleQuery, filter::Filter},
     specimen::SpecimenPredicate,
     tenx_assay::TenxAssayPredicate,
 };
@@ -82,6 +82,8 @@ impl Default for ChromiumDatasetField {
         Self::DeliveredAt
     }
 }
+
+impl DefaultDesc for ChromiumDatasetField {}
 
 pub type ChromiumDatasetQuery = ComplexQuery<ChromiumDatasetPredicate, ChromiumDatasetField>;
 

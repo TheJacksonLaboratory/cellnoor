@@ -2,7 +2,7 @@ use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
     operator::{BoolOperator, StringOperator, TimestampOperator, UuidOperator},
-    query::{ComplexQuery, SimpleQuery},
+    query::{ComplexQuery, DefaultDesc, SimpleQuery},
 };
 
 #[predicate_enum]
@@ -23,6 +23,8 @@ impl Default for ServiceField {
         Self::CreatedAt
     }
 }
+
+impl DefaultDesc for ServiceField {}
 
 pub type ServiceQuery = ComplexQuery<ServicePredicate, ServiceField>;
 

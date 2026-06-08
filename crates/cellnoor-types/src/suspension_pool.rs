@@ -65,25 +65,32 @@ pub struct NewTaggedSuspensionPool {
 #[derive(strum::IntoStaticStr, strum::EnumDiscriminants)]
 #[cfg_attr(
     feature = "serde",
-    serde(tag = "multiplexing_type", rename_all = "snake_case")
+    serde(tag = "multiplexing_tag_type", rename_all = "snake_case")
 )]
 #[strum(serialize_all = "snake_case")]
 // Apply `sort_field_enum` cus it has everything we want
 #[strum_discriminants(name(MultiplexingTagType), sort_field_enum)]
 pub enum NewSuspensionPool {
     FlexBarcode(NewTaggedSuspensionPool),
-    FlexOligoNucleotideBarcode(NewTaggedSuspensionPool),
+    FlexOligonucleotideBarcode(NewTaggedSuspensionPool),
     #[cfg_attr(feature = "serde", serde(rename = "TotalSeq-A"))]
     #[strum(serialize = "TotalSeq-A")]
+    #[strum_discriminants(cfg_attr(feature = "serde", serde(rename = "TotalSeq-A")))]
+    #[strum_discriminants(strum(serialize = "TotalSeq-A"))]
     TotalSeqA(NewTaggedSuspensionPool),
     #[cfg_attr(feature = "serde", serde(rename = "TotalSeq-B"))]
     #[strum(serialize = "TotalSeq-B")]
+    #[strum_discriminants(cfg_attr(feature = "serde", serde(rename = "TotalSeq-B")))]
+    #[strum_discriminants(strum(serialize = "TotalSeq-B"))]
     TotalSeqB(NewTaggedSuspensionPool),
     #[cfg_attr(feature = "serde", serde(rename = "TotalSeq-C"))]
     #[strum(serialize = "TotalSeq-C")]
+    #[strum_discriminants(cfg_attr(feature = "serde", serde(rename = "TotalSeq-C")))]
+    #[strum_discriminants(strum(serialize = "TotalSeq-C"))]
     TotalSeqC(NewTaggedSuspensionPool),
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(disabled)]
+    #[strum_discriminants(strum(disabled))]
     Genetic {
         #[cfg_attr(feature = "serde", serde(flatten))]
         common: NewSuspensionPoolCommonFields,
@@ -98,11 +105,6 @@ impl<'a> FromSql<'a> for MultiplexingTagType {
         raw: &'a [u8],
     ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
         use std::str::FromStr;
-
-        let string = NonemptyString::from_sql(ty, raw).unwrap();
-        dbg!(string);
-        let as_enum: &str = MultiplexingTagType::FlexBarcode.into();
-        dbg!(as_enum);
 
         NonemptyString::from_sql(ty, raw).map(|s| Self::from_str(s.as_ref()).unwrap())
     }
@@ -192,16 +194,54 @@ pub struct SuspensionPoolDetailed {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-
+    use crate::suspension_pool::{MultiplexingTagType, NewSuspensionPool};
     use strum::VariantArray;
 
-    use crate::suspension_pool::MultiplexingTagType;
-
+    // These tests cover 3 axes:
+    // 1. The serde (de)serializtion of MultiplexingTagType matches its strum (de)serialization
+    // 2. MultiplexingTagType can round-trip as a string
+    // 3. The serde (de)serializtion of NewSuspensionPool matches that of MultiplexingTagType
+    #[cfg(feature = "serde")]
     #[test]
-    fn multiplexing_tag_type_serialization() {
+    fn suspension_pool_type_matches_multiplexing_tag_type() {
         for ty in MultiplexingTagType::VARIANTS {
-            MultiplexingTagType::from_str(ty.into()).unwrap();
+            use jiff::Timestamp;
+            use uuid::Uuid;
+
+            if matches!(ty, MultiplexingTagType::Genetic) {
+                continue;
+            }
+
+            // First, we construct a pool using the serde serialization of MultiplexingTagType
+            let mut pool = serde_json::json!(
+                {
+                    "readable_id": "id",
+                    "name": "name",
+                    "pooled_at": Timestamp::now(),
+                    "measurements": [],
+                    "preparers": [Uuid::nil()],
+                    "suspensions": [
+                        {
+                            "suspension_id": Uuid::nil(),
+                            "tag_id": "tag"
+                        }
+                    ],
+                    "multiplexing_tag_type": ty
+                }
+            );
+            let Ok(deserialized_pool) = serde_json::from_value::<NewSuspensionPool>(pool.clone())
+            else {
+                panic!("failed to deserialize the following JSON: as NewSuspensionPool:\n{pool}");
+            };
+
+            // Next, ensure that the strum serializations of the two types match
+            let pool_as_str: &str = deserialized_pool.clone().into();
+            let ty_as_str: &str = ty.into();
+            pretty_assertions::assert_str_eq!(pool_as_str, ty_as_str);
+
+            // Finally, ensure that the strum serialization of MultiplexingTagType yields the same result as the serde serialization
+            pool["multiplexing_tag_type"] = serde_json::Value::String(pool_as_str.to_owned());
+            pretty_assertions::assert_eq!(deserialized_pool, serde_json::from_value(pool).unwrap());
         }
     }
 }

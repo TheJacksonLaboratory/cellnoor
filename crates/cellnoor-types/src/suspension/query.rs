@@ -5,7 +5,7 @@ use crate::{
         F32Operator, I64Operator, JsonOperator, StringOperator, TimestampOperator, UuidOperator,
     },
     query::{
-        ComplexQuery, SimpleQuery,
+        ComplexQuery, DefaultDesc, SimpleQuery,
         filter::{Filter, Operator},
     },
     specimen::SpecimenPredicate,
@@ -77,6 +77,8 @@ impl Default for SuspensionField {
         Self::CreatedAt
     }
 }
+
+impl DefaultDesc for SuspensionField {}
 
 pub type SuspensionQuery = ComplexQuery<SuspensionPredicate, SuspensionField>;
 

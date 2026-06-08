@@ -1,6 +1,7 @@
 use axum::{Json as AxumJson, extract::State};
 use cellnoor_types::chromium_run::{
-    ChromiumRunDetailed, ChromiumRunField, NewChromiumRunRecord, creation::NewChromiumRun,
+    ChromiumRunDetailed, ChromiumRunField,
+    creation::{NewChromiumRun, NewChromiumRunRecord},
 };
 use uuid::Uuid;
 
@@ -105,9 +106,9 @@ impl AsFieldValuePairs<ChromiumRunField, 6> for NewChromiumRunRecord {
 pub mod test {
     use cellnoor_types::{
         chromium_run::{
-            ChromiumRunDetailed, LoadingVolume, NewChromiumRunRecord,
+            ChromiumRunDetailed, LoadingVolume,
             creation::{
-                NewChipLoadingCommonFields, NewChromiumRun,
+                NewChipLoadingCommonFields, NewChromiumRun, NewChromiumRunRecord,
                 mixed::{NewMixedChipLoading, NewMixedGemWell},
                 ocm::{NewOcmChipLoading, NewOcmGemWell, OcmBarcodeId},
                 standard::{NewStandardChipLoading, NewStandardGemWell},

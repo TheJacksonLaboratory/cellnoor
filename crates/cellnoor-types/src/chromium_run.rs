@@ -6,8 +6,11 @@ pub use query::{
 };
 
 use crate::{
-    chromium_run::record::{ChromiumRunRecord, GemWellRecord},
-    id::{Id, NoId},
+    chromium_run::{
+        creation::NewChromiumRunRecord,
+        record::{ChromiumRunRecord, GemWellRecord},
+    },
+    id::Id,
     simple_links::SimpleLinks,
     suspension_pool::{SavedTaggedSpecimenRecord, TaggedSpecimen},
     tenx_assay::TenxAssay,
@@ -48,8 +51,6 @@ mod record {
 }
 
 pub type SavedGemWellRecord = GemWellRecord<Id>;
-
-pub type NewChromiumRunRecord = ChromiumRunRecord<NoId>;
 
 pub type SavedChromiumRunRecord = ChromiumRunRecord<Id>;
 

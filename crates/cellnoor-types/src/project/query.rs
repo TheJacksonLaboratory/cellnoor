@@ -2,7 +2,7 @@ use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
     operator::{StringOperator, TimestampOperator, UuidOperator},
-    query::{ComplexQuery, SimpleQuery},
+    query::{ComplexQuery, DefaultDesc, SimpleQuery},
 };
 
 #[predicate_enum]
@@ -24,6 +24,8 @@ impl Default for ProjectField {
         Self::StartedAt
     }
 }
+
+impl DefaultDesc for ProjectField {}
 
 pub type ProjectQuery = ComplexQuery<ProjectPredicate, ProjectField>;
 

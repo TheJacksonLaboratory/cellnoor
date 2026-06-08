@@ -8,17 +8,25 @@ use crate::query::{
 pub(crate) mod filter;
 pub(crate) mod order_by;
 
+// Most of the time, we're ordering by a time-field, so we want to see most recent first
+pub trait DefaultDesc {
+    fn default_desc() -> bool {
+        true
+    }
+}
+
 #[base_model]
 #[derive(Copy, Default)]
 #[cfg_attr(feature = "serde", serde(default))]
 #[cfg_attr(feature = "schemars", schemars(inline))]
 pub struct SimpleQuery<O>
 where
-    O: Default,
+    O: Default + DefaultDesc,
 {
     pub limit: Option<i64>,
     pub offset: i64,
     pub order_by_field: O,
+    #[cfg_attr(feature = "serde", serde(default = "O::default_desc"))]
     pub order_by_desc: bool,
 }
 
@@ -51,7 +59,7 @@ where
 
 impl<P, O> ComplexQuery<P, O>
 where
-    O: Default,
+    O: Default + DefaultDesc,
 {
     pub fn from_filter(predicate: P) -> Self {
         Self {
@@ -82,7 +90,7 @@ where
 
 impl<P, O> From<P> for ComplexQuery<P, O>
 where
-    O: Default,
+    O: Default + DefaultDesc,
 {
     fn from(pred: P) -> Self {
         Self::from_filter(pred)

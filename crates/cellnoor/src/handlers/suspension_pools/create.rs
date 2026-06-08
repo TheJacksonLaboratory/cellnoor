@@ -39,12 +39,9 @@ async fn insert_suspension_pool(
     tx: &db::Transaction<'_>,
     new: &NewSuspensionPool,
 ) -> Result<SuspensionPoolDetailed, ErrorInner> {
-    let multiplexing_tag_type: &str = new.into();
-    let multiplexing_tag_type = MultiplexingTagType::from_str(multiplexing_tag_type).ok();
-
     let (record, measurements, preparer_ids, suspensions) = match new {
         NewSuspensionPool::FlexBarcode(pool)
-        | NewSuspensionPool::FlexOligoNucleotideBarcode(pool)
+        | NewSuspensionPool::FlexOligonucleotideBarcode(pool)
         | NewSuspensionPool::TotalSeqA(pool)
         | NewSuspensionPool::TotalSeqB(pool)
         | NewSuspensionPool::TotalSeqC(pool) => {
@@ -63,7 +60,13 @@ async fn insert_suspension_pool(
                 preparers,
                 suspensions
                     .iter()
-                    .map(|s| (s.suspension_id, Some(&s.tag_id), multiplexing_tag_type))
+                    .map(|s| {
+                        (
+                            s.suspension_id,
+                            Some(&s.tag_id),
+                            Some(MultiplexingTagType::from_str(new.into()).unwrap()),
+                        )
+                    })
                     .collect::<Vec<_>>(),
             )
         }

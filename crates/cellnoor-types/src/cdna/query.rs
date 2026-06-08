@@ -3,7 +3,7 @@ use macro_attributes::{base_model, predicate_enum, sort_field_enum};
 use crate::{
     operator::{I32Operator, JsonOperator, StringOperator, TimestampOperator, UuidOperator},
     query::{
-        ComplexQuery, SimpleQuery,
+        ComplexQuery, DefaultDesc, SimpleQuery,
         filter::{Filter, Operator},
     },
     specimen::SpecimenPredicate,
@@ -63,13 +63,13 @@ impl From<CdnaPredicateInner> for Filter<CdnaPredicate> {
     }
 }
 
-#[cfg(feature = "postgres-types")]
-
 impl Default for CdnaField {
     fn default() -> Self {
         Self::PreparedAt
     }
 }
+
+impl DefaultDesc for CdnaField {}
 
 pub type CdnaQuery = ComplexQuery<CdnaPredicate, CdnaField>;
 
