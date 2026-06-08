@@ -16,6 +16,7 @@ camino = { workspace = true, optional = true }
 rand = {workspace = true, optional = true}
 aide = {workspace = true, optional = true}
 csvranger = { workspace = true, optional = true }
+positive = { path = "../positive" }
 jsonwebtoken = {workspace = true, optional = true}
 bytes = {workspace = true, optional = true}
 serde.workspace = true

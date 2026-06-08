@@ -22,7 +22,7 @@ pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new()
         .api_route("/", post(create_cdna).get(index_cdna_simple))
         .api_route("/search", post(index_cdna))
-        .api_route("/search/detailed", post(index_cdna_detailed))
+        .api_route("/chromium/search/detailed", post(index_cdna_detailed))
         .nest("/{id}", id_router())
 }
 

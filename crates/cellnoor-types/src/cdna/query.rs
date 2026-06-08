@@ -1,13 +1,13 @@
 use macro_attributes::{base_model, predicate_enum, sort_field_enum};
 
 use crate::{
+    cdna::creation::LibraryType,
     operator::{I32Operator, JsonOperator, StringOperator, TimestampOperator, UuidOperator},
     query::{
         ComplexQuery, DefaultDesc, SimpleQuery,
         filter::{Filter, Operator},
     },
     specimen::SpecimenPredicate,
-    tenx_assay::LibraryType,
 };
 
 pub type LibraryTypeOperator = Operator<LibraryType>;

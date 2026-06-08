@@ -64,7 +64,7 @@ mod positive {
 
             Self::new(val).ok_or(de::Error::invalid_value(
                 Unexpected::Other(&format!("a number <= 0 or > {N}")),
-                &format!("a number n such that 0 < 0 <= {N}").as_str(),
+                &format!("a number n such that 0 < n <= {N}").as_str(),
             ))
         }
     }

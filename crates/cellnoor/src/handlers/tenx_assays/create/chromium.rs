@@ -1,4 +1,4 @@
-use cellnoor_types::tenx_assay::{LibraryType, creation::NewChromiumAssay};
+use cellnoor_types::{cdna::creation::LibraryType, tenx_assay::creation::NewChromiumAssay};
 use uuid::Uuid;
 
 use crate::{
@@ -85,9 +85,12 @@ impl AsFieldValuePairs<&'static str, 7> for NewChromiumAssayRecord<'_> {
 
 #[cfg(test)]
 pub mod tests {
-    use cellnoor_types::tenx_assay::{
-        LibraryType, SampleMultiplexing, TenxAssay,
-        creation::{LibraryTypeSpecification, NewChromiumAssay, NewTenxAssay},
+    use cellnoor_types::{
+        cdna::creation::LibraryType,
+        tenx_assay::{
+            SampleMultiplexing, TenxAssay,
+            creation::{LibraryTypeSpecification, NewChromiumAssay, NewTenxAssay},
+        },
     };
     use nonempty::{NonemptyBoundedVec, NonemptyVec};
     use positive::PositiveI32;

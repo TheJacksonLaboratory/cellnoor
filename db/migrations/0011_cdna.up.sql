@@ -4,7 +4,7 @@ create table cdna (
     library_type case_insensitive_text not null,
     prepared_at timestamptz not null,
     gem_well_id uuid references gem_well,
-    n_amplification_cycles integer not null,
+    n_amplification_cycles integer,
     additional_data jsonb,
 
     -- a single GEM well cannot generate more than one cDNA of the same library type

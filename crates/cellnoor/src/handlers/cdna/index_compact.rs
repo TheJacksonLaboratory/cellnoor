@@ -6,6 +6,7 @@ use cellnoor_types::{
 };
 use futures::StreamExt;
 use postgres_types::ToSql;
+use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
@@ -62,8 +63,8 @@ impl AsPredicate for CdnaPredicate {
     }
 }
 
-pub(super) fn cdna_simple_links(id: Id) -> SimpleLinks {
-    SimpleLinks::from_str_and_id("/cdna", id)
+pub(super) fn cdna_simple_links(id: Uuid) -> SimpleLinks {
+    SimpleLinks::from_str_and_id("/cdna", id.into())
 }
 
 pub fn cdna_from_record(record: SavedCdnaRecord) -> CdnaCompact {
@@ -102,7 +103,7 @@ mod test {
         let cdnas = select_cdna_compact(
             &tx,
             &mut CdnaQuery::from_filter(
-                CdnaPredicateInner::Id(UuidOperator::Eq(*inserted.record.id)).into(),
+                CdnaPredicateInner::Id(UuidOperator::Eq(inserted.record.id)).into(),
             ),
         )
         .await

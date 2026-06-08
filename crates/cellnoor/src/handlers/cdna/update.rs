@@ -68,7 +68,10 @@ async fn update_cdna_by_id(
 
 #[cfg(test)]
 mod test {
-    use cellnoor_types::cdna::{CdnaUpdate, NewCdnaRecord};
+    use cellnoor_types::cdna::{
+        CdnaUpdate,
+        creation::{NewCdna, NewCdnaRecord},
+    };
     use positive::PositiveI32;
     use uuid::Uuid;
 
@@ -84,16 +87,25 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (insert_input, inserted) = insert_test_cdna_and_chromium_run(&tx, |_| ())
+        let (
+            NewCdna::GeneExpression {
+                common: insert_input,
+                ..
+            },
+            inserted,
+        ) = insert_test_cdna_and_chromium_run(&tx, |_| ())
             .await
-            .unwrap();
-        let id = *inserted.record.id;
+            .unwrap()
+        else {
+            panic!("we inserted a gene expression cDNA");
+        };
+
+        let id = inserted.record.id;
 
         let pre_update = CdnaUpdate {
             record: NewCdnaRecord {
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                n_amplification_cycles: PositiveI32::new(15).unwrap(),
-                ..insert_input.record
+                ..insert_input.common.record
             },
             measurements: None,
             preparers: None,

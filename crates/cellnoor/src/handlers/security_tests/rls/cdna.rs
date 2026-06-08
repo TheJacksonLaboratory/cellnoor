@@ -1,5 +1,5 @@
 use cellnoor_types::{
-    cdna::{CdnaDetailed, CdnaPredicate, CdnaPredicateInner, CdnaQuery, NewCdna},
+    cdna::{CdnaDetailed, CdnaPredicate, CdnaPredicateInner, CdnaQuery, creation::NewCdna},
     chromium_run::creation::{NewChromiumRun, standard::NewStandardChipLoading},
     operator::UuidOperator,
 };
@@ -64,9 +64,12 @@ async fn insert_inaccessible_cdna(tx: &db::Transaction<'_>) -> (NewCdna, CdnaDet
 
     let gem_well_id = *chromium_run.gem_wells[0].record.id;
 
-    insert_test_cdna_and_chromium_run(tx, |c| c.record.gem_well_id = Some(gem_well_id))
-        .await
-        .unwrap()
+    insert_test_cdna_and_chromium_run(tx, |c| match c {
+        NewCdna::GeneExpression { common, .. } => common.gem_well_id = gem_well_id,
+        _ => (),
+    })
+    .await
+    .unwrap()
 }
 
 async fn get_user_id_from_cdna(cdna: &CdnaDetailed) -> Uuid {
@@ -113,5 +116,5 @@ async fn row_level_security_for_cdna() {
     let tx = client.begin().await.unwrap();
 
     test_user_can_only_see_accessible_cdna(&tx, accessible_cdna).await;
-    test_user_cannot_see_inaccessible_cdna(&tx, *inaccessible_cdna.record.id).await;
+    test_user_cannot_see_inaccessible_cdna(&tx, inaccessible_cdna.record.id).await;
 }

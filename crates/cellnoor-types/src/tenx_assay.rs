@@ -3,23 +3,10 @@ use nonempty::NonemptyString;
 pub use query::{TenxAssayField, TenxAssayPredicate};
 use uuid::Uuid;
 
+use crate::cdna::creation::LibraryType;
+
 pub mod creation;
 mod query;
-
-#[unit_enum]
-pub enum LibraryType {
-    AntibodyCapture,
-    AntigenCapture,
-    ChromatinAccessibility,
-    CrisprGuideCapture,
-    Custom,
-    GeneExpression,
-    MultiplexingCapture,
-    Vdj,
-    VdjB,
-    VdjT,
-    VdjTGd,
-}
 
 #[unit_enum]
 pub enum SampleMultiplexing {
