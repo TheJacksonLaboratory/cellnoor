@@ -128,12 +128,11 @@ mod test {
             HashSet::from_iter(specimens.iter().map(|s| s.specimen.record.id));
         assert_eq!(set.len(), 3);
 
-        let set: HashSet<_, RandomState> = HashSet::from_iter(
-            specimens
-                .iter()
-                .filter_map(|s| s.multiplexing_tag.as_ref())
-                .map(|t| t.id),
-        );
+        let set: HashSet<_, RandomState> = specimens
+            .iter()
+            .filter_map(|s| s.multiplexing_tag.as_ref())
+            .collect();
+
         assert_eq!(set.len(), 2);
     }
 

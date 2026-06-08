@@ -78,7 +78,7 @@ pub fn sort_field_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let input: proc_macro2::TokenStream = input.into();
 
     quote! {
-        #[derive(Hash, ::strum::IntoStaticStr, ::strum::VariantArray)]
+        #[derive(Hash, ::strum::IntoStaticStr, ::strum::VariantArray, ::strum::EnumString)]
         #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
         #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
         #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]

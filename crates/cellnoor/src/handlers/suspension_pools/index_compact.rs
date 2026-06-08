@@ -3,9 +3,9 @@ use cellnoor_types::{
     SimpleLinks,
     id::Id,
     suspension_pool::{
-        SavedSuspensionPoolRecord, SavedTaggedSpecimenRecord, SuspensionPoolCompact,
-        SuspensionPoolLinks, SuspensionPoolPredicate, SuspensionPoolPredicateInner,
-        SuspensionPoolQuery, TaggedSpecimen,
+        MultiplexingTagPredicate, SavedSuspensionPoolRecord, SavedTaggedSpecimenRecord,
+        SuspensionPoolCompact, SuspensionPoolLinks, SuspensionPoolPredicate,
+        SuspensionPoolPredicateInner, SuspensionPoolQuery, TaggedSpecimen,
     },
 };
 use futures::StreamExt;
@@ -49,17 +49,30 @@ async fn select_suspension_pools_compact(
     Ok(stream.map(suspension_pool_from_record).collect().await)
 }
 
+impl AsPredicate for MultiplexingTagPredicate {
+    fn as_predicate(&self) -> (&'static str, (&'static str, &(dyn ToSql + Sync))) {
+        let sql = match self {
+            Self::Type(t) => t.as_sql_operator_and_value(),
+        };
+
+        (self.field_name(), sql)
+    }
+}
+
 impl AsPredicate for SuspensionPoolPredicate {
     fn as_predicate(&self) -> (&'static str, (&'static str, &(dyn ToSql + Sync))) {
         let sql = match self {
             Self::Specimen(p) => {
                 return p.as_predicate();
             }
+            Self::MultiplexingTag(p) => {
+                return p.as_predicate();
+            }
             Self::SuspensionPool(p) => match p {
                 SuspensionPoolPredicateInner::Id(u) => u.as_sql_operator_and_value(),
                 SuspensionPoolPredicateInner::Name(s)
                 | SuspensionPoolPredicateInner::ReadableId(s) => s.as_sql_operator_and_value(),
-                SuspensionPoolPredicateInner::MultiplexingType(s) => s.as_sql_operator_and_value(),
+
                 SuspensionPoolPredicateInner::PooledAt(t) => t.as_sql_operator_and_value(),
                 SuspensionPoolPredicateInner::AdditionalData(j) => j.as_sql_operator_and_value(),
             },
@@ -102,7 +115,7 @@ mod test {
     use cellnoor_types::{
         operator::SimpleStringOperator,
         specimen::{SpecimenField, SpecimenPredicate},
-        suspension_pool::{SuspensionPoolField, SuspensionPoolQuery},
+        suspension_pool::{MultiplexingTagField, SuspensionPoolField, SuspensionPoolQuery},
     };
     use pretty_assertions::assert_eq;
 
@@ -149,6 +162,7 @@ mod test {
 
         tokio::join!(
             ensure_fields_are_selectable::<SpecimenField>(&tx, view),
+            ensure_fields_are_selectable::<MultiplexingTagField>(&tx, view),
             ensure_fields_are_selectable::<SuspensionPoolField>(&tx, view),
         );
     }

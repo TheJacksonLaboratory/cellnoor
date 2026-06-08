@@ -13,6 +13,17 @@ use crate::{
 pub type MultiplexingTagTypeOperator = Operator<MultiplexingTagType>;
 
 #[predicate_enum]
+#[strum(prefix = "(multiplexing_tag).")]
+#[strum_discriminants(
+    name(MultiplexingTagField),
+    sort_field_enum,
+    strum(prefix = "(multiplexing_tag).")
+)]
+pub enum MultiplexingTagPredicate {
+    Type(MultiplexingTagTypeOperator),
+}
+
+#[predicate_enum]
 #[strum(prefix = "(suspension_pool).")]
 #[strum_discriminants(
     name(SuspensionPoolField),
@@ -23,7 +34,6 @@ pub enum SuspensionPoolPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),
     Name(StringOperator),
-    MultiplexingType(MultiplexingTagTypeOperator),
     PooledAt(TimestampOperator),
     AdditionalData(JsonOperator),
 }
@@ -34,6 +44,8 @@ pub enum SuspensionPoolPredicateInner {
 pub enum SuspensionPoolPredicate {
     #[strum(transparent)]
     Specimen(SpecimenPredicate),
+    #[strum(transparent)]
+    MultiplexingTag(MultiplexingTagPredicate),
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(transparent)]
     SuspensionPool(SuspensionPoolPredicateInner),
@@ -43,6 +55,7 @@ impl SuspensionPoolPredicate {
     pub fn field_name(&self) -> &'static str {
         match self {
             Self::Specimen(p) => p.field_name(),
+            Self::MultiplexingTag(p) => p.field_name(),
             Self::SuspensionPool(p) => p.field_name(),
         }
     }
@@ -51,6 +64,12 @@ impl SuspensionPoolPredicate {
 impl From<SpecimenPredicate> for SuspensionPoolPredicate {
     fn from(value: SpecimenPredicate) -> Self {
         Self::Specimen(value)
+    }
+}
+
+impl From<MultiplexingTagPredicate> for SuspensionPoolPredicate {
+    fn from(value: MultiplexingTagPredicate) -> Self {
+        Self::MultiplexingTag(value)
     }
 }
 

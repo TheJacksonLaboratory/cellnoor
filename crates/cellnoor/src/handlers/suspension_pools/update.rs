@@ -3,8 +3,8 @@ use axum::{
     extract::{Path, State},
 };
 use cellnoor_types::suspension_pool::{
-    NewSuspensionPoolCommonFields, SuspensionPoolDetailed, SuspensionPoolField,
-    SuspensionPoolUpdate,
+    NewSuspensionPoolCommonFields, NewSuspensionPoolRecord, SuspensionPoolDetailed,
+    SuspensionPoolField, SuspensionPoolUpdate,
 };
 use uuid::Uuid;
 
@@ -70,24 +70,4 @@ async fn update_suspension_pool_by_id(
     tokio::try_join!(preparer_insertions, measurement_insertions)?;
 
     select_suspension_pool_by_id(tx, id).await
-}
-
-impl AsFieldValuePairs<SuspensionPoolField, 4> for NewSuspensionPoolCommonFields {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, SuspensionPoolField, 4> {
-        use SuspensionPoolField::*;
-
-        let Self {
-            readable_id,
-            name,
-            pooled_at,
-            additional_data,
-        } = self;
-
-        [
-            (ReadableId, readable_id),
-            (Name, name),
-            (PooledAt, pooled_at),
-            (AdditionalData, additional_data),
-        ]
-    }
 }

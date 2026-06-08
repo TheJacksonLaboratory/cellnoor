@@ -188,7 +188,7 @@ pub mod test {
         let gem_well2 = NewStandardGemWell {
             readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
             loading: NewStandardChipLoading::SuspensionPool {
-                suspension_pool_id: pool.record.id,
+                suspension_pool_id: *pool.record.id,
                 common: loading_common(),
             },
         };

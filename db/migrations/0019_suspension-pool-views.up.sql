@@ -14,7 +14,7 @@ create view suspension_pool_to_specimen as (
     from suspension_pool
     join suspension_pooling as pooling on suspension_pool.id = pooling.pool_id
     join suspension_to_specimen as suspension on pooling.suspension_id = (suspension.suspension).id
-    left join multiplexing_tag on pooling.tag_id = multiplexing_tag.id
+    left join multiplexing_tag on (pooling.tag_id, pooling.tag_type) = (multiplexing_tag.tag_id, multiplexing_tag.type)
 );
 
 create function get_suspension_created_at(suspension_id uuid) returns timestamptz language plpgsql volatile strict as $$

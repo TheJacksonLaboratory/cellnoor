@@ -3,7 +3,6 @@ create table suspension_pool (
     readable_id case_insensitive_text unique not null,
     name case_insensitive_text not null,
     pooled_at timestamptz not null,
-    multiplexing_type case_insensitive_text not null,
     additional_data jsonb
 );
 
@@ -24,6 +23,7 @@ create trigger measurement_made_after_suspension_pool_created before insert or u
 create table suspension_pool_preparer (
     pool_id uuid references suspension_pool on delete cascade not null,
     prepared_by uuid references person not null,
+
     primary key (pool_id, prepared_by)
 );
 
@@ -43,5 +43,5 @@ create table suspension_pooling (
 
     foreign key (tag_id, tag_type) references multiplexing_tag,
     unique (pool_id, tag_id, tag_type),
-    unique nulls not distinct (pool_id, suspension_id, tag_id, tag_type),
+    unique nulls not distinct (pool_id, suspension_id, tag_id, tag_type)
 );

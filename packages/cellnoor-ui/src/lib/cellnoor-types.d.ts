@@ -696,7 +696,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["NewService"];
+                    "application/json": components["schemas"]["ServiceUpdate"];
                 };
             };
             responses: {
@@ -1702,12 +1702,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": {
-                            /** Format: uuid */
-                            id: string;
-                            tag_id: string;
-                            type_: components["schemas"]["MultiplexingTagType"];
-                        }[];
+                        "application/json": components["schemas"]["MultiplexingTag"][];
                     };
                 };
             };
@@ -1722,10 +1717,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": {
-                        tag_id: string;
-                        type_: components["schemas"]["MultiplexingTagType"];
-                    };
+                    "application/json": components["schemas"]["MultiplexingTag"];
                 };
             };
             responses: {
@@ -1734,7 +1726,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": string;
+                        "application/json": components["schemas"]["MultiplexingTag"];
                     };
                 };
                 /** @description Failed to parse the request body as JSON */
@@ -4691,11 +4683,9 @@ export interface components {
             expires_at?: string | null;
             /** Format: uuid */
             id: string;
-            /** Format: uuid */
-            person_id?: string | null;
+            person_id?: components["schemas"]["PersonId"] | null;
             secret: string;
-            /** Format: uuid */
-            service_id?: string | null;
+            service_id?: components["schemas"]["ServiceId"] | null;
         };
         /**
          * @description Auto-generated discriminant enum variants
@@ -4746,17 +4736,13 @@ export interface components {
             expires_at?: string | null;
             /** Format: uuid */
             id: string;
-            /** Format: uuid */
-            person_id?: string | null;
-            /** Format: uuid */
-            service_id?: string | null;
+            person_id?: components["schemas"]["PersonId"] | null;
+            service_id?: components["schemas"]["ServiceId"] | null;
         };
         ApiKeyUpdate: {
             description?: string | null;
             /** Format: date-time */
             expires_at?: string | null;
-            permissions_to_grant?: components["schemas"]["PermissionsToGrant"] | null;
-            permissions_to_revoke?: components["schemas"]["PermissionsToRevoke"] | null;
         };
         /** @description A comparison operator for any scalar value. */
         Array_of_LibraryTypeOperator: {
@@ -5633,8 +5619,32 @@ export interface components {
         Micrometer: "micrometer";
         /** @enum {string} */
         Milliliter: "milliliter";
-        /** @enum {string} */
-        MultiplexingTagType: "flex_barcode" | "flex_oligonucleotide_barcode" | "on_chip_multiplexing" | "TotalSeq-A" | "TotalSeq-B" | "TotalSeq-C";
+        MultiplexingTag: {
+            tag_id: string;
+            type_: components["schemas"]["MultiplexingTagType"];
+        };
+        MultiplexingTagPredicate: {
+            type: components["schemas"]["MultiplexingTagTypeOperator"];
+        };
+        /**
+         * @description Auto-generated discriminant enum variants
+         * @enum {string}
+         */
+        MultiplexingTagType: "flex_barcode" | "flex_oligo_nucleotide_barcode" | "total_seq_a" | "total_seq_b" | "total_seq_c" | "genetic";
+        /** @description A comparison operator for any scalar value. */
+        MultiplexingTagTypeOperator: {
+            eq: components["schemas"]["MultiplexingTagType"];
+        } | {
+            lt: components["schemas"]["MultiplexingTagType"];
+        } | {
+            lte: components["schemas"]["MultiplexingTagType"];
+        } | {
+            gt: components["schemas"]["MultiplexingTagType"];
+        } | {
+            gte: components["schemas"]["MultiplexingTagType"];
+        } | {
+            in: components["schemas"]["MultiplexingTagType"][];
+        } | components["schemas"]["MultiplexingTagType"];
         /** @enum {string} */
         Nanogram: "nanogram";
         NanogramConcentration: {
@@ -5647,9 +5657,7 @@ export interface components {
             description?: string | null;
             /** Format: date-time */
             expires_at?: string | null;
-            permissions_to_grant: components["schemas"]["PermissionsToGrant"];
-            /** Format: uuid */
-            service_id?: string | null;
+            service_id?: components["schemas"]["ServiceId"] | null;
         };
         NewBlock: {
             additional_data?: unknown;
@@ -5861,11 +5869,11 @@ export interface components {
             readable_id: string;
         };
         NewPerson: {
+            can_manage_users: boolean;
             email?: string | null;
             /** Format: uuid */
             institution_id: string;
-            /** @default false */
-            is_staff?: boolean;
+            is_staff: boolean;
             name: string;
             orcid?: string | null;
             permissions_to_grant: components["schemas"]["PermissionsToGrant"];
@@ -5879,7 +5887,10 @@ export interface components {
             started_at: string;
         };
         NewService: {
+            can_manage_users: boolean;
             description?: string | null;
+            is_staff: boolean;
+            permissions_to_grant: components["schemas"]["PermissionsToGrant"];
             users: string[];
         };
         NewSpecimen: ({
@@ -5963,22 +5974,24 @@ export interface components {
             /** Format: uuid */
             measured_by: string;
         };
-        NewSuspensionPool: {
+        NewSuspensionPool: ({
+            /** @constant */
+            multiplexing_type: "flex_barcode";
+        } & components["schemas"]["NewTaggedSuspensionPool"]) | ({
+            /** @constant */
+            multiplexing_type: "flex_oligo_nucleotide_barcode";
+        } & components["schemas"]["NewTaggedSuspensionPool"]) | ({
+            /** @constant */
+            multiplexing_type: "TotalSeq-A";
+        } & components["schemas"]["NewTaggedSuspensionPool"]) | ({
+            /** @constant */
+            multiplexing_type: "TotalSeq-B";
+        } & components["schemas"]["NewTaggedSuspensionPool"]) | ({
+            /** @constant */
+            multiplexing_type: "TotalSeq-C";
+        } & components["schemas"]["NewTaggedSuspensionPool"]) | {
             additional_data?: unknown;
             measurements: components["schemas"]["NewSuspensionPoolMeasurement"][];
-            /** @constant */
-            multiplexing_type: "exogenous_tag";
-            name: string;
-            /** Format: date-time */
-            pooled_at: string;
-            preparers: string[];
-            readable_id: string;
-            suspensions: components["schemas"]["TaggedSuspension"][];
-        } | {
-            additional_data?: unknown;
-            measurements: components["schemas"]["NewSuspensionPoolMeasurement"][];
-            /** @constant */
-            multiplexing_type: "genetic";
             name: string;
             /** Format: date-time */
             pooled_at: string;
@@ -6038,6 +6051,16 @@ export interface components {
             submitted_by: string;
             thermal_preservation_method: components["schemas"]["SuspensionThermalPreservation"];
             tissue: string;
+        };
+        NewTaggedSuspensionPool: {
+            additional_data?: unknown;
+            measurements: components["schemas"]["NewSuspensionPoolMeasurement"][];
+            name: string;
+            /** Format: date-time */
+            pooled_at: string;
+            preparers: string[];
+            readable_id: string;
+            suspensions: components["schemas"]["TaggedSuspension"][];
         };
         NewTenxAssay: {
             /** @constant */
@@ -6793,13 +6816,13 @@ export interface components {
         PermissionsToGrant: components["schemas"]["ResourcePermission"][];
         PermissionsToRevoke: components["schemas"]["ResourcePermission"][];
         Person: {
+            can_manage_users: boolean;
             email?: string | null;
             /** Format: uuid */
             id: string;
             /** Format: uuid */
             institution_id: string;
-            /** @default false */
-            is_staff?: boolean;
+            is_staff: boolean;
             links: components["schemas"]["PersonLinks"];
             name: string;
             orcid?: string | null;
@@ -6808,7 +6831,9 @@ export interface components {
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
-        PersonField: "id" | "name" | "email" | "institution_id" | "is_staff" | "orcid";
+        PersonField: "id" | "name" | "email" | "institution_id" | "is_staff" | "can_manage_users" | "orcid";
+        /** Format: uuid */
+        PersonId: string;
         PersonLinks: {
             projects: string;
             self: string;
@@ -6823,6 +6848,8 @@ export interface components {
             institution_id: components["schemas"]["UuidOperator"];
         } | {
             is_staff: components["schemas"]["booleanOperator"];
+        } | {
+            can_manage_users: components["schemas"]["booleanOperator"];
         } | {
             orcid: components["schemas"]["StringOperator"];
         };
@@ -6848,11 +6875,11 @@ export interface components {
             order_by?: components["schemas"]["OrderByPersonFieldSet"];
         };
         PersonUpdate: {
+            can_manage_users: boolean;
             email?: string | null;
             /** Format: uuid */
             institution_id: string;
-            /** @default false */
-            is_staff?: boolean;
+            is_staff: boolean;
             name: string;
             orcid?: string | null;
             permissions_to_grant?: components["schemas"]["PermissionsToGrant"] | null;
@@ -6867,8 +6894,8 @@ export interface components {
             value: number;
         };
         ProjectCompact: {
-            /** Format: uuid */
-            created_by: string;
+            created_by_person?: components["schemas"]["PersonId"] | null;
+            created_by_service?: components["schemas"]["ServiceId"] | null;
             /** Format: date-time */
             ended_at: string;
             /** Format: uuid */
@@ -6881,8 +6908,8 @@ export interface components {
             started_at: string;
         };
         ProjectDetailed: {
-            /** Format: uuid */
-            created_by: string;
+            created_by_person?: components["schemas"]["PersonId"] | null;
+            created_by_service?: components["schemas"]["ServiceId"] | null;
             /** Format: date-time */
             ended_at: string;
             /** Format: uuid */
@@ -6899,11 +6926,15 @@ export interface components {
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
-        ProjectField: "id" | "name" | "started_at" | "ended_at";
+        ProjectField: "id" | "name" | "created_by_person" | "created_by_service" | "started_at" | "ended_at";
         ProjectPredicate: {
             id: components["schemas"]["UuidOperator"];
         } | {
             name: components["schemas"]["StringOperator"];
+        } | {
+            created_by_person: components["schemas"]["UuidOperator"];
+        } | {
+            created_by_service: components["schemas"]["UuidOperator"];
         } | {
             started_at: components["schemas"]["TimestampOperator"];
         } | {
@@ -7328,11 +7359,13 @@ export interface components {
             [key: string]: unknown;
         };
         Service: {
+            can_manage_users: boolean;
             /** Format: date-time */
             created_at: string;
             description?: string | null;
             /** Format: uuid */
             id: string;
+            is_staff: boolean;
             /** Format: uuid */
             owned_by: string;
         };
@@ -7340,13 +7373,19 @@ export interface components {
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
-        ServiceField: "id" | "description" | "owned_by" | "created_at";
+        ServiceField: "id" | "description" | "owned_by" | "is_staff" | "can_manage_users" | "created_at";
+        /** Format: uuid */
+        ServiceId: string;
         ServicePredicate: {
             id: components["schemas"]["UuidOperator"];
         } | {
             description: components["schemas"]["StringOperator"];
         } | {
             owned_by: components["schemas"]["UuidOperator"];
+        } | {
+            is_staff: components["schemas"]["booleanOperator"];
+        } | {
+            can_manage_users: components["schemas"]["booleanOperator"];
         } | {
             created_at: components["schemas"]["TimestampOperator"];
         };
@@ -7370,6 +7409,13 @@ export interface components {
              */
             offset?: number;
             order_by?: components["schemas"]["OrderByServiceFieldSet"];
+        };
+        ServiceUpdate: {
+            can_manage_users: boolean;
+            description?: string | null;
+            is_staff: boolean;
+            permissions_to_grant?: components["schemas"]["PermissionsToGrant"] | null;
+            permissions_to_revoke?: components["schemas"]["PermissionsToRevoke"] | null;
         };
         /** @enum {string} */
         Species: "ambystoma_mexicanum" | "canis_familiaris" | "callithrix_jacchus" | "drosophila_melanogaster" | "gasterosteus_aculeatus" | "homo_sapiens" | "mus_musculus" | "rattus_norvegicus" | "sminthopsis_crassicaudata";
@@ -7673,7 +7719,6 @@ export interface components {
             /** Format: uuid */
             id: string;
             links: components["schemas"]["SuspensionPoolLinks"];
-            multiplexing_type: string;
             name: string;
             /** Format: date-time */
             pooled_at: string;
@@ -7685,7 +7730,6 @@ export interface components {
             id: string;
             links: components["schemas"]["SuspensionPoolLinks"];
             measurements: components["schemas"]["SuspensionPoolMeasurement"][];
-            multiplexing_type: string;
             name: string;
             /** Format: date-time */
             pooled_at: string;
@@ -7697,7 +7741,7 @@ export interface components {
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
-        SuspensionPoolField: "id" | "readable_id" | "name" | "multiplexing_type" | "pooled_at" | "additional_data";
+        SuspensionPoolField: "id" | "readable_id" | "name" | "pooled_at" | "additional_data";
         SuspensionPoolLinks: {
             self: string;
             suspensions: string;
@@ -7728,6 +7772,8 @@ export interface components {
         } & components["schemas"]["MeanDiameter"]);
         SuspensionPoolPredicate: {
             specimen: components["schemas"]["SpecimenPredicate"];
+        } | {
+            multiplexing_tag: components["schemas"]["MultiplexingTagPredicate"];
         } | components["schemas"]["SuspensionPoolPredicateInner"];
         SuspensionPoolPredicateFilter: {
             all_of: components["schemas"]["SuspensionPoolPredicateFilter"][];
@@ -7742,8 +7788,6 @@ export interface components {
             readable_id: components["schemas"]["StringOperator"];
         } | {
             name: components["schemas"]["StringOperator"];
-        } | {
-            multiplexing_type: components["schemas"]["StringOperator"];
         } | {
             pooled_at: components["schemas"]["TimestampOperator"];
         } | {
@@ -7766,7 +7810,6 @@ export interface components {
         SuspensionPoolUpdate: {
             additional_data?: unknown;
             measurements?: components["schemas"]["NewSuspensionPoolMeasurement"][] | null;
-            multiplexing_type: string;
             name: string;
             /** Format: date-time */
             pooled_at: string;
@@ -7864,12 +7907,7 @@ export interface components {
             links: {
                 self: string;
             };
-            multiplexing_tag?: {
-                /** Format: uuid */
-                id: string;
-                tag_id: string;
-                type_: components["schemas"]["MultiplexingTagType"];
-            } | null;
+            multiplexing_tag?: components["schemas"]["MultiplexingTag"] | null;
             name: string;
             ocm_barcode_id?: components["schemas"]["OcmBarcodeId"] | null;
             /** Format: uuid */
@@ -7891,7 +7929,6 @@ export interface components {
         TaggedSuspension: {
             /** Format: uuid */
             suspension_id: string;
-            /** Format: uuid */
             tag_id: string;
         };
         TenxAssay: {
@@ -8153,7 +8190,10 @@ export type MediaType = components['schemas']['MediaType'];
 export type Microliter = components['schemas']['Microliter'];
 export type Micrometer = components['schemas']['Micrometer'];
 export type Milliliter = components['schemas']['Milliliter'];
+export type MultiplexingTag = components['schemas']['MultiplexingTag'];
+export type MultiplexingTagPredicate = components['schemas']['MultiplexingTagPredicate'];
 export type MultiplexingTagType = components['schemas']['MultiplexingTagType'];
+export type MultiplexingTagTypeOperator = components['schemas']['MultiplexingTagTypeOperator'];
 export type Nanogram = components['schemas']['Nanogram'];
 export type NanogramConcentration = components['schemas']['NanogramConcentration'];
 export type NewApiKey = components['schemas']['NewApiKey'];
@@ -8184,6 +8224,7 @@ export type NewSuspensionMeasurement = components['schemas']['NewSuspensionMeasu
 export type NewSuspensionPool = components['schemas']['NewSuspensionPool'];
 export type NewSuspensionPoolMeasurement = components['schemas']['NewSuspensionPoolMeasurement'];
 export type NewSuspensionSpecimen = components['schemas']['NewSuspensionSpecimen'];
+export type NewTaggedSuspensionPool = components['schemas']['NewTaggedSuspensionPool'];
 export type NewTenxAssay = components['schemas']['NewTenxAssay'];
 export type NewTissue = components['schemas']['NewTissue'];
 export type NucleicAcidMeasurementData = components['schemas']['NucleicAcidMeasurementData'];
@@ -8223,6 +8264,7 @@ export type PermissionsToGrant = components['schemas']['PermissionsToGrant'];
 export type PermissionsToRevoke = components['schemas']['PermissionsToRevoke'];
 export type Person = components['schemas']['Person'];
 export type PersonField = components['schemas']['PersonField'];
+export type PersonId = components['schemas']['PersonId'];
 export type PersonLinks = components['schemas']['PersonLinks'];
 export type PersonPredicate = components['schemas']['PersonPredicate'];
 export type PersonPredicateFilter = components['schemas']['PersonPredicateFilter'];
@@ -8258,9 +8300,11 @@ export type Server = components['schemas']['Server'];
 export type ServerVariable = components['schemas']['ServerVariable'];
 export type Service = components['schemas']['Service'];
 export type ServiceField = components['schemas']['ServiceField'];
+export type ServiceId = components['schemas']['ServiceId'];
 export type ServicePredicate = components['schemas']['ServicePredicate'];
 export type ServicePredicateFilter = components['schemas']['ServicePredicateFilter'];
 export type ServicePredicateQuery = components['schemas']['ServicePredicateQuery'];
+export type ServiceUpdate = components['schemas']['ServiceUpdate'];
 export type Species = components['schemas']['Species'];
 export type SpeciesOperator = components['schemas']['SpeciesOperator'];
 export type SpecimenCompact = components['schemas']['SpecimenCompact'];
@@ -8344,22 +8388,22 @@ export const libraryTypeValues: ReadonlyArray<FlattenedDeepRequired<components>[
 export const microliterValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Microliter"]> = ["microliter"];
 export const micrometerValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Micrometer"]> = ["micrometer"];
 export const milliliterValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Milliliter"]> = ["milliliter"];
-export const multiplexingTagTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["MultiplexingTagType"]> = ["flex_barcode", "flex_oligonucleotide_barcode", "on_chip_multiplexing", "TotalSeq-A", "TotalSeq-B", "TotalSeq-C"];
+export const multiplexingTagTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["MultiplexingTagType"]> = ["flex_barcode", "flex_oligo_nucleotide_barcode", "total_seq_a", "total_seq_b", "total_seq_c", "genetic"];
 export const nanogramValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Nanogram"]> = ["nanogram"];
 export const ocmBarcodeIdValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["OcmBarcodeId"]> = ["ob1", "ob2", "ob3", "ob4"];
 export const pathStyleValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["PathStyle"]> = ["matrix", "label", "simple"];
-export const personFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["PersonField"]> = ["id", "name", "email", "institution_id", "is_staff", "orcid"];
+export const personFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["PersonField"]> = ["id", "name", "email", "institution_id", "is_staff", "can_manage_users", "orcid"];
 export const picogramValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Picogram"]> = ["picogram"];
-export const projectFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ProjectField"]> = ["id", "name", "started_at", "ended_at"];
+export const projectFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ProjectField"]> = ["id", "name", "created_by_person", "created_by_service", "started_at", "ended_at"];
 export const queryStyleValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["QueryStyle"]> = ["form", "spaceDelimited", "pipeDelimited", "deepObject"];
 export const sampleMultiplexingValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SampleMultiplexing"]> = ["cellplex", "flex_barcode", "flex_oligonucleotide_barcode", "hashtag", "on_chip_multiplexing", "singleplex"];
-export const serviceAccountFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ServiceField"]> = ["id", "description", "owned_by", "created_at"];
+export const serviceFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ServiceField"]> = ["id", "description", "owned_by", "is_staff", "can_manage_users", "created_at"];
 export const speciesValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Species"]> = ["ambystoma_mexicanum", "canis_familiaris", "callithrix_jacchus", "drosophila_melanogaster", "gasterosteus_aculeatus", "homo_sapiens", "mus_musculus", "rattus_norvegicus", "sminthopsis_crassicaudata"];
 export const specimenFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SpecimenField"]> = ["id", "readable_id", "name", "submitted_by", "project_id", "received_at", "species", "host_species", "returned_at", "returned_by", "type", "embedded_in", "fixative", "thermal_preservation_method", "tissue", "additional_data"];
 export const specimenTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SpecimenType"]> = ["block", "cell_pellet", "rna_extract", "suspension", "tissue"];
 export const suspensionContentValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SuspensionContent"]> = ["cells", "nuclei"];
 export const suspensionFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SuspensionField"]> = ["id", "readable_id", "specimen_id", "content", "created_at", "lysis_duration_minutes", "target_cell_recovery", "additional_data"];
-export const suspensionPoolFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SuspensionPoolField"]> = ["id", "readable_id", "name", "multiplexing_type", "pooled_at", "additional_data"];
+export const suspensionPoolFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SuspensionPoolField"]> = ["id", "readable_id", "name", "pooled_at", "additional_data"];
 export const suspensionThermalPreservationValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SuspensionThermalPreservation"]> = ["controlled_rate_freezing"];
 export const thermalPreservationMethodValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ThermalPreservationMethod"]> = ["controlled_rate_freezing", "flash_freezing"];
 export type operations = Record<string, never>;

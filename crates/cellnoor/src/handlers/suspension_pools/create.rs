@@ -1,9 +1,14 @@
 use axum::{Json, extract::State};
-use cellnoor_types::suspension_pool::{
-    NewSuspensionPool, NewSuspensionPoolCommonFields, SuspensionPoolDetailed, SuspensionPoolField,
-    TaggedSuspension,
+use cellnoor_types::{
+    suspension::NewSuspension,
+    suspension_pool::{
+        MultiplexingTagType, NewSuspensionPool, NewSuspensionPoolCommonFields,
+        NewSuspensionPoolRecord, NewTaggedSuspensionPool, SuspensionPoolDetailed,
+        SuspensionPoolField, TaggedSuspension,
+    },
 };
 use nonempty::NonemptyString;
+use std::str::FromStr;
 use uuid::Uuid;
 
 use crate::{
@@ -37,53 +42,54 @@ async fn insert_suspension_pool(
     tx: &db::Transaction<'_>,
     new: &NewSuspensionPool,
 ) -> Result<SuspensionPoolDetailed, ErrorInner> {
-    let multiplexing_type = NonemptyString::new(new.as_ref().to_owned()).unwrap();
+    let multiplexing_tag_type: &str = new.into();
+    let multiplexing_tag_type = MultiplexingTagType::from_str(multiplexing_tag_type).ok();
 
     let (record, measurements, preparer_ids, suspensions) = match new {
-        NewSuspensionPool::FlexBarcode {
-            common,
-            measurements,
-            preparers,
-            suspensions,
-        } => (
-            common,
-            measurements,
-            preparers,
-            suspensions
-                .into_iter()
-                .map(
-                    |TaggedSuspension {
-                         suspension_id,
-                         tag_id,
-                     }| (*suspension_id, Some(*tag_id)),
-                )
-                .collect::<Vec<_>>(),
-        ),
+        NewSuspensionPool::FlexBarcode(pool)
+        | NewSuspensionPool::FlexOligoNucleotideBarcode(pool)
+        | NewSuspensionPool::TotalSeqA(pool)
+        | NewSuspensionPool::TotalSeqB(pool)
+        | NewSuspensionPool::TotalSeqC(pool) => {
+            let NewTaggedSuspensionPool {
+                common:
+                    NewSuspensionPoolCommonFields {
+                        record,
+                        measurements,
+                        preparers,
+                    },
+                suspensions,
+            } = pool;
+            (
+                record,
+                measurements,
+                preparers,
+                suspensions
+                    .iter()
+                    .map(|s| (s.suspension_id, Some(&s.tag_id), multiplexing_tag_type))
+                    .collect::<Vec<_>>(),
+            )
+        }
         NewSuspensionPool::Genetic {
-            common,
-            measurements,
-            preparers,
+            common:
+                NewSuspensionPoolCommonFields {
+                    record,
+                    measurements,
+                    preparers,
+                },
             suspensions,
         } => (
-            common,
+            record,
             measurements,
             preparers,
             suspensions
                 .into_iter()
-                .map(|suspension_id| (*suspension_id, None))
-                .collect::<Vec<_>>(),
+                .map(|suspension_id| (*suspension_id, None, None))
+                .collect(),
         ),
     };
 
-    let id = db::insert_into(
-        tx,
-        "suspension_pool",
-        &NewSuspensionPoolRecord {
-            record: &record,
-            multiplexing_type: &multiplexing_type,
-        },
-    )
-    .await?;
+    let id = db::insert_into(tx, "suspension_pool", record).await?;
 
     let measurement_insertions = futures::future::try_join_all(
         measurements
@@ -126,14 +132,15 @@ pub(super) async fn insert_suspension_pool_preparers(
 async fn insert_suspension_poolings(
     tx: &db::Transaction<'_>,
     pool_id: Uuid,
-    suspensions: &[(Uuid, Option<Uuid>)],
+    suspensions: &[(Uuid, Option<&NonemptyString>, Option<MultiplexingTagType>)],
 ) -> Result<(), ErrorInner> {
     let poolings: Vec<_> = suspensions
         .iter()
-        .map(|&(suspension_id, tag_id)| NewSuspensionPooling {
+        .map(|(suspension_id, tag_id, tag_type)| NewSuspensionPooling {
             pool_id,
-            suspension_id,
-            tag_id,
+            suspension_id: *suspension_id,
+            tag_id: *tag_id,
+            tag_type: *tag_type,
         })
         .collect();
 
@@ -163,52 +170,46 @@ impl AsFieldValuePairs<&'static str, 2> for NewSuspensionPoolPreparer {
     }
 }
 
-struct NewSuspensionPooling {
+struct NewSuspensionPooling<'a> {
     pool_id: Uuid,
     suspension_id: Uuid,
-    tag_id: Option<Uuid>,
+    tag_id: Option<&'a NonemptyString>,
+    tag_type: Option<MultiplexingTagType>,
 }
 
-impl AsFieldValuePairs<&'static str, 3> for NewSuspensionPooling {
-    fn as_field_value_pairs(&'_ self) -> FieldValuePairs<'_, &'static str, 3> {
+impl AsFieldValuePairs<&'static str, 4> for NewSuspensionPooling<'_> {
+    fn as_field_value_pairs(&'_ self) -> FieldValuePairs<'_, &'static str, 4> {
         let Self {
             pool_id,
             suspension_id,
             tag_id,
+            tag_type,
         } = self;
 
         [
             ("pool_id", pool_id),
             ("suspension_id", suspension_id),
             ("tag_id", tag_id),
+            ("tag_type", tag_type),
         ]
     }
 }
 
-struct NewSuspensionPoolRecord<'a> {
-    record: &'a NewSuspensionPoolCommonFields,
-    multiplexing_type: &'a NonemptyString,
-}
-
-impl AsFieldValuePairs<SuspensionPoolField, 5> for NewSuspensionPoolRecord<'_> {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, SuspensionPoolField, 5> {
+impl AsFieldValuePairs<SuspensionPoolField, 4> for NewSuspensionPoolRecord {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, SuspensionPoolField, 4> {
         use SuspensionPoolField::*;
 
         let Self {
-            record:
-                NewSuspensionPoolCommonFields {
-                    readable_id,
-                    name,
-                    pooled_at,
-                    additional_data,
-                },
-            multiplexing_type,
+            id: _,
+            readable_id,
+            name,
+            pooled_at,
+            additional_data,
         } = self;
 
         [
             (ReadableId, readable_id),
             (Name, name),
-            (MultiplexingType, multiplexing_type),
             (PooledAt, pooled_at),
             (AdditionalData, additional_data),
         ]
@@ -221,10 +222,11 @@ pub mod test {
     use std::collections::HashSet;
 
     use cellnoor_types::{
+        id::NoId,
         suspension::measurement::Viability,
         suspension_pool::{
-            NewSuspensionPool, NewSuspensionPoolCommonFields, SuspensionPoolDetailed,
-            TaggedSuspension,
+            NewSuspensionPool, NewSuspensionPoolCommonFields, NewSuspensionPoolRecord,
+            NewTaggedSuspensionPool, SuspensionPoolDetailed, TaggedSuspension,
             measurement::{NewSuspensionPoolMeasurement, SuspensionPoolMeasurementData},
         },
     };
@@ -265,33 +267,36 @@ pub mod test {
 
         let person_id = suspension1.specimen.record.submitted_by;
 
-        let mut new = NewSuspensionPool::FlexBarcode {
+        let mut new = NewSuspensionPool::FlexBarcode(NewTaggedSuspensionPool {
             common: NewSuspensionPoolCommonFields {
-                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                name: "pool".to_nonempty_string(),
-                pooled_at: Timestamp::now(),
-                additional_data: None,
+                record: NewSuspensionPoolRecord {
+                    id: NoId {},
+                    readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                    name: "pool".to_nonempty_string(),
+                    pooled_at: Timestamp::now(),
+                    additional_data: None,
+                },
+                measurements: vec![NewSuspensionPoolMeasurement {
+                    measured_by: person_id,
+                    measured_at: Timestamp::now(),
+                    data: Json(SuspensionPoolMeasurementData::Viability(Viability {
+                        value: PositiveBoundedF32::new(0.5).unwrap(),
+                    })),
+                }],
+                preparers: NonemptyVec::new(vec![person_id]).unwrap(),
             },
-            measurements: vec![NewSuspensionPoolMeasurement {
-                measured_by: person_id,
-                measured_at: Timestamp::now(),
-                data: Json(SuspensionPoolMeasurementData::Viability(Viability {
-                    value: PositiveBoundedF32::new(0.5).unwrap(),
-                })),
-            }],
-            preparers: NonemptyVec::new(vec![person_id]).unwrap(),
             suspensions: NonemptyBoundedVec::new(vec![
                 TaggedSuspension {
                     suspension_id: suspension1_id,
-                    tag_id: multiplexing_tag1_id,
+                    tag_id: multiplexing_tag1_id.tag_id,
                 },
                 TaggedSuspension {
                     suspension_id: suspension2_id,
-                    tag_id: multiplexing_tag2_id,
+                    tag_id: multiplexing_tag2_id.tag_id,
                 },
             ])
             .unwrap(),
-        };
+        });
 
         modify(&mut new);
 
@@ -345,7 +350,7 @@ pub mod test {
         );
 
         assert_eq!(measurements.len(), 1);
-        assert_eq!(measurements[0].pool_id, record.id);
+        assert_eq!(measurements[0].pool_id, *record.id);
         assert_eq!(
             measurements[0].data.0,
             SuspensionPoolMeasurementData::Viability(Viability {
