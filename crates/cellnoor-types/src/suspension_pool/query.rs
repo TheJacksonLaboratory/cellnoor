@@ -1,4 +1,4 @@
-use macro_attributes::{base_model, predicate_enum, sort_field_enum, unit_enum};
+use macro_attributes::{base_model, predicate_enum, sort_field_enum};
 
 use crate::{
     operator::{JsonOperator, StringOperator, TimestampOperator, UuidOperator},

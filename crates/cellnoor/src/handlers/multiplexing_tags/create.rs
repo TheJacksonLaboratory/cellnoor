@@ -1,11 +1,10 @@
 use axum::{Json, extract::State};
 use cellnoor_types::multiplexing_tag::{MultiplexingTag, NewMultiplexingTag};
 use postgres_types::ToSql;
-use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs, SqlBuilder, insert_into},
+    db::{self, AsFieldValuePairs, FieldValuePairs, SqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };

@@ -107,7 +107,6 @@ pub mod test_util {
     use std::sync::Arc;
 
     use camino::Utf8PathBuf;
-    
     use nonempty::NonemptyString;
     #[cfg(test)]
     use uuid::Uuid;

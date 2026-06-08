@@ -1,13 +1,11 @@
-use jiff::Timestamp;
 use macro_attributes::{base_model, select, sort_field_enum};
-use nonempty::{NonemptyBoundedVec, NonemptyString, NonemptyVec};
+use nonempty::{NonemptyString, NonemptyVec};
 #[cfg(feature = "postgres-types")]
 use postgres_types::{FromSql, ToSql, to_sql_checked};
 pub use query::{
     MultiplexingTagField, MultiplexingTagPredicate, SimpleSuspensionPoolQuery, SuspensionPoolField,
     SuspensionPoolPredicate, SuspensionPoolPredicateInner, SuspensionPoolQuery,
 };
-use serde_json::Value;
 use uuid::Uuid;
 
 use crate::{
@@ -116,6 +114,8 @@ impl<'a> FromSql<'a> for MultiplexingTagType {
 
 #[cfg(feature = "postgres-types")]
 impl ToSql for MultiplexingTagType {
+    to_sql_checked!();
+
     fn to_sql(
         &self,
         ty: &postgres_types::Type,
@@ -137,8 +137,6 @@ impl ToSql for MultiplexingTagType {
     {
         <NonemptyString as ToSql>::accepts(ty)
     }
-
-    to_sql_checked!();
 }
 
 #[base_model]
@@ -194,9 +192,11 @@ pub struct SuspensionPoolDetailed {
 
 #[cfg(test)]
 mod tests {
-    use crate::suspension_pool::MultiplexingTagType;
     use std::str::FromStr;
+
     use strum::VariantArray;
+
+    use crate::suspension_pool::MultiplexingTagType;
 
     #[test]
     fn multiplexing_tag_type_serialization() {

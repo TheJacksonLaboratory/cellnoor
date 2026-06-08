@@ -2,15 +2,12 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::suspension_pool::{
-    NewSuspensionPoolCommonFields, NewSuspensionPoolRecord, SuspensionPoolDetailed,
-    SuspensionPoolField, SuspensionPoolUpdate,
-};
+use cellnoor_types::suspension_pool::{SuspensionPoolDetailed, SuspensionPoolUpdate};
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self},
     error::{Error, ErrorInner},
     handlers::{
         IdParam,

@@ -1,14 +1,11 @@
+use std::str::FromStr;
+
 use axum::{Json, extract::State};
-use cellnoor_types::{
-    suspension::NewSuspension,
-    suspension_pool::{
-        MultiplexingTagType, NewSuspensionPool, NewSuspensionPoolCommonFields,
-        NewSuspensionPoolRecord, NewTaggedSuspensionPool, SuspensionPoolDetailed,
-        SuspensionPoolField, TaggedSuspension,
-    },
+use cellnoor_types::suspension_pool::{
+    MultiplexingTagType, NewSuspensionPool, NewSuspensionPoolCommonFields, NewSuspensionPoolRecord,
+    NewTaggedSuspensionPool, SuspensionPoolDetailed, SuspensionPoolField,
 };
 use nonempty::NonemptyString;
-use std::str::FromStr;
 use uuid::Uuid;
 
 use crate::{
