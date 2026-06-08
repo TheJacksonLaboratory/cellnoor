@@ -2,7 +2,6 @@ use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
     cdna::{CdnaCompact, CdnaPredicate, CdnaPredicateInner, CdnaQuery, SavedCdnaRecord},
-    id::Id,
 };
 use futures::StreamExt;
 use postgres_types::ToSql;

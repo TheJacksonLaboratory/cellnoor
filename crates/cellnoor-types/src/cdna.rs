@@ -1,9 +1,7 @@
 use jiff::Timestamp;
-use macro_attributes::{base_model, select, sort_field_enum};
-use nonempty::{NonemptyString, NonemptyVec};
+use macro_attributes::{base_model, select};
+use nonempty::NonemptyString;
 use positive::PositiveI32;
-#[cfg(feature = "postgres-types")]
-use postgres_types::{FromSql, ToSql, to_sql_checked};
 pub use query::{CdnaField, CdnaPredicate, CdnaPredicateInner, CdnaQuery, SimpleCdnaQuery};
 use uuid::Uuid;
 

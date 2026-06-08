@@ -1,14 +1,10 @@
 use std::str::FromStr;
 
 use axum::{Json, extract::State};
-use cellnoor_types::{
-    cdna::{
-        CdnaDetailed, CdnaField,
-        creation::{LibraryType, NewCdna, NewCdnaCommonFields, NewCdnaRecord},
-    },
-    nucleic_acid_measurement::NewNucleicAcidMeasurement,
+use cellnoor_types::cdna::{
+    CdnaDetailed, CdnaField,
+    creation::{LibraryType, NewCdna, NewCdnaCommonFields, NewCdnaRecord},
 };
-use nonempty::NonemptyVec;
 use positive::PositiveI32;
 use uuid::Uuid;
 
@@ -190,7 +186,6 @@ pub mod test {
             CdnaDetailed,
             creation::{NewCdna, NewCdnaCommonFields, NewCdnaRecord, NewChromiumCdnaCommonFields},
         },
-        id::NoId,
         nucleic_acid_measurement::{
             Concentration, NewNucleicAcidMeasurement, NucleicAcidMeasurementData,
         },

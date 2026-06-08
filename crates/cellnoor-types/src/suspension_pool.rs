@@ -194,13 +194,16 @@ pub struct SuspensionPoolDetailed {
 
 #[cfg(test)]
 mod tests {
-    use crate::suspension_pool::{MultiplexingTagType, NewSuspensionPool};
     use strum::VariantArray;
 
+    use crate::suspension_pool::{MultiplexingTagType, NewSuspensionPool};
+
     // These tests cover 3 axes:
-    // 1. The serde (de)serializtion of MultiplexingTagType matches its strum (de)serialization
+    // 1. The serde (de)serializtion of MultiplexingTagType matches its strum
+    //    (de)serialization
     // 2. MultiplexingTagType can round-trip as a string
-    // 3. The serde (de)serializtion of NewSuspensionPool matches that of MultiplexingTagType
+    // 3. The serde (de)serializtion of NewSuspensionPool matches that of
+    //    MultiplexingTagType
     #[cfg(feature = "serde")]
     #[test]
     fn suspension_pool_type_matches_multiplexing_tag_type() {
@@ -212,7 +215,8 @@ mod tests {
                 continue;
             }
 
-            // First, we construct a pool using the serde serialization of MultiplexingTagType
+            // First, we construct a pool using the serde serialization of
+            // MultiplexingTagType
             let mut pool = serde_json::json!(
                 {
                     "readable_id": "id",
@@ -239,7 +243,8 @@ mod tests {
             let ty_as_str: &str = ty.into();
             pretty_assertions::assert_str_eq!(pool_as_str, ty_as_str);
 
-            // Finally, ensure that the strum serialization of MultiplexingTagType yields the same result as the serde serialization
+            // Finally, ensure that the strum serialization of MultiplexingTagType yields
+            // the same result as the serde serialization
             pool["multiplexing_tag_type"] = serde_json::Value::String(pool_as_str.to_owned());
             pretty_assertions::assert_eq!(deserialized_pool, serde_json::from_value(pool).unwrap());
         }

@@ -45,9 +45,9 @@ pub async fn upload_files(
         parsed_files.push((path, parsed_file));
     }
 
-    // Grab the db client as late as possible and get rid of it as early as possible by
-    // putting it in a scoped block. This is performed first to utilize the db's
-    // permissions checks
+    // Grab the db client as late as possible and get rid of it as early as possible
+    // by putting it in a scoped block. This is performed first to utilize the
+    // db's permissions checks
     {
         let mut client = app_state.db_client(user).await?;
         let tx = client.begin().await?;
@@ -73,7 +73,8 @@ async fn write_file_to_db(
     path: &NonemptyString,
     parsed_file: Option<&serde_json::Value>,
 ) -> Result<(), ErrorInner> {
-    // Ensure the raw file is inserted first because the parsed file depends on the raw file's existence
+    // Ensure the raw file is inserted first because the parsed file depends on the
+    // raw file's existence
     insert_raw_file(tx, dataset_id, path).await?;
     insert_parsed_file(tx, dataset_id, path, parsed_file).await
 }

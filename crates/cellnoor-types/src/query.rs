@@ -8,7 +8,8 @@ use crate::query::{
 pub(crate) mod filter;
 pub(crate) mod order_by;
 
-// Most of the time, we're ordering by a time-field, so we want to see most recent first
+// Most of the time, we're ordering by a time-field, so we want to see most
+// recent first
 pub trait DefaultDesc {
     fn default_desc() -> bool {
         true
