@@ -72,7 +72,6 @@ mod test {
         CdnaUpdate,
         creation::{CdnaSimpleFields, NewCdna},
     };
-
     use uuid::Uuid;
 
     use crate::{

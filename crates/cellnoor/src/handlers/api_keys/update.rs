@@ -2,7 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::api_key::{SavedApiKeyRecord, ApiKeyUpdate};
+use cellnoor_types::api_key::{ApiKeyUpdate, SavedApiKeyRecord};
 use uuid::Uuid;
 
 use crate::{

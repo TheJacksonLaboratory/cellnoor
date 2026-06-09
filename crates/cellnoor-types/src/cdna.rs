@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     cdna::{
-        creation::{LibraryType, CdnaSimpleFields},
+        creation::{CdnaSimpleFields, LibraryType},
         measurement::CdnaMeasurement,
     },
     nucleic_acid_measurement::NewNucleicAcidMeasurement,

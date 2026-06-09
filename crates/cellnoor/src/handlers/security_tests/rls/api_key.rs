@@ -1,7 +1,7 @@
 use std::assert_matches;
 
 use cellnoor_types::{
-    api_key::{ApiKey, ApiKeyPredicate, SavedApiKeyRecord, ApiKeyUpdate, ServiceId},
+    api_key::{ApiKey, ApiKeyPredicate, ApiKeyUpdate, SavedApiKeyRecord, ServiceId},
     operator::UuidOperator,
     service::Service,
 };

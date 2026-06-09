@@ -1,7 +1,6 @@
 use std::convert::identity;
 
 use axum::extract::{Path, State};
-
 use schemars::JsonSchema;
 use serde::Deserialize;
 

@@ -11,7 +11,8 @@ pub(super) async fn auth_required(_: AuthUser) {}
 pub(super) fn router() -> ApiRouter<AppState> {
     // We mount the same handler twice: Once for paths like
     // file-auth/chromium-datasets/{id}/ and another for paths like
-    // file-auth/chromium-datasets/{id}/file.html. Note that we put a trailing slash for directories because caddy automatically does that
+    // file-auth/chromium-datasets/{id}/file.html. Note that we put a trailing slash
+    // for directories because caddy automatically does that
     ApiRouter::new()
         // As long a user is authenticated, they can access top-level directories.
         .api_route("/{dataset_type}/", get(auth_required))
