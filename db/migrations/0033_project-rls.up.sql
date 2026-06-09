@@ -16,10 +16,10 @@ alter table project enable row level security;
 create or replace function current_service_is_staff() returns boolean language plpgsql volatile strict as $$
     declare
         current_user_id uuid = current_user::uuid;
-        can_read boolean;
+        user_is_staff boolean;
     begin
-        select is_staff from service where id = current_user_id into can_read;
-        return can_read;
+        select is_staff from service where id = current_user_id into user_is_staff;
+        return user_is_staff;
     end;
 $$;
 

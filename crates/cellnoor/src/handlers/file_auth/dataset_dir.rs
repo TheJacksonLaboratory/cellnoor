@@ -12,9 +12,10 @@ use crate::{
     state::AppState,
 };
 
-#[derive(Clone, Copy, Debug, Deserialize, JsonSchema)]
+#[derive(Clone, Copy, Debug, Deserialize, JsonSchema, strum::Display)]
 #[serde(rename_all = "kebab-case")]
 #[schemars(inline)]
+#[strum(serialize_all = "snake_case")]
 pub enum DatasetType {
     ChromiumDatasets,
 }
@@ -37,6 +38,11 @@ pub async fn authorize_dataset_dir_access(
         _file_path,
     }): Path<DatasetDir>,
 ) -> Result<(), Error> {
+    tracing::debug!(
+        %dataset_type,
+        %dataset_id,
+        file_path = _file_path.unwrap_or_default()
+    );
     // If we know the user is staff without hitting the db, we can just return early
     if user.is_staff().is_some_and(identity) {
         return Ok(());
@@ -48,7 +54,12 @@ pub async fn authorize_dataset_dir_access(
     dataset_exists(tx, dataset_type, dataset_id)
         .await?
         .then_some(())
-        .ok_or(ErrorInner::ResourceNotFound.into())
+        .ok_or(
+            ErrorInner::PermissionDenied {
+                message: "cannot access this dataset".to_owned(),
+            }
+            .into(),
+        )
 }
 
 // Postgres row-level security will automatically hide what the user can't see

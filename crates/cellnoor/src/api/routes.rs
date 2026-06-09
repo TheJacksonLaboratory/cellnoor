@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use aide::{
-    axum::ApiRouter,
+    axum::{ApiRouter, routing::get as aide_get},
     openapi::{ApiKeyLocation, OpenApi, SecurityScheme},
     redoc::Redoc,
 };
@@ -51,6 +51,8 @@ pub fn router() -> (OpenApi, Router<AppState>) {
         .nest("/cdna", cdna::router())
         .nest("/libraries", libraries::router())
         .nest("/chromium-datasets", chromium_datasets::router())
+        // This is necessary because of caddy's file-system shenanigans
+        .route("/file-auth/", aide_get(file_auth::auth_required))
         .nest("/file-auth", file_auth::router());
 
     let mut api_docs = OpenApi::default();

@@ -88,3 +88,44 @@ impl DefaultDesc for ChromiumDatasetField {}
 pub type ChromiumDatasetQuery = ComplexQuery<ChromiumDatasetPredicate, ChromiumDatasetField>;
 
 pub type SimpleChromiumDatasetQuery = SimpleQuery<ChromiumDatasetField>;
+
+#[cfg(test)]
+mod tests {
+    #[cfg(feature = "serde")]
+    #[test]
+    fn filter_deserialization() {
+        use crate::{
+            chromium_dataset::{
+                ChromiumDatasetPredicate, ChromiumDatasetPredicateInner, ChromiumDatasetQuery,
+            },
+            operator::SimpleStringOperator,
+            order_by::{OrderBy, OrderBySet},
+        };
+
+        let untyped_filter = serde_json::json!({ "name": "some name" });
+        let filter: ChromiumDatasetPredicate =
+            serde_json::from_value(untyped_filter.clone()).unwrap();
+
+        pretty_assertions::assert_eq!(
+            filter,
+            ChromiumDatasetPredicate::ChromiumDataset(ChromiumDatasetPredicateInner::Name(
+                SimpleStringOperator::ImplicitEq("some name".to_owned()).into()
+            ))
+        );
+
+        let query = serde_json::json!({"filter": untyped_filter});
+        let query: ChromiumDatasetQuery = serde_json::from_value(query).unwrap();
+        pretty_assertions::assert_eq!(
+            query,
+            ChromiumDatasetQuery {
+                filter: Some(filter.into()),
+                limit: None,
+                offset: 0,
+                order_by: OrderBySet::One(OrderBy {
+                    field: crate::chromium_dataset::ChromiumDatasetField::DeliveredAt,
+                    desc: true
+                })
+            }
+        );
+    }
+}

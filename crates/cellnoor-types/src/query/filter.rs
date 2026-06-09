@@ -104,7 +104,7 @@ pub enum StringOperator {
     /// PostgreSQL like any
     LikeAny(Vec<String>),
     /// PostgreSQL trigram similar to (%)
-    Trgrm(String),
+    Trgm(String),
     /// PostgreSQL trigram similar to any (% any)
     TrgmAny(Vec<String>),
     /// All other operators
@@ -118,7 +118,7 @@ impl StringOperator {
         match self {
             Self::Like(s) => ("like", s),
             Self::LikeAny(s) => ("like any", s),
-            Self::Trgrm(s) => ("%", s),
+            Self::Trgm(s) => ("%", s),
             Self::TrgmAny(s) => ("% any", s),
             Self::Simple(op) => op.as_sql_operator_and_value(),
         }

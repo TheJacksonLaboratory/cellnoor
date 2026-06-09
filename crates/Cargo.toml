@@ -11,6 +11,9 @@ resolver = "3"
 edition = "2024"
 
 [workspace.dependencies]
+tracing-subscriber = {version = "0.3.23", default-features = false, features = ["std", "fmt", "registry"]}
+tracing = {version = "0.1.44"}
+tower-http = {version = "0.6.11", features = ["trace"]}
 camino = { version = "1.2.2" }
 rand = { version = "0.10.1" }
 csvranger = { version = "0.3.0", features = ["legacy", "serde"] }

@@ -1,16 +1,17 @@
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, fs, str::FromStr};
 
 use axum::extract::{Multipart, Path, State, multipart::Field};
 use bytes::Bytes;
-use camino::Utf8Path;
+use camino::{Utf8Path, Utf8PathBuf};
 use csvranger::TenxCsvValue;
+use deadpool_postgres::tokio_postgres::Error as TokioPgError;
 use nonempty::NonemptyString;
 use strum::VariantNames;
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs},
+    db::{self, AsFieldValuePairs, SqlBuilder},
     error::{Error, ErrorInner},
     handlers::IdParam,
     state::AppState,
@@ -27,6 +28,13 @@ pub async fn upload_files(
 
     let mut raw_files = Vec::with_capacity(N_FILES);
     let mut parsed_files = Vec::with_capacity(N_FILES);
+
+    let dataset_with_project_names = {
+        let mut client = app_state.db_client(user).await?;
+        let tx = client.begin().await?;
+
+        fetch_dataset_and_project_names(&tx, &dataset_id).await?
+    };
 
     while let Some(field) = files
         .next_field()
@@ -45,9 +53,7 @@ pub async fn upload_files(
         parsed_files.push((path, parsed_file));
     }
 
-    // Grab the db client as late as possible and get rid of it as early as possible
-    // by putting it in a scoped block. This is performed first to utilize the
-    // db's permissions checks
+    // Put database operations in their own scope to avoid blocking
     {
         let mut client = app_state.db_client(user).await?;
         let tx = client.begin().await?;
@@ -61,7 +67,12 @@ pub async fn upload_files(
     }
 
     tokio::task::spawn_blocking(move || {
-        write_fileset_to_disk(app_state.static_files_dir(), dataset_id, &raw_files)
+        write_fileset_to_disk(
+            app_state.static_files_dir(),
+            dataset_id,
+            &dataset_with_project_names,
+            &raw_files,
+        )
     });
 
     Ok(())
@@ -72,50 +83,71 @@ async fn write_file_to_db(
     dataset_id: Uuid,
     path: &NonemptyString,
     parsed_file: Option<&serde_json::Value>,
-) -> Result<(), ErrorInner> {
+) -> Result<(), TokioPgError> {
     // Ensure the raw file is inserted first because the parsed file depends on the
     // raw file's existence
     insert_raw_file(tx, dataset_id, path).await?;
     insert_parsed_file(tx, dataset_id, path, parsed_file).await
 }
 
+struct DatasetWithProjectNames {
+    dataset_name: NonemptyString,
+    project_names: Vec<NonemptyString>,
+}
+
+async fn fetch_dataset_and_project_names(
+    tx: &db::Transaction<'_>,
+    dataset_id: &Uuid,
+) -> Result<DatasetWithProjectNames, deadpool_postgres::tokio_postgres::Error> {
+    static SELECT_PROJECT_NAMES: SqlBuilder =
+        SqlBuilder::new(include_str!("upload_files/select_project_names.sql"));
+
+    let sql = SELECT_PROJECT_NAMES.finish_with_params(vec![dataset_id]);
+
+    tx.query_one(&sql).await.map(|r| DatasetWithProjectNames {
+        dataset_name: r.get("dataset_name"),
+        project_names: r.get("project_names"),
+    })
+}
+
 fn write_fileset_to_disk(
     static_file_dir: &Utf8Path,
     dataset_id: Uuid,
+    DatasetWithProjectNames {
+        dataset_name,
+        project_names,
+    }: &DatasetWithProjectNames,
     raw_files: &[(NonemptyString, Bytes)],
 ) -> Result<(), ErrorInner> {
-    for (path, raw_file) in raw_files {
-        write_file_to_disk(static_file_dir, dataset_id, path, None, raw_file)?;
+    let chromium_dataset_dir = static_file_dir
+        .join("chromium-datasets")
+        .join(dataset_id.to_string());
+    let project_dirs = project_names.iter().map(|p| {
+        static_file_dir
+            .join("projects")
+            .join(p.as_ref())
+            .join(dataset_name.as_ref())
+    });
+
+    for (filename, raw_file) in raw_files {
+        let actual_path = chromium_dataset_dir.join(filename.as_ref());
+        write_file_to_dataset_dir(&actual_path, raw_file)?;
+        let symlink_paths = project_dirs.clone().map(|d| d.join(filename.as_ref()));
+        symlink_to_project_dirs(&actual_path, symlink_paths)?;
 
         let compressed_file = compress_file(raw_file)?;
-        write_file_to_disk(
-            static_file_dir,
-            dataset_id,
-            path,
-            Some("zst"),
-            &compressed_file,
-        )?;
+        let compressed_path = actual_path.with_added_extension("zst");
+        write_file_to_dataset_dir(&compressed_path, &compressed_file)?;
+        let symlink_paths = project_dirs
+            .clone()
+            .map(|d| d.join(compressed_path.strip_prefix(&chromium_dataset_dir).unwrap()));
+        symlink_to_project_dirs(&compressed_path, symlink_paths)?;
     }
 
     Ok(())
 }
 
-fn write_file_to_disk(
-    static_file_dir: &Utf8Path,
-    dataset_id: Uuid,
-    path: &NonemptyString,
-    extension: Option<&str>,
-    raw_file: &[u8],
-) -> Result<(), ErrorInner> {
-    let mut path = static_file_dir
-        .join("chromium-datasets")
-        .join(dataset_id.to_string())
-        .join(path.as_ref());
-
-    if let Some(ext) = extension {
-        path.add_extension(ext);
-    }
-
+fn write_file_to_dataset_dir(path: &Utf8Path, raw_file: &[u8]) -> Result<(), ErrorInner> {
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
 
     std::fs::write(&path, &raw_file).map_err(|e| ErrorInner::Other {
@@ -138,10 +170,29 @@ fn compress_file(raw_file: &[u8]) -> Result<Vec<u8>, ErrorInner> {
     })
 }
 
+fn symlink_to_project_dirs<'a>(
+    source: &'a Utf8Path,
+    destinations: impl IntoIterator<Item = Utf8PathBuf>,
+) -> Result<(), ErrorInner> {
+    for dest in destinations {
+        fs::create_dir_all(dest.parent().unwrap()).unwrap();
+
+        if dest.exists() {
+            continue;
+        }
+
+        std::os::unix::fs::symlink(source, &dest).map_err(|e| ErrorInner::FileUpload {
+            message: format!("unable to symlink {source} to {dest}: {e}"),
+        })?;
+    }
+
+    Ok(())
+}
+
 async fn process_file(form_field: Field<'_>) -> Result<ProcessedFile, ErrorInner> {
     let content_type = AllowedContentType::from_multipart_form_field(&form_field)?;
 
-    let path = extract_path(form_field.file_name())
+    let path = extract_filename(form_field.file_name())
         .map(str::to_owned)
         .map(NonemptyString::new)?
         .unwrap();
@@ -187,7 +238,7 @@ async fn insert_raw_file(
     tx: &db::Transaction<'_>,
     dataset_id: Uuid,
     path: &NonemptyString,
-) -> Result<(), ErrorInner> {
+) -> Result<(), TokioPgError> {
     db::insert_into_no_returning(
         tx,
         "chromium_dataset_raw_file",
@@ -216,7 +267,7 @@ async fn insert_parsed_file(
     dataset_id: Uuid,
     path: &NonemptyString,
     parsed_file: Option<&serde_json::Value>,
-) -> Result<(), ErrorInner> {
+) -> Result<(), TokioPgError> {
     let Some(parsed_file) = parsed_file else {
         return Ok(());
     };
@@ -308,7 +359,7 @@ impl AllowedContentType {
     }
 }
 
-fn extract_path(filename: Option<&str>) -> Result<&str, ErrorInner> {
+fn extract_filename(filename: Option<&str>) -> Result<&str, ErrorInner> {
     const ALLOWED_FILENAMES: [&str; 7] = [
         "metrics_summary.csv",
         "qc_library_metrics.csv",
@@ -376,25 +427,26 @@ fn extract_path(filename: Option<&str>) -> Result<&str, ErrorInner> {
 mod tests {
     use pretty_assertions::assert_eq;
 
-    use super::extract_path;
+    use super::extract_filename;
 
     #[test]
     fn empty_filename() {
-        extract_path(Some("")).unwrap_err();
+        extract_filename(Some("")).unwrap_err();
     }
 
     #[test]
     fn root_filename() {
-        extract_path(Some("/file")).unwrap_err();
+        extract_filename(Some("/file")).unwrap_err();
     }
 
     #[test]
     fn correct_filenames() {
-        let path = extract_path(Some("metrics_summary.csv")).unwrap();
+        let path = extract_filename(Some("metrics_summary.csv")).unwrap();
 
         assert_eq!(path, "metrics_summary.csv");
 
-        let path = extract_path(Some("per_sample_outs/sample_name/metrics_summary.csv")).unwrap();
+        let path =
+            extract_filename(Some("per_sample_outs/sample_name/metrics_summary.csv")).unwrap();
 
         assert_eq!(path, "per_sample_outs/sample_name/metrics_summary.csv");
     }

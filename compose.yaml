@@ -38,9 +38,11 @@ services:
     pull_policy: weekly
     healthcheck:
       test: pg_isready || exit 1
-      interval: 1s
+      interval: 5m
+      start_period: 10s
+      start_interval: 0.5s
       timeout: 5s
-      retries: 30
+      retries: 10
     volumes:
       [
         &db_data_volume db-data:/var/lib/postgresql,
@@ -102,9 +104,9 @@ services:
       - &static_files_volume static-files:/static-files
     healthcheck:
       test: curl --fail --http2-prior-knowledge --unix-socket /run/cellnoor/cellnoor.sock http://localhost/health || exit 1
-      interval: 1s
+      interval: 5m
       start_period: 10s
-      start_interval: 1s
+      start_interval: 0.5s
       timeout: 5s
       retries: 10
   caddy:

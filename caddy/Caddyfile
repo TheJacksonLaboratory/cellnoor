@@ -17,15 +17,15 @@
 }
 
 {$PUBLIC_FILES_URL} {
+    root {$STATIC_FILES_DIR}
     encode
     {$TLS_SETTINGS}
 
     forward_auth unix+h2c/{$API_SOCKET} {
-        uri /file-auth
+        uri /file-auth{path}
     }
 
     file_server browse {
-        root {$STATIC_FILES_DIR}
         precompressed
     }
 }

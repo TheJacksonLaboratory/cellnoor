@@ -59,6 +59,8 @@ pub enum ErrorInner {
 
 impl IntoResponse for Error {
     fn into_response(mut self) -> axum::response::Response {
+        tracing::error!("{}", serde_json::to_string_pretty(&self).unwrap());
+
         // TODO: add logging
         if let ErrorInner::Other {
             message,
