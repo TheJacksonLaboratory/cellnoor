@@ -6,7 +6,9 @@ use axum::{
     Json,
     extract::{Query, State},
 };
-use cellnoor_types::chromium_run::{ChromiumRunCompact, ChromiumRunQuery, SimpleChromiumRunQuery};
+use cellnoor_types::chromium_run::{
+    ChromiumRunCompact, ChromiumRunDetailed, ChromiumRunQuery, SimpleChromiumRunQuery,
+};
 
 use crate::{
     auth::AuthUser,
@@ -24,6 +26,7 @@ pub(super) fn router() -> ApiRouter<AppState> {
             "/",
             post(create_chromium_run).get(index_chromium_runs_simple),
         )
+        .api_route("/detailed", get(index_chromium_runs_detailed_simple))
         .api_route("/search", post(index_chromium_runs))
         .api_route("/search/detailed", post(index_chromium_runs_detailed))
         .nest("/{id}", id_router())
@@ -44,4 +47,12 @@ async fn index_chromium_runs_simple(
     Query(q): Query<SimpleChromiumRunQuery>,
 ) -> Result<Json<Vec<ChromiumRunCompact>>, Error> {
     index_chromium_runs(state, user, Json(ChromiumRunQuery::from_simple_query(q))).await
+}
+
+async fn index_chromium_runs_detailed_simple(
+    state: State<AppState>,
+    user: AuthUser,
+    Query(q): Query<SimpleChromiumRunQuery>,
+) -> Result<Json<Vec<ChromiumRunDetailed>>, Error> {
+    index_chromium_runs_detailed(state, user, Json(ChromiumRunQuery::from_simple_query(q))).await
 }

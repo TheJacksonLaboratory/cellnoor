@@ -9,6 +9,7 @@ use uuid::Uuid;
 mod query;
 
 #[base_model]
+#[derive(Default)]
 pub struct NewApiKey {
     pub description: Option<NonemptyString>,
     pub service_id: Option<ServiceId>,

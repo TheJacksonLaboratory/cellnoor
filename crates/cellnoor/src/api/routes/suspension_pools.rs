@@ -7,7 +7,7 @@ use axum::{
     extract::{Query, State},
 };
 use cellnoor_types::suspension_pool::{
-    SimpleSuspensionPoolQuery, SuspensionPoolCompact, SuspensionPoolQuery,
+    SimpleSuspensionPoolQuery, SuspensionPoolCompact, SuspensionPoolDetailed, SuspensionPoolQuery,
 };
 
 use crate::{
@@ -27,6 +27,7 @@ pub(super) fn router() -> ApiRouter<AppState> {
             "/",
             post(create_suspension_pool).get(index_suspension_pools_simple),
         )
+        .api_route("/detailed", get(index_suspension_pools_detailed_simple))
         .api_route("/search", post(index_suspension_pools))
         .api_route("/search/detailed", post(index_suspension_pools_detailed))
         .nest("/{id}", id_router())
@@ -49,4 +50,13 @@ async fn index_suspension_pools_simple(
     Query(q): Query<SimpleSuspensionPoolQuery>,
 ) -> Result<Json<Vec<SuspensionPoolCompact>>, Error> {
     index_suspension_pools(state, user, Json(SuspensionPoolQuery::from_simple_query(q))).await
+}
+
+async fn index_suspension_pools_detailed_simple(
+    state: State<AppState>,
+    user: AuthUser,
+    Query(q): Query<SimpleSuspensionPoolQuery>,
+) -> Result<Json<Vec<SuspensionPoolDetailed>>, Error> {
+    index_suspension_pools_detailed(state, user, Json(SuspensionPoolQuery::from_simple_query(q)))
+        .await
 }

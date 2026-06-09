@@ -6,7 +6,7 @@ use axum::{
     Json,
     extract::{Query, State},
 };
-use cellnoor_types::project::{ProjectCompact, ProjectQuery, SimpleProjectQuery};
+use cellnoor_types::project::{ProjectCompact, ProjectDetailed, ProjectQuery, SimpleProjectQuery};
 
 use crate::{
     auth::AuthUser,
@@ -21,6 +21,7 @@ use crate::{
 pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new()
         .api_route("/", post(create_project).get(index_projects_simple))
+        .api_route("/detailed", get(index_projects_detailed_simple))
         .api_route("/search", post(index_projects))
         .api_route("/search/detailed", post(index_projects_detailed))
         .nest("/{id}", id_router())
@@ -41,4 +42,12 @@ async fn index_projects_simple(
     Query(q): Query<SimpleProjectQuery>,
 ) -> Result<Json<Vec<ProjectCompact>>, Error> {
     index_projects(state, user, Json(ProjectQuery::from_simple_query(q))).await
+}
+
+async fn index_projects_detailed_simple(
+    state: State<AppState>,
+    user: AuthUser,
+    Query(q): Query<SimpleProjectQuery>,
+) -> Result<Json<Vec<ProjectDetailed>>, Error> {
+    index_projects_detailed(state, user, Json(ProjectQuery::from_simple_query(q))).await
 }

@@ -6,7 +6,9 @@ use axum::{
     Json,
     extract::{Query, State},
 };
-use cellnoor_types::suspension::{SimpleSuspensionQuery, SuspensionCompact, SuspensionQuery};
+use cellnoor_types::suspension::{
+    SimpleSuspensionQuery, SuspensionCompact, SuspensionDetailed, SuspensionQuery,
+};
 
 use crate::{
     auth::AuthUser,
@@ -21,6 +23,7 @@ use crate::{
 pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new()
         .api_route("/", post(create_suspension).get(index_suspensions_simple))
+        .api_route("/detailed", get(index_suspensions_detailed_simple))
         .api_route("/search", post(index_suspensions))
         .api_route("/search/detailed", post(index_suspensions_detailed))
         .nest("/{id}", id_router())
@@ -43,4 +46,12 @@ async fn index_suspensions_simple(
     Query(q): Query<SimpleSuspensionQuery>,
 ) -> Result<Json<Vec<SuspensionCompact>>, Error> {
     index_suspensions(state, user, Json(SuspensionQuery::from_simple_query(q))).await
+}
+
+async fn index_suspensions_detailed_simple(
+    state: State<AppState>,
+    user: AuthUser,
+    Query(q): Query<SimpleSuspensionQuery>,
+) -> Result<Json<Vec<SuspensionDetailed>>, Error> {
+    index_suspensions_detailed(state, user, Json(SuspensionQuery::from_simple_query(q))).await
 }

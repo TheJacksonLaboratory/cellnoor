@@ -15,13 +15,15 @@ use crate::{
 pub async fn create_api_key(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(new_api_key): Json<NewApiKey>,
+    new_api_key: Option<Json<NewApiKey>>,
 ) -> Result<Json<ApiKey>, Error> {
     let mut client = state.db_client(user).await?;
 
     let tx = client.begin().await?;
 
-    let response = insert_api_key(&tx, &new_api_key).await.map(Json)?;
+    let response = insert_api_key(&tx, &new_api_key.unwrap_or_default())
+        .await
+        .map(Json)?;
 
     tx.commit().await?;
 
