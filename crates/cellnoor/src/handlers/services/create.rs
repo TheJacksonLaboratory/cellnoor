@@ -1,7 +1,7 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
     person::PermissionsToGrant,
-    service::{NewService, NewServiceRecord, Service, ServiceField},
+    service::{NewService, Service, ServiceField, ServiceSimpleFields},
 };
 use uuid::Uuid;
 
@@ -73,7 +73,7 @@ async fn create_db_user(
 
 // `owned_by` is intentionally omitted: the database fills it from
 // `current_user::uuid`, and RLS guarantees it equals the caller
-impl AsFieldValuePairs<ServiceField, 3> for NewServiceRecord {
+impl AsFieldValuePairs<ServiceField, 3> for ServiceSimpleFields {
     fn as_field_value_pairs(&self) -> FieldValuePairs<'_, ServiceField, 3> {
         use ServiceField::*;
 
@@ -95,7 +95,7 @@ impl AsFieldValuePairs<ServiceField, 3> for NewServiceRecord {
 pub mod test {
     use cellnoor_types::{
         person::PermissionsToGrant,
-        service::{NewService, NewServiceRecord, Service},
+        service::{NewService, Service, ServiceSimpleFields},
     };
     use uuid::Uuid;
 
@@ -114,7 +114,7 @@ pub mod test {
         F: FnMut(&mut NewService),
     {
         let mut new = NewService {
-            record: NewServiceRecord {
+            record: ServiceSimpleFields {
                 description: Some(Uuid::new_v4().to_string().to_nonempty_string()),
                 is_staff: false,
                 can_manage_users: false,

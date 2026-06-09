@@ -1,7 +1,7 @@
 use std::assert_matches;
 
 use cellnoor_types::{
-    api_key::{ApiKey, ApiKeyPredicate, ApiKeyRecord, ApiKeyUpdate, ServiceId},
+    api_key::{ApiKey, ApiKeyPredicate, SavedApiKeyRecord, ApiKeyUpdate, ServiceId},
     operator::UuidOperator,
     service::Service,
 };
@@ -81,7 +81,7 @@ async fn user_cannot_see_inaccessible_api_key(client: &mut db::Client, api_key_i
     assert_eq!(inaccessible, []);
 }
 
-async fn user_can_see_accessible_api_key(client: &mut db::Client, api_key: ApiKeyRecord) {
+async fn user_can_see_accessible_api_key(client: &mut db::Client, api_key: SavedApiKeyRecord) {
     let tx = client.begin().await.unwrap();
 
     let accessible = select_api_keys(

@@ -1,6 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
-    api_key::{ApiKeyPredicate, ApiKeyQuery, ApiKeyRecord},
+    api_key::{ApiKeyPredicate, ApiKeyQuery, SavedApiKeyRecord},
     operator::UuidOperator,
 };
 use futures::StreamExt;
@@ -17,7 +17,7 @@ pub async fn index_api_keys(
     State(state): State<AppState>,
     user: AuthUser,
     Json(mut query): Json<ApiKeyQuery>,
-) -> Result<Json<Vec<ApiKeyRecord>>, Error> {
+) -> Result<Json<Vec<SavedApiKeyRecord>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
@@ -31,7 +31,7 @@ pub async fn index_api_keys(
 pub(in super::super) async fn select_api_keys(
     tx: &db::Transaction<'_>,
     query: &mut ApiKeyQuery,
-) -> Result<Vec<ApiKeyRecord>, ErrorInner> {
+) -> Result<Vec<SavedApiKeyRecord>, ErrorInner> {
     static SELECT_API_KEYS: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select.sql"));
 
@@ -44,7 +44,7 @@ pub(in super::super) async fn select_api_keys(
 pub(super) async fn select_api_key_record_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-) -> Result<ApiKeyRecord, ErrorInner> {
+) -> Result<SavedApiKeyRecord, ErrorInner> {
     select_one(
         tx,
         ApiKeyPredicate::Id(UuidOperator::Eq(id)),

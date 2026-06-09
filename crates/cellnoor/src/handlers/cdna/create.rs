@@ -3,7 +3,7 @@ use std::str::FromStr;
 use axum::{Json, extract::State};
 use cellnoor_types::cdna::{
     CdnaDetailed, CdnaField,
-    creation::{LibraryType, NewCdna, NewCdnaCommonFields, NewCdnaRecord},
+    creation::{CdnaSimpleFields, LibraryType, NewCdna, NewCdnaCommonFields},
 };
 use positive::PositiveI32;
 use uuid::Uuid;
@@ -132,7 +132,7 @@ impl<'a> NewCdnaGeneric<'a> {
     }
 }
 
-impl AsFieldValuePairs<CdnaField, 3> for NewCdnaRecord {
+impl AsFieldValuePairs<CdnaField, 3> for CdnaSimpleFields {
     fn as_field_value_pairs(&self) -> FieldValuePairs<'_, CdnaField, 3> {
         use CdnaField::*;
 
@@ -184,7 +184,9 @@ pub mod test {
     use cellnoor_types::{
         cdna::{
             CdnaDetailed,
-            creation::{NewCdna, NewCdnaCommonFields, NewCdnaRecord, NewChromiumCdnaCommonFields},
+            creation::{
+                CdnaSimpleFields, NewCdna, NewCdnaCommonFields, NewChromiumCdnaCommonFields,
+            },
         },
         nucleic_acid_measurement::{
             Concentration, NewNucleicAcidMeasurement, NucleicAcidMeasurementData,
@@ -222,7 +224,7 @@ pub mod test {
         let mut new = NewCdna::GeneExpression {
             common: NewChromiumCdnaCommonFields {
                 common: NewCdnaCommonFields {
-                    record: NewCdnaRecord {
+                    record: CdnaSimpleFields {
                         readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                         prepared_at,
                         additional_data: None,

@@ -2,7 +2,7 @@ use std::assert_matches;
 
 use cellnoor_types::{
     operator::UuidOperator,
-    service::{NewServiceRecord, Service, ServicePredicate, ServiceQuery, ServiceUpdate},
+    service::{Service, ServicePredicate, ServiceQuery, ServiceSimpleFields, ServiceUpdate},
 };
 use pretty_assertions::assert_eq;
 use uuid::Uuid;
@@ -40,7 +40,7 @@ async fn user_cannot_update_unowned_service(client: &mut db::Client, service_id:
         &tx,
         service_id,
         &ServiceUpdate {
-            record: NewServiceRecord {
+            record: ServiceSimpleFields {
                 description: Some("foo".to_nonempty_string()),
                 is_staff: false,
                 can_manage_users: false,

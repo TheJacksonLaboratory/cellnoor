@@ -6,7 +6,7 @@ use axum::{
     Json,
     extract::{Query, State},
 };
-use cellnoor_types::api_key::{ApiKeyQuery, ApiKeyRecord, SimpleApiKeyQuery};
+use cellnoor_types::api_key::{ApiKeyQuery, SavedApiKeyRecord, SimpleApiKeyQuery};
 
 use crate::{
     auth::AuthUser,
@@ -30,6 +30,6 @@ async fn index_api_keys_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleApiKeyQuery>,
-) -> Result<Json<Vec<ApiKeyRecord>>, Error> {
+) -> Result<Json<Vec<SavedApiKeyRecord>>, Error> {
     index_api_keys(state, user, Json(ApiKeyQuery::from_simple_query(q))).await
 }

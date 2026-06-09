@@ -2,7 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::api_key::{ApiKeyRecord, ApiKeyUpdate};
+use cellnoor_types::api_key::{SavedApiKeyRecord, ApiKeyUpdate};
 use uuid::Uuid;
 
 use crate::{
@@ -18,7 +18,7 @@ pub async fn update_api_key(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(update): Json<ApiKeyUpdate>,
-) -> Result<Json<ApiKeyRecord>, Error> {
+) -> Result<Json<SavedApiKeyRecord>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
@@ -33,7 +33,7 @@ pub(in super::super) async fn update_api_key_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     update: &ApiKeyUpdate,
-) -> Result<ApiKeyRecord, ErrorInner> {
+) -> Result<SavedApiKeyRecord, ErrorInner> {
     db::update(tx, "api_key", id, update).await?;
 
     select_api_key_record_by_id(tx, id).await

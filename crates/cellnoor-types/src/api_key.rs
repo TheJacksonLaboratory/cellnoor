@@ -65,7 +65,7 @@ impl From<ServiceId> for Uuid {
 
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "api_key_public"))]
-pub struct ApiKeyRecord {
+pub struct SavedApiKeyRecord {
     pub id: Uuid,
     pub description: Option<NonemptyString>,
     pub person_id: Option<PersonId>,
@@ -79,7 +79,7 @@ pub struct ApiKeyRecord {
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct ApiKey {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: ApiKeyRecord,
+    pub record: SavedApiKeyRecord,
     pub secret: String,
 }
 

@@ -125,7 +125,6 @@ impl AsFieldValuePairs<SuspensionField, 7> for NewSuspensionRecord {
 
 #[cfg(test)]
 pub mod test {
-
     use cellnoor_types::{
         id::NoId,
         suspension::{

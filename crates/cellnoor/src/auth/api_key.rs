@@ -1,4 +1,4 @@
-use cellnoor_types::api_key::ApiKeyRecord;
+use cellnoor_types::api_key::SavedApiKeyRecord;
 use sha3::Digest;
 
 use crate::{
@@ -26,7 +26,7 @@ trait ApiKeyExt {
     fn to_user(&self) -> Result<AuthUser, ErrorInner>;
 }
 
-impl ApiKeyExt for ApiKeyRecord {
+impl ApiKeyExt for SavedApiKeyRecord {
     fn is_expired(&self) -> bool {
         self.expires_at.is_some_and(|e| e < jiff::Timestamp::now())
     }
@@ -56,7 +56,7 @@ impl ApiKeyExt for ApiKeyRecord {
 async fn fetch_api_key_record_by_hash(
     tx: &db::Transaction<'_>,
     api_key: &[u8],
-) -> Result<ApiKeyRecord, ErrorInner> {
+) -> Result<SavedApiKeyRecord, ErrorInner> {
     static SELECT_API_KEY: SqlBuilder = SqlBuilder::new(include_str!("select_api_key.sql"));
 
     let hashed_key = hash_api_key(api_key);

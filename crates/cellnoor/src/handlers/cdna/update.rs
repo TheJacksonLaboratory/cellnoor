@@ -70,9 +70,9 @@ async fn update_cdna_by_id(
 mod test {
     use cellnoor_types::cdna::{
         CdnaUpdate,
-        creation::{NewCdna, NewCdnaRecord},
+        creation::{CdnaSimpleFields, NewCdna},
     };
-    
+
     use uuid::Uuid;
 
     use crate::{
@@ -103,7 +103,7 @@ mod test {
         let id = inserted.record.id;
 
         let pre_update = CdnaUpdate {
-            record: NewCdnaRecord {
+            record: CdnaSimpleFields {
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 ..insert_input.common.record
             },

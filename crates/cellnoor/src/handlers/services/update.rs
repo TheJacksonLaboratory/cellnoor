@@ -97,7 +97,7 @@ async fn revoke_permissions(
 
 #[cfg(test)]
 mod test {
-    use cellnoor_types::service::{NewServiceRecord, ServiceUpdate};
+    use cellnoor_types::service::{ServiceSimpleFields, ServiceUpdate};
 
     use crate::{
         handlers::services::{create::test::insert_test_service, update::update_service_by_id},
@@ -112,7 +112,7 @@ mod test {
         let (_, inserted) = insert_test_service(&tx, |_| ()).await.unwrap();
 
         let update = ServiceUpdate {
-            record: NewServiceRecord {
+            record: ServiceSimpleFields {
                 description: Some("updated".to_nonempty_string()),
                 is_staff: false,
                 can_manage_users: false,

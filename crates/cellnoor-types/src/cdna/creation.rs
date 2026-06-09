@@ -9,7 +9,7 @@ use uuid::Uuid;
 use crate::nucleic_acid_measurement::NewNucleicAcidMeasurement;
 
 #[base_model]
-pub struct NewCdnaRecord {
+pub struct CdnaSimpleFields {
     pub readable_id: NonemptyString,
     pub prepared_at: Timestamp,
     pub additional_data: Option<serde_json::Value>,
@@ -18,7 +18,7 @@ pub struct NewCdnaRecord {
 #[base_model]
 pub struct NewCdnaCommonFields {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: NewCdnaRecord,
+    pub record: CdnaSimpleFields,
     pub measurements: Vec<NewNucleicAcidMeasurement>,
     pub preparers: NonemptyVec<Uuid>,
 }

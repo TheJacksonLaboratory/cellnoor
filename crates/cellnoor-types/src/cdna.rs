@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     cdna::{
-        creation::{LibraryType, NewCdnaRecord},
+        creation::{LibraryType, CdnaSimpleFields},
         measurement::CdnaMeasurement,
     },
     nucleic_acid_measurement::NewNucleicAcidMeasurement,
@@ -22,7 +22,7 @@ mod query;
 #[base_model]
 pub struct CdnaUpdate {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: NewCdnaRecord,
+    pub record: CdnaSimpleFields,
     pub measurements: Option<Vec<NewNucleicAcidMeasurement>>,
     pub preparers: Option<Vec<Uuid>>,
 }
