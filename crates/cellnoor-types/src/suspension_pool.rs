@@ -1,6 +1,5 @@
 use macro_attributes::{base_model, discriminant_unit_enum, select};
 use nonempty::{NonemptyString, NonemptyVec};
-
 pub use query::{
     MultiplexingTagField, MultiplexingTagPredicate, SimpleSuspensionPoolQuery, SuspensionPoolField,
     SuspensionPoolPredicate, SuspensionPoolPredicateInner, SuspensionPoolQuery,
