@@ -23,7 +23,7 @@ create table person (
 -- better-auth infects everything, so this table has to comply with
 -- https://better-auth.com/docs/concepts/database#account. Notice that we don't include any of the sensitive fields,
 -- and we manually delete them in our auth configuration
-create table person_account (
+create table account (
     id uuid primary key default uuidv7(),
     person_id uuid references person on delete cascade not null,
     auth_provider_name text not null,

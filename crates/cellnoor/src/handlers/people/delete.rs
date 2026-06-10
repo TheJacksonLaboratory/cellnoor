@@ -61,6 +61,6 @@ mod test {
         let (_, person) = insert_test_person_and_institution(&tx, |_| ())
             .await
             .unwrap();
-        delete_person_by_id(&tx, *person.record.id).await.unwrap();
+        delete_person_by_id(&tx, person.record.id).await.unwrap();
     }
 }

@@ -107,7 +107,7 @@ pub mod test {
         F: FnMut(&mut NewProject),
     {
         let (_, person) = insert_test_person_and_institution(tx, |_| ()).await?;
-        let person_id = *person.record.id;
+        let person_id = person.record.id;
 
         let mut new = NewProject {
             name: Uuid::new_v4().to_string().to_nonempty_string(),

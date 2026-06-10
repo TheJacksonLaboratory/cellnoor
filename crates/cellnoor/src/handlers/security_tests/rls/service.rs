@@ -105,10 +105,10 @@ async fn row_level_security_for_services() {
 
     tx.commit().await.unwrap();
 
-    let user1_id = *user1.record.id;
+    let user1_id = user1.record.id;
     let user1_svc_acct = create_service_for(user1_id).await;
 
-    let user2_id = *user2.record.id;
+    let user2_id = user2.record.id;
     let user2_svc_acct = create_service_for(user2_id).await;
 
     let mut user1_client = db_client_as_user(user1_id).await;

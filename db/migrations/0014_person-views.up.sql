@@ -9,3 +9,13 @@ create view person_public as (
         orcid
     from person
 );
+
+create view person_account as (
+    select
+        person.id,
+        person.name,
+        person.email,
+        account.auth_provider_name,
+        account.auth_provider_user_id
+    from account join person on account.person_id = person.id
+);

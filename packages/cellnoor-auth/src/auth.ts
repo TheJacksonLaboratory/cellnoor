@@ -1,6 +1,7 @@
 import { type Account, betterAuth } from "better-auth";
 import { readConfig } from "./config";
 import { getDbClient } from "./db";
+import * as jose from "jose";
 
 const {
   publicAuthUrl,
@@ -26,7 +27,7 @@ async function deleteUnnecessaryAccountFields(
 async function provisionDbUser({ id }: { id: string }) {
   const dbClient = await getDbClient();
   await dbClient.query(
-    "select create_person_user_if_not_exists($1)",
+    "select create_app_user_if_not_exists($1::uuid)",
     [id],
   );
 }
@@ -71,7 +72,6 @@ export const auth = betterAuth({
     storeSessionInDatabase: false,
   },
   account: {
-    modelName: "person_account",
     fields: {
       userId: "person_id",
       providerId: "auth_provider_name",
@@ -81,7 +81,6 @@ export const auth = betterAuth({
     },
     storeStateStrategy: "cookie",
     storeAccountCookie: true,
-    accountLinking: { trustedProviders: ["microsoft"] },
   },
   databaseHooks: {
     account: {
@@ -105,10 +104,12 @@ export const auth = betterAuth({
   },
   socialProviders: {
     microsoft: {
+      disableIdTokenSignIn: true,
       tenantId: microsoftEntraTenantId,
       clientId: microsoftEntraClientId,
       clientSecret: microsoftEntraClientSecret,
-      async mapProfileToUser({ tid }) {
+      overrideUserInfoOnSignIn: true,
+      async mapProfileToUser({ tid, oid }) {
         const dbClient = await getDbClient();
 
         const { rows: [{ institution_id }] } = await dbClient.query(
@@ -117,7 +118,7 @@ export const auth = betterAuth({
           [tid],
         );
 
-        return { institution_id };
+        return { institution_id, id: oid };
       },
     },
   },

@@ -17,17 +17,28 @@ with initial_data as (
 )
 
 insert into person (
-    id, name, email, email_verified, institution_id, is_staff, can_manage_users, orcid
+    id, name, institution_id, is_staff, can_manage_users, orcid
 )
 select
     uuid_nil(),
     admin_person ->> 'name',
-    admin_person ->> 'email',
-    true,
     uuid_nil(),
     (admin_person ->> 'is_staff')::boolean,
     true,
     admin_person ->> 'orcid'
+from initial_data;
+
+with initial_data as (
+    select json(pg_read_file('/initial-data.json')) -> 'admin' as admin_person
+)
+
+insert into account (
+    person_id, auth_provider_name, auth_provider_user_id
+)
+select
+    uuid_nil(),
+    admin_person ->> 'auth_provider_name',
+    admin_person ->> 'auth_provider_user_id'
 from initial_data;
 -- noqa: enable=AL03
 
@@ -38,5 +49,6 @@ select create_app_user_if_not_exists(uuid_nil());
 do $$
     begin
         execute format('grant all on all tables in schema public to %I with grant option', uuid_nil());
+        execute format('grant %I to auth with admin true, inherit false', uuid_nil());
     end;
 $$;

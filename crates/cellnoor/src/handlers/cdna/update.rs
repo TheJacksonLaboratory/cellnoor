@@ -104,7 +104,7 @@ mod test {
         let pre_update = CdnaUpdate {
             record: CdnaSimpleFields {
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                ..insert_input.common.record
+                ..insert_input.common.simple
             },
             measurements: None,
             preparers: None,

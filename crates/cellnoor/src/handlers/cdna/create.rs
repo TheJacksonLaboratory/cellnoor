@@ -155,7 +155,7 @@ impl AsFieldValuePairs<CdnaField, 6> for NewCdnaGeneric<'_> {
         let Self {
             common:
                 NewCdnaCommonFields {
-                    record,
+                    simple,
                     measurements: _,
                     preparers: _,
                 },
@@ -167,7 +167,7 @@ impl AsFieldValuePairs<CdnaField, 6> for NewCdnaGeneric<'_> {
         // Preallocate an array and then just combine
         let mut fields: FieldValuePairs<'_, CdnaField, 6> = [(ReadableId, &""); 6];
 
-        fields[..3].copy_from_slice(&record.as_field_value_pairs());
+        fields[..3].copy_from_slice(&simple.as_field_value_pairs());
 
         fields[3] = (LibraryType, library_type);
         fields[4] = (GemWellId, gem_well_id);
@@ -222,7 +222,7 @@ pub mod test {
         let mut new = NewCdna::GeneExpression {
             common: NewChromiumCdnaCommonFields {
                 common: NewCdnaCommonFields {
-                    record: CdnaSimpleFields {
+                    simple: CdnaSimpleFields {
                         readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                         prepared_at,
                         additional_data: None,

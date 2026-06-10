@@ -32,7 +32,7 @@ async fn create_test_user() -> Uuid {
 
     tx.commit().await.unwrap();
 
-    *person.record.id
+    person.record.id
 }
 
 async fn assert_is_ok<F, Pred, OrderField, Ret>(tx: &db::Transaction<'_>, select_fn: F)

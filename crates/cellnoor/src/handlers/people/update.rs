@@ -40,14 +40,15 @@ async fn update_person_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     PersonUpdate {
-        record,
+        simple,
+        email,
         permissions_to_grant,
         permissions_to_revoke,
     }: &PersonUpdate,
 ) -> Result<Person, ErrorInner> {
-    validate_email(record.email.as_ref().map(NonemptyString::as_ref))?;
+    validate_email(email.as_ref())?;
 
-    db::update(tx, "person", id, record).await?;
+    db::update(tx, "person", id, simple).await?;
 
     let no_grants = PermissionsToGrant::default();
     let no_revocations = PermissionsToRevoke::default();
@@ -116,7 +117,7 @@ async fn revoke_permissions(
 #[cfg(test)]
 mod test {
 
-    use cellnoor_types::person::{Person, PersonUpdate, SavedPersonRecord};
+    use cellnoor_types::person::{NewPerson, Person, PersonUpdate, SavedPersonRecord};
 
     use crate::{
         handlers::people::{
@@ -131,7 +132,7 @@ mod test {
         let tx = client.begin().await.unwrap();
 
         let (
-            mut pre_update,
+            pre_update,
             Person {
                 record: SavedPersonRecord { id, .. },
                 links: _,
@@ -140,14 +141,19 @@ mod test {
             .await
             .unwrap();
 
-        pre_update.record.name = "updated".to_nonempty_string();
+        let NewPerson::Microsoft { mut common, .. } = pre_update else {
+            unreachable!()
+        };
+
+        common.simple.name = "updated".to_nonempty_string();
         let update_to_apply = PersonUpdate {
-            record: pre_update.record,
-            permissions_to_grant: Some(pre_update.permissions_to_grant),
+            simple: common.simple,
+            email: "something@example.com".to_nonempty_string(),
+            permissions_to_grant: None,
             permissions_to_revoke: None,
         };
 
-        update_person_by_id(&tx, *id, &update_to_apply)
+        update_person_by_id(&tx, id, &update_to_apply)
             .await
             .unwrap();
     }

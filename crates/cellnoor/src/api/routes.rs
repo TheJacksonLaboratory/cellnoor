@@ -9,6 +9,7 @@ use axum::{Extension, Json, Router, routing::get};
 
 use crate::state::AppState;
 
+mod accounts;
 mod api_keys;
 mod cdna;
 mod chromium_datasets;
@@ -38,6 +39,7 @@ pub fn router() -> (OpenApi, Router<AppState>) {
         )
         .nest("/institutions", institutions::router())
         .nest("/people", people::router())
+        .nest("/accounts", accounts::router())
         .nest("/service-accounts", services::router())
         .nest("/api-keys", api_keys::router())
         .nest("/projects", projects::router())

@@ -5,6 +5,7 @@ use cellnoor_types::{
     person::{Person, PersonLinks, PersonPredicate, PersonQuery, SavedPersonRecord},
 };
 use futures::StreamExt;
+use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
@@ -44,12 +45,12 @@ pub(in super::super) async fn select_people(
         .await)
 }
 
-fn person_links(id: Id) -> PersonLinks {
-    let self_ = format!("/people/{id}");
+fn person_links(id: Uuid) -> PersonLinks {
+    let simple = SimpleLinks::from_str_and_id("people", id.into());
 
     PersonLinks {
-        projects: format!("{self_}/projects"),
-        simple: SimpleLinks { self_ },
+        projects: format!("{}/projects", simple.self_),
+        simple,
     }
 }
 
@@ -108,7 +109,7 @@ mod test {
         .unwrap();
 
         assert_eq!(selected_records.len(), 1);
-        assert_eq!(*selected_records[0].record.id, *inserted.record.id);
+        assert_eq!(selected_records[0].record.id, inserted.record.id);
     }
 
     #[tokio::test(flavor = "multi_thread")]

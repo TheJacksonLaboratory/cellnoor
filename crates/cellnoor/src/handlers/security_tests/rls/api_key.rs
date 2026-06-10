@@ -108,8 +108,8 @@ async fn row_level_security_for_api_keys() {
 
     tx.commit().await.unwrap();
 
-    let user1_id = *user1.record.id;
-    let user2_id = *user2.record.id;
+    let user1_id = user1.record.id;
+    let user2_id = user2.record.id;
 
     let mut user2_client = db_client_as_user(user2_id).await;
 

@@ -1,35 +1,14 @@
 #![allow(clippy::iter_without_into_iter)]
 use std::slice::Iter;
 
-use macro_attributes::{base_model, unit_enum};
+use macro_attributes::{base_model, select, unit_enum};
+use nonempty::NonemptyString;
 pub use query::{PersonField, PersonPredicate, PersonQuery, SimplePersonQuery};
+use uuid::Uuid;
 
-use crate::{
-    id::{Id, NoId},
-    person::record::PersonRecord,
-    simple_links::SimpleLinks,
-};
+use crate::simple_links::SimpleLinks;
 
 mod query;
-
-mod record {
-    use macro_attributes::select;
-    use nonempty::NonemptyString;
-    use uuid::Uuid;
-
-    #[select]
-    #[cfg_attr(feature = "postgres-types", postgres(name = "person_public"))]
-    pub struct PersonRecord<T> {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        pub id: T,
-        pub name: NonemptyString,
-        pub email: Option<NonemptyString>,
-        pub institution_id: Uuid,
-        pub is_staff: bool,
-        pub can_manage_users: bool,
-        pub orcid: Option<NonemptyString>,
-    }
-}
 
 #[unit_enum]
 pub enum Action {
@@ -40,12 +19,6 @@ pub enum Action {
     Delete,
 }
 
-impl Action {
-    pub fn as_str(&self) -> &str {
-        self.as_ref()
-    }
-}
-
 #[derive(Clone, Debug, PartialEq, Eq, Hash, strum::Display)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
@@ -54,14 +27,13 @@ impl Action {
 pub enum ResourcePermission {
     Institution(Vec<Action>),
     Person(Vec<Action>),
+    Account(Vec<Action>),
     Project(Vec<Action>),
     Specimen(Vec<Action>),
     AssayConstantData(Vec<Action>),
     ChromiumExperimentalData(Vec<Action>),
     ChromiumDataset(Vec<Action>),
 }
-
-pub type NewPersonRecord = PersonRecord<NoId>;
 
 #[base_model]
 #[derive(Default)]
@@ -104,16 +76,47 @@ impl From<Vec<ResourcePermission>> for PermissionsToRevoke {
 }
 
 #[base_model]
-pub struct NewPerson {
+pub struct PersonSimpleFields {
+    pub name: NonemptyString,
+    pub institution_id: Uuid,
+    pub is_staff: bool,
+    pub can_manage_users: bool,
+    pub orcid: Option<NonemptyString>,
+}
+
+#[base_model]
+pub struct NewPersonCommonFields {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: NewPersonRecord,
+    pub simple: PersonSimpleFields,
     pub permissions_to_grant: PermissionsToGrant,
+}
+
+#[base_model]
+#[derive(strum::AsRefStr)]
+#[strum(serialize_all = "snake_case")]
+#[cfg_attr(
+    feature = "serde",
+    serde(tag = "auth_provider_name", rename_all = "snake_case")
+)]
+pub enum NewPerson {
+    Microsoft {
+        #[cfg_attr(feature = "serde", serde(flatten))]
+        common: NewPersonCommonFields,
+        auth_provider_user_id: Uuid,
+    },
+    #[cfg_attr(feature = "serde", serde(untagged))]
+    None {
+        #[cfg_attr(feature = "serde", serde(flatten))]
+        common: NewPersonCommonFields,
+        email: NonemptyString,
+    },
 }
 
 #[base_model]
 pub struct PersonUpdate {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: NewPersonRecord,
+    pub simple: PersonSimpleFields,
+    pub email: NonemptyString,
     pub permissions_to_grant: Option<PermissionsToGrant>,
     pub permissions_to_revoke: Option<PermissionsToRevoke>,
 }
@@ -125,7 +128,17 @@ pub struct PersonLinks {
     pub projects: String,
 }
 
-pub type SavedPersonRecord = PersonRecord<Id>;
+#[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "person_public"))]
+pub struct SavedPersonRecord {
+    pub id: Uuid,
+    pub name: NonemptyString,
+    pub email: Option<NonemptyString>,
+    pub institution_id: Uuid,
+    pub is_staff: bool,
+    pub can_manage_users: bool,
+    pub orcid: Option<NonemptyString>,
+}
 
 #[base_model]
 pub struct Person {

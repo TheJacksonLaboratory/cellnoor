@@ -16,7 +16,7 @@ pub struct CdnaSimpleFields {
 #[base_model]
 pub struct NewCdnaCommonFields {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: CdnaSimpleFields,
+    pub simple: CdnaSimpleFields,
     pub measurements: Vec<NewNucleicAcidMeasurement>,
     pub preparers: NonemptyVec<Uuid>,
 }
