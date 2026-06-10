@@ -1,4 +1,4 @@
-use macro_attributes::{base_model, predicate_enum, sort_field_enum};
+use macro_attributes::{base_model, predicate_enum, predicate_enum_wrapper, sort_field_enum};
 
 use crate::{
     operator::{
@@ -32,24 +32,13 @@ pub enum SuspensionPredicateInner {
     AdditionalData(JsonOperator),
 }
 
-#[base_model]
-#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
-#[derive(strum::IntoStaticStr)]
+#[predicate_enum_wrapper]
 pub enum SuspensionPredicate {
     #[strum(transparent)]
     Specimen(SpecimenPredicate),
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(transparent)]
     Suspension(SuspensionPredicateInner),
-}
-
-impl SuspensionPredicate {
-    pub fn field_name(&self) -> &'static str {
-        match self {
-            Self::Specimen(p) => p.field_name(),
-            Self::Suspension(p) => p.field_name(),
-        }
-    }
 }
 
 impl From<SpecimenPredicate> for SuspensionPredicate {
@@ -69,8 +58,6 @@ impl From<SuspensionPredicateInner> for Filter<SuspensionPredicate> {
         Self::Leaf(value.into())
     }
 }
-
-#[cfg(feature = "postgres-types")]
 
 impl Default for SuspensionField {
     fn default() -> Self {

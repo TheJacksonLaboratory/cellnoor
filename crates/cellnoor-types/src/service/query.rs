@@ -17,7 +17,6 @@ pub enum ServicePredicate {
     CreatedAt(TimestampOperator),
 }
 
-#[cfg(feature = "postgres-types")]
 impl Default for ServiceField {
     fn default() -> Self {
         Self::CreatedAt

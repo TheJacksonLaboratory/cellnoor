@@ -1,7 +1,6 @@
-use macro_attributes::{base_model, select, sort_field_enum};
+use macro_attributes::{base_model, discriminant_unit_enum, select};
 use nonempty::{NonemptyString, NonemptyVec};
-#[cfg(feature = "postgres-types")]
-use postgres_types::{FromSql, ToSql, to_sql_checked};
+
 pub use query::{
     MultiplexingTagField, MultiplexingTagPredicate, SimpleSuspensionPoolQuery, SuspensionPoolField,
     SuspensionPoolPredicate, SuspensionPoolPredicateInner, SuspensionPoolQuery,
@@ -62,14 +61,13 @@ pub struct NewTaggedSuspensionPool {
 }
 
 #[base_model]
-#[derive(strum::IntoStaticStr, strum::EnumDiscriminants)]
+#[derive(strum::AsRefStr, strum::EnumDiscriminants)]
 #[cfg_attr(
     feature = "serde",
     serde(tag = "multiplexing_tag_type", rename_all = "snake_case")
 )]
 #[strum(serialize_all = "snake_case")]
-// Apply `sort_field_enum` cus it has everything we want
-#[strum_discriminants(name(MultiplexingTagType), sort_field_enum)]
+#[strum_discriminants(name(MultiplexingTagType), discriminant_unit_enum)]
 pub enum NewSuspensionPool {
     FlexBarcode(NewTaggedSuspensionPool),
     FlexOligonucleotideBarcode(NewTaggedSuspensionPool),
@@ -96,49 +94,6 @@ pub enum NewSuspensionPool {
         common: NewSuspensionPoolCommonFields,
         suspensions: NonemptyVec<Uuid>,
     },
-}
-
-#[cfg(feature = "postgres-types")]
-impl<'a> FromSql<'a> for MultiplexingTagType {
-    fn from_sql(
-        ty: &postgres_types::Type,
-        raw: &'a [u8],
-    ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
-        use std::str::FromStr;
-
-        NonemptyString::from_sql(ty, raw).map(|s| Self::from_str(s.as_ref()).unwrap())
-    }
-
-    fn accepts(ty: &postgres_types::Type) -> bool {
-        <NonemptyString as FromSql>::accepts(ty)
-    }
-}
-
-#[cfg(feature = "postgres-types")]
-impl ToSql for MultiplexingTagType {
-    to_sql_checked!();
-
-    fn to_sql(
-        &self,
-        ty: &postgres_types::Type,
-        out: &mut bytes::BytesMut,
-    ) -> Result<postgres_types::IsNull, Box<dyn std::error::Error + Sync + Send>>
-    where
-        Self: Sized,
-    {
-        let as_str: &str = self.into();
-
-        NonemptyString::new(as_str.to_owned())
-            .unwrap()
-            .to_sql(ty, out)
-    }
-
-    fn accepts(ty: &postgres_types::Type) -> bool
-    where
-        Self: Sized,
-    {
-        <NonemptyString as ToSql>::accepts(ty)
-    }
 }
 
 #[base_model]
@@ -239,13 +194,12 @@ mod tests {
             };
 
             // Next, ensure that the strum serializations of the two types match
-            let pool_as_str: &str = deserialized_pool.clone().into();
-            let ty_as_str: &str = ty.into();
-            pretty_assertions::assert_str_eq!(pool_as_str, ty_as_str);
+            pretty_assertions::assert_str_eq!(deserialized_pool.as_ref(), ty.as_ref());
 
             // Finally, ensure that the strum serialization of MultiplexingTagType yields
             // the same result as the serde serialization
-            pool["multiplexing_tag_type"] = serde_json::Value::String(pool_as_str.to_owned());
+            pool["multiplexing_tag_type"] =
+                serde_json::Value::String(deserialized_pool.as_ref().to_owned());
             pretty_assertions::assert_eq!(deserialized_pool, serde_json::from_value(pool).unwrap());
         }
     }

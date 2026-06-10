@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 #[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
@@ -48,6 +50,14 @@ impl From<NonemptyString> for String {
 #[derive(Debug, thiserror::Error)]
 #[error("string cannot be empty")]
 pub struct Error;
+
+impl FromStr for NonemptyString {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::new(s.to_owned()).ok_or(Error)
+    }
+}
 
 impl TryFrom<String> for NonemptyString {
     type Error = Error;

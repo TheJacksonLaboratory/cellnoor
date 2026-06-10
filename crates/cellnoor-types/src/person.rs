@@ -41,8 +41,8 @@ pub enum Action {
 }
 
 impl Action {
-    pub fn as_str(&self) -> &'static str {
-        self.into()
+    pub fn as_str(&self) -> &str {
+        self.as_ref()
     }
 }
 

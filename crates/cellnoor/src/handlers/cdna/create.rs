@@ -100,7 +100,7 @@ struct NewCdnaGeneric<'a> {
 
 impl<'a> NewCdnaGeneric<'a> {
     fn from_new_cdna(cdna: &'a NewCdna) -> Self {
-        let library_type = LibraryType::from_str(cdna.as_ref()).unwrap();
+        let library_type = cdna.into();
 
         let (common, gem_well_id, n_amplification_cycles) = match cdna {
             NewCdna::AntibodyCapture(common)

@@ -60,13 +60,7 @@ async fn insert_suspension_pool(
                 preparers,
                 suspensions
                     .iter()
-                    .map(|s| {
-                        (
-                            s.suspension_id,
-                            Some(&s.tag_id),
-                            Some(MultiplexingTagType::from_str(new.into()).unwrap()),
-                        )
-                    })
+                    .map(|s| (s.suspension_id, Some(&s.tag_id), Some(new.into())))
                     .collect::<Vec<_>>(),
             )
         }

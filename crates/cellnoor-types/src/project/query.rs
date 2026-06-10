@@ -17,8 +17,6 @@ pub enum ProjectPredicate {
     EndedAt(TimestampOperator),
 }
 
-#[cfg(feature = "postgres-types")]
-
 impl Default for ProjectField {
     fn default() -> Self {
         Self::StartedAt

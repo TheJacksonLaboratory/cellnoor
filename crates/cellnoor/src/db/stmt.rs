@@ -46,7 +46,7 @@ impl FilterableSqlBuilder {
         static WHERE_CLAUSE_PLACEHOLDER: &'static [u8] = b"/* {where} */";
 
         let mut i = 0;
-        let mut sentinel_was_found = false;
+        let mut placeholder_was_found = false;
 
         // The following nested while-loop is necessary because other string-searching
         // functionality is not const-compatible. This loop basically evaluates every
@@ -73,22 +73,22 @@ impl FilterableSqlBuilder {
                 current_needle_idx += 1;
             }
 
-            sentinel_was_found = current_needle_idx == WHERE_CLAUSE_PLACEHOLDER.len();
-            if sentinel_was_found {
+            placeholder_was_found = current_needle_idx == WHERE_CLAUSE_PLACEHOLDER.len();
+            if placeholder_was_found {
                 break;
             }
 
             i += 1;
         }
 
-        if !sentinel_was_found {
+        if !placeholder_was_found {
             panic!(r#"where-clause placeholder "/* {{where}} */"" not found in SQL statement"#);
         }
 
-        let sentinel_idx = i;
-        let (prefix, _) = base_sql.split_at(sentinel_idx);
+        let placeholder_idx = i;
+        let (prefix, _) = base_sql.split_at(placeholder_idx);
 
-        let suffix_idx = sentinel_idx + WHERE_CLAUSE_PLACEHOLDER.len();
+        let suffix_idx = placeholder_idx + WHERE_CLAUSE_PLACEHOLDER.len();
         let (_, suffix) = base_sql.split_at(suffix_idx);
 
         Self { prefix, suffix }
@@ -105,7 +105,7 @@ impl FilterableSqlBuilder {
     ) -> Sql<'a>
     where
         P: AsPredicate,
-        O: Default + Copy + Into<&'static str>,
+        O: Default + Copy + std::fmt::Display,
     {
         // Still tiny but should be more than enough inshallah
         let mut stmt = String::with_capacity(2048);
@@ -142,7 +142,7 @@ impl FilterableSqlBuilder {
 }
 
 pub trait AsPredicate {
-    fn as_predicate(&self) -> (&'static str, (&'static str, &(dyn ToSql + Sync)));
+    fn as_predicate(&self) -> (&str, (&'static str, &(dyn ToSql + Sync)));
 }
 
 fn write_where_clause_predicates<'a, 'b, P>(
@@ -199,7 +199,7 @@ fn write_order_by_fields<'a, O>(
     order_by_set: &OrderBySet<O>,
 ) -> Option<&'a mut String>
 where
-    O: Default + Into<&'static str> + Copy,
+    O: Default + std::fmt::Display + Copy,
 {
     fn direction(desc: bool) -> &'static str {
         if desc { "desc" } else { "asc" }
@@ -207,8 +207,7 @@ where
 
     match order_by_set {
         OrderBySet::One(OrderBy { field, desc }) => {
-            let field: &str = field.clone().into();
-            write!(clause, "{} {}", field, direction(*desc)).unwrap();
+            write!(clause, "{field} {}", direction(*desc)).unwrap();
         }
         OrderBySet::Many(fields) => {
             for (i, order_by) in fields.iter().copied().enumerate() {

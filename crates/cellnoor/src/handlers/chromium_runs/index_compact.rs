@@ -48,7 +48,7 @@ async fn select_chromium_runs_compact(
 }
 
 impl AsPredicate for ChromiumRunPredicate {
-    fn as_predicate(&self) -> (&'static str, (&'static str, &(dyn ToSql + Sync))) {
+    fn as_predicate(&self) -> (&str, (&'static str, &(dyn ToSql + Sync))) {
         let operator_and_value = match self {
             Self::Specimen(p) => return p.as_predicate(),
             Self::TenxAssay(p) => return p.as_predicate(),

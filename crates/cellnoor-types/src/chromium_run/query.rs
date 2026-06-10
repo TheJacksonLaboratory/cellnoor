@@ -1,4 +1,4 @@
-use macro_attributes::{base_model, predicate_enum, sort_field_enum};
+use macro_attributes::{base_model, predicate_enum, predicate_enum_wrapper, sort_field_enum};
 
 use crate::{
     operator::{BoolOperator, JsonOperator, StringOperator, TimestampOperator, UuidOperator},
@@ -24,9 +24,7 @@ pub enum ChromiumRunPredicateInner {
     AdditionalData(JsonOperator),
 }
 
-#[base_model]
-#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
-#[derive(strum::IntoStaticStr)]
+#[predicate_enum_wrapper]
 pub enum ChromiumRunPredicate {
     #[strum(transparent)]
     Specimen(SpecimenPredicate),
@@ -35,16 +33,6 @@ pub enum ChromiumRunPredicate {
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(transparent)]
     ChromiumRun(ChromiumRunPredicateInner),
-}
-
-impl ChromiumRunPredicate {
-    pub fn field_name(&self) -> &'static str {
-        match self {
-            Self::Specimen(p) => p.field_name(),
-            Self::TenxAssay(p) => p.field_name(),
-            Self::ChromiumRun(p) => p.field_name(),
-        }
-    }
 }
 
 impl From<SpecimenPredicate> for ChromiumRunPredicate {
@@ -70,8 +58,6 @@ impl From<ChromiumRunPredicateInner> for Filter<ChromiumRunPredicate> {
         Self::Leaf(value.into())
     }
 }
-
-#[cfg(feature = "postgres-types")]
 
 impl Default for ChromiumRunField {
     fn default() -> Self {

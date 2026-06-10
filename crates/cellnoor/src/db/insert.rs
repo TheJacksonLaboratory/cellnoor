@@ -1,3 +1,4 @@
+use std::fmt::Write;
 use uuid::Uuid;
 
 use crate::db::{AsFieldValuePairs, FieldValuePairs, Sql};
@@ -8,7 +9,7 @@ pub async fn insert_into<F, T, const N: usize>(
     data: &T,
 ) -> Result<Uuid, deadpool_postgres::tokio_postgres::Error>
 where
-    F: Copy + Into<&'static str>,
+    F: Copy + AsRef<str>,
     T: AsFieldValuePairs<F, N>,
 {
     let record = data.as_field_value_pairs();
@@ -23,7 +24,7 @@ pub async fn insert_into_no_returning<F, T, const N: usize>(
     data: &T,
 ) -> Result<(), deadpool_postgres::tokio_postgres::Error>
 where
-    F: Copy + Into<&'static str>,
+    F: Copy + AsRef<str>,
     T: AsFieldValuePairs<F, N>,
 {
     let record = data.as_field_value_pairs();
@@ -40,31 +41,41 @@ fn convert_record_to_insert_stmt<'a, F, const N: usize>(
     returning: Option<&str>,
 ) -> Sql<'a>
 where
-    F: Copy + Into<&'static str>,
+    F: Copy + AsRef<str>,
 {
-    let mut fieldnames = Vec::with_capacity(N);
-    let mut placeholders = Vec::with_capacity(N);
+    // Should be more than enough space
+    let mut insert_clause = String::with_capacity(512);
+    write!(insert_clause, "insert into {table} (").unwrap();
+
     let mut params = Vec::with_capacity(N);
 
     for (i, (field, value)) in field_value_pairs.iter().enumerate() {
-        let field: &str = field.clone().into();
+        if i != 0 {
+            insert_clause.push_str(", ");
+        }
 
-        fieldnames.push(field.split('.').last().unwrap());
-        placeholders.push(format!("${}", i + 1));
+        insert_clause.push_str(field.as_ref().split('.').last().unwrap());
+
         params.push(*value);
     }
 
-    let joined_fieldnames = fieldnames.join(", ");
-    let joined_placeholders = placeholders.join(", ");
+    insert_clause.push_str(") ");
 
-    let returning = match returning {
-        Some(returning) => format!("returning {returning}"),
-        None => String::new(),
-    };
+    insert_clause.push_str("values (");
 
-    let insert_clause = format!(
-        "insert into {table} ({joined_fieldnames}) values ({joined_placeholders}) {returning}"
-    );
+    for i in field_value_pairs.iter().enumerate().map(|(i, _)| i) {
+        if i != 0 {
+            insert_clause.push_str(", ");
+        }
+
+        write!(insert_clause, "${}", i + 1).unwrap();
+    }
+
+    insert_clause.push_str(") ");
+
+    if let Some(returning) = returning {
+        write!(insert_clause, "returning {returning}").unwrap();
+    }
 
     Sql(insert_clause, params)
 }

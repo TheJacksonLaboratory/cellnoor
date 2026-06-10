@@ -334,7 +334,7 @@ fn parse_csv(data: &[u8]) -> Result<serde_json::Value, ErrorInner> {
 }
 
 #[derive(
-    Debug, Clone, Copy, strum::EnumString, strum::IntoStaticStr, PartialEq, strum::VariantNames,
+    Debug, Clone, Copy, strum::EnumString, strum::AsRefStr, PartialEq, strum::VariantNames,
 )]
 enum AllowedContentType {
     #[strum(serialize = "text/csv")]

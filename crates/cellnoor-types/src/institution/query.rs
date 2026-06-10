@@ -18,8 +18,6 @@ pub enum InstitutionPredicate {
     MicrosoftEntraTenantId(UuidOperator),
 }
 
-#[cfg(feature = "postgres-types")]
-
 impl Default for InstitutionField {
     fn default() -> Self {
         Self::Name

@@ -18,8 +18,6 @@ pub enum PersonPredicate {
     Orcid(StringOperator),
 }
 
-#[cfg(feature = "postgres-types")]
-
 impl Default for PersonField {
     fn default() -> Self {
         Self::Name

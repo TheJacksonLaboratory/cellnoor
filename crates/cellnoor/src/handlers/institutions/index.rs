@@ -56,12 +56,7 @@ fn institution_from_record(record: SavedInstitutionRecord) -> Institution {
 }
 
 impl AsPredicate for InstitutionPredicate {
-    fn as_predicate(
-        &self,
-    ) -> (
-        &'static str,
-        (&'static str, &(dyn postgres_types::ToSql + Sync)),
-    ) {
+    fn as_predicate(&self) -> (&str, (&'static str, &(dyn postgres_types::ToSql + Sync))) {
         let sql = match self {
             Self::Id(u) | Self::MicrosoftEntraTenantId(u) => u.as_sql_operator_and_value(),
             Self::Name(s) => s.as_sql_operator_and_value(),

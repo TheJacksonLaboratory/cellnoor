@@ -1,4 +1,4 @@
-use macro_attributes::{base_model, predicate_enum, sort_field_enum};
+use macro_attributes::{base_model, predicate_enum, predicate_enum_wrapper, sort_field_enum};
 
 use crate::{
     operator::{JsonOperator, StringOperator, TimestampOperator, UuidOperator},
@@ -38,9 +38,7 @@ pub enum SuspensionPoolPredicateInner {
     AdditionalData(JsonOperator),
 }
 
-#[base_model]
-#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
-#[derive(strum::IntoStaticStr)]
+#[predicate_enum_wrapper]
 pub enum SuspensionPoolPredicate {
     #[strum(transparent)]
     Specimen(SpecimenPredicate),
@@ -49,16 +47,6 @@ pub enum SuspensionPoolPredicate {
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(transparent)]
     SuspensionPool(SuspensionPoolPredicateInner),
-}
-
-impl SuspensionPoolPredicate {
-    pub fn field_name(&self) -> &'static str {
-        match self {
-            Self::Specimen(p) => p.field_name(),
-            Self::MultiplexingTag(p) => p.field_name(),
-            Self::SuspensionPool(p) => p.field_name(),
-        }
-    }
 }
 
 impl From<SpecimenPredicate> for SuspensionPoolPredicate {
@@ -84,8 +72,6 @@ impl From<SuspensionPoolPredicateInner> for Filter<SuspensionPoolPredicate> {
         Self::Leaf(value.into())
     }
 }
-
-#[cfg(feature = "postgres-types")]
 
 impl Default for SuspensionPoolField {
     fn default() -> Self {

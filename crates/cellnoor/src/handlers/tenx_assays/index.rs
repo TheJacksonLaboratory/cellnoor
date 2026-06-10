@@ -30,12 +30,7 @@ async fn select_tenx_assays(tx: &db::Transaction<'_>) -> Result<Vec<TenxAssay>, 
 }
 
 impl AsPredicate for TenxAssayPredicate {
-    fn as_predicate(
-        &self,
-    ) -> (
-        &'static str,
-        (&'static str, &(dyn postgres_types::ToSql + Sync)),
-    ) {
+    fn as_predicate(&self) -> (&str, (&'static str, &(dyn postgres_types::ToSql + Sync))) {
         let sql = match self {
             Self::Id(u) => u.as_sql_operator_and_value(),
             Self::LibraryTypes(l) => l.as_sql_operator_and_value(),

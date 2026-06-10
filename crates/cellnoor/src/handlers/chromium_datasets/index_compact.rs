@@ -48,7 +48,7 @@ async fn select_chromium_datasets_compact(
 }
 
 impl AsPredicate for ChromiumDatasetPredicate {
-    fn as_predicate(&self) -> (&'static str, (&'static str, &(dyn ToSql + Sync))) {
+    fn as_predicate(&self) -> (&str, (&'static str, &(dyn ToSql + Sync))) {
         let sql = match self {
             Self::Specimen(p) => return p.as_predicate(),
             Self::TenxAssay(p) => return p.as_predicate(),

@@ -50,7 +50,7 @@ async fn select_suspension_pools_compact(
 }
 
 impl AsPredicate for MultiplexingTagPredicate {
-    fn as_predicate(&self) -> (&'static str, (&'static str, &(dyn ToSql + Sync))) {
+    fn as_predicate(&self) -> (&str, (&'static str, &(dyn ToSql + Sync))) {
         let sql = match self {
             Self::Type(t) => t.as_sql_operator_and_value(),
         };
@@ -60,7 +60,7 @@ impl AsPredicate for MultiplexingTagPredicate {
 }
 
 impl AsPredicate for SuspensionPoolPredicate {
-    fn as_predicate(&self) -> (&'static str, (&'static str, &(dyn ToSql + Sync))) {
+    fn as_predicate(&self) -> (&str, (&'static str, &(dyn ToSql + Sync))) {
         let sql = match self {
             Self::Specimen(p) => {
                 return p.as_predicate();

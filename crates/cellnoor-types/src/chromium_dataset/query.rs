@@ -1,4 +1,4 @@
-use macro_attributes::{base_model, predicate_enum, sort_field_enum};
+use macro_attributes::{base_model, predicate_enum, predicate_enum_wrapper, sort_field_enum};
 
 use crate::{
     library::LibraryPredicate,
@@ -21,9 +21,7 @@ pub enum ChromiumDatasetPredicateInner {
     DeliveredAt(TimestampOperator),
 }
 
-#[base_model]
-#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
-#[derive(strum::IntoStaticStr)]
+#[predicate_enum_wrapper]
 pub enum ChromiumDatasetPredicate {
     #[strum(transparent)]
     Specimen(SpecimenPredicate),
@@ -34,17 +32,6 @@ pub enum ChromiumDatasetPredicate {
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(transparent)]
     ChromiumDataset(ChromiumDatasetPredicateInner),
-}
-
-impl ChromiumDatasetPredicate {
-    pub fn field_name(&self) -> &'static str {
-        match self {
-            Self::Specimen(p) => p.field_name(),
-            Self::TenxAssay(p) => p.field_name(),
-            Self::Library(p) => p.field_name(),
-            Self::ChromiumDataset(p) => p.field_name(),
-        }
-    }
 }
 
 impl From<SpecimenPredicate> for ChromiumDatasetPredicate {

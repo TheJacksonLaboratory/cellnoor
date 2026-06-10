@@ -24,8 +24,6 @@ pub enum TenxAssayPredicate {
     ProtocolUrl(StringOperator),
 }
 
-#[cfg(feature = "postgres-types")]
-
 impl Default for TenxAssayField {
     fn default() -> Self {
         Self::Name
