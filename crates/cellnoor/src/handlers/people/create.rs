@@ -2,8 +2,8 @@ use std::sync::LazyLock;
 
 use axum::{Json, extract::State};
 use cellnoor_types::person::{
-    Action, NewPerson, NewPersonCommonFields, PermissionsToGrant, Person, PersonField,
-    PersonSimpleFields, ResourcePermission,
+    Account, Action, NewPerson, PermissionsToGrant, Person, PersonField, PersonSimpleFields,
+    ResourcePermission,
 };
 use nonempty::NonemptyString;
 use postgres_types::ToSql;
@@ -12,7 +12,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, SqlBuilder},
+    db::{self, AsFieldValuePairs},
     error::{Error, ErrorInner},
     handlers::people::show::select_person_by_id,
     state::AppState,
@@ -34,30 +34,29 @@ pub async fn create_person(
     Ok(response)
 }
 
-async fn insert_person(tx: &db::Transaction<'_>, new: &NewPerson) -> Result<Person, ErrorInner> {
-    if let NewPerson::None { common: _, email } = new {
-        validate_email(email.as_ref())?;
-    }
+async fn insert_person(
+    tx: &db::Transaction<'_>,
+    NewPerson {
+        simple,
+        account,
+        permissions_to_grant,
+    }: &NewPerson,
+) -> Result<Person, ErrorInner> {
+    match account {
+        Account::None { email } => validate_email(email.as_ref())?,
+        Account::Microsoft {
+            microsoft_entra_oid: _,
+        } => (),
+    };
 
-    let id = db::insert_into(tx, "person", new).await?;
+    let id = db::insert_into(tx, "person", simple).await?;
 
-    let person = select_person_by_id(&tx, id).await?;
-
-    if let NewPerson::Microsoft {
-        auth_provider_user_id,
-        ..
-    } = new
-    {
-        insert_account(tx, id, new.as_ref(), *auth_provider_user_id).await?;
-    }
-
-    let (NewPerson::Microsoft {
-        common,
-        auth_provider_user_id: _,
-    }
-    | NewPerson::None { common, email: _ }) = new;
-
-    create_db_user(tx, id, &common.permissions_to_grant).await?;
+    // These 3 operations can happen concurrently because they don't depend on one another (inshallah)
+    let (person, _, _) = tokio::try_join!(
+        select_person_by_id(tx, id),
+        insert_account(tx, id, account),
+        create_db_user(tx, id, permissions_to_grant)
+    )?;
 
     Ok(person)
 }
@@ -65,19 +64,23 @@ async fn insert_person(tx: &db::Transaction<'_>, new: &NewPerson) -> Result<Pers
 async fn insert_account(
     tx: &db::Transaction<'_>,
     user_id: Uuid,
-    auth_provider: &str,
-    auth_provider_user_id: Uuid,
+    account: &Account,
 ) -> Result<(), ErrorInner> {
-    static INSERT: SqlBuilder = SqlBuilder::new(include_str!("create/create_account.sql"));
+    let res = match account {
+        Account::Microsoft {
+            microsoft_entra_oid,
+        } => {
+            db::insert_into_no_returning(
+                tx,
+                "account",
+                &NewAccountRecord::new(user_id, account.as_ref(), microsoft_entra_oid),
+            )
+            .await?
+        }
+        Account::None { email: _ } => (),
+    };
 
-    tx.execute(&INSERT.finish_with_params(vec![
-        &user_id,
-        &auth_provider,
-        &auth_provider_user_id.to_string(),
-    ]))
-    .await?;
-
-    Ok(())
+    Ok(res)
 }
 
 async fn create_db_user(
@@ -181,22 +184,63 @@ impl AsFieldValuePairs<PersonField, 6> for NewPerson {
     fn as_field_value_pairs(&self) -> db::FieldValuePairs<'_, PersonField, 6> {
         use PersonField::*;
 
-        let (common_fields, email): (_, (PersonField, &(dyn ToSql + Sync))) = match self {
-            Self::Microsoft {
-                common,
-                auth_provider_user_id: _,
-            } => (common, (Email, &None::<NonemptyString>)),
-            Self::None { common, email } => (common, (Email, email)),
+        let Self {
+            simple,
+            account,
+            permissions_to_grant: _,
+        } = self;
+
+        let email: &(dyn ToSql + Sync) = match account {
+            Account::Microsoft {
+                microsoft_entra_oid: _,
+            } => &None::<NonemptyString>,
+            Account::None { email } => email,
         };
 
         // Initialize an array with dummy info
         let mut fields: [(PersonField, &(dyn ToSql + Sync)); _] = [(PersonField::Name, &""); 6];
 
-        fields[..5].copy_from_slice(&common_fields.simple.as_field_value_pairs());
+        fields[..5].copy_from_slice(&simple.as_field_value_pairs());
 
-        fields[5] = email;
+        fields[5] = (Email, email);
 
         fields
+    }
+}
+
+struct NewAccountRecord<'a> {
+    person_id: Uuid,
+    auth_provider: &'a str,
+    auth_provider_user_id: String,
+}
+
+impl<'a> NewAccountRecord<'a> {
+    fn new(
+        person_id: Uuid,
+        auth_provider: &'a str,
+        auth_provider_user_id: impl std::fmt::Display,
+    ) -> Self {
+        Self {
+            person_id,
+            auth_provider,
+            auth_provider_user_id: auth_provider_user_id.to_string(),
+        }
+    }
+}
+
+impl AsFieldValuePairs<&'static str, 3> for NewAccountRecord<'_> {
+    fn as_field_value_pairs(&self) -> db::FieldValuePairs<'_, &'static str, 3> {
+        let Self {
+            person_id,
+            auth_provider,
+            auth_provider_user_id,
+        } = self;
+
+        [
+            ("person_id", person_id),
+            ("auth_provider", auth_provider),
+            ("auth_provider_user_id", auth_provider_user_id),
+        ]
     }
 }
 
@@ -220,12 +264,9 @@ pub(super) fn validate_email(email: &str) -> Result<(), ErrorInner> {
 
 #[cfg(test)]
 pub mod test {
-    use cellnoor_types::{
-        id::NoId,
-        person::{
-            Action, NewPerson, NewPersonCommonFields, PermissionsToGrant, Person,
-            PersonSimpleFields, ResourcePermission,
-        },
+    use cellnoor_types::person::{
+        Account, Action, NewPerson, PermissionsToGrant, Person, PersonSimpleFields,
+        ResourcePermission,
     };
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
@@ -248,18 +289,18 @@ pub mod test {
     {
         let (_, institution) = insert_test_institution(tx, |_| ()).await?;
 
-        let mut new = NewPerson::Microsoft {
-            common: NewPersonCommonFields {
-                simple: PersonSimpleFields {
-                    name: Uuid::new_v4().to_string().to_nonempty_string(),
-                    institution_id: *institution.record.id,
-                    is_staff: false,
-                    can_manage_users: false,
-                    orcid: None,
-                },
-                permissions_to_grant: PermissionsToGrant::default(),
+        let mut new = NewPerson {
+            simple: PersonSimpleFields {
+                name: Uuid::new_v4().to_string().to_nonempty_string(),
+                institution_id: *institution.record.id,
+                is_staff: false,
+                can_manage_users: false,
+                orcid: None,
             },
-            auth_provider_user_id: Uuid::new_v4(),
+            account: Account::Microsoft {
+                microsoft_entra_oid: Uuid::new_v4(),
+            },
+            permissions_to_grant: PermissionsToGrant::default(),
         };
 
         modify(&mut new);
@@ -286,12 +327,14 @@ pub mod test {
         // Create a new person with permissions to create every entity in the chain from
         // an institution to a Chromium dataset
         let (_, person) = insert_test_person_and_institution(&tx, |p| {
-            let NewPerson::Microsoft { common, .. } = p else {
-                unreachable!()
-            };
+            let NewPerson {
+                simple,
+                permissions_to_grant,
+                account: _,
+            } = p;
 
-            common.simple.is_staff = false;
-            common.permissions_to_grant = vec![
+            simple.is_staff = false;
+            *permissions_to_grant = vec![
                 ResourcePermission::Institution(vec![Action::Create]),
                 ResourcePermission::Person(vec![Action::Create, Action::Update, Action::Delete]),
                 ResourcePermission::Project(vec![Action::Create]),
@@ -325,11 +368,7 @@ pub mod test {
         let tx = client.begin().await.unwrap();
 
         let error = insert_test_person_and_institution(&tx, |p| {
-            let NewPerson::Microsoft { common, .. } = p else {
-                unreachable!()
-            };
-
-            common.simple.institution_id = Uuid::new_v4();
+            p.simple.institution_id = Uuid::new_v4();
         })
         .await
         .unwrap_err();
@@ -348,12 +387,8 @@ pub mod test {
         let create = vec![Action::Create];
 
         let grant_create_person = |p: &mut NewPerson| {
-            let NewPerson::Microsoft { common, .. } = p else {
-                unreachable!()
-            };
-
-            common.simple.can_manage_users = true;
-            common.permissions_to_grant = vec![
+            p.simple.can_manage_users = true;
+            p.permissions_to_grant = vec![
                 ResourcePermission::Institution(create.clone()),
                 ResourcePermission::Person(create.clone()),
                 ResourcePermission::Account(create.clone()),
@@ -378,10 +413,7 @@ pub mod test {
         // The newly created person should be able to create another person with the
         // requested permissions
         let (_, person) = insert_test_person_and_institution(&tx, |p| {
-            let NewPerson::Microsoft { common, .. } = p else {
-                unreachable!()
-            };
-            common.permissions_to_grant =
+            p.permissions_to_grant =
                 vec![ResourcePermission::Institution(vec![Action::Create])].into()
         })
         .await

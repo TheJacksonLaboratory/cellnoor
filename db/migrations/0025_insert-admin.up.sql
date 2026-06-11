@@ -33,11 +33,11 @@ with initial_data as (
 )
 
 insert into account (
-    person_id, auth_provider_name, auth_provider_user_id
+    person_id, auth_provider, auth_provider_user_id
 )
 select
     uuid_nil(),
-    admin_person ->> 'auth_provider_name',
+    admin_person ->> 'auth_provider',
     admin_person ->> 'auth_provider_user_id'
 from initial_data;
 -- noqa: enable=AL03

@@ -20,7 +20,7 @@ pub struct PersonAccount {
     id: Uuid,
     name: NonemptyString,
     email: Option<NonemptyString>,
-    auth_provider_name: String,
+    auth_provider: String,
     auth_provider_user_id: String,
 }
 

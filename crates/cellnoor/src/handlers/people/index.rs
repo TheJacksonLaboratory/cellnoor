@@ -1,7 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
-    id::Id,
     person::{Person, PersonLinks, PersonPredicate, PersonQuery, SavedPersonRecord},
 };
 use futures::StreamExt;

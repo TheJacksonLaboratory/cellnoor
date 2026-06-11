@@ -85,31 +85,25 @@ pub struct PersonSimpleFields {
 }
 
 #[base_model]
-pub struct NewPersonCommonFields {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub simple: PersonSimpleFields,
-    pub permissions_to_grant: PermissionsToGrant,
-}
-
-#[base_model]
 #[derive(strum::AsRefStr)]
 #[strum(serialize_all = "snake_case")]
-#[cfg_attr(
-    feature = "serde",
-    serde(tag = "auth_provider_name", rename_all = "snake_case")
-)]
-pub enum NewPerson {
+#[cfg_attr(feature = "serde", serde(deny_unknown_fields, tag = "auth_provider"))]
+pub enum Account {
     Microsoft {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: NewPersonCommonFields,
-        auth_provider_user_id: Uuid,
+        microsoft_entra_oid: Uuid,
     },
     #[cfg_attr(feature = "serde", serde(untagged))]
     None {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: NewPersonCommonFields,
         email: NonemptyString,
     },
+}
+
+#[base_model]
+pub struct NewPerson {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub simple: PersonSimpleFields,
+    pub account: Account,
+    pub permissions_to_grant: PermissionsToGrant,
 }
 
 #[base_model]

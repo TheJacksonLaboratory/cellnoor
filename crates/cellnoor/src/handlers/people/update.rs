@@ -3,7 +3,6 @@ use axum::{
     extract::{Path, State},
 };
 use cellnoor_types::person::{PermissionsToGrant, PermissionsToRevoke, Person, PersonUpdate};
-use nonempty::NonemptyString;
 use uuid::Uuid;
 
 use crate::{
@@ -117,7 +116,7 @@ async fn revoke_permissions(
 #[cfg(test)]
 mod test {
 
-    use cellnoor_types::person::{NewPerson, Person, PersonUpdate, SavedPersonRecord};
+    use cellnoor_types::person::{Person, PersonUpdate, SavedPersonRecord};
 
     use crate::{
         handlers::people::{
@@ -132,7 +131,7 @@ mod test {
         let tx = client.begin().await.unwrap();
 
         let (
-            pre_update,
+            mut pre_update,
             Person {
                 record: SavedPersonRecord { id, .. },
                 links: _,
@@ -141,13 +140,9 @@ mod test {
             .await
             .unwrap();
 
-        let NewPerson::Microsoft { mut common, .. } = pre_update else {
-            unreachable!()
-        };
-
-        common.simple.name = "updated".to_nonempty_string();
+        pre_update.simple.name = "updated".to_nonempty_string();
         let update_to_apply = PersonUpdate {
-            simple: common.simple,
+            simple: pre_update.simple,
             email: "something@example.com".to_nonempty_string(),
             permissions_to_grant: None,
             permissions_to_revoke: None,

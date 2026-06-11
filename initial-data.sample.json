@@ -5,7 +5,7 @@
   },
   "admin": {
     "name": "Ahmed Said",
-    "auth_provider_name": "microsoft",
+    "auth_provider": "microsoft",
     "auth_provider_user_id": "",
     "is_staff": true
   }

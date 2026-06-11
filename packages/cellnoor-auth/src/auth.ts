@@ -74,7 +74,7 @@ export const auth = betterAuth({
   account: {
     fields: {
       userId: "person_id",
-      providerId: "auth_provider_name",
+      providerId: "auth_provider",
       accountId: "auth_provider_user_id",
       createdAt: "created_at",
       updatedAt: "updated_at",

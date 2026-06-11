@@ -26,7 +26,7 @@ create table person (
 create table account (
     id uuid primary key default uuidv7(),
     person_id uuid references person on delete cascade not null,
-    auth_provider_name text not null,
+    auth_provider text not null,
     auth_provider_user_id text not null,
     scope text,
     created_at timestamptz not null default now(),
