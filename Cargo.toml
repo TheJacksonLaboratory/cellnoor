@@ -15,7 +15,7 @@ resolver = "3"
 edition = "2024"
 
 [workspace.dependencies]
-csvranger = { version = "0.2.0", features = ["legacy", "serde", "schemars"] }
+csvranger = { version = "0.3.0", features = ["legacy", "serde", "schemars"] }
 aide = { version = "0.16.0-alpha.4", features = [
   "axum",
   "axum-json",
@@ -39,7 +39,7 @@ clap = { version = "4.6.1", features = ["derive", "env"] }
 csv = { version = "1.4.0" }
 deranged = { version = "0.5.8" }
 diesel = { version = "2.3.7", default-features = false }
-diesel-async = { version = "0.8.0", features = [
+diesel-async = { version = "0.9.1", features = [
   "deadpool",
   "migrations",
   "postgres",
