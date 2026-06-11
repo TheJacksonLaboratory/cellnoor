@@ -8,8 +8,8 @@
     choices,
     parentForm,
   }: {
-    orderByField: string;
-    orderByDescending: boolean;
+    orderByField?: string;
+    orderByDescending?: boolean;
     choices: { label: string; value: string }[];
     parentForm: HTMLFormElement;
   } = $props();

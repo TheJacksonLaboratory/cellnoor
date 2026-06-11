@@ -8,6 +8,7 @@ volumes:
   db-socket:
   auth-socket:
   api-socket:
+  ui-socket:
   caddy-data:
   caddy-config:
   static-files:
@@ -87,7 +88,7 @@ services:
       context: crates
       target: final
       args:
-        UID: "10001"
+        UID: &uid "10001"
         SOCKET: &api_socket /run/cellnoor/cellnoor.sock
         STATIC_FILES_DIR: &static_files_dir /static-files
     environment:
@@ -109,6 +110,33 @@ services:
       start_interval: 0.5s
       timeout: 5s
       retries: 10
+  cellnoor-ui:
+    build:
+      context: packages/cellnoor-ui
+      target: final
+      args:
+        UID: *uid
+        SOCKET_PATH: &ui_socket /run/cellnoor-ui/cellnoor-ui.sock
+      tags:
+        - ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
+    environment:
+      # https://svelte.dev/docs/kit/adapter-node#Environment-variables-PORT-HOST-and-SOCKET_PATH
+      HOST: ""
+      SOCKET_PATH: *ui_socket
+      API_SOCKET: *api_socket
+    depends_on:
+      cellnoor:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail --unix-socket /run/cellnoor-ui/cellnoor-ui.sock http://localhost/health || exit 1
+      interval: 5m
+      start_period: 10s
+      start_interval: 0.5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - *api_socket_volume
+      - &ui_socket_volume ui-socket:/run/cellnoor-ui
   caddy:
     image: caddy:2-alpine
     environment:
@@ -129,6 +157,7 @@ services:
         caddy-config:/config,
         *auth_socket_volume,
         *api_socket_volume,
+        *ui_socket_volume,
         *static_files_volume,
       ]
     pull_policy: always

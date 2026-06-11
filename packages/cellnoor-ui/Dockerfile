@@ -1,20 +1,19 @@
+# I don't know what is happening here
 FROM oven/bun:1 AS base
 WORKDIR /usr/src/app
 
 FROM base AS install
 COPY package.json bun.lock ./
+COPY cellnoor-ui cellnoor-ui
 COPY cellnoor-ui/package.json cellnoor-ui/package.json
-COPY pkgs/cellnoor-client/package.json pkgs/cellnoor-client/package.json
 RUN bun install --frozen-lockfile
 
 FROM base AS prerelease
 COPY --from=install /usr/src/app/node_modules node_modules
 COPY --from=install /usr/src/app/cellnoor-ui/node_modules cellnoor-ui/node_modules
-COPY --from=install /usr/src/app/pkgs/cellnoor-client/node_modules pkgs/cellnoor-client/node_modules
 COPY package.json bun.lock ./
-COPY cellnoor-ui/ cellnoor-ui/
-COPY pkgs/cellnoor-client/ pkgs/cellnoor-client/
-RUN bun run --bun --filter cellnoor-ui build
+COPY /usr/src/app/cellnoor-ui /usr/src/app/cellnoor-ui
+RUN bun run --bun build
 
 FROM base AS final
 
@@ -23,7 +22,6 @@ ARG SOCKET_PATH
 
 COPY --from=install /usr/src/app/node_modules node_modules
 COPY --from=install /usr/src/app/cellnoor-ui/node_modules cellnoor-ui/node_modules
-COPY --from=install /usr/src/app/pkgs/cellnoor-client/node_modules pkgs/cellnoor-client/node_modules
 COPY --from=prerelease /usr/src/app/package.json /usr/src/app/bun.lock ./
 COPY --from=prerelease /usr/src/app/cellnoor-ui/build/ cellnoor-ui/build/
 RUN apt update && apt install curl adduser --yes

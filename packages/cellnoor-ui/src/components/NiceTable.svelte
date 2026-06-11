@@ -4,11 +4,12 @@
   const {
     fieldNames,
     data,
-    extractDatum,
+    // @ts-expect-error too much effort
+    extractDatum = (fieldname, row) => row[fieldname],
   }: {
     fieldNames: string[];
     data: T[];
-    extractDatum: ExtractDatum;
+    extractDatum?: ExtractDatum;
   } = $props();
 </script>
 

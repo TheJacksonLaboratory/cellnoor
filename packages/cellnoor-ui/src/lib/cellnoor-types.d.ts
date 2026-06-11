@@ -4931,7 +4931,7 @@ export interface components {
     schemas: {
         Account: {
             /** @constant */
-            auth_provider: "Microsoft";
+            auth_provider: "microsoft";
             /** Format: uuid */
             microsoft_entra_oid: string;
         } | {

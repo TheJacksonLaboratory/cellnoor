@@ -71,6 +71,18 @@
         extractDatum={extractSpecimenDatum}
       />
       <div class="divider m-0"></div>
+      <h1 class="text-lg font-bold">Dataset Metrics</h1>
+      {#each dataset!.data as datum (datum.path)}
+        {#if Array.isArray(datum.data)}
+          <NiceTable data={datum.data} fieldNames={Object.keys(datum.data[0])} />
+        {/if}
+      {/each}
+      <div class="divider m-0"></div>
+      <iframe
+        class="grow border rounded min-h-screen"
+        src={dataset!.links.file_dir}
+        title={dataset!.name}
+      ></iframe>
     </div>
   </div>
 {/if}

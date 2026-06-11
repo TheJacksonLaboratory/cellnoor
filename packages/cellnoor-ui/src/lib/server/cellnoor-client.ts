@@ -1,7 +1,7 @@
 import createClient, { type Client, type ClientOptions, type Middleware } from "openapi-fetch";
 import type { paths } from "$lib/cellnoor-types";
 import { getRequestEvent } from "$app/server";
-import { API_URL, API_SOCKET } from "$app/env/private";
+import { API_SOCKET } from "$app/env/private";
 
 export type CellnoorClient = Client<paths>;
 
@@ -17,7 +17,7 @@ export function getApiClient() {
   }
 
   const client = createCellnoorClient({
-    baseUrl: API_URL,
+    baseUrl: "",
     fetch: async (request) => {
       return fetch(request, { unix: API_SOCKET });
     },

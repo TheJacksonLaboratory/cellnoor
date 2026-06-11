@@ -12,6 +12,8 @@
     type TenxAssayPredicate,
     libraryTypeValues,
     type OrderByChromiumDatasetField,
+    speciesValues,
+    sampleMultiplexingValues,
   } from "$lib/cellnoor-types";
   import { isNonempty } from "$lib/query-utils";
 
@@ -23,17 +25,30 @@
   const specimenNamePred = $state({ name: { trgm_any: [] } }) satisfies SpecimenPredicate;
   const speciesPred = $state({ species: { in: [] } }) satisfies SpecimenPredicate;
   const tissuePred = $state({ tissue: { trgm_any: [] } }) satisfies SpecimenPredicate;
+  const projectPred = $state({ project_id: { in: [] } }) satisfies SpecimenPredicate;
+  const assayNamePred = $state({ name: { in: [] } }) satisfies TenxAssayPredicate;
+  const assayMultiplexingPred = $state({
+    sample_multiplexing: { in: [] },
+  }) satisfies TenxAssayPredicate;
+  const assayLibraryTypesPred = $state({
+    library_types: { contains: [] },
+  }) satisfies TenxAssayPredicate;
 
   const predicates = $derived([
     { specimen: specimenNamePred },
     { specimen: speciesPred },
     { specimen: tissuePred },
+    { specimen: projectPred },
+    { tenx_assay: assayNamePred },
+    { tenx_assay: assayMultiplexingPred },
+    { tenx_assay: assayLibraryTypesPred },
   ]) satisfies ChromiumDatasetPredicate[];
 
   const query = $derived({
     filter: {
       all_of: predicates.filter(isNonempty),
     },
+    order_by: { field: undefined, desc: undefined },
   }) satisfies ChromiumDatasetPredicateQuery;
 
   const stringifiedQuery = JSON.stringify(query);
@@ -69,13 +84,13 @@
       <div class="mb-2 flex flex-row justify-between align-middle">
         <p class="text-lg">{datasets.length} results</p>
         <SortAndLimit
-          bind:orderByField={query.order_by![0]!.field}
-          bind:orderByDescending={query.order_by![0]!.descending!}
+          bind:orderByField={query.order_by.field}
+          bind:orderByDescending={query.order_by.desc}
           choices={orderByChoices}
           parentForm={filterForm!}
         />
       </div>
-      {#each chromiumDatasets as cd (cd.id)}
+      {#each datasets as cd (cd.id)}
         <ChromiumDataset chromiumDataset={cd} />
       {/each}
     {:else if error}
@@ -92,45 +107,41 @@
           <InputList
             parentForm={filterForm}
             fieldName="Specimen Name"
-            bind:values={query.filter.specimen.names}
+            bind:values={specimenNamePred.name.trgm_any}
           />
           <InputList
             parentForm={filterForm}
             fieldName="Species"
-            choices={speciesChoices}
-            bind:values={query.filter.specimen.species}
+            choices={speciesValues.map(toLowercaseChoice)}
+            bind:values={speciesPred.species.in}
           />
         </Fieldset>
         <Fieldset name="Lab Information">
           <InputList
             parentForm={filterForm}
             fieldName="Lab Name"
-            choices={(projects || []).map((p) => {
-              return { label: p.name, value: p.id };
-            })}
-            bind:values={query.filter.project_ids}
+            choices={(projects || []).map((p) => toLowercaseChoice(p.name))}
+            bind:values={projectPred.project_id.in}
           />
         </Fieldset>
         <Fieldset name="Assay Information">
           <InputList
             parentForm={filterForm}
             fieldName="Assay Name"
-            choices={assays!.map((a) => {
-              return { label: a.name, value: a.name };
-            })}
-            bind:values={query.filter.assay.names}
+            choices={(assays || []).map((a) => toLowercaseChoice(a.name))}
+            bind:values={assayNamePred.name.in}
           />
           <InputList
             parentForm={filterForm}
             fieldName="Multiplexing"
-            choices={plexyChoices}
-            bind:values={query.filter.assay.sample_multiplexing}
+            choices={sampleMultiplexingValues.map(toLowercaseChoice)}
+            bind:values={assayMultiplexingPred.sample_multiplexing.in}
           />
           <InputList
             parentForm={filterForm}
             fieldName="Library Types"
-            choices={libraryTypeChoices}
-            bind:values={query.filter.assay.library_types_flat}
+            choices={libraryTypeValues.map(toLowercaseChoice)}
+            bind:values={assayLibraryTypesPred.library_types.contains}
           />
         </Fieldset>
         <Fieldset name="Advanced">
@@ -138,15 +149,10 @@
             <input type="checkbox" />
             <div class="collapse-title font-semibold btn btn-success mb-2">Example</div>
             <div class="collapse-content mockup-code bg-base-200 text-base-content border">
-              <pre><code>{exampleAdvancedQuery}</code></pre>
+              <pre><code></code></pre>
             </div>
           </div>
-          <textarea
-            bind:value={advancedQuery}
-            class="textarea w-full"
-            rows="6"
-            placeholder={advancedQueryPlaceholder}
-          ></textarea>
+          <textarea bind:value={advancedQuery} class="textarea w-full" rows="6"></textarea>
           <p>{advancedQueryError}</p>
         </Fieldset>
         <input name="q" hidden bind:value={stringifiedQuery} />
