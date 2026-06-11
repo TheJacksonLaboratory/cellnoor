@@ -56,6 +56,7 @@ pub struct ChromiumDatasetCompact {
 pub struct ChromiumDatasetDetailedLinks {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub simple: SimpleLinks,
+    pub file_dir: String,
     pub raw_files: Vec<String>,
 }
 

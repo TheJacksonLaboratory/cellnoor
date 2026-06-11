@@ -85,6 +85,7 @@ fn chromium_dataset_detailed_links(
 ) -> ChromiumDatasetDetailedLinks {
     ChromiumDatasetDetailedLinks {
         simple: chromium_dataset_links(id),
+        file_dir: format!("{public_files_url}/chromium-datasets/{id}"),
         raw_files: raw_file_paths
             .iter()
             .map(|p| format!("{public_files_url}/chromium-datasets/{id}/{p}"))

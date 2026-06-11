@@ -524,6 +524,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PersonAccount"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/service-accounts": {
         parameters: {
             query?: never;
@@ -857,7 +891,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiKeyRecord"][];
+                        "application/json": components["schemas"]["SavedApiKeyRecord"][];
                     };
                 };
             };
@@ -882,33 +916,6 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["ApiKey"];
-                    };
-                };
-                /** @description Failed to parse the request body as JSON */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                    };
-                };
-                /** @description Expected request with `Content-Type: application/json` */
-                415: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
-                    };
-                };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": string;
                     };
                 };
             };
@@ -946,7 +953,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiKeyRecord"][];
+                        "application/json": components["schemas"]["SavedApiKeyRecord"][];
                     };
                 };
                 /** @description Failed to parse the request body as JSON */
@@ -1012,7 +1019,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiKeyRecord"];
+                        "application/json": components["schemas"]["SavedApiKeyRecord"];
                     };
                 };
                 /** @description Failed to parse the request body as JSON */
@@ -1153,6 +1160,45 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/projects/detailed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    offset?: number;
+                    order_by_desc?: boolean;
+                    order_by_field?: components["schemas"]["ProjectField"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProjectDetailed"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1888,6 +1934,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/specimens/detailed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    offset?: number;
+                    order_by_desc?: boolean;
+                    order_by_field?: components["schemas"]["SpecimenField"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SpecimenDetailed"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/specimens/search": {
         parameters: {
             query?: never;
@@ -2274,6 +2359,45 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/suspensions/detailed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    offset?: number;
+                    order_by_desc?: boolean;
+                    order_by_field?: components["schemas"]["SuspensionField"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuspensionDetailed"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2672,6 +2796,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/suspension-pools/detailed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    offset?: number;
+                    order_by_desc?: boolean;
+                    order_by_field?: components["schemas"]["SuspensionPoolField"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuspensionPoolDetailed"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/suspension-pools/search": {
         parameters: {
             query?: never;
@@ -3064,6 +3227,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/chromium-runs/detailed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    offset?: number;
+                    order_by_desc?: boolean;
+                    order_by_field?: components["schemas"]["ChromiumRunField"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChromiumRunDetailed"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/chromium-runs/search": {
         parameters: {
             query?: never;
@@ -3389,6 +3591,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/cdna/chromium/detailed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    offset?: number;
+                    order_by_desc?: boolean;
+                    order_by_field?: components["schemas"]["CdnaField"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CdnaDetailed"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/cdna/search": {
         parameters: {
             query?: never;
@@ -3454,7 +3695,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/cdna/search/detailed": {
+    "/cdna/chromium/search/detailed": {
         parameters: {
             query?: never;
             header?: never;
@@ -3775,6 +4016,45 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/libraries/detailed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    offset?: number;
+                    order_by_desc?: boolean;
+                    order_by_field?: components["schemas"]["LibraryField"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LibraryDetailed"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4173,6 +4453,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/chromium-datasets/detailed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    offset?: number;
+                    order_by_desc?: boolean;
+                    order_by_field?: components["schemas"]["ChromiumDatasetField"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChromiumDatasetDetailed"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/chromium-datasets/search": {
         parameters: {
             query?: never;
@@ -4410,7 +4729,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/file-auth": {
+    "/file-auth/{dataset_type}/": {
         parameters: {
             query?: never;
             header?: never;
@@ -4443,7 +4762,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/file-auth/{dataset_type}": {
+    "/file-auth/projects/": {
         parameters: {
             query?: never;
             header?: never;
@@ -4476,40 +4795,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/file-auth/projects": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description no content */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/file-auth/{dataset_type}/{dataset_id}": {
+    "/file-auth/{dataset_type}/{dataset_id}/": {
         parameters: {
             query?: never;
             header?: never;
@@ -4583,7 +4869,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/file-auth/projects/{project_name}": {
+    "/file-auth/projects/{project_name}/": {
         parameters: {
             query?: never;
             header?: never;
@@ -4659,6 +4945,14 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        Account: {
+            /** @constant */
+            auth_provider: "Microsoft";
+            /** Format: uuid */
+            microsoft_entra_oid: string;
+        } | {
+            email: string;
+        };
         /** @enum {string} */
         Action: "create" | "update" | "delete";
         /** @description A comparison operator for any scalar value. */
@@ -4728,17 +5022,6 @@ export interface components {
             offset?: number;
             order_by?: components["schemas"]["OrderByApiKeyFieldSet"];
         };
-        ApiKeyRecord: {
-            /** Format: date-time */
-            created_at: string;
-            description?: string | null;
-            /** Format: date-time */
-            expires_at?: string | null;
-            /** Format: uuid */
-            id: string;
-            person_id?: components["schemas"]["PersonId"] | null;
-            service_id?: components["schemas"]["ServiceId"] | null;
-        };
         ApiKeyUpdate: {
             description?: string | null;
             /** Format: date-time */
@@ -4787,7 +5070,7 @@ export interface components {
                 self: string;
             };
             /** Format: int32 */
-            n_amplification_cycles: number;
+            n_amplification_cycles?: number | null;
             /** Format: date-time */
             prepared_at: string;
             readable_id: string;
@@ -4804,7 +5087,7 @@ export interface components {
             };
             measurements: components["schemas"]["CdnaMeasurement"][];
             /** Format: int32 */
-            n_amplification_cycles: number;
+            n_amplification_cycles?: number | null;
             /** Format: date-time */
             prepared_at: string;
             preparers: string[];
@@ -4868,12 +5151,7 @@ export interface components {
         };
         CdnaUpdate: {
             additional_data?: unknown;
-            /** Format: uuid */
-            gem_well_id?: string | null;
-            library_type: components["schemas"]["LibraryType"];
             measurements?: components["schemas"]["NewNucleicAcidMeasurement"][] | null;
-            /** Format: int32 */
-            n_amplification_cycles: number;
             /** Format: date-time */
             prepared_at: string;
             preparers?: string[] | null;
@@ -4904,6 +5182,7 @@ export interface components {
             specimens: components["schemas"]["TaggedSpecimen"][];
         };
         ChromiumDatasetDetailedLinks: {
+            file_dir: string;
             raw_files: string[];
             self: string;
         };
@@ -5481,7 +5760,10 @@ export interface components {
             offset?: number;
             order_by?: components["schemas"]["OrderByLibraryFieldSet"];
         };
-        /** @enum {string} */
+        /**
+         * @description Auto-generated discriminant enum variants
+         * @enum {string}
+         */
         LibraryType: "antibody_capture" | "antigen_capture" | "chromatin_accessibility" | "crispr_guide_capture" | "custom" | "gene_expression" | "multiplexing_capture" | "vdj" | "vdj_b" | "vdj_t" | "vdj_t_gd";
         LibraryTypeArrayOperator: {
             contains: components["schemas"]["LibraryType"][];
@@ -5621,7 +5903,7 @@ export interface components {
         Milliliter: "milliliter";
         MultiplexingTag: {
             tag_id: string;
-            type_: components["schemas"]["MultiplexingTagType"];
+            type: components["schemas"]["MultiplexingTagType"];
         };
         MultiplexingTagPredicate: {
             type: components["schemas"]["MultiplexingTagTypeOperator"];
@@ -5630,7 +5912,7 @@ export interface components {
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
-        MultiplexingTagType: "flex_barcode" | "flex_oligo_nucleotide_barcode" | "total_seq_a" | "total_seq_b" | "total_seq_c" | "genetic";
+        MultiplexingTagType: "flex_barcode" | "flex_oligonucleotide_barcode" | "TotalSeq-A" | "TotalSeq-B" | "TotalSeq-C" | "genetic";
         /** @description A comparison operator for any scalar value. */
         MultiplexingTagTypeOperator: {
             eq: components["schemas"]["MultiplexingTagType"];
@@ -5723,11 +6005,27 @@ export interface components {
             submitted_by: string;
             tissue: string;
         };
-        NewCdna: {
+        NewCdna: ({
+            /** @constant */
+            library_type: "antibody_capture";
+        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | ({
+            /** @constant */
+            library_type: "antigen_capture";
+        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | ({
+            /** @constant */
+            library_type: "chromatin_accessibility";
+        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | ({
+            /** @constant */
+            library_type: "crispr_guide_capture";
+        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | ({
+            /** @constant */
+            library_type: "custom";
+        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | {
             additional_data?: unknown;
             /** Format: uuid */
-            gem_well_id?: string | null;
-            library_type: components["schemas"]["LibraryType"];
+            gem_well_id: string;
+            /** @constant */
+            library_type: "gene_expression";
             measurements: components["schemas"]["NewNucleicAcidMeasurement"][];
             /** Format: int32 */
             n_amplification_cycles: number;
@@ -5735,7 +6033,22 @@ export interface components {
             prepared_at: string;
             preparers: string[];
             readable_id: string;
-        };
+        } | ({
+            /** @constant */
+            library_type: "multiplexing_capture";
+        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | ({
+            /** @constant */
+            library_type: "vdj";
+        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | ({
+            /** @constant */
+            library_type: "vdj_b";
+        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | ({
+            /** @constant */
+            library_type: "vdj_t";
+        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | ({
+            /** @constant */
+            library_type: "vdj_t_gd";
+        } & components["schemas"]["NewChromiumCdnaCommonFields"]);
         NewCellPellet: {
             additional_data?: unknown;
             host_species?: components["schemas"]["Species"] | null;
@@ -5764,6 +6077,16 @@ export interface components {
             name: string;
             protocol_url: string;
             sample_multiplexing: components["schemas"]["SampleMultiplexing"];
+        };
+        NewChromiumCdnaCommonFields: {
+            additional_data?: unknown;
+            /** Format: uuid */
+            gem_well_id: string;
+            measurements: components["schemas"]["NewNucleicAcidMeasurement"][];
+            /** Format: date-time */
+            prepared_at: string;
+            preparers: string[];
+            readable_id: string;
         };
         NewChromiumDataset: {
             /** Format: date-time */
@@ -5869,8 +6192,8 @@ export interface components {
             readable_id: string;
         };
         NewPerson: {
+            account: components["schemas"]["Account"];
             can_manage_users: boolean;
-            email?: string | null;
             /** Format: uuid */
             institution_id: string;
             is_staff: boolean;
@@ -5976,19 +6299,19 @@ export interface components {
         };
         NewSuspensionPool: ({
             /** @constant */
-            multiplexing_type: "flex_barcode";
+            multiplexing_tag_type: "flex_barcode";
         } & components["schemas"]["NewTaggedSuspensionPool"]) | ({
             /** @constant */
-            multiplexing_type: "flex_oligo_nucleotide_barcode";
+            multiplexing_tag_type: "flex_oligonucleotide_barcode";
         } & components["schemas"]["NewTaggedSuspensionPool"]) | ({
             /** @constant */
-            multiplexing_type: "TotalSeq-A";
+            multiplexing_tag_type: "TotalSeq-A";
         } & components["schemas"]["NewTaggedSuspensionPool"]) | ({
             /** @constant */
-            multiplexing_type: "TotalSeq-B";
+            multiplexing_tag_type: "TotalSeq-B";
         } & components["schemas"]["NewTaggedSuspensionPool"]) | ({
             /** @constant */
-            multiplexing_type: "TotalSeq-C";
+            multiplexing_tag_type: "TotalSeq-C";
         } & components["schemas"]["NewTaggedSuspensionPool"]) | {
             additional_data?: unknown;
             measurements: components["schemas"]["NewSuspensionPoolMeasurement"][];
@@ -6827,6 +7150,14 @@ export interface components {
             name: string;
             orcid?: string | null;
         };
+        PersonAccount: {
+            auth_provider: string;
+            auth_provider_user_id: string;
+            email?: string | null;
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
         /**
          * @description Auto-generated discriminant enum variants
          * @enum {string}
@@ -6876,7 +7207,7 @@ export interface components {
         };
         PersonUpdate: {
             can_manage_users: boolean;
-            email?: string | null;
+            email: string;
             /** Format: uuid */
             institution_id: string;
             is_staff: boolean;
@@ -7175,6 +7506,8 @@ export interface components {
         } | {
             person: components["schemas"]["Action"][];
         } | {
+            account: components["schemas"]["Action"][];
+        } | {
             project: components["schemas"]["Action"][];
         } | {
             specimen: components["schemas"]["Action"][];
@@ -7247,6 +7580,17 @@ export interface components {
         } | {
             in: components["schemas"]["SampleMultiplexing"][];
         } | components["schemas"]["SampleMultiplexing"];
+        SavedApiKeyRecord: {
+            /** Format: date-time */
+            created_at: string;
+            description?: string | null;
+            /** Format: date-time */
+            expires_at?: string | null;
+            /** Format: uuid */
+            id: string;
+            person_id?: components["schemas"]["PersonId"] | null;
+            service_id?: components["schemas"]["ServiceId"] | null;
+        };
         SchemaObject: {
             /**
              * @description A free-form property to include an example of an instance for this
@@ -7601,7 +7945,7 @@ export interface components {
         } | {
             like_any: string[];
         } | {
-            trgrm: string;
+            trgm: string;
         } | {
             trgm_any: string[];
         } | components["schemas"]["stringOperator"];
@@ -8107,6 +8451,7 @@ export interface components {
     headers: never;
     pathItems: never;
 }
+export type Account = components['schemas']['Account'];
 export type Action = components['schemas']['Action'];
 export type AnyValueOperator = components['schemas']['AnyValueOperator'];
 export type ApiKey = components['schemas']['ApiKey'];
@@ -8115,7 +8460,6 @@ export type ApiKeyLocation = components['schemas']['ApiKeyLocation'];
 export type ApiKeyPredicate = components['schemas']['ApiKeyPredicate'];
 export type ApiKeyPredicateFilter = components['schemas']['ApiKeyPredicateFilter'];
 export type ApiKeyPredicateQuery = components['schemas']['ApiKeyPredicateQuery'];
-export type ApiKeyRecord = components['schemas']['ApiKeyRecord'];
 export type ApiKeyUpdate = components['schemas']['ApiKeyUpdate'];
 export type ArrayOfLibraryTypeOperator = components['schemas']['Array_of_LibraryTypeOperator'];
 export type BlockEmbeddingMatrix = components['schemas']['BlockEmbeddingMatrix'];
@@ -8201,6 +8545,7 @@ export type NewBlock = components['schemas']['NewBlock'];
 export type NewCdna = components['schemas']['NewCdna'];
 export type NewCellPellet = components['schemas']['NewCellPellet'];
 export type NewChromiumAssay = components['schemas']['NewChromiumAssay'];
+export type NewChromiumCdnaCommonFields = components['schemas']['NewChromiumCdnaCommonFields'];
 export type NewChromiumDataset = components['schemas']['NewChromiumDataset'];
 export type NewChromiumRun = components['schemas']['NewChromiumRun'];
 export type NewDualIndexSet = components['schemas']['NewDualIndexSet'];
@@ -8263,6 +8608,7 @@ export type Paths = components['schemas']['Paths'];
 export type PermissionsToGrant = components['schemas']['PermissionsToGrant'];
 export type PermissionsToRevoke = components['schemas']['PermissionsToRevoke'];
 export type Person = components['schemas']['Person'];
+export type PersonAccount = components['schemas']['PersonAccount'];
 export type PersonField = components['schemas']['PersonField'];
 export type PersonId = components['schemas']['PersonId'];
 export type PersonLinks = components['schemas']['PersonLinks'];
@@ -8294,6 +8640,7 @@ export type Response = components['schemas']['Response'];
 export type Responses = components['schemas']['Responses'];
 export type SampleMultiplexing = components['schemas']['SampleMultiplexing'];
 export type SampleMultiplexingOperator = components['schemas']['SampleMultiplexingOperator'];
+export type SavedApiKeyRecord = components['schemas']['SavedApiKeyRecord'];
 export type SchemaObject = components['schemas']['SchemaObject'];
 export type SecurityScheme = components['schemas']['SecurityScheme'];
 export type Server = components['schemas']['Server'];
@@ -8367,7 +8714,7 @@ type ReadonlyArray<T> = [
 ] extends [
     unknown[]
 ] ? Readonly<Exclude<T, undefined>> : Readonly<Exclude<T, undefined>[]>;
-export const pathsFileAuthDataset_typeDataset_idGetParametersPathDataset_typeValues: ReadonlyArray<FlattenedDeepRequired<paths>["/file-auth/{dataset_type}/{dataset_id}"]["get"]["parameters"]["path"]["dataset_type"]> = ["chromium-datasets"];
+export const pathsFileAuthDataset_typeDataset_idGetParametersPathDataset_typeValues: ReadonlyArray<FlattenedDeepRequired<paths>["/file-auth/{dataset_type}/{dataset_id}/"]["get"]["parameters"]["path"]["dataset_type"]> = ["chromium-datasets"];
 export const pathsFileAuthDataset_typeDataset_idFile_pathGetParametersPathDataset_typeValues: ReadonlyArray<FlattenedDeepRequired<paths>["/file-auth/{dataset_type}/{dataset_id}/{*file_path}"]["get"]["parameters"]["path"]["dataset_type"]> = ["chromium-datasets"];
 export const actionValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Action"]> = ["create", "update", "delete"];
 export const apiKeyFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ApiKeyField"]> = ["id", "description", "person_id", "service_id", "created_at", "expires_at"];
@@ -8388,7 +8735,7 @@ export const libraryTypeValues: ReadonlyArray<FlattenedDeepRequired<components>[
 export const microliterValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Microliter"]> = ["microliter"];
 export const micrometerValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Micrometer"]> = ["micrometer"];
 export const milliliterValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Milliliter"]> = ["milliliter"];
-export const multiplexingTagTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["MultiplexingTagType"]> = ["flex_barcode", "flex_oligo_nucleotide_barcode", "total_seq_a", "total_seq_b", "total_seq_c", "genetic"];
+export const multiplexingTagTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["MultiplexingTagType"]> = ["flex_barcode", "flex_oligonucleotide_barcode", "TotalSeq-A", "TotalSeq-B", "TotalSeq-C", "genetic"];
 export const nanogramValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Nanogram"]> = ["nanogram"];
 export const ocmBarcodeIdValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["OcmBarcodeId"]> = ["ob1", "ob2", "ob3", "ob4"];
 export const pathStyleValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["PathStyle"]> = ["matrix", "label", "simple"];
