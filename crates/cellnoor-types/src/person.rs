@@ -87,7 +87,10 @@ pub struct PersonSimpleFields {
 #[base_model]
 #[derive(strum::AsRefStr)]
 #[strum(serialize_all = "snake_case")]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields, tag = "auth_provider"))]
+#[cfg_attr(
+    feature = "serde",
+    serde(deny_unknown_fields, tag = "auth_provider", rename_all = "snake_case")
+)]
 pub enum Account {
     Microsoft {
         microsoft_entra_oid: Uuid,

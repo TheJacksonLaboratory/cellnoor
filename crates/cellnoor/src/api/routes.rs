@@ -7,7 +7,7 @@ use aide::{
 };
 use axum::{Extension, Json, Router, routing::get};
 
-use crate::state::AppState;
+use crate::{handlers::redirect_unauthenticated_user, state::AppState};
 
 mod accounts;
 mod api_keys;
@@ -54,7 +54,7 @@ pub fn router() -> (OpenApi, Router<AppState>) {
         .nest("/libraries", libraries::router())
         .nest("/chromium-datasets", chromium_datasets::router())
         // This is necessary because of caddy's file-system shenanigans
-        .route("/file-auth/", aide_get(file_auth::auth_required))
+        .route("/file-auth/", aide_get(redirect_unauthenticated_user))
         .nest("/file-auth", file_auth::router());
 
     let mut api_docs = OpenApi::default();

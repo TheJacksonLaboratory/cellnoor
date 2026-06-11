@@ -1,42 +1,42 @@
-use std::sync::Arc;
-
 use camino::{Utf8Path, Utf8PathBuf};
 use deadpool_postgres::PoolError;
 use secrecy::ExposeSecret;
 
 use crate::{auth::AuthUser, db, settings::Settings};
 
+// In theory, we shouldn't really be cloning strings on every request. I don't think this is a serious performance issue for like 100 bytes though
 #[derive(Clone)]
 struct StateCommon {
     db_pool: db::Pool,
     public_files_url: String,
+    public_auth_url: String,
     static_files_dir: Utf8PathBuf,
 }
 
 #[derive(Clone)]
 pub struct DevState {
-    inner: StateCommon,
+    common: StateCommon,
 }
 
 impl DevState {
     pub fn db_pool(&self) -> db::Pool {
-        self.inner.db_pool.clone()
+        self.common.db_pool.clone()
     }
 
     pub fn raw_files_url(&self) -> &str {
-        &self.inner.public_files_url
+        &self.common.public_files_url
     }
 }
 
 #[derive(Clone)]
 pub struct ProdState {
-    inner: StateCommon,
-    jwt_decoding_info: Arc<(jsonwebtoken::DecodingKey, jsonwebtoken::Validation)>,
+    common: StateCommon,
+    jwt_decoding_info: &'static (jsonwebtoken::DecodingKey, jsonwebtoken::Validation),
 }
 
 impl ProdState {
     pub async fn db_client(&self, user: AuthUser) -> Result<db::Client, PoolError> {
-        self.inner.db_pool.get(user).await
+        self.common.db_pool.get(user).await
     }
 
     pub fn jwt_decoding_info(&self) -> &(jsonwebtoken::DecodingKey, jsonwebtoken::Validation) {
@@ -52,24 +52,25 @@ pub enum AppState {
 
 impl AppState {
     pub fn initialize(settings: &Settings) -> anyhow::Result<Self> {
-        let inner = StateCommon {
+        let common = StateCommon {
             db_pool: db::Pool::new(settings.db_config().to_owned(), settings.max_db_pool_size())?,
             public_files_url: settings.public_files_url().to_owned(),
+            public_auth_url: settings.public_auth_url().to_owned(),
             static_files_dir: Utf8PathBuf::from(settings.static_files_dir()),
         };
 
         let state = if settings.with_auth() {
             Self::Prod(ProdState {
-                inner,
-                jwt_decoding_info: Arc::new((
+                common,
+                jwt_decoding_info: Box::leak(Box::new((
                     jsonwebtoken::DecodingKey::from_secret(
                         settings.auth_secret().expose_secret().as_bytes(),
                     ),
                     jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::HS256),
-                )),
+                ))),
             })
         } else {
-            Self::Dev(DevState { inner })
+            Self::Dev(DevState { common })
         };
 
         Ok(state)
@@ -85,18 +86,22 @@ impl AppState {
         }
     }
 
-    fn inner(&self) -> &StateCommon {
+    fn common(&self) -> &StateCommon {
         match self {
-            Self::Dev(DevState { inner }) | Self::Prod(ProdState { inner, .. }) => inner,
+            Self::Dev(DevState { common }) | Self::Prod(ProdState { common, .. }) => common,
         }
     }
 
     pub fn public_files_url(&self) -> &str {
-        &self.inner().public_files_url
+        &self.common().public_files_url
     }
 
     pub fn static_files_dir(&self) -> &Utf8Path {
-        &self.inner().static_files_dir
+        &self.common().static_files_dir
+    }
+
+    pub fn public_auth_url(&self) -> &str {
+        &self.common().public_auth_url
     }
 }
 
@@ -104,8 +109,6 @@ impl AppState {
 /// A module of test utilities to reduce boilerplate for writing tests.
 #[cfg(test)]
 pub mod test_util {
-    use std::sync::Arc;
-
     use camino::Utf8PathBuf;
     use nonempty::NonemptyString;
     #[cfg(test)]
@@ -126,17 +129,17 @@ pub mod test_util {
 
         // Unit-tests don't use JSON web tokens, so we pass in an empty secret
         ProdState {
-            inner: StateCommon {
+            common: StateCommon {
                 db_pool,
                 public_files_url: String::new(),
-                static_files_dir: Utf8PathBuf::new(),
+                public_auth_url: String::new(),
+                static_files_dir: Utf8PathBuf::from(""),
             },
 
-            jwt_decoding_info: Arc::new((
+            jwt_decoding_info: Box::leak(Box::new((
                 jsonwebtoken::DecodingKey::from_secret(&[]),
-                // better-auth uses HS256 by default
                 jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::HS256),
-            )),
+            ))),
         }
     }
 

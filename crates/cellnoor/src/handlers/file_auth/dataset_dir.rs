@@ -9,6 +9,7 @@ use crate::{
     auth::AuthUser,
     db::{self, SqlBuilder},
     error::{Error, ErrorInner},
+    handlers::redirect_unauthenticated_user,
     state::AppState,
 };
 
@@ -30,8 +31,8 @@ pub struct DatasetDir {
 
 #[axum::debug_handler]
 pub async fn authorize_dataset_dir_access(
-    State(state): State<AppState>,
-    user: AuthUser,
+    state: State<AppState>,
+    user: Result<AuthUser, Error>,
     Path(DatasetDir {
         dataset_type,
         dataset_id,
@@ -43,6 +44,9 @@ pub async fn authorize_dataset_dir_access(
         %dataset_id,
         file_path = _file_path.unwrap_or_default()
     );
+
+    let user = redirect_unauthenticated_user(state.clone(), user).await?;
+
     // If we know the user is staff without hitting the db, we can just return early
     if user.is_staff().is_some_and(identity) {
         return Ok(());

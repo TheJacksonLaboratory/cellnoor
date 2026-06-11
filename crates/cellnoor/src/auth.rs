@@ -1,6 +1,12 @@
 use aide::OperationIo;
 pub use api_key::hash_api_key;
-use axum::{RequestPartsExt, extract::FromRequestParts, http::HeaderValue};
+use axum::{
+    RequestPartsExt,
+    body::Body,
+    extract::FromRequestParts,
+    http::HeaderValue,
+    response::{IntoResponse, Response},
+};
 use axum_extra::extract::{CookieJar, cookie::Cookie};
 use cellnoor_types::api_key::{PersonId, ServiceId};
 use deadpool_postgres::PoolError;
@@ -114,6 +120,12 @@ impl FromRequestParts<AppState> for AuthUser {
         };
 
         Ok(authenticate_with_api_key(state, api_key).await?)
+    }
+}
+
+impl IntoResponse for AuthUser {
+    fn into_response(self) -> Response {
+        Response::new(Body::empty())
     }
 }
 

@@ -49,6 +49,7 @@ select create_app_user_if_not_exists(uuid_nil());
 do $$
     begin
         execute format('grant all on all tables in schema public to %I with grant option', uuid_nil());
+        -- Note that 'admin true' is necessary should we ever want to change the admin user's permissions
         execute format('grant %I to auth with admin true, inherit false', uuid_nil());
     end;
 $$;

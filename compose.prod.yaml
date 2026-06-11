@@ -3,12 +3,15 @@ services:
     build: !reset null
     image: ghcr.io/thejacksonlaboratory/cellnoor-auth:latest
     pull_policy: always
+    environment:
+      PUBLIC_AUTH_URL: &public_auth_url https://cellnoor.jax.org:3000
   cellnoor:
     build: !reset null
     image: ghcr.io/thejacksonlaboratory/cellnoor:latest
     pull_policy: always
     environment:
       MAX_DB_POOL_SIZE: "4"
+      PUBLIC_AUTH_URL: *public_auth_url
       PUBLIC_FILES_URL: &public_files_url https://cellnoor.jax.org/files
   cellnoor-ui:
     build: !reset null
@@ -16,7 +19,7 @@ services:
     pull_policy: always
   caddy:
     environment:
-      PUBLIC_AUTH_URL: https://cellnoor.jax.org:3000
+      PUBLIC_AUTH_URL: *public_auth_url
       PUBLIC_API_URL: https://cellnoor.jax.org:3001
       PUBLIC_UI_URL: https://cellnoor.jax.org
       PUBLIC_FILES_URL: *public_files_url

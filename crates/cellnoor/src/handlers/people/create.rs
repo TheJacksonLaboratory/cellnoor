@@ -34,14 +34,13 @@ pub async fn create_person(
     Ok(response)
 }
 
-async fn insert_person(
-    tx: &db::Transaction<'_>,
-    NewPerson {
-        simple,
+async fn insert_person(tx: &db::Transaction<'_>, new: &NewPerson) -> Result<Person, ErrorInner> {
+    let NewPerson {
+        simple: _,
         account,
         permissions_to_grant,
-    }: &NewPerson,
-) -> Result<Person, ErrorInner> {
+    } = new;
+
     match account {
         Account::None { email } => validate_email(email.as_ref())?,
         Account::Microsoft {
@@ -49,7 +48,7 @@ async fn insert_person(
         } => (),
     };
 
-    let id = db::insert_into(tx, "person", simple).await?;
+    let id = insert_person_record(tx, new).await?;
 
     // These 3 operations can happen concurrently because they don't depend on one another (inshallah)
     let (person, _, _) = tokio::try_join!(
@@ -59,6 +58,15 @@ async fn insert_person(
     )?;
 
     Ok(person)
+}
+
+async fn insert_person_record(
+    tx: &db::Transaction<'_>,
+    record: &NewPerson,
+) -> Result<Uuid, ErrorInner> {
+    let id = db::insert_into(tx, "person", record).await?;
+
+    Ok(id)
 }
 
 async fn insert_account(
@@ -268,7 +276,7 @@ pub mod test {
         Account, Action, NewPerson, PermissionsToGrant, Person, PersonSimpleFields,
         ResourcePermission,
     };
-    use pretty_assertions::assert_eq;
+    use pretty_assertions::{assert_eq, assert_str_eq};
     use uuid::Uuid;
 
     use crate::{
@@ -317,6 +325,22 @@ pub mod test {
         insert_test_person_and_institution(&tx, |_| ())
             .await
             .unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn insert_with_email() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let (_, inserted) = insert_test_person_and_institution(&tx, |p| {
+            p.account = Account::None {
+                email: "email@example.com".to_nonempty_string(),
+            }
+        })
+        .await
+        .unwrap();
+
+        assert_str_eq!(inserted.record.email.unwrap().as_ref(), "email@example.com");
     }
 
     #[tokio::test(flavor = "multi_thread")]

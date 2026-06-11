@@ -12,6 +12,7 @@ services:
         BUILD_PROFILE: dev
     environment:
       PUBLIC_FILES_URL: &public_files_url https://files.cellnoor.localhost
+      PUBLIC_AUTH_URL: *public_auth_url
   caddy:
     environment:
       PUBLIC_AUTH_URL: *public_auth_url
