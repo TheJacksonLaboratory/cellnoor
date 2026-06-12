@@ -1,7 +1,6 @@
 import { type Account, betterAuth } from "better-auth";
 import { readConfig } from "./config";
 import { getDbClient } from "./db";
-import * as jose from "jose";
 
 const {
   publicAuthUrl,

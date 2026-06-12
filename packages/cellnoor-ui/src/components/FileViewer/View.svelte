@@ -5,9 +5,7 @@
   const { file }: { file: FileNode | null } = $props();
 </script>
 
-{#if !file}{:else if isHtmlFile(file)}
-  <iframe class="grow border rounded min-h-screen" src={file.src} title={file.name}></iframe>
-{:else if Array.isArray(file.content) && file.content.length != 1}
+{#if Array.isArray(file.content) && file.content.length != 1}
   <NiceTable
     fieldNames={Object.keys(file.content[0]!)}
     data={file.content}

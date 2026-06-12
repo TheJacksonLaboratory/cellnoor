@@ -120,8 +120,9 @@ services:
       tags:
         - ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
     environment:
-      # https://svelte.dev/docs/kit/adapter-node#Environment-variables-PORT-HOST-and-SOCKET_PATH
+      # https://github.com/oven-sh/bun/issues/14299
       HOST: ""
+      # https://svelte.dev/docs/kit/adapter-node#Environment-variables-PORT-HOST-and-SOCKET_PATH
       SOCKET_PATH: *ui_socket
       API_SOCKET: *api_socket
     depends_on:
@@ -137,11 +138,13 @@ services:
     volumes:
       - *api_socket_volume
       - &ui_socket_volume ui-socket:/run/cellnoor-ui
+    secrets: [auth_secret]
   caddy:
     image: caddy:2-alpine
     environment:
       AUTH_SOCKET: *auth_socket
       API_SOCKET: *api_socket
+      UI_SOCKET: *ui_socket
       STATIC_FILES_DIR: *static_files_dir
     restart: always
     cap_add:

@@ -1,13 +1,10 @@
 import { auth } from "$lib/auth";
 import { svelteKitHandler } from "better-auth/svelte-kit";
-import { building } from "$app/environment";
+import { building } from "$app/env";
 import { redirect } from "@sveltejs/kit";
+import { PUBLIC_AUTH_URL } from "$app/env/public";
 
 const NON_AUTH_ROUTES = [
-  "/api/auth/sign-in/social",
-  "/api/auth/callback/microsoft",
-  "/api/auth/jwks",
-  "/auth/sign-in",
   "/health",
 ];
 
@@ -29,7 +26,7 @@ export async function handle({ event, resolve }) {
   });
 
   if (!session) {
-    return redirect(307, "/auth/sign-in");
+    return redirect(307, PUBLIC_AUTH_URL ?? "");
   }
 
   // We could destructure this (the way we do with other things above), but I'm not sure if `session` is a reference or

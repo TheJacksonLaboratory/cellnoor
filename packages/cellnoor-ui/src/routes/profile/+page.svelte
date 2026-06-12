@@ -4,10 +4,8 @@
 
   const { data, form } = $props();
   const {
-    apiTokens,
     user: { name: userName, email, image },
-    today,
-    sixMonthsFromNow,
+    apiKeys,
   } = $derived(data);
   let apiKeysDialogBox: HTMLDialogElement;
 </script>
@@ -43,7 +41,7 @@
             </tr>
           </thead>
           <tbody>
-            {#each apiTokens as { jti, name, description, iat, exp } (jti)}
+            {#each apiKeys as { id, description, created_at, expires_at } (id)}
               <tr>
                 <td>
                   {name}
@@ -52,14 +50,14 @@
                   {description}
                 </td>
                 <td>
-                  {DATETIME_FORMATTER.format(iat)}
+                  {created_at}
                 </td>
                 <td>
-                  {DATETIME_FORMATTER.format(exp)}
+                  {expires_at || ""}
                 </td>
                 <td>
                   <form method="post" use:enhance action="?/deleteApiToken">
-                    <input name="jti" value={jti} type="hidden" />
+                    <input name="jti" value={id} type="hidden" />
                     <button class="btn btn-error">Delete</button>
                   </form>
                 </td>
@@ -77,27 +75,16 @@
             <legend class="fieldset-legend">Description</legend>
             <textarea name="description" class="textarea"></textarea>
           </fieldset>
-          <fieldset class="fieldset">
-            <legend class="fieldset-legend">Expires on</legend>
-            <input
-              class="input"
-              name="expiresOn"
-              type="date"
-              min={today}
-              max={sixMonthsFromNow}
-              required
-            />
-          </fieldset>
           <button class="btn btn-success max-w-3/4"> Create new API token </button>
         </form>
       </div>
       {#if form}
         <div class="wrap-anywhere py-1 text-left">
-          {#if form?.apiToken}
-            Your new API token is <code class="font-bold">{form?.apiToken}</code>. You will not be
+          {#if form.apiKey}
+            Your new API token is <code class="font-bold">{form?.apiKey}</code>. You will not be
             able to view this token after leaving or refreshing this page. Store this token
             securely.
-          {:else if form?.error}
+          {:else if form.error}
             {form.error}
           {/if}
         </div>

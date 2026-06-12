@@ -1,6 +1,6 @@
 import adapter from "@sveltejs/adapter-node";
+import { type Config } from "@sveltejs/kit";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
-import { Config } from "@sveltejs/kit";
 
 const config: Config = {
   compilerOptions: {
@@ -11,8 +11,9 @@ const config: Config = {
   preprocess: vitePreprocess(),
   kit: {
     adapter: adapter(),
-    experimental: {explicitEnvironmentVariables: true, remoteFunctions: true},
+    experimental: { explicitEnvironmentVariables: true, remoteFunctions: true },
     csp: {
+      // TODO: Make this more permissive
       directives: {
         "base-uri": ["self"],
         "default-src": ["self"],

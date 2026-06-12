@@ -1,7 +1,8 @@
-import createClient, { type Client, type ClientOptions, type Middleware } from "openapi-fetch";
+import createClient from "openapi-fetch";
+import type {  Client,  ClientOptions,  Middleware } from "openapi-fetch"
 import type { paths } from "$lib/cellnoor-types";
 import { getRequestEvent } from "$app/server";
-import { API_SOCKET } from "$app/env/private";
+import { API_SOCKET, API_URL } from "$app/env/private";
 
 export type CellnoorClient = Client<paths>;
 
@@ -17,7 +18,7 @@ export function getApiClient() {
   }
 
   const client = createCellnoorClient({
-    baseUrl: "",
+    baseUrl: API_URL,
     fetch: async (request) => {
       return fetch(request, { unix: API_SOCKET });
     },
@@ -38,7 +39,7 @@ const middleware: Middleware = {
     for (const cookieName of [authCookieName, `${securePrefix}${authCookieName}`]) {
       const cookieValue = cookies.get(cookieName);
       if (cookieValue) {
-        request.headers.set(cookieName, cookieValue);
+        request.headers.set("Cookie", `${cookieName}=${cookieValue}`);
       }
     }
   }

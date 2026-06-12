@@ -1,13 +1,13 @@
 <!-- I cannot believe how shitty this is -->
 <script lang="ts">
+  import type { ChromiumDatasetDetailed } from "$lib/cellnoor-types";
   import { DATE_FORMATTER } from "$lib/date";
-  import type { ChromiumDataset } from "cellnoor-client";
   import LibraryTypeBadges from "../LibraryTypeBadges.svelte";
 
   const {
     chromiumDataset,
   }: {
-    chromiumDataset: ChromiumDataset;
+    chromiumDataset: ChromiumDatasetDetailed;
   } = $props();
   const { links, name, assay, delivered_at } = $derived(chromiumDataset);
 </script>

@@ -1,5 +1,5 @@
 import type { ChromiumDatasetDetailed, ProjectCompact } from "$lib/cellnoor-types";
-import { getApiClient } from "$lib/server/cellnoor-client.js";
+import { getApiClient } from "$lib/server/cellnoor-client";
 
 export async function load({ params: { id } }): Promise<{dataset: ChromiumDatasetDetailed, project: ProjectCompact} | {error: string}> {
   const apiClient = getApiClient();

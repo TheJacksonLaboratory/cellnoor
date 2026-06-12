@@ -1,29 +1,18 @@
-# I don't know what is happening here
-FROM oven/bun:1 AS base
+FROM oven/bun:1 AS build
 WORKDIR /usr/src/app
 
-FROM base AS install
 COPY package.json bun.lock ./
-COPY cellnoor-ui cellnoor-ui
-COPY cellnoor-ui/package.json cellnoor-ui/package.json
-RUN bun install --frozen-lockfile
-
-FROM base AS prerelease
-COPY --from=install /usr/src/app/node_modules node_modules
-COPY --from=install /usr/src/app/cellnoor-ui/node_modules cellnoor-ui/node_modules
-COPY package.json bun.lock ./
-COPY /usr/src/app/cellnoor-ui /usr/src/app/cellnoor-ui
+RUN bun install --frozen-lockfile --dev
+COPY . .
 RUN bun run --bun build
 
-FROM base AS final
+FROM oven/bun:1 AS final
+WORKDIR /usr/src/app
 
 ARG UID
 ARG SOCKET_PATH
 
-COPY --from=install /usr/src/app/node_modules node_modules
-COPY --from=install /usr/src/app/cellnoor-ui/node_modules cellnoor-ui/node_modules
-COPY --from=prerelease /usr/src/app/package.json /usr/src/app/bun.lock ./
-COPY --from=prerelease /usr/src/app/cellnoor-ui/build/ cellnoor-ui/build/
+# curl is used by the compose healthcheck
 RUN apt update && apt install curl adduser --yes
 
 RUN adduser \
@@ -37,7 +26,12 @@ RUN adduser \
 
 RUN mkdir -p "$(dirname ${SOCKET_PATH})" && chown appuser "$(dirname ${SOCKET_PATH})"
 
+COPY --from=build /usr/src/app/package.json ./
+COPY --from=build /usr/src/app/node_modules node_modules
+COPY --from=build /usr/src/app/build build
+
 # Run the app. Make sure to delete the socket before every restart cus it's a hassle to do it from within JS
 USER appuser
 
-CMD rm -f ${SOCKET_PATH} &&  bun run cellnoor-ui/build/index.js
+ENV NODE_ENV=production
+CMD ["/bin/sh", "-c", "rm -f /run/cellnoor-ui/cellnoor-ui.sock && bun run build/index.js"]

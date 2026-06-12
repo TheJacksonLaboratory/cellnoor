@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "better-auth": "^1.6.16",
-    "jose": "^6.2.3",
     "pg": "^8.21.0"
   }
 }

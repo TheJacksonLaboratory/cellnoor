@@ -3,34 +3,32 @@
   import ChromiumDataset from "./ChromiumDataset.svelte";
   import Fieldset from "../../components/Fieldset.svelte";
   import SortAndLimit from "../../components/SortAndLimit.svelte";
-  import {
-    type LibraryType,
-    type Species,
-    type ChromiumDatasetPredicate,
-    type ChromiumDatasetPredicateQuery,
-    type SpecimenPredicate,
-    type TenxAssayPredicate,
-    libraryTypeValues,
-    type OrderByChromiumDatasetField,
-    speciesValues,
-    sampleMultiplexingValues,
+  import type {
+    ChromiumDatasetPredicate,
+    ChromiumDatasetPredicateQuery,
+    SpecimenPredicate,
+    TenxAssayPredicate,
+    OrderByChromiumDatasetField,
   } from "$lib/cellnoor-types";
+  import { libraryTypeValues, sampleMultiplexingValues, speciesValues } from "$lib/cellnoor-types";
   import { isNonempty } from "$lib/query-utils";
 
   const { data } = $props();
-  const { assays, datasets, projects, error } = data;
+  const { assays, datasets, projects, error } = $derived(data);
 
   let filterForm: HTMLFormElement | undefined = $state();
 
-  const specimenNamePred = $state({ name: { trgm_any: [] } }) satisfies SpecimenPredicate;
-  const speciesPred = $state({ species: { in: [] } }) satisfies SpecimenPredicate;
-  const tissuePred = $state({ tissue: { trgm_any: [] } }) satisfies SpecimenPredicate;
-  const projectPred = $state({ project_id: { in: [] } }) satisfies SpecimenPredicate;
-  const assayNamePred = $state({ name: { in: [] } }) satisfies TenxAssayPredicate;
-  const assayMultiplexingPred = $state({
+  let specimenNamePred = $state({ name: { trgm_any: [] } }) satisfies SpecimenPredicate;
+  let speciesPred = $state({ species: { in: [] } }) satisfies SpecimenPredicate;
+  let tissuePred = $state({ tissue: { trgm_any: [] } }) satisfies SpecimenPredicate;
+  let projectPred = $state({
+    project_id: { in: [] },
+  }) satisfies SpecimenPredicate;
+  let assayNamePred = $state({ name: { in: [] } }) satisfies TenxAssayPredicate;
+  let assayMultiplexingPred = $state({
     sample_multiplexing: { in: [] },
   }) satisfies TenxAssayPredicate;
-  const assayLibraryTypesPred = $state({
+  let assayLibraryTypesPred = $state({
     library_types: { contains: [] },
   }) satisfies TenxAssayPredicate;
 
@@ -44,14 +42,17 @@
     { tenx_assay: assayLibraryTypesPred },
   ]) satisfies ChromiumDatasetPredicate[];
 
+  let order_by = $state({ field: undefined, desc: undefined });
+
   const query = $derived({
     filter: {
+      // @ts-expect-error I don't get why this is a type-error :)
       all_of: predicates.filter(isNonempty),
     },
-    order_by: { field: undefined, desc: undefined },
+    order_by,
   }) satisfies ChromiumDatasetPredicateQuery;
 
-  const stringifiedQuery = JSON.stringify(query);
+  const stringifiedQuery = $derived(JSON.stringify(query));
 
   let advancedQuery = $state("");
   let advancedQueryError = $derived.by(() => {
@@ -84,8 +85,8 @@
       <div class="mb-2 flex flex-row justify-between align-middle">
         <p class="text-lg">{datasets.length} results</p>
         <SortAndLimit
-          bind:orderByField={query.order_by.field}
-          bind:orderByDescending={query.order_by.desc}
+          bind:orderByField={order_by.field}
+          bind:orderByDescending={order_by.desc}
           choices={orderByChoices}
           parentForm={filterForm!}
         />
@@ -155,7 +156,7 @@
           <textarea bind:value={advancedQuery} class="textarea w-full" rows="6"></textarea>
           <p>{advancedQueryError}</p>
         </Fieldset>
-        <input name="q" hidden bind:value={stringifiedQuery} />
+        <input name="q" hidden value={stringifiedQuery} />
         <button type="submit" class="btn btn-primary mt-4">Apply</button>
       </form>
     </div>

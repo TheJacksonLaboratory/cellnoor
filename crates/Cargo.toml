@@ -13,7 +13,7 @@ edition = "2024"
 [workspace.dependencies]
 tracing-subscriber = {version = "0.3.23", default-features = false, features = ["std", "fmt", "registry"]}
 tracing = {version = "0.1.44"}
-tower-http = {version = "0.6.11", features = ["trace"]}
+tower-http = {version = "0.6.11", features = ["trace", "normalize-path"]}
 camino = { version = "1.2.2" }
 rand = { version = "0.10.1" }
 csvranger = { version = "0.3.0", features = ["legacy", "serde"] }
@@ -31,6 +31,8 @@ futures = { version = "0.3.32" }
 anyhow = "1.0.102"
 config = {version = "0.15.22", default-features = false }
 axum = { version = "0.8.9", default-features = false, features = [
+  # Unfortunately http1 is required for the UI backend to communicate over unix socket with the API :) JavaScript is so advanced!
+  "http1",
   "http2",
   "json",
   "macros",

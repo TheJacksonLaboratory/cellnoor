@@ -1,8 +1,8 @@
 use anyhow::Context;
-use axum::{Router, serve::Listener};
+use axum::{Router, ServiceExt, extract::Request, serve::Listener};
 pub use routes::router;
 use tokio::net::{TcpListener, UnixListener};
-use tower_http::trace::TraceLayer;
+use tower_http::{normalize_path::NormalizePath, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::{settings::Settings, state::AppState};
@@ -42,7 +42,9 @@ where
 {
     tracing::debug!("cellnoor listening on {:?}", listener.local_addr()?);
 
-    axum::serve(listener, app)
+    let app = NormalizePath::trim_trailing_slash(app);
+
+    axum::serve(listener, ServiceExt::<Request>::into_make_service(app))
         .await
         .context("failed to serve app")?;
 

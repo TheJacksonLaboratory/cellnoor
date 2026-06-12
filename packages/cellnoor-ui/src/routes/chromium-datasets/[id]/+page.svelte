@@ -1,14 +1,13 @@
 <script lang="ts">
   import type { SpecimenCompact, TaggedSpecimen } from "$lib/cellnoor-types";
   import { DATE_FORMATTER } from "$lib/date";
-  import { type FileNode } from "$lib/file-tree";
   import * as FileViewer from "../../../components/FileViewer";
   import NiceTable from "../../../components/NiceTable.svelte";
 
   const { data } = $props();
-  const { dataset, project, error } = data;
+  const { dataset, project, error } = $derived(data);
 
-  let activeFile: FileNode | null = $state(null);
+  let selectedMetricsFile = $state("");
 
   // TBH, we could make this much simpler by just title-casing every property name and just making sure that if it's the ID, name, or date, we do some special processing!
   const specimenTableFieldNames = [
@@ -72,8 +71,16 @@
       />
       <div class="divider m-0"></div>
       <h1 class="text-lg font-bold">Dataset Metrics</h1>
+
+      <div class="flex flex-row gap-1">
+        {#each dataset!.data as datum (datum.path)}
+          <button class="btn" onclick={() => (selectedMetricsFile = datum.path)}
+            >{datum.path}</button
+          >
+        {/each}
+      </div>
       {#each dataset!.data as datum (datum.path)}
-        {#if Array.isArray(datum.data)}
+        {#if Array.isArray(datum.data) && selectedMetricsFile == datum.path}
           <NiceTable data={datum.data} fieldNames={Object.keys(datum.data[0])} />
         {/if}
       {/each}

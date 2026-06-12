@@ -1,9 +1,9 @@
-import { type ChromiumDatasetCompact, type ProjectCompact, type TenxAssay } from "$lib/cellnoor-types";
+import type {  ChromiumDatasetCompact,  ChromiumDatasetDetailed,  ProjectCompact,  TenxAssay } from "$lib/cellnoor-types";
 import { getApiClient } from "$lib/server/cellnoor-client";
 
 type ReturnType =
   | {
-      datasets: ChromiumDatasetCompact[],
+      datasets: ChromiumDatasetDetailed[],
       assays: TenxAssay[];
       projects: ProjectCompact[];
     }
@@ -13,18 +13,11 @@ export async function load({ url }) {
   return await loadData(url.searchParams.get("q") || `{"limit": 5000}`);
 }
 
-export const actions = {
-  search: async ({ request }) => {
-    const formData = await request.formData();
-    return await loadData(formData.get("q")?.toString());
-  },
-};
-
 async function loadData(q?: string): Promise<ReturnType> {
-  const client = await getApiClient();
+  const client = getApiClient();
 
   // We don't care whatsoever what the actual query is because the API will validate it. Since the client is type-safe anyways this is fine
-  const getDatasets = client.POST("/chromium-datasets/search", { body: q ? JSON.parse(q) : {} });
+  const getDatasets = client.POST("/chromium-datasets/search/detailed", { body: q ? JSON.parse(q) : {} });
 
   const [chromiumDatasets, assays, projects] = await Promise.all([
     getDatasets,
