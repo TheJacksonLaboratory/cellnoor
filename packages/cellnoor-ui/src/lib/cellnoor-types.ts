@@ -4729,7 +4729,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/file-auth/{dataset_type}/": {
+    "/file-auth": {
         parameters: {
             query?: never;
             header?: never;
@@ -4754,7 +4754,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/file-auth/projects/": {
+    "/file-auth/{dataset_type}": {
         parameters: {
             query?: never;
             header?: never;
@@ -4779,7 +4779,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/file-auth/{dataset_type}/{dataset_id}/": {
+    "/file-auth/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: never;
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/file-auth/{dataset_type}/{dataset_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -4853,7 +4878,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/file-auth/projects/{project_name}/": {
+    "/file-auth/projects/{project_name}": {
         parameters: {
             query?: never;
             header?: never;
@@ -8698,7 +8723,7 @@ type ReadonlyArray<T> = [
 ] extends [
     unknown[]
 ] ? Readonly<Exclude<T, undefined>> : Readonly<Exclude<T, undefined>[]>;
-export const pathsFileAuthDataset_typeDataset_idGetParametersPathDataset_typeValues: ReadonlyArray<FlattenedDeepRequired<paths>["/file-auth/{dataset_type}/{dataset_id}/"]["get"]["parameters"]["path"]["dataset_type"]> = ["chromium-datasets"];
+export const pathsFileAuthDataset_typeDataset_idGetParametersPathDataset_typeValues: ReadonlyArray<FlattenedDeepRequired<paths>["/file-auth/{dataset_type}/{dataset_id}"]["get"]["parameters"]["path"]["dataset_type"]> = ["chromium-datasets"];
 export const pathsFileAuthDataset_typeDataset_idFile_pathGetParametersPathDataset_typeValues: ReadonlyArray<FlattenedDeepRequired<paths>["/file-auth/{dataset_type}/{dataset_id}/{*file_path}"]["get"]["parameters"]["path"]["dataset_type"]> = ["chromium-datasets"];
 export const actionValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Action"]> = ["create", "update", "delete"];
 export const apiKeyFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ApiKeyField"]> = ["id", "description", "person_id", "service_id", "created_at", "expires_at"];
