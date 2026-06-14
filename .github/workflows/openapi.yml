@@ -7,8 +7,6 @@ on:
 jobs:
   check_openapi_document:
     runs-on: ubuntu-latest
-    env:
-      CELLNOOR_GENERATE_SCHEMA: false
 
     steps:
       - name: Check out repository code
