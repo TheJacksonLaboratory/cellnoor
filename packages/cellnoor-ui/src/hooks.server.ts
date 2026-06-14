@@ -4,6 +4,8 @@ import { building } from "$app/env";
 import { redirect } from "@sveltejs/kit";
 import { PUBLIC_AUTH_URL } from "$app/env/public";
 
+// Trigger CI
+
 const NON_AUTH_ROUTES = [
   "/health",
 ];
