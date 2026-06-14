@@ -58,4 +58,12 @@ jobs:
           cache-workspace-crates: true
 
       - name: Test
+        env:
+          CELLLNOOR_ROOT_DB_PASSWORD: p
+          CELLNOOR_APP_DB_PASSWORD: p
+          CELLNOOR_AUTH_DB_PASSWORD: p
+          CELLNOOR_AUTH_SECRET: ""
+          CELLNOOR_MICROSOFT_ENTRA_TENANT_ID: ""
+          CELLNOOR_MICROSOFT_ENTRA_CLIENT_ID: ""
+          CELLNOOR_MICROSOFT_ENTRA_CLIENT_SECRET: ""
         run: ./scripts/dev/test.sh

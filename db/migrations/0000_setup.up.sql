@@ -1,4 +1,3 @@
--- Trigger CI
 create or replace function role_exists(role_name text) returns boolean language plpgsql volatile strict as $$
     declare role_exists boolean;
     begin
