@@ -23,6 +23,7 @@ jobs:
           cache-on-failure: true
 
       - name: Lint
+        working-directory: crates
         run: cargo clippy --workspace --all-features
 
   format:
