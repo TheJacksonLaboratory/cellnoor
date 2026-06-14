@@ -62,6 +62,6 @@ $$;
 create collation case_insensitive (provider = icu, deterministic = false, locale = 'en-u-ks-level1');
 create domain case_insensitive_text as text collate case_insensitive;
 
-create extension "pg_trgm";
+create extension pg_trgm;
 -- We want to insert nil UUIDs in a couple places, so we install this extension
 create extension "uuid-ossp";

@@ -40,7 +40,9 @@ create or replace function _validate_user_can_manage_users(
     end;
 $$;
 
-create or replace function _validate_target_user_is_person(user_id uuid) returns void language plpgsql volatile strict as $$
+create or replace function _validate_target_user_is_person(
+    user_id uuid
+) returns void language plpgsql volatile strict as $$
     begin
         if not user_is_person(user_id) then
             raise check_violation using message = 'target user is not a person';

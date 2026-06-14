@@ -32,7 +32,9 @@ chromium_dataset_to_specimen,
 chromium_dataset_raw_file,
 chromium_dataset_parsed_file to public;
 
-grant insert (description, owned_by, is_staff, can_manage_users), update (description, owned_by, is_staff, can_manage_users), delete on service to public;
+grant insert (description, owned_by, is_staff, can_manage_users),
+update (description, owned_by, is_staff, can_manage_users),
+delete on service to public;
 
 grant insert, delete on service_access to public;
 
