@@ -147,14 +147,15 @@ fn enum_sql_impls(module_name: Ident, type_name: Ident) -> proc_macro2::TokenStr
                 where
                     Self: Sized,
                 {
-                    ::nonempty::NonemptyString::from_str(self.as_ref()).unwrap().to_sql(ty, out)
+                    let value: &str = self.as_ref();
+                    <&str as ToSql>::to_sql(&value, ty, out)
                 }
 
                 fn accepts(ty: &postgres_types::Type) -> bool
                 where
                     Self: Sized,
                 {
-                    <::nonempty::NonemptyString as ToSql>::accepts(ty)
+                    <::nonempty::NonemptyString as ToSql>::accepts(ty)|| <&str as ToSql>::accepts(ty)
                 }
             }
         }

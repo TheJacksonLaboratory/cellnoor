@@ -121,7 +121,7 @@
           <InputList
             parentForm={filterForm}
             fieldName="Lab Name"
-            choices={(projects || []).map((p) => toLowercaseChoice(p.name))}
+            choices={(projects || []).map((p) => ({ label: p.name, value: p.id }))}
             bind:values={projectPred.project_id.in}
           />
         </Fieldset>
@@ -129,7 +129,7 @@
           <InputList
             parentForm={filterForm}
             fieldName="Assay Name"
-            choices={(assays || []).map((a) => toLowercaseChoice(a.name))}
+            choices={(assays || []).map((a) => ({ label: a.name, value: a.name }))}
             bind:values={assayNamePred.name.in}
           />
           <InputList
