@@ -11,7 +11,7 @@
     "typescript": "latest"
   },
   "dependencies": {
-    "better-auth": "^1.6.16",
+    "better-auth": "^1.6.18",
     "pg": "^8.21.0"
   }
 }
