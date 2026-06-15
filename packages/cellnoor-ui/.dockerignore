@@ -1,0 +1,17 @@
+# Build artifacts
+.svelte-kit
+node_modules
+cellnoor-auth
+index
+*.map
+*.bun-build
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Environment files
+.env*
+
+# Miscellaneous
+README*

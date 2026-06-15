@@ -17,17 +17,17 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        working-directory: cellnoor-ui
+        working-directory: packages/cellnoor-ui
         run: bun install
 
       - name: Check svelte code
-        working-directory: cellnoor-ui
+        working-directory: packages/cellnoor-ui
         run: bun run --bun check
 
       - name: Lint and format
-        working-directory: cellnoor-ui
+        working-directory: packages/cellnoor-ui
         run: bun run --bun lint
 
       - name: Test
-        working-directory: cellnoor-ui
+        working-directory: packages/cellnoor-ui
         run: bun test

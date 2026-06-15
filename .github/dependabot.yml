@@ -1,7 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: cargo
-    directory: .
+    directory: ./crates
     schedule:
       interval: daily
     groups:
@@ -10,10 +10,19 @@ updates:
           - "*"
 
   - package-ecosystem: bun
-    directory: .
+    directory: ./packages/cellnoor-auth
     schedule:
       interval: daily
     groups:
-      all-typescript-dependencies:
+      all-auth-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: bun
+    directory: ./packages/cellnoor-ui
+    schedule:
+      interval: daily
+    groups:
+      all-ui-dependencies:
         patterns:
           - "*"

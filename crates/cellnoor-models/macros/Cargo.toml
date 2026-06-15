@@ -1,7 +1,0 @@
-[package]
-edition.workspace = true
-name = "macros"
-version = "0.1.0"
-
-[lints]
-workspace = true

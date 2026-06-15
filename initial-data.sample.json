@@ -1,0 +1,12 @@
+{
+  "admin_institution": {
+    "name": "Jackson Laboratory",
+    "microsoft_entra_tenant_id": "00000000-0000-0000-0000-000000000000"
+  },
+  "admin": {
+    "name": "Ahmed Said",
+    "auth_provider": "microsoft",
+    "auth_provider_user_id": "00000000-0000-0000-0000-000000000000",
+    "is_staff": true
+  }
+}

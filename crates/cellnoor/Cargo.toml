@@ -1,0 +1,93 @@
+[package]
+name = "cellnoor"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "openapi"
+required-features = ["ssr"]
+
+[dependencies]
+glob = {workspace = true, optional = true }
+csv = {workspace = true, optional = true }
+tracing = {workspace = true, optional = true}
+tracing-subscriber = {workspace = true, optional = true}
+tower-http = {workspace = true, optional = true}
+camino = { workspace = true, optional = true }
+rand = {workspace = true, optional = true}
+aide = {workspace = true, optional = true}
+csvranger = { workspace = true, optional = true }
+positive = { path = "../positive" }
+jsonwebtoken = {workspace = true, optional = true}
+bytes = {workspace = true, optional = true}
+serde.workspace = true
+deadpool-postgres = {workspace = true, optional = true}
+cellnoor-types = {path = "../cellnoor-types", features = ["serde"]}
+axum = {workspace = true, optional = true}
+axum-extra= {workspace = true, optional = true}
+anyhow = {workspace = true, optional = true}
+clap = {workspace = true, optional = true}
+uuid = {workspace = true, optional = true}
+schemars = {workspace = true, optional = true}
+secrecy = {workspace = true, optional = true}
+postgres-types = {workspace = true, optional = true}
+headers = {workspace = true, optional = true}
+jiff = {workspace = true, optional = true}
+dotenvy = {workspace = true, optional = true}
+thiserror = {workspace = true, optional = true}
+config = {workspace = true, optional = true}
+tokio = { workspace = true, optional = true }
+strum = { workspace = true, optional = true }
+sha3 = { workspace = true, optional = true }
+regex = { workspace = true, optional = true }
+futures = { workspace = true, optional = true }
+serde_json = { workspace = true, optional = true }
+nonempty = { path = "../nonempty" }
+zstd = { workspace = true, optional = true }
+
+[features]
+ssr = [
+    "dep:strum",
+    "dep:glob",
+    "dep:tower-http",
+    "dep:tracing",
+    "dep:tracing-subscriber",
+    "dep:sha3",
+    "dep:regex",
+    "dep:futures",
+    "dep:serde_json",
+    "dep:zstd",
+    "dep:bytes",
+    "dep:camino",
+    "dep:csv",
+    "dep:anyhow",
+    "dep:postgres-types",
+    "dep:aide",
+    "dep:csvranger",
+    "dep:deadpool-postgres",
+    "dep:clap",
+    "dep:config",
+    "dep:jiff",
+    "dep:jsonwebtoken",
+    "dep:secrecy",
+    "dep:dotenvy",
+    "dep:thiserror",
+    "dep:axum",
+    "dep:axum-extra",
+    "dep:tokio",
+    "dep:rand",
+    "dep:uuid",
+    "dep:schemars",
+    "dep:headers",
+    "cellnoor-types/schemars",
+    "cellnoor-types/postgres-types"
+]
+
+[dev-dependencies]
+nonempty = { path = "../nonempty", features = ["postgres-types"] }
+uuid = {workspace = true, features = ["v4"]}
+pretty_assertions.workspace = true
+positive = {path = "../positive", features = ["postgres-types"]}

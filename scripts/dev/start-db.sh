@@ -1,0 +1,13 @@
+#! /usr/bin/env bash
+
+set -euo pipefail
+
+docker_compose="docker compose --file compose.yaml --file compose.dev.yaml --env-file .env.compose"
+
+function cleanup_docker() {
+    $docker_compose rm --force --stop --volumes
+    $docker_compose volumes --format json | jq '.[].Name' --slurp | xargs docker volume rm
+}
+trap cleanup_docker EXIT
+
+$docker_compose up db migrate

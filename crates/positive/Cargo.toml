@@ -1,0 +1,18 @@
+[package]
+name = "positive"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+postgres-types = { workspace = true, optional = true }
+schemars = { workspace = true, optional = true }
+serde = { workspace = true, optional = true }
+bytes = {workspace = true, optional = true}
+
+[lints]
+workspace = true
+
+[features]
+serde = ["dep:serde"]
+schemars = ["dep:schemars", "serde"]
+postgres-types = ["dep:postgres-types", "dep:bytes"]

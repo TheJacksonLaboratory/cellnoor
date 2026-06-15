@@ -7,8 +7,6 @@ on:
 jobs:
   check_openapi_document:
     runs-on: ubuntu-latest
-    env:
-      CELLNOOR_GENERATE_SCHEMA: false
 
     steps:
       - name: Check out repository code
@@ -20,8 +18,11 @@ jobs:
           cache-all-crates: true
           cache-workspace-crates: true
 
-      - name: Regenerate OpenAPI document
-        run: cargo run --bin openapi > regenerated-openapi.json
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
 
-      - name: Compare committed OpenAPI document to regenerated OpenAPI document
-        run: diff openapi.json regenerated-openapi.json
+      - name: Regenerate OpenAPI document and TypeScript definitions
+        run: ./scripts/dev/openapi.sh
+
+      - name: Compare committed files to regenerated files
+        run: git diff --exit-code

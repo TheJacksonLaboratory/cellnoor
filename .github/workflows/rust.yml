@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RUSTFLAGS: -Dwarnings
-      CELLNOOR_GENERATE_SCHEMA: false
 
     steps:
       - name: Check out repository code
@@ -24,6 +23,7 @@ jobs:
           cache-on-failure: true
 
       - name: Lint
+        working-directory: crates
         run: cargo clippy --workspace --all-features
 
   format:
@@ -40,36 +40,14 @@ jobs:
           cache-on-failure: true
 
       - name: Install nightly toolchain
-        run: rustup component add --toolchain nightly-2026-02-10 rustfmt # This is updated weekly-ish
+        run: rustup component add --toolchain nightly-2026-06-13 rustfmt # This is updated weekly-ish
 
       - name: Format
-        run: cargo +nightly-2026-02-10 fmt -- --check
+        working-directory: crates
+        run: cargo +nightly-2026-06-13 fmt -- --check
 
   test:
     runs-on: ubuntu-latest
-    env:
-      # Unfortunately, some of these environment variables are unnecessary for unit tests, but have to be included
-      # because the unit tests read the entire app configuration as one big piece
-      # TODO: split the different aspects of the configuration into different places
-      CELLNOOR_GENERATE_SCHEMA: false
-      CELLNOOR_CONFIG_DIR: .
-      CELLNOOR_DB_ROOT_USER: postgres
-      CELLNOOR_DB_ROOT_PASSWORD: ""
-      CELLNOOR_API_DB_PASSWORD: ""
-      CELLNOOR_UI_DB_PASSWORD: ""
-      CELLNOOR_DB_HOST: localhost
-      CELLNOOR_DB_PORT: 5432
-      CELLNOOR_DB_NAME: postgres
-      CELLNOOR_JWT_ISSUER: ""
-      CELLNOOR_JWT_AUDIENCE: ""
-      CELLNOOR_API_ADDRESS: "localhost:8000"
-    services:
-      postgres:
-        image: postgres:18-alpine
-        env:
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports:
-          - 5432:5432
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6
@@ -80,14 +58,16 @@ jobs:
           cache-all-crates: true
           cache-workspace-crates: true
 
-      - name: Install diesel-cli
-        run: cargo install diesel_cli --no-default-features --features postgres
-
-      - name: Check schema
-        working-directory: crates/cellnoor-schema
-        run: diesel setup --database-url postgres://postgres@localhost/postgres --locked-schema
+      - name: Copy initial data
+        run: cp initial-data.sample.json initial-data.json
 
       - name: Test
-        run: |
-          mv initial_data.sample.json cellnoor-api/initial_data
-          cargo test --workspace --all-features
+        env:
+          CELLNOOR_ROOT_DB_PASSWORD: p
+          CELLNOOR_APP_DB_PASSWORD: p
+          CELLNOOR_AUTH_DB_PASSWORD: p
+          CELLNOOR_AUTH_SECRET: ""
+          CELLNOOR_MICROSOFT_ENTRA_TENANT_ID: ""
+          CELLNOOR_MICROSOFT_ENTRA_CLIENT_ID: ""
+          CELLNOOR_MICROSOFT_ENTRA_CLIENT_SECRET: ""
+        run: ./scripts/dev/test.sh

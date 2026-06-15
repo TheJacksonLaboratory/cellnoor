@@ -20,5 +20,4 @@ jobs:
         run: pip install sqlfluff
 
       - name: Lint code
-        working-directory: crates/cellnoor-schema
         run: sqlfluff lint .

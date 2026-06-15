@@ -1,0 +1,24 @@
+pub use client::{Client, Pool, Transaction};
+pub use delete::delete_by_id;
+pub use insert::{insert_into, insert_into_no_returning};
+use postgres_types::ToSql;
+pub use select::select_one;
+pub use stmt::{AsPredicate, FilterableSqlBuilder, Sql, SqlBuilder};
+pub use update::update;
+
+mod client;
+mod delete;
+mod insert;
+mod select;
+mod stmt;
+#[cfg(test)]
+pub mod test_utils;
+mod update;
+
+type FieldValuePair<'a, F> = (F, &'a (dyn ToSql + Sync));
+
+pub type FieldValuePairs<'a, F, const N: usize> = [FieldValuePair<'a, F>; N];
+
+pub trait AsFieldValuePairs<F, const N: usize> {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, F, N>;
+}

@@ -1,70 +1,118 @@
 # This is the base compose file. Merge this with one of compose.dev.yaml of compose.prod.yaml to produce a running
 # application with the following command:
 # docker compose --file compose.yaml --file compose.dev.yaml
+
+# Shared resources
+volumes:
+  db-data:
+  db-socket:
+  auth-socket:
+  api-socket:
+  ui-socket:
+  caddy-data:
+  caddy-config:
+  static-files:
+secrets:
+  root_db_password:
+    environment: CELLNOOR_ROOT_DB_PASSWORD
+  app_db_password:
+    environment: CELLNOOR_APP_DB_PASSWORD
+  auth_db_password:
+    environment: CELLNOOR_AUTH_DB_PASSWORD
+  auth_secret:
+    environment: CELLNOOR_AUTH_SECRET
+  microsoft_entra_tenant_id:
+    environment: CELLNOOR_MICROSOFT_ENTRA_TENANT_ID
+  microsoft_entra_client_id:
+    environment: CELLNOOR_MICROSOFT_ENTRA_CLIENT_ID
+  microsoft_entra_client_secret:
+    environment: CELLNOOR_MICROSOFT_ENTRA_CLIENT_SECRET
 services:
-  postgres:
+  db:
     image: postgres:18-alpine
     restart: always
-    secrets:
-      - db_root_password
-      - db_name
+    secrets: [root_db_password, app_db_password, auth_db_password]
     environment:
-      POSTGRES_USER: &db_root_user postgres
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_root_password
-      POSTGRES_DB_FILE: /run/secrets/db_name
+      POSTGRES_PASSWORD_FILE: /run/secrets/root_db_password
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       POSTGRES_INITDB_ARGS: --auth=scram-sha-256
-    pull_policy: always
+    pull_policy: weekly
     healthcheck:
-      test: pg_isready --dbname $(cat /run/secrets/db_name) || exit 1
-      interval: 5s
+      test: pg_isready || exit 1
+      interval: 5m
+      start_period: 10s
+      start_interval: 0.5s
       timeout: 5s
       retries: 10
     volumes:
-      - database:/var/lib/postgresql
-      - database-socket:/var/run/postgresql
-  &api_host cellnoor-api:
+      [
+        &db_data_volume db-data:/var/lib/postgresql,
+        &db_socket_volume db-socket:/run/postgresql,
+        ./initial-data.json:/initial-data.json,
+      ]
+  migrate:
+    image: migrate/migrate
+    secrets: [root_db_password]
+    depends_on:
+      db:
+        condition: service_healthy
+    # We override the entrypoint to pass in the password file
+    entrypoint: /bin/sh -c 'migrate -path /migrations -database postgresql://postgres:$(cat /run/secrets/root_db_password)@/?host=/var/run/postgresql up'
+    volumes: [./db/migrations:/migrations, *db_socket_volume]
+  cellnoor-auth:
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     build:
-      context: .
-      dockerfile: cellnoor-api/Dockerfile
+      context: packages/cellnoor-auth
+      target: final
+    environment:
+      DB_NAME: &db_name postgres
+      DB_HOST: &db_host /run/postgresql
+      UNIX_DOMAIN_SOCKET: &auth_socket /run/cellnoor-auth/cellnoor-auth.sock
+    secrets:
+      [
+        auth_db_password,
+        auth_secret,
+        microsoft_entra_tenant_id,
+        microsoft_entra_client_id,
+        microsoft_entra_client_secret,
+      ]
+    volumes:
+      [*db_socket_volume, &auth_socket_volume auth-socket:/run/cellnoor-auth]
+  cellnoor:
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    build:
+      context: crates
       target: final
       args:
         UID: &uid "10001"
-        ADDRESS: &api_socket /run/cellnoor-api/cellnoor-api.sock
-      tags:
-        - ghcr.io/thejacksonlaboratory/cellnoor-api:latest
+        SOCKET: &api_socket /run/cellnoor/cellnoor.sock
+        STATIC_FILES_DIR: &static_files_dir /static-files
     environment:
-      DB_ROOT_USER: *db_root_user
-      DB_HOST: &db_host /var/run/postgresql
-      DB_PORT: &db_port 5432
-      ADDRESS: *api_socket
-    secrets:
-      - source: db_root_password
-        uid: *uid
-      - source: cellnoor_api_db_password
-        uid: *uid
-      - source: cellnoor_ui_db_password
-        uid: *uid
-      - source: db_name
-        uid: *uid
+      DB__HOST: *db_host
+      # This is hardcoded for simplicity, but it may behoove us to set an explicit dbname in the db service definition
+      # and use that here
+      DB__DBNAME: postgres
+      STATIC_FILES_DIR: *static_files_dir
+      LISTEN_ON: *api_socket
+    secrets: [auth_secret, app_db_password]
     volumes:
-      - logs:/logs
-      - &database_socket_volume database-socket:/var/run/postgresql
-      - &api_socket_volume cellnoor-api-socket:/run/cellnoor-api
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - *db_socket_volume
+      - &api_socket_volume api-socket:/run/cellnoor
+      - &static_files_volume static-files:/static-files
     healthcheck:
-      test: curl --fail --unix-socket /run/cellnoor-api/cellnoor-api.sock http://localhost/api/health || exit 1
-      interval: 1s
+      test: curl --fail --http2-prior-knowledge --unix-socket /run/cellnoor/cellnoor.sock http://localhost/health || exit 1
+      interval: 5m
       start_period: 10s
-      start_interval: 1s
+      start_interval: 0.5s
       timeout: 5s
       retries: 10
-  &ui_host cellnoor-ui:
+  cellnoor-ui:
     build:
-      context: .
-      dockerfile: cellnoor-ui/Dockerfile
+      context: packages/cellnoor-ui
       target: final
       args:
         UID: *uid
@@ -72,46 +120,32 @@ services:
       tags:
         - ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
     environment:
-      IN_DOCKER: "true"
-      DB_HOST: *db_host
-      DB_PORT: *db_port
-      # https://svelte.dev/docs/kit/adapter-node#Environment-variables-PORT-HOST-and-SOCKET_PATH
+      # https://github.com/oven-sh/bun/issues/14299
       HOST: ""
+      # https://svelte.dev/docs/kit/adapter-node#Environment-variables-PORT-HOST-and-SOCKET_PATH
       SOCKET_PATH: *ui_socket
-      API_URL: http://cellnoor-api/api
       API_SOCKET: *api_socket
     depends_on:
-      cellnoor-api:
+      cellnoor:
         condition: service_healthy
     healthcheck:
       test: curl --fail --unix-socket /run/cellnoor-ui/cellnoor-ui.sock http://localhost/health || exit 1
-      interval: 1s
-      start_period: 5s
-      start_interval: 1s
-      timeout: 1s
-      retries: 5
-    secrets:
-      - source: cellnoor_ui_db_password
-        uid: *uid
-      - source: db_name
-        uid: *uid
-      - source: microsoft_entra_client_id
-        uid: *uid
-      - source: microsoft_entra_client_secret
-        uid: *uid
-      - source: microsoft_entra_tenant
-        uid: *uid
-      - source: auth_secret
-        uid: *uid
+      interval: 5m
+      start_period: 10s
+      start_interval: 0.5s
+      timeout: 5s
+      retries: 10
     volumes:
-      - *database_socket_volume
       - *api_socket_volume
-      - &ui_socket_volume cellnoor-ui-socket:/run/cellnoor-ui
+      - &ui_socket_volume ui-socket:/run/cellnoor-ui
+    secrets: [auth_secret]
   caddy:
     image: caddy:2-alpine
     environment:
+      AUTH_SOCKET: *auth_socket
       API_SOCKET: *api_socket
       UI_SOCKET: *ui_socket
+      STATIC_FILES_DIR: *static_files_dir
     restart: always
     cap_add:
       - NET_ADMIN
@@ -120,37 +154,16 @@ services:
       - "443:443"
       - "443:443/udp"
     volumes:
-      - ./caddy:/etc/caddy
-      - caddy-data:/data
-      - caddy-config:/config
-      - *api_socket_volume
-      - *ui_socket_volume
+      [
+        ./caddy:/etc/caddy,
+        caddy-data:/data,
+        caddy-config:/config,
+        *auth_socket_volume,
+        *api_socket_volume,
+        *ui_socket_volume,
+        *static_files_volume,
+      ]
     pull_policy: always
     depends_on:
-      cellnoor-ui:
+      cellnoor:
         condition: service_healthy
-volumes:
-  logs:
-  caddy-data:
-  caddy-config:
-  database:
-  database-socket:
-  cellnoor-api-socket:
-  cellnoor-ui-socket:
-secrets:
-  db_root_password:
-    environment: CELLNOOR_DB_ROOT_PASSWORD
-  cellnoor_api_db_password:
-    environment: CELLNOOR_API_DB_PASSWORD
-  cellnoor_ui_db_password:
-    environment: CELLNOOR_UI_DB_PASSWORD
-  db_name:
-    environment: CELLNOOR_DB_NAME
-  microsoft_entra_client_id:
-    environment: CELLNOOR_MICROSOFT_ENTRA_CLIENT_ID
-  microsoft_entra_client_secret:
-    environment: CELLNOOR_MICROSOFT_ENTRA_CLIENT_SECRET
-  microsoft_entra_tenant:
-    environment: CELLNOOR_MICROSOFT_ENTRA_TENANT
-  auth_secret:
-    environment: CELLNOOR_AUTH_SECRET
