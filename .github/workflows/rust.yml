@@ -58,6 +58,9 @@ jobs:
           cache-all-crates: true
           cache-workspace-crates: true
 
+      - name: Copy initial data
+        run: cp initial-data.sample.json initial-data.json
+
       - name: Test
         env:
           CELLNOOR_ROOT_DB_PASSWORD: p
