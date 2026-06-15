@@ -2,15 +2,15 @@ use macro_attributes::base_model;
 use nonempty::{NonemptyBoundedVec, NonemptyString};
 
 use crate::chromium_run::creation::{
-    ocm::{MAX_SUSPENSIONS_PER_OCM_GEM_WELL, NewOcmChipLoading},
-    standard::NewStandardChipLoading,
+    LoadedEntity,
+    ocm::{MAX_SUSPENSIONS_PER_OCM_GEM_WELL, OcmLoadedEntity},
 };
 
 #[base_model]
-#[cfg_attr(feature = "serde", serde(untagged, rename_all = "snake_case"))]
+#[cfg_attr(feature = "serde", serde(untagged))]
 pub enum NewMixedChipLoading {
-    Ocm(NonemptyBoundedVec<NewOcmChipLoading, MAX_SUSPENSIONS_PER_OCM_GEM_WELL>),
-    Standard(NewStandardChipLoading),
+    Ocm(NonemptyBoundedVec<OcmLoadedEntity, MAX_SUSPENSIONS_PER_OCM_GEM_WELL>),
+    Standard(LoadedEntity),
 }
 
 #[base_model]

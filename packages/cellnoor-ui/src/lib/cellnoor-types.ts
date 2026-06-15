@@ -5881,10 +5881,12 @@ export interface components {
         } | {
             operationId: string;
         });
-        LoadingVolume: {
-            unit: components["schemas"]["Microliter"];
-            /** Format: float */
-            value: number;
+        LoadedEntity: {
+            /** Format: uuid */
+            suspension_id: string;
+        } | {
+            /** Format: uuid */
+            suspension_pool_id: string;
         };
         MeanDiameter: {
             object: components["schemas"]["SuspensionContent"];
@@ -6169,7 +6171,7 @@ export interface components {
             /** Format: int32 */
             target_reads_per_cell?: number | null;
         };
-        NewMixedChipLoading: components["schemas"]["NewOcmChipLoading"][] | components["schemas"]["NewStandardChipLoading"];
+        NewMixedChipLoading: components["schemas"]["OcmLoadedEntity"][] | components["schemas"]["LoadedEntity"];
         NewMixedGemWell: {
             loading: components["schemas"]["NewMixedChipLoading"];
             readable_id: string;
@@ -6181,23 +6183,8 @@ export interface components {
             /** Format: uuid */
             measured_by: string;
         };
-        NewOcmChipLoading: {
-            additional_data?: unknown;
-            buffer_volume_loaded: components["schemas"]["LoadingVolume"];
-            ocm_barcode_id: components["schemas"]["OcmBarcodeId"];
-            /** Format: uuid */
-            suspension_id: string;
-            suspension_volume_loaded: components["schemas"]["LoadingVolume"];
-        } | {
-            additional_data?: unknown;
-            buffer_volume_loaded: components["schemas"]["LoadingVolume"];
-            ocm_barcode_id: components["schemas"]["OcmBarcodeId"];
-            /** Format: uuid */
-            suspension_pool_id: string;
-            suspension_volume_loaded: components["schemas"]["LoadingVolume"];
-        };
         NewOcmGemWell: {
-            loading: components["schemas"]["NewOcmChipLoading"][];
+            loading: components["schemas"]["OcmLoadedEntity"][];
             readable_id: string;
         };
         NewPerson: {
@@ -6267,22 +6254,14 @@ export interface components {
             /** Format: uuid */
             measured_by: string;
         };
-        NewStandardChipLoading: {
-            additional_data?: unknown;
-            buffer_volume_loaded: components["schemas"]["LoadingVolume"];
+        NewStandardGemWell: {
+            readable_id: string;
+        } | {
             /** Format: uuid */
             suspension_id: string;
-            suspension_volume_loaded: components["schemas"]["LoadingVolume"];
         } | {
-            additional_data?: unknown;
-            buffer_volume_loaded: components["schemas"]["LoadingVolume"];
             /** Format: uuid */
             suspension_pool_id: string;
-            suspension_volume_loaded: components["schemas"]["LoadingVolume"];
-        };
-        NewStandardGemWell: {
-            loading: components["schemas"]["NewStandardChipLoading"];
-            readable_id: string;
         };
         NewSuspension: {
             additional_data?: unknown;
@@ -6629,6 +6608,15 @@ export interface components {
         }) | unknown);
         /** @enum {string} */
         OcmBarcodeId: "ob1" | "ob2" | "ob3" | "ob4";
+        OcmLoadedEntity: {
+            ocm_barcode_id: components["schemas"]["OcmBarcodeId"];
+        } | {
+            /** Format: uuid */
+            suspension_id: string;
+        } | {
+            /** Format: uuid */
+            suspension_pool_id: string;
+        };
         OpenApi: {
             /** @description An element to hold various schemas for the document. */
             components?: components["schemas"]["Components"] | null;
@@ -8537,7 +8525,7 @@ export type LibraryTypeSpecification = components['schemas']['LibraryTypeSpecifi
 export type LibraryUpdate = components['schemas']['LibraryUpdate'];
 export type License = components['schemas']['License'];
 export type Link = components['schemas']['Link'];
-export type LoadingVolume = components['schemas']['LoadingVolume'];
+export type LoadedEntity = components['schemas']['LoadedEntity'];
 export type MeanDiameter = components['schemas']['MeanDiameter'];
 export type MediaType = components['schemas']['MediaType'];
 export type Microliter = components['schemas']['Microliter'];
@@ -8563,7 +8551,6 @@ export type NewLibrary = components['schemas']['NewLibrary'];
 export type NewMixedChipLoading = components['schemas']['NewMixedChipLoading'];
 export type NewMixedGemWell = components['schemas']['NewMixedGemWell'];
 export type NewNucleicAcidMeasurement = components['schemas']['NewNucleicAcidMeasurement'];
-export type NewOcmChipLoading = components['schemas']['NewOcmChipLoading'];
 export type NewOcmGemWell = components['schemas']['NewOcmGemWell'];
 export type NewPerson = components['schemas']['NewPerson'];
 export type NewProject = components['schemas']['NewProject'];
@@ -8571,7 +8558,6 @@ export type NewService = components['schemas']['NewService'];
 export type NewSpecimen = components['schemas']['NewSpecimen'];
 export type NewSpecimenCommonFields = components['schemas']['NewSpecimenCommonFields'];
 export type NewSpecimenMeasurement = components['schemas']['NewSpecimenMeasurement'];
-export type NewStandardChipLoading = components['schemas']['NewStandardChipLoading'];
 export type NewStandardGemWell = components['schemas']['NewStandardGemWell'];
 export type NewSuspension = components['schemas']['NewSuspension'];
 export type NewSuspensionMeasurement = components['schemas']['NewSuspensionMeasurement'];
@@ -8584,6 +8570,7 @@ export type NewTissue = components['schemas']['NewTissue'];
 export type NucleicAcidMeasurementData = components['schemas']['NucleicAcidMeasurementData'];
 export type OAuth2Flows = components['schemas']['OAuth2Flows'];
 export type OcmBarcodeId = components['schemas']['OcmBarcodeId'];
+export type OcmLoadedEntity = components['schemas']['OcmLoadedEntity'];
 export type OpenApi = components['schemas']['OpenApi'];
 export type Operation = components['schemas']['Operation'];
 export type OrderByApiKeyField = components['schemas']['OrderByApiKeyField'];

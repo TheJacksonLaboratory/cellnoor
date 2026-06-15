@@ -106,21 +106,18 @@ impl AsFieldValuePairs<ChromiumRunField, 6> for NewChromiumRunRecord {
 pub mod test {
     use cellnoor_types::{
         chromium_run::{
-            ChromiumRunDetailed, LoadingVolume,
+            ChromiumRunDetailed,
             creation::{
-                NewChipLoadingCommonFields, NewChromiumRun, NewChromiumRunRecord,
+                LoadedEntity, NewChromiumRun, NewChromiumRunRecord,
                 mixed::{NewMixedChipLoading, NewMixedGemWell},
-                ocm::{NewOcmChipLoading, NewOcmGemWell, OcmBarcodeId},
-                standard::{NewStandardChipLoading, NewStandardGemWell},
+                ocm::{NewOcmGemWell, OcmBarcodeId, OcmLoadedEntity},
+                standard::NewStandardGemWell,
             },
         },
         id::NoId,
-        units::Microliter,
     };
     use jiff::Timestamp;
     use nonempty::NonemptyBoundedVec;
-    use positive::PositiveF32;
-    use postgres_types::Json;
     use uuid::Uuid;
 
     use crate::{
@@ -134,20 +131,6 @@ pub mod test {
         },
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
-
-    pub fn loading_common() -> NewChipLoadingCommonFields {
-        NewChipLoadingCommonFields {
-            suspension_volume_loaded: Json(LoadingVolume {
-                value: PositiveF32::new(50.0).unwrap(),
-                unit: Microliter::Microliter,
-            }),
-            buffer_volume_loaded: Json(LoadingVolume {
-                value: PositiveF32::new(50.0).unwrap(),
-                unit: Microliter::Microliter,
-            }),
-            additional_data: None,
-        }
-    }
 
     pub fn new_common(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRecord {
         NewChromiumRunRecord {
@@ -180,17 +163,15 @@ pub mod test {
         // GEM wells
         let gem_well1 = NewStandardGemWell {
             readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-            loading: NewStandardChipLoading::Suspension {
+            loaded_entity: LoadedEntity::Suspension {
                 suspension_id: *suspension.record.id,
-                common: loading_common(),
             },
         };
 
         let gem_well2 = NewStandardGemWell {
             readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-            loading: NewStandardChipLoading::SuspensionPool {
+            loaded_entity: LoadedEntity::SuspensionPool {
                 suspension_pool_id: *pool.record.id,
-                common: loading_common(),
             },
         };
 
@@ -225,14 +206,16 @@ pub mod test {
         // two GEM wells are basically equivalent so we can see if we get duplicate
         // specimens
         let loadings = vec![
-            NewOcmChipLoading::Suspension {
-                suspension_id: *s1.record.id,
-                common: loading_common(),
+            OcmLoadedEntity {
+                loaded_entity: LoadedEntity::Suspension {
+                    suspension_id: *s1.record.id,
+                },
                 ocm_barcode_id: OcmBarcodeId::Ob1,
             },
-            NewOcmChipLoading::Suspension {
-                suspension_id: *s2.record.id,
-                common: loading_common(),
+            OcmLoadedEntity {
+                loaded_entity: LoadedEntity::Suspension {
+                    suspension_id: *s2.record.id,
+                },
                 ocm_barcode_id: OcmBarcodeId::Ob2,
             },
         ];
@@ -277,17 +260,17 @@ pub mod test {
             gem_wells: NonemptyBoundedVec::new(vec![
                 NewMixedGemWell {
                     readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                    loading: NewMixedChipLoading::Standard(NewStandardChipLoading::Suspension {
+                    loading: NewMixedChipLoading::Standard(LoadedEntity::Suspension {
                         suspension_id: *s1.record.id,
-                        common: loading_common(),
                     }),
                 },
                 NewMixedGemWell {
                     readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                     loading: NewMixedChipLoading::Ocm(
-                        NonemptyBoundedVec::new(vec![NewOcmChipLoading::Suspension {
-                            suspension_id: *s2.record.id,
-                            common: loading_common(),
+                        NonemptyBoundedVec::new(vec![OcmLoadedEntity {
+                            loaded_entity: LoadedEntity::Suspension {
+                                suspension_id: *s2.record.id,
+                            },
                             ocm_barcode_id: OcmBarcodeId::Ob1,
                         }])
                         .unwrap(),

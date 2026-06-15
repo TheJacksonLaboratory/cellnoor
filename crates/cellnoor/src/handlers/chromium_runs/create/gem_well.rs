@@ -20,7 +20,7 @@ pub(super) async fn insert_standard_gem_well(
     tx: &db::Transaction<'_>,
     NewStandardGemWell {
         readable_id,
-        loading,
+        loaded_entity,
     }: &NewStandardGemWell,
     chromium_run_id: Uuid,
 ) -> Result<(), ErrorInner> {
@@ -30,7 +30,7 @@ pub(super) async fn insert_standard_gem_well(
     };
 
     let gem_well_id = insert_gem_well(tx, &gem_well).await?;
-    insert_standard_chip_loading(tx, loading, gem_well_id).await?;
+    insert_standard_chip_loading(tx, loaded_entity, gem_well_id).await?;
 
     Ok(())
 }

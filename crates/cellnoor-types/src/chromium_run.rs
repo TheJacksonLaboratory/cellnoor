@@ -1,5 +1,4 @@
 use macro_attributes::{base_model, select};
-use positive::PositiveF32;
 pub use query::{
     ChromiumRunField, ChromiumRunPredicate, ChromiumRunPredicateInner, ChromiumRunQuery,
     SimpleChromiumRunQuery,
@@ -14,7 +13,6 @@ use crate::{
     simple_links::SimpleLinks,
     suspension_pool::{SavedTaggedSpecimenRecord, TaggedSpecimen},
     tenx_assay::TenxAssay,
-    units::Microliter,
 };
 
 pub mod creation;
@@ -54,17 +52,7 @@ pub type SavedGemWellRecord = GemWellRecord<Id>;
 
 pub type SavedChromiumRunRecord = ChromiumRunRecord<Id>;
 
-// The detailed view is read from two separate columns of `gem_well_to_specimen`
-// and assembled in Rust, so this type is a plain serialization carrier — it
-// intentionally does not derive `FromSql` (the `chromium_run_to_assay` view
-// was removed).
 pub type ChromiumRunUpdate = NewChromiumRunRecord;
-
-#[base_model]
-pub struct LoadingVolume {
-    pub value: PositiveF32,
-    pub unit: Microliter,
-}
 
 #[base_model]
 pub struct ChromiumRunLinks {

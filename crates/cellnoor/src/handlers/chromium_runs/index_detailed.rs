@@ -79,8 +79,8 @@ mod test {
     use std::{collections::HashSet, hash::RandomState};
 
     use cellnoor_types::chromium_run::creation::{
-        NewChromiumRun,
-        ocm::{NewOcmChipLoading, NewOcmGemWell, OcmBarcodeId},
+        LoadedEntity, NewChromiumRun,
+        ocm::{NewOcmGemWell, OcmBarcodeId, OcmLoadedEntity},
     };
     use nonempty::NonemptyBoundedVec;
     use pretty_assertions::assert_eq;
@@ -91,7 +91,7 @@ mod test {
             chromium_runs::{
                 create::test::{
                     insert_test_mixed_chromium_run, insert_test_ocm_chromium_run,
-                    insert_test_standard_chromium_run, loading_common, new_common,
+                    insert_test_standard_chromium_run, new_common,
                 },
                 show::select_chromium_run_by_id,
             },
@@ -224,7 +224,10 @@ mod test {
             let gem_well = &mut gem_wells.as_mut()[gem_well_idx];
             let loading = gem_well.loading.as_mut();
 
-            let NewOcmChipLoading::Suspension { suspension_id, .. } = &mut loading[loading_idx]
+            let OcmLoadedEntity {
+                loaded_entity: LoadedEntity::Suspension { suspension_id },
+                ..
+            } = &mut loading[loading_idx]
             else {
                 unreachable!()
             };
@@ -266,14 +269,16 @@ mod test {
             gem_wells: NonemptyBoundedVec::new(vec![NewOcmGemWell {
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 loading: NonemptyBoundedVec::new(vec![
-                    NewOcmChipLoading::Suspension {
-                        suspension_id: *s1.record.id,
-                        common: loading_common(),
+                    OcmLoadedEntity {
+                        loaded_entity: LoadedEntity::Suspension {
+                            suspension_id: *s1.record.id,
+                        },
                         ocm_barcode_id: OcmBarcodeId::Ob1,
                     },
-                    NewOcmChipLoading::Suspension {
-                        suspension_id: *s2.record.id,
-                        common: loading_common(),
+                    OcmLoadedEntity {
+                        loaded_entity: LoadedEntity::Suspension {
+                            suspension_id: *s2.record.id,
+                        },
                         ocm_barcode_id: OcmBarcodeId::Ob2,
                     },
                 ])

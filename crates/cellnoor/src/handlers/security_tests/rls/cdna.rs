@@ -1,6 +1,6 @@
 use cellnoor_types::{
     cdna::{CdnaDetailed, CdnaPredicate, CdnaPredicateInner, CdnaQuery, creation::NewCdna},
-    chromium_run::creation::{NewChromiumRun, standard::NewStandardChipLoading},
+    chromium_run::creation::{LoadedEntity, NewChromiumRun},
     operator::UuidOperator,
 };
 use nonempty::NonemptyBoundedVec;
@@ -36,10 +36,9 @@ fn make_standard_chromium_run_inaccessible(run: &mut NewChromiumRun, suspension_
         panic!("expected standard Chromium run");
     };
 
-    let NewStandardChipLoading::Suspension {
+    let LoadedEntity::Suspension {
         suspension_id: loaded_suspension,
-        common: _,
-    } = &mut gem_wells[0].loading
+    } = &mut gem_wells[0].loaded_entity
     else {
         panic!("expected suspension to be loaded into GEM well");
     };

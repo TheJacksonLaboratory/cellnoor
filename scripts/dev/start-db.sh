@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-docker_compose="docker compose --file compose.yaml --file compose.dev.yaml --env .env.compose"
+docker_compose="docker compose --file compose.yaml --file compose.dev.yaml --env-file .env.compose"
 
 function cleanup_docker() {
     $docker_compose rm --force --stop --volumes

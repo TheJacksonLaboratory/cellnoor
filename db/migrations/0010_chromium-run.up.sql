@@ -22,9 +22,6 @@ create table chip_loading (
     -- There are only 4 allowed OCM barcode IDs, but we let the application restrict this so there is only one source
     -- of truth (and so that we don't need a database migration if things change)
     ocm_barcode_id case_insensitive_text,
-    suspension_volume_loaded jsonb not null,
-    buffer_volume_loaded jsonb not null,
-    additional_data jsonb,
 
     unique nulls not distinct (gem_well_id, ocm_barcode_id),
     constraint has_suspension check ((suspension_id is null) != (suspension_pool_id is null))

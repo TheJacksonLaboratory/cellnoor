@@ -99,9 +99,6 @@ create index gem_well_chromium_run_id_idx on gem_well (chromium_run_id);
 create index chip_loading_suspension_id_idx on chip_loading (suspension_id);
 create index chip_loading_suspension_pool_id_idx on chip_loading (suspension_pool_id);
 create index chip_loading_ocm_barcode_id_idx on chip_loading (ocm_barcode_id);
-create index chip_loading_suspension_volume_loaded_idx on chip_loading using gin (suspension_volume_loaded);
-create index chip_loading_buffer_volume_loaded_idx on chip_loading using gin (buffer_volume_loaded);
-create index chip_loading_additional_data_idx on chip_loading using gin (additional_data);
 
 create index cdna_readable_id_trgm_idx on cdna using gin (readable_id gin_trgm_ops);
 create index cdna_library_type_idx on cdna (library_type);

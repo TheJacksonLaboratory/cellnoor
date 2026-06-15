@@ -1,12 +1,9 @@
 use macro_attributes::base_model;
 use nonempty::NonemptyBoundedVec;
-#[cfg(feature = "postgres-types")]
-use postgres_types::Json;
-use serde_json::Value;
+use uuid::Uuid;
 
 use crate::{
     chromium_run::{
-        LoadingVolume,
         creation::{mixed::NewMixedGemWell, ocm::NewOcmGemWell, standard::NewStandardGemWell},
         record::ChromiumRunRecord,
     },
@@ -23,18 +20,10 @@ pub const MAX_GEM_WELLS_PER_OCM_RUN: usize = 2;
 pub const MAX_GEM_WELLS_PER_NON_OCM_RUN: usize = 8;
 
 #[base_model]
-pub struct NewChipLoadingCommonFields {
-    #[cfg(not(feature = "postgres-types"))]
-    pub suspension_volume_loaded: LoadingVolume,
-    #[cfg(feature = "postgres-types")]
-    #[cfg_attr(feature = "schemars", schemars(with = "LoadingVolume"))]
-    pub suspension_volume_loaded: Json<LoadingVolume>,
-    #[cfg(not(feature = "postgres-types"))]
-    pub buffer_volume_loaded: LoadingVolume,
-    #[cfg(feature = "postgres-types")]
-    #[cfg_attr(feature = "schemars", schemars(with = "LoadingVolume"))]
-    pub buffer_volume_loaded: Json<LoadingVolume>,
-    pub additional_data: Option<Value>,
+#[cfg_attr(feature = "serde", serde(untagged, deny_unknown_fields))]
+pub enum LoadedEntity {
+    Suspension { suspension_id: Uuid },
+    SuspensionPool { suspension_pool_id: Uuid },
 }
 
 #[base_model]

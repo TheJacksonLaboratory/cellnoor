@@ -1,8 +1,7 @@
 use macro_attributes::{base_model, unit_enum};
 use nonempty::{NonemptyBoundedVec, NonemptyString};
-use uuid::Uuid;
 
-use crate::chromium_run::creation::NewChipLoadingCommonFields;
+use crate::chromium_run::creation::LoadedEntity;
 
 pub const MAX_SUSPENSIONS_PER_OCM_GEM_WELL: usize = 4;
 
@@ -15,24 +14,14 @@ pub enum OcmBarcodeId {
 }
 
 #[base_model]
-#[cfg_attr(feature = "serde", serde(untagged, rename_all = "snake_case"))]
-pub enum NewOcmChipLoading {
-    Suspension {
-        suspension_id: Uuid,
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: NewChipLoadingCommonFields,
-        ocm_barcode_id: OcmBarcodeId,
-    },
-    SuspensionPool {
-        suspension_pool_id: Uuid,
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: NewChipLoadingCommonFields,
-        ocm_barcode_id: OcmBarcodeId,
-    },
+pub struct OcmLoadedEntity {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub loaded_entity: LoadedEntity,
+    pub ocm_barcode_id: OcmBarcodeId,
 }
 
 #[base_model]
 pub struct NewOcmGemWell {
     pub readable_id: NonemptyString,
-    pub loading: NonemptyBoundedVec<NewOcmChipLoading, MAX_SUSPENSIONS_PER_OCM_GEM_WELL>,
+    pub loading: NonemptyBoundedVec<OcmLoadedEntity, MAX_SUSPENSIONS_PER_OCM_GEM_WELL>,
 }
