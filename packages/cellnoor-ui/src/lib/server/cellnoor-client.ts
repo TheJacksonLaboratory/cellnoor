@@ -1,5 +1,5 @@
 import createClient from "openapi-fetch";
-import type {  Client,  ClientOptions,  Middleware } from "openapi-fetch"
+import type { Client, ClientOptions, Middleware } from "openapi-fetch";
 import type { paths } from "$lib/cellnoor-types";
 import { getRequestEvent } from "$app/server";
 import { API_SOCKET, API_URL } from "$app/env/private";
@@ -35,12 +35,12 @@ const middleware: Middleware = {
 
     // We have to manually copy cookies since we're not using SvelteKit's fetch (because only Bun's works with Unix domain sockets)
     const securePrefix = "__Secure-";
-    const authCookieName = "cellnoor-auth.session_data"
+    const authCookieName = "cellnoor-auth.session_data";
     for (const cookieName of [authCookieName, `${securePrefix}${authCookieName}`]) {
       const cookieValue = cookies.get(cookieName);
       if (cookieValue) {
         request.headers.set("Cookie", `${cookieName}=${cookieValue}`);
       }
     }
-  }
+  },
 };

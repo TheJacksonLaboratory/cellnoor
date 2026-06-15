@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { LibraryType } from "cellnoor-client";
+  import type { LibraryType } from "../lib/cellnoor-types";
 
   const {
     libraryTypes,

@@ -1,4 +1,3 @@
-<!-- I cannot believe how shitty this is -->
 <script lang="ts">
   import type { ChromiumDatasetDetailed } from "$lib/cellnoor-types";
   import { DATE_FORMATTER } from "$lib/date";

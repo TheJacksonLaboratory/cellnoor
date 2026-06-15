@@ -19,9 +19,8 @@ export async function readSecrets() {
   }
 
   secrets = {
-    authSecret: AUTH_SECRET || await readFromSecretFile("auth_secret"),
+    authSecret: AUTH_SECRET || (await readFromSecretFile("auth_secret")),
   };
-
 
   return secrets;
 }
