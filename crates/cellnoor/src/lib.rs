@@ -1,3 +1,4 @@
+// CI comment
 #![allow(uncommon_codepoints)]
 
 #[cfg(feature = "ssr")]

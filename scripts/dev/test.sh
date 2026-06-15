@@ -12,4 +12,5 @@ trap cleanup_docker EXIT
 
 $docker_compose up db migrate --detach
 
+sleep 5
 CELLNOOR_TEST_DB_URL="postgres://postgres:p@localhost:5432/postgres" cargo test --workspace --manifest-path crates/Cargo.toml --all-features "$@"
