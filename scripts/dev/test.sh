@@ -6,7 +6,7 @@ docker_compose="docker compose --file compose.yaml --file compose.dev.yaml"
 
 function cleanup_docker() {
     $docker_compose rm --force --stop --volumes
-    $docker_compose volumes --format json | jq '.[].Name' --slurp | xargs docker volume rm
+    $docker_compose volumes --format json | jq '.[].Name' --slurp | xargs --no-run-if-empty docker volume rm
 }
 trap cleanup_docker EXIT
 

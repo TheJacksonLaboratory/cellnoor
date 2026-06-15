@@ -20,4 +20,4 @@ fi
 docker_compose="docker compose --env-file .env.compose --file compose.yaml --file compose.dev.yaml"
 
 $docker_compose rm --stop --force --volumes
-$docker_compose volumes --format json | jq '.[].Name' --slurp | xargs docker volume rm
+$docker_compose volumes --format json | jq '.[].Name' --slurp | xargs --no-run-if-empty docker volume rm

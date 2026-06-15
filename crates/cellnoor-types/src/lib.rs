@@ -1,3 +1,4 @@
+//
 #![allow(uncommon_codepoints)]
 #![allow(clippy::derivable_impls)]
 pub use simple_links::SimpleLinks;
