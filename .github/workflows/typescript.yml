@@ -2,9 +2,7 @@ name: Check TypeScript Code
 on:
   push:
     paths:
-      - cellnoor-ui/**
-      - pkgs/*
-      - "**/package.json"
+      - packages/**
 
 jobs:
   lint-format-and-test:
