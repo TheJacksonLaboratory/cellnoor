@@ -51,12 +51,15 @@ pub async fn validate_libraries_have_same_gem_well(
     tx: &db::Transaction<'_>,
     library_ids: &[Uuid],
 ) -> Result<(), ErrorInner> {
-    static SELECT_N_GEM_WELLS: SqlBuilder =
-        SqlBuilder::new(include_str!("create/select_n_gem_wells.sql"));
+    static SELECT_N_GEM_WELLS_AND_LIBRARY_TYPES: SqlBuilder =
+        SqlBuilder::new(include_str!("create/select_n_gem_wells_and_lib_types.sql"));
 
-    let sql = SELECT_N_GEM_WELLS.finish_with_params(vec![&library_ids]);
+    let sql = SELECT_N_GEM_WELLS_AND_LIBRARY_TYPES.finish_with_params(vec![&library_ids]);
 
-    let n_gem_wells: i64 = tx.query_one_into(&sql).await?;
+    let (n_gem_wells, n_library_types): (i64, i64) = tx
+        .query_one(&sql)
+        .await
+        .map(|row| (row.get("n_gem_wells"), row.get("n_library_types")))?;
 
     if n_gem_wells != 1 {
         return Err(ErrorInner::DataConstraint {
@@ -64,6 +67,17 @@ pub async fn validate_libraries_have_same_gem_well(
             field: Some("library_ids".to_owned()),
             message: "all libraries in a Chromium dataset must come from the same GEM well"
                 .to_owned(),
+            detail: None,
+        });
+    }
+
+    if library_ids.len() as i64 != n_library_types {
+        return Err(ErrorInner::DataConstraint {
+            resource: Some("chromium_dataset".to_owned()),
+            field: Some("library_ids".to_owned()),
+            message:
+                "cannot have multiple instances of the same library type in one Chromium dataset"
+                    .to_owned(),
             detail: None,
         });
     }

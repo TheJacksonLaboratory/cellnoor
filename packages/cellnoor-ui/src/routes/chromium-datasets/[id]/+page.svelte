@@ -55,7 +55,7 @@
       {project!.name} / <span class="font-semibold">{dataset!.name}</span>
     </h1>
     <p>
-      {dataset}
+      {dataset!.assay.name}
       <span class="font-extralight">({dataset!.assay.chemistry_version})</span>
     </p>
     <p class="text-sm">
