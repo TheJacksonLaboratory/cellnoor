@@ -23,12 +23,12 @@ pub async fn update_person(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(mut person): Json<PersonUpdate>,
+    Json(person): Json<PersonUpdate>,
 ) -> Result<Json<Person>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = update_person_by_id(&tx, id, &mut person).await.map(Json)?;
+    let response = update_person_by_id(&tx, id, &person).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -56,7 +56,7 @@ async fn update_person_by_id(
     let permissions_to_revoke = permissions_to_revoke.as_ref().unwrap_or(&no_revocations);
 
     let (_, person) = tokio::try_join!(
-        update_permissions(tx, id, &permissions_to_grant, &permissions_to_revoke),
+        update_permissions(tx, id, permissions_to_grant, permissions_to_revoke),
         select_person_by_id(tx, id)
     )?;
 

@@ -31,7 +31,7 @@ pub async fn create_cdna(
 }
 
 async fn insert_cdna(tx: &db::Transaction<'_>, new: &NewCdna) -> Result<CdnaDetailed, ErrorInner> {
-    let generic = NewCdnaGeneric::from_new_cdna(&new);
+    let generic = NewCdnaGeneric::from_new_cdna(new);
     let id = db::insert_into(tx, "cdna", &generic).await?;
 
     let measurement_insertions = futures::future::try_join_all(

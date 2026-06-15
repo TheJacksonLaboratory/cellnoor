@@ -47,11 +47,11 @@ mod index_set_name {
                     resource: None,
                     message: "malformed index set name".to_owned(),
                     field: None,
-                    detail: Some(format!("must match {}", INDEX_SET_NAME_REGEX.to_string())),
+                    detail: Some(format!("must match {}", INDEX_SET_NAME_REGEX.as_str())),
                 });
             }
 
-            return Ok(Self(index_set_name));
+            Ok(Self(index_set_name))
         }
 
         pub fn kit_name(&self) -> IndexKitName<'a> {
@@ -86,7 +86,7 @@ mod sequence {
                     resource: None,
                     message: "malformed DNA sequence".to_owned(),
                     field: None,
-                    detail: Some(format!("must match {}", DNA_REGEX.to_string())),
+                    detail: Some(format!("must match {}", DNA_REGEX.as_str())),
                 });
             }
 

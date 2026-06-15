@@ -29,6 +29,7 @@ pub struct ApiKeyUpdate {
 pub struct PersonId(Uuid);
 
 impl PersonId {
+    #[must_use]
     pub fn new(id: Uuid) -> Self {
         Self(id)
     }
@@ -47,6 +48,7 @@ impl Display for PersonId {
 pub struct ServiceId(Uuid);
 
 impl ServiceId {
+    #[must_use]
     pub fn new(id: Uuid) -> Self {
         Self(id)
     }

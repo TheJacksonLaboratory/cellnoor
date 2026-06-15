@@ -1,3 +1,5 @@
+#![allow(clippy::doc_markdown)]
+
 #[cfg(feature = "postgres-types")]
 use postgres_types::ToSql;
 use uuid::Uuid;
@@ -114,6 +116,7 @@ pub enum StringOperator {
 
 #[cfg(feature = "postgres-types")]
 impl StringOperator {
+    #[must_use]
     pub fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Like(s) => ("like", s),
@@ -191,6 +194,7 @@ pub enum JsonOperator {
 
 #[cfg(feature = "postgres-types")]
 impl JsonOperator {
+    #[must_use]
     pub fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Contains(v) => ("@>", v),

@@ -12,7 +12,7 @@ mod routes;
 pub async fn serve(settings: &Settings) -> anyhow::Result<()> {
     let app_addr = settings.listen_on().to_owned();
 
-    let app_state = AppState::initialize(&settings).context("failed to initialize app state")?;
+    let app_state = AppState::initialize(settings).context("failed to initialize app state")?;
 
     let api = api(app_state);
 

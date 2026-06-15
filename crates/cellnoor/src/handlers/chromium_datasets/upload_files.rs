@@ -150,7 +150,7 @@ fn write_fileset_to_disk(
 fn write_file_to_dataset_dir(path: &Utf8Path, raw_file: &[u8]) -> Result<(), ErrorInner> {
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
 
-    std::fs::write(&path, &raw_file).map_err(|e| ErrorInner::Other {
+    std::fs::write(path, raw_file).map_err(|e| ErrorInner::Other {
         message: format!("failed to write file: {e}"),
         sql_state: None,
     })?;
@@ -170,8 +170,8 @@ fn compress_file(raw_file: &[u8]) -> Result<Vec<u8>, ErrorInner> {
     })
 }
 
-fn symlink_to_project_dirs<'a>(
-    source: &'a Utf8Path,
+fn symlink_to_project_dirs(
+    source: &Utf8Path,
     destinations: impl IntoIterator<Item = Utf8PathBuf>,
 ) -> Result<(), ErrorInner> {
     for dest in destinations {

@@ -75,7 +75,7 @@ async fn insert_account(
     user_id: Uuid,
     account: &Account,
 ) -> Result<(), ErrorInner> {
-    let res = match account {
+    match account {
         Account::Microsoft {
             microsoft_entra_oid,
         } => {
@@ -89,7 +89,7 @@ async fn insert_account(
         Account::None { email: _ } => (),
     };
 
-    Ok(res)
+    Ok(())
 }
 
 async fn create_db_user(

@@ -44,6 +44,7 @@ impl PermissionsToGrant {
         self.0.iter()
     }
 
+    #[must_use]
     pub fn contains(&self, x: &ResourcePermission) -> bool {
         self.0.contains(x)
     }
@@ -64,6 +65,7 @@ impl PermissionsToRevoke {
         self.0.iter()
     }
 
+    #[must_use]
     pub fn contains(&self, x: &ResourcePermission) -> bool {
         self.0.contains(x)
     }

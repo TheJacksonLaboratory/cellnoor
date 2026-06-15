@@ -41,7 +41,7 @@ impl ProdState {
     }
 
     pub fn jwt_decoding_info(&self) -> &(jsonwebtoken::DecodingKey, jsonwebtoken::Validation) {
-        &self.jwt_decoding_info
+        self.jwt_decoding_info
     }
 }
 

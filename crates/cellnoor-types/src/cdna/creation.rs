@@ -55,7 +55,9 @@ pub enum NewCdna {
 }
 
 impl NewCdna {
+    #[must_use]
     pub fn gem_well_id(&self) -> Option<Uuid> {
+        #[allow(clippy::enum_glob_use)]
         use NewCdna::*;
 
         match self {

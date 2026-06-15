@@ -43,7 +43,7 @@ impl FilterableSqlBuilder {
     // We can use this function at compile-time to make sure every SQL statement has
     // "/* {where} */" in it!
     pub const fn new(base_sql: &'static str) -> Self {
-        static WHERE_CLAUSE_PLACEHOLDER: &'static [u8] = b"/* {where} */";
+        static WHERE_CLAUSE_PLACEHOLDER: &[u8] = b"/* {where} */";
 
         let mut i = 0;
         let mut placeholder_was_found = false;

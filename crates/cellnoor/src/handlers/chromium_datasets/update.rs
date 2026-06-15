@@ -69,7 +69,7 @@ fn rename_dataset_directory(
     old_dataset_name: &str,
     new_dataset_name: &str,
 ) -> Result<(), ErrorInner> {
-    let old_dataset_dir = static_files_dir.join(&format!("**/{old_dataset_name}"));
+    let old_dataset_dir = static_files_dir.join(format!("**/{old_dataset_name}"));
 
     // Dataset names are unique, so we know there's only one
     let paths = glob::glob(old_dataset_dir.as_str())

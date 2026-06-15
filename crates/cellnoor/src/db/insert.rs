@@ -55,7 +55,7 @@ where
             insert_clause.push_str(", ");
         }
 
-        insert_clause.push_str(field.as_ref().split('.').last().unwrap());
+        insert_clause.push_str(field.as_ref().split('.').next_back().unwrap());
 
         params.push(*value);
     }

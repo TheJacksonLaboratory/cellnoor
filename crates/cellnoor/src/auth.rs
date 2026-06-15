@@ -101,10 +101,9 @@ impl FromRequestParts<AppState> for AuthUser {
             .map(Cookie::value)
         {
             let (secret, validation) = state.jwt_decoding_info();
-            match authenticate_with_jwt(encoded_jwt.as_bytes(), secret, validation) {
-                Ok(user) => return Ok(user),
-                // Do nothing with the error for now
-                Err(_) => (),
+
+            if let Ok(user) = authenticate_with_jwt(encoded_jwt.as_bytes(), secret, validation) {
+                return Ok(user);
             }
         }
 
