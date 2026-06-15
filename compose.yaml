@@ -66,6 +66,8 @@ services:
     build:
       context: packages/cellnoor-auth
       target: final
+      tags:
+        - ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
     environment:
       DB_NAME: &db_name postgres
       DB_HOST: &db_host /run/postgresql
@@ -91,6 +93,8 @@ services:
         UID: &uid "10001"
         SOCKET: &api_socket /run/cellnoor/cellnoor.sock
         STATIC_FILES_DIR: &static_files_dir /static-files
+      tags:
+        - ghcr.io/thejacksonlaboratory/cellnoor:latest
     environment:
       DB__HOST: *db_host
       # This is hardcoded for simplicity, but it may behoove us to set an explicit dbname in the db service definition
