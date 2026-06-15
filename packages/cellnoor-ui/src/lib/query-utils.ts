@@ -4,7 +4,6 @@ export function isNonempty(obj: Record<string, Record<string, Record<string, unk
     return false;
   }
 
-
   const operator = Object.values(field)[0];
   if (!operator) {
     return false;

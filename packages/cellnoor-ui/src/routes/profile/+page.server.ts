@@ -1,6 +1,5 @@
 import { getApiClient } from "$lib/server/cellnoor-client.js";
 
-
 async function createNewApiKey(description: string | null) {
   const client = getApiClient();
 
@@ -10,7 +9,7 @@ async function createNewApiKey(description: string | null) {
     return { error: "something went wrong" };
   }
 
-  return { apiKey: data.secret }
+  return { apiKey: data.secret };
 }
 
 function validateFormData(data: FormData) {
@@ -22,12 +21,12 @@ function validateFormData(data: FormData) {
 }
 
 export const actions = {
-  createApiToken: async ({request}) => {
+  createApiToken: async ({ request }) => {
     const { description } = validateFormData(await request.formData());
 
     return await createNewApiKey(description);
   },
-  deleteApiToken: async ({request,}) => {
+  deleteApiToken: async ({ request }) => {
     const data = await request.formData();
     const apiKeyId = data.get("apiKeyId")?.toString();
 
@@ -44,5 +43,5 @@ export async function load() {
   const client = getApiClient();
   const { data, error } = await client.GET("/api-keys");
 
-  return data ? {apiKeys: data} : error
+  return data ? { apiKeys: data } : error;
 }

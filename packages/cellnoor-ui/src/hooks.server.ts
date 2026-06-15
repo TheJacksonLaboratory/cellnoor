@@ -4,9 +4,7 @@ import { building } from "$app/env";
 import { redirect } from "@sveltejs/kit";
 import { PUBLIC_AUTH_URL } from "$app/env/public";
 
-const NON_AUTH_ROUTES = [
-  "/health",
-];
+const NON_AUTH_ROUTES = ["/health"];
 
 function requiresAuth(path: string) {
   return !NON_AUTH_ROUTES.some((s) => path.includes(s));
