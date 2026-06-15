@@ -2,7 +2,8 @@
 alter user app with bypassrls;
 grant select on api_key to app;
 
--- user_creator needs to create roles and have all permissions so that it can grant permissions. It also needs to bypass RLS
+-- user_creator needs to create roles and have all permissions so that it can grant permissions. It also needs to bypass
+-- RLS
 grant all on all tables in schema public to user_creator with grant option;
 alter user user_creator createrole bypassrls;
 grant create on schema public to user_creator;

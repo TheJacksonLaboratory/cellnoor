@@ -11,7 +11,8 @@ create table library (
     constraint has_index check ((single_index_set_name is null) != (dual_index_set_name is null))
 );
 
-create trigger library_prepared_after_cdna before insert or update on library for each row execute function check_timestamp_ordering(
+create trigger library_prepared_after_cdna before insert or update on library for each row execute function
+check_timestamp_ordering(
     'prepared_at', 'cdna_id', 'cdna', 'prepared_at'
 );
 
@@ -25,7 +26,8 @@ create table library_measurement (
     unique (library_id, measured_by, measured_at, data)
 );
 
-create trigger measurement_made_after_library_prepared before insert or update on library_measurement for each row execute function check_timestamp_ordering(
+create trigger measurement_made_after_library_prepared before insert or update on library_measurement for each row
+execute function check_timestamp_ordering(
     'measured_at', 'library_id', 'library', 'prepared_at'
 );
 

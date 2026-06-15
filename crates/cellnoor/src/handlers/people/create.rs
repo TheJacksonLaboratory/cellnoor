@@ -50,8 +50,9 @@ async fn insert_person(tx: &db::Transaction<'_>, new: &NewPerson) -> Result<Pers
 
     let id = insert_person_record(tx, new).await?;
 
-    // These 3 operations can happen concurrently because they don't depend on one another (inshallah)
-    let (person, _, _) = tokio::try_join!(
+    // These 3 operations can happen concurrently because they don't depend on one
+    // another (inshallah)
+    let (person, ..) = tokio::try_join!(
         select_person_by_id(tx, id),
         insert_account(tx, id, account),
         create_db_user(tx, id, permissions_to_grant)

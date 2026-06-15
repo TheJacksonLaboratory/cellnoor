@@ -13,7 +13,8 @@ use crate::{
     state::AppState,
 };
 
-// We don't define this in cellnoor-types because it's not really a public endpoint
+// We don't define this in cellnoor-types because it's not really a public
+// endpoint
 #[derive(Clone, Debug, Serialize, JsonSchema, FromSql)]
 #[postgres(name = "person_account")]
 pub struct PersonAccount {

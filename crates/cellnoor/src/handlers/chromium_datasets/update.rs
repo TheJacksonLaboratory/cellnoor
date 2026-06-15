@@ -99,7 +99,8 @@ async fn fetch_dataset_name(
 
     dataset_id: Uuid,
 ) -> Result<NonemptyString, ErrorInner> {
-    // In theory, we could just write a query that gets only the name, but it might be wise to reuse code we have already written
+    // In theory, we could just write a query that gets only the name, but it might
+    // be wise to reuse code we have already written
     let ds = select_chromium_dataset_by_id(tx, "", dataset_id).await?;
 
     Ok(ds.record.name)

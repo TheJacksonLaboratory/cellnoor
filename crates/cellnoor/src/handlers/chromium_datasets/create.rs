@@ -75,9 +75,9 @@ pub async fn validate_libraries_have_same_gem_well(
         return Err(ErrorInner::DataConstraint {
             resource: Some("chromium_dataset".to_owned()),
             field: Some("library_ids".to_owned()),
-            message:
-                "cannot have multiple instances of the same library type in one Chromium dataset"
-                    .to_owned(),
+            message: "cannot have multiple instances of the same library type in one Chromium \
+                      dataset"
+                .to_owned(),
             detail: None,
         });
     }

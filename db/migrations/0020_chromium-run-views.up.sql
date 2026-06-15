@@ -42,7 +42,8 @@ create function get_chromium_run_at_from_gem_well_id(
     gem_well_id uuid
 ) returns timestamptz language plpgsql volatile strict as $$
     begin
-        return (select chromium_run.run_at from gem_well join chromium_run on gem_well.chromium_run_id = chromium_run.id where gem_well.id = gem_well_id);
+        return (select chromium_run.run_at from gem_well
+            join chromium_run on gem_well.chromium_run_id = chromium_run.id where gem_well.id = gem_well_id);
     end;
 $$;
 
@@ -55,11 +56,14 @@ create function check_chromium_run_after_loaded_items() returns trigger language
         select pooled_at from suspension_pool where id = new.suspension_pool_id into suspension_pool_pooled_at;
 
         if (greatest(suspension_created_at, suspension_pool_pooled_at) > chromium_run_at) then
-            raise check_violation using message = 'Chromium run cannot occur before its constituent suspensions and/or suspension pools', table = tg_table_name;
+            raise check_violation using
+                message = 'Chromium run cannot occur before its constituent suspensions and/or suspension pools',
+                table = tg_table_name;
         end if;
 
         return new;
     end;
 $$;
 
-create trigger chromium_run_after_loaded_items before insert or update on chip_loading for each row execute function check_chromium_run_after_loaded_items();
+create trigger chromium_run_after_loaded_items before insert or update on chip_loading for each row execute function
+check_chromium_run_after_loaded_items();

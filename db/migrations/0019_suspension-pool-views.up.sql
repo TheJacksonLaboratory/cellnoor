@@ -19,11 +19,13 @@ create view suspension_pool_to_specimen as (
 
 create function get_suspension_created_at(suspension_id uuid) returns timestamptz language plpgsql volatile strict as $$
     begin
-        return (select greatest((suspension).created_at, (specimen).received_at) from suspension_to_specimen where (suspension).id = suspension_id);
+        return (select greatest((suspension).created_at, (specimen).received_at) from suspension_to_specimen
+            where (suspension).id = suspension_id);
     end;
 $$;
 
-create function check_suspensions_pooled_after_suspension_creation() returns trigger language plpgsql volatile strict as $$
+create function check_suspensions_pooled_after_suspension_creation() returns trigger language plpgsql volatile strict as
+$$
     declare
         suspension_created_at timestamptz = get_suspension_created_at(new.suspension_id);
         suspension_pool_pooled_at timestamptz;
@@ -31,11 +33,14 @@ create function check_suspensions_pooled_after_suspension_creation() returns tri
         select pooled_at from suspension_pool where id = new.pool_id into suspension_pool_pooled_at;
 
         if (suspension_created_at > suspension_pool_pooled_at) then
-            raise check_violation using message = 'suspension pool cannot be created before its constituent suspensions', table = tg_table_name;
+            raise check_violation using
+                message = 'suspension pool cannot be created before its constituent suspensions',
+                table = tg_table_name;
         end if;
 
         return new;
     end;
 $$;
 
-create trigger suspensions_pooled_after_creation before insert or update on suspension_pooling for each row execute function check_suspensions_pooled_after_suspension_creation();
+create trigger suspensions_pooled_after_creation before insert or update on suspension_pooling for each row execute
+function check_suspensions_pooled_after_suspension_creation();

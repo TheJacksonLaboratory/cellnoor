@@ -16,7 +16,8 @@ create table suspension_pool_measurement (
     unique (pool_id, measured_by, measured_at, data)
 );
 
-create trigger measurement_made_after_suspension_pool_created before insert or update on suspension_pool_measurement for each row execute function check_timestamp_ordering(
+create trigger measurement_made_after_suspension_pool_created before insert or update on suspension_pool_measurement
+for each row execute function check_timestamp_ordering(
     'measured_at', 'pool_id', 'suspension_pool', 'pooled_at'
 );
 
