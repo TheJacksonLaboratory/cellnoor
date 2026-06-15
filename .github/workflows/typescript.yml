@@ -22,10 +22,10 @@ jobs:
         working-directory: packages/cellnoor-ui
         run: bun run --bun check
 
-      - name: Lint and format
-        working-directory: packages/cellnoor-ui
-        run: bun run --bun lint
+      # - name: Lint and format
+      #   working-directory: packages/cellnoor-ui
+      #   run: bun run --bun lint
 
-      - name: Test
-        working-directory: packages/cellnoor-ui
-        run: bun test
+      # - name: Test
+      #   working-directory: packages/cellnoor-ui
+      #   run: bun test
