@@ -11,7 +11,8 @@ create table suspension (
     constraint only_nuclei_suspension_was_lysed check (content = 'nuclei' or lysis_duration_minutes is null)
 );
 
-create trigger suspension_created_after_specimen_received before insert or update on suspension for each row execute function check_timestamp_ordering(
+create trigger suspension_created_after_specimen_received before insert or update on suspension for each row execute
+function check_timestamp_ordering(
     'created_at', 'specimen_id', 'specimen', 'received_at'
 );
 
@@ -25,7 +26,8 @@ create table suspension_measurement (
     unique (suspension_id, measured_by, measured_at, data)
 );
 
-create trigger measurement_made_after_suspension_created before insert or update on suspension_measurement for each row execute function check_timestamp_ordering(
+create trigger measurement_made_after_suspension_created before insert or update on suspension_measurement
+for each row execute function check_timestamp_ordering(
     'measured_at', 'suspension_id', 'suspension', 'created_at'
 );
 

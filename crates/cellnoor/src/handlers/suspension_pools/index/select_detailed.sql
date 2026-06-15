@@ -4,9 +4,9 @@ select
         specimen, multiplexing_tag, null
     )::tagged_specimen) as specimens,
     array(
-        select m from suspension_pool_measurement as m
+        select mes from suspension_pool_measurement as mes
         where
-            m.pool_id
+            mes.pool_id
             = (suspension_pool).id
     ) as measurements,
     array(

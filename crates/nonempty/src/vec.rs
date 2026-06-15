@@ -74,7 +74,7 @@ impl<'a, T, const N: usize> IntoIterator for &'a NonemptyBoundedVec<T, N> {
     type Item = &'a T;
 
     fn into_iter(self) -> Self::IntoIter {
-        (&self.0).into_iter()
+        self.0.iter()
     }
 }
 

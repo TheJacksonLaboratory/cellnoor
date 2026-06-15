@@ -47,7 +47,8 @@ create function check_timestamp_ordering() returns trigger language plpgsql vola
     end;
 $$;
 
-create trigger check_specimen_received_after_project_started before insert or update on specimen for each row execute function check_timestamp_ordering(
+create trigger check_specimen_received_after_project_started before insert or update on specimen for each row execute
+function check_timestamp_ordering(
     'received_at', 'project_id', 'project', 'started_at'
 );
 
@@ -70,6 +71,7 @@ create table specimen_measurement (
     unique (specimen_id, measured_by, measured_at, data)
 );
 
-create trigger specimen_before_measurement before insert or update on specimen_measurement for each row execute function check_timestamp_ordering(
+create trigger specimen_before_measurement before insert or update on specimen_measurement for each row execute
+function check_timestamp_ordering(
     'measured_at', 'specimen_id', 'specimen', 'received_at'
 );

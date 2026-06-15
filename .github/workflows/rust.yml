@@ -43,6 +43,7 @@ jobs:
         run: rustup component add --toolchain nightly-2026-06-13 rustfmt # This is updated weekly-ish
 
       - name: Format
+        working-directory: crates
         run: cargo +nightly-2026-06-13 fmt -- --check
 
   test:
@@ -59,7 +60,7 @@ jobs:
 
       - name: Test
         env:
-          CELLLNOOR_ROOT_DB_PASSWORD: p
+          CELLNOOR_ROOT_DB_PASSWORD: p
           CELLNOOR_APP_DB_PASSWORD: p
           CELLNOOR_AUTH_DB_PASSWORD: p
           CELLNOOR_AUTH_SECRET: ""

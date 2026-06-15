@@ -4,8 +4,8 @@ select
         specimen, multiplexing_tag, ocm_barcode_id
     )::tagged_specimen) as specimens,
     array(
-        select m from cdna_measurement as m
-        where m.cdna_id = (cdna).id
+        select mes from cdna_measurement as mes
+        where mes.cdna_id = (cdna).id
     ) as measurements,
     array(
         select prep.prepared_by from cdna_preparer as prep

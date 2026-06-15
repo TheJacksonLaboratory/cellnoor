@@ -18,6 +18,9 @@ jobs:
           cache-all-crates: true
           cache-workspace-crates: true
 
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+
       - name: Regenerate OpenAPI document and TypeScript definitions
         run: ./scripts/dev/openapi.sh
 
