@@ -139,10 +139,10 @@ fn permission_as_tableset(permission: &ResourcePermission) -> &'static str {
              multiplexing_tag"
         }
         ResourcePermission::ChromiumExperimentalData(_) => {
-            "suspension, suspension_measurement, suspension_preparer, suspension_pool, \
-             suspension_pool_measurement, suspension_pool_preparer, chromium_run, gem_well, \
-             chip_loading, cdna, cdna_measurement, cdna_preparer, library, library_measurement, \
-             library_preparer"
+            "suspension, suspension_to_specimen, suspension_measurement, suspension_preparer, \
+             suspension_pool, suspension_pooling, suspension_pool_measurement, \
+             suspension_pool_preparer, chromium_run, gem_well, chip_loading, cdna, \
+             cdna_measurement, cdna_preparer, library, library_measurement, library_preparer"
         }
         ResourcePermission::ChromiumDataset(_) => {
             "chromium_dataset, chromium_dataset_raw_file, chromium_dataset_parsed_file, \
