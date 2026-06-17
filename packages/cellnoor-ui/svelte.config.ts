@@ -15,12 +15,18 @@ const config: Config = {
     csp: {
       directives: {
         "base-uri": ["self"],
-        "default-src": ["self"],
-        // We hardcode everything here because this is a deprecated trash app, but in el futuro it will use a build-time variable
+        "default-src": [
+          "self",
+          "*.cellnoor.jax.org:3000",
+          "*.cellnoor.jax.org:3001",
+          "*.cellnoor.jax.org:3002",
+          "*.cellnoor.localhost",
+        ],
         "frame-src": [
           "self",
-          "*.cellnoor.jax.org",
-          "cellnoor.jax.org:8001",
+          "*.cellnoor.jax.org:3000",
+          "*.cellnoor.jax.org:3001",
+          "*.cellnoor.jax.org:3002",
           "*.cellnoor.localhost",
         ],
         "img-src": ["self", "data:"],
