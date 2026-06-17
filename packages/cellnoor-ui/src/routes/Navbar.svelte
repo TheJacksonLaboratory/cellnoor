@@ -5,7 +5,7 @@
   import { createAuthClient } from "better-auth/svelte";
   import { PUBLIC_AUTH_URL } from "$app/env/public";
 
-  const authClient = createAuthClient();
+  const authClient = createAuthClient({ baseURL: PUBLIC_AUTH_URL });
 
   const { userName }: { userName: string } = $props();
   const links = [[resolve("/chromium-datasets"), "Chromium Datasets"]];
