@@ -55,7 +55,14 @@ async fn redirect_unauthenticated_user(
     next: Next,
 ) -> Result<Response, Redirect> {
     if user.is_err() {
-        let redirect_to = format!("{}?redirect_to={}", state.public_auth_url(), request.uri());
+        // Since this route is meant for file authentication, we can confidently just
+        // redirect to the file server after sign-in
+        let redirect_to = format!(
+            "{}?redirect_to={}{}",
+            state.public_auth_url(),
+            state.public_files_url(),
+            request.uri().path()
+        );
 
         tracing::debug!("redirecting user to: {redirect_to}");
         return Err(Redirect::to(&redirect_to));
