@@ -94,7 +94,7 @@ impl AsFieldValuePairs<ServiceField, 3> for ServiceSimpleFields {
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
-        person::PermissionsToGrant,
+        person::{Action, PermissionsToGrant, ResourcePermission},
         service::{NewService, Service, ServiceSimpleFields},
     };
     use uuid::Uuid;
@@ -135,5 +135,18 @@ pub mod test {
         let tx = client.begin().await.unwrap();
 
         insert_test_service(&tx, |_| ()).await.unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn insert_with_permissions() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        insert_test_service(&tx, |s| {
+            s.permissions_to_grant =
+                vec![ResourcePermission::Institution(vec![Action::Create])].into()
+        })
+        .await
+        .unwrap();
     }
 }

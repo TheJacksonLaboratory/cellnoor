@@ -1,10 +1,10 @@
 set role user_creator;
 
 create or replace function _user_has_permission_set_on_tableset(
-    current_user_id uuid, permission permission_set
+    current_user_id uuid, perm permission_set
 ) returns boolean language plpgsql volatile strict security definer as $$
     declare
-        has_permissions boolean = false;
+        has_permissions boolean = true;
         table_ text;
         action_ text;
     begin
@@ -12,7 +12,7 @@ create or replace function _user_has_permission_set_on_tableset(
         loop
             foreach action_ in array string_to_array(perm.actions, ',')
             loop
-                has_permissions = (has_permissions and has_table_privilege(current_user_id, table_, action_));
+                has_permissions = (has_permissions and has_table_privilege(current_user_id::text, table_, action_));
             end loop;
         end loop;
 
