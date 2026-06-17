@@ -17,9 +17,10 @@ const config: Config = {
         "base-uri": ["self"],
         "default-src": [
           "self",
-          "*.cellnoor.jax.org:3000",
-          "*.cellnoor.jax.org:3001",
-          "*.cellnoor.jax.org:3002",
+          "*.cellnoor.jax.org",
+          "cellnoor.jax.org:3000",
+          "cellnoor.jax.org:3001",
+          "cellnoor.jax.org:3002",
           "*.cellnoor.localhost",
         ],
         "frame-src": [

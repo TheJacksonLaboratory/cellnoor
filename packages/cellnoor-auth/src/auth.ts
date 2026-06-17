@@ -26,7 +26,7 @@ async function deleteUnnecessaryAccountFields(
 async function provisionDbUser({ id }: { id: string }) {
   const dbClient = await getDbClient();
   await dbClient.query(
-    "select create_app_user_if_not_exists($1::uuid)",
+    "select create_person_user_from_login($1::uuid)",
     [id],
   );
 }
@@ -35,11 +35,27 @@ function getDomain() {
   return new URL(publicAuthUrl).hostname.split(".").toSpliced(0, 1).join(".");
 }
 
+export const trustedOrigins = [
+  "https://cellnoor.jax.org",
+
+  "https://cellnoor.jax.org:3000",
+  "https://cellnoor.jax.org:3001",
+  "https://cellnoor.jax.org:3002",
+
+  "https://app.cellnoor.localhost",
+  "https://api.cellnoor.localhost",
+  "https://files.cellnoor.localhost",
+
+  "https://app.cellnoor.jax.org",
+  "https://api.cellnoor.jax.org",
+  "https://files.cellnoor.jax.org",
+];
+
 export const auth = betterAuth({
   baseURL: publicAuthUrl,
   // I don't really want to pass in another configuration parameter because IT won't give me the correct certificates,
-  // so we're just gonna hardcode the ports here
-  trustedOrigins: () => ["", ":3000", ":3001", ":3002"].map((port) => `*.${getDomain()}${port}`),
+  // so we're just gonna hardcode stuff
+  trustedOrigins,
   secret: authSecret,
   database: await getDbClient(),
   // We need to supply secondary storage to make better-auth forget about our database, so we just provide a dummy implementation

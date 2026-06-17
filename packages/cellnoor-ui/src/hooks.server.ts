@@ -26,7 +26,6 @@ export async function handle({ event, resolve }) {
   if (!session) {
     const authUrl = new URL(PUBLIC_AUTH_URL ?? "");
     authUrl.searchParams.append("redirect_to", event.url.toString());
-    console.log(authUrl);
 
     return redirect(307, authUrl);
   }

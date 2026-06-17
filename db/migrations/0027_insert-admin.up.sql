@@ -42,8 +42,8 @@ select
 from initial_data;
 -- noqa: enable=AL03
 
--- Create a db user for admin user
-select create_app_user_if_not_exists(uuid_nil());
+-- Create a db user for admin user. Note that we use the 'from_login' function because that doesn't involve
+select create_person_user_from_login(uuid_nil());
 
 -- Grant them permissions on everything
 do $$
