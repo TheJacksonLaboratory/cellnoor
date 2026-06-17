@@ -26,6 +26,13 @@ services:
       PUBLIC_UI_URL: ${CELLNOOR_UI_URL}
       PUBLIC_FILES_URL: *public_files_url
       TLS_SETTINGS: tls /run/secrets/tls_certificate /run/secrets/tls_key
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+      - "3002:3002"
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
     secrets:
       - tls_certificate
       - tls_key
