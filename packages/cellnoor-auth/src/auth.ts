@@ -37,7 +37,7 @@ function getDomain() {
 
 export const auth = betterAuth({
   baseURL: publicAuthUrl,
-  trustedOrigins: () => [`*.${getDomain()}`],
+  trustedOrigins: () => [`*.${getDomain()}`, getDomain()],
   secret: authSecret,
   database: await getDbClient(),
   // We need to supply secondary storage to make better-auth forget about our database, so we just provide a dummy implementation
