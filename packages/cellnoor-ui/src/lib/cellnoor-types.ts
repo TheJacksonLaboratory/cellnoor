@@ -558,7 +558,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/service-accounts": {
+    "/services": {
         parameters: {
             query?: never;
             header?: never;
@@ -646,7 +646,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/service-accounts/search": {
+    "/services/search": {
         parameters: {
             query?: never;
             header?: never;
@@ -711,7 +711,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/service-accounts/{id}": {
+    "/services/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -798,7 +798,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/service-accounts/{id}/people": {
+    "/services/{id}/people": {
         parameters: {
             query?: never;
             header?: never;
