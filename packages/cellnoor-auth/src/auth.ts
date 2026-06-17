@@ -37,7 +37,9 @@ function getDomain() {
 
 export const auth = betterAuth({
   baseURL: publicAuthUrl,
-  trustedOrigins: () => [`*.${getDomain()}`],
+  // I don't really want to pass in another configuration parameter because IT won't give me the correct certificates,
+  // so we're just gonna hardcode the ports here
+  trustedOrigins: () => ["", ":3000", ":3001", ":3002"].map((port) => `*.${getDomain()}${port}`),
   secret: authSecret,
   database: await getDbClient(),
   // We need to supply secondary storage to make better-auth forget about our database, so we just provide a dummy implementation
