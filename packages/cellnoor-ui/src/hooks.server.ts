@@ -24,7 +24,11 @@ export async function handle({ event, resolve }) {
   });
 
   if (!session) {
-    return redirect(307, PUBLIC_AUTH_URL ?? "");
+    const authUrl = new URL(PUBLIC_AUTH_URL ?? "");
+    authUrl.searchParams.append("redirect_to", event.url.toString());
+    console.log(authUrl);
+
+    return redirect(307, authUrl);
   }
 
   // We could destructure this (the way we do with other things above), but I'm not sure if `session` is a reference or

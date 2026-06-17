@@ -1,9 +1,5 @@
 use aide::OperationIo;
-use axum::{
-    Json,
-    http::StatusCode,
-    response::{IntoResponse, Redirect},
-};
+use axum::{Json, http::StatusCode, response::IntoResponse};
 use deadpool_postgres::{
     PoolError as DeadpoolPgError,
     tokio_postgres::{Error as TokioPgError, error::SqlState},
@@ -51,8 +47,6 @@ pub enum ErrorInner {
     },
     #[error("permission denied")]
     PermissionDenied { message: String },
-    #[error("unauthenticated user, redirecting to {to}")]
-    Redirect { to: String },
     #[error("failed to parse uploaded file: {message}")]
     FileUpload { message: String },
     #[error("{message} (SQL State - {})", sql_state.as_ref().map(|s| s.code()).unwrap_or_default())]
@@ -77,9 +71,6 @@ impl IntoResponse for Error {
         }
 
         let status = match &self.error {
-            ErrorInner::Redirect { to } => {
-                return Redirect::to(to).into_response();
-            }
             ErrorInner::ResourceNotFound => StatusCode::NOT_FOUND,
             ErrorInner::DataConstraint { .. }
             | ErrorInner::InvalidReference { .. }

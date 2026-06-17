@@ -1,39 +1,65 @@
-use aide::axum::{ApiRouter, routing::get};
+use axum::{
+    Router,
+    extract::{Request, State},
+    middleware::Next,
+    response::{Redirect, Response},
+    routing::get,
+};
 
 use crate::{
-    handlers::{
-        file_auth::{authorize_dataset_dir_access, authorize_project_dir_access},
-        redirect_unauthenticated_user,
-    },
+    auth::AuthUser,
+    error::Error,
+    handlers::file_auth::{authorize_dataset_dir_access, authorize_project_dir_access},
     state::AppState,
 };
 
-pub(super) fn router() -> ApiRouter<AppState> {
+pub fn router(state: AppState) -> Router<AppState> {
+    let ok = get(async || ());
     // We mount the same handler twice: Once for paths like
     // file-auth/chromium-datasets/{id}/ and another for paths like
     // file-auth/chromium-datasets/{id}/file.html. Note that we put a trailing slash
     // for directories because caddy automatically does that
-    ApiRouter::new()
-        .api_route("/", get(redirect_unauthenticated_user))
+    Router::new()
+        .route("/", ok.clone())
         // As long a user is authenticated, they can access top-level directories
-        .api_route("/{dataset_type}", get(redirect_unauthenticated_user))
-        .api_route("/projects", get(redirect_unauthenticated_user))
+        .route("/{dataset_type}", ok.clone())
+        .route("/projects", ok)
         // Accessing a specific dataset triggers row-level security
-        .api_route(
+        .route(
             "/{dataset_type}/{dataset_id}",
             get(authorize_dataset_dir_access),
         )
-        .api_route(
+        .route(
             "/{dataset_type}/{dataset_id}/{*file_path}",
             get(authorize_dataset_dir_access),
         )
         // Accessing a specific project triggers row-level security
-        .api_route(
+        .route(
             "/projects/{project_name}",
             get(authorize_project_dir_access),
         )
-        .api_route(
+        .route(
             "/projects/{project_name}/{*file_path}",
             get(authorize_project_dir_access),
         )
+        .route_layer(axum::middleware::from_fn_with_state(
+            state,
+            redirect_unauthenticated_user,
+        ))
+}
+
+async fn redirect_unauthenticated_user(
+    State(state): State<AppState>,
+    user: Result<AuthUser, Error>,
+    request: Request,
+    next: Next,
+) -> Result<Response, Redirect> {
+    if user.is_err() {
+        let redirect_to = format!("{}?redirect_to={}", state.public_auth_url(), request.uri());
+
+        tracing::debug!("redirecting user to: {redirect_to}");
+        return Err(Redirect::to(&redirect_to));
+    }
+
+    Ok(next.run(request).await)
 }

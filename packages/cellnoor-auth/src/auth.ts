@@ -31,9 +31,13 @@ async function provisionDbUser({ id }: { id: string }) {
   );
 }
 
+function getDomain() {
+  return publicAuthUrl.split(".").toSpliced(0,1).join(".")
+}
 
 export const auth = betterAuth({
   baseURL: publicAuthUrl,
+  trustedOrigins: () => [`*.${getDomain()}`],
   secret: authSecret,
   database: await getDbClient(),
   // We need to supply secondary storage to make better-auth forget about our database, so we just provide a dummy implementation
@@ -123,11 +127,7 @@ export const auth = betterAuth({
   },
   advanced: {
     cookiePrefix: "cellnoor-auth",
-    // We expect this app to be served at something like auth.cellnoor.jax.org, so cross-subdomain cookies need to be
-    // enabled so that api.cellnoor.jax.org and app.cellnoor.jax.org also get the neceessary cookies. Note that
-    // `publicAuthUrl.split(".").toSpliced(0,1).join(".")` returns a string with the first subdomain removed, so we get
-    // "cellnoor.jax.org" if publicAuthUrl === "auth.cellnoor.jax.org"
-    crossSubDomainCookies: { enabled: true, domain: publicAuthUrl.split(".").toSpliced(0,1).join(".") },
+    crossSubDomainCookies: { enabled: true, domain: getDomain() },
     database: { generateId: "uuid" },
   },
 });
