@@ -84,6 +84,7 @@ export const auth = betterAuth({
     },
     storeStateStrategy: "cookie",
     storeAccountCookie: true,
+    accountLinking: { trustedProviders: ["microsoft"] }
   },
   databaseHooks: {
     account: {
