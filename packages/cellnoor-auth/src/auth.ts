@@ -32,7 +32,7 @@ async function provisionDbUser({ id }: { id: string }) {
 }
 
 function getDomain() {
-  return new URL(publicAuthUrl).host.split(".").toSpliced(0, 1).join(".");
+  return new URL(publicAuthUrl).hostname.split(".").toSpliced(0, 1).join(".");
 }
 
 export const auth = betterAuth({
