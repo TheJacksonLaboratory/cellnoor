@@ -32,12 +32,12 @@ async function provisionDbUser({ id }: { id: string }) {
 }
 
 function getDomain() {
-  return publicAuthUrl.split(".").toSpliced(0,1).join(".")
+  return new URL(publicAuthUrl).host.split(".").toSpliced(0, 1).join(".");
 }
 
 export const auth = betterAuth({
   baseURL: publicAuthUrl,
-  trustedOrigins: () => [`*.${getDomain()}`, getDomain()],
+  trustedOrigins: () => [`*.${getDomain()}`],
   secret: authSecret,
   database: await getDbClient(),
   // We need to supply secondary storage to make better-auth forget about our database, so we just provide a dummy implementation
