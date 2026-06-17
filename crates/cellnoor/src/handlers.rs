@@ -1,11 +1,4 @@
-use axum::extract::State;
 use uuid::Uuid;
-
-use crate::{
-    auth::AuthUser,
-    error::{Error, ErrorInner},
-    state::AppState,
-};
 
 pub mod accounts;
 pub mod api_keys;
@@ -43,16 +36,4 @@ pub mod tenx_assays;
 #[schemars(inline)]
 pub struct IdParam {
     pub id: Uuid,
-}
-
-pub(super) async fn redirect_unauthenticated_user(
-    State(state): State<AppState>,
-    user: Result<AuthUser, Error>,
-) -> Result<AuthUser, Error> {
-    user.map_err(|_| {
-        ErrorInner::Redirect {
-            to: state.public_auth_url().to_owned(),
-        }
-        .into()
-    })
 }

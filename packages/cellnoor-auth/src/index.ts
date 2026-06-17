@@ -25,7 +25,9 @@ Bun.serve({
     },
     "/api/auth/*": auth.handler,
   },
-  async fetch() {
-    return Response.redirect("/sign-in");
+  async fetch({ url }) {
+    const requestUrl = new URL(url);
+
+    return Response.redirect(`/sign-in${requestUrl.search}`);
   },
 });

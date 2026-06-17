@@ -14,7 +14,7 @@ mod api_keys;
 mod cdna;
 mod chromium_datasets;
 mod chromium_runs;
-mod file_auth;
+pub(super) mod file_auth;
 mod index_sets;
 mod institutions;
 mod libraries;
@@ -52,8 +52,7 @@ pub fn router() -> (OpenApi, Router<AppState>) {
         .nest("/chromium-runs", chromium_runs::router())
         .nest("/cdna", cdna::router())
         .nest("/libraries", libraries::router())
-        .nest("/chromium-datasets", chromium_datasets::router())
-        .nest("/file-auth", file_auth::router());
+        .nest("/chromium-datasets", chromium_datasets::router());
 
     let mut api_docs = OpenApi::default();
 

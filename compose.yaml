@@ -67,7 +67,7 @@ services:
       context: packages/cellnoor-auth
       target: final
       tags:
-        - ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
+        - ghcr.io/thejacksonlaboratory/cellnoor-auth:latest
     environment:
       DB_NAME: &db_name postgres
       DB_HOST: &db_host /run/postgresql

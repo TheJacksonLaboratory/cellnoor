@@ -8,7 +8,6 @@ use crate::{
     auth::AuthUser,
     db::{self, SqlBuilder},
     error::{Error, ErrorInner},
-    handlers::redirect_unauthenticated_user,
     state::AppState,
 };
 
@@ -21,7 +20,7 @@ pub struct ProjectDir {
 
 pub async fn authorize_project_dir_access(
     state: State<AppState>,
-    user: Result<AuthUser, Error>,
+    user: AuthUser,
     Path(ProjectDir {
         project_name,
         _file_path,
@@ -31,8 +30,6 @@ pub async fn authorize_project_dir_access(
         %project_name,
         file_path = _file_path.unwrap_or_default()
     );
-
-    let user = redirect_unauthenticated_user(state.clone(), user).await?;
 
     // If we know the user is staff without hitting the db (via the JWT), just
     // return OK

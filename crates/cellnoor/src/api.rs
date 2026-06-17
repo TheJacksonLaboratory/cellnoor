@@ -72,6 +72,13 @@ fn api(app_state: AppState) -> Router {
     // the root (because we expect that the reverse proxy will serve this app behind
     // api.cellnoor.jax.org)
     Router::new()
-        .merge(api_router.with_state(app_state))
+        .merge(
+            api_router
+                // Since the file-auth routes use middleware that requires an `AppState`, and we
+                // don't want to make the `routes::router` function require an `AppState` as an
+                // argument, we just add that route here
+                .nest("/file-auth", routes::file_auth::router(app_state.clone()))
+                .with_state(app_state),
+        )
         .layer(TraceLayer::new_for_http())
 }
