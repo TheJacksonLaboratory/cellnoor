@@ -24,9 +24,10 @@ const config: Config = {
         ],
         "frame-src": [
           "self",
-          "*.cellnoor.jax.org:3000",
-          "*.cellnoor.jax.org:3001",
-          "*.cellnoor.jax.org:3002",
+          "*.cellnoor.jax.org",
+          "cellnoor.jax.org:3000",
+          "cellnoor.jax.org:3001",
+          "cellnoor.jax.org:3002",
           "*.cellnoor.localhost",
         ],
         "img-src": ["self", "data:"],
