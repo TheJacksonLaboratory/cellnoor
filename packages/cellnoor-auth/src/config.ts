@@ -36,7 +36,6 @@ interface Config {
   microsoftEntraTenantId: string;
   microsoftEntraClientId: string;
   microsoftEntraClientSecret: string;
-  redirectTo: string;
 }
 
 let appConfig: Config | null = null;
@@ -72,6 +71,5 @@ export async function readConfig(): Promise<Config> {
     microsoftEntraClientSecret: await readSecret(
       "microsoft_entra_client_secret",
     ),
-    redirectTo: readRequiredEnvVar("redirect_to")
   };
 }

@@ -5,7 +5,6 @@ services:
     pull_policy: always
     environment:
       PUBLIC_AUTH_URL: &public_auth_url ${CELLNOOR_AUTH_URL}
-      REDIRECT_TO: &public_ui_url ${CELLNOOR_UI_URL}
   cellnoor:
     build: !reset null
     image: ghcr.io/thejacksonlaboratory/cellnoor:latest
@@ -24,7 +23,7 @@ services:
     environment:
       PUBLIC_AUTH_URL: *public_auth_url
       PUBLIC_API_URL: ${CELLNOOR_API_URL}
-      PUBLIC_UI_URL: *public_ui_url
+      PUBLIC_UI_URL: ${CELLNOOR_UI_URL}
       PUBLIC_FILES_URL: *public_files_url
       TLS_SETTINGS: tls /run/secrets/tls_certificate /run/secrets/tls_key
     secrets:
