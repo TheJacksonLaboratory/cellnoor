@@ -40,7 +40,7 @@ pub fn router() -> (OpenApi, Router<AppState>) {
         .nest("/institutions", institutions::router())
         .nest("/people", people::router())
         .nest("/accounts", accounts::router())
-        .nest("/service-accounts", services::router())
+        .nest("/services", services::router())
         .nest("/api-keys", api_keys::router())
         .nest("/projects", projects::router())
         .nest("/index-sets", index_sets::router())
