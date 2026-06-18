@@ -5,6 +5,7 @@ services:
     pull_policy: always
     environment:
       PUBLIC_AUTH_URL: &public_auth_url ${CELLNOOR_AUTH_URL}
+      NODE_ENV: &node_env production
   cellnoor:
     build: !reset null
     image: ghcr.io/thejacksonlaboratory/cellnoor:latest
@@ -19,6 +20,7 @@ services:
     pull_policy: always
     environment:
       PUBLIC_AUTH_URL: *public_auth_url
+      NODE_ENV: *node_env
   caddy:
     environment:
       PUBLIC_AUTH_URL: *public_auth_url

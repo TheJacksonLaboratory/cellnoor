@@ -127,6 +127,7 @@ export const auth = betterAuth({
   socialProviders: {
     microsoft: {
       disableIdTokenSignIn: true,
+      profilePhotoSize: 48,
       tenantId: microsoftEntraTenantId,
       clientId: microsoftEntraClientId,
       clientSecret: microsoftEntraClientSecret,

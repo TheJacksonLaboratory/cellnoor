@@ -4,7 +4,6 @@ WORKDIR /usr/src/app
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile --dev
 COPY . .
-ENV NODE_ENV=production
 RUN bun run --bun build
 
 FROM oven/bun:1 AS final
@@ -34,5 +33,4 @@ COPY --from=build /usr/src/app/build build
 # Run the app. Make sure to delete the socket before every restart cus it's a hassle to do it from within JS
 USER appuser
 
-ENV NODE_ENV=production
 CMD ["/bin/sh", "-c", "rm -f /run/cellnoor-ui/cellnoor-ui.sock && bun run build/index.js"]
