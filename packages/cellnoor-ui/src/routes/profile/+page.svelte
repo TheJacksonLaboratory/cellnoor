@@ -1,23 +1,27 @@
 <script lang="ts">
+  import { PUBLIC_AUTH_URL } from "$app/env/public";
   import { enhance } from "$app/forms";
-  import { DATETIME_FORMATTER } from "$lib/date.js";
+  import { createAuthClient } from "better-auth/svelte";
+
+  const authClient = createAuthClient({ baseURL: PUBLIC_AUTH_URL });
+
+  let session = authClient.useSession();
+
+  const { data: sessionData } = $derived($session);
 
   const { data, form } = $props();
-  const {
-    user: { name: userName, email, image },
-    apiKeys,
-  } = $derived(data);
+  const { apiKeys } = $derived(data);
   let apiKeysDialogBox: HTMLDialogElement;
 </script>
 
 <div class="min-h-1/2 mx-auto flex flex-col items-center w-fit">
-  {#if image}
+  {#if sessionData?.user.image}
     <div class="avatar">
-      <img class="rounded-full" src={image} alt="profile" />
+      <img class="rounded-full" src={sessionData.user.image} alt="profile" />
     </div>
   {/if}
-  <h1 class="text-4xl font-bold">{userName}</h1>
-  <p class="text-xl font-bold">{email}</p>
+  <h1 class="text-4xl font-bold">{sessionData?.user.name}</h1>
+  <p class="text-xl font-bold">{sessionData?.user.email}</p>
   <div class="divider"></div>
   <button
     class="btn btn-primary btn-outline"

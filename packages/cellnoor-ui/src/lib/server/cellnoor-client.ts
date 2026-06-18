@@ -36,10 +36,11 @@ const middleware: Middleware = {
     // We have to manually copy cookies since we're not using SvelteKit's fetch (because only Bun's works with Unix domain sockets)
     const securePrefix = "__Secure-";
     const authCookieName = "cellnoor-auth.session_data";
-    for (const cookieName of [authCookieName, `${securePrefix}${authCookieName}`]) {
-      const cookieValue = cookies.get(cookieName);
-      if (cookieValue) {
-        request.headers.set("Cookie", `${cookieName}=${cookieValue}`);
+    const secureCookieName = `${securePrefix}${authCookieName}`;
+
+    for (const {name, value} of cookies.getAll()) {
+      if (name.startsWith(authCookieName) || name.startsWith(secureCookieName)) {
+        request.headers.append("Cookie", `${name}=${value}`);
       }
     }
   },
