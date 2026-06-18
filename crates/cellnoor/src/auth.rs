@@ -7,7 +7,7 @@ use axum::{
     http::HeaderValue,
     response::{IntoResponse, Response},
 };
-use axum_extra::extract::{CookieJar, cookie::Cookie};
+use axum_extra::extract::CookieJar;
 use cellnoor_types::api_key::{PersonId, ServiceId};
 use deadpool_postgres::PoolError;
 use uuid::Uuid;
@@ -93,23 +93,14 @@ impl FromRequestParts<AppState> for AuthUser {
         };
 
         let cookies = parts.extract::<CookieJar>().await.unwrap();
-        // We know the name of the cookie because it's set in
-        // packages/cellnoor-auth/src/auth.ts
-        if let Some(encoded_jwt) = cookies
-            .get("__Secure-cellnoor-auth.session_data")
-            .or(cookies.get("cellnoor-auth.session_data"))
-            .map(Cookie::value)
+        let encoded_jwt = read_chunked_jwt(&cookies);
+        let (secret, validation) = state.jwt_decoding_info();
+        if !encoded_jwt.is_empty()
+            && let Ok(user) = authenticate_with_jwt(encoded_jwt.as_bytes(), secret, validation)
         {
-            let (secret, validation) = state.jwt_decoding_info();
-
-            if let Ok(user) = authenticate_with_jwt(encoded_jwt.as_bytes(), secret, validation) {
-                return Ok(user);
-            }
+            return Ok(user);
         }
 
-        // Eventually, we'll also decode the JWT that better-auth sets, so we will have
-        // both UI auth and API auth mechanisms consolidated here. For now, we don't
-        // need that
         let Some(api_key) = parts.headers.get("x-api-key").map(HeaderValue::as_bytes) else {
             return Err(ErrorInner::NoAuthFound {
                 message: "failed to authenticate with JWT at cookie 'cellnoor-auth.session_data' \
@@ -120,6 +111,37 @@ impl FromRequestParts<AppState> for AuthUser {
 
         Ok(authenticate_with_api_key(state, api_key).await?)
     }
+}
+
+fn read_chunked_jwt(cookies: &CookieJar) -> String {
+    // Realistically, the JWT is only 8 kb max, and each cookie is 4 kb long, so we
+    // really only have 2 chunks. Allocate 8 just in case because they're just
+    // slices
+    let mut encoded_jwt = [("", ""); 8];
+    let mut i = 0;
+    for cookie in cookies.iter() {
+        // We know the name of the cookie because it's set in
+        // /packages/cellnoor-auth/src/auth.ts. We also don't expect both the secure
+        // version and the insecure version to be set, so we're not gonna intermix the
+        // cookies
+        if cookie
+            .name()
+            .starts_with("__Secure-cellnoor-auth.session_data")
+            || cookie.name().starts_with("cellnoor-auth.session_data")
+        {
+            if i > encoded_jwt.len() {
+                break;
+            }
+
+            encoded_jwt[i] = cookie.name_value();
+
+            i += 1;
+        }
+    }
+
+    encoded_jwt.sort_by_key(|(name, _)| *name);
+
+    encoded_jwt.map(|(_, val)| val).join("")
 }
 
 impl IntoResponse for AuthUser {

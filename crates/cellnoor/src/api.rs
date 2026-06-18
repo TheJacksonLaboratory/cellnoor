@@ -1,5 +1,6 @@
 use anyhow::Context;
-use axum::{Router, ServiceExt, extract::Request, serve::Listener};
+use axum::{Router, serve::Listener};
+use hyper_util::rt::{TokioExecutor, TokioIo};
 pub use routes::router;
 use tokio::net::{TcpListener, UnixListener};
 use tower_http::{normalize_path::NormalizePath, trace::TraceLayer};
@@ -36,19 +37,33 @@ pub async fn serve(settings: &Settings) -> anyhow::Result<()> {
     }
 }
 
-async fn serve_with_listener<L: Listener>(listener: L, app: Router) -> anyhow::Result<()>
+async fn serve_with_listener<L: Listener>(mut listener: L, app: Router) -> anyhow::Result<()>
 where
     L::Addr: std::fmt::Debug,
 {
     tracing::debug!("cellnoor listening on {:?}", listener.local_addr()?);
 
     let app = NormalizePath::trim_trailing_slash(app);
+    let service = hyper_util::service::TowerToHyperService::new(app);
 
-    axum::serve(listener, ServiceExt::<Request>::into_make_service(app))
-        .await
-        .context("failed to serve app")?;
+    loop {
+        let (socket, _) = listener.accept().await;
+        let service = service.clone();
 
-    Ok(())
+        tokio::spawn(async move {
+            let socket = TokioIo::new(socket);
+
+            // Accept headers of 64 KiB
+            if let Err(err) = hyper_util::server::conn::auto::Builder::new(TokioExecutor::new())
+                .http2()
+                .max_header_list_size(64 * 1024)
+                .serve_connection(socket, service)
+                .await
+            {
+                tracing::error!("failed to serve connection: {err}");
+            }
+        });
+    }
 }
 
 fn initialize_logging() {

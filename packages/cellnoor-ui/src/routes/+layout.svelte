@@ -2,13 +2,11 @@
   import "../app.css";
   import Navbar from "./Navbar.svelte";
 
-  let { children, data } = $props();
+  let { children } = $props();
 </script>
 
 <svelte:head></svelte:head>
 
-{#if data.user}
-  <Navbar userName={data.user.name} />
-{/if}
+<Navbar />
 
 {@render children?.()}

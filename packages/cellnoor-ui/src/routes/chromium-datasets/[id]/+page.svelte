@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { SpecimenCompact, TaggedSpecimen } from "$lib/cellnoor-types";
+  import type { TaggedSpecimen } from "$lib/cellnoor-types";
   import { DATE_FORMATTER } from "$lib/date";
   import NiceTable from "../../../components/NiceTable.svelte";
   import { page } from "$app/state";

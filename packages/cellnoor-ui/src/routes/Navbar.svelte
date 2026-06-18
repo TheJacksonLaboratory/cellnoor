@@ -3,10 +3,23 @@
   import "../app.css";
   import { createAuthClient } from "better-auth/svelte";
   import { PUBLIC_AUTH_URL } from "$app/env/public";
+  import { page } from "$app/state";
+  import { browser } from "$app/environment";
+
+  function goToSignInPage() {
+    window.location.assign(`${PUBLIC_AUTH_URL}?redirect_to=${page.url}` || "");
+  }
 
   const authClient = createAuthClient({ baseURL: PUBLIC_AUTH_URL });
 
-  const { userName }: { userName: string } = $props();
+  let session = authClient.useSession();
+
+  $effect(() => {
+    if (browser && !$session.isPending && !$session.data) {
+      goToSignInPage();
+    }
+  });
+
   const links = [[resolve("/chromium-datasets"), "Chromium Datasets"]];
 </script>
 
@@ -36,7 +49,7 @@
           popovertarget="name-popover"
           style="anchor-name: --name-anchor"
         >
-          {userName}
+          {$session.data?.user.name}
         </button>
       </li>
     </ul>
