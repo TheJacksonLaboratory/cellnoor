@@ -1,7 +1,6 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import "../app.css";
-  import { goto } from "$app/navigation";
   import { createAuthClient } from "better-auth/svelte";
   import { PUBLIC_AUTH_URL } from "$app/env/public";
 
@@ -55,10 +54,7 @@
           onclick={async () => {
             await authClient.signOut({
               fetchOptions: {
-                onSuccess: async () =>
-                  await goto(PUBLIC_AUTH_URL || "", {
-                    invalidateAll: true,
-                  }),
+                onSuccess: () => window.location.assign(PUBLIC_AUTH_URL || ""),
               },
             });
           }}

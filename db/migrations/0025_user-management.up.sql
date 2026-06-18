@@ -80,6 +80,15 @@ create or replace function _create_person_user_as_user_creator(
     end;
 $$;
 
+create or replace function _create_person_user_as_user_creator_without_validation(
+    target_user_id uuid
+) returns void language plpgsql volatile strict security definer as $$
+    begin
+        perform _validate_target_user_is_person(target_user_id);
+        perform create_app_user_if_not_exists(target_user_id);
+    end;
+$$;
+
 create or replace function _drop_person_user_as_user_creator(
     current_user_id uuid, target_user_id uuid
 ) returns void language plpgsql volatile strict security definer as $$
@@ -124,6 +133,14 @@ create or replace function create_person_user_with_permissions(
     begin
         perform _create_person_user_as_user_creator(current_user::uuid, user_id);
         perform grant_permissions_to_person(user_id, permissions);
+    end;
+$$;
+
+create or replace function create_person_user_from_login(
+    user_id uuid
+) returns void language plpgsql volatile strict as $$
+    begin
+        perform _create_person_user_as_user_creator_without_validation(user_id);
     end;
 $$;
 

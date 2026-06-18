@@ -7,7 +7,7 @@ import { PUBLIC_AUTH_URL } from "$app/env/public";
 const NON_AUTH_ROUTES = ["/health"];
 
 function requiresAuth(path: string) {
-  return !NON_AUTH_ROUTES.some((s) => path.includes(s));
+  return !NON_AUTH_ROUTES.some((s) => path === s || path.startsWith(`${s}/`));
 }
 
 export async function handle({ event, resolve }) {
@@ -26,7 +26,6 @@ export async function handle({ event, resolve }) {
   if (!session) {
     const authUrl = new URL(PUBLIC_AUTH_URL ?? "");
     authUrl.searchParams.append("redirect_to", event.url.toString());
-    console.log(authUrl);
 
     return redirect(307, authUrl);
   }
