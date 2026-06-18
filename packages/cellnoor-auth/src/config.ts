@@ -57,7 +57,7 @@ export async function readConfig(): Promise<Config> {
     dbPort = Number.parseInt(dbPortFromEnv);
   }
 
-  return {
+  appConfig =  {
     publicAuthUrl: readRequiredEnvVar("public_auth_url"),
     unixDomainSocket: readEnvVar("unix_domain_socket"),
     dbPassword: await readSecret("auth_db_password"),
@@ -72,4 +72,6 @@ export async function readConfig(): Promise<Config> {
       "microsoft_entra_client_secret",
     ),
   };
+
+  return appConfig;
 }

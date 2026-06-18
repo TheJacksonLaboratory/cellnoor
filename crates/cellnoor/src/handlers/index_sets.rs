@@ -59,7 +59,7 @@ mod index_set_name {
         }
 
         pub fn well_name(&self) -> IndexSetWellName<'a> {
-            IndexSetWellName(&self.0[6..8])
+            IndexSetWellName(&self.0[6..])
         }
     }
 }
@@ -73,7 +73,7 @@ mod sequence {
     use crate::error::ErrorInner;
 
     static DNA_REGEX: LazyLock<Regex> =
-        LazyLock::new(|| Regex::new(r"^[ACGT]{8}|[ACGT]{10}$").unwrap());
+        LazyLock::new(|| Regex::new(r"^([ACGT]{8}|[ACGT]{10})$").unwrap());
 
     #[derive(Clone, Copy, Debug, ToSql)]
     #[postgres(transparent)]

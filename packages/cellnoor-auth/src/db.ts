@@ -20,5 +20,7 @@ export async function getDbClient() {
     max: maxDbPoolSize,
   };
 
-  return new Pool(options);
+  dbClient = new Pool(options);
+
+  return dbClient;
 }
