@@ -48,9 +48,6 @@
             {#each apiKeys as { id, description, created_at, expires_at } (id)}
               <tr>
                 <td>
-                  {name}
-                </td>
-                <td>
                   {description}
                 </td>
                 <td>
@@ -61,7 +58,7 @@
                 </td>
                 <td>
                   <form method="post" use:enhance action="?/deleteApiToken">
-                    <input name="jti" value={id} type="hidden" />
+                    <input name="apiKeyId" value={id} type="hidden" />
                     <button class="btn btn-error">Delete</button>
                   </form>
                 </td>
