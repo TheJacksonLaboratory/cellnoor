@@ -19,6 +19,7 @@ async function deleteUnnecessaryAccountFields(
   delete account.refreshToken;
   delete account.idToken;
   delete account.refreshTokenExpiresAt;
+  delete account.password;
 
   return account;
 }
@@ -101,7 +102,6 @@ export const auth = betterAuth({
       updatedAt: "updated_at",
     },
     storeStateStrategy: "cookie",
-    storeAccountCookie: true,
     accountLinking: { trustedProviders: ["microsoft"] }
   },
   databaseHooks: {
@@ -116,9 +116,6 @@ export const auth = betterAuth({
       },
     },
     user: {
-      update: {
-        after: provisionDbUser
-      },
       create: {
         after: provisionDbUser
       },
