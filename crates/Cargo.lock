@@ -312,7 +312,6 @@ dependencies = [
  "futures",
  "glob",
  "headers",
- "hyper-util",
  "jiff",
  "jsonwebtoken",
  "nonempty",

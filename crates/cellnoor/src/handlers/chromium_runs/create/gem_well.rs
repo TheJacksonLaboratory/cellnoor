@@ -1,7 +1,5 @@
 use cellnoor_types::chromium_run::creation::{
-    mixed::{NewMixedChipLoading, NewMixedGemWell},
-    ocm::{MAX_SUSPENSIONS_PER_OCM_GEM_WELL, NewOcmGemWell},
-    standard::NewStandardGemWell,
+    mixed::NewStandardOrOcmGemWell, ocm::NewOcmGemWell, standard::NewStandardGemWell,
 };
 use nonempty::NonemptyString;
 use uuid::Uuid;
@@ -60,38 +58,17 @@ pub(super) async fn insert_ocm_gem_well(
 
 pub(super) async fn insert_mixed_gem_well(
     tx: &db::Transaction<'_>,
-    NewMixedGemWell {
-        readable_id,
-        loading,
-    }: &NewMixedGemWell,
+    gem_well: &NewStandardOrOcmGemWell,
     chromium_run_id: Uuid,
 ) -> Result<(), ErrorInner> {
-    let gem_well = NewGemWellRecord {
-        readable_id,
-        chromium_run_id,
-    };
-
-    let gem_well_id = insert_gem_well(tx, &gem_well).await?;
-
-    let mut standard_chip_loading_insertions = Vec::with_capacity(MAX_SUSPENSIONS_PER_OCM_GEM_WELL);
-    let mut ocm_chip_loading_insertions = Vec::with_capacity(MAX_SUSPENSIONS_PER_OCM_GEM_WELL);
-
-    match loading {
-        NewMixedChipLoading::Standard(loading) => standard_chip_loading_insertions
-            .push(insert_standard_chip_loading(tx, loading, gem_well_id)),
-        NewMixedChipLoading::Ocm(loadings) => {
-            for l in loadings {
-                ocm_chip_loading_insertions.push(insert_ocm_chip_loading(tx, l, gem_well_id))
-            }
+    match gem_well {
+        NewStandardOrOcmGemWell::OnChipMultiplexing(ocm) => {
+            insert_ocm_gem_well(tx, ocm, chromium_run_id).await
+        }
+        NewStandardOrOcmGemWell::Standard(standard) => {
+            insert_standard_gem_well(tx, standard, chromium_run_id).await
         }
     }
-
-    tokio::try_join!(
-        futures::future::try_join_all(standard_chip_loading_insertions),
-        futures::future::try_join_all(ocm_chip_loading_insertions)
-    )?;
-
-    Ok(())
 }
 
 async fn insert_gem_well(

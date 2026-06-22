@@ -23,7 +23,6 @@ csvranger = { workspace = true, optional = true }
 positive = { path = "../positive" }
 jsonwebtoken = {workspace = true, optional = true}
 bytes = {workspace = true, optional = true}
-hyper-util = { workspace = true, optional = true }
 serde.workspace = true
 deadpool-postgres = {workspace = true, optional = true}
 cellnoor-types = {path = "../cellnoor-types", features = ["serde"]}
@@ -51,7 +50,6 @@ zstd = { workspace = true, optional = true }
 
 [features]
 ssr = [
-    "dep:hyper-util",
     "dep:strum",
     "dep:glob",
     "dep:tower-http",
