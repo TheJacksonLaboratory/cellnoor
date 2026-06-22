@@ -72,7 +72,6 @@ services:
       DB_NAME: &db_name postgres
       DB_HOST: &db_host /run/postgresql
       UNIX_DOMAIN_SOCKET: &auth_socket /run/cellnoor-auth/cellnoor-auth.sock
-      BUN_OPTIONS: &set_max_http_header_size --max-http-header-size=65536
     secrets:
       [
         auth_db_password,
@@ -130,7 +129,6 @@ services:
       # https://svelte.dev/docs/kit/adapter-node#Environment-variables-PORT-HOST-and-SOCKET_PATH
       SOCKET_PATH: *ui_socket
       API_SOCKET: *api_socket
-      BUN_OPTIONS: *set_max_http_header_size
     depends_on:
       cellnoor:
         condition: service_healthy

@@ -4,7 +4,9 @@ use uuid::Uuid;
 
 use crate::{
     chromium_run::{
-        creation::{mixed::NewMixedGemWell, ocm::NewOcmGemWell, standard::NewStandardGemWell},
+        creation::{
+            mixed::NewStandardOrOcmGemWell, ocm::NewOcmGemWell, standard::NewStandardGemWell,
+        },
         record::ChromiumRunRecord,
     },
     id::NoId,
@@ -32,7 +34,7 @@ pub enum NewChromiumRun {
     Mixed {
         #[cfg_attr(feature = "serde", serde(flatten))]
         common: NewChromiumRunRecord,
-        gem_wells: NonemptyBoundedVec<NewMixedGemWell, MAX_GEM_WELLS_PER_OCM_RUN>,
+        gem_wells: NonemptyBoundedVec<NewStandardOrOcmGemWell, MAX_GEM_WELLS_PER_OCM_RUN>,
     },
     OnChipMultiplexing {
         #[cfg_attr(feature = "serde", serde(flatten))]

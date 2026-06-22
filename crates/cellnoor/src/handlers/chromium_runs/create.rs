@@ -109,7 +109,7 @@ pub mod test {
             ChromiumRunDetailed,
             creation::{
                 LoadedEntity, NewChromiumRun, NewChromiumRunRecord,
-                mixed::{NewMixedChipLoading, NewMixedGemWell},
+                mixed::NewStandardOrOcmGemWell,
                 ocm::{NewOcmGemWell, OcmBarcodeId, OcmLoadedEntity},
                 standard::NewStandardGemWell,
             },
@@ -258,24 +258,22 @@ pub mod test {
         let mut new = NewChromiumRun::Mixed {
             common: new_common(assay_id, person_id),
             gem_wells: NonemptyBoundedVec::new(vec![
-                NewMixedGemWell {
+                NewStandardOrOcmGemWell::Standard(NewStandardGemWell {
                     readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                    loading: NewMixedChipLoading::Standard(LoadedEntity::Suspension {
+                    loaded_entity: LoadedEntity::Suspension {
                         suspension_id: *s1.record.id,
-                    }),
-                },
-                NewMixedGemWell {
+                    },
+                }),
+                NewStandardOrOcmGemWell::OnChipMultiplexing(NewOcmGemWell {
                     readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                    loading: NewMixedChipLoading::Ocm(
-                        NonemptyBoundedVec::new(vec![OcmLoadedEntity {
-                            loaded_entity: LoadedEntity::Suspension {
-                                suspension_id: *s2.record.id,
-                            },
-                            ocm_barcode_id: OcmBarcodeId::Ob1,
-                        }])
-                        .unwrap(),
-                    ),
-                },
+                    loading: NonemptyBoundedVec::new(vec![OcmLoadedEntity {
+                        loaded_entity: LoadedEntity::Suspension {
+                            suspension_id: *s2.record.id,
+                        },
+                        ocm_barcode_id: OcmBarcodeId::Ob1,
+                    }])
+                    .unwrap(),
+                }),
             ])
             .unwrap(),
         };

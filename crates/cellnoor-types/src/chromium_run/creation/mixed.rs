@@ -1,20 +1,10 @@
 use macro_attributes::base_model;
-use nonempty::{NonemptyBoundedVec, NonemptyString};
 
-use crate::chromium_run::creation::{
-    LoadedEntity,
-    ocm::{MAX_SUSPENSIONS_PER_OCM_GEM_WELL, OcmLoadedEntity},
-};
+use crate::chromium_run::creation::{ocm::NewOcmGemWell, standard::NewStandardGemWell};
 
 #[base_model]
-#[cfg_attr(feature = "serde", serde(untagged))]
-pub enum NewMixedChipLoading {
-    Ocm(NonemptyBoundedVec<OcmLoadedEntity, MAX_SUSPENSIONS_PER_OCM_GEM_WELL>),
-    Standard(LoadedEntity),
-}
-
-#[base_model]
-pub struct NewMixedGemWell {
-    pub readable_id: NonemptyString,
-    pub loading: NewMixedChipLoading,
+#[cfg_attr(feature = "serde", serde(tag = "plexy", rename_all = "snake_case"))]
+pub enum NewStandardOrOcmGemWell {
+    OnChipMultiplexing(NewOcmGemWell),
+    Standard(NewStandardGemWell),
 }
