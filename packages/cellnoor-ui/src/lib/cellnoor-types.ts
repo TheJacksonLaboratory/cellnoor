@@ -5660,13 +5660,6 @@ export interface components {
         } | {
             operationId: string;
         });
-        LoadedEntity: {
-            /** Format: uuid */
-            suspension_id: string;
-        } | {
-            /** Format: uuid */
-            suspension_pool_id: string;
-        };
         MeanDiameter: {
             object: components["schemas"]["SuspensionContent"];
             unit: components["schemas"]["Micrometer"];
@@ -5888,7 +5881,7 @@ export interface components {
             additional_data?: unknown;
             /** Format: uuid */
             assay_id: string;
-            gem_wells: components["schemas"]["NewMixedGemWell"][];
+            gem_wells: components["schemas"]["NewStandardOrOcmGemWell"][];
             /** @constant */
             plexy: "mixed";
             readable_id: string;
@@ -5949,11 +5942,6 @@ export interface components {
             single_index_set_name?: string | null;
             /** Format: int32 */
             target_reads_per_cell?: number | null;
-        };
-        NewMixedChipLoading: components["schemas"]["OcmLoadedEntity"][] | components["schemas"]["LoadedEntity"];
-        NewMixedGemWell: {
-            loading: components["schemas"]["NewMixedChipLoading"];
-            readable_id: string;
         };
         NewNucleicAcidMeasurement: {
             data: components["schemas"]["NucleicAcidMeasurementData"];
@@ -6042,6 +6030,13 @@ export interface components {
             /** Format: uuid */
             suspension_pool_id: string;
         };
+        NewStandardOrOcmGemWell: ({
+            /** @constant */
+            plexy: "on_chip_multiplexing";
+        } & components["schemas"]["NewOcmGemWell"]) | ({
+            /** @constant */
+            plexy: "standard";
+        } & components["schemas"]["NewStandardGemWell"]);
         NewSuspension: {
             additional_data?: unknown;
             content: components["schemas"]["SuspensionContent"];
@@ -8304,7 +8299,6 @@ export type LibraryTypeSpecification = components['schemas']['LibraryTypeSpecifi
 export type LibraryUpdate = components['schemas']['LibraryUpdate'];
 export type License = components['schemas']['License'];
 export type Link = components['schemas']['Link'];
-export type LoadedEntity = components['schemas']['LoadedEntity'];
 export type MeanDiameter = components['schemas']['MeanDiameter'];
 export type MediaType = components['schemas']['MediaType'];
 export type Microliter = components['schemas']['Microliter'];
@@ -8327,8 +8321,6 @@ export type NewChromiumRun = components['schemas']['NewChromiumRun'];
 export type NewDualIndexSet = components['schemas']['NewDualIndexSet'];
 export type NewInstitution = components['schemas']['NewInstitution'];
 export type NewLibrary = components['schemas']['NewLibrary'];
-export type NewMixedChipLoading = components['schemas']['NewMixedChipLoading'];
-export type NewMixedGemWell = components['schemas']['NewMixedGemWell'];
 export type NewNucleicAcidMeasurement = components['schemas']['NewNucleicAcidMeasurement'];
 export type NewOcmGemWell = components['schemas']['NewOcmGemWell'];
 export type NewPerson = components['schemas']['NewPerson'];
@@ -8338,6 +8330,7 @@ export type NewSpecimen = components['schemas']['NewSpecimen'];
 export type NewSpecimenCommonFields = components['schemas']['NewSpecimenCommonFields'];
 export type NewSpecimenMeasurement = components['schemas']['NewSpecimenMeasurement'];
 export type NewStandardGemWell = components['schemas']['NewStandardGemWell'];
+export type NewStandardOrOcmGemWell = components['schemas']['NewStandardOrOcmGemWell'];
 export type NewSuspension = components['schemas']['NewSuspension'];
 export type NewSuspensionMeasurement = components['schemas']['NewSuspensionMeasurement'];
 export type NewSuspensionPool = components['schemas']['NewSuspensionPool'];
