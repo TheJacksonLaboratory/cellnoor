@@ -43,7 +43,7 @@ axum = { version = "0.8.9", default-features = false, features = [
 ] }
 sha3 = {version = "0.12.0"}
 proc-macro2 = {version = "1.0.106"}
-syn = { version = "2.0.117", default-features = false, features = [
+syn = { version = "3.0.3", default-features = false, features = [
   "full",
   "parsing",
 ] }
