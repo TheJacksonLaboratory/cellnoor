@@ -5,13 +5,13 @@
   "private": true,
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/pg": "^8.21.0"
+    "@types/pg": "^8.23.1"
   },
   "peerDependencies": {
     "typescript": "latest"
   },
   "dependencies": {
-    "better-auth": "^1.6.26",
+    "better-auth": "^1.7.0",
     "pg": "^8.23.0"
   }
 }
