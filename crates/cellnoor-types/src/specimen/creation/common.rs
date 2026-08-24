@@ -1,4 +1,3 @@
-
 use macro_attributes::unit_enum;
 
 #[unit_enum]

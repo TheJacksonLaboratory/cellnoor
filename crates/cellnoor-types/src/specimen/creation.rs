@@ -4,14 +4,10 @@ use nonempty::NonemptyString;
 use uuid::Uuid;
 
 use crate::specimen::{
-        Species,
-        creation::{
-            block::BlockFields,
-            suspension::SuspensionSpecimenFields,
-            tissue::TissueFields,
-        },
-        measurement::NewSpecimenMeasurement,
-    };
+    Species,
+    creation::{block::BlockFields, suspension::SuspensionSpecimenFields, tissue::TissueFields},
+    measurement::NewSpecimenMeasurement,
+};
 
 pub use common::{
     ControlledRateFreezing, DithiobisSuccinimidylpropionate, FlashFreezing, FormaldehydeDerivative,
@@ -42,7 +38,7 @@ pub struct NewSpecimen {
 
 #[base_model]
 #[derive(Copy, strum::EnumDiscriminants)]
-#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
+#[cfg_attr(feature = "serde", serde(rename_all = "snake_case", tag = "type"))]
 #[strum(serialize_all = "snake_case")]
 #[strum_discriminants(name(SpecimenType), discriminant_unit_enum)]
 pub enum SpecimenVariableFields {
