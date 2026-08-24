@@ -9,6 +9,7 @@ use crate::{
     error::{Error, ErrorInner},
     handlers::specimens::{
         measurements::create::insert_specimen_measurement, show::select_specimen_by_id,
+        split_new_specimen_for_insertion::split_new_specimen_for_insertion,
     },
     state::AppState,
 };
@@ -33,7 +34,7 @@ async fn insert_specimen(
     tx: &db::Transaction<'_>,
     record: NewSpecimen,
 ) -> Result<SpecimenDetailed, ErrorInner> {
-    let (record, measurements) = record.split_for_insertion();
+    let (record, measurements) = split_new_specimen_for_insertion(record);
 
     let id = db::insert_into(tx, "specimen", &record).await?;
 
@@ -96,7 +97,7 @@ pub mod test {
         project::SavedProjectRecordDetailed,
         specimen::{
             Species, SpecimenDetailed,
-            creation::{NewSpecimen, NewSpecimenCommonFields, block::NewBlock},
+            creation::{FlashFreezing, NewSpecimen, SpecimenVariableFields, block::BlockFields},
             measurement::{NewSpecimenMeasurement, SpecimenMeasurementData},
         },
     };
@@ -124,31 +125,31 @@ pub mod test {
     {
         let (_, inserted_project) = insert_test_project(tx, |_| ()).await?;
         let SavedProjectRecordDetailed { project, members } = inserted_project.record;
-
-        let mut new = NewSpecimen::Block(NewBlock::CarboxymethylCellulose {
-            common: NewSpecimenCommonFields {
-                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                name: Uuid::new_v4().to_string().to_nonempty_string(),
-                submitted_by: members[0],
-                received_at: Timestamp::now(),
-                project_id: project.id,
-                species: Species::MusMusculus,
-                host_species: None,
-                returned_by: None,
-                returned_at: None,
-                tissue: "tissue".to_nonempty_string(),
-                additional_data: None,
-                measurements: vec![NewSpecimenMeasurement {
-                    measured_by: members[0],
-                    measured_at: Timestamp::now(),
-                    data: Json(SpecimenMeasurementData::Rin {
-                        instrument_name: None,
-                        value: PositiveBoundedF32::new(5.0).unwrap(),
-                    }),
-                }],
-            },
-            fixative: None,
-        });
+        let mut new = NewSpecimen {
+            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+            name: Uuid::new_v4().to_string().to_nonempty_string(),
+            submitted_by: members[0],
+            received_at: Timestamp::now(),
+            project_id: project.id,
+            species: Species::MusMusculus,
+            host_species: None,
+            returned_by: None,
+            returned_at: None,
+            tissue: "tissue".to_nonempty_string(),
+            additional_data: None,
+            measurements: vec![NewSpecimenMeasurement {
+                measured_by: members[0],
+                measured_at: Timestamp::now(),
+                data: Json(SpecimenMeasurementData::Rin {
+                    instrument_name: None,
+                    value: PositiveBoundedF32::new(5.0).unwrap(),
+                }),
+            }],
+            variable_fields: SpecimenVariableFields::Block(BlockFields::CarboxymethylCellulose {
+                fixative: None,
+                thermal_preservation_method: FlashFreezing::FlashFreezing,
+            }),
+        };
 
         modify(&mut new);
 
@@ -170,7 +171,7 @@ pub mod test {
         let tx = client.begin().await.unwrap();
 
         let error = insert_test_specimen_and_project(&tx, |sp| {
-            sp.common_mut().received_at = Timestamp::from_second(0).unwrap()
+            sp.received_at = Timestamp::from_second(0).unwrap()
         })
         .await
         .unwrap_err();

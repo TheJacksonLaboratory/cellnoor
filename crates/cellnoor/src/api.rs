@@ -22,7 +22,7 @@ pub async fn serve(settings: &Settings) -> anyhow::Result<()> {
         if let Err(e) = std::fs::remove_file(&app_addr)
             && !matches!(e.kind(), std::io::ErrorKind::NotFound)
         {
-            return Err(e)?;
+            Err(e)?;
         }
 
         let listener =

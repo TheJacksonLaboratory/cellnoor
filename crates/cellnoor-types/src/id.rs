@@ -13,7 +13,7 @@ use uuid::Uuid;
 #[base_model]
 #[derive(Copy, Eq, Hash)]
 #[cfg_attr(feature = "schemars", schemars(inline))]
-pub struct NoId {}
+pub struct NoId;
 
 #[base_model]
 #[derive(Copy, Eq, Hash)]

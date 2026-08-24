@@ -12,7 +12,9 @@ use crate::{
     handlers::{
         IdParam,
         specimens::{
-            measurements::create::insert_specimen_measurement, show::select_specimen_by_id,
+            measurements::create::insert_specimen_measurement,
+            show::select_specimen_by_id,
+            split_new_specimen_for_insertion::split_new_specimen_for_insertion,
         },
     },
     state::AppState,
@@ -39,7 +41,7 @@ async fn update_specimen_by_id(
     id: Uuid,
     record: NewSpecimen,
 ) -> Result<SpecimenDetailed, ErrorInner> {
-    let (record, measurements) = record.split_for_insertion();
+    let (record, measurements) = split_new_specimen_for_insertion(record);
 
     db::update(tx, "specimen", id, &record).await?;
 
@@ -55,11 +57,6 @@ async fn update_specimen_by_id(
 
 #[cfg(test)]
 mod test {
-
-    use cellnoor_types::specimen::creation::{
-        NewSpecimen,
-        block::{BlockFixative, NewBlock},
-    };
     use uuid::Uuid;
 
     use crate::{
@@ -74,16 +71,11 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (pre_update, inserted) = insert_test_specimen_and_project(&tx, |_| ()).await.unwrap();
+        let (mut update, inserted) = insert_test_specimen_and_project(&tx, |_| ()).await.unwrap();
         let id = *inserted.record.id;
 
-        let mut common = pre_update.into_common();
-        common.readable_id = Uuid::new_v4().to_string().to_nonempty_string();
-        common.measurements = vec![];
-        let update = NewSpecimen::Block(NewBlock::Paraffin {
-            common,
-            fixative: BlockFixative::FormaldehydeDerivative,
-        });
+        update.readable_id = Uuid::new_v4().to_string().to_nonempty_string();
+        update.measurements = vec![];
 
         update_specimen_by_id(&tx, id, update).await.unwrap();
     }

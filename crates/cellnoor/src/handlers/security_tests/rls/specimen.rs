@@ -35,11 +35,9 @@ pub async fn insert_inaccessible_specimen(
 ) -> (NewSpecimen, SpecimenDetailed) {
     let (_, project) = insert_inaccessible_project(tx).await;
 
-    insert_test_specimen_and_project(&tx, |s| {
-        s.common_mut().project_id = project.record.project.id
-    })
-    .await
-    .unwrap()
+    insert_test_specimen_and_project(&tx, |s| s.project_id = project.record.project.id)
+        .await
+        .unwrap()
 }
 
 pub async fn get_user_id_from_specimen(
