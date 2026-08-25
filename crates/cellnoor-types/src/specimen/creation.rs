@@ -1,3 +1,6 @@
+pub use common::{
+    ControlledRateFreezing, DithiobisSuccinimidylpropionate, FlashFreezing, FormaldehydeDerivative,
+};
 use jiff::Timestamp;
 use macro_attributes::{base_model, discriminant_unit_enum};
 use nonempty::NonemptyString;
@@ -7,10 +10,6 @@ use crate::specimen::{
     Species,
     creation::{block::BlockFields, suspension::SuspensionSpecimenFields, tissue::TissueFields},
     measurement::NewSpecimenMeasurement,
-};
-
-pub use common::{
-    ControlledRateFreezing, DithiobisSuccinimidylpropionate, FlashFreezing, FormaldehydeDerivative,
 };
 
 pub mod block;

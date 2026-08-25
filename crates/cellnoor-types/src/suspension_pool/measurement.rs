@@ -41,4 +41,3 @@ pub struct SuspensionPoolMeasurement {
     #[cfg(not(feature = "postgres-types"))]
     pub data: SuspensionPoolMeasurementData,
 }
-

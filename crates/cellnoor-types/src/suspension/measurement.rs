@@ -8,12 +8,13 @@ use crate::{
 };
 
 mod record {
-    use crate::suspension::measurement::SuspensionMeasurementData;
     use jiff::Timestamp;
     use macro_attributes::select;
     #[cfg(all(feature = "postgres-types", feature = "schemars"))]
     use postgres_types::Json;
     use uuid::Uuid;
+
+    use crate::suspension::measurement::SuspensionMeasurementData;
 
     #[select]
     #[cfg_attr(feature = "postgres-types", postgres(name = "suspension_measurement"))]

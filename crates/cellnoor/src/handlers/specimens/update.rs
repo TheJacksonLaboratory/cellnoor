@@ -12,8 +12,7 @@ use crate::{
     handlers::{
         IdParam,
         specimens::{
-            measurements::create::insert_specimen_measurement,
-            show::select_specimen_by_id,
+            measurements::create::insert_specimen_measurement, show::select_specimen_by_id,
             split_new_specimen_for_insertion::split_new_specimen_for_insertion,
         },
     },
