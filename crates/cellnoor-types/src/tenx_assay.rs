@@ -1,6 +1,6 @@
 use macro_attributes::{select, unit_enum};
 use nonempty::NonemptyString;
-pub use query::{TenxAssayField, TenxAssayPredicate};
+pub use query::{SampleMultiplexingOperator, TenxAssayField, TenxAssayPredicate};
 use uuid::Uuid;
 
 use crate::cdna::creation::LibraryType;

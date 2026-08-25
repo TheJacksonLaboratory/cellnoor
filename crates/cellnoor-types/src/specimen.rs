@@ -7,7 +7,11 @@ pub use creation::SpecimenType;
 use macro_attributes::{base_model, select, unit_enum};
 #[cfg(feature = "postgres-types")]
 use postgres_types::{FromSql, ToSql, to_sql_checked};
-pub use query::{SimpleSpecimenQuery, SpecimenField, SpecimenPredicate, SpecimenQuery};
+pub use query::{
+    BlockEmbeddingMatrixOperator, FixativeOperator, SimpleSpecimenQuery, SpeciesOperator,
+    SpecimenField, SpecimenPredicate, SpecimenQuery, SpecimenTypeOperator,
+    ThermalPreservationMethodOperator,
+};
 
 use crate::{
     id::{Id, NoId},

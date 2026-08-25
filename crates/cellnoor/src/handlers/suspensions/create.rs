@@ -130,8 +130,8 @@ pub mod test {
         suspension::{
             NewSuspension, NewSuspensionRecord, SuspensionContent, SuspensionDetailed,
             measurement::{
-                NewSuspensionMeasurement, SuspensionMeasurementData, SuspensionMeasurementQuantity,
-                Viability,
+                CellViability, NewSuspensionMeasurement, SuspensionMeasurementData,
+                SuspensionMeasurementQuantity,
             },
         },
     };
@@ -174,10 +174,11 @@ pub mod test {
                 additional_data: None,
             },
             measurements: vec![NewSuspensionMeasurement {
+                id: NoId,
                 measured_by: person_id,
                 measured_at: Timestamp::now(),
                 data: Json(SuspensionMeasurementData {
-                    quantity: SuspensionMeasurementQuantity::Viability(Viability {
+                    quantity: SuspensionMeasurementQuantity::Viability(CellViability {
                         value: PositiveBoundedF32::new(0.5).unwrap(),
                     }),
                     post_hybridization: false,

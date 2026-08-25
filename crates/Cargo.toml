@@ -76,10 +76,12 @@ result_large_err = "allow"
 unsafe_derive_deserialize = "allow"
 wildcard_imports = "allow"
 
-# Defines a size-optimized profile for the WASM bundle in release mode
-[profile.wasm-release]
-inherits = "release"
-opt-level = 'z'
-lto = true
-codegen-units = 1
-panic = "abort"
+[workspace.lints.rust]
+unreachable-pub = "warn"
+dead-code-pub-in-binary = "warn"
+elided-lifetimes-in-paths = "warn"
+explicit-outlives-requirements = "warn"
+missing-copy-implementations = "warn"
+missing-debug-implementations = "warn"
+unnameable-types = "warn"
+unit-bindings = "warn"

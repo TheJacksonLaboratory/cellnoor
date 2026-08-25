@@ -1,17 +1,9 @@
-use jiff::Timestamp;
 use macro_attributes::{base_model, discriminant_unit_enum};
-use nonempty::{NonemptyString, NonemptyVec};
+use nonempty::NonemptyVec;
 use positive::PositiveI32;
 use uuid::Uuid;
 
-use crate::nucleic_acid_measurement::NewNucleicAcidMeasurement;
-
-#[base_model]
-pub struct CdnaSimpleFields {
-    pub readable_id: NonemptyString,
-    pub prepared_at: Timestamp,
-    pub additional_data: Option<serde_json::Value>,
-}
+use crate::{cdna::CdnaSimpleFields, nucleic_acid_measurement::NewNucleicAcidMeasurement};
 
 #[base_model]
 pub struct NewCdna {
@@ -38,9 +30,7 @@ pub enum CdnaVariableFields {
     ChromatinAccessibility,
     CrisprGuideCapture,
     Custom,
-    GeneExpression {
-        n_amplification_cycles: PositiveI32,
-    },
+    GeneExpression { n_amplification_cycles: PositiveI32 },
     MultiplexingCapture,
     Vdj,
     VdjB,

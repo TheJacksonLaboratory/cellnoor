@@ -1,7 +1,7 @@
 use cellnoor_types::{
     cdna::{
-        NewCdnaRecord,
-        creation::{CdnaSimpleFields, CdnaVariableFields, NewCdna},
+        CdnaSimpleFields, NewCdnaRecord,
+        creation::{CdnaVariableFields, NewCdna},
     },
     id::NoId,
     nucleic_acid_measurement::NewNucleicAcidMeasurement,

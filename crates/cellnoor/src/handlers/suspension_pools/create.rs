@@ -193,7 +193,7 @@ pub mod test {
 
     use cellnoor_types::{
         id::NoId,
-        suspension::measurement::Viability,
+        suspension::measurement::CellViability,
         suspension_pool::{
             NewSuspensionPool, NewSuspensionPoolRecord, PooledSuspensions, SuspensionPoolDetailed,
             TaggedSuspension,
@@ -248,7 +248,7 @@ pub mod test {
             measurements: vec![NewSuspensionPoolMeasurement {
                 measured_by: person_id,
                 measured_at: Timestamp::now(),
-                data: Json(SuspensionPoolMeasurementData::Viability(Viability {
+                data: Json(SuspensionPoolMeasurementData::Viability(CellViability {
                     value: PositiveBoundedF32::new(0.5).unwrap(),
                 })),
             }],
@@ -323,7 +323,7 @@ pub mod test {
         assert_eq!(measurements[0].pool_id, *record.id);
         assert_eq!(
             measurements[0].data.0,
-            SuspensionPoolMeasurementData::Viability(Viability {
+            SuspensionPoolMeasurementData::Viability(CellViability {
                 value: PositiveBoundedF32::new(0.5).unwrap()
             })
         );

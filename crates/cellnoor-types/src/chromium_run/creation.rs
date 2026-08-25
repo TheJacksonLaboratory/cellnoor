@@ -22,6 +22,7 @@ pub const MAX_GEM_WELLS_PER_OCM_RUN: usize = 2;
 pub const MAX_GEM_WELLS_PER_NON_OCM_RUN: usize = 8;
 
 #[base_model]
+#[derive(Copy)]
 #[cfg_attr(feature = "serde", serde(untagged, deny_unknown_fields))]
 pub enum LoadedEntity {
     Suspension { suspension_id: Uuid },

@@ -1,3 +1,5 @@
+// This is necessary to prevent stupid warnings on the test binary
+#![cfg_attr(test, allow(dead_code_pub_in_binary))]
 use crate::positive::{Positive, PositiveBounded};
 
 mod positive;

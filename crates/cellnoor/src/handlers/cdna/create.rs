@@ -1,7 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::cdna::{
-    CdnaDetailed, CdnaField, NewCdnaRecord,
-    creation::{CdnaSimpleFields, NewCdna},
+    CdnaDetailed, CdnaField, CdnaSimpleFields, NewCdnaRecord, creation::NewCdna,
 };
 use uuid::Uuid;
 
@@ -137,8 +136,8 @@ impl AsFieldValuePairs<CdnaField, 6> for NewCdnaRecord {
 pub mod test {
     use cellnoor_types::{
         cdna::{
-            CdnaDetailed,
-            creation::{CdnaSimpleFields, CdnaVariableFields, NewCdna},
+            CdnaDetailed, CdnaSimpleFields,
+            creation::{CdnaVariableFields, NewCdna},
         },
         nucleic_acid_measurement::{
             Concentration, NewNucleicAcidMeasurement, NucleicAcidMeasurementData,

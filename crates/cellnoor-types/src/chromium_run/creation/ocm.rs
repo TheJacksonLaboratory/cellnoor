@@ -14,6 +14,7 @@ pub enum OcmBarcodeId {
 }
 
 #[base_model]
+#[derive(Copy)]
 pub struct OcmLoadedEntity {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub loaded_entity: LoadedEntity,

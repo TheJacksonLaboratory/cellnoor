@@ -68,7 +68,7 @@ async fn update_cdna_by_id(
 
 #[cfg(test)]
 mod test {
-    use cellnoor_types::cdna::{CdnaUpdate, creation::CdnaSimpleFields};
+    use cellnoor_types::cdna::{CdnaSimpleFields, CdnaUpdate};
     use uuid::Uuid;
 
     use crate::{

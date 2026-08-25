@@ -1,9 +1,13 @@
+use jiff::Timestamp;
 use macro_attributes::base_model;
-pub use query::{CdnaField, CdnaPredicate, CdnaPredicateInner, CdnaQuery, SimpleCdnaQuery};
+use nonempty::NonemptyString;
+pub use query::{
+    CdnaField, CdnaPredicate, CdnaPredicateInner, CdnaQuery, LibraryTypeOperator, SimpleCdnaQuery,
+};
 use uuid::Uuid;
 
 use crate::{
-    cdna::{creation::CdnaSimpleFields, measurement::CdnaMeasurement, record::CdnaRecord},
+    cdna::{measurement::CdnaMeasurement, record::CdnaRecord},
     id::{Id, NoId},
     nucleic_acid_measurement::NewNucleicAcidMeasurement,
     simple_links::SimpleLinks,
@@ -13,6 +17,13 @@ use crate::{
 pub mod creation;
 pub mod measurement;
 mod query;
+
+#[base_model]
+pub struct CdnaSimpleFields {
+    pub readable_id: NonemptyString,
+    pub prepared_at: Timestamp,
+    pub additional_data: Option<serde_json::Value>,
+}
 
 mod record {
     use jiff::Timestamp;

@@ -1,8 +1,9 @@
 use macro_attributes::{base_model, discriminant_unit_enum, select};
 use nonempty::{NonemptyString, NonemptyVec};
 pub use query::{
-    MultiplexingTagField, MultiplexingTagPredicate, SimpleSuspensionPoolQuery, SuspensionPoolField,
-    SuspensionPoolPredicate, SuspensionPoolPredicateInner, SuspensionPoolQuery,
+    MultiplexingTagField, MultiplexingTagPredicate, MultiplexingTagTypeOperator,
+    SimpleSuspensionPoolQuery, SuspensionPoolField, SuspensionPoolPredicate,
+    SuspensionPoolPredicateInner, SuspensionPoolQuery,
 };
 use uuid::Uuid;
 
@@ -93,9 +94,7 @@ pub enum PooledSuspensions {
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(disabled)]
     #[strum_discriminants(strum(disabled))]
-    Genetic {
-        suspensions: NonemptyVec<Uuid>,
-    },
+    Genetic { suspensions: NonemptyVec<Uuid> },
 }
 
 #[base_model]

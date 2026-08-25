@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use crate::Error;
 
 #[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -25,13 +25,12 @@ impl std::fmt::Debug for NonemptyString {
 }
 
 impl NonemptyString {
-    #[must_use]
-    pub fn new(s: String) -> Option<Self> {
+    pub fn new(s: String) -> Result<Self, Error<String>> {
         if s.is_empty() {
-            return None;
+            return Err(Error(s));
         }
 
-        Some(Self(s))
+        Ok(Self(s))
     }
 }
 
@@ -47,23 +46,11 @@ impl From<NonemptyString> for String {
     }
 }
 
-#[derive(Debug, thiserror::Error)]
-#[error("string cannot be empty")]
-pub struct Error;
-
-impl FromStr for NonemptyString {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Self::new(s.to_owned()).ok_or(Error)
-    }
-}
-
 impl TryFrom<String> for NonemptyString {
-    type Error = Error;
+    type Error = Error<String>;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        Self::new(value).ok_or(Error)
+        Self::new(value)
     }
 }
 

@@ -45,6 +45,7 @@ pub struct SpecimenMeasurementData {
 }
 
 #[base_model]
+#[derive(Copy)]
 #[cfg_attr(feature = "serde", serde(tag = "quantity"))]
 pub enum SpecimenMeasurementQuantity {
     #[cfg_attr(feature = "serde", serde(rename = "DV200"))]

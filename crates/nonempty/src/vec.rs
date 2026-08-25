@@ -8,10 +8,7 @@ use bytes::BytesMut;
 #[cfg(feature = "postgres-types")]
 use postgres_types::{ToSql, to_sql_checked};
 
-#[must_use]
-#[derive(Clone, Debug, thiserror::Error, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[error("array must have between 1 and {N} elements")]
-pub struct Error<V, const N: usize>(pub V);
+use crate::Error;
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -41,7 +38,7 @@ impl<T, const N: usize> From<T> for NonemptyBoundedVec<T, N> {
 }
 
 impl<T, const N: usize> NonemptyBoundedVec<T, N> {
-    pub fn new(v: Vec<T>) -> Result<Self, Error<Vec<T>, N>> {
+    pub fn new(v: Vec<T>) -> Result<Self, Error<Vec<T>>> {
         if v.is_empty() {
             return Err(Error(v));
         }
@@ -97,9 +94,9 @@ impl<T, const N: usize> From<NonemptyBoundedVec<T, N>> for Vec<T> {
 }
 
 impl<T, const N: usize> TryFrom<Vec<T>> for NonemptyBoundedVec<T, N> {
-    type Error = Error<Vec<T>, N>;
+    type Error = Error<Vec<T>>;
 
-    fn try_from(value: Vec<T>) -> Result<Self, Error<Vec<T>, N>> {
+    fn try_from(value: Vec<T>) -> Result<Self, Error<Vec<T>>> {
         Self::new(value)
     }
 }
@@ -142,14 +139,14 @@ mod tests {
     fn empty_vec() {
         let err = NonemptyBoundedVec::<bool, 1>::new(vec![]).unwrap_err();
 
-        assert_eq!(err, super::Error(vec![]));
+        assert_eq!(err.0, Vec::<bool>::new());
     }
 
     #[test]
     fn long_vec() {
         let err = NonemptyBoundedVec::<_, 1>::new(vec![false, false]).unwrap_err();
 
-        assert_eq!(err, super::Error(vec![false, false]));
+        assert_eq!(err.0, vec![false, false]);
     }
 
     #[test]
