@@ -47,7 +47,6 @@ impl AsFieldValuePairs<&'static str, 4> for (Uuid, &NewSuspensionMeasurement) {
         let (
             suspension_id,
             NewSuspensionMeasurement {
-                id: _,
                 measured_by,
                 measured_at,
                 data,

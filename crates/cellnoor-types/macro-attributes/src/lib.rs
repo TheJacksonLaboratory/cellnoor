@@ -42,7 +42,7 @@ fn enum_derives() -> proc_macro2::TokenStream {
 
     quote! {
         #base_derives
-        #[derive(::strum::AsRefStr)]
+        #[derive(::strum::AsRefStr, ::strum::IntoStaticStr)]
         #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
         #[strum(serialize_all = "snake_case")]
     }

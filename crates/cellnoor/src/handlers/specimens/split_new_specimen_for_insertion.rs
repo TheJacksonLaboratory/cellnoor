@@ -49,9 +49,7 @@ pub fn split_new_specimen_for_insertion(
             },
         ) => (
             fixative.map(Fixative::FormaldehydeDerivative),
-            Some(ThermalPreservationMethod::FlashFreezing(
-                thermal_preservation_method,
-            )),
+            Some(ThermalPreservationMethod::Ff(thermal_preservation_method)),
         ),
         SpecimenVariableFields::Block(BlockFields::Paraffin { fixative }) => {
             (Some(Fixative::FormaldehydeDerivative(fixative)), None)
@@ -60,9 +58,7 @@ pub fn split_new_specimen_for_insertion(
             thermal_preservation_method,
         } => (
             None,
-            Some(ThermalPreservationMethod::FlashFreezing(
-                thermal_preservation_method,
-            )),
+            Some(ThermalPreservationMethod::Ff(thermal_preservation_method)),
         ),
         SpecimenVariableFields::RnaExtract
         | SpecimenVariableFields::Suspension(SuspensionSpecimenFields::Fresh)
@@ -75,9 +71,7 @@ pub fn split_new_specimen_for_insertion(
             thermal_preservation_method,
         }) => (
             None,
-            Some(ThermalPreservationMethod::ControlledRateFreezing(
-                thermal_preservation_method,
-            )),
+            Some(ThermalPreservationMethod::Crf(thermal_preservation_method)),
         ),
         SpecimenVariableFields::Tissue(TissueFields::ThermallyPreserved {
             thermal_preservation_method,

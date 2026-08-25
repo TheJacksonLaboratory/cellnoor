@@ -174,7 +174,6 @@ pub mod test {
                 additional_data: None,
             },
             measurements: vec![NewSuspensionMeasurement {
-                id: NoId,
                 measured_by: person_id,
                 measured_at: Timestamp::now(),
                 data: Json(SuspensionMeasurementData {

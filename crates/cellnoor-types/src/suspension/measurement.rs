@@ -1,42 +1,45 @@
-use macro_attributes::{base_model, unit_enum};
+use jiff::Timestamp;
+use macro_attributes::{base_model, select, unit_enum};
 use positive::{PositiveBoundedF32, PositiveF32};
+#[cfg(all(feature = "postgres-types", feature = "schemars"))]
+use postgres_types::Json;
+use uuid::Uuid;
 
 use crate::{
-    id::{Id, NoId},
-    suspension::{SuspensionContent, measurement::record::SuspensionMeasurementRecord},
+    suspension::SuspensionContent,
     units::{Microliter, Micrometer, Milliliter},
 };
 
-mod record {
-    use jiff::Timestamp;
-    use macro_attributes::select;
+#[base_model]
+pub struct NewSuspensionMeasurement {
+    pub measured_by: Uuid,
+    pub measured_at: Timestamp,
     #[cfg(all(feature = "postgres-types", feature = "schemars"))]
-    use postgres_types::Json;
-    use uuid::Uuid;
-
-    use crate::suspension::measurement::SuspensionMeasurementData;
-
-    #[select]
-    #[cfg_attr(feature = "postgres-types", postgres(name = "suspension_measurement"))]
-    pub struct SuspensionMeasurementRecord<T> {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        pub id: T,
-        pub measured_by: Uuid,
-        pub measured_at: Timestamp,
-        #[cfg(all(feature = "postgres-types", feature = "schemars"))]
-        #[cfg_attr(
-            all(feature = "postgres-types", feature = "schemars"),
-            schemars(with = "SuspensionMeasurementData")
-        )]
-        pub data: Json<SuspensionMeasurementData>,
-        #[cfg(not(feature = "postgres-types"))]
-        pub data: SuspensionMeasurementData,
-    }
+    #[cfg_attr(
+        all(feature = "postgres-types", feature = "schemars"),
+        schemars(with = "SuspensionMeasurementData")
+    )]
+    pub data: Json<SuspensionMeasurementData>,
+    #[cfg(not(feature = "postgres-types"))]
+    pub data: SuspensionMeasurementData,
 }
 
-pub type NewSuspensionMeasurement = SuspensionMeasurementRecord<NoId>;
-
-pub type SuspensionMeasurement = SuspensionMeasurementRecord<Id>;
+#[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "suspension_measurement"))]
+pub struct SuspensionMeasurement {
+    pub id: Uuid,
+    pub suspension_id: Uuid,
+    pub measured_by: Uuid,
+    pub measured_at: Timestamp,
+    #[cfg(all(feature = "postgres-types", feature = "schemars"))]
+    #[cfg_attr(
+        all(feature = "postgres-types", feature = "schemars"),
+        schemars(with = "SuspensionMeasurementData")
+    )]
+    pub data: Json<SuspensionMeasurementData>,
+    #[cfg(not(feature = "postgres-types"))]
+    pub data: SuspensionMeasurementData,
+}
 
 #[base_model]
 #[derive(Copy)]

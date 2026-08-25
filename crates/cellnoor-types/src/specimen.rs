@@ -115,8 +115,8 @@ pub struct SpecimenDetailed {
 #[derive(Copy)]
 #[cfg_attr(feature = "serde", serde(untagged))]
 pub enum ThermalPreservationMethod {
-    ControlledRateFreezing(ControlledRateFreezing),
-    FlashFreezing(FlashFreezing),
+    Crf(ControlledRateFreezing),
+    Ff(FlashFreezing),
 }
 
 #[cfg(feature = "postgres-types")]
@@ -128,16 +128,12 @@ impl<'a> FromSql<'a> for ThermalPreservationMethod {
         let s = <nonempty::NonemptyString as FromSql>::from_sql(ty, raw)?;
         let s = s.as_ref();
 
-        let map_err = |e| Box::new(e) as Box<dyn ::std::error::Error + Sync + Send>;
+        let controlled_rate_freezing = ControlledRateFreezing::from_str(s).map(Self::Crf);
+        let flash_freezing = FlashFreezing::from_str(s).map(Self::Ff);
 
-        let controlled_rate_freezing = ControlledRateFreezing::from_str(s)
-            .map(Self::ControlledRateFreezing)
-            .map_err(map_err);
-        let flash_freezing = FlashFreezing::from_str(s)
-            .map(Self::FlashFreezing)
-            .map_err(map_err);
-
-        controlled_rate_freezing.or(flash_freezing)
+        controlled_rate_freezing
+            .or(flash_freezing)
+            .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Sync + Send>)
     }
 
     fn accepts(ty: &postgres_types::Type) -> bool {
@@ -159,12 +155,12 @@ impl ToSql for ThermalPreservationMethod {
     where
         Self: Sized,
     {
-        let value: &str = match self {
-            Self::ControlledRateFreezing(c) => c.as_ref(),
-            Self::FlashFreezing(f) => f.as_ref(),
+        let value = match self {
+            Self::Crf(c) => c.into(),
+            Self::Ff(f) => f.into(),
         };
 
-        <&str as ToSql>::to_sql(&value, ty, out)
+        <&'static str as ToSql>::to_sql(&value, ty, out)
     }
 
     fn accepts(ty: &postgres_types::Type) -> bool
@@ -192,16 +188,13 @@ impl<'a> FromSql<'a> for Fixative {
         let s = <nonempty::NonemptyString as FromSql>::from_sql(ty, raw)?;
         let s = s.as_ref();
 
-        let map_err = |e| Box::new(e) as Box<dyn ::std::error::Error + Sync + Send>;
-
-        let dsp = DithiobisSuccinimidylpropionate::from_str(s)
-            .map(Self::DithiobisSuccinimidylpropionate)
-            .map_err(map_err);
-        let formaldehyde_derivative = FormaldehydeDerivative::from_str(s)
-            .map(Self::FormaldehydeDerivative)
-            .map_err(map_err);
+        let dsp =
+            DithiobisSuccinimidylpropionate::from_str(s).map(Self::DithiobisSuccinimidylpropionate);
+        let formaldehyde_derivative =
+            FormaldehydeDerivative::from_str(s).map(Self::FormaldehydeDerivative);
 
         dsp.or(formaldehyde_derivative)
+            .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Sync + Send>)
     }
 
     fn accepts(ty: &postgres_types::Type) -> bool {
@@ -223,12 +216,12 @@ impl ToSql for Fixative {
     where
         Self: Sized,
     {
-        let value: &str = match self {
-            Self::DithiobisSuccinimidylpropionate(c) => c.as_ref(),
-            Self::FormaldehydeDerivative(f) => f.as_ref(),
+        let value = match self {
+            Self::DithiobisSuccinimidylpropionate(c) => c.into(),
+            Self::FormaldehydeDerivative(f) => f.into(),
         };
 
-        <&str as ToSql>::to_sql(&value, ty, out)
+        <&'static str as ToSql>::to_sql(&value, ty, out)
     }
 
     fn accepts(ty: &postgres_types::Type) -> bool

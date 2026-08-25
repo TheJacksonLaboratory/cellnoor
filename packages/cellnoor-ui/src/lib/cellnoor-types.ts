@@ -4829,7 +4829,10 @@ export interface components {
         } | {
             in: components["schemas"]["LibraryType"][][];
         } | components["schemas"]["LibraryType"][];
-        /** @enum {string} */
+        /**
+         * @description Auto-generated discriminant enum variants
+         * @enum {string}
+         */
         BlockEmbeddingMatrix: "carboxymethyl_cellulose" | "optimal_cutting_temperature_compound" | "paraffin";
         /** @description A comparison operator for any scalar value. */
         BlockEmbeddingMatrixOperator: {
@@ -4845,8 +4848,21 @@ export interface components {
         } | {
             in: components["schemas"]["BlockEmbeddingMatrix"][];
         } | components["schemas"]["BlockEmbeddingMatrix"];
-        /** @enum {string} */
-        BlockFixative: "formaldehyde_derivative";
+        BlockFields: {
+            /** @constant */
+            embedded_in: "carboxymethyl_cellulose";
+            fixative?: components["schemas"]["FormaldehydeDerivative"] | null;
+            thermal_preservation_method: components["schemas"]["FlashFreezing"];
+        } | {
+            /** @constant */
+            embedded_in: "optimal_cutting_temperature_compound";
+            fixative?: components["schemas"]["FormaldehydeDerivative"] | null;
+            thermal_preservation_method: components["schemas"]["FlashFreezing"];
+        } | {
+            /** @constant */
+            embedded_in: "paraffin";
+            fixative: components["schemas"]["FormaldehydeDerivative"];
+        };
         CdnaCompact: {
             additional_data?: unknown;
             /** Format: uuid */
@@ -4945,8 +4961,10 @@ export interface components {
             preparers?: string[] | null;
             readable_id: string;
         };
-        /** @enum {string} */
-        CellPelletThermalPreservation: "flash_freezing";
+        CellViability: {
+            /** Format: float */
+            value: number;
+        };
         ChromiumDatasetCompact: {
             /** Format: date-time */
             delivered_at: string;
@@ -5185,9 +5203,13 @@ export interface components {
             [key: string]: unknown;
         };
         /** @enum {string} */
+        ControlledRateFreezing: "controlled_rate_freezing";
+        /** @enum {string} */
         CookieStyle: "form";
         /** @enum {string} */
         CountingMethod: "bright_field" | "acridine_orange_propidium_iodide" | "trypan_blue";
+        /** @enum {string} */
+        DithiobisSuccinimidylpropionate: "dithiobis_succinimidylpropionate";
         /** @description A single encoding definition applied to a single schema property. */
         Encoding: {
             /**
@@ -5289,8 +5311,7 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /** @enum {string} */
-        Fixative: "dithiobis_succinimidylpropionate" | "formaldehyde_derivative";
+        Fixative: components["schemas"]["DithiobisSuccinimidylpropionate"] | components["schemas"]["FormaldehydeDerivative"];
         /** @description A comparison operator for any scalar value. */
         FixativeOperator: {
             eq: components["schemas"]["Fixative"];
@@ -5305,6 +5326,10 @@ export interface components {
         } | {
             in: components["schemas"]["Fixative"][];
         } | components["schemas"]["Fixative"];
+        /** @enum {string} */
+        FlashFreezing: "flash_freezing";
+        /** @enum {string} */
+        FormaldehydeDerivative: "formaldehyde_derivative";
         GemWell: {
             /** Format: uuid */
             chromium_run_id: string;
@@ -5724,134 +5749,51 @@ export interface components {
             expires_at?: string | null;
             service_id?: components["schemas"]["ServiceId"] | null;
         };
-        NewBlock: {
-            additional_data?: unknown;
-            /** @constant */
-            embedded_in: "optimal_cutting_temperature_compound";
-            fixative?: components["schemas"]["BlockFixative"] | null;
-            host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
-            name: string;
-            /** Format: uuid */
-            project_id: string;
-            readable_id: string;
-            /** Format: date-time */
-            received_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
-            species: components["schemas"]["Species"];
-            /** Format: uuid */
-            submitted_by: string;
-            tissue: string;
-        } | {
-            additional_data?: unknown;
-            /** @constant */
-            embedded_in: "carboxymethyl_cellulose";
-            fixative?: components["schemas"]["BlockFixative"] | null;
-            host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
-            name: string;
-            /** Format: uuid */
-            project_id: string;
-            readable_id: string;
-            /** Format: date-time */
-            received_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
-            species: components["schemas"]["Species"];
-            /** Format: uuid */
-            submitted_by: string;
-            tissue: string;
-        } | {
-            additional_data?: unknown;
-            /** @constant */
-            embedded_in: "paraffin";
-            fixative: components["schemas"]["BlockFixative"];
-            host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
-            name: string;
-            /** Format: uuid */
-            project_id: string;
-            readable_id: string;
-            /** Format: date-time */
-            received_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
-            species: components["schemas"]["Species"];
-            /** Format: uuid */
-            submitted_by: string;
-            tissue: string;
-        };
-        NewCdna: ({
-            /** @constant */
-            library_type: "antibody_capture";
-        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | ({
-            /** @constant */
-            library_type: "antigen_capture";
-        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | ({
-            /** @constant */
-            library_type: "chromatin_accessibility";
-        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | ({
-            /** @constant */
-            library_type: "crispr_guide_capture";
-        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | ({
-            /** @constant */
-            library_type: "custom";
-        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | {
+        NewCdna: {
             additional_data?: unknown;
             /** Format: uuid */
             gem_well_id: string;
-            /** @constant */
-            library_type: "gene_expression";
             measurements: components["schemas"]["NewNucleicAcidMeasurement"][];
-            /** Format: int32 */
-            n_amplification_cycles: number;
             /** Format: date-time */
             prepared_at: string;
             preparers: string[];
             readable_id: string;
-        } | ({
+        } & ({
+            /** @constant */
+            library_type: "antibody_capture";
+        } | {
+            /** @constant */
+            library_type: "antigen_capture";
+        } | {
+            /** @constant */
+            library_type: "chromatin_accessibility";
+        } | {
+            /** @constant */
+            library_type: "crispr_guide_capture";
+        } | {
+            /** @constant */
+            library_type: "custom";
+        } | {
+            /** @constant */
+            library_type: "gene_expression";
+            /** Format: int32 */
+            n_amplification_cycles: number;
+        } | {
             /** @constant */
             library_type: "multiplexing_capture";
-        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | ({
+        } | {
             /** @constant */
             library_type: "vdj";
-        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | ({
+        } | {
             /** @constant */
             library_type: "vdj_b";
-        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | ({
+        } | {
             /** @constant */
             library_type: "vdj_t";
-        } & components["schemas"]["NewChromiumCdnaCommonFields"]) | ({
+        } | {
             /** @constant */
             library_type: "vdj_t_gd";
-        } & components["schemas"]["NewChromiumCdnaCommonFields"]);
-        NewCellPellet: {
-            additional_data?: unknown;
-            host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
-            name: string;
-            /** Format: uuid */
-            project_id: string;
-            readable_id: string;
-            /** Format: date-time */
-            received_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
-            species: components["schemas"]["Species"];
-            /** Format: uuid */
-            submitted_by: string;
-            thermal_preservation_method: components["schemas"]["CellPelletThermalPreservation"];
-            tissue: string;
-        };
+        });
         NewChromiumAssay: {
             chemistry_version: string;
             chromium_chip: string;
@@ -5860,16 +5802,6 @@ export interface components {
             name: string;
             protocol_url: string;
             sample_multiplexing: components["schemas"]["SampleMultiplexing"];
-        };
-        NewChromiumCdnaCommonFields: {
-            additional_data?: unknown;
-            /** Format: uuid */
-            gem_well_id: string;
-            measurements: components["schemas"]["NewNucleicAcidMeasurement"][];
-            /** Format: date-time */
-            prepared_at: string;
-            preparers: string[];
-            readable_id: string;
         };
         NewChromiumDataset: {
             /** Format: date-time */
@@ -5881,42 +5813,25 @@ export interface components {
             additional_data?: unknown;
             /** Format: uuid */
             assay_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            run_at: string;
+            /** Format: uuid */
+            run_by: string;
+            succeeded: boolean;
+        } & ({
             gem_wells: components["schemas"]["NewStandardOrOcmGemWell"][];
             /** @constant */
             plexy: "mixed";
-            readable_id: string;
-            /** Format: date-time */
-            run_at: string;
-            /** Format: uuid */
-            run_by: string;
-            succeeded: boolean;
         } | {
-            additional_data?: unknown;
-            /** Format: uuid */
-            assay_id: string;
             gem_wells: components["schemas"]["NewOcmGemWell"][];
             /** @constant */
             plexy: "on_chip_multiplexing";
-            readable_id: string;
-            /** Format: date-time */
-            run_at: string;
-            /** Format: uuid */
-            run_by: string;
-            succeeded: boolean;
         } | {
-            additional_data?: unknown;
-            /** Format: uuid */
-            assay_id: string;
             gem_wells: components["schemas"]["NewStandardGemWell"][];
             /** @constant */
             plexy: "standard";
-            readable_id: string;
-            /** Format: date-time */
-            run_at: string;
-            /** Format: uuid */
-            run_by: string;
-            succeeded: boolean;
-        };
+        });
         NewDualIndexSet: {
             index2_workflow_a_i5: string;
             index2_workflow_b_i5: string;
@@ -5979,23 +5894,7 @@ export interface components {
             permissions_to_grant: components["schemas"]["PermissionsToGrant"];
             users: string[];
         };
-        NewSpecimen: ({
-            /** @constant */
-            type: "block";
-        } & components["schemas"]["NewBlock"]) | ({
-            /** @constant */
-            type: "cell_pellet";
-        } & components["schemas"]["NewCellPellet"]) | ({
-            /** @constant */
-            type: "rna_extract";
-        } & components["schemas"]["NewSpecimenCommonFields"]) | ({
-            /** @constant */
-            type: "suspension";
-        } & components["schemas"]["NewSuspensionSpecimen"]) | ({
-            /** @constant */
-            type: "tissue";
-        } & components["schemas"]["NewTissue"]);
-        NewSpecimenCommonFields: {
+        NewSpecimen: {
             additional_data?: unknown;
             host_species?: components["schemas"]["Species"] | null;
             measurements: components["schemas"]["NewSpecimenMeasurement"][];
@@ -6013,7 +5912,23 @@ export interface components {
             /** Format: uuid */
             submitted_by: string;
             tissue: string;
-        };
+        } & (({
+            /** @constant */
+            type: "block";
+        } & components["schemas"]["BlockFields"]) | {
+            thermal_preservation_method: components["schemas"]["FlashFreezing"];
+            /** @constant */
+            type: "cell_pellet";
+        } | {
+            /** @constant */
+            type: "rna_extract";
+        } | ({
+            /** @constant */
+            type: "suspension";
+        } & components["schemas"]["SuspensionSpecimenFields"]) | ({
+            /** @constant */
+            type: "tissue";
+        } & components["schemas"]["TissueFields"]));
         NewSpecimenMeasurement: {
             data: components["schemas"]["SpecimenMeasurementData"];
             /** Format: date-time */
@@ -6059,22 +5974,7 @@ export interface components {
             /** Format: uuid */
             measured_by: string;
         };
-        NewSuspensionPool: ({
-            /** @constant */
-            multiplexing_tag_type: "flex_barcode";
-        } & components["schemas"]["NewTaggedSuspensionPool"]) | ({
-            /** @constant */
-            multiplexing_tag_type: "flex_oligonucleotide_barcode";
-        } & components["schemas"]["NewTaggedSuspensionPool"]) | ({
-            /** @constant */
-            multiplexing_tag_type: "TotalSeq-A";
-        } & components["schemas"]["NewTaggedSuspensionPool"]) | ({
-            /** @constant */
-            multiplexing_tag_type: "TotalSeq-B";
-        } & components["schemas"]["NewTaggedSuspensionPool"]) | ({
-            /** @constant */
-            multiplexing_tag_type: "TotalSeq-C";
-        } & components["schemas"]["NewTaggedSuspensionPool"]) | {
+        NewSuspensionPool: {
             additional_data?: unknown;
             measurements: components["schemas"]["NewSuspensionPoolMeasurement"][];
             name: string;
@@ -6082,141 +5982,44 @@ export interface components {
             pooled_at: string;
             preparers: string[];
             readable_id: string;
+        } | {
+            /** @constant */
+            multiplexing_tag_type: "flex_barcode";
+            suspensions: components["schemas"]["TaggedSuspension"][];
+        } | {
+            /** @constant */
+            multiplexing_tag_type: "flex_oligonucleotide_barcode";
+            suspensions: components["schemas"]["TaggedSuspension"][];
+        } | {
+            /** @constant */
+            multiplexing_tag_type: "TotalSeq-A";
+            suspensions: components["schemas"]["TaggedSuspension"][];
+        } | {
+            /** @constant */
+            multiplexing_tag_type: "TotalSeq-B";
+            suspensions: components["schemas"]["TaggedSuspension"][];
+        } | {
+            /** @constant */
+            multiplexing_tag_type: "TotalSeq-C";
+            suspensions: components["schemas"]["TaggedSuspension"][];
+        } | {
             suspensions: string[];
         };
         NewSuspensionPoolMeasurement: {
-            data: components["schemas"]["SuspensionPoolMeasurementData"];
+            data: components["schemas"]["SuspensionMeasurementQuantity"];
             /** Format: date-time */
             measured_at: string;
             /** Format: uuid */
             measured_by: string;
         };
-        NewSuspensionSpecimen: {
-            additional_data?: unknown;
-            fixative: components["schemas"]["Fixative"];
-            host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
-            name: string;
-            /** @constant */
-            preservation_state: "fixed";
-            /** Format: uuid */
-            project_id: string;
-            readable_id: string;
-            /** Format: date-time */
-            received_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
-            species: components["schemas"]["Species"];
-            /** Format: uuid */
-            submitted_by: string;
-            tissue: string;
-        } | ({
-            /** @constant */
-            preservation_state: "fresh";
-        } & components["schemas"]["NewSpecimenCommonFields"]) | {
-            additional_data?: unknown;
-            host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
-            name: string;
-            /** @constant */
-            preservation_state: "thermally_preserved";
-            /** Format: uuid */
-            project_id: string;
-            readable_id: string;
-            /** Format: date-time */
-            received_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
-            species: components["schemas"]["Species"];
-            /** Format: uuid */
-            submitted_by: string;
-            thermal_preservation_method: components["schemas"]["SuspensionThermalPreservation"];
-            tissue: string;
-        };
-        NewTaggedSuspensionPool: {
-            additional_data?: unknown;
-            measurements: components["schemas"]["NewSuspensionPoolMeasurement"][];
-            name: string;
-            /** Format: date-time */
-            pooled_at: string;
-            preparers: string[];
-            readable_id: string;
-            suspensions: components["schemas"]["TaggedSuspension"][];
-        };
         NewTenxAssay: {
             /** @constant */
             platform: "chromium";
         } & components["schemas"]["NewChromiumAssay"];
-        NewTissue: {
-            additional_data?: unknown;
-            fixative: components["schemas"]["Fixative"];
-            host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
-            name: string;
-            /** @constant */
-            preservation_state: "fixed";
-            /** Format: uuid */
-            project_id: string;
-            readable_id: string;
-            /** Format: date-time */
-            received_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
-            species: components["schemas"]["Species"];
-            /** Format: uuid */
-            submitted_by: string;
-            tissue: string;
-        } | {
-            additional_data?: unknown;
-            host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
-            name: string;
-            /** @constant */
-            preservation_state: "fresh";
-            /** Format: uuid */
-            project_id: string;
-            readable_id: string;
-            /** Format: date-time */
-            received_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
-            species: components["schemas"]["Species"];
-            /** Format: uuid */
-            submitted_by: string;
-            tissue: string;
-        } | {
-            additional_data?: unknown;
-            host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
-            name: string;
-            /** @constant */
-            preservation_state: "thermally_preserved";
-            /** Format: uuid */
-            project_id: string;
-            readable_id: string;
-            /** Format: date-time */
-            received_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
-            species: components["schemas"]["Species"];
-            /** Format: uuid */
-            submitted_by: string;
-            thermal_preservation_method: components["schemas"]["ThermalPreservationMethod"];
-            tissue: string;
-        };
         NucleicAcidMeasurementData: {
-            concentration: components["schemas"]["PicogramConcentration"];
             instrument_name: string;
+        } & ({
+            concentration: components["schemas"]["PicogramConcentration"];
             /** Format: int32 */
             mean_size_bp?: number | null;
             sizing_range: [
@@ -6227,10 +6030,9 @@ export interface components {
             type: "Electrophoretic";
         } | {
             concentration: components["schemas"]["NanogramConcentration"];
-            instrument_name: string;
             /** @constant */
             type: "Fluorometric";
-        };
+        });
         OAuth2Flows: (({
             implicit: {
                 authorizationUrl: string;
@@ -7622,17 +7424,17 @@ export interface components {
         };
         SpecimenMeasurementData: {
             instrument_name?: string | null;
+        } & ({
             /** @constant */
             quantity: "DV200";
             /** Format: float */
             value: number;
         } | {
-            instrument_name?: string | null;
             /** @constant */
             quantity: "RIN";
             /** Format: float */
             value: number;
-        };
+        });
         SpecimenPredicate: {
             id: components["schemas"]["UuidOperator"];
         } | {
@@ -7687,7 +7489,10 @@ export interface components {
             offset?: number;
             order_by?: components["schemas"]["OrderBySpecimenFieldSet"];
         };
-        /** @enum {string} */
+        /**
+         * @description Auto-generated discriminant enum variants
+         * @enum {string}
+         */
         SpecimenType: "block" | "cell_pellet" | "rna_extract" | "suspension" | "tissue";
         /** @description A comparison operator for any scalar value. */
         SpecimenTypeOperator: {
@@ -7799,36 +7604,33 @@ export interface components {
             suspension_id: string;
         };
         SuspensionMeasurementData: {
-            counting_method?: components["schemas"]["CountingMethod"] | null;
-            denominator_unit: components["schemas"]["Milliliter"];
-            numerator_unit: components["schemas"]["SuspensionContent"];
             post_hybridization: boolean;
+        } & (({
             /** @constant */
-            quantity: "Concentration";
-            /** Format: uint32 */
-            value: number;
-        } | {
-            post_hybridization: boolean;
+            quantity: "concentration";
+        } & components["schemas"]["SuspensionConcentration"]) | ({
             /** @constant */
-            quantity: "Viability";
-            /** Format: float */
-            value: number;
-        } | {
-            post_hybridization: boolean;
+            quantity: "viability";
+        } & components["schemas"]["CellViability"]) | ({
             /** @constant */
-            quantity: "Volume";
-            unit: components["schemas"]["Microliter"];
-            /** Format: float */
-            value: number;
-        } | {
-            object: components["schemas"]["SuspensionContent"];
-            post_hybridization: boolean;
+            quantity: "volume";
+        } & components["schemas"]["SuspensionVolume"]) | ({
             /** @constant */
-            quantity: "MeanDiameter";
-            unit: components["schemas"]["Micrometer"];
-            /** Format: float */
-            value: number;
-        };
+            quantity: "mean_diameter";
+        } & components["schemas"]["MeanDiameter"]));
+        SuspensionMeasurementQuantity: ({
+            /** @constant */
+            quantity: "concentration";
+        } & components["schemas"]["SuspensionConcentration"]) | ({
+            /** @constant */
+            quantity: "viability";
+        } & components["schemas"]["CellViability"]) | ({
+            /** @constant */
+            quantity: "volume";
+        } & components["schemas"]["SuspensionVolume"]) | ({
+            /** @constant */
+            quantity: "mean_diameter";
+        } & components["schemas"]["MeanDiameter"]);
         SuspensionPoolCompact: {
             additional_data?: unknown;
             /** Format: uuid */
@@ -7862,7 +7664,7 @@ export interface components {
             suspensions: string;
         };
         SuspensionPoolMeasurement: {
-            data: components["schemas"]["SuspensionPoolMeasurementData"];
+            data: components["schemas"]["SuspensionMeasurementQuantity"];
             /** Format: uuid */
             id: string;
             /** Format: date-time */
@@ -7872,19 +7674,6 @@ export interface components {
             /** Format: uuid */
             pool_id: string;
         };
-        SuspensionPoolMeasurementData: ({
-            /** @constant */
-            quantity: "Concentration";
-        } & components["schemas"]["SuspensionConcentration"]) | ({
-            /** @constant */
-            quantity: "Viability";
-        } & components["schemas"]["Viability"]) | ({
-            /** @constant */
-            quantity: "Volume";
-        } & components["schemas"]["SuspensionVolume"]) | ({
-            /** @constant */
-            quantity: "MeanDiameter";
-        } & components["schemas"]["MeanDiameter"]);
         SuspensionPoolPredicate: {
             specimen: components["schemas"]["SpecimenPredicate"];
         } | {
@@ -7972,8 +7761,18 @@ export interface components {
             offset?: number;
             order_by?: components["schemas"]["OrderBySuspensionFieldSet"];
         };
-        /** @enum {string} */
-        SuspensionThermalPreservation: "controlled_rate_freezing";
+        SuspensionSpecimenFields: {
+            fixative: components["schemas"]["Fixative"];
+            /** @constant */
+            preservation_state: "fixed";
+        } | {
+            /** @constant */
+            preservation_state: "fresh";
+        } | {
+            /** @constant */
+            preservation_state: "thermally_preserved";
+            thermal_preservation_method: components["schemas"]["ControlledRateFreezing"];
+        };
         SuspensionUpdate: {
             additional_data?: unknown;
             content: components["schemas"]["SuspensionContent"];
@@ -8072,8 +7871,7 @@ export interface components {
         } | {
             protocol_url: components["schemas"]["StringOperator"];
         };
-        /** @enum {string} */
-        ThermalPreservationMethod: "controlled_rate_freezing" | "flash_freezing";
+        ThermalPreservationMethod: components["schemas"]["ControlledRateFreezing"] | components["schemas"]["FlashFreezing"];
         /** @description A comparison operator for any scalar value. */
         ThermalPreservationMethodOperator: {
             eq: components["schemas"]["ThermalPreservationMethod"];
@@ -8107,6 +7905,18 @@ export interface components {
         } | {
             in: string[];
         } | string;
+        TissueFields: {
+            fixative: components["schemas"]["Fixative"];
+            /** @constant */
+            preservation_state: "fixed";
+        } | {
+            /** @constant */
+            preservation_state: "fresh";
+        } | {
+            /** @constant */
+            preservation_state: "thermally_preserved";
+            thermal_preservation_method: components["schemas"]["ThermalPreservationMethod"];
+        };
         /** @description A comparison operator for any scalar value. */
         UuidOperator: {
             /** Format: uuid */
@@ -8126,10 +7936,6 @@ export interface components {
         } | {
             in: string[];
         } | string;
-        Viability: {
-            /** Format: float */
-            value: number;
-        };
         /** @description A comparison operator for any scalar value. */
         booleanOperator: {
             eq: boolean;
@@ -8235,7 +8041,7 @@ export type ApiKeyUpdate = components['schemas']['ApiKeyUpdate'];
 export type ArrayOfLibraryTypeOperator = components['schemas']['Array_of_LibraryTypeOperator'];
 export type BlockEmbeddingMatrix = components['schemas']['BlockEmbeddingMatrix'];
 export type BlockEmbeddingMatrixOperator = components['schemas']['BlockEmbeddingMatrixOperator'];
-export type BlockFixative = components['schemas']['BlockFixative'];
+export type BlockFields = components['schemas']['BlockFields'];
 export type CdnaCompact = components['schemas']['CdnaCompact'];
 export type CdnaDetailed = components['schemas']['CdnaDetailed'];
 export type CdnaField = components['schemas']['CdnaField'];
@@ -8245,7 +8051,7 @@ export type CdnaPredicateFilter = components['schemas']['CdnaPredicateFilter'];
 export type CdnaPredicateInner = components['schemas']['CdnaPredicateInner'];
 export type CdnaPredicateQuery = components['schemas']['CdnaPredicateQuery'];
 export type CdnaUpdate = components['schemas']['CdnaUpdate'];
-export type CellPelletThermalPreservation = components['schemas']['CellPelletThermalPreservation'];
+export type CellViability = components['schemas']['CellViability'];
 export type ChromiumDatasetCompact = components['schemas']['ChromiumDatasetCompact'];
 export type ChromiumDatasetDetailed = components['schemas']['ChromiumDatasetDetailed'];
 export type ChromiumDatasetDetailedLinks = components['schemas']['ChromiumDatasetDetailedLinks'];
@@ -8267,13 +8073,17 @@ export type ChromiumRunPredicateQuery = components['schemas']['ChromiumRunPredic
 export type ChromiumRunRecord = components['schemas']['ChromiumRunRecord'];
 export type Components = components['schemas']['Components'];
 export type Contact = components['schemas']['Contact'];
+export type ControlledRateFreezing = components['schemas']['ControlledRateFreezing'];
 export type CookieStyle = components['schemas']['CookieStyle'];
 export type CountingMethod = components['schemas']['CountingMethod'];
+export type DithiobisSuccinimidylpropionate = components['schemas']['DithiobisSuccinimidylpropionate'];
 export type Encoding = components['schemas']['Encoding'];
 export type Example = components['schemas']['Example'];
 export type ExternalDocumentation = components['schemas']['ExternalDocumentation'];
 export type Fixative = components['schemas']['Fixative'];
 export type FixativeOperator = components['schemas']['FixativeOperator'];
+export type FlashFreezing = components['schemas']['FlashFreezing'];
+export type FormaldehydeDerivative = components['schemas']['FormaldehydeDerivative'];
 export type GemWell = components['schemas']['GemWell'];
 export type Header = components['schemas']['Header'];
 export type HeaderStyle = components['schemas']['HeaderStyle'];
@@ -8311,11 +8121,8 @@ export type MultiplexingTagTypeOperator = components['schemas']['MultiplexingTag
 export type Nanogram = components['schemas']['Nanogram'];
 export type NanogramConcentration = components['schemas']['NanogramConcentration'];
 export type NewApiKey = components['schemas']['NewApiKey'];
-export type NewBlock = components['schemas']['NewBlock'];
 export type NewCdna = components['schemas']['NewCdna'];
-export type NewCellPellet = components['schemas']['NewCellPellet'];
 export type NewChromiumAssay = components['schemas']['NewChromiumAssay'];
-export type NewChromiumCdnaCommonFields = components['schemas']['NewChromiumCdnaCommonFields'];
 export type NewChromiumDataset = components['schemas']['NewChromiumDataset'];
 export type NewChromiumRun = components['schemas']['NewChromiumRun'];
 export type NewDualIndexSet = components['schemas']['NewDualIndexSet'];
@@ -8327,7 +8134,6 @@ export type NewPerson = components['schemas']['NewPerson'];
 export type NewProject = components['schemas']['NewProject'];
 export type NewService = components['schemas']['NewService'];
 export type NewSpecimen = components['schemas']['NewSpecimen'];
-export type NewSpecimenCommonFields = components['schemas']['NewSpecimenCommonFields'];
 export type NewSpecimenMeasurement = components['schemas']['NewSpecimenMeasurement'];
 export type NewStandardGemWell = components['schemas']['NewStandardGemWell'];
 export type NewStandardOrOcmGemWell = components['schemas']['NewStandardOrOcmGemWell'];
@@ -8335,10 +8141,7 @@ export type NewSuspension = components['schemas']['NewSuspension'];
 export type NewSuspensionMeasurement = components['schemas']['NewSuspensionMeasurement'];
 export type NewSuspensionPool = components['schemas']['NewSuspensionPool'];
 export type NewSuspensionPoolMeasurement = components['schemas']['NewSuspensionPoolMeasurement'];
-export type NewSuspensionSpecimen = components['schemas']['NewSuspensionSpecimen'];
-export type NewTaggedSuspensionPool = components['schemas']['NewTaggedSuspensionPool'];
 export type NewTenxAssay = components['schemas']['NewTenxAssay'];
-export type NewTissue = components['schemas']['NewTissue'];
 export type NucleicAcidMeasurementData = components['schemas']['NucleicAcidMeasurementData'];
 export type OAuth2Flows = components['schemas']['OAuth2Flows'];
 export type OcmBarcodeId = components['schemas']['OcmBarcodeId'];
@@ -8441,12 +8244,12 @@ export type SuspensionDetailed = components['schemas']['SuspensionDetailed'];
 export type SuspensionField = components['schemas']['SuspensionField'];
 export type SuspensionMeasurement = components['schemas']['SuspensionMeasurement'];
 export type SuspensionMeasurementData = components['schemas']['SuspensionMeasurementData'];
+export type SuspensionMeasurementQuantity = components['schemas']['SuspensionMeasurementQuantity'];
 export type SuspensionPoolCompact = components['schemas']['SuspensionPoolCompact'];
 export type SuspensionPoolDetailed = components['schemas']['SuspensionPoolDetailed'];
 export type SuspensionPoolField = components['schemas']['SuspensionPoolField'];
 export type SuspensionPoolLinks = components['schemas']['SuspensionPoolLinks'];
 export type SuspensionPoolMeasurement = components['schemas']['SuspensionPoolMeasurement'];
-export type SuspensionPoolMeasurementData = components['schemas']['SuspensionPoolMeasurementData'];
 export type SuspensionPoolPredicate = components['schemas']['SuspensionPoolPredicate'];
 export type SuspensionPoolPredicateFilter = components['schemas']['SuspensionPoolPredicateFilter'];
 export type SuspensionPoolPredicateInner = components['schemas']['SuspensionPoolPredicateInner'];
@@ -8456,7 +8259,7 @@ export type SuspensionPredicate = components['schemas']['SuspensionPredicate'];
 export type SuspensionPredicateFilter = components['schemas']['SuspensionPredicateFilter'];
 export type SuspensionPredicateInner = components['schemas']['SuspensionPredicateInner'];
 export type SuspensionPredicateQuery = components['schemas']['SuspensionPredicateQuery'];
-export type SuspensionThermalPreservation = components['schemas']['SuspensionThermalPreservation'];
+export type SuspensionSpecimenFields = components['schemas']['SuspensionSpecimenFields'];
 export type SuspensionUpdate = components['schemas']['SuspensionUpdate'];
 export type SuspensionVolume = components['schemas']['SuspensionVolume'];
 export type Tag = components['schemas']['Tag'];
@@ -8467,8 +8270,8 @@ export type TenxAssayPredicate = components['schemas']['TenxAssayPredicate'];
 export type ThermalPreservationMethod = components['schemas']['ThermalPreservationMethod'];
 export type ThermalPreservationMethodOperator = components['schemas']['ThermalPreservationMethodOperator'];
 export type TimestampOperator = components['schemas']['TimestampOperator'];
+export type TissueFields = components['schemas']['TissueFields'];
 export type UuidOperator = components['schemas']['UuidOperator'];
-export type Viability = components['schemas']['Viability'];
 export type BooleanOperator = components['schemas']['booleanOperator'];
 export type FloatOperator = components['schemas']['floatOperator'];
 export type Int32Operator = components['schemas']['int32Operator'];
@@ -8486,14 +8289,15 @@ export const actionValues: ReadonlyArray<FlattenedDeepRequired<components>["sche
 export const apiKeyFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ApiKeyField"]> = ["id", "description", "person_id", "service_id", "created_at", "expires_at"];
 export const apiKeyLocationValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ApiKeyLocation"]> = ["query", "header", "cookie"];
 export const blockEmbeddingMatrixValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["BlockEmbeddingMatrix"]> = ["carboxymethyl_cellulose", "optimal_cutting_temperature_compound", "paraffin"];
-export const blockFixativeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["BlockFixative"]> = ["formaldehyde_derivative"];
 export const cdnaFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["CdnaField"]> = ["id", "readable_id", "library_type", "prepared_at", "gem_well_id", "n_amplification_cycles", "additional_data"];
-export const cellPelletThermalPreservationValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["CellPelletThermalPreservation"]> = ["flash_freezing"];
 export const chromiumDatasetFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ChromiumDatasetField"]> = ["id", "name", "delivered_at"];
 export const chromiumRunFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ChromiumRunField"]> = ["id", "readable_id", "assay_id", "run_at", "run_by", "succeeded", "additional_data"];
+export const controlledRateFreezingValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ControlledRateFreezing"]> = ["controlled_rate_freezing"];
 export const cookieStyleValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["CookieStyle"]> = ["form"];
 export const countingMethodValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["CountingMethod"]> = ["bright_field", "acridine_orange_propidium_iodide", "trypan_blue"];
-export const fixativeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Fixative"]> = ["dithiobis_succinimidylpropionate", "formaldehyde_derivative"];
+export const dithiobisSuccinimidylpropionateValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["DithiobisSuccinimidylpropionate"]> = ["dithiobis_succinimidylpropionate"];
+export const flashFreezingValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["FlashFreezing"]> = ["flash_freezing"];
+export const formaldehydeDerivativeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["FormaldehydeDerivative"]> = ["formaldehyde_derivative"];
 export const headerStyleValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["HeaderStyle"]> = ["simple"];
 export const institutionFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["InstitutionField"]> = ["id", "name", "microsoft_entra_tenant_id"];
 export const libraryFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["LibraryField"]> = ["id", "readable_id", "cdna_id", "single_index_set_name", "dual_index_set_name", "number_of_sample_index_pcr_cycles", "target_reads_per_cell", "prepared_at", "additional_data"];
@@ -8517,6 +8321,4 @@ export const specimenTypeValues: ReadonlyArray<FlattenedDeepRequired<components>
 export const suspensionContentValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SuspensionContent"]> = ["cells", "nuclei"];
 export const suspensionFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SuspensionField"]> = ["id", "readable_id", "specimen_id", "content", "created_at", "lysis_duration_minutes", "target_cell_recovery", "additional_data"];
 export const suspensionPoolFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SuspensionPoolField"]> = ["id", "readable_id", "name", "pooled_at", "additional_data"];
-export const suspensionThermalPreservationValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SuspensionThermalPreservation"]> = ["controlled_rate_freezing"];
-export const thermalPreservationMethodValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ThermalPreservationMethod"]> = ["controlled_rate_freezing", "flash_freezing"];
 export type operations = Record<string, never>;
