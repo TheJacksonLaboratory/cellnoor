@@ -79,7 +79,7 @@ mod test {
     use std::{collections::HashSet, hash::RandomState};
 
     use cellnoor_types::chromium_run::creation::{
-        LoadedEntity, NewChromiumRun,
+        ChromiumRunGemWells, LoadedEntity, NewChromiumRun,
         ocm::{NewOcmGemWell, OcmBarcodeId, OcmLoadedEntity},
     };
     use nonempty::NonemptyBoundedVec;
@@ -91,7 +91,7 @@ mod test {
             chromium_runs::{
                 create::test::{
                     insert_test_mixed_chromium_run, insert_test_ocm_chromium_run,
-                    insert_test_standard_chromium_run, new_common,
+                    insert_test_standard_chromium_run, new_record,
                 },
                 show::select_chromium_run_by_id,
             },
@@ -217,8 +217,9 @@ mod test {
             gem_well_idx: usize,
             loading_idx: usize,
         ) -> &mut Uuid {
-            let NewChromiumRun::OnChipMultiplexing { gem_wells, .. } = chromium_run else {
-                unreachable!("expected NewChromiumRun::OnChipMultiplexing");
+            let ChromiumRunGemWells::OnChipMultiplexing { gem_wells } = &mut chromium_run.gem_wells
+            else {
+                unreachable!("expected ChromiumRunGemWells::OnChipMultiplexing");
             };
 
             let gem_well = &mut gem_wells.as_mut()[gem_well_idx];
@@ -264,27 +265,29 @@ mod test {
         let assay_id = assay.id;
         let person_id = s1.specimen.record.submitted_by;
 
-        let new = NewChromiumRun::OnChipMultiplexing {
-            common: new_common(assay_id, person_id),
-            gem_wells: NonemptyBoundedVec::new(vec![NewOcmGemWell {
-                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                loading: NonemptyBoundedVec::new(vec![
-                    OcmLoadedEntity {
-                        loaded_entity: LoadedEntity::Suspension {
-                            suspension_id: *s1.record.id,
+        let new = NewChromiumRun {
+            record: new_record(assay_id, person_id),
+            gem_wells: ChromiumRunGemWells::OnChipMultiplexing {
+                gem_wells: NonemptyBoundedVec::new(vec![NewOcmGemWell {
+                    readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                    loading: NonemptyBoundedVec::new(vec![
+                        OcmLoadedEntity {
+                            loaded_entity: LoadedEntity::Suspension {
+                                suspension_id: *s1.record.id,
+                            },
+                            ocm_barcode_id: OcmBarcodeId::Ob1,
                         },
-                        ocm_barcode_id: OcmBarcodeId::Ob1,
-                    },
-                    OcmLoadedEntity {
-                        loaded_entity: LoadedEntity::Suspension {
-                            suspension_id: *s2.record.id,
+                        OcmLoadedEntity {
+                            loaded_entity: LoadedEntity::Suspension {
+                                suspension_id: *s2.record.id,
+                            },
+                            ocm_barcode_id: OcmBarcodeId::Ob2,
                         },
-                        ocm_barcode_id: OcmBarcodeId::Ob2,
-                    },
-                ])
+                    ])
+                    .unwrap(),
+                }])
                 .unwrap(),
-            }])
-            .unwrap(),
+            },
         };
 
         let (_, run) = insert_test_ocm_chromium_run(&tx, |run| *run = new.clone())

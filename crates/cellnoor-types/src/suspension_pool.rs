@@ -39,24 +39,19 @@ mod record {
 pub type NewSuspensionPoolRecord = SuspensionPoolRecord<NoId>;
 
 #[base_model]
-pub struct NewSuspensionPoolCommonFields {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: NewSuspensionPoolRecord,
-    pub measurements: Vec<measurement::NewSuspensionPoolMeasurement>,
-    pub preparers: NonemptyVec<Uuid>,
-}
-
-#[base_model]
 pub struct TaggedSuspension {
     pub suspension_id: Uuid,
     pub tag_id: NonemptyString,
 }
 
 #[base_model]
-pub struct NewTaggedSuspensionPool {
+pub struct NewSuspensionPool {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub common: NewSuspensionPoolCommonFields,
-    pub suspensions: NonemptyVec<TaggedSuspension>,
+    pub record: NewSuspensionPoolRecord,
+    pub measurements: Vec<measurement::NewSuspensionPoolMeasurement>,
+    pub preparers: NonemptyVec<Uuid>,
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub suspensions: PooledSuspensions,
 }
 
 #[base_model]
@@ -67,30 +62,38 @@ pub struct NewTaggedSuspensionPool {
 )]
 #[strum(serialize_all = "snake_case")]
 #[strum_discriminants(name(MultiplexingTagType), discriminant_unit_enum)]
-pub enum NewSuspensionPool {
-    FlexBarcode(NewTaggedSuspensionPool),
-    FlexOligonucleotideBarcode(NewTaggedSuspensionPool),
+pub enum PooledSuspensions {
+    FlexBarcode {
+        suspensions: NonemptyVec<TaggedSuspension>,
+    },
+    FlexOligonucleotideBarcode {
+        suspensions: NonemptyVec<TaggedSuspension>,
+    },
     #[cfg_attr(feature = "serde", serde(rename = "TotalSeq-A"))]
     #[strum(serialize = "TotalSeq-A")]
     #[strum_discriminants(cfg_attr(feature = "serde", serde(rename = "TotalSeq-A")))]
     #[strum_discriminants(strum(serialize = "TotalSeq-A"))]
-    TotalSeqA(NewTaggedSuspensionPool),
+    TotalSeqA {
+        suspensions: NonemptyVec<TaggedSuspension>,
+    },
     #[cfg_attr(feature = "serde", serde(rename = "TotalSeq-B"))]
     #[strum(serialize = "TotalSeq-B")]
     #[strum_discriminants(cfg_attr(feature = "serde", serde(rename = "TotalSeq-B")))]
     #[strum_discriminants(strum(serialize = "TotalSeq-B"))]
-    TotalSeqB(NewTaggedSuspensionPool),
+    TotalSeqB {
+        suspensions: NonemptyVec<TaggedSuspension>,
+    },
     #[cfg_attr(feature = "serde", serde(rename = "TotalSeq-C"))]
     #[strum(serialize = "TotalSeq-C")]
     #[strum_discriminants(cfg_attr(feature = "serde", serde(rename = "TotalSeq-C")))]
     #[strum_discriminants(strum(serialize = "TotalSeq-C"))]
-    TotalSeqC(NewTaggedSuspensionPool),
+    TotalSeqC {
+        suspensions: NonemptyVec<TaggedSuspension>,
+    },
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(disabled)]
     #[strum_discriminants(strum(disabled))]
     Genetic {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: NewSuspensionPoolCommonFields,
         suspensions: NonemptyVec<Uuid>,
     },
 }
@@ -193,12 +196,12 @@ mod tests {
             };
 
             // Next, ensure that the strum serializations of the two types match
-            pretty_assertions::assert_str_eq!(deserialized_pool.as_ref(), ty.as_ref());
+            pretty_assertions::assert_str_eq!(deserialized_pool.suspensions.as_ref(), ty.as_ref());
 
             // Finally, ensure that the strum serialization of MultiplexingTagType yields
             // the same result as the serde serialization
             pool["multiplexing_tag_type"] =
-                serde_json::Value::String(deserialized_pool.as_ref().to_owned());
+                serde_json::Value::String(deserialized_pool.suspensions.as_ref().to_owned());
             pretty_assertions::assert_eq!(deserialized_pool, serde_json::from_value(pool).unwrap());
         }
     }

@@ -1,16 +1,18 @@
 use axum::{Json, extract::State};
 use cellnoor_types::cdna::{
-    CdnaDetailed, CdnaField,
-    creation::{CdnaSimpleFields, LibraryType, NewCdna, NewCdnaCommonFields},
+    CdnaDetailed, CdnaField, NewCdnaRecord,
+    creation::{CdnaSimpleFields, NewCdna},
 };
-use positive::PositiveI32;
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
     db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
-    handlers::cdna::{measurements::create::insert_cdna_measurement, show::select_cdna_by_id},
+    handlers::cdna::{
+        measurements::create::insert_cdna_measurement, show::select_cdna_by_id,
+        split_new_cdna_for_insertion::split_new_cdna_for_insertion,
+    },
     state::AppState,
 };
 
@@ -23,27 +25,26 @@ pub async fn create_cdna(
 
     let tx = client.begin().await?;
 
-    let response = insert_cdna(&tx, &record).await.map(Json)?;
+    let response = insert_cdna(&tx, record).await.map(Json)?;
 
     tx.commit().await?;
 
     Ok(response)
 }
 
-async fn insert_cdna(tx: &db::Transaction<'_>, new: &NewCdna) -> Result<CdnaDetailed, ErrorInner> {
-    let generic = NewCdnaGeneric::from_new_cdna(new);
-    let id = db::insert_into(tx, "cdna", &generic).await?;
+async fn insert_cdna(tx: &db::Transaction<'_>, new: NewCdna) -> Result<CdnaDetailed, ErrorInner> {
+    let (record, measurements, preparers) = split_new_cdna_for_insertion(new);
+
+    let id = db::insert_into(tx, "cdna", &record).await?;
 
     let measurement_insertions = futures::future::try_join_all(
-        generic
-            .common
-            .measurements
+        measurements
             .iter()
             .map(|m| insert_cdna_measurement(tx, id, m)),
     );
 
     tokio::try_join!(
-        insert_cdna_preparers(tx, id, generic.common.preparers.as_ref()),
+        insert_cdna_preparers(tx, id, preparers.as_ref()),
         measurement_insertions
     )?;
 
@@ -89,47 +90,6 @@ impl AsFieldValuePairs<&'static str, 2> for NewCdnaPreparer {
     }
 }
 
-struct NewCdnaGeneric<'a> {
-    common: &'a NewCdnaCommonFields,
-    gem_well_id: Option<Uuid>,
-    library_type: LibraryType,
-    n_amplification_cycles: Option<PositiveI32>,
-}
-
-impl<'a> NewCdnaGeneric<'a> {
-    fn from_new_cdna(cdna: &'a NewCdna) -> Self {
-        let library_type = cdna.into();
-
-        let (common, gem_well_id, n_amplification_cycles) = match cdna {
-            NewCdna::AntibodyCapture(common)
-            | NewCdna::AntigenCapture(common)
-            | NewCdna::ChromatinAccessibility(common)
-            | NewCdna::CrisprGuideCapture(common)
-            | NewCdna::Custom(common)
-            | NewCdna::MultiplexingCapture(common)
-            | NewCdna::Vdj(common)
-            | NewCdna::VdjB(common)
-            | NewCdna::VdjT(common)
-            | NewCdna::VdjTGd(common) => (&common.common, Some(common.gem_well_id), None),
-            NewCdna::GeneExpression {
-                common,
-                n_amplification_cycles,
-            } => (
-                &common.common,
-                Some(common.gem_well_id),
-                Some(*n_amplification_cycles),
-            ),
-        };
-
-        Self {
-            common,
-            gem_well_id,
-            library_type,
-            n_amplification_cycles,
-        }
-    }
-}
-
 impl AsFieldValuePairs<CdnaField, 3> for CdnaSimpleFields {
     fn as_field_value_pairs(&self) -> FieldValuePairs<'_, CdnaField, 3> {
         use CdnaField::*;
@@ -148,32 +108,28 @@ impl AsFieldValuePairs<CdnaField, 3> for CdnaSimpleFields {
     }
 }
 
-impl AsFieldValuePairs<CdnaField, 6> for NewCdnaGeneric<'_> {
+impl AsFieldValuePairs<CdnaField, 6> for NewCdnaRecord {
     fn as_field_value_pairs(&self) -> FieldValuePairs<'_, CdnaField, 6> {
         use CdnaField::*;
 
         let Self {
-            common:
-                NewCdnaCommonFields {
-                    simple,
-                    measurements: _,
-                    preparers: _,
-                },
-            gem_well_id,
+            id: _,
+            readable_id,
             library_type,
+            prepared_at,
+            gem_well_id,
             n_amplification_cycles,
+            additional_data,
         } = self;
 
-        // Preallocate an array and then just combine
-        let mut fields: FieldValuePairs<'_, CdnaField, 6> = [(ReadableId, &""); 6];
-
-        fields[..3].copy_from_slice(&simple.as_field_value_pairs());
-
-        fields[3] = (LibraryType, library_type);
-        fields[4] = (GemWellId, gem_well_id);
-        fields[5] = (NAmplificationCycles, n_amplification_cycles);
-
-        fields
+        [
+            (ReadableId, readable_id),
+            (LibraryType, library_type),
+            (PreparedAt, prepared_at),
+            (GemWellId, gem_well_id),
+            (NAmplificationCycles, n_amplification_cycles),
+            (AdditionalData, additional_data),
+        ]
     }
 }
 
@@ -182,12 +138,11 @@ pub mod test {
     use cellnoor_types::{
         cdna::{
             CdnaDetailed,
-            creation::{
-                CdnaSimpleFields, NewCdna, NewCdnaCommonFields, NewChromiumCdnaCommonFields,
-            },
+            creation::{CdnaSimpleFields, CdnaVariableFields, NewCdna},
         },
         nucleic_acid_measurement::{
             Concentration, NewNucleicAcidMeasurement, NucleicAcidMeasurementData,
+            NucleicAcidMeasurementMethod,
         },
         units::{Microliter, Nanogram},
     };
@@ -219,36 +174,36 @@ pub mod test {
         let person_id = run.record.run_by;
         let prepared_at = run.record.run_at;
 
-        let mut new = NewCdna::GeneExpression {
-            common: NewChromiumCdnaCommonFields {
-                common: NewCdnaCommonFields {
-                    simple: CdnaSimpleFields {
-                        readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                        prepared_at,
-                        additional_data: None,
-                    },
-                    measurements: vec![NewNucleicAcidMeasurement {
-                        measured_by: person_id,
-                        measured_at: Timestamp::now(),
-                        data: Json(NucleicAcidMeasurementData::Fluorometric {
-                            instrument_name: "Qubit".to_nonempty_string(),
-                            concentration: Concentration {
-                                value: PositiveI32::new(50).unwrap(),
-                                numerator_unit: Nanogram::Nanogram,
-                                denominator_unit: Microliter::Microliter,
-                            },
-                        }),
-                    }],
-                    preparers: nonempty::NonemptyVec::new(vec![person_id]).unwrap(),
-                },
-                gem_well_id,
+        let mut new = NewCdna {
+            simple: CdnaSimpleFields {
+                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                prepared_at,
+                additional_data: None,
             },
-            n_amplification_cycles: PositiveI32::new(10).unwrap(),
+            gem_well_id,
+            measurements: vec![NewNucleicAcidMeasurement {
+                measured_by: person_id,
+                measured_at: Timestamp::now(),
+                data: Json(NucleicAcidMeasurementData {
+                    instrument_name: "Qubit".to_nonempty_string(),
+                    method: NucleicAcidMeasurementMethod::Fluorometric {
+                        concentration: Concentration {
+                            value: PositiveI32::new(50).unwrap(),
+                            numerator_unit: Nanogram::Nanogram,
+                            denominator_unit: Microliter::Microliter,
+                        },
+                    },
+                }),
+            }],
+            preparers: nonempty::NonemptyVec::new(vec![person_id]).unwrap(),
+            variable_fields: CdnaVariableFields::GeneExpression {
+                n_amplification_cycles: PositiveI32::new(10).unwrap(),
+            },
         };
 
         modify(&mut new);
 
-        let inserted = insert_cdna(tx, &new).await?;
+        let inserted = insert_cdna(tx, new.clone()).await?;
         Ok((new, inserted))
     }
 

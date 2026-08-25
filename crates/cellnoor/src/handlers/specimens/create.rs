@@ -98,7 +98,9 @@ pub mod test {
         specimen::{
             Species, SpecimenDetailed,
             creation::{FlashFreezing, NewSpecimen, SpecimenVariableFields, block::BlockFields},
-            measurement::{NewSpecimenMeasurement, SpecimenMeasurementData},
+            measurement::{
+                NewSpecimenMeasurement, SpecimenMeasurementData, SpecimenMeasurementQuantity,
+            },
         },
     };
     use jiff::Timestamp;
@@ -140,9 +142,11 @@ pub mod test {
             measurements: vec![NewSpecimenMeasurement {
                 measured_by: members[0],
                 measured_at: Timestamp::now(),
-                data: Json(SpecimenMeasurementData::Rin {
+                data: Json(SpecimenMeasurementData {
                     instrument_name: None,
-                    value: PositiveBoundedF32::new(5.0).unwrap(),
+                    quantity: SpecimenMeasurementQuantity::Rin {
+                        value: PositiveBoundedF32::new(5.0).unwrap(),
+                    },
                 }),
             }],
             variable_fields: SpecimenVariableFields::Block(BlockFields::CarboxymethylCellulose {

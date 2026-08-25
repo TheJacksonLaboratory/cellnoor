@@ -29,21 +29,23 @@ pub enum LoadedEntity {
 }
 
 #[base_model]
+pub struct NewChromiumRun {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: NewChromiumRunRecord,
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub gem_wells: ChromiumRunGemWells,
+}
+
+#[base_model]
 #[cfg_attr(feature = "serde", serde(tag = "plexy", rename_all = "snake_case"))]
-pub enum NewChromiumRun {
+pub enum ChromiumRunGemWells {
     Mixed {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: NewChromiumRunRecord,
         gem_wells: NonemptyBoundedVec<NewStandardOrOcmGemWell, MAX_GEM_WELLS_PER_OCM_RUN>,
     },
     OnChipMultiplexing {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: NewChromiumRunRecord,
         gem_wells: NonemptyBoundedVec<NewOcmGemWell, MAX_GEM_WELLS_PER_OCM_RUN>,
     },
     Standard {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: NewChromiumRunRecord,
         gem_wells: NonemptyBoundedVec<NewStandardGemWell, MAX_GEM_WELLS_PER_NON_OCM_RUN>,
     },
 }

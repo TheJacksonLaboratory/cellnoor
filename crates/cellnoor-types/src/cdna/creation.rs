@@ -14,64 +14,36 @@ pub struct CdnaSimpleFields {
 }
 
 #[base_model]
-pub struct NewCdnaCommonFields {
+pub struct NewCdna {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub simple: CdnaSimpleFields,
+    pub gem_well_id: Uuid,
     pub measurements: Vec<NewNucleicAcidMeasurement>,
     pub preparers: NonemptyVec<Uuid>,
-}
-
-#[base_model]
-pub struct NewChromiumCdnaCommonFields {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub common: NewCdnaCommonFields,
-    pub gem_well_id: Uuid,
+    pub variable_fields: CdnaVariableFields,
 }
 
 #[base_model]
+#[derive(Copy, strum::EnumDiscriminants)]
 #[cfg_attr(
     feature = "serde",
     serde(tag = "library_type", rename_all = "snake_case")
 )]
-#[derive(strum::EnumDiscriminants, strum::AsRefStr)]
 #[strum(serialize_all = "snake_case")]
 #[strum_discriminants(name(LibraryType), discriminant_unit_enum)]
-pub enum NewCdna {
-    AntibodyCapture(NewChromiumCdnaCommonFields),
-    AntigenCapture(NewChromiumCdnaCommonFields),
-    ChromatinAccessibility(NewChromiumCdnaCommonFields),
-    CrisprGuideCapture(NewChromiumCdnaCommonFields),
-    Custom(NewChromiumCdnaCommonFields),
+pub enum CdnaVariableFields {
+    AntibodyCapture,
+    AntigenCapture,
+    ChromatinAccessibility,
+    CrisprGuideCapture,
+    Custom,
     GeneExpression {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: NewChromiumCdnaCommonFields,
         n_amplification_cycles: PositiveI32,
     },
-    MultiplexingCapture(NewChromiumCdnaCommonFields),
-    Vdj(NewChromiumCdnaCommonFields),
-    VdjB(NewChromiumCdnaCommonFields),
-    VdjT(NewChromiumCdnaCommonFields),
-    VdjTGd(NewChromiumCdnaCommonFields),
-}
-
-impl NewCdna {
-    #[must_use]
-    pub fn gem_well_id(&self) -> Option<Uuid> {
-        #[allow(clippy::enum_glob_use)]
-        use NewCdna::*;
-
-        match self {
-            AntibodyCapture(common)
-            | AntigenCapture(common)
-            | ChromatinAccessibility(common)
-            | CrisprGuideCapture(common)
-            | Custom(common)
-            | GeneExpression { common, .. }
-            | MultiplexingCapture(common)
-            | Vdj(common)
-            | VdjB(common)
-            | VdjT(common)
-            | VdjTGd(common) => Some(common.gem_well_id),
-        }
-    }
+    MultiplexingCapture,
+    Vdj,
+    VdjB,
+    VdjT,
+    VdjTGd,
 }

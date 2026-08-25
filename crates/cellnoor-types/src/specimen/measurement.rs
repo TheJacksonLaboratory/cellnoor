@@ -38,16 +38,17 @@ pub struct SpecimenMeasurement {
 }
 
 #[base_model]
+pub struct SpecimenMeasurementData {
+    pub instrument_name: Option<NonemptyString>,
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub quantity: SpecimenMeasurementQuantity,
+}
+
+#[base_model]
 #[cfg_attr(feature = "serde", serde(tag = "quantity"))]
-pub enum SpecimenMeasurementData {
+pub enum SpecimenMeasurementQuantity {
     #[cfg_attr(feature = "serde", serde(rename = "DV200"))]
-    Dv200 {
-        instrument_name: Option<NonemptyString>,
-        value: PositiveBoundedF32<1>,
-    },
+    Dv200 { value: PositiveBoundedF32<1> },
     #[cfg_attr(feature = "serde", serde(rename = "RIN"))]
-    Rin {
-        instrument_name: Option<NonemptyString>,
-        value: PositiveBoundedF32<10>,
-    },
+    Rin { value: PositiveBoundedF32<10> },
 }

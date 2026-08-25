@@ -129,7 +129,10 @@ pub mod test {
         id::NoId,
         suspension::{
             NewSuspension, NewSuspensionRecord, SuspensionContent, SuspensionDetailed,
-            measurement::{NewSuspensionMeasurement, SuspensionMeasurementData, Viability},
+            measurement::{
+                NewSuspensionMeasurement, SuspensionMeasurementData, SuspensionMeasurementQuantity,
+                Viability,
+            },
         },
     };
     use jiff::Timestamp;
@@ -173,10 +176,10 @@ pub mod test {
             measurements: vec![NewSuspensionMeasurement {
                 measured_by: person_id,
                 measured_at: Timestamp::now(),
-                data: Json(SuspensionMeasurementData::Viability {
-                    common: Viability {
+                data: Json(SuspensionMeasurementData {
+                    quantity: SuspensionMeasurementQuantity::Viability(Viability {
                         value: PositiveBoundedF32::new(0.5).unwrap(),
-                    },
+                    }),
                     post_hybridization: false,
                 }),
             }],

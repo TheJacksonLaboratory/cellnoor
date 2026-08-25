@@ -130,6 +130,7 @@ pub mod test {
         library::{LibraryDetailed, NewLibrary, NewLibraryRecord},
         nucleic_acid_measurement::{
             Concentration, NewNucleicAcidMeasurement, NucleicAcidMeasurementData,
+            NucleicAcidMeasurementMethod,
         },
         units::{Microliter, Nanogram},
     };
@@ -163,7 +164,7 @@ pub mod test {
             record: NewLibraryRecord {
                 id: NoId {},
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                cdna_id: cdna.record.id,
+                cdna_id: *cdna.record.id,
                 single_index_set_name: None,
                 dual_index_set_name: Some(DUAL_INDEX_SET_NAME.to_owned()),
                 number_of_sample_index_pcr_cycles: PositiveI32::new(8).unwrap(),
@@ -174,12 +175,14 @@ pub mod test {
             measurements: vec![NewNucleicAcidMeasurement {
                 measured_by: person_id,
                 measured_at: Timestamp::now(),
-                data: Json(NucleicAcidMeasurementData::Fluorometric {
+                data: Json(NucleicAcidMeasurementData {
                     instrument_name: "Qubit".to_nonempty_string(),
-                    concentration: Concentration {
-                        value: PositiveI32::new(20).unwrap(),
-                        numerator_unit: Nanogram::Nanogram,
-                        denominator_unit: Microliter::Microliter,
+                    method: NucleicAcidMeasurementMethod::Fluorometric {
+                        concentration: Concentration {
+                            value: PositiveI32::new(20).unwrap(),
+                            numerator_unit: Nanogram::Nanogram,
+                            denominator_unit: Microliter::Microliter,
+                        },
                     },
                 }),
             }],

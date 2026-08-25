@@ -4,6 +4,7 @@ pub(super) mod index_compact;
 pub(super) mod index_detailed;
 pub(super) mod measurements;
 pub(super) mod show;
+mod split_new_cdna_for_insertion;
 pub(super) mod update;
 
 pub use create::create_cdna;

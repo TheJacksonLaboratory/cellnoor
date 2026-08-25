@@ -54,7 +54,7 @@ fn map_detailed_row(row: Row) -> CdnaDetailed {
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
 
     CdnaDetailed {
-        links: cdna_simple_links(record.id),
+        links: cdna_simple_links(*record.id),
         record,
         specimens: specimens
             .into_iter()

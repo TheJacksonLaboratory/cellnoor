@@ -68,10 +68,7 @@ async fn update_cdna_by_id(
 
 #[cfg(test)]
 mod test {
-    use cellnoor_types::cdna::{
-        CdnaUpdate,
-        creation::{CdnaSimpleFields, NewCdna},
-    };
+    use cellnoor_types::cdna::{CdnaUpdate, creation::CdnaSimpleFields};
     use uuid::Uuid;
 
     use crate::{
@@ -86,25 +83,16 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (
-            NewCdna::GeneExpression {
-                common: insert_input,
-                ..
-            },
-            inserted,
-        ) = insert_test_cdna_and_chromium_run(&tx, |_| ())
+        let (insert_input, inserted) = insert_test_cdna_and_chromium_run(&tx, |_| ())
             .await
-            .unwrap()
-        else {
-            panic!("we inserted a gene expression cDNA");
-        };
+            .unwrap();
 
-        let id = inserted.record.id;
+        let id = *inserted.record.id;
 
         let pre_update = CdnaUpdate {
             record: CdnaSimpleFields {
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                ..insert_input.common.simple
+                ..insert_input.simple
             },
             measurements: None,
             preparers: None,

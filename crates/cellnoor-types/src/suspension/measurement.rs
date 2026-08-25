@@ -42,28 +42,19 @@ pub struct SuspensionMeasurement {
 }
 
 #[base_model]
+pub struct SuspensionMeasurementData {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub quantity: SuspensionMeasurementQuantity,
+    pub post_hybridization: bool,
+}
+
+#[base_model]
 #[cfg_attr(feature = "serde", serde(tag = "quantity"))]
-pub enum SuspensionMeasurementData {
-    Concentration {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: Concentration,
-        post_hybridization: bool,
-    },
-    Viability {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: Viability,
-        post_hybridization: bool,
-    },
-    Volume {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: Volume,
-        post_hybridization: bool,
-    },
-    MeanDiameter {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: MeanDiameter,
-        post_hybridization: bool,
-    },
+pub enum SuspensionMeasurementQuantity {
+    Concentration(Concentration),
+    Viability(Viability),
+    Volume(Volume),
+    MeanDiameter(MeanDiameter),
 }
 
 #[base_model]

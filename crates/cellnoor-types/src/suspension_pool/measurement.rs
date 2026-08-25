@@ -4,7 +4,9 @@ use macro_attributes::{base_model, select};
 use postgres_types::Json;
 use uuid::Uuid;
 
-use crate::suspension::measurement::{Concentration, MeanDiameter, Viability, Volume};
+use crate::suspension::measurement::SuspensionMeasurementQuantity;
+
+pub type SuspensionPoolMeasurementData = SuspensionMeasurementQuantity;
 
 #[base_model]
 pub struct NewSuspensionPoolMeasurement {
@@ -40,11 +42,3 @@ pub struct SuspensionPoolMeasurement {
     pub data: SuspensionPoolMeasurementData,
 }
 
-#[base_model]
-#[cfg_attr(feature = "serde", serde(tag = "quantity"))]
-pub enum SuspensionPoolMeasurementData {
-    Concentration(Concentration),
-    Viability(Viability),
-    Volume(Volume),
-    MeanDiameter(MeanDiameter),
-}

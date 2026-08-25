@@ -68,7 +68,7 @@ pub(super) fn cdna_simple_links(id: Uuid) -> SimpleLinks {
 
 pub fn cdna_from_record(record: SavedCdnaRecord) -> CdnaCompact {
     CdnaCompact {
-        links: cdna_simple_links(record.id),
+        links: cdna_simple_links(*record.id),
         record,
     }
 }
@@ -102,7 +102,7 @@ mod test {
         let cdnas = select_cdna_compact(
             &tx,
             &mut CdnaQuery::from_filter(
-                CdnaPredicateInner::Id(UuidOperator::Eq(inserted.record.id)).into(),
+                CdnaPredicateInner::Id(UuidOperator::Eq(*inserted.record.id)).into(),
             ),
         )
         .await

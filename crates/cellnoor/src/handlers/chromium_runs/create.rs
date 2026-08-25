@@ -1,7 +1,7 @@
 use axum::{Json as AxumJson, extract::State};
 use cellnoor_types::chromium_run::{
     ChromiumRunDetailed, ChromiumRunField,
-    creation::{NewChromiumRun, NewChromiumRunRecord},
+    creation::{ChromiumRunGemWells, NewChromiumRun, NewChromiumRunRecord},
 };
 use uuid::Uuid;
 
@@ -36,29 +36,24 @@ pub async fn create_chromium_run(
 
 async fn insert_chromium_run(
     tx: &db::Transaction<'_>,
-    new: NewChromiumRun,
+    NewChromiumRun { record, gem_wells }: NewChromiumRun,
 ) -> Result<ChromiumRunDetailed, ErrorInner> {
-    // We destructure twice cus it's so much less repetitive
-    let run_id = match &new {
-        NewChromiumRun::Standard { common, .. }
-        | NewChromiumRun::OnChipMultiplexing { common, .. }
-        | NewChromiumRun::Mixed { common, .. } => insert_chromium_run_record(tx, common).await?,
-    };
+    let run_id = insert_chromium_run_record(tx, &record).await?;
 
-    match new {
-        NewChromiumRun::Standard { gem_wells, .. } => {
+    match gem_wells {
+        ChromiumRunGemWells::Standard { gem_wells } => {
             let gem_well_insertions = gem_wells
                 .iter()
                 .map(|g| insert_standard_gem_well(tx, g, run_id));
 
             futures::future::try_join_all(gem_well_insertions).await?;
         }
-        NewChromiumRun::OnChipMultiplexing { gem_wells, .. } => {
+        ChromiumRunGemWells::OnChipMultiplexing { gem_wells } => {
             let gem_well_insertions = gem_wells.iter().map(|g| insert_ocm_gem_well(tx, g, run_id));
 
             futures::future::try_join_all(gem_well_insertions).await?;
         }
-        NewChromiumRun::Mixed { gem_wells, .. } => {
+        ChromiumRunGemWells::Mixed { gem_wells } => {
             let gem_well_insertions = gem_wells
                 .iter()
                 .map(|g| insert_mixed_gem_well(tx, g, run_id));
@@ -108,7 +103,7 @@ pub mod test {
         chromium_run::{
             ChromiumRunDetailed,
             creation::{
-                LoadedEntity, NewChromiumRun, NewChromiumRunRecord,
+                ChromiumRunGemWells, LoadedEntity, NewChromiumRun, NewChromiumRunRecord,
                 mixed::NewStandardOrOcmGemWell,
                 ocm::{NewOcmGemWell, OcmBarcodeId, OcmLoadedEntity},
                 standard::NewStandardGemWell,
@@ -132,7 +127,7 @@ pub mod test {
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
-    pub fn new_common(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRecord {
+    pub fn new_record(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRecord {
         NewChromiumRunRecord {
             id: NoId {},
             readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
@@ -175,9 +170,11 @@ pub mod test {
             },
         };
 
-        let mut new = NewChromiumRun::Standard {
-            common: new_common(assay_id, person_id),
-            gem_wells: NonemptyBoundedVec::new(vec![gem_well1, gem_well2]).unwrap(),
+        let mut new = NewChromiumRun {
+            record: new_record(assay_id, person_id),
+            gem_wells: ChromiumRunGemWells::Standard {
+                gem_wells: NonemptyBoundedVec::new(vec![gem_well1, gem_well2]).unwrap(),
+            },
         };
 
         modify(&mut new);
@@ -229,9 +226,11 @@ pub mod test {
                 loading: NonemptyBoundedVec::new(loadings).unwrap(),
             },
         ];
-        let mut new = NewChromiumRun::OnChipMultiplexing {
-            common: new_common(assay_id, person_id),
-            gem_wells: NonemptyBoundedVec::new(gem_wells).unwrap(),
+        let mut new = NewChromiumRun {
+            record: new_record(assay_id, person_id),
+            gem_wells: ChromiumRunGemWells::OnChipMultiplexing {
+                gem_wells: NonemptyBoundedVec::new(gem_wells).unwrap(),
+            },
         };
 
         modify(&mut new);
@@ -255,27 +254,29 @@ pub mod test {
         let (_, assay) = insert_test_chromium_assay(tx).await?;
         let assay_id = assay.id;
 
-        let mut new = NewChromiumRun::Mixed {
-            common: new_common(assay_id, person_id),
-            gem_wells: NonemptyBoundedVec::new(vec![
-                NewStandardOrOcmGemWell::Standard(NewStandardGemWell {
-                    readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                    loaded_entity: LoadedEntity::Suspension {
-                        suspension_id: *s1.record.id,
-                    },
-                }),
-                NewStandardOrOcmGemWell::OnChipMultiplexing(NewOcmGemWell {
-                    readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                    loading: NonemptyBoundedVec::new(vec![OcmLoadedEntity {
+        let mut new = NewChromiumRun {
+            record: new_record(assay_id, person_id),
+            gem_wells: ChromiumRunGemWells::Mixed {
+                gem_wells: NonemptyBoundedVec::new(vec![
+                    NewStandardOrOcmGemWell::Standard(NewStandardGemWell {
+                        readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                         loaded_entity: LoadedEntity::Suspension {
-                            suspension_id: *s2.record.id,
+                            suspension_id: *s1.record.id,
                         },
-                        ocm_barcode_id: OcmBarcodeId::Ob1,
-                    }])
-                    .unwrap(),
-                }),
-            ])
-            .unwrap(),
+                    }),
+                    NewStandardOrOcmGemWell::OnChipMultiplexing(NewOcmGemWell {
+                        readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                        loading: NonemptyBoundedVec::new(vec![OcmLoadedEntity {
+                            loaded_entity: LoadedEntity::Suspension {
+                                suspension_id: *s2.record.id,
+                            },
+                            ocm_barcode_id: OcmBarcodeId::Ob1,
+                        }])
+                        .unwrap(),
+                    }),
+                ])
+                .unwrap(),
+            },
         };
 
         modify(&mut new);

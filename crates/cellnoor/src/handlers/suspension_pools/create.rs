@@ -1,7 +1,7 @@
 use axum::{Json, extract::State};
 use cellnoor_types::suspension_pool::{
-    MultiplexingTagType, NewSuspensionPool, NewSuspensionPoolCommonFields, NewSuspensionPoolRecord,
-    NewTaggedSuspensionPool, SuspensionPoolDetailed, SuspensionPoolField,
+    MultiplexingTagType, NewSuspensionPool, NewSuspensionPoolRecord, PooledSuspensions,
+    SuspensionPoolDetailed, SuspensionPoolField,
 };
 use nonempty::NonemptyString;
 use uuid::Uuid;
@@ -35,50 +35,28 @@ pub async fn create_suspension_pool(
 
 async fn insert_suspension_pool(
     tx: &db::Transaction<'_>,
-    new: &NewSuspensionPool,
+    NewSuspensionPool {
+        record,
+        measurements,
+        preparers,
+        suspensions,
+    }: &NewSuspensionPool,
 ) -> Result<SuspensionPoolDetailed, ErrorInner> {
-    let (record, measurements, preparer_ids, suspensions) = match new {
-        NewSuspensionPool::FlexBarcode(pool)
-        | NewSuspensionPool::FlexOligonucleotideBarcode(pool)
-        | NewSuspensionPool::TotalSeqA(pool)
-        | NewSuspensionPool::TotalSeqB(pool)
-        | NewSuspensionPool::TotalSeqC(pool) => {
-            let NewTaggedSuspensionPool {
-                common:
-                    NewSuspensionPoolCommonFields {
-                        record,
-                        measurements,
-                        preparers,
-                    },
-                suspensions,
-            } = pool;
-            (
-                record,
-                measurements,
-                preparers,
-                suspensions
-                    .iter()
-                    .map(|s| (s.suspension_id, Some(&s.tag_id), Some(new.into())))
-                    .collect::<Vec<_>>(),
-            )
-        }
-        NewSuspensionPool::Genetic {
-            common:
-                NewSuspensionPoolCommonFields {
-                    record,
-                    measurements,
-                    preparers,
-                },
-            suspensions,
-        } => (
-            record,
-            measurements,
-            preparers,
-            suspensions
-                .into_iter()
-                .map(|suspension_id| (*suspension_id, None, None))
-                .collect(),
-        ),
+    let tag_type: MultiplexingTagType = suspensions.into();
+
+    let poolings: Vec<_> = match suspensions {
+        PooledSuspensions::FlexBarcode { suspensions }
+        | PooledSuspensions::FlexOligonucleotideBarcode { suspensions }
+        | PooledSuspensions::TotalSeqA { suspensions }
+        | PooledSuspensions::TotalSeqB { suspensions }
+        | PooledSuspensions::TotalSeqC { suspensions } => suspensions
+            .iter()
+            .map(|s| (s.suspension_id, Some(&s.tag_id), Some(tag_type)))
+            .collect(),
+        PooledSuspensions::Genetic { suspensions } => suspensions
+            .iter()
+            .map(|&suspension_id| (suspension_id, None, None))
+            .collect(),
     };
 
     let id = db::insert_into(tx, "suspension_pool", record).await?;
@@ -90,8 +68,8 @@ async fn insert_suspension_pool(
     );
 
     tokio::try_join!(
-        insert_suspension_pool_preparers(tx, id, preparer_ids.as_ref()),
-        insert_suspension_poolings(tx, id, &suspensions),
+        insert_suspension_pool_preparers(tx, id, preparers.as_ref()),
+        insert_suspension_poolings(tx, id, &poolings),
         measurement_insertions,
     )?;
 
@@ -217,13 +195,13 @@ pub mod test {
         id::NoId,
         suspension::measurement::Viability,
         suspension_pool::{
-            NewSuspensionPool, NewSuspensionPoolCommonFields, NewSuspensionPoolRecord,
-            NewTaggedSuspensionPool, SuspensionPoolDetailed, TaggedSuspension,
+            NewSuspensionPool, NewSuspensionPoolRecord, PooledSuspensions, SuspensionPoolDetailed,
+            TaggedSuspension,
             measurement::{NewSuspensionPoolMeasurement, SuspensionPoolMeasurementData},
         },
     };
     use jiff::Timestamp;
-    use nonempty::{NonemptyBoundedVec, NonemptyVec};
+    use nonempty::NonemptyVec;
     use positive::PositiveBoundedF32;
     use postgres_types::Json;
     use pretty_assertions::assert_eq;
@@ -259,36 +237,36 @@ pub mod test {
 
         let person_id = suspension1.specimen.record.submitted_by;
 
-        let mut new = NewSuspensionPool::FlexBarcode(NewTaggedSuspensionPool {
-            common: NewSuspensionPoolCommonFields {
-                record: NewSuspensionPoolRecord {
-                    id: NoId {},
-                    readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                    name: "pool".to_nonempty_string(),
-                    pooled_at: Timestamp::now(),
-                    additional_data: None,
-                },
-                measurements: vec![NewSuspensionPoolMeasurement {
-                    measured_by: person_id,
-                    measured_at: Timestamp::now(),
-                    data: Json(SuspensionPoolMeasurementData::Viability(Viability {
-                        value: PositiveBoundedF32::new(0.5).unwrap(),
-                    })),
-                }],
-                preparers: NonemptyVec::new(vec![person_id]).unwrap(),
+        let mut new = NewSuspensionPool {
+            record: NewSuspensionPoolRecord {
+                id: NoId {},
+                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                name: "pool".to_nonempty_string(),
+                pooled_at: Timestamp::now(),
+                additional_data: None,
             },
-            suspensions: NonemptyBoundedVec::new(vec![
-                TaggedSuspension {
-                    suspension_id: suspension1_id,
-                    tag_id: multiplexing_tag1_id.tag_id,
-                },
-                TaggedSuspension {
-                    suspension_id: suspension2_id,
-                    tag_id: multiplexing_tag2_id.tag_id,
-                },
-            ])
-            .unwrap(),
-        });
+            measurements: vec![NewSuspensionPoolMeasurement {
+                measured_by: person_id,
+                measured_at: Timestamp::now(),
+                data: Json(SuspensionPoolMeasurementData::Viability(Viability {
+                    value: PositiveBoundedF32::new(0.5).unwrap(),
+                })),
+            }],
+            preparers: NonemptyVec::new(vec![person_id]).unwrap(),
+            suspensions: PooledSuspensions::FlexBarcode {
+                suspensions: NonemptyVec::new(vec![
+                    TaggedSuspension {
+                        suspension_id: suspension1_id,
+                        tag_id: multiplexing_tag1_id.tag_id,
+                    },
+                    TaggedSuspension {
+                        suspension_id: suspension2_id,
+                        tag_id: multiplexing_tag2_id.tag_id,
+                    },
+                ])
+                .unwrap(),
+            },
+        };
 
         modify(&mut new);
 
