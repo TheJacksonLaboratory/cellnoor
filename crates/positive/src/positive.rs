@@ -109,4 +109,4 @@ where
     }
 }
 
-pub type Positive<T> = PositiveBounded<T, { u32::MAX }>;
+pub(crate) type Positive<T> = PositiveBounded<T, { u32::MAX }>;

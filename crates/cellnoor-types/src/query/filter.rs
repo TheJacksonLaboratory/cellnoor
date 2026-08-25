@@ -156,6 +156,7 @@ impl<T> ArrayOperator<T>
 where
     T: ToSql + Sync,
 {
+    #[must_use]
     pub fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Contains(v) => ("@>", v),
