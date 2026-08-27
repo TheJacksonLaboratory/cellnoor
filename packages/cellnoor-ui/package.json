@@ -19,7 +19,7 @@
     "@sveltejs/kit": "^2.70.3",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@types/bun": "^1.4.0",
-    "eslint": "^10.8.1",
+    "eslint": "^10.9.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.11.0",
     "openapi-fetch": "^0.17.0",
@@ -33,10 +33,10 @@
   },
   "dependencies": {
     "@fontsource-variable/comfortaa": "^5.3.0",
-    "@lucide/svelte": "^1.33.0",
+    "@lucide/svelte": "^1.34.0",
     "@tailwindcss/vite": "^4.3.3",
     "better-auth": "^1.7.1",
-    "daisyui": "^5.7.20",
+    "daisyui": "^5.7.22",
     "tailwindcss": "^4.3.3",
     "valibot": "^1.4.2"
   }
