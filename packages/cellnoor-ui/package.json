@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@fontsource-variable/comfortaa": "^5.3.0",
-    "@lucide/svelte": "^1.37.0",
+    "@lucide/svelte": "^1.38.0",
     "@tailwindcss/vite": "^4.3.3",
     "better-auth": "^1.7.2",
     "daisyui": "^5.7.22",
