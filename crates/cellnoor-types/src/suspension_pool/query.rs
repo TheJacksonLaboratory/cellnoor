@@ -3,7 +3,7 @@ use macro_attributes::{predicate_enum, predicate_enum_wrapper, sort_field_enum};
 use crate::{
     operator::{JsonOperator, StringOperator, TimestampOperator, UuidOperator},
     query::{
-        ComplexQuery, DefaultDesc, SimpleQuery,
+        ComplexQuery, OrderField, SimpleQuery,
         filter::{Filter, Operator},
     },
     specimen::SpecimenPredicate,
@@ -73,13 +73,11 @@ impl From<SuspensionPoolPredicateInner> for Filter<SuspensionPoolPredicate> {
     }
 }
 
-impl Default for SuspensionPoolField {
-    fn default() -> Self {
+impl OrderField for SuspensionPoolField {
+    fn default_field() -> Self {
         Self::PooledAt
     }
 }
-
-impl DefaultDesc for SuspensionPoolField {}
 
 pub type SuspensionPoolQuery = ComplexQuery<SuspensionPoolPredicate, SuspensionPoolField>;
 

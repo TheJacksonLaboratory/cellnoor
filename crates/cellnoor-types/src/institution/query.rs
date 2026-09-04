@@ -2,7 +2,7 @@ use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
     operator::{StringOperator, UuidOperator},
-    query::{ComplexQuery, DefaultDesc, SimpleQuery},
+    query::{ComplexQuery, OrderField, SimpleQuery},
 };
 
 #[predicate_enum]
@@ -18,15 +18,13 @@ pub enum InstitutionPredicate {
     MicrosoftEntraTenantId(UuidOperator),
 }
 
-impl Default for InstitutionField {
-    fn default() -> Self {
+impl OrderField for InstitutionField {
+    fn default_field() -> Self {
         Self::Name
     }
-}
 
-impl DefaultDesc for InstitutionField {
     fn default_desc() -> bool {
-        false
+        true
     }
 }
 

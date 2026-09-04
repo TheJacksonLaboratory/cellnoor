@@ -2,7 +2,7 @@ use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
     operator::{BoolOperator, StringOperator, UuidOperator},
-    query::{ComplexQuery, DefaultDesc, SimpleQuery},
+    query::{ComplexQuery, OrderField, SimpleQuery},
 };
 
 #[predicate_enum]
@@ -18,13 +18,11 @@ pub enum PersonPredicate {
     Orcid(StringOperator),
 }
 
-impl Default for PersonField {
-    fn default() -> Self {
+impl OrderField for PersonField {
+    fn default_field() -> Self {
         Self::Name
     }
-}
 
-impl DefaultDesc for PersonField {
     fn default_desc() -> bool {
         false
     }

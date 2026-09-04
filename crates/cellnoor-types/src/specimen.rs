@@ -156,11 +156,11 @@ impl ToSql for ThermalPreservationMethod {
         Self: Sized,
     {
         let value = match self {
-            Self::Crf(c) => c.into(),
-            Self::Ff(f) => f.into(),
+            Self::Crf(c) => c.as_ref(),
+            Self::Ff(f) => f.as_ref(),
         };
 
-        <&'static str as ToSql>::to_sql(&value, ty, out)
+        <&str as ToSql>::to_sql(&value, ty, out)
     }
 
     fn accepts(ty: &postgres_types::Type) -> bool
@@ -217,11 +217,11 @@ impl ToSql for Fixative {
         Self: Sized,
     {
         let value = match self {
-            Self::DithiobisSuccinimidylpropionate(c) => c.into(),
-            Self::FormaldehydeDerivative(f) => f.into(),
+            Self::DithiobisSuccinimidylpropionate(c) => c.as_ref(),
+            Self::FormaldehydeDerivative(f) => f.as_ref(),
         };
 
-        <&'static str as ToSql>::to_sql(&value, ty, out)
+        <&str as ToSql>::to_sql(&value, ty, out)
     }
 
     fn accepts(ty: &postgres_types::Type) -> bool

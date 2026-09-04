@@ -3,7 +3,7 @@ use macro_attributes::{predicate_enum, sort_field_enum};
 use crate::{
     operator::{StringOperator, UuidOperator},
     query::{
-        DefaultDesc,
+        OrderField,
         filter::{ArrayOperator, Operator},
     },
     tenx_assay::{LibraryType, SampleMultiplexing},
@@ -24,13 +24,11 @@ pub enum TenxAssayPredicate {
     ProtocolUrl(StringOperator),
 }
 
-impl Default for TenxAssayField {
-    fn default() -> Self {
+impl OrderField for TenxAssayField {
+    fn default_field() -> Self {
         Self::Name
     }
-}
 
-impl DefaultDesc for TenxAssayField {
     fn default_desc() -> bool {
         false
     }

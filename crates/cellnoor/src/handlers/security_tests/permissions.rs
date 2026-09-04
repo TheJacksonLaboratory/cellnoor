@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use cellnoor_types::query::ComplexQuery;
+use cellnoor_types::query::{ComplexQuery, OrderField};
 use uuid::Uuid;
 
 use crate::{
@@ -35,10 +35,10 @@ async fn create_test_user() -> Uuid {
     person.record.id
 }
 
-async fn assert_is_ok<F, Pred, OrderField, Ret>(tx: &db::Transaction<'_>, select_fn: F)
+async fn assert_is_ok<F, Pred, Order, Ret>(tx: &db::Transaction<'_>, select_fn: F)
 where
-    OrderField: Default,
-    F: AsyncFn(&db::Transaction, &mut ComplexQuery<Pred, OrderField>) -> Result<Ret, ErrorInner>,
+    Order: OrderField,
+    F: AsyncFn(&db::Transaction, &mut ComplexQuery<Pred, Order>) -> Result<Ret, ErrorInner>,
     Ret: Debug,
 {
     std::assert_matches!(select_fn(tx, &mut ComplexQuery::default()).await, Ok(_));

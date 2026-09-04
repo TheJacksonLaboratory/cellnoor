@@ -2,7 +2,7 @@ use macro_attributes::{predicate_enum, predicate_enum_wrapper, sort_field_enum};
 
 use crate::{
     operator::{BoolOperator, JsonOperator, StringOperator, TimestampOperator, UuidOperator},
-    query::{ComplexQuery, DefaultDesc, SimpleQuery, filter::Filter},
+    query::{ComplexQuery, OrderField, SimpleQuery, filter::Filter},
     specimen::SpecimenPredicate,
     tenx_assay::TenxAssayPredicate,
 };
@@ -59,13 +59,11 @@ impl From<ChromiumRunPredicateInner> for Filter<ChromiumRunPredicate> {
     }
 }
 
-impl Default for ChromiumRunField {
-    fn default() -> Self {
+impl OrderField for ChromiumRunField {
+    fn default_field() -> Self {
         Self::RunAt
     }
 }
-
-impl DefaultDesc for ChromiumRunField {}
 
 pub type ChromiumRunQuery = ComplexQuery<ChromiumRunPredicate, ChromiumRunField>;
 

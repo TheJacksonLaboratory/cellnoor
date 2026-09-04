@@ -4,7 +4,7 @@ use crate::{
     operator::{
         I32Operator, I64Operator, JsonOperator, StringOperator, TimestampOperator, UuidOperator,
     },
-    query::{ComplexQuery, DefaultDesc, SimpleQuery, filter::Filter},
+    query::{ComplexQuery, OrderField, SimpleQuery, filter::Filter},
     specimen::SpecimenPredicate,
 };
 
@@ -50,13 +50,11 @@ impl From<LibraryPredicateInner> for Filter<LibraryPredicate> {
     }
 }
 
-impl Default for LibraryField {
-    fn default() -> Self {
+impl OrderField for LibraryField {
+    fn default_field() -> Self {
         Self::PreparedAt
     }
 }
-
-impl DefaultDesc for LibraryField {}
 
 pub type LibraryQuery = ComplexQuery<LibraryPredicate, LibraryField>;
 

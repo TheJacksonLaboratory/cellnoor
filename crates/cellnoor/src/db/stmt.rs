@@ -3,7 +3,7 @@ use std::fmt::Write;
 use cellnoor_types::{
     filter::Filter,
     order_by::{OrderBy, OrderBySet},
-    query::ComplexQuery,
+    query::{ComplexQuery, OrderField},
 };
 use postgres_types::ToSql;
 
@@ -105,7 +105,7 @@ impl FilterableSqlBuilder {
     ) -> Sql<'a>
     where
         P: AsPredicate,
-        O: Default + Copy + std::fmt::Display,
+        O: OrderField + Copy + std::fmt::Display,
     {
         // Still tiny but should be more than enough inshallah
         let mut stmt = String::with_capacity(2048);
@@ -199,7 +199,7 @@ fn write_order_by_fields<'a, O>(
     order_by_set: &OrderBySet<O>,
 ) -> Option<&'a mut String>
 where
-    O: Default + std::fmt::Display + Copy,
+    O: OrderField + std::fmt::Display + Copy,
 {
     fn direction(desc: bool) -> &'static str {
         if desc { "desc" } else { "asc" }

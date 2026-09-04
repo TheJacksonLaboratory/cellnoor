@@ -2,7 +2,7 @@ use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
     operator::{JsonOperator, StringOperator, TimestampOperator, UuidOperator},
-    query::{ComplexQuery, DefaultDesc, SimpleQuery, filter::Operator},
+    query::{ComplexQuery, OrderField, SimpleQuery, filter::Operator},
     specimen::{
         Fixative, Species, SpecimenType, ThermalPreservationMethod,
         creation::block::BlockEmbeddingMatrix,
@@ -37,13 +37,11 @@ pub enum SpecimenPredicate {
     AdditionalData(JsonOperator),
 }
 
-impl Default for SpecimenField {
-    fn default() -> Self {
+impl OrderField for SpecimenField {
+    fn default_field() -> Self {
         Self::ReceivedAt
     }
 }
-
-impl DefaultDesc for SpecimenField {}
 
 pub type SpecimenQuery = ComplexQuery<SpecimenPredicate, SpecimenField>;
 

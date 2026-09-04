@@ -1,26 +1,22 @@
 use macro_attributes::base_model;
 use nonempty::NonemptyVec;
 
+use crate::query::OrderField;
+
 #[base_model]
 #[derive(Copy)]
 #[cfg_attr(feature = "serde", serde(default))]
 #[cfg_attr(feature = "schemars", schemars(rename = "OrderBy{T}"))]
-pub struct OrderBy<T>
-where
-    T: Default,
-{
+pub struct OrderBy<T: OrderField> {
     pub field: T,
     pub desc: bool,
 }
 
-impl<T> Default for OrderBy<T>
-where
-    T: Default,
-{
+impl<T: OrderField> Default for OrderBy<T> {
     fn default() -> Self {
         Self {
-            field: T::default(),
-            desc: true,
+            field: T::default_field(),
+            desc: T::default_desc(),
         }
     }
 }
@@ -30,16 +26,13 @@ where
 #[cfg_attr(feature = "schemars", schemars(rename = "OrderBy{T}Set"))]
 pub enum OrderBySet<T>
 where
-    T: Default,
+    T: OrderField,
 {
     One(OrderBy<T>),
     Many(NonemptyVec<OrderBy<T>>),
 }
 
-impl<T> Default for OrderBySet<T>
-where
-    T: Default,
-{
+impl<T: OrderField> Default for OrderBySet<T> {
     fn default() -> Self {
         Self::One(OrderBy::default())
     }

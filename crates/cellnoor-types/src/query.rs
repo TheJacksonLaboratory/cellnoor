@@ -10,7 +10,9 @@ pub(crate) mod order_by;
 
 // Most of the time, we're ordering by a time-field, so we want to see most
 // recent first
-pub trait DefaultDesc {
+pub trait OrderField {
+    fn default_field() -> Self;
+
     #[must_use]
     fn default_desc() -> bool {
         true
@@ -19,14 +21,15 @@ pub trait DefaultDesc {
 
 #[base_model]
 #[derive(Copy, Default)]
-#[cfg_attr(feature = "serde", serde(default))]
 #[cfg_attr(feature = "schemars", schemars(inline))]
 pub struct SimpleQuery<O>
 where
-    O: Default + DefaultDesc,
+    O: OrderField,
 {
     pub limit: Option<i64>,
+    #[cfg_attr(feature = "serde", serde(default))]
     pub offset: i64,
+    #[cfg_attr(feature = "serde", serde(default = "O::default_field"))]
     pub order_by_field: O,
     #[cfg_attr(feature = "serde", serde(default = "O::default_desc"))]
     pub order_by_desc: bool,
@@ -37,7 +40,7 @@ where
 #[cfg_attr(feature = "schemars", schemars(rename = "{P}Query"))]
 pub struct ComplexQuery<P, O>
 where
-    O: Default,
+    O: OrderField,
 {
     pub filter: Option<Filter<P>>,
     pub limit: Option<i64>,
@@ -47,7 +50,7 @@ where
 
 impl<F, O> Default for ComplexQuery<F, O>
 where
-    O: Default,
+    O: OrderField,
 {
     fn default() -> Self {
         Self {
@@ -61,7 +64,7 @@ where
 
 impl<P, O> ComplexQuery<P, O>
 where
-    O: Default + DefaultDesc,
+    O: OrderField,
 {
     pub fn from_filter(predicate: P) -> Self {
         Self {
@@ -92,7 +95,7 @@ where
 
 impl<P, O> From<P> for ComplexQuery<P, O>
 where
-    O: Default + DefaultDesc,
+    O: OrderField,
 {
     fn from(pred: P) -> Self {
         Self::from_filter(pred)

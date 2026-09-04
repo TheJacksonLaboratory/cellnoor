@@ -2,7 +2,7 @@ use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
     operator::{StringOperator, TimestampOperator, UuidOperator},
-    query::{ComplexQuery, DefaultDesc, SimpleQuery},
+    query::{ComplexQuery, OrderField, SimpleQuery},
 };
 
 #[predicate_enum]
@@ -21,13 +21,11 @@ pub enum ApiKeyPredicate {
     ExpiresAt(TimestampOperator),
 }
 
-impl Default for ApiKeyField {
-    fn default() -> Self {
+impl OrderField for ApiKeyField {
+    fn default_field() -> Self {
         Self::CreatedAt
     }
 }
-
-impl DefaultDesc for ApiKeyField {}
 
 pub type ApiKeyQuery = ComplexQuery<ApiKeyPredicate, ApiKeyField>;
 
