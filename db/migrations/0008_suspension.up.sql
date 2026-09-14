@@ -10,8 +10,7 @@ create table suspension (
     additional_data jsonb,
 
     unique (id, created_at),
-    foreign key (specimen_id, specimen_received_at)
-    references specimen (id, received_at) on update cascade,
+    foreign key (specimen_id, specimen_received_at) references specimen (id, received_at) on update cascade,
 
     constraint only_nuclei_suspension_was_lysed check (content = 'nuclei' or lysis_duration_minutes is null),
     constraint created_after_specimen_received check (created_at >= specimen_received_at)
@@ -39,8 +38,9 @@ create table suspension_measurement (
     data jsonb not null,
 
     unique (suspension_id, measured_by, measured_at, data),
-    foreign key (suspension_id, suspension_created_at)
-    references suspension (id, created_at) on update cascade on delete cascade,
+    foreign key (suspension_id, suspension_created_at) references suspension (
+        id, created_at
+    ) on update cascade on delete cascade,
 
     constraint measured_after_suspension_created check (measured_at >= suspension_created_at)
 );

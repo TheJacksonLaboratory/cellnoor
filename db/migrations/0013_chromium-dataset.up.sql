@@ -30,10 +30,10 @@ create table chromium_dataset_library (
     library_prepared_at timestamptz not null,
     primary key (dataset_id, library_id),
 
-    foreign key (dataset_id, dataset_delivered_at)
-    references chromium_dataset (id, delivered_at) on update cascade on delete cascade,
-    foreign key (library_id, library_prepared_at)
-    references library (id, prepared_at) on update cascade,
+    foreign key (dataset_id, dataset_delivered_at) references chromium_dataset (
+        id, delivered_at
+    ) on update cascade on delete cascade,
+    foreign key (library_id, library_prepared_at) references library (id, prepared_at) on update cascade,
 
     constraint delivered_after_library_prepared check (dataset_delivered_at >= library_prepared_at)
 );

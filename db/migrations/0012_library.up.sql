@@ -37,8 +37,9 @@ create table library_measurement (
     data jsonb not null,
 
     unique (library_id, measured_by, measured_at, data),
-    foreign key (library_id, library_prepared_at)
-    references library (id, prepared_at) on update cascade on delete cascade,
+    foreign key (library_id, library_prepared_at) references library (
+        id, prepared_at
+    ) on update cascade on delete cascade,
 
     constraint measured_after_library_prepared check (measured_at >= library_prepared_at)
 );

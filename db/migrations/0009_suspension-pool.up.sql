@@ -17,7 +17,9 @@ create table suspension_pool_measurement (
     data jsonb not null,
 
     unique (pool_id, measured_by, measured_at, data),
-    foreign key (pool_id, pool_created_at) references suspension_pool (id, pooled_at) on update cascade on delete cascade,
+    foreign key (pool_id, pool_created_at) references suspension_pool (
+        id, pooled_at
+    ) on update cascade on delete cascade,
 
     constraint measured_after_pool_created check (measured_at >= pool_created_at)
 );

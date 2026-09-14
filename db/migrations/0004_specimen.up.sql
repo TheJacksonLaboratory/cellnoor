@@ -20,8 +20,9 @@ create table specimen (
     additional_data jsonb,
 
     unique (id, received_at),
-    foreign key (project_id, project_started_at, project_ended_at)
-    references project (id, started_at, ended_at) on update cascade,
+    foreign key (project_id, project_started_at, project_ended_at) references project (
+        id, started_at, ended_at
+    ) on update cascade,
 
     constraint received_after_project_start check (received_at >= project_started_at),
     constraint received_before_project_end check (received_at <= project_ended_at),
