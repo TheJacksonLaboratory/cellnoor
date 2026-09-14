@@ -6370,7 +6370,7 @@ export interface components {
         };
         OrderByLibraryFieldSet: components["schemas"]["OrderByLibraryField"] | components["schemas"]["OrderByLibraryField"][];
         OrderByPersonField: {
-            /** @default true */
+            /** @default false */
             desc?: boolean;
             field?: components["schemas"]["PersonField"];
         };
