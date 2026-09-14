@@ -59,6 +59,9 @@ impl AsFieldValuePairs<SpecimenField, 15> for NewSpecimenRecord {
             submitted_by,
             received_at,
             project_id,
+            // Populated by a database trigger
+            project_started_at: _,
+            project_ended_at: _,
             species,
             host_species,
             returned_by,

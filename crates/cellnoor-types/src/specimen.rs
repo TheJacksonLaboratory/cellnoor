@@ -51,6 +51,10 @@ mod record {
         pub name: NonemptyString,
         pub submitted_by: Uuid,
         pub project_id: Uuid,
+        #[cfg_attr(feature = "serde", serde(skip))]
+        pub project_started_at: Timestamp,
+        #[cfg_attr(feature = "serde", serde(skip))]
+        pub project_ended_at: Timestamp,
         pub received_at: Timestamp,
         pub species: Species,
         pub host_species: Option<Species>,

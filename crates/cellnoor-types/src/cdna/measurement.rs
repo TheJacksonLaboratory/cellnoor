@@ -11,6 +11,8 @@ use crate::nucleic_acid_measurement::NucleicAcidMeasurementData;
 pub struct CdnaMeasurement {
     pub id: Uuid,
     pub cdna_id: Uuid,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub cdna_prepared_at: Timestamp,
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
     #[cfg(feature = "postgres-types")]

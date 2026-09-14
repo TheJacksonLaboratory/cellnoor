@@ -11,6 +11,8 @@ use crate::nucleic_acid_measurement::NucleicAcidMeasurementData;
 pub struct LibraryMeasurement {
     pub id: Uuid,
     pub library_id: Uuid,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub library_prepared_at: Timestamp,
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
     #[cfg(all(feature = "postgres-types", feature = "schemars"))]

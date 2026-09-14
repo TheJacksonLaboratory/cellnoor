@@ -104,6 +104,8 @@ impl AsFieldValuePairs<SuspensionField, 7> for NewSuspensionRecord {
             id: _,
             readable_id,
             specimen_id,
+            // Populated by a database trigger
+            specimen_received_at: _,
             content,
             created_at,
             lysis_duration_minutes,

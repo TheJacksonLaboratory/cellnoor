@@ -85,6 +85,10 @@ pub fn split_new_specimen_for_insertion(
             name,
             submitted_by,
             project_id,
+            // These are denormalized copies of the project's start and end, populated by a database
+            // trigger on insert. The values here are never written or read
+            project_started_at: Default::default(),
+            project_ended_at: Default::default(),
             received_at,
             species,
             host_species,

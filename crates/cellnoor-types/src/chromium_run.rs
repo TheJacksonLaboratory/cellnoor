@@ -32,6 +32,8 @@ mod record {
         pub id: T,
         pub readable_id: NonemptyString,
         pub chromium_run_id: Uuid,
+        #[cfg_attr(feature = "serde", serde(skip))]
+        pub run_at: Timestamp,
     }
 
     #[select]

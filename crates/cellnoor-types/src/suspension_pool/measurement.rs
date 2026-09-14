@@ -30,6 +30,8 @@ pub struct NewSuspensionPoolMeasurement {
 pub struct SuspensionPoolMeasurement {
     pub id: Uuid,
     pub pool_id: Uuid,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub pool_created_at: Timestamp,
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
     #[cfg(all(feature = "postgres-types", feature = "schemars"))]

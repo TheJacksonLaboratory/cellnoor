@@ -29,6 +29,8 @@ pub struct NewSuspensionMeasurement {
 pub struct SuspensionMeasurement {
     pub id: Uuid,
     pub suspension_id: Uuid,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub suspension_created_at: Option<Timestamp>,
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
     #[cfg(all(feature = "postgres-types", feature = "schemars"))]

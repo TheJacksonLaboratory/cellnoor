@@ -99,6 +99,8 @@ impl AsFieldValuePairs<LibraryField, 8> for NewLibraryRecord {
             id: _,
             readable_id,
             cdna_id,
+            // Populated by a database trigger
+            cdna_prepared_at: _,
             single_index_set_name,
             dual_index_set_name,
             number_of_sample_index_pcr_cycles,

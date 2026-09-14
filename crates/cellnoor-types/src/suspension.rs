@@ -35,6 +35,8 @@ mod record {
         pub id: T,
         pub readable_id: NonemptyString,
         pub specimen_id: Uuid,
+        #[cfg_attr(feature = "serde", serde(skip))]
+        pub specimen_received_at: Timestamp,
         pub content: SuspensionContent,
         pub created_at: Option<Timestamp>,
         pub lysis_duration_minutes: Option<f32>,
