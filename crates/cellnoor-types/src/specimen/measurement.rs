@@ -25,6 +25,8 @@ pub struct NewSpecimenMeasurement {
 pub struct SpecimenMeasurement {
     pub id: Uuid,
     pub specimen_id: Uuid,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub specimen_received_at: Timestamp,
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
     #[cfg(all(feature = "postgres-types", feature = "schemars"))]

@@ -3,7 +3,10 @@ create table specimen (
     readable_id case_insensitive_text unique not null,
     name case_insensitive_text not null,
     submitted_by uuid references person not null,
-    project_id uuid references project not null,
+    project_id uuid not null,
+    -- We denormalize the project start and end so we can constrain received_at
+    project_started_at timestamptz not null,
+    project_ended_at timestamptz not null,
     received_at timestamptz not null,
     species case_insensitive_text not null,
     host_species case_insensitive_text,
@@ -16,42 +19,29 @@ create table specimen (
     tissue case_insensitive_text not null,
     additional_data jsonb,
 
+    unique (id, received_at),
+    foreign key (project_id, project_started_at, project_ended_at) references project (
+        id, started_at, ended_at
+    ) on update cascade,
+
+    constraint received_after_project_start check (received_at >= project_started_at),
+    constraint received_before_project_end check (received_at <= project_ended_at),
     constraint received_before_returned check (received_at < returned_at),
     constraint host_species_different_from_donor_species check (species != host_species)
 );
 
--- In order to ensure a timestamp on a child entity makes sense relative to its parent, we define a trigger function
--- that works for any table
-create function check_timestamp_ordering() returns trigger language plpgsql volatile strict as $$
-    declare
-        child_value_field text = tg_argv[0];
-        child_fk_field text = tg_argv[1];
-        parent_table text = tg_argv[2];
-        parent_value_field text = tg_argv[3];
-        new_json jsonb = to_jsonb(new);
-        child_value timestamptz = (new_json ->> child_value_field)::timestamptz;
-        child_fk uuid = (new_json ->> child_fk_field)::uuid;
-        n integer;
+-- To prevent polluting application-code, we write a trigger that populates a specimens's project's start and end
+create function populate_specimen_project_timestamps() returns trigger language plpgsql as $$
     begin
-        if (child_value is null) then
-            return new;
-        end if;
-
-        execute format('select count(*) from %I where id = $1 and (%I <= $2 or %I is null)', parent_table, parent_value_field, parent_value_field) into n using child_fk, child_value;
-
-        if (n != 1) then
-            raise check_violation using message = format('%I cannot be before parent %I field %I', child_value_field, parent_table, parent_value_field), table = tg_table_name, column = child_value_field;
-        end if;
+        select started_at, ended_at into new.project_started_at, new.project_ended_at
+        from project where id = new.project_id;
 
         return new;
     end;
 $$;
 
-create trigger check_specimen_received_after_project_started before insert or update on specimen for each row execute
-function check_timestamp_ordering(
-    'received_at', 'project_id', 'project', 'started_at'
-);
-
+create trigger specimen_project_timestamps before insert or update of project_id on specimen for each row execute
+function populate_specimen_project_timestamps();
 
 create table committee_approval (
     institution_id uuid references institution on delete cascade not null,
@@ -63,15 +53,27 @@ create table committee_approval (
 
 create table specimen_measurement (
     id uuid primary key default uuidv7(),
-    specimen_id uuid references specimen on delete cascade not null,
+    specimen_id uuid not null,
+    specimen_received_at timestamptz not null,
     measured_by uuid references person not null,
     measured_at timestamptz not null,
     data jsonb not null,
 
-    unique (specimen_id, measured_by, measured_at, data)
+    unique (specimen_id, measured_by, measured_at, data),
+    foreign key (specimen_id, specimen_received_at) references specimen (
+        id, received_at
+    ) on update cascade on delete cascade,
+
+    constraint measured_after_specimen_received check (measured_at >= specimen_received_at)
 );
 
-create trigger specimen_before_measurement before insert or update on specimen_measurement for each row execute
-function check_timestamp_ordering(
-    'measured_at', 'specimen_id', 'specimen', 'received_at'
-);
+create function populate_specimen_measurement_timestamps() returns trigger language plpgsql as $$
+    begin
+        select received_at into new.specimen_received_at from specimen where id = new.specimen_id;
+
+        return new;
+    end;
+$$;
+
+create trigger specimen_measurement_timestamps before insert or update of specimen_id on specimen_measurement for each
+row execute function populate_specimen_measurement_timestamps();

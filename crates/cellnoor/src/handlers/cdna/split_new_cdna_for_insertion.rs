@@ -52,6 +52,9 @@ pub fn split_new_cdna_for_insertion(
             library_type,
             prepared_at,
             gem_well_id: Some(gem_well_id),
+            // A denormalized copy of the GEM well's Chromium run time, populated by a database
+            // trigger on insert. The value here is never written or read
+            gem_well_run_at: None,
             n_amplification_cycles,
             additional_data,
         },

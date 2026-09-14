@@ -59,6 +59,9 @@ impl AsFieldValuePairs<SpecimenField, 15> for NewSpecimenRecord {
             submitted_by,
             received_at,
             project_id,
+            // Populated by a database trigger
+            project_started_at: _,
+            project_ended_at: _,
             species,
             host_species,
             returned_by,
@@ -106,7 +109,6 @@ pub mod test {
     use jiff::Timestamp;
     use positive::PositiveBoundedF32;
     use postgres_types::Json;
-    use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
     use crate::{
@@ -180,13 +182,13 @@ pub mod test {
         .await
         .unwrap_err();
 
-        assert_eq!(
+        std::assert_matches!(
             error,
             ErrorInner::DataConstraint {
-                resource: Some("specimen".to_owned()),
-                field: Some("received_at".to_owned()),
-                message: "received_at cannot be before parent project field started_at".to_owned(),
-                detail: None
+                resource: Some(_),
+                field: None,
+                message: _,
+                detail: None,
             }
         );
     }

@@ -43,6 +43,8 @@ mod record {
         pub library_type: LibraryType,
         pub prepared_at: Timestamp,
         pub gem_well_id: Option<Uuid>,
+        #[cfg_attr(feature = "serde", serde(skip))]
+        pub gem_well_run_at: Option<Timestamp>,
         pub n_amplification_cycles: Option<PositiveI32>,
         pub additional_data: Option<serde_json::Value>,
     }

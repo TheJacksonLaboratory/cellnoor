@@ -30,6 +30,8 @@ mod record {
         pub id: T,
         pub readable_id: NonemptyString,
         pub cdna_id: Uuid,
+        #[cfg_attr(feature = "serde", serde(skip))]
+        pub cdna_prepared_at: Timestamp,
         pub single_index_set_name: Option<String>,
         pub dual_index_set_name: Option<String>,
         pub number_of_sample_index_pcr_cycles: PositiveI32,

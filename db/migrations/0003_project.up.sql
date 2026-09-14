@@ -6,6 +6,7 @@ create table project (
     started_at timestamptz not null,
     ended_at timestamptz not null,
 
+    unique (id, started_at, ended_at),
     constraint has_creator check ((created_by_person is null) != (created_by_service is null)),
     constraint starts_before_ends check (started_at <= ended_at)
 );

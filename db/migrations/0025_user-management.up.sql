@@ -53,7 +53,7 @@ $$;
 
 
 create or replace function _grant_permissions_to_person_as_user_creator(
-    current_user_id uuid, target_user_id uuid, permissions permission_set []
+    current_user_id uuid, target_user_id uuid, permissions permission_set[]
 ) returns void language plpgsql volatile strict security definer as $$
     declare
         user_is_person boolean;
@@ -102,7 +102,7 @@ create or replace function _drop_person_user_as_user_creator(
 $$;
 
 create or replace function _revoke_permissions_from_person_as_user_creator(
-    current_user_id uuid, target_user_id uuid, permissions permission_set []
+    current_user_id uuid, target_user_id uuid, permissions permission_set[]
 ) returns void language plpgsql volatile strict security definer as $$
     declare perm permission_set;
     begin
@@ -120,7 +120,7 @@ reset role;
 
 
 create or replace function grant_permissions_to_person(
-    user_id uuid, permissions permission_set []
+    user_id uuid, permissions permission_set[]
 ) returns void language plpgsql volatile strict as $$
     begin
         perform _grant_permissions_to_person_as_user_creator(current_user::uuid, user_id, permissions);
@@ -128,7 +128,7 @@ create or replace function grant_permissions_to_person(
 $$;
 
 create or replace function create_person_user_with_permissions(
-    user_id uuid, permissions permission_set []
+    user_id uuid, permissions permission_set[]
 ) returns void language plpgsql volatile strict as $$
     begin
         perform _create_person_user_as_user_creator(current_user::uuid, user_id);
@@ -145,7 +145,7 @@ create or replace function create_person_user_from_login(
 $$;
 
 create or replace function revoke_permissions_from_person(
-    service_id uuid, permissions permission_set []
+    service_id uuid, permissions permission_set[]
 ) returns void language plpgsql volatile strict as $$
     begin
         perform _revoke_permissions_from_person_as_user_creator(current_user::uuid, service_id, permissions);

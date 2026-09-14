@@ -117,6 +117,8 @@ impl AsFieldValuePairs<CdnaField, 6> for NewCdnaRecord {
             library_type,
             prepared_at,
             gem_well_id,
+            // Populated by a database trigger
+            gem_well_run_at: _,
             n_amplification_cycles,
             additional_data,
         } = self;

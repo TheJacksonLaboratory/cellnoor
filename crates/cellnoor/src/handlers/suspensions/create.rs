@@ -104,6 +104,8 @@ impl AsFieldValuePairs<SuspensionField, 7> for NewSuspensionRecord {
             id: _,
             readable_id,
             specimen_id,
+            // Populated by a database trigger
+            specimen_received_at: _,
             content,
             created_at,
             lysis_duration_minutes,
@@ -167,6 +169,7 @@ pub mod test {
                 id: NoId {},
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 specimen_id,
+                specimen_received_at: specimen.record.received_at,
                 content: SuspensionContent::Cells,
                 created_at: None,
                 lysis_duration_minutes: None,
