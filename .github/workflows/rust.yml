@@ -1,7 +1,9 @@
 name: Check Rust Code
 on:
-  push:
+  pull_request:
+    branches: ["main"]
     paths:
+      - "**/*.sql"
       - "**/*.rs"
       - "**/Cargo.toml"
 
@@ -13,7 +15,7 @@ jobs:
 
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Cache cargo files
         uses: Swatinem/rust-cache@v2
@@ -40,7 +42,7 @@ jobs:
           cache-on-failure: true
 
       - name: Install nightly toolchain
-        run: rustup component add --toolchain nightly-2026-06-13 rustfmt # This is updated weekly-ish
+        run: rustup component add --toolchain nightly-2026-09-13 rustfmt # This is updated weekly-ish
 
       - name: Format
         working-directory: crates

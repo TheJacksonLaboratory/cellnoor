@@ -1,6 +1,7 @@
 name: Check TypeScript Code
 on:
-  push:
+  pull_request:
+    branches: ["main"]
     paths:
       - packages/**
 
@@ -9,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2
