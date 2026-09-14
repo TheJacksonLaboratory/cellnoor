@@ -167,6 +167,7 @@ pub mod test {
                 id: NoId {},
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 cdna_id: *cdna.record.id,
+                cdna_prepared_at: cdna.record.prepared_at,
                 single_index_set_name: None,
                 dual_index_set_name: Some(DUAL_INDEX_SET_NAME.to_owned()),
                 number_of_sample_index_pcr_cycles: PositiveI32::new(8).unwrap(),

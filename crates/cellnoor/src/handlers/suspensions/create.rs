@@ -169,6 +169,7 @@ pub mod test {
                 id: NoId {},
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 specimen_id,
+                specimen_received_at: specimen.record.received_at,
                 content: SuspensionContent::Cells,
                 created_at: None,
                 lysis_duration_minutes: None,
