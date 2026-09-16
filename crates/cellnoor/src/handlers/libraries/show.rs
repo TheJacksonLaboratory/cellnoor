@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, select_one},
+    db,
     error::{Error, ErrorInner},
     handlers::{IdParam, libraries::index_detailed::select_libraries_detailed},
     state::AppState,
@@ -35,8 +35,7 @@ pub(super) async fn select_library_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<LibraryDetailed, ErrorInner> {
-    select_one(
-        tx,
+    tx.select_one(
         LibraryPredicateInner::Id(UuidOperator::Eq(id)).into(),
         select_libraries_detailed,
     )

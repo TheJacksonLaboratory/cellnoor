@@ -4,7 +4,7 @@ use nonempty::NonemptyString;
 pub use query::{ServiceField, ServicePredicate, ServiceQuery, SimpleServiceQuery};
 use uuid::Uuid;
 
-use crate::permission::Permission;
+use crate::{Relation, permission::Permission};
 
 mod query;
 
@@ -30,6 +30,10 @@ pub struct ServiceUpdate {
     pub permissions_to_revoke: Vec<Permission>,
 }
 
+impl Relation for ServiceSimpleFields {
+    const NAME: &'static str = "service";
+}
+
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "service_public"))]
 pub struct Service {
@@ -38,4 +42,8 @@ pub struct Service {
     pub owned_by: Uuid,
     pub is_staff: bool,
     pub created_at: Timestamp,
+}
+
+impl Relation for Service {
+    const NAME: &'static str = "service_public";
 }

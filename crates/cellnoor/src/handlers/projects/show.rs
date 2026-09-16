@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, select_one},
+    db,
     error::{Error, ErrorInner},
     handlers::{IdParam, projects::index_detailed::select_projects_detailed},
     state::AppState,
@@ -36,8 +36,7 @@ pub(super) async fn select_project_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<ProjectDetailed, ErrorInner> {
-    select_one(
-        tx,
+    tx.select_one(
         ProjectPredicate::Id(UuidOperator::Eq(id)),
         select_projects_detailed,
     )

@@ -1,7 +1,7 @@
 use std::fmt::Write;
 
 use cellnoor_types::{
-    filter::Filter,
+    filter::{AsPredicate, Filter},
     order_by::{OrderBy, OrderBySet},
     query::{ComplexQuery, OrderField},
 };
@@ -9,16 +9,6 @@ use postgres_types::ToSql;
 
 #[derive(Debug, Clone)]
 pub struct Sql<'a>(pub(super) String, pub(super) Vec<&'a (dyn ToSql + Sync)>);
-
-impl Sql<'_> {
-    pub fn stmt(&self) -> &str {
-        &self.0
-    }
-
-    pub fn params(&self) -> &[&(dyn ToSql + Sync)] {
-        &self.1
-    }
-}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct SqlBuilder(&'static str);
@@ -39,57 +29,37 @@ pub struct FilterableSqlBuilder {
     suffix: &'static str,
 }
 
-impl FilterableSqlBuilder {
-    // We can use this function at compile-time to make sure every SQL statement has
-    // "/* {where} */" in it!
-    pub const fn new(base_sql: &'static str) -> Self {
-        static WHERE_CLAUSE_PLACEHOLDER: &[u8] = b"/* {where} */";
+// `str::find` is not const, so scan for the placeholder by hand to keep the
+// check at compile time.
+const fn placeholder_index(base_sql: &str, placeholder: &str) -> usize {
+    let (haystack, needle) = (base_sql.as_bytes(), placeholder.as_bytes());
 
+    let mut start = 0;
+    while start + needle.len() <= haystack.len() {
         let mut i = 0;
-        let mut placeholder_was_found = false;
-
-        // The following nested while-loop is necessary because other string-searching
-        // functionality is not const-compatible. This loop basically evaluates every
-        // substring of sql with the same length as `WHERE_CLAUSE_SENTINEL`, checking if
-        // said substring == WHERE_CLAUSE_SENTINEL
-        while i <= base_sql.len() {
-            let mut current_needle_idx = 0;
-
-            while current_needle_idx < WHERE_CLAUSE_PLACEHOLDER.len() {
-                let current_haystack_idx = i + current_needle_idx;
-                let current_haystack_idx_is_valid = current_haystack_idx < base_sql.len();
-
-                if !current_haystack_idx_is_valid {
-                    break;
-                }
-
-                let haystack_char = base_sql.as_bytes()[current_haystack_idx];
-                let needle_char = WHERE_CLAUSE_PLACEHOLDER[current_needle_idx];
-
-                if haystack_char != needle_char {
-                    break;
-                }
-
-                current_needle_idx += 1;
-            }
-
-            placeholder_was_found = current_needle_idx == WHERE_CLAUSE_PLACEHOLDER.len();
-            if placeholder_was_found {
-                break;
-            }
-
+        while i < needle.len() && haystack[start + i] == needle[i] {
             i += 1;
         }
 
-        if !placeholder_was_found {
-            panic!(r#"where-clause placeholder "/* {{where}} */"" not found in SQL statement"#);
+        if i == needle.len() {
+            return start;
         }
 
-        let placeholder_idx = i;
-        let (prefix, _) = base_sql.split_at(placeholder_idx);
+        start += 1;
+    }
 
-        let suffix_idx = placeholder_idx + WHERE_CLAUSE_PLACEHOLDER.len();
-        let (_, suffix) = base_sql.split_at(suffix_idx);
+    panic!(r#"where-clause placeholder "/* {{where}} */" not found in SQL statement"#);
+}
+
+impl FilterableSqlBuilder {
+    // We can use this function at compile-time to make sure every SQL statement
+    // has "/* {where} */" in it!
+    pub const fn new(base_sql: &'static str) -> Self {
+        const PLACEHOLDER: &str = "/* {where} */";
+
+        let index = placeholder_index(base_sql, PLACEHOLDER);
+        let (prefix, rest) = base_sql.split_at(index);
+        let (_, suffix) = rest.split_at(PLACEHOLDER.len());
 
         Self { prefix, suffix }
     }
@@ -105,7 +75,7 @@ impl FilterableSqlBuilder {
     ) -> Sql<'a>
     where
         P: AsPredicate,
-        O: OrderField + Copy + std::fmt::Display,
+        O: OrderField,
     {
         // Still tiny but should be more than enough inshallah
         let mut stmt = String::with_capacity(2048);
@@ -139,10 +109,6 @@ impl FilterableSqlBuilder {
 
         Sql(stmt, bind_params)
     }
-}
-
-pub trait AsPredicate {
-    fn as_predicate(&self) -> (&str, (&'static str, &(dyn ToSql + Sync)));
 }
 
 fn write_where_clause_predicates<'a, 'b, P>(
@@ -194,12 +160,11 @@ where
     clause
 }
 
-fn write_order_by_fields<'a, O>(
-    clause: &'a mut String,
-    order_by_set: &OrderBySet<O>,
-) -> Option<&'a mut String>
+/// A field names its column bare, so the relation it belongs to goes back in
+/// here: a read selects the relation's whole row as a composite.
+fn write_order_by_fields<O>(clause: &mut String, order_by_set: &OrderBySet<O>)
 where
-    O: OrderField + std::fmt::Display + Copy,
+    O: OrderField,
 {
     fn direction(desc: bool) -> &'static str {
         if desc { "desc" } else { "asc" }
@@ -207,7 +172,14 @@ where
 
     match order_by_set {
         OrderBySet::One(OrderBy { field, desc }) => {
-            write!(clause, "{field} {}", direction(*desc)).unwrap();
+            write!(
+                clause,
+                "({}).{} {}",
+                O::RELATION,
+                field.as_ref(),
+                direction(*desc)
+            )
+            .unwrap();
         }
         OrderBySet::Many(fields) => {
             for (i, order_by) in fields.iter().copied().enumerate() {
@@ -218,9 +190,7 @@ where
                 write_order_by_fields(clause, &OrderBySet::One(order_by));
             }
         }
-    };
-
-    Some(clause)
+    }
 }
 
 #[cfg(test)]

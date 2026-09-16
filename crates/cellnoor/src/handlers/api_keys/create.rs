@@ -1,5 +1,8 @@
 use axum::{Json, extract::State};
-use cellnoor_types::api_key::{ApiKey, NewApiKey};
+use cellnoor_types::{
+    Relation,
+    api_key::{ApiKey, NewApiKey},
+};
 use jiff::Timestamp;
 use nonempty::NonemptyString;
 use rand::{RngExt, distr::Alphanumeric};
@@ -7,7 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::{AuthUser, hash_api_key},
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::api_keys::index::select_api_key_record_by_id,
     state::AppState,
@@ -48,7 +51,7 @@ async fn insert_api_key(
         expires_at: *expires_at,
     };
 
-    let id = db::insert_into(tx, "api_key", &record).await?;
+    let id = tx.insert_returning_id(&record).await?;
 
     let record = select_api_key_record_by_id(tx, id).await?;
 
@@ -62,8 +65,14 @@ struct NewApiKeyRecord<'a> {
     expires_at: Option<Timestamp>,
 }
 
-impl AsFieldValuePairs<&'static str, 4> for NewApiKeyRecord<'_> {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 4> {
+impl Relation for NewApiKeyRecord<'_> {
+    const NAME: &'static str = "api_key";
+}
+
+impl Insert for NewApiKeyRecord<'_> {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             description,
             hashed_key,
@@ -71,7 +80,7 @@ impl AsFieldValuePairs<&'static str, 4> for NewApiKeyRecord<'_> {
             expires_at,
         } = self;
 
-        [
+        vec![
             ("description", description),
             ("hashed_key", hashed_key),
             ("owner_id", owner_id),

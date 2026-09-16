@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs, insert_into},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::chromium_runs::{
         create::gem_well::{insert_mixed_gem_well, insert_ocm_gem_well, insert_standard_gem_well},
@@ -69,11 +69,13 @@ async fn insert_chromium_run_record(
     tx: &db::Transaction<'_>,
     record: &NewChromiumRunRecord,
 ) -> Result<Uuid, ErrorInner> {
-    Ok(insert_into(tx, "chromium_run", record).await?)
+    tx.insert_returning_id(record).await
 }
 
-impl AsFieldValuePairs<ChromiumRunField, 6> for NewChromiumRunRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, ChromiumRunField, 6> {
+impl Insert for NewChromiumRunRecord {
+    type Field = ChromiumRunField;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         use ChromiumRunField::*;
 
         let Self {
@@ -86,7 +88,7 @@ impl AsFieldValuePairs<ChromiumRunField, 6> for NewChromiumRunRecord {
             additional_data,
         } = self;
 
-        [
+        vec![
             (ReadableId, readable_id),
             (AssayId, assay_id),
             (RunAt, run_at),
@@ -129,7 +131,7 @@ pub mod test {
 
     pub fn new_record(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRecord {
         NewChromiumRunRecord {
-            id: NoId {},
+            id: NoId,
             readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
             assay_id,
             run_at: Timestamp::now(),
@@ -154,8 +156,8 @@ pub mod test {
         let (_, assay) = insert_test_chromium_assay(tx).await?;
         let assay_id = assay.id;
 
-        // To exercise the ability of a mulitply loaded chip, the chromium run has two
-        // GEM wells
+        // To exercise the ability of a mulitply loaded chip, the chromium run
+        // has two GEM wells
         let gem_well1 = NewStandardGemWell {
             readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
             loaded_entity: LoadedEntity::Suspension {
@@ -198,10 +200,10 @@ pub mod test {
         let (_, assay) = insert_test_chromium_assay(tx).await?;
         let assay_id = assay.id;
 
-        // To exercise the ability of a mulitply loaded chip, each GEM well has two
-        // suspensions, and the chromium run has two GEM wells. However, this time, the
-        // two GEM wells are basically equivalent so we can see if we get duplicate
-        // specimens
+        // To exercise the ability of a mulitply loaded chip, each GEM well has
+        // two suspensions, and the chromium run has two GEM wells.
+        // However, this time, the two GEM wells are basically
+        // equivalent so we can see if we get duplicate specimens
         let loadings = vec![
             OcmLoadedEntity {
                 loaded_entity: LoadedEntity::Suspension {

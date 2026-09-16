@@ -3,7 +3,7 @@ use cellnoor_types::project::{NewProject, ProjectDetailed, ProjectField};
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::projects::{access::add_people::insert_project_accesses, show::select_project_by_id},
     state::AppState,
@@ -30,15 +30,17 @@ async fn insert_project(
     new: &NewProject,
 ) -> Result<ProjectDetailed, ErrorInner> {
     // `created_by` is omitted: the database fills it from `app_user_id()`
-    let id = db::insert_into(tx, "project", new).await?;
+    let id = tx.insert_returning_id(new).await?;
 
     insert_project_accesses(tx, id, &new.members).await?;
 
     select_project_by_id(tx, id).await
 }
 
-impl AsFieldValuePairs<ProjectField, 3> for NewProject {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, ProjectField, 3> {
+impl Insert for NewProject {
+    type Field = ProjectField;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         use ProjectField::*;
 
         let Self {
@@ -48,7 +50,7 @@ impl AsFieldValuePairs<ProjectField, 3> for NewProject {
             members: _,
         } = self;
 
-        [(Name, name), (StartedAt, started_at), (EndedAt, ended_at)]
+        vec![(Name, name), (StartedAt, started_at), (EndedAt, ended_at)]
     }
 }
 

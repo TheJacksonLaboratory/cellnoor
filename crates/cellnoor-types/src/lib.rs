@@ -2,6 +2,7 @@
 #![cfg_attr(test, allow(dead_code_pub_in_binary))]
 #![allow(uncommon_codepoints)]
 #![allow(clippy::derivable_impls)]
+pub use relation::Relation;
 pub use simple_links::SimpleLinks;
 
 pub mod api_key;
@@ -18,6 +19,7 @@ pub mod permission;
 pub mod person;
 pub mod project;
 pub mod query;
+pub mod relation;
 pub mod service;
 pub(crate) mod simple_links;
 pub mod specimen;
@@ -36,6 +38,8 @@ pub mod operator {
 
 pub mod filter {
     pub use crate::query::filter::Filter;
+    #[cfg(feature = "postgres-types")]
+    pub use crate::query::filter::{AsPredicate, SqlOperator};
 }
 
 pub mod order_by {

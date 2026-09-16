@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, select_one},
+    db,
     error::{Error, ErrorInner},
     handlers::{IdParam, institutions::index::select_institutions},
     state::AppState,
@@ -35,8 +35,7 @@ pub(super) async fn select_institution_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<Institution, ErrorInner> {
-    select_one(
-        tx,
+    tx.select_one(
         InstitutionPredicate::Id(UuidOperator::Eq(id)),
         select_institutions,
     )

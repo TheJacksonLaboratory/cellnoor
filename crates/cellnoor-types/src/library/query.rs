@@ -1,16 +1,18 @@
 use macro_attributes::{predicate_enum, predicate_enum_wrapper, sort_field_enum};
 
 use crate::{
+    Relation,
+    library::SavedLibraryRecord,
     operator::{
         I32Operator, I64Operator, JsonOperator, StringOperator, TimestampOperator, UuidOperator,
     },
-    query::{ComplexQuery, OrderField, SimpleQuery, filter::Filter},
+    query::{ComplexQuery, Field, OrderField, SimpleQuery, filter::Filter},
     specimen::SpecimenPredicate,
 };
 
 #[predicate_enum]
 #[strum(prefix = "(library).")]
-#[strum_discriminants(name(LibraryField), sort_field_enum, strum(prefix = "(library)."))]
+#[strum_discriminants(name(LibraryField), sort_field_enum)]
 pub enum LibraryPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),
@@ -48,6 +50,10 @@ impl From<LibraryPredicateInner> for Filter<LibraryPredicate> {
     fn from(value: LibraryPredicateInner) -> Self {
         Self::Leaf(value.into())
     }
+}
+
+impl Field for LibraryField {
+    const RELATION: &'static str = <SavedLibraryRecord as Relation>::NAME;
 }
 
 impl OrderField for LibraryField {

@@ -8,9 +8,21 @@ use crate::query::{
 pub(crate) mod filter;
 pub(crate) mod order_by;
 
-// Most of the time, we're ordering by a time-field, so we want to see most
-// recent first
-pub trait OrderField {
+/// One column of one relation, used to order a query and to name the columns of
+/// an insert or update.
+///
+/// A filter or an order-by addresses the column as `(relation).column`, while
+/// an insert or update names it bare, so the relation is kept separate from the
+/// column's own name.
+pub trait Field: AsRef<str> + Copy {
+    const RELATION: &'static str;
+}
+
+/// A field a query may be ordered by.
+///
+/// Most of the time, we're ordering by a time-field, so we want to see most
+/// recent first.
+pub trait OrderField: Field {
     fn default_field() -> Self;
 
     #[must_use]

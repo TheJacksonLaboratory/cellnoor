@@ -3,15 +3,15 @@ use std::{collections::HashMap, fs, str::FromStr};
 use axum::extract::{Multipart, Path, State, multipart::Field};
 use bytes::Bytes;
 use camino::{Utf8Path, Utf8PathBuf};
+use cellnoor_types::Relation;
 use csvranger::TenxCsvValue;
-use deadpool_postgres::tokio_postgres::Error as TokioPgError;
 use nonempty::NonemptyString;
 use strum::VariantNames;
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, SqlBuilder},
+    db::{self, FieldValues, Insert, SqlBuilder},
     error::{Error, ErrorInner},
     handlers::IdParam,
     state::AppState,
@@ -83,9 +83,9 @@ async fn write_file_to_db(
     dataset_id: Uuid,
     path: &NonemptyString,
     parsed_file: Option<&serde_json::Value>,
-) -> Result<(), TokioPgError> {
-    // Ensure the raw file is inserted first because the parsed file depends on the
-    // raw file's existence
+) -> Result<(), ErrorInner> {
+    // Ensure the raw file is inserted first because the parsed file depends on
+    // the raw file's existence
     insert_raw_file(tx, dataset_id, path).await?;
     insert_parsed_file(tx, dataset_id, path, parsed_file).await
 }
@@ -98,7 +98,7 @@ struct DatasetWithProjectNames {
 async fn fetch_dataset_and_project_names(
     tx: &db::Transaction<'_>,
     dataset_id: &Uuid,
-) -> Result<DatasetWithProjectNames, deadpool_postgres::tokio_postgres::Error> {
+) -> Result<DatasetWithProjectNames, ErrorInner> {
     static SELECT_PROJECT_NAMES: SqlBuilder =
         SqlBuilder::new(include_str!("upload_files/select_project_names.sql"));
 
@@ -238,13 +238,8 @@ async fn insert_raw_file(
     tx: &db::Transaction<'_>,
     dataset_id: Uuid,
     path: &NonemptyString,
-) -> Result<(), TokioPgError> {
-    db::insert_into_no_returning(
-        tx,
-        "chromium_dataset_raw_file",
-        &NewRawFile { dataset_id, path },
-    )
-    .await?;
+) -> Result<(), ErrorInner> {
+    tx.insert(&NewRawFile { dataset_id, path }).await?;
 
     Ok(())
 }
@@ -254,11 +249,17 @@ struct NewRawFile<'a> {
     path: &'a NonemptyString,
 }
 
-impl AsFieldValuePairs<&'static str, 2> for NewRawFile<'_> {
-    fn as_field_value_pairs(&self) -> db::FieldValuePairs<'_, &'static str, 2> {
+impl Relation for NewRawFile<'_> {
+    const NAME: &'static str = "chromium_dataset_raw_file";
+}
+
+impl Insert for NewRawFile<'_> {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self { dataset_id, path } = self;
 
-        [("dataset_id", dataset_id), ("path", path)]
+        vec![("dataset_id", dataset_id), ("path", path)]
     }
 }
 
@@ -267,7 +268,7 @@ async fn insert_parsed_file(
     dataset_id: Uuid,
     path: &NonemptyString,
     parsed_file: Option<&serde_json::Value>,
-) -> Result<(), TokioPgError> {
+) -> Result<(), ErrorInner> {
     let Some(parsed_file) = parsed_file else {
         return Ok(());
     };
@@ -278,7 +279,7 @@ async fn insert_parsed_file(
         data: parsed_file,
     };
 
-    db::insert_into_no_returning(tx, "chromium_dataset_parsed_file", &record).await?;
+    tx.insert(&record).await?;
 
     Ok(())
 }
@@ -289,15 +290,21 @@ struct NewParsedFile<'a> {
     data: &'a serde_json::Value,
 }
 
-impl AsFieldValuePairs<&'static str, 3> for NewParsedFile<'_> {
-    fn as_field_value_pairs(&self) -> db::FieldValuePairs<'_, &'static str, 3> {
+impl Relation for NewParsedFile<'_> {
+    const NAME: &'static str = "chromium_dataset_parsed_file";
+}
+
+impl Insert for NewParsedFile<'_> {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             dataset_id,
             path,
             data,
         } = self;
 
-        [("dataset_id", dataset_id), ("path", path), ("data", data)]
+        vec![("dataset_id", dataset_id), ("path", path), ("data", data)]
     }
 }
 

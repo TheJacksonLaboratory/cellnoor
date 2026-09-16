@@ -2,6 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use cellnoor_types::api_key::ApiKeyUpdate;
 use uuid::Uuid;
 
 use crate::{
@@ -28,7 +29,7 @@ pub async fn delete_api_key(
 }
 
 async fn delete_api_key_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    db::delete_by_id(tx, "api_key", id).await?;
+    tx.delete::<ApiKeyUpdate>(id).await?;
 
     Ok(())
 }

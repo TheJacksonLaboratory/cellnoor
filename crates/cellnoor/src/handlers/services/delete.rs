@@ -2,6 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use cellnoor_types::service::ServiceSimpleFields;
 use uuid::Uuid;
 
 use crate::{
@@ -30,7 +31,7 @@ pub async fn delete_service(
 async fn delete_service_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
     // A trigger drops the principal, which cascades to who has access to the
     // service and to its API keys
-    db::delete_by_id(tx, "service", id).await
+    tx.delete::<ServiceSimpleFields>(id).await
 }
 
 #[cfg(test)]

@@ -7,6 +7,7 @@ pub use query::{
 use uuid::Uuid;
 
 use crate::{
+    Relation,
     id::{Id, NoId},
     simple_links::SimpleLinks,
     specimen::{SavedSpecimenRecord, SpecimenCompact},
@@ -43,6 +44,10 @@ mod record {
         pub target_cell_recovery: Option<i64>,
         pub additional_data: Option<Value>,
     }
+}
+
+impl<T> Relation for SuspensionRecord<T> {
+    const NAME: &'static str = "suspension";
 }
 
 pub type NewSuspensionRecord = SuspensionRecord<NoId>;

@@ -1,4 +1,4 @@
-create view chromium_dataset_to_specimen as (
+create view chromium_dataset_to_specimen with (security_invoker = true) as (
     select
         chromium_dataset,
         library.library,

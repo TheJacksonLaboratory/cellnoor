@@ -86,7 +86,6 @@ async fn chromium_dataset_exists(
          $1)",
     );
 
-    Ok(tx
-        .query_one_into(&SELECT_DATASET.finish_with_params(vec![&dataset_id]))
-        .await?)
+    tx.query_one_into(&SELECT_DATASET.finish_with_params(vec![&dataset_id]))
+        .await
 }

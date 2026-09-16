@@ -1,13 +1,16 @@
 use axum::{Json, extract::State};
-use cellnoor_types::library::{LibraryDetailed, LibraryField, NewLibrary, NewLibraryRecord};
+use cellnoor_types::{
+    Relation,
+    library::{LibraryDetailed, LibraryField, NewLibrary, NewLibraryRecord},
+};
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::libraries::{
-        measurements::create::insert_library_measurement, show::select_library_by_id,
+        measurements::create::insert_library_measurements, show::select_library_by_id,
     },
     state::AppState,
 };
@@ -36,13 +39,9 @@ async fn insert_library(
         preparers,
     }: NewLibrary,
 ) -> Result<LibraryDetailed, ErrorInner> {
-    let id = db::insert_into(tx, "library", &record).await?;
+    let id = tx.insert_returning_id(&record).await?;
 
-    let measurement_insertions = futures::future::try_join_all(
-        measurements
-            .iter()
-            .map(|m| insert_library_measurement(tx, id, m)),
-    );
+    let measurement_insertions = insert_library_measurements(tx, id, &measurements);
 
     tokio::try_join!(
         insert_library_preparers(tx, id, preparers.as_ref()),
@@ -65,14 +64,7 @@ pub(super) async fn insert_library_preparers(
         })
         .collect();
 
-    futures::future::try_join_all(
-        preparers
-            .iter()
-            .map(|p| db::insert_into_no_returning(tx, "library_preparer", p)),
-    )
-    .await?;
-
-    Ok(())
+    tx.insert_many(&preparers).await
 }
 
 struct NewLibraryPreparer {
@@ -80,19 +72,27 @@ struct NewLibraryPreparer {
     prepared_by: Uuid,
 }
 
-impl AsFieldValuePairs<&'static str, 2> for NewLibraryPreparer {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 2> {
+impl Relation for NewLibraryPreparer {
+    const NAME: &'static str = "library_preparer";
+}
+
+impl Insert for NewLibraryPreparer {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             library_id,
             prepared_by,
         } = self;
 
-        [("library_id", library_id), ("prepared_by", prepared_by)]
+        vec![("library_id", library_id), ("prepared_by", prepared_by)]
     }
 }
 
-impl AsFieldValuePairs<LibraryField, 8> for NewLibraryRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, LibraryField, 8> {
+impl Insert for NewLibraryRecord {
+    type Field = LibraryField;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         use LibraryField::*;
 
         let Self {
@@ -109,7 +109,7 @@ impl AsFieldValuePairs<LibraryField, 8> for NewLibraryRecord {
             additional_data,
         } = self;
 
-        [
+        vec![
             (ReadableId, readable_id),
             (CdnaId, cdna_id),
             (SingleIndexSetName, single_index_set_name),
@@ -164,7 +164,7 @@ pub mod test {
 
         let mut new = NewLibrary {
             record: NewLibraryRecord {
-                id: NoId {},
+                id: NoId,
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 cdna_id: *cdna.record.id,
                 cdna_prepared_at: cdna.record.prepared_at,

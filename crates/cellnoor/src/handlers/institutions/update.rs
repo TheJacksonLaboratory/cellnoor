@@ -36,7 +36,7 @@ async fn update_institution_by_id(
     id: Uuid,
     updated_record: &NewInstitution,
 ) -> Result<Institution, ErrorInner> {
-    db::update(tx, "institution", id, updated_record).await?;
+    tx.update(id, updated_record).await?;
 
     select_institution_by_id(tx, id).await
 }

@@ -3,12 +3,11 @@ use cellnoor_types::{
     operator::UuidOperator,
     service::{Service, ServicePredicate, ServiceQuery},
 };
-use futures::StreamExt;
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, FilterableSqlBuilder, select_one},
+    db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -16,12 +15,12 @@ use crate::{
 pub async fn index_services(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(mut query): Json<ServiceQuery>,
+    Json(query): Json<ServiceQuery>,
 ) -> Result<Json<Vec<Service>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_services(&tx, &mut query).await.map(Json)?;
+    let response = select_services(&tx, &query).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -30,15 +29,12 @@ pub async fn index_services(
 
 pub(in super::super) async fn select_services(
     tx: &db::Transaction<'_>,
-    query: &mut ServiceQuery,
+    query: &ServiceQuery,
 ) -> Result<Vec<Service>, ErrorInner> {
     static SELECT_SERVICES: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select.sql"));
 
-    let sql = SELECT_SERVICES.finish_with_query(query);
-
-    let stream = tx.query_stream_into(sql).await?;
-    Ok(stream.collect().await)
+    tx.select(&SELECT_SERVICES, query).await
 }
 
 // Even though there's no service-accounts/{id} route, this function is still
@@ -47,25 +43,8 @@ pub(super) async fn select_service_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<Service, ErrorInner> {
-    select_one(
-        tx,
-        ServicePredicate::Id(UuidOperator::Eq(id)),
-        select_services,
-    )
-    .await
-}
-
-impl AsPredicate for ServicePredicate {
-    fn as_predicate(&self) -> (&str, (&'static str, &(dyn postgres_types::ToSql + Sync))) {
-        let sql = match self {
-            Self::Id(u) | Self::OwnedBy(u) => u.as_sql_operator_and_value(),
-            Self::Description(s) => s.as_sql_operator_and_value(),
-            Self::IsStaff(b) => b.as_sql_operator_and_value(),
-            Self::CreatedAt(t) => t.as_sql_operator_and_value(),
-        };
-
-        (self.field_name(), sql)
-    }
+    tx.select_one(ServicePredicate::Id(UuidOperator::Eq(id)), select_services)
+        .await
 }
 
 #[cfg(test)]
@@ -89,9 +68,8 @@ mod test {
 
         let (_, inserted) = insert_test_service(&tx, |_| ()).await.unwrap();
 
-        let mut query =
-            ServiceQuery::from_filter(ServicePredicate::Id(UuidOperator::Eq(inserted.id)));
-        let selected = select_services(&tx, &mut query).await.unwrap();
+        let query = ServiceQuery::from_filter(ServicePredicate::Id(UuidOperator::Eq(inserted.id)));
+        let selected = select_services(&tx, &query).await.unwrap();
 
         assert_eq!(selected.len(), 1);
         assert_eq!(selected[0].id, inserted.id);

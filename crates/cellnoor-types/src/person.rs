@@ -3,7 +3,7 @@ use nonempty::NonemptyString;
 pub use query::{PersonField, PersonPredicate, PersonQuery, SimplePersonQuery};
 use uuid::Uuid;
 
-use crate::{permission::Permission, simple_links::SimpleLinks};
+use crate::{Relation, permission::Permission, simple_links::SimpleLinks};
 
 mod query;
 
@@ -49,6 +49,14 @@ pub struct PersonUpdate {
     pub permissions_to_revoke: Vec<Permission>,
 }
 
+impl Relation for NewPerson {
+    const NAME: &'static str = "person";
+}
+
+impl Relation for PersonUpdate {
+    const NAME: &'static str = "person";
+}
+
 #[base_model]
 pub struct PersonLinks {
     #[cfg_attr(feature = "serde", serde(flatten))]
@@ -65,6 +73,10 @@ pub struct SavedPersonRecord {
     pub institution_id: Uuid,
     pub is_staff: bool,
     pub orcid: Option<NonemptyString>,
+}
+
+impl Relation for SavedPersonRecord {
+    const NAME: &'static str = "person_public";
 }
 
 #[base_model]

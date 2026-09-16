@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
 use axum::{Json, extract::State};
-use cellnoor_types::index_set::NewDualIndexSet;
+use cellnoor_types::{Relation, index_set::NewDualIndexSet};
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs, insert_into_no_returning},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::index_sets::{
         NewIndexKit,
@@ -92,7 +92,7 @@ async fn insert_dual_index_set(
     tx: &db::Transaction<'_>,
     record: NewDualIndexSetRecord<'_>,
 ) -> Result<(), ErrorInner> {
-    insert_into_no_returning(tx, "dual_index_set", &record).await?;
+    tx.insert(&record).await?;
 
     Ok(())
 }
@@ -106,8 +106,14 @@ struct NewDualIndexSetRecord<'a> {
     index2_workflow_b_i5: DnaSequence<'a>,
 }
 
-impl<'a> AsFieldValuePairs<&'static str, 6> for NewDualIndexSetRecord<'a> {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 6> {
+impl<'a> Relation for NewDualIndexSetRecord<'a> {
+    const NAME: &'static str = "dual_index_set";
+}
+
+impl<'a> Insert for NewDualIndexSetRecord<'a> {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             name,
             kit,
@@ -117,7 +123,7 @@ impl<'a> AsFieldValuePairs<&'static str, 6> for NewDualIndexSetRecord<'a> {
             index2_workflow_b_i5,
         } = self;
 
-        [
+        vec![
             ("name", name),
             ("kit", kit),
             ("well", well),
@@ -133,7 +139,6 @@ pub mod tests {
     use std::collections::HashMap;
 
     use cellnoor_types::index_set::NewDualIndexSet;
-    use postgres_types::ToSql;
 
     use crate::{
         db::{self, SqlBuilder},
@@ -142,7 +147,7 @@ pub mod tests {
         state::test_util::db_client_as_admin,
     };
 
-    pub const DUAL_INDEX_SET_NAME: &'static str = "SI-TT-A1";
+    pub const DUAL_INDEX_SET_NAME: &str = "SI-TT-A1";
 
     pub async fn insert_test_dual_index_set(
         tx: &db::Transaction<'_>,
@@ -150,8 +155,11 @@ pub mod tests {
         let name = DUAL_INDEX_SET_NAME.to_owned();
 
         // Acquire a db lock to prevent a concurrency bug during testing
-        let lock_param: &[&(dyn ToSql + Sync)] = &[&"dual_index_set"];
-        tx.execute_raw_sql("select pg_advisory_xact_lock(hashtext($1))", lock_param)
+        static LOCK_TABLE: SqlBuilder =
+            SqlBuilder::new("select pg_advisory_xact_lock(hashtext($1))");
+
+        let table = "dual_index_set";
+        tx.execute(&LOCK_TABLE.finish_with_params(vec![&table]))
             .await?;
 
         let sql =

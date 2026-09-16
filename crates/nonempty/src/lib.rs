@@ -8,4 +8,4 @@ pub use vec::{NonemptyBoundedVec, NonemptyVec};
 
 #[derive(Debug, Clone, Copy, thiserror::Error)]
 #[error("empty collection not allowed")]
-pub struct Error<T>(pub T);
+pub struct Error;

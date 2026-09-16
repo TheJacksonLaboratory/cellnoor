@@ -1,24 +1,26 @@
 pub use client::{Client, Pool, Transaction};
-pub use delete::delete_by_id;
-pub use insert::{insert_into, insert_into_no_returning};
 use postgres_types::ToSql;
-pub use select::select_one;
-pub use stmt::{AsPredicate, FilterableSqlBuilder, Sql, SqlBuilder};
-pub use update::update;
+pub use stmt::{FilterableSqlBuilder, Sql, SqlBuilder};
 
 mod client;
-mod delete;
 mod insert;
-mod select;
 mod stmt;
 #[cfg(test)]
 pub mod test_utils;
 mod update;
 
-type FieldValuePair<'a, F> = (F, &'a (dyn ToSql + Sync));
+/// The columns of one row, paired with the values to bind to them.
+pub type FieldValues<'a, F> = Vec<(F, &'a (dyn ToSql + Sync))>;
 
-pub type FieldValuePairs<'a, F, const N: usize> = [FieldValuePair<'a, F>; N];
+/// [`FieldValues`] as the statement builders read it.
+type FieldValueSlice<'a, F> = [(F, &'a (dyn ToSql + Sync))];
 
-pub trait AsFieldValuePairs<F, const N: usize> {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, F, N>;
+/// A row that can be written to the relation it belongs to.
+///
+/// `Field` is the relation's field enum where a query filters on it, and
+/// `&'static str` for the join tables that nothing filters on.
+pub trait Insert: cellnoor_types::Relation {
+    type Field: AsRef<str>;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field>;
 }

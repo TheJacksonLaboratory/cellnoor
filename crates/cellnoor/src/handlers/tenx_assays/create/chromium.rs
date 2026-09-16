@@ -1,8 +1,10 @@
-use cellnoor_types::{cdna::creation::LibraryType, tenx_assay::creation::NewChromiumAssay};
+use cellnoor_types::{
+    Relation, cdna::creation::LibraryType, tenx_assay::creation::NewChromiumAssay,
+};
 use uuid::Uuid;
 
 use crate::{
-    db::{self, AsFieldValuePairs, FieldValuePairs, insert_into},
+    db::{self, FieldValues, Insert},
     error::ErrorInner,
     handlers::tenx_assays::create::{
         NewLibraryTypeSpecificationRecord, insert_library_type_specification,
@@ -46,7 +48,7 @@ async fn insert_chromium_assay_record(
     tx: &db::Transaction<'_>,
     record: &NewChromiumAssayRecord<'_>,
 ) -> Result<Uuid, ErrorInner> {
-    Ok(insert_into(tx, "tenx_assay", record).await?)
+    tx.insert_returning_id(record).await
 }
 
 struct NewChromiumAssayRecord<'a> {
@@ -54,8 +56,14 @@ struct NewChromiumAssayRecord<'a> {
     library_types: Vec<LibraryType>,
 }
 
-impl AsFieldValuePairs<&'static str, 7> for NewChromiumAssayRecord<'_> {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 7> {
+impl Relation for NewChromiumAssayRecord<'_> {
+    const NAME: &'static str = "tenx_assay";
+}
+
+impl Insert for NewChromiumAssayRecord<'_> {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             inner:
                 NewChromiumAssay {
@@ -71,7 +79,7 @@ impl AsFieldValuePairs<&'static str, 7> for NewChromiumAssayRecord<'_> {
             library_types,
         } = self;
 
-        [
+        vec![
             ("name", name),
             ("chemistry_version", chemistry_version),
             ("protocol_url", protocol_url),

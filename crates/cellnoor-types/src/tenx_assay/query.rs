@@ -1,19 +1,20 @@
 use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
+    Relation,
     operator::{StringOperator, UuidOperator},
     query::{
-        OrderField,
+        Field, OrderField,
         filter::{ArrayOperator, Operator},
     },
-    tenx_assay::{LibraryType, SampleMultiplexing},
+    tenx_assay::{LibraryType, SampleMultiplexing, TenxAssay},
 };
 
 pub type SampleMultiplexingOperator = Operator<SampleMultiplexing>;
 
 #[predicate_enum]
 #[strum(prefix = "(tenx_assay).")]
-#[strum_discriminants(name(TenxAssayField), sort_field_enum, strum(prefix = "(tenx_assay)."))]
+#[strum_discriminants(name(TenxAssayField), sort_field_enum)]
 pub enum TenxAssayPredicate {
     Id(UuidOperator),
     Name(StringOperator),
@@ -22,6 +23,10 @@ pub enum TenxAssayPredicate {
     ChemistryVersion(StringOperator),
     ChromiumChip(StringOperator),
     ProtocolUrl(StringOperator),
+}
+
+impl Field for TenxAssayField {
+    const RELATION: &'static str = <TenxAssay as Relation>::NAME;
 }
 
 impl OrderField for TenxAssayField {

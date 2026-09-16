@@ -1,7 +1,10 @@
 use std::sync::LazyLock;
 
 use axum::{Json, extract::State};
-use cellnoor_types::person::{Account, NewPerson, Person, PersonField, PersonSimpleFields};
+use cellnoor_types::{
+    Relation,
+    person::{Account, NewPerson, Person, PersonField, PersonSimpleFields},
+};
 use nonempty::NonemptyString;
 use postgres_types::ToSql;
 use regex::Regex;
@@ -9,7 +12,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::{people::show::select_person_by_id, permissions::grant_permissions, set_is_staff},
     state::AppState,
@@ -45,7 +48,7 @@ async fn insert_person(tx: &db::Transaction<'_>, new: &NewPerson) -> Result<Pers
         } => (),
     };
 
-    let id = db::insert_into(tx, "person", new).await?;
+    let id = tx.insert_returning_id(new).await?;
     set_is_staff(tx, id, simple.is_staff).await?;
     grant_permissions(tx, id, permissions_to_grant).await?;
 
@@ -65,11 +68,11 @@ async fn insert_account(
         Account::Microsoft {
             microsoft_entra_oid,
         } => {
-            db::insert_into_no_returning(
-                tx,
-                "account",
-                &NewAccountRecord::new(user_id, account.as_ref(), microsoft_entra_oid),
-            )
+            tx.insert(&NewAccountRecord::new(
+                user_id,
+                account.as_ref(),
+                microsoft_entra_oid,
+            ))
             .await?
         }
         Account::None { email: _ } => (),
@@ -83,7 +86,7 @@ async fn insert_account(
 pub(super) fn person_field_value_pairs<'a>(
     simple: &'a PersonSimpleFields,
     email: &'a (dyn ToSql + Sync),
-) -> FieldValuePairs<'a, PersonField, 4> {
+) -> FieldValues<'a, PersonField> {
     use PersonField::*;
 
     let PersonSimpleFields {
@@ -93,7 +96,7 @@ pub(super) fn person_field_value_pairs<'a>(
         orcid,
     } = simple;
 
-    [
+    vec![
         (Name, name),
         (InstitutionId, institution_id),
         (Orcid, orcid),
@@ -101,8 +104,10 @@ pub(super) fn person_field_value_pairs<'a>(
     ]
 }
 
-impl AsFieldValuePairs<PersonField, 4> for NewPerson {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, PersonField, 4> {
+impl Insert for NewPerson {
+    type Field = PersonField;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             simple,
             account,
@@ -140,15 +145,21 @@ impl<'a> NewAccountRecord<'a> {
     }
 }
 
-impl AsFieldValuePairs<&'static str, 3> for NewAccountRecord<'_> {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 3> {
+impl Relation for NewAccountRecord<'_> {
+    const NAME: &'static str = "account";
+}
+
+impl Insert for NewAccountRecord<'_> {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             person_id,
             auth_provider,
             auth_provider_user_id,
         } = self;
 
-        [
+        vec![
             ("person_id", person_id),
             ("auth_provider", auth_provider),
             ("auth_provider_user_id", auth_provider_user_id),

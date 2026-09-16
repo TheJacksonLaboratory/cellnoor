@@ -1,15 +1,16 @@
 use axum::{Json, extract::State};
-use cellnoor_types::cdna::{
-    CdnaDetailed, CdnaField, CdnaSimpleFields, NewCdnaRecord, creation::NewCdna,
+use cellnoor_types::{
+    Relation,
+    cdna::{CdnaDetailed, CdnaField, CdnaSimpleFields, NewCdnaRecord, creation::NewCdna},
 };
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::cdna::{
-        measurements::create::insert_cdna_measurement, show::select_cdna_by_id,
+        measurements::create::insert_cdna_measurements, show::select_cdna_by_id,
         split_new_cdna_for_insertion::split_new_cdna_for_insertion,
     },
     state::AppState,
@@ -34,13 +35,9 @@ pub async fn create_cdna(
 async fn insert_cdna(tx: &db::Transaction<'_>, new: NewCdna) -> Result<CdnaDetailed, ErrorInner> {
     let (record, measurements, preparers) = split_new_cdna_for_insertion(new);
 
-    let id = db::insert_into(tx, "cdna", &record).await?;
+    let id = tx.insert_returning_id(&record).await?;
 
-    let measurement_insertions = futures::future::try_join_all(
-        measurements
-            .iter()
-            .map(|m| insert_cdna_measurement(tx, id, m)),
-    );
+    let measurement_insertions = insert_cdna_measurements(tx, id, &measurements);
 
     tokio::try_join!(
         insert_cdna_preparers(tx, id, preparers.as_ref()),
@@ -63,14 +60,7 @@ pub(super) async fn insert_cdna_preparers(
         })
         .collect();
 
-    futures::future::try_join_all(
-        preparers
-            .iter()
-            .map(|p| db::insert_into_no_returning(tx, "cdna_preparer", p)),
-    )
-    .await?;
-
-    Ok(())
+    tx.insert_many(&preparers).await
 }
 
 struct NewCdnaPreparer {
@@ -78,19 +68,27 @@ struct NewCdnaPreparer {
     prepared_by: Uuid,
 }
 
-impl AsFieldValuePairs<&'static str, 2> for NewCdnaPreparer {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 2> {
+impl Relation for NewCdnaPreparer {
+    const NAME: &'static str = "cdna_preparer";
+}
+
+impl Insert for NewCdnaPreparer {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             cdna_id,
             prepared_by,
         } = self;
 
-        [("cdna_id", cdna_id), ("prepared_by", prepared_by)]
+        vec![("cdna_id", cdna_id), ("prepared_by", prepared_by)]
     }
 }
 
-impl AsFieldValuePairs<CdnaField, 3> for CdnaSimpleFields {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, CdnaField, 3> {
+impl Insert for CdnaSimpleFields {
+    type Field = CdnaField;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         use CdnaField::*;
 
         let Self {
@@ -99,7 +97,7 @@ impl AsFieldValuePairs<CdnaField, 3> for CdnaSimpleFields {
             additional_data,
         } = self;
 
-        [
+        vec![
             (ReadableId, readable_id),
             (PreparedAt, prepared_at),
             (AdditionalData, additional_data),
@@ -107,8 +105,10 @@ impl AsFieldValuePairs<CdnaField, 3> for CdnaSimpleFields {
     }
 }
 
-impl AsFieldValuePairs<CdnaField, 6> for NewCdnaRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, CdnaField, 6> {
+impl Insert for NewCdnaRecord {
+    type Field = CdnaField;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         use CdnaField::*;
 
         let Self {
@@ -123,7 +123,7 @@ impl AsFieldValuePairs<CdnaField, 6> for NewCdnaRecord {
             additional_data,
         } = self;
 
-        [
+        vec![
             (ReadableId, readable_id),
             (LibraryType, library_type),
             (PreparedAt, prepared_at),

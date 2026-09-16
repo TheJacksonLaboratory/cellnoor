@@ -2,6 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use cellnoor_types::project::SavedProjectRecord;
 use uuid::Uuid;
 
 use crate::{
@@ -28,7 +29,7 @@ pub async fn delete_project(
 }
 
 async fn delete_project_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    db::delete_by_id(tx, "project", id).await
+    tx.delete::<SavedProjectRecord>(id).await
 }
 
 #[cfg(test)]

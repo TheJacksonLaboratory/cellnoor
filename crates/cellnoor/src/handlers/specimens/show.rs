@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, select_one},
+    db,
     error::{Error, ErrorInner},
     handlers::{IdParam, specimens::index_detailed::select_specimens_detailed},
     state::AppState,
@@ -35,8 +35,7 @@ pub(super) async fn select_specimen_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<SpecimenDetailed, ErrorInner> {
-    select_one(
-        tx,
+    tx.select_one(
         SpecimenPredicate::Id(UuidOperator::Eq(id)),
         select_specimens_detailed,
     )

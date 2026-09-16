@@ -2,7 +2,7 @@
 -- id, and everything that records who did or owns something references a principal
 create table principal (
     id uuid primary key,
-    -- Staff bypass row-level security
+    -- Staff see every project, and so everything descending from one (see db/migrations/0031_data-rls.up.sql)
     is_staff boolean not null default false
 );
 

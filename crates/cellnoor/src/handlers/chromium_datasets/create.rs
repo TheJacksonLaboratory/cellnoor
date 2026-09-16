@@ -1,12 +1,15 @@
 use axum::{Json, extract::State};
-use cellnoor_types::chromium_dataset::{
-    ChromiumDatasetDetailed, ChromiumDatasetField, NewChromiumDataset, NewChromiumDatasetRecord,
+use cellnoor_types::{
+    Relation,
+    chromium_dataset::{
+        ChromiumDatasetDetailed, ChromiumDatasetField, NewChromiumDataset, NewChromiumDatasetRecord,
+    },
 };
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs, SqlBuilder},
+    db::{self, FieldValues, Insert, SqlBuilder},
     error::{Error, ErrorInner},
     handlers::chromium_datasets::show::select_chromium_dataset_by_id,
     state::AppState,
@@ -40,7 +43,7 @@ async fn insert_chromium_dataset(
 ) -> Result<ChromiumDatasetDetailed, ErrorInner> {
     validate_libraries_have_same_gem_well(tx, library_ids.as_ref()).await?;
 
-    let id = db::insert_into(tx, "chromium_dataset", &record).await?;
+    let id = tx.insert_returning_id(&record).await?;
 
     insert_chromium_dataset_libraries(tx, id, library_ids.as_ref()).await?;
 
@@ -98,13 +101,7 @@ async fn insert_chromium_dataset_libraries(
         })
         .collect();
 
-    futures::future::try_join_all(
-        rows.iter()
-            .map(|r| db::insert_into_no_returning(tx, "chromium_dataset_library", r)),
-    )
-    .await?;
-
-    Ok(())
+    tx.insert_many(&rows).await
 }
 
 struct NewChromiumDatasetLibrary {
@@ -112,19 +109,27 @@ struct NewChromiumDatasetLibrary {
     library_id: Uuid,
 }
 
-impl AsFieldValuePairs<&'static str, 2> for NewChromiumDatasetLibrary {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 2> {
+impl Relation for NewChromiumDatasetLibrary {
+    const NAME: &'static str = "chromium_dataset_library";
+}
+
+impl Insert for NewChromiumDatasetLibrary {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             dataset_id,
             library_id,
         } = self;
 
-        [("dataset_id", dataset_id), ("library_id", library_id)]
+        vec![("dataset_id", dataset_id), ("library_id", library_id)]
     }
 }
 
-impl AsFieldValuePairs<ChromiumDatasetField, 2> for NewChromiumDatasetRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, ChromiumDatasetField, 2> {
+impl Insert for NewChromiumDatasetRecord {
+    type Field = ChromiumDatasetField;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         use ChromiumDatasetField::*;
 
         let Self {
@@ -133,7 +138,7 @@ impl AsFieldValuePairs<ChromiumDatasetField, 2> for NewChromiumDatasetRecord {
             delivered_at,
         } = self;
 
-        [(Name, name), (DeliveredAt, delivered_at)]
+        vec![(Name, name), (DeliveredAt, delivered_at)]
     }
 }
 
@@ -169,7 +174,7 @@ pub mod test {
 
         let mut new = NewChromiumDataset {
             record: NewChromiumDatasetRecord {
-                id: NoId {},
+                id: NoId,
                 name: Uuid::new_v4().to_string().to_nonempty_string(),
                 delivered_at: Timestamp::now(),
             },
@@ -200,7 +205,7 @@ pub mod test {
 
         let new = NewChromiumDataset {
             record: NewChromiumDatasetRecord {
-                id: NoId {},
+                id: NoId,
                 name: Uuid::new_v4().to_string().to_nonempty_string(),
                 delivered_at: Timestamp::now(),
             },

@@ -11,7 +11,7 @@ create view person_public with (security_invoker = true) as (
     from person join principal on person.id = principal.id
 );
 
-create view person_account as (
+create view person_account with (security_invoker = true) as (
     select
         person.id,
         person.name,

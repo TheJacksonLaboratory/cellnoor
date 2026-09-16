@@ -17,8 +17,8 @@ pub fn router(state: AppState) -> Router<AppState> {
     let ok = get(async || ());
     // We mount the same handler twice: Once for paths like
     // file-auth/chromium-datasets/{id}/ and another for paths like
-    // file-auth/chromium-datasets/{id}/file.html. Note that we put a trailing slash
-    // for directories because caddy automatically does that
+    // file-auth/chromium-datasets/{id}/file.html. Note that we put a trailing
+    // slash for directories because caddy automatically does that
     Router::new()
         .route("/", ok.clone())
         // As long a user is authenticated, they can access top-level directories
@@ -55,8 +55,8 @@ async fn redirect_unauthenticated_user(
     next: Next,
 ) -> Result<Response, Redirect> {
     if user.is_err() {
-        // Since this route is meant for file authentication, we can confidently just
-        // redirect to the file server after sign-in
+        // Since this route is meant for file authentication, we can confidently
+        // just redirect to the file server after sign-in
         let redirect_to = format!(
             "{}?redirect_to={}{}",
             state.public_auth_url(),

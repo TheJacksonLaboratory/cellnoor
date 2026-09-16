@@ -73,7 +73,7 @@ async fn user_cannot_see_inaccessible_api_key(client: &mut db::Client, api_key_i
 
     let inaccessible = select_api_keys(
         &tx,
-        &mut ApiKeyPredicate::Id(UuidOperator::Eq(api_key_id)).into(),
+        &ApiKeyPredicate::Id(UuidOperator::Eq(api_key_id)).into(),
     )
     .await
     .unwrap();
@@ -86,7 +86,7 @@ async fn user_can_see_accessible_api_key(client: &mut db::Client, api_key: Saved
 
     let accessible = select_api_keys(
         &tx,
-        &mut ApiKeyPredicate::Id(UuidOperator::Eq(api_key.id)).into(),
+        &ApiKeyPredicate::Id(UuidOperator::Eq(api_key.id)).into(),
     )
     .await
     .unwrap();

@@ -5,7 +5,7 @@ create type tagged_specimen as (
     ocm_barcode_id case_insensitive_text
 );
 
-create view suspension_pool_to_specimen as (
+create view suspension_pool_to_specimen with (security_invoker = true) as (
     select
         suspension_pool,
         suspension.specimen,

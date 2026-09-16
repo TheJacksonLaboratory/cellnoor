@@ -2,16 +2,12 @@ use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
     id::Id,
-    suspension::{
-        SavedSuspensionRecord, SuspensionCompact, SuspensionPredicate, SuspensionPredicateInner,
-        SuspensionQuery,
-    },
+    suspension::{SavedSuspensionRecord, SuspensionCompact, SuspensionQuery},
 };
-use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, FilterableSqlBuilder},
+    db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -19,14 +15,12 @@ use crate::{
 pub async fn index_suspensions(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(mut query): Json<SuspensionQuery>,
+    Json(query): Json<SuspensionQuery>,
 ) -> Result<Json<Vec<SuspensionCompact>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_suspensions_compact(&tx, &mut query)
-        .await
-        .map(Json)?;
+    let response = select_suspensions_compact(&tx, &query).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -35,36 +29,17 @@ pub async fn index_suspensions(
 
 async fn select_suspensions_compact(
     tx: &db::Transaction<'_>,
-    query: &mut SuspensionQuery,
+    query: &SuspensionQuery,
 ) -> Result<Vec<SuspensionCompact>, ErrorInner> {
     static SELECT_COMPACT_SUSPENSION: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
 
-    let sql = SELECT_COMPACT_SUSPENSION.finish_with_query(query);
-
-    let stream = tx.query_stream_into(sql).await?;
-    Ok(stream.map(suspension_from_record).collect().await)
-}
-
-impl AsPredicate for SuspensionPredicate {
-    fn as_predicate(&self) -> (&str, (&'static str, &(dyn postgres_types::ToSql + Sync))) {
-        let sql = match self {
-            Self::Specimen(p) => return p.as_predicate(),
-            Self::Suspension(field) => match field {
-                SuspensionPredicateInner::Id(u) | SuspensionPredicateInner::SpecimenId(u) => {
-                    u.as_sql_operator_and_value()
-                }
-                SuspensionPredicateInner::ReadableId(s) => s.as_sql_operator_and_value(),
-                SuspensionPredicateInner::Content(c) => c.as_sql_operator_and_value(),
-                SuspensionPredicateInner::CreatedAt(t) => t.as_sql_operator_and_value(),
-                SuspensionPredicateInner::LysisDurationMinutes(f) => f.as_sql_operator_and_value(),
-                SuspensionPredicateInner::TargetCellRecovery(i) => i.as_sql_operator_and_value(),
-                SuspensionPredicateInner::AdditionalData(j) => j.as_sql_operator_and_value(),
-            },
-        };
-
-        (self.field_name(), sql)
-    }
+    Ok(tx
+        .select(&SELECT_COMPACT_SUSPENSION, query)
+        .await?
+        .into_iter()
+        .map(suspension_from_record)
+        .collect())
 }
 
 pub(super) fn suspension_simple_links(id: Id) -> SimpleLinks {
@@ -107,7 +82,7 @@ mod test {
 
         let suspensions = select_suspensions_compact(
             &tx,
-            &mut SuspensionQuery::from_filter(
+            &SuspensionQuery::from_filter(
                 SuspensionPredicateInner::Id(UuidOperator::Eq(*inserted.record.id)).into(),
             ),
         )

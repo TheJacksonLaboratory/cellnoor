@@ -4,7 +4,6 @@ use cellnoor_types::suspension_pool::{
     SuspensionPoolQuery,
 };
 use deadpool_postgres::tokio_postgres::Row;
-use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
@@ -19,12 +18,12 @@ use crate::{
 pub async fn index_suspension_pools_detailed(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(mut query): Json<SuspensionPoolQuery>,
+    Json(query): Json<SuspensionPoolQuery>,
 ) -> Result<Json<Vec<SuspensionPoolDetailed>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_suspension_pools_detailed(&tx, &mut query)
+    let response = select_suspension_pools_detailed(&tx, &query)
         .await
         .map(Json)?;
 
@@ -36,18 +35,17 @@ pub async fn index_suspension_pools_detailed(
 // Visibility required for tests
 pub(in super::super) async fn select_suspension_pools_detailed(
     tx: &db::Transaction<'_>,
-    query: &mut SuspensionPoolQuery,
+    query: &SuspensionPoolQuery,
 ) -> Result<Vec<SuspensionPoolDetailed>, ErrorInner> {
     static SELECT_DETAILED_SUSPENSION_POOL: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
 
-    let sql = SELECT_DETAILED_SUSPENSION_POOL.finish_with_query(query);
-
-    let stream = tx.query_stream(sql).await?;
-    Ok(stream
-        .map(|row| row.map(map_detailed_row).unwrap())
-        .collect()
-        .await)
+    Ok(tx
+        .select_rows(&SELECT_DETAILED_SUSPENSION_POOL, query)
+        .await?
+        .into_iter()
+        .map(map_detailed_row)
+        .collect())
 }
 
 fn map_detailed_row(row: Row) -> SuspensionPoolDetailed {

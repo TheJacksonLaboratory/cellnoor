@@ -1,7 +1,7 @@
 use macro_attributes::select;
 use nonempty::NonemptyString;
 
-use crate::suspension_pool::MultiplexingTagType;
+use crate::{Relation, suspension_pool::MultiplexingTagType};
 
 #[select]
 #[derive(Eq, Hash)]
@@ -11,6 +11,10 @@ pub struct MultiplexingTag {
     #[cfg_attr(feature = "serde", serde(rename = "type"))]
     #[cfg_attr(feature = "postgres-types", postgres(name = "type"))]
     pub type_: MultiplexingTagType,
+}
+
+impl Relation for MultiplexingTag {
+    const NAME: &'static str = "multiplexing_tag";
 }
 
 pub type NewMultiplexingTag = MultiplexingTag;

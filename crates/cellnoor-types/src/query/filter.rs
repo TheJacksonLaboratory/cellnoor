@@ -27,6 +27,21 @@ impl<P> From<P> for Filter<P> {
     }
 }
 
+/// A comparison that renders as a SQL operator and a bind value.
+#[cfg(feature = "postgres-types")]
+pub trait SqlOperator {
+    fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync));
+}
+
+/// One boolean comparison against one column of a relation.
+///
+/// Implemented by the `predicate_enum` and `predicate_enum_wrapper` macros.
+#[cfg(feature = "postgres-types")]
+pub trait AsPredicate {
+    /// The column, and the SQL operator and bind value to compare it against.
+    fn as_predicate(&self) -> (&str, (&'static str, &(dyn ToSql + Sync)));
+}
+
 /// A comparison operator for any scalar value.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
@@ -54,11 +69,11 @@ pub enum Operator<T> {
 }
 
 #[cfg(feature = "postgres-types")]
-impl<T> Operator<T>
+impl<T> SqlOperator for Operator<T>
 where
     T: ToSql + Sync,
 {
-    pub fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
+    fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Eq(v) => ("=", v),
             Self::Lt(v) => ("<", v),
@@ -115,9 +130,8 @@ pub enum StringOperator {
 }
 
 #[cfg(feature = "postgres-types")]
-impl StringOperator {
-    #[must_use]
-    pub fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
+impl SqlOperator for StringOperator {
+    fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Like(s) => ("like", s),
             Self::LikeAny(s) => ("like any", s),
@@ -152,12 +166,11 @@ pub enum ArrayOperator<T> {
 }
 
 #[cfg(feature = "postgres-types")]
-impl<T> ArrayOperator<T>
+impl<T> SqlOperator for ArrayOperator<T>
 where
     T: ToSql + Sync,
 {
-    #[must_use]
-    pub fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
+    fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Contains(v) => ("@>", v),
             Self::IsContainedIn(v) => ("<@", v),
@@ -194,9 +207,8 @@ pub enum JsonOperator {
 }
 
 #[cfg(feature = "postgres-types")]
-impl JsonOperator {
-    #[must_use]
-    pub fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
+impl SqlOperator for JsonOperator {
+    fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Contains(v) => ("@>", v),
             Self::IsContainedIn(v) => ("<@", v),

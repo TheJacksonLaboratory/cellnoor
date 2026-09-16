@@ -1,15 +1,16 @@
 use axum::{Json, extract::State};
-use cellnoor_types::suspension::{
-    NewSuspension, NewSuspensionRecord, SuspensionDetailed, SuspensionField,
+use cellnoor_types::{
+    Relation,
+    suspension::{NewSuspension, NewSuspensionRecord, SuspensionDetailed, SuspensionField},
 };
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::suspensions::{
-        measurements::create::insert_suspension_measurement, show::select_suspension_by_id,
+        measurements::create::insert_suspension_measurements, show::select_suspension_by_id,
     },
     state::AppState,
 };
@@ -38,13 +39,9 @@ async fn insert_suspension(
         preparers,
     }: NewSuspension,
 ) -> Result<SuspensionDetailed, ErrorInner> {
-    let id = db::insert_into(tx, "suspension", &record).await?;
+    let id = tx.insert_returning_id(&record).await?;
 
-    let measurement_insertions = futures::future::try_join_all(
-        measurements
-            .iter()
-            .map(|m| insert_suspension_measurement(tx, id, m)),
-    );
+    let measurement_insertions = insert_suspension_measurements(tx, id, &measurements);
 
     tokio::try_join!(
         insert_suspension_preparers(tx, id, preparers.as_ref()),
@@ -67,14 +64,7 @@ pub(super) async fn insert_suspension_preparers(
         })
         .collect();
 
-    futures::future::try_join_all(
-        preparers
-            .iter()
-            .map(|p| db::insert_into_no_returning(tx, "suspension_preparer", p)),
-    )
-    .await?;
-
-    Ok(())
+    tx.insert_many(&preparers).await
 }
 
 struct NewSuspensionPreparer {
@@ -82,22 +72,30 @@ struct NewSuspensionPreparer {
     prepared_by: Uuid,
 }
 
-impl AsFieldValuePairs<&'static str, 2> for NewSuspensionPreparer {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 2> {
+impl Relation for NewSuspensionPreparer {
+    const NAME: &'static str = "suspension_preparer";
+}
+
+impl Insert for NewSuspensionPreparer {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             suspension_id,
             prepared_by,
         } = self;
 
-        [
+        vec![
             ("suspension_id", suspension_id),
             ("prepared_by", prepared_by),
         ]
     }
 }
 
-impl AsFieldValuePairs<SuspensionField, 7> for NewSuspensionRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, SuspensionField, 7> {
+impl Insert for NewSuspensionRecord {
+    type Field = SuspensionField;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         use SuspensionField::*;
 
         let Self {
@@ -113,7 +111,7 @@ impl AsFieldValuePairs<SuspensionField, 7> for NewSuspensionRecord {
             additional_data,
         } = self;
 
-        [
+        vec![
             (ReadableId, readable_id),
             (SpecimenId, specimen_id),
             (Content, content),
@@ -166,7 +164,7 @@ pub mod test {
 
         let mut new = NewSuspension {
             record: NewSuspensionRecord {
-                id: NoId {},
+                id: NoId,
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 specimen_id,
                 specimen_received_at: specimen.record.received_at,

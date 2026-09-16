@@ -37,7 +37,7 @@ async fn update_project_by_id(
     id: Uuid,
     updated_project: &NewProject,
 ) -> Result<ProjectDetailed, ErrorInner> {
-    db::update(tx, "project", id, updated_project).await?;
+    tx.update(id, updated_project).await?;
 
     insert_project_accesses(tx, id, &updated_project.members).await?;
 

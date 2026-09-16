@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, select_one},
+    db,
     error::{Error, ErrorInner},
     handlers::{IdParam, cdna::index_detailed::select_cdna_detailed},
     state::AppState,
@@ -35,8 +35,7 @@ pub(super) async fn select_cdna_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<CdnaDetailed, ErrorInner> {
-    select_one(
-        tx,
+    tx.select_one(
         CdnaPredicateInner::Id(UuidOperator::Eq(id)).into(),
         select_cdna_detailed,
     )

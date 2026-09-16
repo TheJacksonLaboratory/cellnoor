@@ -1,17 +1,20 @@
 use axum::{Json, extract::State};
-use cellnoor_types::suspension_pool::{
-    MultiplexingTagType, NewSuspensionPool, NewSuspensionPoolRecord, PooledSuspensions,
-    SuspensionPoolDetailed, SuspensionPoolField,
+use cellnoor_types::{
+    Relation,
+    suspension_pool::{
+        MultiplexingTagType, NewSuspensionPool, NewSuspensionPoolRecord, PooledSuspensions,
+        SuspensionPoolDetailed, SuspensionPoolField,
+    },
 };
 use nonempty::NonemptyString;
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::suspension_pools::{
-        measurements::create::insert_suspension_pool_measurement,
+        measurements::create::insert_suspension_pool_measurements,
         show::select_suspension_pool_by_id,
     },
     state::AppState,
@@ -59,13 +62,9 @@ async fn insert_suspension_pool(
             .collect(),
     };
 
-    let id = db::insert_into(tx, "suspension_pool", record).await?;
+    let id = tx.insert_returning_id(record).await?;
 
-    let measurement_insertions = futures::future::try_join_all(
-        measurements
-            .iter()
-            .map(|m| insert_suspension_pool_measurement(tx, id, m)),
-    );
+    let measurement_insertions = insert_suspension_pool_measurements(tx, id, measurements);
 
     tokio::try_join!(
         insert_suspension_pool_preparers(tx, id, preparers.as_ref()),
@@ -89,14 +88,7 @@ pub(super) async fn insert_suspension_pool_preparers(
         })
         .collect();
 
-    futures::future::try_join_all(
-        preparers
-            .iter()
-            .map(|p| db::insert_into_no_returning(tx, "suspension_pool_preparer", p)),
-    )
-    .await?;
-
-    Ok(())
+    tx.insert_many(&preparers).await
 }
 
 async fn insert_suspension_poolings(
@@ -114,14 +106,7 @@ async fn insert_suspension_poolings(
         })
         .collect();
 
-    futures::future::try_join_all(
-        poolings
-            .iter()
-            .map(|p| db::insert_into_no_returning(tx, "suspension_pooling", p)),
-    )
-    .await?;
-
-    Ok(())
+    tx.insert_many(&poolings).await
 }
 
 struct NewSuspensionPoolPreparer {
@@ -129,14 +114,20 @@ struct NewSuspensionPoolPreparer {
     prepared_by: Uuid,
 }
 
-impl AsFieldValuePairs<&'static str, 2> for NewSuspensionPoolPreparer {
-    fn as_field_value_pairs(&'_ self) -> FieldValuePairs<'_, &'static str, 2> {
+impl Relation for NewSuspensionPoolPreparer {
+    const NAME: &'static str = "suspension_pool_preparer";
+}
+
+impl Insert for NewSuspensionPoolPreparer {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             pool_id,
             prepared_by,
         } = self;
 
-        [("pool_id", pool_id), ("prepared_by", prepared_by)]
+        vec![("pool_id", pool_id), ("prepared_by", prepared_by)]
     }
 }
 
@@ -147,8 +138,14 @@ struct NewSuspensionPooling<'a> {
     tag_type: Option<MultiplexingTagType>,
 }
 
-impl AsFieldValuePairs<&'static str, 4> for NewSuspensionPooling<'_> {
-    fn as_field_value_pairs(&'_ self) -> FieldValuePairs<'_, &'static str, 4> {
+impl Relation for NewSuspensionPooling<'_> {
+    const NAME: &'static str = "suspension_pooling";
+}
+
+impl Insert for NewSuspensionPooling<'_> {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             pool_id,
             suspension_id,
@@ -156,7 +153,7 @@ impl AsFieldValuePairs<&'static str, 4> for NewSuspensionPooling<'_> {
             tag_type,
         } = self;
 
-        [
+        vec![
             ("pool_id", pool_id),
             ("suspension_id", suspension_id),
             ("tag_id", tag_id),
@@ -165,8 +162,10 @@ impl AsFieldValuePairs<&'static str, 4> for NewSuspensionPooling<'_> {
     }
 }
 
-impl AsFieldValuePairs<SuspensionPoolField, 4> for NewSuspensionPoolRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, SuspensionPoolField, 4> {
+impl Insert for NewSuspensionPoolRecord {
+    type Field = SuspensionPoolField;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         use SuspensionPoolField::*;
 
         let Self {
@@ -177,7 +176,7 @@ impl AsFieldValuePairs<SuspensionPoolField, 4> for NewSuspensionPoolRecord {
             additional_data,
         } = self;
 
-        [
+        vec![
             (ReadableId, readable_id),
             (Name, name),
             (PooledAt, pooled_at),
@@ -239,7 +238,7 @@ pub mod test {
 
         let mut new = NewSuspensionPool {
             record: NewSuspensionPoolRecord {
-                id: NoId {},
+                id: NoId,
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 name: "pool".to_nonempty_string(),
                 pooled_at: Timestamp::now(),
@@ -279,8 +278,8 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        // Insert a couple unrelated test specimens to make sure the suspension pool
-        // query doesn't pick them up
+        // Insert a couple unrelated test specimens to make sure the suspension
+        // pool query doesn't pick them up
 
         let mut unrelated_specimen_ids = HashSet::new();
 

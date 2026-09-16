@@ -2,12 +2,12 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::nucleic_acid_measurement::NewNucleicAcidMeasurement;
+use cellnoor_types::{Relation, nucleic_acid_measurement::NewNucleicAcidMeasurement};
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::IdParam,
     state::AppState,
@@ -23,7 +23,7 @@ pub async fn create_library_measurement(
 
     let tx = client.begin().await?;
 
-    let response = insert_library_measurement(&tx, library_id, &record)
+    let response = insert_library_measurements(&tx, library_id, std::slice::from_ref(&record))
         .await
         .map(Json)?;
 
@@ -32,16 +32,17 @@ pub async fn create_library_measurement(
     Ok(response)
 }
 
-pub(in super::super) async fn insert_library_measurement(
+pub(in super::super) async fn insert_library_measurements(
     tx: &db::Transaction<'_>,
     library_id: Uuid,
-    record: &NewNucleicAcidMeasurement,
+    records: &[NewNucleicAcidMeasurement],
 ) -> Result<(), ErrorInner> {
-    let row = NewLibraryMeasurement { library_id, record };
+    let rows: Vec<_> = records
+        .iter()
+        .map(|record| NewLibraryMeasurement { library_id, record })
+        .collect();
 
-    db::insert_into_no_returning(tx, "library_measurement", &row).await?;
-
-    Ok(())
+    tx.insert_many(&rows).await
 }
 
 struct NewLibraryMeasurement<'a> {
@@ -49,8 +50,14 @@ struct NewLibraryMeasurement<'a> {
     record: &'a NewNucleicAcidMeasurement,
 }
 
-impl AsFieldValuePairs<&'static str, 4> for NewLibraryMeasurement<'_> {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 4> {
+impl Relation for NewLibraryMeasurement<'_> {
+    const NAME: &'static str = "library_measurement";
+}
+
+impl Insert for NewLibraryMeasurement<'_> {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             library_id,
             record:
@@ -61,7 +68,7 @@ impl AsFieldValuePairs<&'static str, 4> for NewLibraryMeasurement<'_> {
                 },
         } = self;
 
-        [
+        vec![
             ("library_id", library_id),
             ("measured_by", measured_by),
             ("measured_at", measured_at),

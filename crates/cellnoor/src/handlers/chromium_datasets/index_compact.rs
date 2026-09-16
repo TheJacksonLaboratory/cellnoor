@@ -1,18 +1,13 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
-    chromium_dataset::{
-        ChromiumDatasetCompact, ChromiumDatasetPredicate, ChromiumDatasetPredicateInner,
-        ChromiumDatasetQuery, SavedChromiumDatasetRecord,
-    },
+    chromium_dataset::{ChromiumDatasetCompact, ChromiumDatasetQuery, SavedChromiumDatasetRecord},
     id::Id,
 };
-use futures::StreamExt;
-use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, FilterableSqlBuilder},
+    db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -20,12 +15,12 @@ use crate::{
 pub async fn index_chromium_datasets(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(mut query): Json<ChromiumDatasetQuery>,
+    Json(query): Json<ChromiumDatasetQuery>,
 ) -> Result<Json<Vec<ChromiumDatasetCompact>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_chromium_datasets_compact(&tx, &mut query)
+    let response = select_chromium_datasets_compact(&tx, &query)
         .await
         .map(Json)?;
 
@@ -36,32 +31,17 @@ pub async fn index_chromium_datasets(
 
 async fn select_chromium_datasets_compact(
     tx: &db::Transaction<'_>,
-    query: &mut ChromiumDatasetQuery,
+    query: &ChromiumDatasetQuery,
 ) -> Result<Vec<ChromiumDatasetCompact>, ErrorInner> {
     static SELECT_COMPACT_CHROMIUM_DATASETS: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
 
-    let sql = SELECT_COMPACT_CHROMIUM_DATASETS.finish_with_query(query);
-
-    let stream = tx.query_stream_into(sql).await?;
-    Ok(stream.map(chromium_dataset_from_record).collect().await)
-}
-
-impl AsPredicate for ChromiumDatasetPredicate {
-    fn as_predicate(&self) -> (&str, (&'static str, &(dyn ToSql + Sync))) {
-        let sql = match self {
-            Self::Specimen(p) => return p.as_predicate(),
-            Self::TenxAssay(p) => return p.as_predicate(),
-            Self::Library(p) => return p.as_predicate(),
-            Self::ChromiumDataset(field) => match field {
-                ChromiumDatasetPredicateInner::Id(u) => u.as_sql_operator_and_value(),
-                ChromiumDatasetPredicateInner::Name(s) => s.as_sql_operator_and_value(),
-                ChromiumDatasetPredicateInner::DeliveredAt(t) => t.as_sql_operator_and_value(),
-            },
-        };
-
-        (self.field_name(), sql)
-    }
+    Ok(tx
+        .select(&SELECT_COMPACT_CHROMIUM_DATASETS, query)
+        .await?
+        .into_iter()
+        .map(chromium_dataset_from_record)
+        .collect())
 }
 
 pub(super) fn chromium_dataset_links(id: Id) -> SimpleLinks {
@@ -106,7 +86,7 @@ mod test {
 
         let datasets = select_chromium_datasets_compact(
             &tx,
-            &mut ChromiumDatasetQuery::from_filter(
+            &ChromiumDatasetQuery::from_filter(
                 ChromiumDatasetPredicateInner::Id(UuidOperator::Eq(*inserted.record.id)).into(),
             ),
         )

@@ -2,16 +2,12 @@ use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
     id::Id,
-    library::{
-        LibraryCompact, LibraryPredicate, LibraryPredicateInner, LibraryQuery, SavedLibraryRecord,
-    },
+    library::{LibraryCompact, LibraryQuery, SavedLibraryRecord},
 };
-use futures::StreamExt;
-use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, FilterableSqlBuilder},
+    db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -30,12 +26,12 @@ pub fn library_from_record(record: SavedLibraryRecord) -> LibraryCompact {
 pub async fn index_libraries(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(mut query): Json<LibraryQuery>,
+    Json(query): Json<LibraryQuery>,
 ) -> Result<Json<Vec<LibraryCompact>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_libraries_compact(&tx, &mut query).await.map(Json)?;
+    let response = select_libraries_compact(&tx, &query).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -44,39 +40,17 @@ pub async fn index_libraries(
 
 async fn select_libraries_compact(
     tx: &db::Transaction<'_>,
-    query: &mut LibraryQuery,
+    query: &LibraryQuery,
 ) -> Result<Vec<LibraryCompact>, ErrorInner> {
     static SELECT_COMPACT_LIBRARIES: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
 
-    let sql = SELECT_COMPACT_LIBRARIES.finish_with_query(query);
-
-    let stream = tx.query_stream_into(sql).await?;
-    Ok(stream.map(library_from_record).collect().await)
-}
-
-impl AsPredicate for LibraryPredicate {
-    fn as_predicate(&self) -> (&str, (&'static str, &(dyn ToSql + Sync))) {
-        let sql = match self {
-            Self::Specimen(p) => return p.as_predicate(),
-            Self::Library(field) => match field {
-                LibraryPredicateInner::Id(u) | LibraryPredicateInner::CdnaId(u) => {
-                    u.as_sql_operator_and_value()
-                }
-                LibraryPredicateInner::ReadableId(s)
-                | LibraryPredicateInner::SingleIndexSetName(s)
-                | LibraryPredicateInner::DualIndexSetName(s) => s.as_sql_operator_and_value(),
-                LibraryPredicateInner::NumberOfSampleIndexPcrCycles(i) => {
-                    i.as_sql_operator_and_value()
-                }
-                LibraryPredicateInner::TargetReadsPerCell(i) => i.as_sql_operator_and_value(),
-                LibraryPredicateInner::PreparedAt(t) => t.as_sql_operator_and_value(),
-                LibraryPredicateInner::AdditionalData(j) => j.as_sql_operator_and_value(),
-            },
-        };
-
-        (self.field_name(), sql)
-    }
+    Ok(tx
+        .select(&SELECT_COMPACT_LIBRARIES, query)
+        .await?
+        .into_iter()
+        .map(library_from_record)
+        .collect())
 }
 
 #[cfg(test)]
@@ -105,7 +79,7 @@ mod test {
 
         let libraries = select_libraries_compact(
             &tx,
-            &mut LibraryQuery::from_filter(
+            &LibraryQuery::from_filter(
                 LibraryPredicateInner::Id(UuidOperator::Eq(*inserted.record.id)).into(),
             ),
         )

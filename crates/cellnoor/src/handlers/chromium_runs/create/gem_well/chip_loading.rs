@@ -1,11 +1,14 @@
-use cellnoor_types::chromium_run::creation::{
-    LoadedEntity,
-    ocm::{OcmBarcodeId, OcmLoadedEntity},
+use cellnoor_types::{
+    Relation,
+    chromium_run::creation::{
+        LoadedEntity,
+        ocm::{OcmBarcodeId, OcmLoadedEntity},
+    },
 };
 use uuid::Uuid;
 
 use crate::{
-    db::{self, AsFieldValuePairs, insert_into_no_returning},
+    db::{self, FieldValues, Insert},
     error::ErrorInner,
 };
 
@@ -33,7 +36,7 @@ async fn insert_chip_loading(
     tx: &db::Transaction<'_>,
     chip_loading: &NewChipLoadingRecord,
 ) -> Result<(), ErrorInner> {
-    Ok(insert_into_no_returning(tx, "chip_loading", chip_loading).await?)
+    tx.insert(chip_loading).await
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -80,8 +83,14 @@ impl NewChipLoadingRecord {
     }
 }
 
-impl AsFieldValuePairs<&'static str, 4> for NewChipLoadingRecord {
-    fn as_field_value_pairs(&self) -> crate::db::FieldValuePairs<'_, &'static str, 4> {
+impl Relation for NewChipLoadingRecord {
+    const NAME: &'static str = "chip_loading";
+}
+
+impl Insert for NewChipLoadingRecord {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             gem_well_id,
             suspension_id,
@@ -89,7 +98,7 @@ impl AsFieldValuePairs<&'static str, 4> for NewChipLoadingRecord {
             ocm_barcode_id,
         } = self;
 
-        [
+        vec![
             ("gem_well_id", gem_well_id),
             ("suspension_id", suspension_id),
             ("suspension_pool_id", suspension_pool_id),

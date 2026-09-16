@@ -14,6 +14,7 @@ pub use query::{
 };
 
 use crate::{
+    Relation,
     id::{Id, NoId},
     project::{ProjectCompact, SavedProjectRecord},
     simple_links::SimpleLinks,
@@ -81,6 +82,10 @@ pub enum Species {
     MusMusculus,
     RattusNorvegicus,
     SminthopsisCrassicaudata,
+}
+
+impl<T> Relation for SpecimenRecord<T> {
+    const NAME: &'static str = "specimen";
 }
 
 pub type NewSpecimenRecord = SpecimenRecord<NoId>;

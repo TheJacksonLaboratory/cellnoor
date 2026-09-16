@@ -4,6 +4,8 @@ use nonempty::NonemptyString;
 pub use query::{ApiKeyField, ApiKeyPredicate, ApiKeyQuery, SimpleApiKeyQuery};
 use uuid::Uuid;
 
+use crate::Relation;
+
 mod query;
 
 #[base_model]
@@ -21,6 +23,10 @@ pub struct ApiKeyUpdate {
     pub expires_at: Option<Timestamp>,
 }
 
+impl Relation for ApiKeyUpdate {
+    const NAME: &'static str = "api_key";
+}
+
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "api_key_public"))]
 pub struct SavedApiKeyRecord {
@@ -30,6 +36,10 @@ pub struct SavedApiKeyRecord {
     pub owner_is_staff: bool,
     pub created_at: Timestamp,
     pub expires_at: Option<Timestamp>,
+}
+
+impl Relation for SavedApiKeyRecord {
+    const NAME: &'static str = "api_key_public";
 }
 
 #[derive(Clone, PartialEq)]

@@ -1,5 +1,4 @@
 use axum::{Json, extract::State};
-use futures::StreamExt;
 use nonempty::NonemptyString;
 use postgres_types::FromSql;
 use schemars::JsonSchema;
@@ -44,9 +43,7 @@ async fn select_accounts(tx: &db::Transaction<'_>) -> Result<Vec<PersonAccount>,
 
     let sql = SELECT_API_KEYS.finish_with_params(vec![]);
 
-    let stream = tx.query_stream_into(sql).await?;
-
-    Ok(stream.collect().await)
+    tx.query_into(&sql).await
 }
 
 #[cfg(test)]

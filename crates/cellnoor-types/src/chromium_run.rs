@@ -5,6 +5,7 @@ pub use query::{
 };
 
 use crate::{
+    Relation,
     chromium_run::{
         creation::NewChromiumRunRecord,
         record::{ChromiumRunRecord, GemWellRecord},
@@ -25,11 +26,13 @@ mod record {
     use serde_json::Value;
     use uuid::Uuid;
 
+    use crate::id::Id;
+
     #[select]
     #[cfg_attr(feature = "postgres-types", postgres(name = "gem_well"))]
-    pub struct GemWellRecord<T> {
+    pub struct GemWellRecord {
         #[cfg_attr(feature = "serde", serde(flatten))]
-        pub id: T,
+        pub id: Id,
         pub readable_id: NonemptyString,
         pub chromium_run_id: Uuid,
         #[cfg_attr(feature = "serde", serde(skip))]
@@ -50,7 +53,13 @@ mod record {
     }
 }
 
-pub type SavedGemWellRecord = GemWellRecord<Id>;
+impl Relation for GemWellRecord {
+    const NAME: &'static str = "gem_well";
+}
+
+impl<T> Relation for ChromiumRunRecord<T> {
+    const NAME: &'static str = "chromium_run";
+}
 
 pub type SavedChromiumRunRecord = ChromiumRunRecord<Id>;
 
@@ -68,14 +77,14 @@ pub struct ChromiumRunLinks {
 #[cfg_attr(feature = "postgres-types", postgres(name = "gem_well_with_specimens"))]
 pub struct SavedGemWellWithSpecimensRecord {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub gem_well: SavedGemWellRecord,
+    pub gem_well: GemWellRecord,
     pub specimens: Vec<SavedTaggedSpecimenRecord>,
 }
 
 #[base_model]
 pub struct GemWell {
     #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: SavedGemWellRecord,
+    pub record: GemWellRecord,
     pub specimens: Vec<TaggedSpecimen>,
 }
 

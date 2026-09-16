@@ -1,19 +1,17 @@
 use macro_attributes::{predicate_enum, predicate_enum_wrapper, sort_field_enum};
 
 use crate::{
+    Relation,
+    chromium_run::SavedChromiumRunRecord,
     operator::{BoolOperator, JsonOperator, StringOperator, TimestampOperator, UuidOperator},
-    query::{ComplexQuery, OrderField, SimpleQuery, filter::Filter},
+    query::{ComplexQuery, Field, OrderField, SimpleQuery, filter::Filter},
     specimen::SpecimenPredicate,
     tenx_assay::TenxAssayPredicate,
 };
 
 #[predicate_enum]
 #[strum(prefix = "(chromium_run).")]
-#[strum_discriminants(
-    name(ChromiumRunField),
-    sort_field_enum,
-    strum(prefix = "(chromium_run).")
-)]
+#[strum_discriminants(name(ChromiumRunField), sort_field_enum)]
 pub enum ChromiumRunPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),
@@ -57,6 +55,10 @@ impl From<ChromiumRunPredicateInner> for Filter<ChromiumRunPredicate> {
     fn from(value: ChromiumRunPredicateInner) -> Self {
         Self::Leaf(value.into())
     }
+}
+
+impl Field for ChromiumRunField {
+    const RELATION: &'static str = <SavedChromiumRunRecord as Relation>::NAME;
 }
 
 impl OrderField for ChromiumRunField {

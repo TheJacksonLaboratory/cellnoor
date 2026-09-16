@@ -8,6 +8,7 @@ pub use query::{
 use uuid::Uuid;
 
 use crate::{
+    Relation,
     chromium_run::creation::ocm::OcmBarcodeId,
     id::{Id, NoId},
     multiplexing_tag::MultiplexingTag,
@@ -35,6 +36,10 @@ mod record {
         pub pooled_at: Timestamp,
         pub additional_data: Option<Value>,
     }
+}
+
+impl<T> Relation for SuspensionPoolRecord<T> {
+    const NAME: &'static str = "suspension_pool";
 }
 
 pub type NewSuspensionPoolRecord = SuspensionPoolRecord<NoId>;
@@ -197,8 +202,9 @@ mod tests {
             // Next, ensure that the strum serializations of the two types match
             pretty_assertions::assert_str_eq!(deserialized_pool.suspensions.as_ref(), ty.as_ref());
 
-            // Finally, ensure that the strum serialization of MultiplexingTagType yields
-            // the same result as the serde serialization
+            // Finally, ensure that the strum serialization of
+            // MultiplexingTagType yields the same result as the serde
+            // serialization
             pool["multiplexing_tag_type"] =
                 serde_json::Value::String(deserialized_pool.suspensions.as_ref().to_owned());
             pretty_assertions::assert_eq!(deserialized_pool, serde_json::from_value(pool).unwrap());

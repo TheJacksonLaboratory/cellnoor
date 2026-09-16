@@ -2,11 +2,12 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use cellnoor_types::Relation;
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::IdParam,
     state::AppState,
@@ -43,14 +44,7 @@ pub(in super::super) async fn insert_project_accesses(
         })
         .collect();
 
-    futures::future::try_join_all(
-        accesses
-            .iter()
-            .map(|a| db::insert_into_no_returning(tx, "project_access", a)),
-    )
-    .await?;
-
-    Ok(())
+    tx.insert_many(&accesses).await
 }
 
 struct NewProjectAccess {
@@ -58,13 +52,19 @@ struct NewProjectAccess {
     principal_id: Uuid,
 }
 
-impl AsFieldValuePairs<&'static str, 2> for NewProjectAccess {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 2> {
+impl Relation for NewProjectAccess {
+    const NAME: &'static str = "project_access";
+}
+
+impl Insert for NewProjectAccess {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             project_id,
             principal_id,
         } = self;
 
-        [("project_id", project_id), ("principal_id", principal_id)]
+        vec![("project_id", project_id), ("principal_id", principal_id)]
     }
 }

@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, select_one},
+    db,
     error::{Error, ErrorInner},
     handlers::{IdParam, chromium_runs::index_detailed::select_chromium_runs_detailed},
     state::AppState,
@@ -36,8 +36,7 @@ pub(super) async fn select_chromium_run_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<ChromiumRunDetailed, ErrorInner> {
-    select_one(
-        tx,
+    tx.select_one(
         ChromiumRunPredicateInner::Id(UuidOperator::Eq(id)).into(),
         select_chromium_runs_detailed,
     )

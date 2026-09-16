@@ -14,7 +14,7 @@ pub(super) async fn authenticate_with_api_key(
 
 impl AuthUser {
     fn from_api_key_record(api_key: &SavedApiKeyRecord) -> Result<Self, ErrorInner> {
-        if api_key_is_expired(&api_key) {
+        if api_key_is_expired(api_key) {
             return Err(ErrorInner::ExpiredApiKey {
                 expired_at: api_key.expires_at.unwrap(),
             });

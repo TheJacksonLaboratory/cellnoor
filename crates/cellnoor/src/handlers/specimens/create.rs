@@ -5,10 +5,10 @@ use cellnoor_types::specimen::{
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::specimens::{
-        measurements::create::insert_specimen_measurement, show::select_specimen_by_id,
+        measurements::create::insert_specimen_measurements, show::select_specimen_by_id,
         split_new_specimen_for_insertion::split_new_specimen_for_insertion,
     },
     state::AppState,
@@ -36,20 +36,17 @@ async fn insert_specimen(
 ) -> Result<SpecimenDetailed, ErrorInner> {
     let (record, measurements) = split_new_specimen_for_insertion(record);
 
-    let id = db::insert_into(tx, "specimen", &record).await?;
+    let id = tx.insert_returning_id(&record).await?;
 
-    futures::future::try_join_all(
-        measurements
-            .iter()
-            .map(|m| insert_specimen_measurement(tx, id, m)),
-    )
-    .await?;
+    insert_specimen_measurements(tx, id, &measurements).await?;
 
     select_specimen_by_id(tx, id).await
 }
 
-impl AsFieldValuePairs<SpecimenField, 15> for NewSpecimenRecord {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, SpecimenField, 15> {
+impl Insert for NewSpecimenRecord {
+    type Field = SpecimenField;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         use SpecimenField::*;
 
         let Self {
@@ -74,7 +71,7 @@ impl AsFieldValuePairs<SpecimenField, 15> for NewSpecimenRecord {
             thermal_preservation_method,
         } = self;
 
-        [
+        vec![
             (ReadableId, readable_id),
             (Name, name),
             (SubmittedBy, submitted_by),

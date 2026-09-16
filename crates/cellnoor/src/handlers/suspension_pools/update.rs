@@ -13,7 +13,7 @@ use crate::{
         IdParam,
         suspension_pools::{
             create::insert_suspension_pool_preparers,
-            measurements::create::insert_suspension_pool_measurement,
+            measurements::create::insert_suspension_pool_measurements,
             show::select_suspension_pool_by_id,
         },
     },
@@ -47,7 +47,7 @@ async fn update_suspension_pool_by_id(
         preparers,
     }: &SuspensionPoolUpdate,
 ) -> Result<SuspensionPoolDetailed, ErrorInner> {
-    db::update(tx, "suspension_pool", id, record).await?;
+    tx.update(id, record).await?;
 
     let preparer_insertions = async {
         if let Some(preparers) = preparers {
@@ -57,12 +57,8 @@ async fn update_suspension_pool_by_id(
         }
     };
 
-    let measurement_insertions = futures::future::try_join_all(
-        measurements
-            .iter()
-            .flatten()
-            .map(|m| insert_suspension_pool_measurement(tx, id, m)),
-    );
+    let measurement_insertions =
+        insert_suspension_pool_measurements(tx, id, measurements.as_deref().unwrap_or_default());
 
     tokio::try_join!(preparer_insertions, measurement_insertions)?;
 

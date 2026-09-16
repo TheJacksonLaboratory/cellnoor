@@ -2,12 +2,12 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::suspension_pool::measurement::NewSuspensionPoolMeasurement;
+use cellnoor_types::{Relation, suspension_pool::measurement::NewSuspensionPoolMeasurement};
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::IdParam,
     state::AppState,
@@ -23,7 +23,7 @@ pub async fn create_suspension_pool_measurement(
 
     let tx = client.begin().await?;
 
-    let response = insert_suspension_pool_measurement(&tx, pool_id, &record)
+    let response = insert_suspension_pool_measurements(&tx, pool_id, std::slice::from_ref(&record))
         .await
         .map(Json)?;
 
@@ -32,28 +32,43 @@ pub async fn create_suspension_pool_measurement(
     Ok(response)
 }
 
-pub(in super::super) async fn insert_suspension_pool_measurement(
+pub(in super::super) async fn insert_suspension_pool_measurements(
     tx: &db::Transaction<'_>,
     pool_id: Uuid,
-    record: &NewSuspensionPoolMeasurement,
+    records: &[NewSuspensionPoolMeasurement],
 ) -> Result<(), ErrorInner> {
-    db::insert_into_no_returning(tx, "suspension_pool_measurement", &(pool_id, record)).await?;
+    let rows: Vec<_> = records
+        .iter()
+        .map(|record| NewSuspensionPoolMeasurementRow { pool_id, record })
+        .collect();
 
-    Ok(())
+    tx.insert_many(&rows).await
 }
 
-impl AsFieldValuePairs<&'static str, 4> for (Uuid, &NewSuspensionPoolMeasurement) {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 4> {
-        let (
-            pool_id,
-            NewSuspensionPoolMeasurement {
-                measured_by,
-                measured_at,
-                data,
-            },
-        ) = self;
+struct NewSuspensionPoolMeasurementRow<'a> {
+    pool_id: Uuid,
+    record: &'a NewSuspensionPoolMeasurement,
+}
 
-        [
+impl Relation for NewSuspensionPoolMeasurementRow<'_> {
+    const NAME: &'static str = "suspension_pool_measurement";
+}
+
+impl Insert for NewSuspensionPoolMeasurementRow<'_> {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
+        let Self {
+            pool_id,
+            record:
+                NewSuspensionPoolMeasurement {
+                    measured_by,
+                    measured_at,
+                    data,
+                },
+        } = self;
+
+        vec![
             ("pool_id", pool_id),
             ("measured_by", measured_by),
             ("measured_at", measured_at),

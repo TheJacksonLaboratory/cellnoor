@@ -1,7 +1,10 @@
 use axum::{Json, extract::State};
-use cellnoor_types::tenx_assay::{
-    TenxAssay,
-    creation::{LibraryTypeSpecification, NewTenxAssay},
+use cellnoor_types::{
+    Relation,
+    tenx_assay::{
+        TenxAssay,
+        creation::{LibraryTypeSpecification, NewTenxAssay},
+    },
 };
 #[cfg(test)]
 pub use chromium::tests::insert_test_chromium_assay;
@@ -9,7 +12,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs, SqlBuilder, insert_into_no_returning},
+    db::{self, FieldValues, Insert, SqlBuilder},
     error::{Error, ErrorInner},
     handlers::tenx_assays::create::chromium::insert_chromium_assay,
     state::AppState,
@@ -54,7 +57,7 @@ async fn insert_library_type_specification(
     tx: &db::Transaction<'_>,
     record: &NewLibraryTypeSpecificationRecord<'_>,
 ) -> Result<(), ErrorInner> {
-    insert_into_no_returning(tx, "library_type_specification", record).await?;
+    tx.insert(record).await?;
 
     Ok(())
 }
@@ -64,11 +67,17 @@ struct NewLibraryTypeSpecificationRecord<'a> {
     spec: &'a LibraryTypeSpecification,
 }
 
-impl<'a> AsFieldValuePairs<&'static str, 5> for NewLibraryTypeSpecificationRecord<'a> {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 5> {
+impl<'a> Relation for NewLibraryTypeSpecificationRecord<'a> {
+    const NAME: &'static str = "library_type_specification";
+}
+
+impl<'a> Insert for NewLibraryTypeSpecificationRecord<'a> {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self { assay_id, spec } = self;
 
-        [
+        vec![
             ("assay_id", assay_id),
             ("library_type", &spec.library_type),
             ("index_kit", &spec.index_kit),

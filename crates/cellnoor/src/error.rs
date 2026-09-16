@@ -102,21 +102,13 @@ impl From<TokioPgError> for ErrorInner {
                 message: db_error.message().replace("table", "resource"),
             },
             SqlState::FOREIGN_KEY_VIOLATION => {
-                let referencing_resource = db_error.table().map(str::to_owned).unwrap();
-                let referencing_field_prefix = format!("{referencing_resource}_");
+                let referencing_resource = db_error.table().unwrap_or_default();
+                let constraint = db_error.constraint().unwrap_or_default();
 
                 ErrorInner::InvalidReference {
-                    referencing_resource: db_error.table().map(str::to_owned).unwrap(),
-                    // This looks insane but it's just basically transforming something like
-                    // 'person_institution_id_fkey' to 'institution_id'
-                    referencing_field: db_error
-                        .constraint()
-                        .unwrap()
-                        .strip_prefix(&referencing_field_prefix)
-                        .unwrap()
-                        .strip_suffix("_fkey")
-                        .unwrap()
+                    referencing_field: referencing_field(referencing_resource, constraint)
                         .to_owned(),
+                    referencing_resource: referencing_resource.to_owned(),
                 }
             }
             SqlState::CHECK_VIOLATION | SqlState::UNIQUE_VIOLATION => ErrorInner::DataConstraint {
@@ -131,6 +123,19 @@ impl From<TokioPgError> for ErrorInner {
             },
         }
     }
+}
+
+/// Recover the column from a foreign-key constraint's name, which Postgres
+/// builds as `{table}_{column}_fkey`.
+///
+/// A constraint that was named by hand, or one over several columns, doesn't
+/// fit that shape, so fall back to the constraint's own name rather than
+/// guessing.
+fn referencing_field<'a>(table: &str, constraint: &'a str) -> &'a str {
+    constraint
+        .strip_prefix(&format!("{table}_"))
+        .and_then(|field| field.strip_suffix("_fkey"))
+        .unwrap_or(constraint)
 }
 
 impl From<ErrorInner> for Error {

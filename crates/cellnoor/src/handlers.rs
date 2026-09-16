@@ -1,7 +1,8 @@
+use cellnoor_types::Relation;
 use uuid::Uuid;
 
 use crate::{
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::ErrorInner,
 };
 
@@ -46,9 +47,24 @@ pub struct IdParam {
 
 struct IsStaff(bool);
 
-impl AsFieldValuePairs<&'static str, 1> for IsStaff {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 1> {
-        [("is_staff", &self.0)]
+impl Relation for IsStaff {
+    const NAME: &'static str = "principal";
+}
+
+async fn f() {
+    use cellnoor_types::institution::SavedInstitutionRecord;
+    let x: deadpool_postgres::Client = todo!();
+    let y: SavedInstitutionRecord = x
+        .query_one_scalar("select institution from institution", &[])
+        .await
+        .unwrap();
+}
+
+impl Insert for IsStaff {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
+        vec![("is_staff", &self.0)]
     }
 }
 
@@ -61,5 +77,5 @@ pub(crate) async fn set_is_staff(
     id: Uuid,
     is_staff: bool,
 ) -> Result<(), ErrorInner> {
-    db::update(tx, "principal", id, &IsStaff(is_staff)).await
+    tx.update(id, &IsStaff(is_staff)).await
 }

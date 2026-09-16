@@ -1,11 +1,14 @@
-use cellnoor_types::chromium_run::creation::{
-    mixed::NewStandardOrOcmGemWell, ocm::NewOcmGemWell, standard::NewStandardGemWell,
+use cellnoor_types::{
+    Relation,
+    chromium_run::creation::{
+        mixed::NewStandardOrOcmGemWell, ocm::NewOcmGemWell, standard::NewStandardGemWell,
+    },
 };
 use nonempty::NonemptyString;
 use uuid::Uuid;
 
 use crate::{
-    db::{self, AsFieldValuePairs, insert_into},
+    db::{self, FieldValues, Insert},
     error::ErrorInner,
     handlers::chromium_runs::create::gem_well::chip_loading::{
         insert_ocm_chip_loading, insert_standard_chip_loading,
@@ -75,7 +78,7 @@ async fn insert_gem_well(
     tx: &db::Transaction<'_>,
     gem_well: &NewGemWellRecord<'_>,
 ) -> Result<Uuid, ErrorInner> {
-    Ok(insert_into(tx, "gem_well", gem_well).await?)
+    tx.insert_returning_id(gem_well).await
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -84,14 +87,20 @@ struct NewGemWellRecord<'a> {
     chromium_run_id: Uuid,
 }
 
-impl AsFieldValuePairs<&'static str, 2> for NewGemWellRecord<'_> {
-    fn as_field_value_pairs(&self) -> crate::db::FieldValuePairs<'_, &'static str, 2> {
+impl Relation for NewGemWellRecord<'_> {
+    const NAME: &'static str = "gem_well";
+}
+
+impl Insert for NewGemWellRecord<'_> {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             readable_id,
             chromium_run_id,
         } = self;
 
-        [
+        vec![
             ("readable_id", readable_id),
             ("chromium_run_id", chromium_run_id),
         ]

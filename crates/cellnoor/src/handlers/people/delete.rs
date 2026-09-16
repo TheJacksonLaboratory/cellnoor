@@ -2,6 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use cellnoor_types::person::PersonUpdate;
 use uuid::Uuid;
 
 use crate::{
@@ -29,7 +30,7 @@ pub async fn delete_person(
 
 async fn delete_person_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
     // A trigger drops the principal, which cascades to their accounts and keys
-    db::delete_by_id(tx, "person", id).await
+    tx.delete::<PersonUpdate>(id).await
 }
 
 #[cfg(test)]

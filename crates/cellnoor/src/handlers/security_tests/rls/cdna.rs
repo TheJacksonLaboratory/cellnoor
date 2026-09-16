@@ -20,11 +20,9 @@ use crate::{
 };
 
 async fn insert_accessible_cdna(tx: &db::Transaction<'_>) -> (NewCdna, CdnaDetailed) {
-    // The underlying `insert_test_project` adds one person to the project, so we
-    // don't need to do anything extra here
-    insert_test_cdna_and_chromium_run(&tx, |_| ())
-        .await
-        .unwrap()
+    // The underlying `insert_test_project` adds one person to the project, so
+    // we don't need to do anything extra here
+    insert_test_cdna_and_chromium_run(tx, |_| ()).await.unwrap()
 }
 
 fn make_standard_chromium_run_inaccessible(run: &mut NewChromiumRun, suspension_id: Uuid) {
@@ -34,7 +32,7 @@ fn make_standard_chromium_run_inaccessible(run: &mut NewChromiumRun, suspension_
 
     let LoadedEntity::Suspension {
         suspension_id: loaded_suspension,
-    } = &mut gem_wells[0].loaded_entity
+    } = &mut gem_wells.as_mut()[0].loaded_entity
     else {
         panic!("expected suspension to be loaded into GEM well");
     };
@@ -47,7 +45,7 @@ async fn insert_inaccessible_cdna(tx: &db::Transaction<'_>) -> (NewCdna, CdnaDet
     let (_, specimen) = insert_inaccessible_specimen(tx).await;
 
     let (_, suspension) =
-        insert_test_suspension_and_specimen(&tx, |s| s.record.specimen_id = *specimen.record.id)
+        insert_test_suspension_and_specimen(tx, |s| s.record.specimen_id = *specimen.record.id)
             .await
             .unwrap();
 
@@ -72,7 +70,7 @@ async fn test_user_can_only_see_accessible_cdna(
     tx: &db::Transaction<'_>,
     accessible_cdna: CdnaDetailed,
 ) {
-    let cdnas = select_cdna_detailed(&tx, &mut CdnaQuery::default())
+    let cdnas = select_cdna_detailed(tx, &CdnaQuery::default())
         .await
         .unwrap();
 
@@ -85,7 +83,7 @@ async fn test_user_cannot_see_inaccessible_cdna(
 ) {
     let pred: CdnaPredicate = CdnaPredicateInner::Id(UuidOperator::Eq(inaccessible_cdna_id)).into();
 
-    let res = select_cdna_detailed(&tx, &mut pred.into()).await.unwrap();
+    let res = select_cdna_detailed(tx, &pred.into()).await.unwrap();
 
     assert_eq!(res, []);
 }
@@ -100,7 +98,8 @@ async fn row_level_security_for_cdna() {
         tokio::join!(insert_accessible_cdna(&tx), insert_inaccessible_cdna(&tx));
     let user_id = get_user_id_from_cdna(&accessible_cdna).await;
 
-    // Commit this transaction so the change persists for the next part of the test
+    // Commit this transaction so the change persists for the next part of the
+    // test
     tx.commit().await.unwrap();
 
     // Log in as the new user

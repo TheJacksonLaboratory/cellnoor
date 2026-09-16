@@ -4,7 +4,7 @@ use nonempty::NonemptyString;
 pub use query::{ProjectField, ProjectPredicate, ProjectQuery, SimpleProjectQuery};
 use uuid::Uuid;
 
-use crate::simple_links::SimpleLinks;
+use crate::{Relation, simple_links::SimpleLinks};
 
 mod query;
 
@@ -16,6 +16,10 @@ pub struct NewProject {
     pub members: Vec<Uuid>,
 }
 
+impl Relation for NewProject {
+    const NAME: &'static str = "project";
+}
+
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "project"))]
 pub struct SavedProjectRecord {
@@ -24,6 +28,10 @@ pub struct SavedProjectRecord {
     pub created_by: Uuid,
     pub started_at: Timestamp,
     pub ended_at: Timestamp,
+}
+
+impl Relation for SavedProjectRecord {
+    const NAME: &'static str = "project";
 }
 
 // We don't particularly need a "detailed" view of a project, but this is a good

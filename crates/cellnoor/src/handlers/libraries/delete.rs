@@ -2,6 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use cellnoor_types::library::SavedLibraryRecord;
 use uuid::Uuid;
 
 use crate::{
@@ -28,5 +29,5 @@ pub async fn delete_library(
 }
 
 async fn delete_library_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    db::delete_by_id(tx, "library", id).await
+    tx.delete::<SavedLibraryRecord>(id).await
 }

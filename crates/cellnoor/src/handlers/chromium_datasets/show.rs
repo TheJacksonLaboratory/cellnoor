@@ -40,11 +40,11 @@ pub(super) async fn select_chromium_dataset_by_id(
     raw_files_url: &str,
     id: Uuid,
 ) -> Result<ChromiumDatasetDetailed, ErrorInner> {
-    let mut query = ChromiumDatasetQuery::from_filter(
+    let query = ChromiumDatasetQuery::from_filter(
         ChromiumDatasetPredicateInner::Id(UuidOperator::Eq(id)).into(),
     );
 
-    let mut results = select_chromium_datasets_detailed(tx, raw_files_url, &mut query).await?;
+    let mut results = select_chromium_datasets_detailed(tx, raw_files_url, &query).await?;
 
     if results.len() != 1 {
         return Err(ErrorInner::ResourceNotFound);

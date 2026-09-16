@@ -36,7 +36,7 @@ async fn update_chromium_run_by_id(
     id: Uuid,
     update: &ChromiumRunUpdate,
 ) -> Result<ChromiumRunDetailed, ErrorInner> {
-    db::update(tx, "chromium_run", id, update).await?;
+    tx.update(id, update).await?;
     select_chromium_run_by_id(tx, id).await
 }
 
@@ -64,7 +64,7 @@ mod test {
         let id = *record.id;
 
         let update = ChromiumRunUpdate {
-            id: NoId {},
+            id: NoId,
             readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
             assay_id: record.assay_id,
             run_at: record.run_at,

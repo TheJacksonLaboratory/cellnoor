@@ -1,10 +1,11 @@
 use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
+    Relation,
     operator::{JsonOperator, StringOperator, TimestampOperator, UuidOperator},
-    query::{ComplexQuery, OrderField, SimpleQuery, filter::Operator},
+    query::{ComplexQuery, Field, OrderField, SimpleQuery, filter::Operator},
     specimen::{
-        Fixative, Species, SpecimenType, ThermalPreservationMethod,
+        Fixative, SavedSpecimenRecord, Species, SpecimenType, ThermalPreservationMethod,
         creation::block::BlockEmbeddingMatrix,
     },
 };
@@ -17,7 +18,7 @@ pub type ThermalPreservationMethodOperator = Operator<ThermalPreservationMethod>
 
 #[predicate_enum]
 #[strum(prefix = "(specimen).")]
-#[strum_discriminants(name(SpecimenField), sort_field_enum, strum(prefix = "(specimen)."))]
+#[strum_discriminants(name(SpecimenField), sort_field_enum)]
 pub enum SpecimenPredicate {
     Id(UuidOperator),
     ReadableId(StringOperator),
@@ -35,6 +36,10 @@ pub enum SpecimenPredicate {
     ThermalPreservationMethod(ThermalPreservationMethodOperator),
     Tissue(StringOperator),
     AdditionalData(JsonOperator),
+}
+
+impl Field for SpecimenField {
+    const RELATION: &'static str = <SavedSpecimenRecord as Relation>::NAME;
 }
 
 impl OrderField for SpecimenField {

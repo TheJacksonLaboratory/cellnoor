@@ -2,6 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use cellnoor_types::multiplexing_tag::MultiplexingTag;
 use uuid::Uuid;
 
 use crate::{
@@ -31,5 +32,5 @@ async fn delete_multiplexing_tag_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<(), ErrorInner> {
-    db::delete_by_id(tx, "multiplexing_tag", id).await
+    tx.delete::<MultiplexingTag>(id).await
 }

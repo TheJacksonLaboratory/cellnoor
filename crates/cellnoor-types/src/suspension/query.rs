@@ -1,26 +1,23 @@
 use macro_attributes::{predicate_enum, predicate_enum_wrapper, sort_field_enum};
 
 use crate::{
+    Relation,
     operator::{
         F32Operator, I64Operator, JsonOperator, StringOperator, TimestampOperator, UuidOperator,
     },
     query::{
-        ComplexQuery, OrderField, SimpleQuery,
+        ComplexQuery, Field, OrderField, SimpleQuery,
         filter::{Filter, Operator},
     },
     specimen::SpecimenPredicate,
-    suspension::SuspensionContent,
+    suspension::{SavedSuspensionRecord, SuspensionContent},
 };
 
 pub type SuspensionContentOperator = Operator<SuspensionContent>;
 
 #[predicate_enum]
 #[strum(prefix = "(suspension).")]
-#[strum_discriminants(
-    name(SuspensionField),
-    sort_field_enum,
-    strum(prefix = "(suspension).")
-)]
+#[strum_discriminants(name(SuspensionField), sort_field_enum)]
 pub enum SuspensionPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),
@@ -57,6 +54,10 @@ impl From<SuspensionPredicateInner> for Filter<SuspensionPredicate> {
     fn from(value: SuspensionPredicateInner) -> Self {
         Self::Leaf(value.into())
     }
+}
+
+impl Field for SuspensionField {
+    const RELATION: &'static str = <SavedSuspensionRecord as Relation>::NAME;
 }
 
 impl OrderField for SuspensionField {

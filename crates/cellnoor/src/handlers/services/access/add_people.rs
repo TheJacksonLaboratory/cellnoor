@@ -2,11 +2,12 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use cellnoor_types::Relation;
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::IdParam,
     state::AppState,
@@ -43,14 +44,7 @@ pub(in super::super::super) async fn insert_service_accesses(
         })
         .collect();
 
-    futures::future::try_join_all(
-        accesses
-            .iter()
-            .map(|a| db::insert_into_no_returning(tx, "service_access", a)),
-    )
-    .await?;
-
-    Ok(())
+    tx.insert_many(&accesses).await
 }
 
 struct NewServiceAccess {
@@ -58,14 +52,20 @@ struct NewServiceAccess {
     person_id: Uuid,
 }
 
-impl AsFieldValuePairs<&'static str, 2> for NewServiceAccess {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 2> {
+impl Relation for NewServiceAccess {
+    const NAME: &'static str = "service_access";
+}
+
+impl Insert for NewServiceAccess {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             service_id,
             person_id,
         } = self;
 
-        [("service_id", service_id), ("person_id", person_id)]
+        vec![("service_id", service_id), ("person_id", person_id)]
     }
 }
 

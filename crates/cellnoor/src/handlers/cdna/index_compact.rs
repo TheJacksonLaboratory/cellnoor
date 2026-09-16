@@ -1,15 +1,13 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
-    cdna::{CdnaCompact, CdnaPredicate, CdnaPredicateInner, CdnaQuery, SavedCdnaRecord},
+    cdna::{CdnaCompact, CdnaQuery, SavedCdnaRecord},
 };
-use futures::StreamExt;
-use postgres_types::ToSql;
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, FilterableSqlBuilder},
+    db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -17,12 +15,12 @@ use crate::{
 pub async fn index_cdna(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(mut query): Json<CdnaQuery>,
+    Json(query): Json<CdnaQuery>,
 ) -> Result<Json<Vec<CdnaCompact>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_cdna_compact(&tx, &mut query).await.map(Json)?;
+    let response = select_cdna_compact(&tx, &query).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -31,35 +29,17 @@ pub async fn index_cdna(
 
 async fn select_cdna_compact(
     tx: &db::Transaction<'_>,
-    query: &mut CdnaQuery,
+    query: &CdnaQuery,
 ) -> Result<Vec<CdnaCompact>, ErrorInner> {
     static SELECT_COMPACT_CDNA: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
 
-    let sql = SELECT_COMPACT_CDNA.finish_with_query(query);
-
-    let stream = tx.query_stream_into(sql).await?;
-    Ok(stream.map(cdna_from_record).collect().await)
-}
-
-impl AsPredicate for CdnaPredicate {
-    fn as_predicate(&self) -> (&str, (&'static str, &(dyn ToSql + Sync))) {
-        let sql = match self {
-            Self::Specimen(p) => return p.as_predicate(),
-            Self::Cdna(field) => match field {
-                CdnaPredicateInner::Id(u) | CdnaPredicateInner::GemWellId(u) => {
-                    u.as_sql_operator_and_value()
-                }
-                CdnaPredicateInner::ReadableId(s) => s.as_sql_operator_and_value(),
-                CdnaPredicateInner::LibraryType(l) => l.as_sql_operator_and_value(),
-                CdnaPredicateInner::PreparedAt(t) => t.as_sql_operator_and_value(),
-                CdnaPredicateInner::NAmplificationCycles(i) => i.as_sql_operator_and_value(),
-                CdnaPredicateInner::AdditionalData(j) => j.as_sql_operator_and_value(),
-            },
-        };
-
-        (self.field_name(), sql)
-    }
+    Ok(tx
+        .select(&SELECT_COMPACT_CDNA, query)
+        .await?
+        .into_iter()
+        .map(cdna_from_record)
+        .collect())
 }
 
 pub(super) fn cdna_simple_links(id: Uuid) -> SimpleLinks {
@@ -101,7 +81,7 @@ mod test {
 
         let cdnas = select_cdna_compact(
             &tx,
-            &mut CdnaQuery::from_filter(
+            &CdnaQuery::from_filter(
                 CdnaPredicateInner::Id(UuidOperator::Eq(*inserted.record.id)).into(),
             ),
         )

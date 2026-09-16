@@ -2,6 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use cellnoor_types::cdna::SavedCdnaRecord;
 use uuid::Uuid;
 
 use crate::{
@@ -28,5 +29,5 @@ pub async fn delete_cdna(
 }
 
 async fn delete_cdna_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    db::delete_by_id(tx, "cdna", id).await
+    tx.delete::<SavedCdnaRecord>(id).await
 }

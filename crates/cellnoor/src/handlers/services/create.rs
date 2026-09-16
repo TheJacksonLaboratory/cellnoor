@@ -3,7 +3,7 @@ use cellnoor_types::service::{NewService, Service, ServiceField, ServiceSimpleFi
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::{
         permissions::grant_permissions,
@@ -37,7 +37,7 @@ async fn insert_service(
         permissions_to_grant,
     }: &NewService,
 ) -> Result<Service, ErrorInner> {
-    let id = db::insert_into(tx, "service", record).await?;
+    let id = tx.insert_returning_id(record).await?;
     set_is_staff(tx, id, record.is_staff).await?;
     grant_permissions(tx, id, permissions_to_grant).await?;
 
@@ -49,14 +49,16 @@ async fn insert_service(
 // `owned_by` is intentionally omitted: the database fills it from
 // `app_user_id()`, and row-level security guarantees it equals the caller.
 // `is_staff` is a column of `principal`, not `service` (see `set_is_staff`)
-impl AsFieldValuePairs<ServiceField, 1> for ServiceSimpleFields {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, ServiceField, 1> {
+impl Insert for ServiceSimpleFields {
+    type Field = ServiceField;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             description,
             is_staff: _,
         } = self;
 
-        [(ServiceField::Description, description)]
+        vec![(ServiceField::Description, description)]
     }
 }
 

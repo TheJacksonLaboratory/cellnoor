@@ -2,17 +2,14 @@ use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
     chromium_run::{
-        ChromiumRunCompact, ChromiumRunLinks, ChromiumRunPredicate, ChromiumRunPredicateInner,
-        ChromiumRunQuery, SavedChromiumRunRecord,
+        ChromiumRunCompact, ChromiumRunLinks, ChromiumRunQuery, SavedChromiumRunRecord,
     },
     id::Id,
 };
-use futures::StreamExt;
-use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, FilterableSqlBuilder},
+    db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -20,14 +17,12 @@ use crate::{
 pub async fn index_chromium_runs(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(mut query): Json<ChromiumRunQuery>,
+    Json(query): Json<ChromiumRunQuery>,
 ) -> Result<Json<Vec<ChromiumRunCompact>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_chromium_runs_compact(&tx, &mut query)
-        .await
-        .map(Json)?;
+    let response = select_chromium_runs_compact(&tx, &query).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -36,35 +31,17 @@ pub async fn index_chromium_runs(
 
 async fn select_chromium_runs_compact(
     tx: &db::Transaction<'_>,
-    query: &mut ChromiumRunQuery,
+    query: &ChromiumRunQuery,
 ) -> Result<Vec<ChromiumRunCompact>, ErrorInner> {
     static SELECT_COMPACT_CHROMIUM_RUNS: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
 
-    let sql = SELECT_COMPACT_CHROMIUM_RUNS.finish_with_query(query);
-
-    let stream = tx.query_stream_into(sql).await?;
-    Ok(stream.map(chromium_run_from_record).collect().await)
-}
-
-impl AsPredicate for ChromiumRunPredicate {
-    fn as_predicate(&self) -> (&str, (&'static str, &(dyn ToSql + Sync))) {
-        let operator_and_value = match self {
-            Self::Specimen(p) => return p.as_predicate(),
-            Self::TenxAssay(p) => return p.as_predicate(),
-            Self::ChromiumRun(field) => match field {
-                ChromiumRunPredicateInner::Id(u)
-                | ChromiumRunPredicateInner::AssayId(u)
-                | ChromiumRunPredicateInner::RunBy(u) => u.as_sql_operator_and_value(),
-                ChromiumRunPredicateInner::ReadableId(s) => s.as_sql_operator_and_value(),
-                ChromiumRunPredicateInner::RunAt(t) => t.as_sql_operator_and_value(),
-                ChromiumRunPredicateInner::Succeeded(b) => b.as_sql_operator_and_value(),
-                ChromiumRunPredicateInner::AdditionalData(j) => j.as_sql_operator_and_value(),
-            },
-        };
-
-        (self.field_name(), operator_and_value)
-    }
+    Ok(tx
+        .select(&SELECT_COMPACT_CHROMIUM_RUNS, query)
+        .await?
+        .into_iter()
+        .map(chromium_run_from_record)
+        .collect())
 }
 
 pub(super) fn chromium_run_links(id: Id) -> ChromiumRunLinks {
@@ -110,10 +87,10 @@ mod test {
             .unwrap();
         let id = *run.record.id;
 
-        let mut query = ChromiumRunQuery::from_filter(
+        let query = ChromiumRunQuery::from_filter(
             ChromiumRunPredicateInner::Id(UuidOperator::Eq(id)).into(),
         );
-        select_chromium_runs_compact(&tx, &mut query).await.unwrap();
+        select_chromium_runs_compact(&tx, &query).await.unwrap();
     }
 
     #[tokio::test(flavor = "multi_thread")]

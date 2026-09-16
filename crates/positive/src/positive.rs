@@ -30,24 +30,6 @@ where
     }
 }
 
-impl<T, const N: u32> PartialEq<T> for PositiveBounded<T, N>
-where
-    T: PartialEq,
-{
-    fn eq(&self, other: &T) -> bool {
-        self.0.eq(other)
-    }
-}
-
-impl<T, const N: u32> PartialOrd<T> for PositiveBounded<T, N>
-where
-    T: PartialOrd,
-{
-    fn partial_cmp(&self, other: &T) -> Option<std::cmp::Ordering> {
-        self.0.partial_cmp(other)
-    }
-}
-
 #[cfg(feature = "serde")]
 impl<'de, T, const N: u32> Deserialize<'de> for PositiveBounded<T, N>
 where

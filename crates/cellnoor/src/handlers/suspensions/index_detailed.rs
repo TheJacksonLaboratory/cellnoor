@@ -2,7 +2,6 @@ use axum::{Json, extract::State};
 use cellnoor_types::suspension::{
     SavedSuspensionRecordDetailed, SuspensionDetailed, SuspensionQuery,
 };
-use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
@@ -18,14 +17,12 @@ use crate::{
 pub async fn index_suspensions_detailed(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(mut query): Json<SuspensionQuery>,
+    Json(query): Json<SuspensionQuery>,
 ) -> Result<Json<Vec<SuspensionDetailed>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_suspensions_detailed(&tx, &mut query)
-        .await
-        .map(Json)?;
+    let response = select_suspensions_detailed(&tx, &query).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -35,15 +32,17 @@ pub async fn index_suspensions_detailed(
 // Visibility required for tests
 pub(in super::super) async fn select_suspensions_detailed(
     tx: &db::Transaction<'_>,
-    query: &mut SuspensionQuery,
+    query: &SuspensionQuery,
 ) -> Result<Vec<SuspensionDetailed>, ErrorInner> {
     static SELECT_DETAILED_SUSPENSION: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
 
-    let sql = SELECT_DETAILED_SUSPENSION.finish_with_query(query);
-
-    let stream = tx.query_stream_into(sql).await?;
-    Ok(stream.map(suspension_from_detailed_record).collect().await)
+    Ok(tx
+        .select(&SELECT_DETAILED_SUSPENSION, query)
+        .await?
+        .into_iter()
+        .map(suspension_from_detailed_record)
+        .collect())
 }
 
 fn suspension_from_detailed_record(

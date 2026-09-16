@@ -1,6 +1,5 @@
 use axum::{Json, extract::State};
 use cellnoor_types::multiplexing_tag::MultiplexingTag;
-use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
@@ -30,7 +29,7 @@ pub async fn select_multiplexing_tags(
 
     let sql = SELECT_MULTIPLEXING_TAGS.finish_with_params(vec![]);
 
-    Ok(tx.query_stream_into(sql).await?.collect().await)
+    tx.query_into(&sql).await
 }
 
 #[cfg(test)]

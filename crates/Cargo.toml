@@ -51,10 +51,9 @@ strum = {version = "0.28.0", features = ["derive"]}
 bytes = { version = "1.11.1" }
 quote = { version = "1.0.45" }
 jsonwebtoken = {version = "11.0.0", features = ["rust_crypto"]}
-axum-extra = { version = "0.12.6", default-features = false, features = ["cookie", "typed-header"] }
+axum-extra = { version = "0.12.6", default-features = false, features = ["cookie"] }
 dotenvy = { version = "0.15.7" }
 secrecy = { version = "0.10.3", features = ["serde"] }
-clap = { version = "4.6.1", features = ["derive", "env"] }
 jiff = { version = "0.2.24", features = ["serde"] }
 pretty_assertions = { version = "1.4.1" }
 schemars = { version = "1.2.1", features = ["jiff02", "uuid1"] }
@@ -65,7 +64,6 @@ thiserror = "2.0.18"
 uuid = { version = "1.23.0", features = ["serde"] }
 tokio = {version = "1.52.1", features = ["macros", "rt-multi-thread"]}
 deadpool-postgres = { version = "0.14.1", features = ["serde"] }
-headers = {version = "0.4.1"}
 zstd = { version = "0.13.3" }
 
 [workspace.lints.clippy]

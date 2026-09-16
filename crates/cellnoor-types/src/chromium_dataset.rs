@@ -7,6 +7,7 @@ pub use query::{
 use uuid::Uuid;
 
 use crate::{
+    Relation,
     chromium_dataset::record::ChromiumDatasetRecord,
     id::{Id, NoId},
     library::LibraryCompact,
@@ -30,6 +31,10 @@ mod record {
         pub name: NonemptyString,
         pub delivered_at: Timestamp,
     }
+}
+
+impl<T> Relation for ChromiumDatasetRecord<T> {
+    const NAME: &'static str = "chromium_dataset";
 }
 
 pub type NewChromiumDatasetRecord = ChromiumDatasetRecord<NoId>;

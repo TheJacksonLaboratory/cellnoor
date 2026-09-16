@@ -2,6 +2,7 @@ use macro_attributes::base_model;
 pub use query::{InstitutionField, InstitutionPredicate, InstitutionQuery, SimpleInstitutionQuery};
 
 use crate::{
+    Relation,
     id::{Id, NoId},
     institution::record::InstitutionRecord,
     simple_links::SimpleLinks,
@@ -25,6 +26,10 @@ mod record {
         pub name: NonemptyString,
         pub microsoft_entra_tenant_id: Uuid,
     }
+}
+
+impl<T> Relation for InstitutionRecord<T> {
+    const NAME: &'static str = "institution";
 }
 
 pub type NewInstitution = InstitutionRecord<NoId>;

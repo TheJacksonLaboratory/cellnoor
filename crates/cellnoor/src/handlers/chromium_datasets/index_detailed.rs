@@ -9,7 +9,6 @@ use cellnoor_types::{
     suspension_pool::SavedTaggedSpecimenRecord,
 };
 use deadpool_postgres::tokio_postgres::Row;
-use futures::StreamExt;
 use nonempty::NonemptyString;
 
 use crate::{
@@ -27,12 +26,12 @@ use crate::{
 pub async fn index_chromium_datasets_detailed(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(mut query): Json<ChromiumDatasetQuery>,
+    Json(query): Json<ChromiumDatasetQuery>,
 ) -> Result<Json<Vec<ChromiumDatasetDetailed>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_chromium_datasets_detailed(&tx, state.public_files_url(), &mut query)
+    let response = select_chromium_datasets_detailed(&tx, state.public_files_url(), &query)
         .await
         .map(Json)?;
 
@@ -45,18 +44,17 @@ pub async fn index_chromium_datasets_detailed(
 pub(in super::super) async fn select_chromium_datasets_detailed(
     tx: &db::Transaction<'_>,
     raw_files_url: &str,
-    query: &mut ChromiumDatasetQuery,
+    query: &ChromiumDatasetQuery,
 ) -> Result<Vec<ChromiumDatasetDetailed>, ErrorInner> {
     static SELECT_DETAILED_CHROMIUM_DATASETS: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
 
-    let sql = SELECT_DETAILED_CHROMIUM_DATASETS.finish_with_query(query);
-
-    let stream = tx.query_stream(sql).await?;
-    Ok(stream
-        .map(|row| map_detailed_row(raw_files_url, row.unwrap()))
-        .collect()
-        .await)
+    Ok(tx
+        .select_rows(&SELECT_DETAILED_CHROMIUM_DATASETS, query)
+        .await?
+        .into_iter()
+        .map(|row| map_detailed_row(raw_files_url, row))
+        .collect())
 }
 
 fn map_detailed_row(raw_files_url: &str, row: Row) -> ChromiumDatasetDetailed {

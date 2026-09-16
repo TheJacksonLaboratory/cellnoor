@@ -1,41 +1,39 @@
 use macro_attributes::{predicate_enum, predicate_enum_wrapper, sort_field_enum};
 
 use crate::{
+    Relation,
+    multiplexing_tag::MultiplexingTag,
     operator::{JsonOperator, StringOperator, TimestampOperator, UuidOperator},
     query::{
-        ComplexQuery, OrderField, SimpleQuery,
+        ComplexQuery, Field, OrderField, SimpleQuery,
         filter::{Filter, Operator},
     },
     specimen::SpecimenPredicate,
-    suspension_pool::MultiplexingTagType,
+    suspension_pool::{MultiplexingTagType, SavedSuspensionPoolRecord},
 };
 
 pub type MultiplexingTagTypeOperator = Operator<MultiplexingTagType>;
 
 #[predicate_enum]
 #[strum(prefix = "(multiplexing_tag).")]
-#[strum_discriminants(
-    name(MultiplexingTagField),
-    sort_field_enum,
-    strum(prefix = "(multiplexing_tag).")
-)]
+#[strum_discriminants(name(MultiplexingTagField), sort_field_enum)]
 pub enum MultiplexingTagPredicate {
     Type(MultiplexingTagTypeOperator),
 }
 
 #[predicate_enum]
 #[strum(prefix = "(suspension_pool).")]
-#[strum_discriminants(
-    name(SuspensionPoolField),
-    sort_field_enum,
-    strum(prefix = "(suspension_pool).")
-)]
+#[strum_discriminants(name(SuspensionPoolField), sort_field_enum)]
 pub enum SuspensionPoolPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),
     Name(StringOperator),
     PooledAt(TimestampOperator),
     AdditionalData(JsonOperator),
+}
+
+impl Field for MultiplexingTagField {
+    const RELATION: &'static str = <MultiplexingTag as Relation>::NAME;
 }
 
 #[predicate_enum_wrapper]
@@ -71,6 +69,10 @@ impl From<SuspensionPoolPredicateInner> for Filter<SuspensionPoolPredicate> {
     fn from(value: SuspensionPoolPredicateInner) -> Self {
         Self::Leaf(value.into())
     }
+}
+
+impl Field for SuspensionPoolField {
+    const RELATION: &'static str = <SavedSuspensionPoolRecord as Relation>::NAME;
 }
 
 impl OrderField for SuspensionPoolField {

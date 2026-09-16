@@ -4,7 +4,6 @@ use cellnoor_types::chromium_run::{
     SavedGemWellWithSpecimensRecord,
 };
 use deadpool_postgres::tokio_postgres::Row;
-use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
@@ -20,14 +19,12 @@ use crate::{
 pub async fn index_chromium_runs_detailed(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(mut query): Json<ChromiumRunQuery>,
+    Json(query): Json<ChromiumRunQuery>,
 ) -> Result<Json<Vec<ChromiumRunDetailed>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_chromium_runs_detailed(&tx, &mut query)
-        .await
-        .map(Json)?;
+    let response = select_chromium_runs_detailed(&tx, &query).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -37,18 +34,17 @@ pub async fn index_chromium_runs_detailed(
 // Visibility required for tests
 pub(in super::super) async fn select_chromium_runs_detailed(
     tx: &db::Transaction<'_>,
-    query: &mut ChromiumRunQuery,
+    query: &ChromiumRunQuery,
 ) -> Result<Vec<ChromiumRunDetailed>, ErrorInner> {
     static SELECT_DETAILED_CHROMIUM_RUNS: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
 
-    let sql = SELECT_DETAILED_CHROMIUM_RUNS.finish_with_query(query);
-
-    let stream = tx.query_stream(sql).await?;
-    Ok(stream
-        .map(|row| row.map(map_detailed_row).unwrap())
-        .collect()
-        .await)
+    Ok(tx
+        .select_rows(&SELECT_DETAILED_CHROMIUM_RUNS, query)
+        .await?
+        .into_iter()
+        .map(map_detailed_row)
+        .collect())
 }
 
 fn map_detailed_row(row: Row) -> ChromiumRunDetailed {
@@ -117,8 +113,9 @@ mod test {
 
         assert_eq!(gem_wells.len(), 2);
 
-        // Ensure that the returned specimens are all different and that they have
-        // different multiplexing tags, so aggregate all the specimens
+        // Ensure that the returned specimens are all different and that they
+        // have different multiplexing tags, so aggregate all the
+        // specimens
         let mut specimens = gem_wells[0].specimens.clone();
         specimens.extend_from_slice(&gem_wells[1].specimens);
 
@@ -149,8 +146,8 @@ mod test {
 
         assert_eq!(gem_wells.len(), 2);
 
-        // Ensure that the two returned specimens are different and that they have
-        // different OCM barcode IDs
+        // Ensure that the two returned specimens are different and that they
+        // have different OCM barcode IDs
         let specimens = &gem_wells[0].specimens;
         assert_eq!(specimens.len(), 2);
         assert_ne!(
@@ -205,8 +202,9 @@ mod test {
 
         assert_ne!(specimens[0].ocm_barcode_id, specimens[1].ocm_barcode_id);
 
-        // The second GEM well is loaded with two different specimens, but the first
-        // specimen is the same as the two specimens loaded in the first GEM well
+        // The second GEM well is loaded with two different specimens, but the
+        // first specimen is the same as the two specimens loaded in the
+        // first GEM well
         assert_eq!(gem_wells[1].specimens[0], specimens[0]);
     }
 

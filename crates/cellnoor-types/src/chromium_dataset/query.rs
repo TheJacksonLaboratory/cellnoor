@@ -1,20 +1,18 @@
 use macro_attributes::{predicate_enum, predicate_enum_wrapper, sort_field_enum};
 
 use crate::{
+    Relation,
+    chromium_dataset::SavedChromiumDatasetRecord,
     library::LibraryPredicate,
     operator::{StringOperator, TimestampOperator, UuidOperator},
-    query::{ComplexQuery, OrderField, SimpleQuery, filter::Filter},
+    query::{ComplexQuery, Field, OrderField, SimpleQuery, filter::Filter},
     specimen::SpecimenPredicate,
     tenx_assay::TenxAssayPredicate,
 };
 
 #[predicate_enum]
 #[strum(prefix = "(chromium_dataset).")]
-#[strum_discriminants(
-    name(ChromiumDatasetField),
-    sort_field_enum,
-    strum(prefix = "(chromium_dataset).")
-)]
+#[strum_discriminants(name(ChromiumDatasetField), sort_field_enum)]
 pub enum ChromiumDatasetPredicateInner {
     Id(UuidOperator),
     Name(StringOperator),
@@ -62,6 +60,10 @@ impl From<ChromiumDatasetPredicateInner> for Filter<ChromiumDatasetPredicate> {
     fn from(value: ChromiumDatasetPredicateInner) -> Self {
         Self::Leaf(value.into())
     }
+}
+
+impl Field for ChromiumDatasetField {
+    const RELATION: &'static str = <SavedChromiumDatasetRecord as Relation>::NAME;
 }
 
 impl OrderField for ChromiumDatasetField {

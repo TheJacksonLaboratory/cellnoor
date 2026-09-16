@@ -7,6 +7,7 @@ pub use query::{
 use uuid::Uuid;
 
 use crate::{
+    Relation,
     cdna::{measurement::CdnaMeasurement, record::CdnaRecord},
     id::{Id, NoId},
     nucleic_acid_measurement::NewNucleicAcidMeasurement,
@@ -23,6 +24,10 @@ pub struct CdnaSimpleFields {
     pub readable_id: NonemptyString,
     pub prepared_at: Timestamp,
     pub additional_data: Option<serde_json::Value>,
+}
+
+impl Relation for CdnaSimpleFields {
+    const NAME: &'static str = "cdna";
 }
 
 mod record {
@@ -56,6 +61,10 @@ pub struct CdnaUpdate {
     pub record: CdnaSimpleFields,
     pub measurements: Option<Vec<NewNucleicAcidMeasurement>>,
     pub preparers: Option<Vec<Uuid>>,
+}
+
+impl<T> Relation for CdnaRecord<T> {
+    const NAME: &'static str = "cdna";
 }
 
 pub type NewCdnaRecord = CdnaRecord<NoId>;

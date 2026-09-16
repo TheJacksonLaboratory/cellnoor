@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::{
         IdParam,
@@ -50,7 +50,7 @@ async fn update_person_by_id(
     } = update;
     validate_email(email.as_ref())?;
 
-    db::update(tx, "person", id, update).await?;
+    tx.update(id, update).await?;
     set_is_staff(tx, id, simple.is_staff).await?;
     grant_permissions(tx, id, permissions_to_grant).await?;
     revoke_permissions(tx, id, permissions_to_revoke).await?;
@@ -58,8 +58,10 @@ async fn update_person_by_id(
     select_person_by_id(tx, id).await
 }
 
-impl AsFieldValuePairs<PersonField, 4> for PersonUpdate {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, PersonField, 4> {
+impl Insert for PersonUpdate {
+    type Field = PersonField;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             simple,
             email,

@@ -50,7 +50,7 @@ async fn update_chromium_dataset_by_id(
 ) -> Result<ChromiumDatasetDetailed, ErrorInner> {
     let old_dataset_name = fetch_dataset_name(tx, id).await?;
 
-    db::update(tx, "chromium_dataset", id, update).await?;
+    tx.update(id, update).await?;
     let updated = select_chromium_dataset_by_id(tx, files_url, id).await?;
 
     if old_dataset_name != updated.record.name {
@@ -99,8 +99,8 @@ async fn fetch_dataset_name(
 
     dataset_id: Uuid,
 ) -> Result<NonemptyString, ErrorInner> {
-    // In theory, we could just write a query that gets only the name, but it might
-    // be wise to reuse code we have already written
+    // In theory, we could just write a query that gets only the name, but it
+    // might be wise to reuse code we have already written
     let ds = select_chromium_dataset_by_id(tx, "", dataset_id).await?;
 
     Ok(ds.record.name)
@@ -127,7 +127,7 @@ mod tests {
         let id = *ds.record.id;
 
         let update = ChromiumDatasetUpdate {
-            id: NoId {},
+            id: NoId,
             name: "newname".to_nonempty_string(),
             delivered_at: ds.record.delivered_at,
         };

@@ -2,6 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use cellnoor_types::chromium_dataset::SavedChromiumDatasetRecord;
 use uuid::Uuid;
 
 use crate::{
@@ -31,5 +32,5 @@ async fn delete_chromium_dataset_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<(), ErrorInner> {
-    db::delete_by_id(tx, "chromium_dataset", id).await
+    tx.delete::<SavedChromiumDatasetRecord>(id).await
 }

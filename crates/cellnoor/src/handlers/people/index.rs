@@ -1,14 +1,13 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
-    person::{Person, PersonLinks, PersonPredicate, PersonQuery, SavedPersonRecord},
+    person::{Person, PersonLinks, PersonQuery, SavedPersonRecord},
 };
-use futures::StreamExt;
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, FilterableSqlBuilder},
+    db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -16,12 +15,12 @@ use crate::{
 pub async fn index_people(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(mut query): Json<PersonQuery>,
+    Json(query): Json<PersonQuery>,
 ) -> Result<Json<Vec<Person>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_people(&tx, &mut query).await.map(Json)?;
+    let response = select_people(&tx, &query).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -30,18 +29,17 @@ pub async fn index_people(
 
 pub(in super::super) async fn select_people(
     tx: &db::Transaction<'_>,
-    query: &mut PersonQuery,
+    query: &PersonQuery,
 ) -> Result<Vec<Person>, ErrorInner> {
     static SELECT_PEOPLE: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select.sql"));
 
-    let sql = SELECT_PEOPLE.finish_with_query(query);
-
     Ok(tx
-        .query_stream_into(sql)
-        .await
-        .map(async |stream| stream.map(person_from_record).collect().await)?
-        .await)
+        .select(&SELECT_PEOPLE, query)
+        .await?
+        .into_iter()
+        .map(person_from_record)
+        .collect())
 }
 
 fn person_links(id: Uuid) -> PersonLinks {
@@ -57,18 +55,6 @@ fn person_from_record(record: SavedPersonRecord) -> Person {
     Person {
         links: person_links(record.id),
         record,
-    }
-}
-
-impl AsPredicate for PersonPredicate {
-    fn as_predicate(&self) -> (&str, (&'static str, &(dyn postgres_types::ToSql + Sync))) {
-        let sql = match self {
-            Self::Id(u) | Self::InstitutionId(u) => u.as_sql_operator_and_value(),
-            Self::Name(s) | Self::Email(s) | Self::Orcid(s) => s.as_sql_operator_and_value(),
-            Self::IsStaff(b) => b.as_sql_operator_and_value(),
-        };
-
-        (self.field_name(), sql)
     }
 }
 
@@ -100,7 +86,7 @@ mod test {
 
         let selected_records = select_people(
             &tx,
-            &mut PersonQuery::from_filter(PersonPredicate::Name(StringOperator::Like(
+            &PersonQuery::from_filter(PersonPredicate::Name(StringOperator::Like(
                 inserted.record.name.into(),
             ))),
         )

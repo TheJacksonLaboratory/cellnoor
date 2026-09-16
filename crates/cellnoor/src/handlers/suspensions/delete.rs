@@ -2,6 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use cellnoor_types::suspension::SavedSuspensionRecord;
 use uuid::Uuid;
 
 use crate::{
@@ -28,5 +29,5 @@ pub async fn delete_suspension(
 }
 
 async fn delete_suspension_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    db::delete_by_id(tx, "suspension", id).await
+    tx.delete::<SavedSuspensionRecord>(id).await
 }

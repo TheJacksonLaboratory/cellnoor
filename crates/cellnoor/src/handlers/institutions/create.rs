@@ -3,7 +3,7 @@ use cellnoor_types::institution::{Institution, InstitutionField, NewInstitution}
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::institutions::show::select_institution_by_id,
     state::AppState,
@@ -29,13 +29,15 @@ async fn insert_institution(
     tx: &db::Transaction<'_>,
     new_record: &NewInstitution,
 ) -> Result<Institution, ErrorInner> {
-    let id = db::insert_into(tx, "institution", new_record).await?;
+    let id = tx.insert_returning_id(new_record).await?;
 
     select_institution_by_id(tx, id).await
 }
 
-impl AsFieldValuePairs<InstitutionField, 2> for NewInstitution {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, InstitutionField, 2> {
+impl Insert for NewInstitution {
+    type Field = InstitutionField;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         use InstitutionField::*;
         let Self {
             id: _,
@@ -43,7 +45,7 @@ impl AsFieldValuePairs<InstitutionField, 2> for NewInstitution {
             microsoft_entra_tenant_id,
         } = self;
 
-        [
+        vec![
             (Name, name),
             (MicrosoftEntraTenantId, microsoft_entra_tenant_id),
         ]
@@ -73,7 +75,7 @@ pub mod test {
         F: FnMut(&mut NewInstitution),
     {
         let mut new = NewInstitution {
-            id: NoId {},
+            id: NoId,
             name: Uuid::new_v4().to_string().to_nonempty_string(),
             microsoft_entra_tenant_id: Uuid::new_v4(),
         };

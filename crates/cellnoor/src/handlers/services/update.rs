@@ -45,7 +45,7 @@ pub(in super::super) async fn update_service_by_id(
         permissions_to_revoke,
     } = update;
 
-    db::update(tx, "service", id, record).await?;
+    tx.update(id, record).await?;
     set_is_staff(tx, id, record.is_staff).await?;
     grant_permissions(tx, id, permissions_to_grant).await?;
     revoke_permissions(tx, id, permissions_to_revoke).await?;

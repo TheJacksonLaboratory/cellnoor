@@ -2,6 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use cellnoor_types::institution::SavedInstitutionRecord;
 use uuid::Uuid;
 
 use crate::{
@@ -28,7 +29,7 @@ pub async fn delete_institution(
 }
 
 async fn delete_institution_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    db::delete_by_id(tx, "institution", id).await
+    tx.delete::<SavedInstitutionRecord>(id).await
 }
 
 #[cfg(test)]

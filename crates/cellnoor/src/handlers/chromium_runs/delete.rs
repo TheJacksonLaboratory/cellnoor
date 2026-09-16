@@ -2,6 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use cellnoor_types::chromium_run::SavedChromiumRunRecord;
 use uuid::Uuid;
 
 use crate::{
@@ -28,7 +29,7 @@ pub async fn delete_chromium_run(
 }
 
 async fn delete_chromium_run_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    db::delete_by_id(tx, "chromium_run", id).await
+    tx.delete::<SavedChromiumRunRecord>(id).await
 }
 
 #[cfg(test)]

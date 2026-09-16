@@ -3,12 +3,11 @@ use cellnoor_types::{
     api_key::{ApiKeyPredicate, ApiKeyQuery, SavedApiKeyRecord},
     operator::UuidOperator,
 };
-use futures::StreamExt;
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsPredicate, FilterableSqlBuilder, select_one},
+    db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -16,12 +15,12 @@ use crate::{
 pub async fn index_api_keys(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(mut query): Json<ApiKeyQuery>,
+    Json(query): Json<ApiKeyQuery>,
 ) -> Result<Json<Vec<SavedApiKeyRecord>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_api_keys(&tx, &mut query).await.map(Json)?;
+    let response = select_api_keys(&tx, &query).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -30,40 +29,20 @@ pub async fn index_api_keys(
 
 pub(in super::super) async fn select_api_keys(
     tx: &db::Transaction<'_>,
-    query: &mut ApiKeyQuery,
+    query: &ApiKeyQuery,
 ) -> Result<Vec<SavedApiKeyRecord>, ErrorInner> {
     static SELECT_API_KEYS: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select.sql"));
 
-    let sql = SELECT_API_KEYS.finish_with_query(query);
-
-    let stream = tx.query_stream_into(sql).await?;
-    Ok(stream.collect().await)
+    tx.select(&SELECT_API_KEYS, query).await
 }
 
 pub(super) async fn select_api_key_record_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<SavedApiKeyRecord, ErrorInner> {
-    select_one(
-        tx,
-        ApiKeyPredicate::Id(UuidOperator::Eq(id)),
-        select_api_keys,
-    )
-    .await
-}
-
-impl AsPredicate for ApiKeyPredicate {
-    fn as_predicate(&self) -> (&str, (&'static str, &(dyn postgres_types::ToSql + Sync))) {
-        let sql = match self {
-            Self::Id(u) | Self::OwnerId(u) => u.as_sql_operator_and_value(),
-            Self::OwnerIsStaff(b) => b.as_sql_operator_and_value(),
-            Self::Description(s) => s.as_sql_operator_and_value(),
-            Self::CreatedAt(t) | Self::ExpiresAt(t) => t.as_sql_operator_and_value(),
-        };
-
-        (self.field_name(), sql)
-    }
+    tx.select_one(ApiKeyPredicate::Id(UuidOperator::Eq(id)), select_api_keys)
+        .await
 }
 
 #[cfg(test)]
@@ -87,9 +66,9 @@ mod test {
 
         let (_, inserted) = insert_test_api_key(&tx, |_| ()).await.unwrap();
 
-        let mut query =
+        let query =
             ApiKeyQuery::from_filter(ApiKeyPredicate::Id(UuidOperator::Eq(inserted.record.id)));
-        let selected = select_api_keys(&tx, &mut query).await.unwrap();
+        let selected = select_api_keys(&tx, &query).await.unwrap();
 
         assert_eq!(selected.len(), 1);
         assert_eq!(selected[0].id, inserted.record.id);

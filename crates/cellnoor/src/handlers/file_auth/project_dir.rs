@@ -52,7 +52,6 @@ async fn project_exists(tx: db::Transaction<'_>, project_name: &str) -> Result<b
     static SELECT_DATASET: SqlBuilder =
         SqlBuilder::new("select exists (select 1 from project where name = $1)");
 
-    Ok(tx
-        .query_one_into(&SELECT_DATASET.finish_with_params(vec![&project_name]))
-        .await?)
+    tx.query_one_into(&SELECT_DATASET.finish_with_params(vec![&project_name]))
+        .await
 }

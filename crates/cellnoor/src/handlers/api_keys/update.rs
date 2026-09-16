@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::{IdParam, api_keys::index::select_api_key_record_by_id},
     state::AppState,
@@ -34,19 +34,21 @@ pub(in super::super) async fn update_api_key_by_id(
     id: Uuid,
     update: &ApiKeyUpdate,
 ) -> Result<SavedApiKeyRecord, ErrorInner> {
-    db::update(tx, "api_key", id, update).await?;
+    tx.update(id, update).await?;
 
     select_api_key_record_by_id(tx, id).await
 }
 
-impl AsFieldValuePairs<&'static str, 2> for ApiKeyUpdate {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 2> {
+impl Insert for ApiKeyUpdate {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             description,
             expires_at,
         } = self;
 
-        [("description", description), ("expires_at", expires_at)]
+        vec![("description", description), ("expires_at", expires_at)]
     }
 }
 

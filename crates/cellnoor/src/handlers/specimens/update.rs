@@ -12,7 +12,7 @@ use crate::{
     handlers::{
         IdParam,
         specimens::{
-            measurements::create::insert_specimen_measurement, show::select_specimen_by_id,
+            measurements::create::insert_specimen_measurements, show::select_specimen_by_id,
             split_new_specimen_for_insertion::split_new_specimen_for_insertion,
         },
     },
@@ -42,14 +42,9 @@ async fn update_specimen_by_id(
 ) -> Result<SpecimenDetailed, ErrorInner> {
     let (record, measurements) = split_new_specimen_for_insertion(record);
 
-    db::update(tx, "specimen", id, &record).await?;
+    tx.update(id, &record).await?;
 
-    futures::future::try_join_all(
-        measurements
-            .iter()
-            .map(|m| insert_specimen_measurement(tx, id, m)),
-    )
-    .await?;
+    insert_specimen_measurements(tx, id, &measurements).await?;
 
     select_specimen_by_id(tx, id).await
 }

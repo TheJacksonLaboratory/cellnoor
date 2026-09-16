@@ -70,7 +70,7 @@ async fn user_can_only_see_accessible_services(
 ) {
     let tx = client.begin().await.unwrap();
 
-    let services = select_services(&tx, &mut ServiceQuery::default())
+    let services = select_services(&tx, &ServiceQuery::default())
         .await
         .unwrap();
 
@@ -82,7 +82,7 @@ async fn user_cannot_see_inaccessible_services(client: &mut db::Client, service_
 
     let inaccessible = select_services(
         &tx,
-        &mut ServicePredicate::Id(UuidOperator::Eq(service_id)).into(),
+        &ServicePredicate::Id(UuidOperator::Eq(service_id)).into(),
     )
     .await
     .unwrap();
@@ -115,7 +115,8 @@ async fn row_level_security_for_services() {
     user_cannot_update_unowned_service(&mut user1_client, user2_svc_acct.id).await;
     user_cannot_grant_access_to_unowned_service(&mut user1_client, user2_svc_acct.id).await;
     user_cannot_see_inaccessible_services(&mut user1_client, user2_svc_acct.id).await;
-    user_can_only_see_accessible_services(&mut user1_client, &[user1_svc_acct.clone()]).await;
+    user_can_only_see_accessible_services(&mut user1_client, std::slice::from_ref(&user1_svc_acct))
+        .await;
 
     // Now user1 grants access to user2
     let tx = user1_client.begin().await.unwrap();

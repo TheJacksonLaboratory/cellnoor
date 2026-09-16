@@ -1,3 +1,4 @@
+use cellnoor_types::Relation;
 pub use dual::create::create_dual_index_sets;
 #[cfg(test)]
 pub use dual::create::tests::DUAL_INDEX_SET_NAME;
@@ -8,7 +9,7 @@ pub use single::create::create_single_index_sets;
 pub use single::create::tests::insert_test_single_index_set;
 
 use crate::{
-    db::{self, AsFieldValuePairs, insert_into_no_returning},
+    db::{self, FieldValues, Insert},
     error::ErrorInner,
     handlers::index_sets::index_set_name::IndexKitName,
 };
@@ -99,9 +100,15 @@ struct NewIndexKit<'a> {
     name: IndexKitName<'a>,
 }
 
-impl AsFieldValuePairs<&'static str, 1> for NewIndexKit<'_> {
-    fn as_field_value_pairs(&self) -> db::FieldValuePairs<'_, &'static str, 1> {
-        [("name", &self.name)]
+impl Relation for NewIndexKit<'_> {
+    const NAME: &'static str = "index_kit";
+}
+
+impl Insert for NewIndexKit<'_> {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
+        vec![("name", &self.name)]
     }
 }
 
@@ -109,7 +116,7 @@ async fn insert_index_kit(
     tx: &db::Transaction<'_>,
     index_kit: &NewIndexKit<'_>,
 ) -> Result<(), ErrorInner> {
-    insert_into_no_returning(tx, "index_kit", index_kit).await?;
+    tx.insert(index_kit).await?;
 
     Ok(())
 }

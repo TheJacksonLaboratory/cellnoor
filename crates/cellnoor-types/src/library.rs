@@ -6,6 +6,7 @@ pub use query::{
 use uuid::Uuid;
 
 use crate::{
+    Relation,
     id::{Id, NoId},
     library::{measurement::LibraryMeasurement, record::LibraryRecord},
     nucleic_acid_measurement::NewNucleicAcidMeasurement,
@@ -39,6 +40,10 @@ mod record {
         pub prepared_at: Timestamp,
         pub additional_data: Option<serde_json::Value>,
     }
+}
+
+impl<T> Relation for LibraryRecord<T> {
+    const NAME: &'static str = "library";
 }
 
 pub type NewLibraryRecord = LibraryRecord<NoId>;

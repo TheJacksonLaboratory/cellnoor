@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, select_one},
+    db,
     error::{Error, ErrorInner},
     handlers::{IdParam, suspensions::index_detailed::select_suspensions_detailed},
     state::AppState,
@@ -35,8 +35,7 @@ pub(super) async fn select_suspension_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<SuspensionDetailed, ErrorInner> {
-    select_one(
-        tx,
+    tx.select_one(
         SuspensionPredicateInner::Id(UuidOperator::Eq(id)).into(),
         select_suspensions_detailed,
     )

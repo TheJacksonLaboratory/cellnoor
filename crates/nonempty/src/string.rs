@@ -25,9 +25,9 @@ impl std::fmt::Debug for NonemptyString {
 }
 
 impl NonemptyString {
-    pub fn new(s: String) -> Result<Self, Error<String>> {
+    pub fn new(s: String) -> Result<Self, Error> {
         if s.is_empty() {
-            return Err(Error(s));
+            return Err(Error);
         }
 
         Ok(Self(s))
@@ -47,7 +47,7 @@ impl From<NonemptyString> for String {
 }
 
 impl TryFrom<String> for NonemptyString {
-    type Error = Error<String>;
+    type Error = Error;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         Self::new(value)

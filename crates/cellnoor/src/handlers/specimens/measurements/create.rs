@@ -2,12 +2,12 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::specimen::measurement::NewSpecimenMeasurement;
+use cellnoor_types::{Relation, specimen::measurement::NewSpecimenMeasurement};
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::IdParam,
     state::AppState,
@@ -23,7 +23,7 @@ pub async fn create_specimen_measurement(
 
     let tx = client.begin().await?;
 
-    let response = insert_specimen_measurement(&tx, id, &record)
+    let response = insert_specimen_measurements(&tx, id, std::slice::from_ref(&record))
         .await
         .map(Json)?;
 
@@ -32,28 +32,46 @@ pub async fn create_specimen_measurement(
     Ok(response)
 }
 
-pub(in super::super) async fn insert_specimen_measurement(
+pub(in super::super) async fn insert_specimen_measurements(
     tx: &db::Transaction<'_>,
     specimen_id: Uuid,
-    record: &NewSpecimenMeasurement,
+    records: &[NewSpecimenMeasurement],
 ) -> Result<(), ErrorInner> {
-    db::insert_into_no_returning(tx, "specimen_measurement", &(specimen_id, record)).await?;
+    let rows: Vec<_> = records
+        .iter()
+        .map(|record| NewSpecimenMeasurementRow {
+            specimen_id,
+            record,
+        })
+        .collect();
 
-    Ok(())
+    tx.insert_many(&rows).await
 }
 
-impl AsFieldValuePairs<&'static str, 4> for (Uuid, &NewSpecimenMeasurement) {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 4> {
-        let (
-            specimen_id,
-            NewSpecimenMeasurement {
-                measured_by,
-                measured_at,
-                data,
-            },
-        ) = self;
+struct NewSpecimenMeasurementRow<'a> {
+    specimen_id: Uuid,
+    record: &'a NewSpecimenMeasurement,
+}
 
-        [
+impl Relation for NewSpecimenMeasurementRow<'_> {
+    const NAME: &'static str = "specimen_measurement";
+}
+
+impl Insert for NewSpecimenMeasurementRow<'_> {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
+        let Self {
+            specimen_id,
+            record:
+                NewSpecimenMeasurement {
+                    measured_by,
+                    measured_at,
+                    data,
+                },
+        } = self;
+
+        vec![
             ("specimen_id", specimen_id),
             ("measured_by", measured_by),
             ("measured_at", measured_at),

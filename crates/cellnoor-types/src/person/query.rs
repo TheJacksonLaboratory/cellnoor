@@ -1,13 +1,15 @@
 use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
+    Relation,
     operator::{BoolOperator, StringOperator, UuidOperator},
-    query::{ComplexQuery, OrderField, SimpleQuery},
+    person::SavedPersonRecord,
+    query::{ComplexQuery, Field, OrderField, SimpleQuery},
 };
 
 #[predicate_enum]
 #[strum(prefix = "(person_public).")]
-#[strum_discriminants(name(PersonField), sort_field_enum, strum(prefix = "(person_public)."))]
+#[strum_discriminants(name(PersonField), sort_field_enum)]
 pub enum PersonPredicate {
     Id(UuidOperator),
     Name(StringOperator),
@@ -15,6 +17,10 @@ pub enum PersonPredicate {
     InstitutionId(UuidOperator),
     IsStaff(BoolOperator),
     Orcid(StringOperator),
+}
+
+impl Field for PersonField {
+    const RELATION: &'static str = <SavedPersonRecord as Relation>::NAME;
 }
 
 impl OrderField for PersonField {

@@ -58,10 +58,10 @@ fn may(resource: Resource, actions: &[Action]) -> Vec<Permission> {
 async fn assert_is_ok<F, Pred, Order, Ret>(tx: &db::Transaction<'_>, select_fn: F)
 where
     Order: OrderField,
-    F: AsyncFn(&db::Transaction, &mut ComplexQuery<Pred, Order>) -> Result<Ret, ErrorInner>,
+    F: AsyncFn(&db::Transaction, &ComplexQuery<Pred, Order>) -> Result<Ret, ErrorInner>,
     Ret: Debug,
 {
-    assert_matches!(select_fn(tx, &mut ComplexQuery::default()).await, Ok(_));
+    assert_matches!(select_fn(tx, &ComplexQuery::default()).await, Ok(_));
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -126,7 +126,7 @@ async fn staff_can_see_projects_they_are_not_a_member_of() {
     let mut client = db_client_as_user(staff_id).await;
     let tx = client.begin().await.unwrap();
 
-    let visible = select_projects_detailed(&tx, &mut ProjectQuery::default())
+    let visible = select_projects_detailed(&tx, &ProjectQuery::default())
         .await
         .unwrap();
 

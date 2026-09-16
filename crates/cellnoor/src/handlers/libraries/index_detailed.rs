@@ -4,7 +4,6 @@ use cellnoor_types::{
     suspension_pool::SavedTaggedSpecimenRecord,
 };
 use deadpool_postgres::tokio_postgres::Row;
-use futures::StreamExt;
 
 use crate::{
     auth::AuthUser,
@@ -20,12 +19,12 @@ use crate::{
 pub async fn index_libraries_detailed(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(mut query): Json<LibraryQuery>,
+    Json(query): Json<LibraryQuery>,
 ) -> Result<Json<Vec<LibraryDetailed>>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = select_libraries_detailed(&tx, &mut query).await.map(Json)?;
+    let response = select_libraries_detailed(&tx, &query).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -35,18 +34,17 @@ pub async fn index_libraries_detailed(
 // Visibility required for tests
 pub(in super::super) async fn select_libraries_detailed(
     tx: &db::Transaction<'_>,
-    query: &mut LibraryQuery,
+    query: &LibraryQuery,
 ) -> Result<Vec<LibraryDetailed>, ErrorInner> {
     static SELECT_DETAILED_LIBRARIES: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
 
-    let sql = SELECT_DETAILED_LIBRARIES.finish_with_query(query);
-
-    let stream = tx.query_stream(sql).await?;
-    Ok(stream
-        .map(|row| row.map(map_detailed_row).unwrap())
-        .collect()
-        .await)
+    Ok(tx
+        .select_rows(&SELECT_DETAILED_LIBRARIES, query)
+        .await?
+        .into_iter()
+        .map(map_detailed_row)
+        .collect())
 }
 
 fn map_detailed_row(row: Row) -> LibraryDetailed {

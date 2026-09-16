@@ -1,9 +1,23 @@
--- Staff see every project, and so everything descending from one. Everyone else sees only the projects they were
--- given access to
-create function current_user_has_access_to_project(project_id_to_check uuid) returns boolean language sql stable as $$
+-- Staff see every project, and so everything descending from one. Everyone else sees only the projects they were given access to.
+--
+-- Both of these are `security definer`, which is what stops them recursing. The policy on `project_access` calls
+-- them, and an invoker-side read of `project_access` (or of `project`, whose own policy reads `project_access`) would
+-- re-enter that policy and keep going until PostgreSQL runs out of stack. Running as the owner takes the read out
+-- from under row-level security, and each function only ever answers a yes-or-no question about the current user
+create function current_user_has_access_to_project(
+    project_id_to_check uuid
+) returns boolean language sql stable security definer as $$
     select current_user_is_staff() or exists (
         select 1 from project_access where project_id = project_id_to_check and principal_id = app_user_id()
     )
+$$;
+
+-- A project's creator holds no access row at the moment the project is made, so this is how they are allowed to hand
+-- the first one out
+create function current_user_created_project(
+    project_id_to_check uuid
+) returns boolean language sql stable security definer as $$
+    select exists (select 1 from project where id = project_id_to_check and created_by = app_user_id())
 $$;
 
 -- A permission is granted on a resource, which is a group of tables. Reads are open except for projects and
@@ -98,5 +112,8 @@ $$;
 
 drop table resource_table;
 
--- `created_by` defaults to the current user, and this stops anyone from creating a project as someone else
 create policy creator_is_current_user on project as restrictive for insert with check (created_by = app_user_id());
+
+create policy access_is_granted_by_members on project_access as restrictive for all using (
+    current_user_has_access_to_project(project_id) or current_user_created_project(project_id)
+);

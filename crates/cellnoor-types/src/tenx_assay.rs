@@ -3,7 +3,7 @@ use nonempty::NonemptyString;
 pub use query::{SampleMultiplexingOperator, TenxAssayField, TenxAssayPredicate};
 use uuid::Uuid;
 
-use crate::cdna::creation::LibraryType;
+use crate::{Relation, cdna::creation::LibraryType};
 
 pub mod creation;
 mod query;
@@ -29,4 +29,8 @@ pub struct TenxAssay {
     pub protocol_url: NonemptyString,
     pub chromium_chip: Option<NonemptyString>,
     pub cmdlines: Option<Vec<NonemptyString>>,
+}
+
+impl Relation for TenxAssay {
+    const NAME: &'static str = "tenx_assay";
 }

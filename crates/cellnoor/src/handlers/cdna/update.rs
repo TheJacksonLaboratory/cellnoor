@@ -12,7 +12,7 @@ use crate::{
     handlers::{
         IdParam,
         cdna::{
-            create::insert_cdna_preparers, measurements::create::insert_cdna_measurement,
+            create::insert_cdna_preparers, measurements::create::insert_cdna_measurements,
             show::select_cdna_by_id,
         },
     },
@@ -44,7 +44,7 @@ async fn update_cdna_by_id(
         preparers,
     }: &CdnaUpdate,
 ) -> Result<CdnaDetailed, ErrorInner> {
-    db::update(tx, "cdna", id, record).await?;
+    tx.update(id, record).await?;
 
     let preparer_insertions = async {
         if let Some(preparers) = preparers {
@@ -54,12 +54,8 @@ async fn update_cdna_by_id(
         }
     };
 
-    let measurement_insertions = futures::future::try_join_all(
-        measurements
-            .iter()
-            .flatten()
-            .map(|m| insert_cdna_measurement(tx, id, m)),
-    );
+    let measurement_insertions =
+        insert_cdna_measurements(tx, id, measurements.as_deref().unwrap_or_default());
 
     tokio::try_join!(preparer_insertions, measurement_insertions)?;
 

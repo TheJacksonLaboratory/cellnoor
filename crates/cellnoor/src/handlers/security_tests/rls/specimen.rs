@@ -19,9 +19,9 @@ use crate::{
 };
 
 async fn insert_accessible_specimen(tx: &db::Transaction<'_>) -> (NewSpecimen, SpecimenDetailed) {
-    // The underlying `insert_test_project` adds one person to the project, so we
-    // don't need to do anything extra here
-    insert_test_specimen_and_project(&tx, |_| ()).await.unwrap()
+    // The underlying `insert_test_project` adds one person to the project, so
+    // we don't need to do anything extra here
+    insert_test_specimen_and_project(tx, |_| ()).await.unwrap()
 }
 
 async fn insert_inaccessible_project(tx: &db::Transaction<'_>) -> (NewProject, ProjectDetailed) {
@@ -35,7 +35,7 @@ pub async fn insert_inaccessible_specimen(
 ) -> (NewSpecimen, SpecimenDetailed) {
     let (_, project) = insert_inaccessible_project(tx).await;
 
-    insert_test_specimen_and_project(&tx, |s| s.project_id = project.record.project.id)
+    insert_test_specimen_and_project(tx, |s| s.project_id = project.record.project.id)
         .await
         .unwrap()
 }
@@ -46,7 +46,7 @@ pub async fn get_user_id_from_specimen(
 ) -> Uuid {
     let projects = select_projects_detailed(
         tx,
-        &mut ProjectPredicate::Id(UuidOperator::Eq(specimen.record.project_id)).into(),
+        &ProjectPredicate::Id(UuidOperator::Eq(specimen.record.project_id)).into(),
     )
     .await
     .unwrap();
@@ -58,7 +58,7 @@ async fn test_user_can_only_see_accessible_specimen(
     tx: &db::Transaction<'_>,
     accessible_specimen: SpecimenDetailed,
 ) {
-    let specimens = select_specimens_detailed(&tx, &mut SpecimenQuery::default())
+    let specimens = select_specimens_detailed(tx, &SpecimenQuery::default())
         .await
         .unwrap();
 
@@ -71,8 +71,8 @@ async fn test_user_cannot_see_inaccessible_specimen(
 ) {
     // Check that the inaccessible project causes a `ResourceNotFound`
     let res = select_specimens_detailed(
-        &tx,
-        &mut SpecimenPredicate::Id(UuidOperator::Eq(inaccessible_specimen_id)).into(),
+        tx,
+        &SpecimenPredicate::Id(UuidOperator::Eq(inaccessible_specimen_id)).into(),
     )
     .await
     .unwrap();
@@ -92,7 +92,8 @@ async fn row_level_security_for_specimens() {
     );
     let user_id = get_user_id_from_specimen(&tx, &accessible_specimen).await;
 
-    // Commit this transaction so the change persists for the next part of the test
+    // Commit this transaction so the change persists for the next part of the
+    // test
     tx.commit().await.unwrap();
 
     // Log in as the new user

@@ -1,7 +1,4 @@
-use std::{
-    fmt::Debug,
-    ops::{Index, IndexMut},
-};
+use std::{fmt::Debug, ops::Index};
 
 #[cfg(feature = "postgres-types")]
 use bytes::BytesMut;
@@ -25,12 +22,6 @@ impl<T, const N: usize> Index<usize> for NonemptyBoundedVec<T, N> {
     }
 }
 
-impl<T, const N: usize> IndexMut<usize> for NonemptyBoundedVec<T, N> {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        self.0.index_mut(index)
-    }
-}
-
 impl<T, const N: usize> From<T> for NonemptyBoundedVec<T, N> {
     fn from(value: T) -> Self {
         Self(vec![value])
@@ -38,13 +29,13 @@ impl<T, const N: usize> From<T> for NonemptyBoundedVec<T, N> {
 }
 
 impl<T, const N: usize> NonemptyBoundedVec<T, N> {
-    pub fn new(v: Vec<T>) -> Result<Self, Error<Vec<T>>> {
+    pub fn new(v: Vec<T>) -> Result<Self, Error> {
         if v.is_empty() {
-            return Err(Error(v));
+            return Err(Error);
         }
 
         if v.len() > N {
-            return Err(Error(v));
+            return Err(Error);
         }
 
         Ok(Self(v))
@@ -94,9 +85,9 @@ impl<T, const N: usize> From<NonemptyBoundedVec<T, N>> for Vec<T> {
 }
 
 impl<T, const N: usize> TryFrom<Vec<T>> for NonemptyBoundedVec<T, N> {
-    type Error = Error<Vec<T>>;
+    type Error = Error;
 
-    fn try_from(value: Vec<T>) -> Result<Self, Error<Vec<T>>> {
+    fn try_from(value: Vec<T>) -> Result<Self, Error> {
         Self::new(value)
     }
 }
@@ -131,22 +122,16 @@ pub type NonemptyVec<T> = NonemptyBoundedVec<T, { usize::MAX }>;
 
 #[cfg(test)]
 mod tests {
-    use pretty_assertions::assert_eq;
-
     use super::NonemptyBoundedVec;
 
     #[test]
     fn empty_vec() {
-        let err = NonemptyBoundedVec::<bool, 1>::new(vec![]).unwrap_err();
-
-        assert_eq!(err.0, Vec::<bool>::new());
+        assert!(NonemptyBoundedVec::<bool, 1>::new(vec![]).is_err());
     }
 
     #[test]
     fn long_vec() {
-        let err = NonemptyBoundedVec::<_, 1>::new(vec![false, false]).unwrap_err();
-
-        assert_eq!(err.0, vec![false, false]);
+        assert!(NonemptyBoundedVec::<_, 1>::new(vec![false, false]).is_err());
     }
 
     #[test]

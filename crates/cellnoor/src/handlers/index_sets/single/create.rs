@@ -1,8 +1,9 @@
 use axum::{Json, extract::State};
+use cellnoor_types::Relation;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs, insert_into_no_returning},
+    db::{self, FieldValues, Insert},
     error::{Error, ErrorInner},
     handlers::index_sets::{
         NewIndexKit,
@@ -85,7 +86,7 @@ async fn insert_single_index_set(
     tx: &db::Transaction<'_>,
     record: NewSingleIndexSetRecord<'_>,
 ) -> Result<(), ErrorInner> {
-    insert_into_no_returning(tx, "single_index_set", &record).await?;
+    tx.insert(&record).await?;
 
     Ok(())
 }
@@ -97,8 +98,14 @@ struct NewSingleIndexSetRecord<'a> {
     sequences: [DnaSequence<'a>; 4],
 }
 
-impl<'a> AsFieldValuePairs<&'static str, 4> for NewSingleIndexSetRecord<'a> {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 4> {
+impl<'a> Relation for NewSingleIndexSetRecord<'a> {
+    const NAME: &'static str = "single_index_set";
+}
+
+impl<'a> Insert for NewSingleIndexSetRecord<'a> {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             name,
             kit,
@@ -106,7 +113,7 @@ impl<'a> AsFieldValuePairs<&'static str, 4> for NewSingleIndexSetRecord<'a> {
             sequences,
         } = self;
 
-        [
+        vec![
             ("name", name),
             ("kit", kit),
             ("well", well),

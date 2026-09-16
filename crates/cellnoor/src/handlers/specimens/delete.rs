@@ -2,6 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
+use cellnoor_types::specimen::SavedSpecimenRecord;
 use uuid::Uuid;
 
 use crate::{
@@ -28,5 +29,5 @@ pub async fn delete_specimen(
 }
 
 async fn delete_specimen_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    db::delete_by_id(tx, "specimen", id).await
+    tx.delete::<SavedSpecimenRecord>(id).await
 }

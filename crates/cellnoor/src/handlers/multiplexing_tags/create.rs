@@ -4,7 +4,7 @@ use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
-    db::{self, AsFieldValuePairs, FieldValuePairs, SqlBuilder},
+    db::{self, SqlBuilder},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -34,17 +34,8 @@ async fn insert_multiplexing_tag(
 
     let params: Vec<&(dyn ToSql + Sync)> = vec![tag_id, type_];
 
-    Ok(tx
-        .query_one_into(&INSERT_MULTIPLEXING_TAG.finish_with_params(params))
-        .await?)
-}
-
-impl AsFieldValuePairs<&'static str, 2> for NewMultiplexingTag {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 2> {
-        let Self { tag_id, type_ } = self;
-
-        [("tag_id", tag_id), ("type", type_)]
-    }
+    tx.query_one_into(&INSERT_MULTIPLEXING_TAG.finish_with_params(params))
+        .await
 }
 
 #[cfg(test)]
