@@ -1,8 +1,9 @@
 use axum::{Json, extract::State};
-use cellnoor_types::api_key::{ApiKey, NewApiKey, PersonId, ServiceId};
+use cellnoor_types::api_key::{ApiKey, NewApiKey};
 use jiff::Timestamp;
 use nonempty::NonemptyString;
 use rand::{RngExt, distr::Alphanumeric};
+use uuid::Uuid;
 
 use crate::{
     auth::{AuthUser, hash_api_key},
@@ -34,25 +35,16 @@ async fn insert_api_key(
     tx: &db::Transaction<'_>,
     NewApiKey {
         description,
-        service_id,
+        owner_id,
         expires_at,
     }: &NewApiKey,
 ) -> Result<ApiKey, ErrorInner> {
     let secret = generate_secret();
 
-    // Note: we don't use tx.user().service_id() because firstly, it would be
-    // impossible for a service to create an API key for itself without an API key,
-    // and secondly, only people can create API keys
-    let (person_id, service_id) = match service_id {
-        Some(service_id) => (None, Some(*service_id)),
-        None => (tx.user().person_id(), None),
-    };
-
     let record = NewApiKeyRecord {
         description: description.as_ref(),
         hashed_key: hash_api_key(secret.as_bytes()),
-        person_id,
-        service_id,
+        owner_id: owner_id.unwrap_or(tx.user().id()),
         expires_at: *expires_at,
     };
 
@@ -66,26 +58,23 @@ async fn insert_api_key(
 struct NewApiKeyRecord<'a> {
     description: Option<&'a NonemptyString>,
     hashed_key: [u8; 32],
-    person_id: Option<PersonId>,
-    service_id: Option<ServiceId>,
+    owner_id: Uuid,
     expires_at: Option<Timestamp>,
 }
 
-impl AsFieldValuePairs<&'static str, 5> for NewApiKeyRecord<'_> {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 5> {
+impl AsFieldValuePairs<&'static str, 4> for NewApiKeyRecord<'_> {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 4> {
         let Self {
             description,
             hashed_key,
-            person_id,
-            service_id,
+            owner_id,
             expires_at,
         } = self;
 
         [
             ("description", description),
             ("hashed_key", hashed_key),
-            ("person_id", person_id),
-            ("service_id", service_id),
+            ("owner_id", owner_id),
             ("expires_at", expires_at),
         ]
     }
@@ -133,7 +122,7 @@ pub mod test {
     {
         let mut new = NewApiKey {
             description: Some(Uuid::new_v4().to_string().to_nonempty_string()),
-            service_id: None,
+            owner_id: None,
             expires_at: None,
         };
 

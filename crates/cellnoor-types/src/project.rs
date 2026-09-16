@@ -4,10 +4,7 @@ use nonempty::NonemptyString;
 pub use query::{ProjectField, ProjectPredicate, ProjectQuery, SimpleProjectQuery};
 use uuid::Uuid;
 
-use crate::{
-    api_key::{PersonId, ServiceId},
-    simple_links::SimpleLinks,
-};
+use crate::simple_links::SimpleLinks;
 
 mod query;
 
@@ -24,8 +21,7 @@ pub struct NewProject {
 pub struct SavedProjectRecord {
     pub id: Uuid,
     pub name: NonemptyString,
-    pub created_by_person: Option<PersonId>,
-    pub created_by_service: Option<ServiceId>,
+    pub created_by: Uuid,
     pub started_at: Timestamp,
     pub ended_at: Timestamp,
 }

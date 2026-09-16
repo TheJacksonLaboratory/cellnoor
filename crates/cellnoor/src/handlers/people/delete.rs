@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self},
+    db,
     error::{Error, ErrorInner},
     handlers::IdParam,
     state::AppState,
@@ -28,19 +28,8 @@ pub async fn delete_person(
 }
 
 async fn delete_person_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    // This has to come first because the database won't let you drop a user who
-    // still has a row in the person table
-    drop_db_user(tx, id).await?;
-    db::delete_by_id(tx, "person", id).await?;
-
-    Ok(())
-}
-
-async fn drop_db_user(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    tx.execute_raw_sql("select drop_person_user($1)", &[&id])
-        .await?;
-
-    Ok(())
+    // A trigger drops the principal, which cascades to their accounts and keys
+    db::delete_by_id(tx, "person", id).await
 }
 
 #[cfg(test)]

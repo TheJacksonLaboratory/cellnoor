@@ -1,7 +1,7 @@
 use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
-    operator::{StringOperator, TimestampOperator, UuidOperator},
+    operator::{BoolOperator, StringOperator, TimestampOperator, UuidOperator},
     query::{ComplexQuery, OrderField, SimpleQuery},
 };
 
@@ -15,8 +15,8 @@ use crate::{
 pub enum ApiKeyPredicate {
     Id(UuidOperator),
     Description(StringOperator),
-    PersonId(UuidOperator),
-    ServiceId(UuidOperator),
+    OwnerId(UuidOperator),
+    OwnerIsStaff(BoolOperator),
     CreatedAt(TimestampOperator),
     ExpiresAt(TimestampOperator),
 }

@@ -14,7 +14,6 @@ pub enum PersonPredicate {
     Email(StringOperator),
     InstitutionId(UuidOperator),
     IsStaff(BoolOperator),
-    CanManageUsers(BoolOperator),
     Orcid(StringOperator),
 }
 

@@ -28,18 +28,9 @@ pub async fn delete_service(
 }
 
 async fn delete_service_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    // These must be done sequentially (not concurrently)
-    drop_user(tx, id).await?;
-    db::delete_by_id(tx, "service", id).await?;
-
-    Ok(())
-}
-
-async fn drop_user(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    tx.execute_raw_sql("select drop_service_user($1)", &[&id])
-        .await?;
-
-    Ok(())
+    // A trigger drops the principal, which cascades to who has access to the
+    // service and to its API keys
+    db::delete_by_id(tx, "service", id).await
 }
 
 #[cfg(test)]

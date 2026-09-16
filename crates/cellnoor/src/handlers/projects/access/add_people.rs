@@ -33,13 +33,13 @@ pub async fn add_people_to_project(
 pub(in super::super) async fn insert_project_accesses(
     tx: &db::Transaction<'_>,
     project_id: Uuid,
-    people: &[Uuid],
+    members: &[Uuid],
 ) -> Result<(), ErrorInner> {
-    let accesses: Vec<_> = people
+    let accesses: Vec<_> = members
         .iter()
-        .map(|&person_id| NewProjectAccess {
+        .map(|&principal_id| NewProjectAccess {
             project_id,
-            person_id,
+            principal_id,
         })
         .collect();
 
@@ -55,16 +55,16 @@ pub(in super::super) async fn insert_project_accesses(
 
 struct NewProjectAccess {
     project_id: Uuid,
-    person_id: Uuid,
+    principal_id: Uuid,
 }
 
 impl AsFieldValuePairs<&'static str, 2> for NewProjectAccess {
     fn as_field_value_pairs(&self) -> FieldValuePairs<'_, &'static str, 2> {
         let Self {
             project_id,
-            person_id,
+            principal_id,
         } = self;
 
-        [("project_id", project_id), ("person_id", person_id)]
+        [("project_id", project_id), ("principal_id", principal_id)]
     }
 }

@@ -43,10 +43,9 @@ async fn user_cannot_update_unowned_service(client: &mut db::Client, service_id:
             record: ServiceSimpleFields {
                 description: Some("foo".to_nonempty_string()),
                 is_staff: false,
-                can_manage_users: false,
             },
-            permissions_to_grant: None,
-            permissions_to_revoke: None,
+            permissions_to_grant: Vec::new(),
+            permissions_to_revoke: Vec::new(),
         },
     )
     .await

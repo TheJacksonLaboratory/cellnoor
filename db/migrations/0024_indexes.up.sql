@@ -4,6 +4,8 @@
 -- and we never look up measurements by other fields, so the necessary fields are already indexed
 create index institution_name_trgm_idx on institution using gin (name gin_trgm_ops);
 
+create index principal_is_staff_idx on principal (is_staff);
+
 create index person_name_idx on person (name);
 create index person_name_trgm_idx on person using gin (name gin_trgm_ops);
 create index person_email_trgm_idx on person using gin (email gin_trgm_ops);
@@ -11,34 +13,27 @@ create index person_orcid_trgm_idx on person using gin (orcid gin_trgm_ops);
 create index person_institution_id_idx on person (institution_id);
 create index person_created_at_idx on person (created_at);
 create index person_updated_at_idx on person (updated_at);
-create index person_is_staff_idx on person (is_staff);
-create index person_can_manage_users_idx on person (can_manage_users);
 create index person_email_verified_idx on person (email_verified);
 
 create index service_description_idx on service (description);
 create index service_description_trgm_idx on service using gin (description gin_trgm_ops);
 create index service_owned_by_idx on service (owned_by);
-create index service_is_staff_idx on service (is_staff);
-create index service_can_manage_users_idx on service (can_manage_users);
 create index service_created_at_idx on service (created_at);
 
 create index service_access_person_id_idx on service_access (person_id);
 
 create index api_key_description_idx on api_key (description);
 create index api_key_description_trgm_idx on api_key using gin (description gin_trgm_ops);
-create index api_key_person_id_idx on api_key (person_id);
-create index api_key_service_id_idx on api_key (service_id);
+create index api_key_owner_id_idx on api_key (owner_id);
 create index api_key_created_at_idx on api_key (created_at);
 create index api_key_expires_at_idx on api_key (expires_at);
 
 create index project_name_trgm_idx on project using gin (name gin_trgm_ops);
-create index project_created_by_person_idx on project (created_by_person);
-create index project_created_by_service_idx on project (created_by_service);
+create index project_created_by_idx on project (created_by);
 create index project_started_at_idx on project (started_at);
 create index project_ended_at_idx on project (ended_at);
 
-create index project_access_person_id_idx on project_access (person_id);
-create index project_access_service_id_idx on project_access (service_id);
+create index project_access_principal_id_idx on project_access (principal_id);
 
 create index specimen_readable_id_trgm_idx on specimen using gin (readable_id gin_trgm_ops);
 create index specimen_name_idx on specimen (name);

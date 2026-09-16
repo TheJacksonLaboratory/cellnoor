@@ -65,7 +65,7 @@ impl AsPredicate for PersonPredicate {
         let sql = match self {
             Self::Id(u) | Self::InstitutionId(u) => u.as_sql_operator_and_value(),
             Self::Name(s) | Self::Email(s) | Self::Orcid(s) => s.as_sql_operator_and_value(),
-            Self::IsStaff(b) | Self::CanManageUsers(b) => b.as_sql_operator_and_value(),
+            Self::IsStaff(b) => b.as_sql_operator_and_value(),
         };
 
         (self.field_name(), sql)

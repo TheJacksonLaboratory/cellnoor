@@ -1,8 +1,5 @@
 use axum::{Json, extract::State};
-use cellnoor_types::{
-    api_key::{PersonId, ServiceId},
-    project::{NewProject, ProjectDetailed, ProjectField},
-};
+use cellnoor_types::project::{NewProject, ProjectDetailed, ProjectField};
 
 use crate::{
     auth::AuthUser,
@@ -32,52 +29,26 @@ async fn insert_project(
     tx: &db::Transaction<'_>,
     new: &NewProject,
 ) -> Result<ProjectDetailed, ErrorInner> {
-    let user = tx.user();
-    let id = db::insert_into(
-        tx,
-        "project",
-        &NewProjectWithCreator {
-            record: new,
-            created_by_person: user.person_id(),
-            created_by_service: user.service_id(),
-        },
-    )
-    .await?;
+    // `created_by` is omitted: the database fills it from `app_user_id()`
+    let id = db::insert_into(tx, "project", new).await?;
 
     insert_project_accesses(tx, id, &new.members).await?;
 
     select_project_by_id(tx, id).await
 }
 
-struct NewProjectWithCreator<'a> {
-    record: &'a NewProject,
-    created_by_person: Option<PersonId>,
-    created_by_service: Option<ServiceId>,
-}
-
-impl AsFieldValuePairs<ProjectField, 5> for NewProjectWithCreator<'_> {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, ProjectField, 5> {
+impl AsFieldValuePairs<ProjectField, 3> for NewProject {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, ProjectField, 3> {
         use ProjectField::*;
 
         let Self {
-            record:
-                NewProject {
-                    name,
-                    started_at,
-                    ended_at,
-                    members: _,
-                },
-            created_by_person,
-            created_by_service,
+            name,
+            started_at,
+            ended_at,
+            members: _,
         } = self;
 
-        [
-            (Name, name),
-            (StartedAt, started_at),
-            (EndedAt, ended_at),
-            (CreatedByPerson, created_by_person),
-            (CreatedByService, created_by_service),
-        ]
+        [(Name, name), (StartedAt, started_at), (EndedAt, ended_at)]
     }
 }
 

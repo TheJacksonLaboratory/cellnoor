@@ -1,7 +1,7 @@
 use std::assert_matches;
 
 use cellnoor_types::{
-    api_key::{ApiKey, ApiKeyPredicate, ApiKeyUpdate, SavedApiKeyRecord, ServiceId},
+    api_key::{ApiKey, ApiKeyPredicate, ApiKeyUpdate, SavedApiKeyRecord},
     operator::UuidOperator,
     service::Service,
 };
@@ -41,7 +41,7 @@ async fn create_service_api_key_for(user: Uuid) -> (Service, ApiKey) {
     let (_, service) = insert_test_service(&tx, |_| ()).await.unwrap();
 
     let (_, api_key) = insert_test_api_key(&tx, |key| {
-        key.service_id = Some(ServiceId::new(service.id));
+        key.owner_id = Some(service.id);
     })
     .await
     .unwrap();
@@ -117,8 +117,8 @@ async fn row_level_security_for_api_keys() {
     let user1_api_key = create_person_api_key_for(user1_id).await;
     user_cannot_update_unowned_api_key(&mut user2_client, user1_api_key.record.id).await;
 
-    // A user can't see an API key unless they've been granted access to its service
-    // account
+    // A user can't see an API key unless they've been granted access to its
+    // service account
     let (service, service_api_key) = create_service_api_key_for(user1_id).await;
 
     user_cannot_see_inaccessible_api_key(&mut user2_client, service_api_key.record.id).await;

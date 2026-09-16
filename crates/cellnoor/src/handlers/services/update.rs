@@ -2,19 +2,18 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::{
-    person::{PermissionsToGrant, PermissionsToRevoke},
-    service::{Service, ServiceUpdate},
-};
+use cellnoor_types::service::{Service, ServiceUpdate};
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self},
+    db,
     error::{Error, ErrorInner},
     handlers::{
-        IdParam, people::create::permission_to_permission_set,
+        IdParam,
+        permissions::{grant_permissions, revoke_permissions},
         services::index::select_service_by_id,
+        set_is_staff,
     },
     state::AppState,
 };
@@ -23,12 +22,12 @@ pub async fn update_service(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(serivce): Json<ServiceUpdate>,
+    Json(service): Json<ServiceUpdate>,
 ) -> Result<Json<Service>, Error> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
-    let response = update_service_by_id(&tx, id, &serivce).await.map(Json)?;
+    let response = update_service_by_id(&tx, id, &service).await.map(Json)?;
 
     tx.commit().await?;
 
@@ -38,61 +37,20 @@ pub async fn update_service(
 pub(in super::super) async fn update_service_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-    ServiceUpdate {
+    update: &ServiceUpdate,
+) -> Result<Service, ErrorInner> {
+    let ServiceUpdate {
         record,
         permissions_to_grant,
         permissions_to_revoke,
-    }: &ServiceUpdate,
-) -> Result<Service, ErrorInner> {
+    } = update;
+
     db::update(tx, "service", id, record).await?;
-
-    if let Some(permissions) = permissions_to_grant {
-        grant_permissions(tx, id, permissions).await?;
-    }
-
-    if let Some(permissions) = permissions_to_revoke {
-        revoke_permissions(tx, id, permissions).await?;
-    }
+    set_is_staff(tx, id, record.is_staff).await?;
+    grant_permissions(tx, id, permissions_to_grant).await?;
+    revoke_permissions(tx, id, permissions_to_revoke).await?;
 
     select_service_by_id(tx, id).await
-}
-
-async fn grant_permissions(
-    tx: &db::Transaction<'_>,
-    user_id: Uuid,
-    permissions_to_grant: &PermissionsToGrant,
-) -> Result<(), ErrorInner> {
-    let permissions_to_grant: Vec<_> = permissions_to_grant
-        .iter()
-        .map(permission_to_permission_set)
-        .collect();
-
-    tx.execute_raw_sql(
-        "select grant_permissions_to_service($1, $2)",
-        &[&user_id, &permissions_to_grant],
-    )
-    .await?;
-
-    Ok(())
-}
-
-async fn revoke_permissions(
-    tx: &db::Transaction<'_>,
-    user_id: Uuid,
-    permissions_to_revoke: &PermissionsToRevoke,
-) -> Result<(), ErrorInner> {
-    let permissions_to_revoke: Vec<_> = permissions_to_revoke
-        .iter()
-        .map(permission_to_permission_set)
-        .collect();
-
-    tx.execute_raw_sql(
-        "select revoke_permissions_from_service($1, $2)",
-        &[&user_id, &permissions_to_revoke],
-    )
-    .await?;
-
-    Ok(())
 }
 
 #[cfg(test)]
@@ -115,10 +73,9 @@ mod test {
             record: ServiceSimpleFields {
                 description: Some("updated".to_nonempty_string()),
                 is_staff: false,
-                can_manage_users: false,
             },
-            permissions_to_grant: None,
-            permissions_to_revoke: None,
+            permissions_to_grant: Vec::new(),
+            permissions_to_revoke: Vec::new(),
         };
 
         update_service_by_id(&tx, inserted.id, &update)

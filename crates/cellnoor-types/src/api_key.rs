@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use jiff::Timestamp;
 use macro_attributes::{base_model, select};
 use nonempty::NonemptyString;
@@ -12,7 +10,8 @@ mod query;
 #[derive(Default)]
 pub struct NewApiKey {
     pub description: Option<NonemptyString>,
-    pub service_id: Option<ServiceId>,
+    // The person or service the key acts as. It defaults to whoever creates the key
+    pub owner_id: Option<Uuid>,
     pub expires_at: Option<Timestamp>,
 }
 
@@ -23,56 +22,12 @@ pub struct ApiKeyUpdate {
 }
 
 #[select]
-#[derive(Copy, Eq)]
-#[cfg_attr(feature = "postgres-types", derive(postgres_types::ToSql))]
-#[cfg_attr(feature = "postgres-types", postgres(transparent))]
-pub struct PersonId(Uuid);
-
-impl PersonId {
-    #[must_use]
-    pub fn new(id: Uuid) -> Self {
-        Self(id)
-    }
-}
-
-impl Display for PersonId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-#[select]
-#[derive(Copy, Eq)]
-#[cfg_attr(feature = "postgres-types", derive(postgres_types::ToSql))]
-#[cfg_attr(feature = "postgres-types", postgres(transparent))]
-pub struct ServiceId(Uuid);
-
-impl ServiceId {
-    #[must_use]
-    pub fn new(id: Uuid) -> Self {
-        Self(id)
-    }
-}
-
-impl Display for ServiceId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-impl From<ServiceId> for Uuid {
-    fn from(value: ServiceId) -> Self {
-        value.0
-    }
-}
-
-#[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "api_key_public"))]
 pub struct SavedApiKeyRecord {
     pub id: Uuid,
     pub description: Option<NonemptyString>,
-    pub person_id: Option<PersonId>,
-    pub service_id: Option<ServiceId>,
+    pub owner_id: Uuid,
+    pub owner_is_staff: bool,
     pub created_at: Timestamp,
     pub expires_at: Option<Timestamp>,
 }

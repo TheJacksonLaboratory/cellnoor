@@ -4,7 +4,7 @@ use nonempty::NonemptyString;
 pub use query::{ServiceField, ServicePredicate, ServiceQuery, SimpleServiceQuery};
 use uuid::Uuid;
 
-use crate::person::{PermissionsToGrant, PermissionsToRevoke};
+use crate::permission::Permission;
 
 mod query;
 
@@ -12,7 +12,6 @@ mod query;
 pub struct ServiceSimpleFields {
     pub description: Option<NonemptyString>,
     pub is_staff: bool,
-    pub can_manage_users: bool,
 }
 
 #[base_model]
@@ -20,24 +19,23 @@ pub struct NewService {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: ServiceSimpleFields,
     pub users: Vec<Uuid>,
-    pub permissions_to_grant: PermissionsToGrant,
-}
-
-#[select]
-#[cfg_attr(feature = "postgres-types", postgres(name = "service"))]
-pub struct Service {
-    pub id: Uuid,
-    pub description: Option<NonemptyString>,
-    pub owned_by: Uuid,
-    pub is_staff: bool,
-    pub can_manage_users: bool,
-    pub created_at: Timestamp,
+    pub permissions_to_grant: Vec<Permission>,
 }
 
 #[base_model]
 pub struct ServiceUpdate {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: ServiceSimpleFields,
-    pub permissions_to_grant: Option<PermissionsToGrant>,
-    pub permissions_to_revoke: Option<PermissionsToRevoke>,
+    pub permissions_to_grant: Vec<Permission>,
+    pub permissions_to_revoke: Vec<Permission>,
+}
+
+#[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "service_public"))]
+pub struct Service {
+    pub id: Uuid,
+    pub description: Option<NonemptyString>,
+    pub owned_by: Uuid,
+    pub is_staff: bool,
+    pub created_at: Timestamp,
 }

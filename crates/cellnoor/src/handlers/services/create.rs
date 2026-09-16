@@ -1,17 +1,14 @@
 use axum::{Json, extract::State};
-use cellnoor_types::{
-    person::PermissionsToGrant,
-    service::{NewService, Service, ServiceField, ServiceSimpleFields},
-};
-use uuid::Uuid;
+use cellnoor_types::service::{NewService, Service, ServiceField, ServiceSimpleFields};
 
 use crate::{
     auth::AuthUser,
     db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
     handlers::{
-        people::create::permission_to_permission_set,
+        permissions::grant_permissions,
         services::{access::add_people::insert_service_accesses, index::select_service_by_id},
+        set_is_staff,
     },
     state::AppState,
 };
@@ -41,62 +38,31 @@ async fn insert_service(
     }: &NewService,
 ) -> Result<Service, ErrorInner> {
     let id = db::insert_into(tx, "service", record).await?;
+    set_is_staff(tx, id, record.is_staff).await?;
+    grant_permissions(tx, id, permissions_to_grant).await?;
 
     insert_service_accesses(tx, id, users).await?;
 
-    let (_, service) = tokio::try_join!(
-        create_db_user(tx, id, permissions_to_grant),
-        select_service_by_id(tx, id)
-    )?;
-
-    Ok(service)
-}
-
-async fn create_db_user(
-    tx: &db::Transaction<'_>,
-    user_id: Uuid,
-    permissions: &PermissionsToGrant,
-) -> Result<(), ErrorInner> {
-    let permission_sets: Vec<_> = permissions
-        .iter()
-        .map(permission_to_permission_set)
-        .collect();
-
-    tx.execute_raw_sql(
-        "select create_service_user_with_permissions($1, $2)",
-        &[&user_id, &permission_sets],
-    )
-    .await?;
-
-    Ok(())
+    select_service_by_id(tx, id).await
 }
 
 // `owned_by` is intentionally omitted: the database fills it from
-// `current_user::uuid`, and RLS guarantees it equals the caller
-impl AsFieldValuePairs<ServiceField, 3> for ServiceSimpleFields {
-    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, ServiceField, 3> {
-        use ServiceField::*;
-
+// `app_user_id()`, and row-level security guarantees it equals the caller.
+// `is_staff` is a column of `principal`, not `service` (see `set_is_staff`)
+impl AsFieldValuePairs<ServiceField, 1> for ServiceSimpleFields {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, ServiceField, 1> {
         let Self {
             description,
-            is_staff,
-            can_manage_users,
+            is_staff: _,
         } = self;
 
-        [
-            (Description, description),
-            (IsStaff, is_staff),
-            (CanManageUsers, can_manage_users),
-        ]
+        [(ServiceField::Description, description)]
     }
 }
 
 #[cfg(test)]
 pub mod test {
-    use cellnoor_types::{
-        person::{Action, PermissionsToGrant, ResourcePermission},
-        service::{NewService, Service, ServiceSimpleFields},
-    };
+    use cellnoor_types::service::{NewService, Service, ServiceSimpleFields};
     use uuid::Uuid;
 
     use crate::{
@@ -117,10 +83,9 @@ pub mod test {
             record: ServiceSimpleFields {
                 description: Some(Uuid::new_v4().to_string().to_nonempty_string()),
                 is_staff: false,
-                can_manage_users: false,
             },
             users: vec![Uuid::nil()],
-            permissions_to_grant: PermissionsToGrant::default(),
+            permissions_to_grant: Vec::new(),
         };
 
         modify(&mut new);
@@ -135,18 +100,5 @@ pub mod test {
         let tx = client.begin().await.unwrap();
 
         insert_test_service(&tx, |_| ()).await.unwrap();
-    }
-
-    #[tokio::test(flavor = "multi_thread")]
-    async fn insert_with_permissions() {
-        let mut client = db_client_as_admin().await;
-        let tx = client.begin().await.unwrap();
-
-        insert_test_service(&tx, |s| {
-            s.permissions_to_grant =
-                vec![ResourcePermission::Institution(vec![Action::Create])].into()
-        })
-        .await
-        .unwrap();
     }
 }

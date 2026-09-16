@@ -40,12 +40,18 @@ impl Pool {
             inner: self.0.get().await?,
         })
     }
+
+    /// A connection that acts on behalf of nobody.
+    ///
+    /// Row-level security denies it everything, so it's only good for calling
+    /// `security definer` functions. Authenticating an API key needs this
+    /// because the user isn't known until the key has been found.
+    pub(crate) async fn unauthenticated(&self) -> Result<InnerClient, PoolError> {
+        self.0.get().await
+    }
 }
 
-/// A database client that wraps a transaction.
-///
-/// After any operations, the transaction must be committed by calling
-/// [Client::commit], or else nothing will be saved to the database.
+/// A database client that acts on behalf of a user.
 #[derive(Debug)]
 pub struct Client {
     user: AuthUser,
@@ -53,13 +59,23 @@ pub struct Client {
 }
 
 impl Client {
+    /// Begin a transaction that runs as the authenticated user.
+    ///
+    /// Every row-level security policy reads `app.user_id`, which is only set
+    /// for the duration of the transaction. Nothing is saved unless
+    /// [Transaction::commit] is called.
     pub async fn begin(&'_ mut self) -> Result<Transaction<'_>, TokioPgError> {
         let Self { user, inner } = self;
 
-        Ok(Transaction {
-            user: *user,
-            inner: inner.transaction().await?,
-        })
+        let inner = inner.transaction().await?;
+        inner
+            .execute(
+                "select set_config('app.user_id', $1, true)",
+                &[&user.id().to_string()],
+            )
+            .await?;
+
+        Ok(Transaction { user: *user, inner })
     }
 }
 
@@ -69,30 +85,11 @@ pub struct Transaction<'a> {
 }
 
 impl<'a> Transaction<'a> {
-    async fn set_local_role_as_user(&self) -> Result<(), TokioPgError> {
-        let Self { user, inner } = self;
-
-        let set_role_stmt = format!(r#"set local role "{user}" "#);
-        inner.execute(&set_role_stmt, &[]).await?;
-
-        Ok(())
-    }
-
-    async fn execute_as_user<T>(
-        &self,
-        operation: impl Future<Output = Result<T, TokioPgError>>,
-    ) -> Result<T, TokioPgError> {
-        self.set_local_role_as_user().await?;
-
-        operation.await
-    }
-
     pub async fn query_stream(
         &self,
         Sql(stmt, params): Sql<'_>,
     ) -> Result<RowStream, TokioPgError> {
-        self.execute_as_user(self.inner.query_raw(&stmt, params))
-            .await
+        self.inner.query_raw(&stmt, params).await
     }
 
     pub async fn query_stream_into<T>(
@@ -108,12 +105,11 @@ impl<'a> Transaction<'a> {
     }
 
     pub async fn query(&self, Sql(stmt, params): &Sql<'_>) -> Result<Vec<Row>, TokioPgError> {
-        self.execute_as_user(self.inner.query(stmt, params)).await
+        self.inner.query(stmt, params).await
     }
 
     pub async fn query_one(&self, Sql(stmt, params): &Sql<'_>) -> Result<Row, TokioPgError> {
-        self.execute_as_user(self.inner.query_one(stmt, params))
-            .await
+        self.inner.query_one(stmt, params).await
     }
 
     pub async fn query_one_into<T>(&self, sql: &Sql<'_>) -> Result<T, TokioPgError>
@@ -126,7 +122,7 @@ impl<'a> Transaction<'a> {
     }
 
     pub async fn execute(&self, Sql(stmt, params): &Sql<'_>) -> Result<u64, TokioPgError> {
-        self.execute_as_user(self.inner.execute(stmt, params)).await
+        self.inner.execute(stmt, params).await
     }
 
     pub async fn execute_raw_sql(
@@ -134,7 +130,7 @@ impl<'a> Transaction<'a> {
         stmt: &str,
         params: &[&(dyn ToSql + Sync)],
     ) -> Result<u64, TokioPgError> {
-        self.execute_as_user(self.inner.execute(stmt, params)).await
+        self.inner.execute(stmt, params).await
     }
 
     pub async fn commit(self) -> Result<(), TokioPgError> {

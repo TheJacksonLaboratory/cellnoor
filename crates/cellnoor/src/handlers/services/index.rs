@@ -60,7 +60,7 @@ impl AsPredicate for ServicePredicate {
         let sql = match self {
             Self::Id(u) | Self::OwnedBy(u) => u.as_sql_operator_and_value(),
             Self::Description(s) => s.as_sql_operator_and_value(),
-            Self::IsStaff(b) | Self::CanManageUsers(b) => b.as_sql_operator_and_value(),
+            Self::IsStaff(b) => b.as_sql_operator_and_value(),
             Self::CreatedAt(t) => t.as_sql_operator_and_value(),
         };
 
@@ -102,6 +102,6 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        ensure_fields_are_selectable::<ServiceField>(&tx, "service").await;
+        ensure_fields_are_selectable::<ServiceField>(&tx, "service_public").await;
     }
 }

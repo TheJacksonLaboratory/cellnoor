@@ -14,6 +14,7 @@ pub mod institution;
 pub mod library;
 pub mod multiplexing_tag;
 pub mod nucleic_acid_measurement;
+pub mod permission;
 pub mod person;
 pub mod project;
 pub mod query;

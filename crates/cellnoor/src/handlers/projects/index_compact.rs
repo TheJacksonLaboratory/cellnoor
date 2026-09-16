@@ -44,9 +44,7 @@ async fn select_projects_compact(
 impl AsPredicate for ProjectPredicate {
     fn as_predicate(&self) -> (&str, (&'static str, &(dyn postgres_types::ToSql + Sync))) {
         let sql = match self {
-            Self::Id(u) | Self::CreatedByPerson(u) | Self::CreatedByService(u) => {
-                u.as_sql_operator_and_value()
-            }
+            Self::Id(u) | Self::CreatedBy(u) => u.as_sql_operator_and_value(),
             Self::Name(s) => s.as_sql_operator_and_value(),
             Self::StartedAt(t) | Self::EndedAt(t) => t.as_sql_operator_and_value(),
         };

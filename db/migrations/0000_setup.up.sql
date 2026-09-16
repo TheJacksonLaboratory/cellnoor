@@ -1,61 +1,25 @@
-create or replace function role_exists(role_name text) returns boolean language plpgsql volatile strict as $$
-    declare role_exists boolean;
-    begin
-        select exists (select 1 from pg_roles where rolname = role_name) into role_exists;
-        return role_exists;
-    end;
+-- This is used in row-level security to determine who the current user is. The app sets the `app.user_id` setting in
+-- crates/cellnoor/src/db/client.rs
+create function app_user_id() returns uuid language sql stable as $$
+    select current_setting('app.user_id', true)::uuid
 $$;
 
-create or replace function create_role_if_not_exists(
-    role_name text
-) returns void language plpgsql volatile strict as $$
-    begin
-        if not role_exists(role_name) then
-            execute format('create role %I', role_name);
-        end if;
-    end;
-$$;
-
--- We give the user a random, unguessable password so they could never sign in to the database directly
-create or replace function create_user_if_not_exists(
-    username text
-) returns void language plpgsql volatile strict as $$
-    begin
-        perform create_role_if_not_exists(username);
-        execute format('alter role %I with login password %L', username, uuidv7());
-    end;
-$$;
-
--- 'user_creator' is a highly privileged role that creates database users. It needs to be highly privileged so it can
--- own users and grant/revoke any privilege
-select create_user_if_not_exists('user_creator');
-
-create or replace function create_user_with_password_from_file(
+create function create_user_with_password_from_file(
     username text, password_file_path text
 ) returns void language plpgsql volatile strict as $$
     begin
-        perform create_user_if_not_exists(username);
+        if not exists (select 1 from pg_roles where rolname = username) then
+            execute format('create role %I with login', username);
+        end if;
         execute format('alter role %I with password %L', username, pg_read_file(password_file_path));
     end;
 $$;
 
--- 'app' is the user as which the main application connects. Before executing a statement, it switches to the database
--- user representing the person (or API key). It also needs to bypass RLS so it can see everyone's API keys
+-- 'app' is the user as which the main application connects. It is subject to row-level security on every table
 select create_user_with_password_from_file('app', '/run/secrets/app_db_password');
 
--- 'auth' manages users and API keys, but cannot do anything else
+-- 'auth' manages people and accounts on behalf of the authentication service, but cannot do anything else
 select create_user_with_password_from_file('auth', '/run/secrets/auth_db_password');
-
--- Create a user who's an actual person, meaning they need some privileges
-create or replace function create_app_user_if_not_exists(
-    user_id uuid
-) returns void language plpgsql volatile strict as $$
-    begin
-        perform create_user_if_not_exists(user_id::text);
-        -- The db user 'app' needs to be able to do `set role username`, but it shouldn't inherit that user's privileges
-        execute format('grant %I to app with inherit false', user_id);
-    end;
-$$;
 
 -- We might like to put a check-constraint here ensuring the string is non-empty, but our application has to do that
 -- anyways for values in JSONB properties, so we do it there to avoid duplicating code

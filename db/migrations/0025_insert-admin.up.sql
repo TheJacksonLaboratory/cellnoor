@@ -16,17 +16,35 @@ with initial_data as (
     select json(pg_read_file('/initial-data.json')) -> 'admin' as admin_person
 )
 
-insert into person (
-    id, name, institution_id, is_staff, can_manage_users, orcid
-)
+insert into person (id, name, institution_id, orcid)
 select
     uuid_nil(),
     admin_person ->> 'name',
     uuid_nil(),
-    (admin_person ->> 'is_staff')::boolean,
-    true,
     admin_person ->> 'orcid'
 from initial_data;
+
+-- The admin sees every project and may do anything to every resource
+update principal set is_staff = true
+where id = uuid_nil();
+
+insert into permission (principal_id, resource, action)
+select
+    uuid_nil(),
+    resource,
+    action
+from
+    unnest(array[
+        'institution',
+        'person',
+        'account',
+        'project',
+        'specimen',
+        'assay_constant_data',
+        'chromium_experimental_data',
+        'chromium_dataset'
+    ]) as resource
+cross join unnest(array['create', 'update', 'delete']) as action;
 
 with initial_data as (
     select json(pg_read_file('/initial-data.json')) -> 'admin' as admin_person
@@ -41,15 +59,3 @@ select
     admin_person ->> 'auth_provider_user_id'
 from initial_data;
 -- noqa: enable=AL03
-
--- Create a db user for admin user. Note that we use the 'from_login' function because that doesn't involve
-select create_person_user_from_login(uuid_nil());
-
--- Grant them permissions on everything
-do $$
-    begin
-        execute format('grant all on all tables in schema public to %I with grant option', uuid_nil());
-        -- Note that 'admin true' is necessary should we ever want to change the admin user's permissions
-        execute format('grant %I to auth with admin true, inherit false', uuid_nil());
-    end;
-$$;

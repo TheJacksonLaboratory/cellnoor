@@ -2,19 +2,21 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::person::{PermissionsToGrant, PermissionsToRevoke, Person, PersonUpdate};
+use cellnoor_types::person::{Person, PersonField, PersonUpdate};
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db,
+    db::{self, AsFieldValuePairs, FieldValuePairs},
     error::{Error, ErrorInner},
     handlers::{
         IdParam,
         people::{
-            create::{permission_to_permission_set, validate_email},
+            create::{person_field_value_pairs, validate_email},
             show::select_person_by_id,
         },
+        permissions::{grant_permissions, revoke_permissions},
+        set_is_staff,
     },
     state::AppState,
 };
@@ -38,79 +40,35 @@ pub async fn update_person(
 async fn update_person_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-    PersonUpdate {
+    update: &PersonUpdate,
+) -> Result<Person, ErrorInner> {
+    let PersonUpdate {
         simple,
         email,
         permissions_to_grant,
         permissions_to_revoke,
-    }: &PersonUpdate,
-) -> Result<Person, ErrorInner> {
+    } = update;
     validate_email(email.as_ref())?;
 
-    db::update(tx, "person", id, simple).await?;
+    db::update(tx, "person", id, update).await?;
+    set_is_staff(tx, id, simple.is_staff).await?;
+    grant_permissions(tx, id, permissions_to_grant).await?;
+    revoke_permissions(tx, id, permissions_to_revoke).await?;
 
-    let no_grants = PermissionsToGrant::default();
-    let no_revocations = PermissionsToRevoke::default();
-
-    let permissions_to_grant = permissions_to_grant.as_ref().unwrap_or(&no_grants);
-    let permissions_to_revoke = permissions_to_revoke.as_ref().unwrap_or(&no_revocations);
-
-    let (_, person) = tokio::try_join!(
-        update_permissions(tx, id, permissions_to_grant, permissions_to_revoke),
-        select_person_by_id(tx, id)
-    )?;
-
-    Ok(person)
+    select_person_by_id(tx, id).await
 }
 
-async fn update_permissions(
-    tx: &db::Transaction<'_>,
-    user_id: Uuid,
-    permissions_to_grant: &PermissionsToGrant,
-    permissions_to_revoke: &PermissionsToRevoke,
-) -> Result<(), ErrorInner> {
-    grant_permissions(tx, user_id, permissions_to_grant).await?;
-    revoke_permissions(tx, user_id, permissions_to_revoke).await?;
+impl AsFieldValuePairs<PersonField, 4> for PersonUpdate {
+    fn as_field_value_pairs(&self) -> FieldValuePairs<'_, PersonField, 4> {
+        let Self {
+            simple,
+            email,
+            permissions_to_grant: _,
+            permissions_to_revoke: _,
+        } = self;
 
-    Ok(())
-}
-
-async fn grant_permissions(
-    tx: &db::Transaction<'_>,
-    user_id: Uuid,
-    permissions_to_grant: &PermissionsToGrant,
-) -> Result<(), ErrorInner> {
-    let permissions_to_grant: Vec<_> = permissions_to_grant
-        .iter()
-        .map(permission_to_permission_set)
-        .collect();
-
-    tx.execute_raw_sql(
-        "select grant_permissions_to_person($1, $2)",
-        &[&user_id, &permissions_to_grant],
-    )
-    .await?;
-
-    Ok(())
-}
-
-async fn revoke_permissions(
-    tx: &db::Transaction<'_>,
-    user_id: Uuid,
-    permissions_to_revoke: &PermissionsToRevoke,
-) -> Result<(), ErrorInner> {
-    let permissions_to_revoke: Vec<_> = permissions_to_revoke
-        .iter()
-        .map(permission_to_permission_set)
-        .collect();
-
-    tx.execute_raw_sql(
-        "select revoke_permissions_from_person($1, $2)",
-        &[&user_id, &permissions_to_revoke],
-    )
-    .await?;
-
-    Ok(())
+        person_field_value_pairs(simple, email)
+    }
 }
 
 #[cfg(test)]
@@ -144,8 +102,8 @@ mod test {
         let update_to_apply = PersonUpdate {
             simple: pre_update.simple,
             email: "something@example.com".to_nonempty_string(),
-            permissions_to_grant: None,
-            permissions_to_revoke: None,
+            permissions_to_grant: Vec::new(),
+            permissions_to_revoke: Vec::new(),
         };
 
         update_person_by_id(&tx, id, &update_to_apply)

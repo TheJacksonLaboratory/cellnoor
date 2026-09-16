@@ -1,10 +1,7 @@
-use cellnoor_types::api_key::PersonId;
 use jsonwebtoken::TokenData;
+use uuid::Uuid;
 
-use crate::{
-    auth::{AuthUser, DbUser},
-    error::ErrorInner,
-};
+use crate::{auth::AuthUser, error::ErrorInner};
 
 pub(super) fn authenticate_with_jwt(
     token: &[u8],
@@ -21,10 +18,7 @@ pub(super) fn authenticate_with_jwt(
 impl AuthUser {
     fn from_token_data(token: TokenData<Claims>) -> Self {
         let UserClaims { id, is_staff } = token.claims.user;
-        AuthUser(DbUser::Jwt {
-            user_id: id,
-            is_staff,
-        })
+        AuthUser { id, is_staff }
     }
 }
 
@@ -39,6 +33,6 @@ struct Claims {
 #[allow(dead_code)]
 #[derive(serde::Deserialize)]
 struct UserClaims {
-    id: PersonId,
+    id: Uuid,
     is_staff: bool,
 }

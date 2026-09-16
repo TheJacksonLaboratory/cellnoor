@@ -6,14 +6,17 @@ use crate::{
 };
 
 #[predicate_enum]
-#[strum(prefix = "(service).")]
-#[strum_discriminants(name(ServiceField), sort_field_enum, strum(prefix = "(service)."))]
+#[strum(prefix = "(service_public).")]
+#[strum_discriminants(
+    name(ServiceField),
+    sort_field_enum,
+    strum(prefix = "(service_public).")
+)]
 pub enum ServicePredicate {
     Id(UuidOperator),
     Description(StringOperator),
     OwnedBy(UuidOperator),
     IsStaff(BoolOperator),
-    CanManageUsers(BoolOperator),
     CreatedAt(TimestampOperator),
 }
 
