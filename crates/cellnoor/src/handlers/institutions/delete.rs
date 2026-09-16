@@ -33,7 +33,6 @@ async fn delete_institution_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<
 
 #[cfg(test)]
 mod test {
-
     use crate::{
         handlers::institutions::{
             create::test::insert_test_institution, delete::delete_institution_by_id,

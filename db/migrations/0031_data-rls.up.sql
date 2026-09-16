@@ -46,7 +46,6 @@ insert into resource_table (resource, table_name) values
 ('chromium_dataset', 'chromium_dataset_library');
 
 
-
 do $$
     declare
         r record;
@@ -91,7 +90,7 @@ do $$
             );
             execute format(
                 'create policy can_delete on %I for delete using (%s and current_user_can(%L, %L))',
-                r.table_name, visible_rows, r.resource, 'delete'
+                r.table_name, visible_rows, 'delete', r.resource
             );
         end loop;
     end;

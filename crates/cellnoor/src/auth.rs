@@ -99,6 +99,9 @@ fn read_chunked_jwt(cookies: &CookieJar) -> String {
 #[cfg(test)]
 impl AuthUser {
     pub fn new_as_user(id: Uuid) -> Self {
-        Self { id, is_staff: None }
+        Self {
+            id,
+            is_staff: false,
+        }
     }
 }
