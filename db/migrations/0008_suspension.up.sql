@@ -4,7 +4,7 @@ create table suspension (
     specimen_id uuid not null,
     specimen_received_at timestamptz not null,
     content case_insensitive_text not null,
-    created_at timestamptz,
+    created_at timestamptz not null,
     lysis_duration_minutes real,
     target_cell_recovery bigint,
     additional_data jsonb,
@@ -29,10 +29,8 @@ for each row execute function populate_suspension_specimen_timestamps();
 
 create table suspension_measurement (
     id uuid primary key default uuidv7(),
-    -- `suspension.created_at` is nullable, and the default MATCH SIMPLE skips a foreign key check entirely when any of
-    -- its columns is null. This plain reference keeps `suspension_id` validated in that case
-    suspension_id uuid references suspension on delete cascade not null,
-    suspension_created_at timestamptz,
+    suspension_id uuid not null,
+    suspension_created_at timestamptz not null,
     measured_by uuid references person not null,
     measured_at timestamptz not null,
     data jsonb not null,

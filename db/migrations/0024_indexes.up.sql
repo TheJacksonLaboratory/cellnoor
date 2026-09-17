@@ -2,6 +2,7 @@
 -- only fields we skip are:
 -- 1. fields on measurement tables: measurement tables always have a unique(parent_entity, measurement_data) constraint,
 -- and we never look up measurements by other fields, so the necessary fields are already indexed
+-- 2. fields no query can filter or sort on, which is every field absent from that relation's predicate enum
 create index institution_name_trgm_idx on institution using gin (name gin_trgm_ops);
 
 create index principal_is_staff_idx on principal (is_staff);
@@ -11,9 +12,6 @@ create index person_name_trgm_idx on person using gin (name gin_trgm_ops);
 create index person_email_trgm_idx on person using gin (email gin_trgm_ops);
 create index person_orcid_trgm_idx on person using gin (orcid gin_trgm_ops);
 create index person_institution_id_idx on person (institution_id);
-create index person_created_at_idx on person (created_at);
-create index person_updated_at_idx on person (updated_at);
-create index person_email_verified_idx on person (email_verified);
 
 create index service_description_idx on service (description);
 create index service_description_trgm_idx on service using gin (description gin_trgm_ops);
@@ -55,15 +53,6 @@ create index specimen_additional_data_idx on specimen using gin (additional_data
 
 create index committee_approval_specimen_id_idx on committee_approval (specimen_id);
 
-create index single_index_set_kit_idx on single_index_set (kit);
-create index single_index_set_well_idx on single_index_set (well);
-create index single_index_set_sequences_idx on single_index_set using gin (sequences);
-
-create index dual_index_set_kit_idx on dual_index_set (kit);
-create index dual_index_set_well_idx on dual_index_set (well);
-create index dual_index_set_index_i7_idx on dual_index_set (index_i7);
-create index dual_index_set_index2_workflow_a_i5_idx on dual_index_set (index2_workflow_a_i5);
-create index dual_index_set_index2_workflow_b_i5_idx on dual_index_set (index2_workflow_b_i5);
 
 create index suspension_readable_id_trgm_idx on suspension using gin (readable_id gin_trgm_ops);
 create index suspension_specimen_id_idx on suspension (specimen_id);

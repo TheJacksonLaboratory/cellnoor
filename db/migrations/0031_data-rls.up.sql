@@ -1,4 +1,5 @@
--- Staff see every project, and so everything descending from one. Everyone else sees only the projects they were given access to.
+-- Staff see every project and everything descending from one. Everyone else sees only the projects they were given
+-- access to.
 --
 -- Both of these are `security definer`, which is what stops them recursing. The policy on `project_access` calls
 -- them, and an invoker-side read of `project_access` (or of `project`, whose own policy reads `project_access`) would
@@ -27,6 +28,8 @@ create temp table resource_table (resource text not null, table_name text primar
 
 insert into resource_table (resource, table_name) values
 ('institution', 'institution'),
+('person', 'person'),
+('account', 'account'),
 ('project', 'project'),
 ('project', 'project_access'),
 ('specimen', 'specimen'),
@@ -68,13 +71,13 @@ do $$
         unmapped text;
     begin
         -- A new table with no resource would silently have no policies, so refuse to migrate until it has one.
-        -- The identity tables get their policies in the previous migrations, and `schema_migrations` belongs to the
-        -- migration tool
+        -- The remaining identity tables get their policies in the previous migrations, and `schema_migrations`
+        -- belongs to the migration tool
         select string_agg(tablename, ', ') into unmapped from pg_tables
         where
             schemaname = 'public'
             and tablename not in (
-                'schema_migrations', 'principal', 'permission', 'person', 'account', 'service', 'service_access', 'api_key'
+                'schema_migrations', 'principal', 'permission', 'service', 'service_access', 'api_key'
             )
             and tablename not in (select table_name from resource_table);
 

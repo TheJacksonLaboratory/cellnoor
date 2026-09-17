@@ -27,6 +27,7 @@ create table specimen (
     constraint received_after_project_start check (received_at >= project_started_at),
     constraint received_before_project_end check (received_at <= project_ended_at),
     constraint received_before_returned check (received_at < returned_at),
+    constraint return_is_fully_specified check ((returned_by is null) = (returned_at is null)),
     constraint host_species_different_from_donor_species check (species != host_species)
 );
 

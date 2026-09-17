@@ -163,7 +163,7 @@ pub mod test {
                 specimen_id,
                 specimen_received_at: specimen.record.received_at,
                 content: SuspensionContent::Cells,
-                created_at: None,
+                created_at: Timestamp::now(),
                 lysis_duration_minutes: None,
                 target_cell_recovery: None,
                 additional_data: None,

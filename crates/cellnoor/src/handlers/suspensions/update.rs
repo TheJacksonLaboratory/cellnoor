@@ -63,7 +63,6 @@ async fn update_suspension_by_id(
 mod test {
 
     use cellnoor_types::suspension::{NewSuspensionRecord, SuspensionContent, SuspensionUpdate};
-    use jiff::Timestamp;
     use uuid::Uuid;
 
     use crate::{
@@ -83,7 +82,7 @@ mod test {
             .unwrap();
         let id = *inserted.record.id;
 
-        let mut pre_update = SuspensionUpdate {
+        let pre_update = SuspensionUpdate {
             record: NewSuspensionRecord {
                 readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
                 content: SuspensionContent::Nuclei,
@@ -92,7 +91,6 @@ mod test {
             measurements: None,
             preparers: None,
         };
-        pre_update.record.created_at = Some(Timestamp::now());
 
         update_suspension_by_id(&tx, id, &pre_update).await.unwrap();
     }

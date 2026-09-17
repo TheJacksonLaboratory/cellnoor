@@ -19,6 +19,6 @@ jobs:
         working-directory: packages/cellnoor-ui
         run: bun install
 
-      - name: Check svelte code
+      - name: Check TypeScript code
         working-directory: packages/cellnoor-ui
         run: bun run --bun check

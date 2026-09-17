@@ -37,12 +37,10 @@ create table chip_loading (
     id uuid primary key default uuidv7(),
     gem_well_id uuid not null,
     run_at timestamptz not null,
-    -- `suspension.created_at` is nullable, and the default MATCH SIMPLE skips a foreign key check entirely when any of
-    -- its columns is null. This plain reference keeps `suspension_id` validated in that case
-    suspension_id uuid references suspension on delete cascade,
+    -- Both parents' timestamps are not null, so each pair below is null together or not at all. `match full` enforces
+    -- that, which means each composite foreign key validates its own id column
+    suspension_id uuid,
     suspension_created_at timestamptz,
-    -- `suspension_pool.pooled_at` is not null, so this pair is null together or not at all. `match full` enforces that,
-    -- which means the composite foreign key below validates `suspension_pool_id` on its own
     suspension_pool_id uuid,
     suspension_pool_pooled_at timestamptz,
     -- There are only 4 allowed OCM barcode IDs, but we let the application restrict this so there is only one source
@@ -53,7 +51,7 @@ create table chip_loading (
     foreign key (gem_well_id, run_at) references gem_well (id, run_at) on update cascade on delete cascade,
     foreign key (suspension_id, suspension_created_at) references suspension (
         id, created_at
-    ) on update cascade on delete cascade,
+    ) match full on update cascade on delete cascade,
     foreign key (suspension_pool_id, suspension_pool_pooled_at) references suspension_pool (
         id, pooled_at
     ) match full on update cascade on delete cascade,

@@ -1810,42 +1810,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/multiplexing-tags/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": null;
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/specimens": {
         parameters: {
             query?: never;
@@ -5956,7 +5920,7 @@ export interface components {
             additional_data?: unknown;
             content: components["schemas"]["SuspensionContent"];
             /** Format: date-time */
-            created_at?: string | null;
+            created_at: string;
             /** Format: float */
             lysis_duration_minutes?: number | null;
             measurements: components["schemas"]["NewSuspensionMeasurement"][];
@@ -7513,7 +7477,7 @@ export interface components {
             additional_data?: unknown;
             content: components["schemas"]["SuspensionContent"];
             /** Format: date-time */
-            created_at?: string | null;
+            created_at: string;
             /** Format: uuid */
             id: string;
             links: {
@@ -7554,7 +7518,7 @@ export interface components {
             additional_data?: unknown;
             content: components["schemas"]["SuspensionContent"];
             /** Format: date-time */
-            created_at?: string | null;
+            created_at: string;
             /** Format: uuid */
             id: string;
             links: {
@@ -7761,7 +7725,7 @@ export interface components {
             additional_data?: unknown;
             content: components["schemas"]["SuspensionContent"];
             /** Format: date-time */
-            created_at?: string | null;
+            created_at: string;
             /** Format: float */
             lysis_duration_minutes?: number | null;
             measurements?: components["schemas"]["NewSuspensionMeasurement"][] | null;

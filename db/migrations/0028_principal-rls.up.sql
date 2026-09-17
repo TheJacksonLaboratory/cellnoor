@@ -41,17 +41,3 @@ create policy can_write on permission for all using (
         or current_user_is_service_owner(principal_id)
     )
 );
-
-alter table person enable row level security;
-
-create policy can_read on person for select using (true);
-create policy can_create on person for insert with check (current_user_can('create', 'person'));
-create policy can_update on person for update using (true) with check (current_user_can('update', 'person'));
-create policy can_delete on person for delete using (current_user_can('delete', 'person'));
-
-alter table account enable row level security;
-
-create policy can_read on account for select using (true);
-create policy can_create on account for insert with check (current_user_can('create', 'account'));
-create policy can_update on account for update using (true) with check (current_user_can('update', 'account'));
-create policy can_delete on account for delete using (current_user_can('delete', 'account'));

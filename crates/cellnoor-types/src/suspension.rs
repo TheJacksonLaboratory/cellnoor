@@ -38,7 +38,7 @@ mod record {
         #[cfg_attr(feature = "serde", serde(skip))]
         pub specimen_received_at: Timestamp,
         pub content: SuspensionContent,
-        pub created_at: Option<Timestamp>,
+        pub created_at: Timestamp,
         pub lysis_duration_minutes: Option<f32>,
         pub target_cell_recovery: Option<i64>,
         pub additional_data: Option<Value>,
