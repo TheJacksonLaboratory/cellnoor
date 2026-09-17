@@ -1,3 +1,8 @@
+use aide::OperationIo;
+use axum::{
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use cellnoor_types::Relation;
 pub use dual::create::create_dual_index_sets;
 #[cfg(test)]
@@ -9,13 +14,59 @@ pub use single::create::create_single_index_sets;
 pub use single::create::tests::insert_test_single_index_set;
 
 use crate::{
-    db::{self, FieldValues, Insert},
-    error::ErrorInner,
+    db::{self, DbError, FieldValues, Insert},
+    error::error_response,
     handlers::index_sets::index_set_name::IndexKitName,
 };
 
 mod dual;
 mod single;
+
+#[derive(
+    Debug,
+    Clone,
+    thiserror::Error,
+    serde::Serialize,
+    schemars::JsonSchema,
+    OperationIo,
+    PartialEq,
+    Eq,
+)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum IndexSetError {
+    #[error("malformed index set name '{name}' (must match {must_match})")]
+    MalformedName {
+        name: String,
+        must_match: &'static str,
+    },
+    #[error("malformed DNA sequence '{sequence}' (must match {must_match})")]
+    MalformedSequence {
+        sequence: String,
+        must_match: &'static str,
+    },
+    #[error("all index sets must share the same kit name")]
+    MixedKitNames,
+    #[serde(untagged)]
+    #[error(transparent)]
+    Db(#[from] DbError),
+}
+
+impl IndexSetError {
+    fn status(&self) -> StatusCode {
+        match self {
+            Self::MalformedName { .. } | Self::MalformedSequence { .. } | Self::MixedKitNames => {
+                StatusCode::UNPROCESSABLE_ENTITY
+            }
+            Self::Db(e) => e.status(),
+        }
+    }
+}
+
+impl IntoResponse for IndexSetError {
+    fn into_response(self) -> Response {
+        error_response(self.status(), self)
+    }
+}
 
 mod index_set_name {
     use std::sync::LazyLock;
@@ -23,7 +74,7 @@ mod index_set_name {
     use postgres_types::ToSql;
     use regex::Regex;
 
-    use crate::error::ErrorInner;
+    use crate::handlers::index_sets::IndexSetError;
 
     static INDEX_SET_NAME_REGEX: LazyLock<Regex> = LazyLock::new(|| {
         Regex::new(r"^SI-([NA]{2}|[TN]{2}|[GA]{2}|[TS]{2}|[TT]{2})-[A-H]\d{1,2}$").unwrap()
@@ -42,13 +93,11 @@ mod index_set_name {
     pub struct IndexSetWellName<'a>(&'a str);
 
     impl<'a> IndexSetName<'a> {
-        pub fn new(index_set_name: &'a str) -> Result<Self, ErrorInner> {
+        pub fn new(index_set_name: &'a str) -> Result<Self, IndexSetError> {
             if !INDEX_SET_NAME_REGEX.is_match(index_set_name) {
-                return Err(ErrorInner::DataConstraint {
-                    resource: None,
-                    message: "malformed index set name".to_owned(),
-                    field: None,
-                    detail: Some(format!("must match {}", INDEX_SET_NAME_REGEX.as_str())),
+                return Err(IndexSetError::MalformedName {
+                    name: index_set_name.to_owned(),
+                    must_match: INDEX_SET_NAME_REGEX.as_str(),
                 });
             }
 
@@ -71,7 +120,7 @@ mod sequence {
     use postgres_types::ToSql;
     use regex::Regex;
 
-    use crate::error::ErrorInner;
+    use crate::handlers::index_sets::IndexSetError;
 
     static DNA_REGEX: LazyLock<Regex> =
         LazyLock::new(|| Regex::new(r"^([ACGT]{8}|[ACGT]{10})$").unwrap());
@@ -81,13 +130,11 @@ mod sequence {
     pub struct DnaSequence<'a>(&'a str);
 
     impl<'a> DnaSequence<'a> {
-        pub fn new(sequence: &'a str) -> Result<Self, ErrorInner> {
+        pub fn new(sequence: &'a str) -> Result<Self, IndexSetError> {
             if !DNA_REGEX.is_match(sequence) {
-                return Err(ErrorInner::DataConstraint {
-                    resource: None,
-                    message: "malformed DNA sequence".to_owned(),
-                    field: None,
-                    detail: Some(format!("must match {}", DNA_REGEX.as_str())),
+                return Err(IndexSetError::MalformedSequence {
+                    sequence: sequence.to_owned(),
+                    must_match: DNA_REGEX.as_str(),
                 });
             }
 
@@ -115,7 +162,7 @@ impl Insert for NewIndexKit<'_> {
 async fn insert_index_kit(
     tx: &db::Transaction<'_>,
     index_kit: &NewIndexKit<'_>,
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     tx.insert(index_kit).await?;
 
     Ok(())

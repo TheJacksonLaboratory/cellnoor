@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, Sql},
-    error::{Error, ErrorInner},
+    db::{self, DbError, Sql},
     state::AppState,
 };
 
@@ -27,13 +26,13 @@ pub struct PersonAccount {
 pub async fn index_accounts(
     State(state): State<AppState>,
     user: AuthUser,
-) -> Result<Json<Vec<PersonAccount>>, Error> {
+) -> Result<Json<Vec<PersonAccount>>, DbError> {
     state
         .in_transaction(user, async |tx| select_accounts(tx).await)
         .await
 }
 
-async fn select_accounts(tx: &db::Transaction<'_>) -> Result<Vec<PersonAccount>, ErrorInner> {
+async fn select_accounts(tx: &db::Transaction<'_>) -> Result<Vec<PersonAccount>, DbError> {
     static SELECT_API_KEYS: &str = include_str!("index/select.sql");
 
     let sql = Sql::new(SELECT_API_KEYS, vec![]);

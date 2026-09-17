@@ -11,8 +11,8 @@ use cellnoor_types::project::{
 };
 
 use crate::{
+    db::DbError,
     auth::AuthUser,
-    error::Error,
     handlers::{
         delete_resource,
         projects::{
@@ -47,7 +47,7 @@ async fn index_projects_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleProjectQuery>,
-) -> Result<Json<Vec<ProjectCompact>>, Error> {
+) -> Result<Json<Vec<ProjectCompact>>, DbError> {
     index_projects(state, user, Json(ProjectQuery::from_simple_query(q))).await
 }
 
@@ -55,6 +55,6 @@ async fn index_projects_detailed_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleProjectQuery>,
-) -> Result<Json<Vec<ProjectDetailed>>, Error> {
+) -> Result<Json<Vec<ProjectDetailed>>, DbError> {
     index_projects_detailed(state, user, Json(ProjectQuery::from_simple_query(q))).await
 }

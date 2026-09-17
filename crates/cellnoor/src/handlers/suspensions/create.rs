@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::suspensions::{
         measurements::create::insert_suspension_measurements, show::select_suspension_by_id,
     },
@@ -19,7 +18,7 @@ pub async fn create_suspension(
     State(state): State<AppState>,
     user: AuthUser,
     Json(record): Json<NewSuspension>,
-) -> Result<Json<SuspensionDetailed>, Error> {
+) -> Result<Json<SuspensionDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| insert_suspension(tx, record).await)
         .await
@@ -32,7 +31,7 @@ async fn insert_suspension(
         measurements,
         preparers,
     }: NewSuspension,
-) -> Result<SuspensionDetailed, ErrorInner> {
+) -> Result<SuspensionDetailed, DbError> {
     let id = tx.insert_returning_id(&record).await?;
 
     let measurement_insertions = insert_suspension_measurements(tx, id, &measurements);
@@ -49,7 +48,7 @@ pub(super) async fn insert_suspension_preparers(
     tx: &db::Transaction<'_>,
     suspension_id: Uuid,
     preparer_ids: &[Uuid],
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let preparers: Vec<_> = preparer_ids
         .iter()
         .map(|&prepared_by| NewSuspensionPreparer {
@@ -135,8 +134,7 @@ pub mod test {
     use uuid::Uuid;
 
     use crate::{
-        db,
-        error::ErrorInner,
+        db::{self, DbError},
         handlers::{
             specimens::create::test::insert_test_specimen_and_project,
             suspensions::create::insert_suspension,
@@ -147,7 +145,7 @@ pub mod test {
     pub async fn insert_test_suspension_and_specimen<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewSuspension, SuspensionDetailed), ErrorInner>
+    ) -> Result<(NewSuspension, SuspensionDetailed), DbError>
     where
         F: FnMut(&mut NewSuspension),
     {

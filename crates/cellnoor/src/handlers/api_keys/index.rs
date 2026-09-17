@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FilterableSqlBuilder},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FilterableSqlBuilder},
     state::AppState,
 };
 
@@ -16,7 +15,7 @@ pub async fn index_api_keys(
     State(state): State<AppState>,
     user: AuthUser,
     Json(query): Json<ApiKeyQuery>,
-) -> Result<Json<Vec<SavedApiKeyRecord>>, Error> {
+) -> Result<Json<Vec<SavedApiKeyRecord>>, DbError> {
     state
         .in_transaction(user, async |tx| select_api_keys(tx, &query).await)
         .await
@@ -25,7 +24,7 @@ pub async fn index_api_keys(
 pub(in super::super) async fn select_api_keys(
     tx: &db::Transaction<'_>,
     query: &ApiKeyQuery,
-) -> Result<Vec<SavedApiKeyRecord>, ErrorInner> {
+) -> Result<Vec<SavedApiKeyRecord>, DbError> {
     static SELECT_API_KEYS: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select.sql"));
 
@@ -35,7 +34,7 @@ pub(in super::super) async fn select_api_keys(
 pub(super) async fn select_api_key_record_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-) -> Result<SavedApiKeyRecord, ErrorInner> {
+) -> Result<SavedApiKeyRecord, DbError> {
     tx.select_one(ApiKeyPredicate::Id(UuidOperator::Eq(id)), select_api_keys)
         .await
 }

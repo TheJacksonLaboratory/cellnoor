@@ -13,8 +13,7 @@ use deadpool_postgres::tokio_postgres::Row;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FilterableSqlBuilder},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FilterableSqlBuilder},
     handlers::{
         chromium_datasets::index_compact::chromium_dataset_links,
         libraries::index_compact::library_from_record,
@@ -27,7 +26,7 @@ pub async fn index_chromium_datasets_detailed(
     State(state): State<AppState>,
     user: AuthUser,
     Json(query): Json<ChromiumDatasetQuery>,
-) -> Result<Json<Vec<ChromiumDatasetDetailed>>, Error> {
+) -> Result<Json<Vec<ChromiumDatasetDetailed>>, DbError> {
     state
         .in_transaction(user, async |tx| {
             select_chromium_datasets_detailed(tx, &state.public_files_url, &query).await
@@ -40,7 +39,7 @@ pub(in super::super) async fn select_chromium_datasets_detailed(
     tx: &db::Transaction<'_>,
     raw_files_url: &str,
     query: &ChromiumDatasetQuery,
-) -> Result<Vec<ChromiumDatasetDetailed>, ErrorInner> {
+) -> Result<Vec<ChromiumDatasetDetailed>, DbError> {
     static SELECT_DETAILED_CHROMIUM_DATASETS: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
 

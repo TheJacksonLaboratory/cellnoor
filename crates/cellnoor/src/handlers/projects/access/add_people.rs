@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::IdParam,
     state::AppState,
 };
@@ -18,7 +17,7 @@ pub async fn add_people_to_project(
     user: AuthUser,
     Path(IdParam { id: project_id }): Path<IdParam>,
     Json(people): Json<Vec<Uuid>>,
-) -> Result<Json<()>, Error> {
+) -> Result<Json<()>, DbError> {
     state
         .in_transaction(user, async |tx| {
             insert_project_accesses(tx, project_id, &people).await
@@ -30,7 +29,7 @@ pub(in super::super) async fn insert_project_accesses(
     tx: &db::Transaction<'_>,
     project_id: Uuid,
     members: &[Uuid],
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let accesses: Vec<_> = members
         .iter()
         .map(|&principal_id| NewProjectAccess {

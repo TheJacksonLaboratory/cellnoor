@@ -12,7 +12,7 @@ use cellnoor_types::institution::{
 
 use crate::{
     auth::AuthUser,
-    error::Error,
+    db::DbError,
     handlers::{
         delete_resource,
         institutions::{
@@ -42,6 +42,6 @@ async fn index_institutions_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleInstitutionQuery>,
-) -> Result<Json<Vec<Institution>>, Error> {
+) -> Result<Json<Vec<Institution>>, DbError> {
     index_institutions(state, user, Json(InstitutionQuery::from_simple_query(q))).await
 }

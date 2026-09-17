@@ -7,10 +7,6 @@ pub enum Action {
     Delete,
 }
 
-/// A group of tables that a permission is granted on.
-///
-/// Which tables each one covers is defined in
-/// /db/migrations/0031_data-rls.up.sql.
 #[unit_enum]
 pub enum Resource {
     Institution,
@@ -23,8 +19,6 @@ pub enum Resource {
     ChromiumDataset,
 }
 
-/// Permission to take one action on one resource, which is one row of the
-/// `permission` table.
 #[base_model]
 #[derive(Copy, Eq)]
 pub struct Permission {

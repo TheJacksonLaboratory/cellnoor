@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::chromium_runs::{
         create::gem_well::{insert_mixed_gem_well, insert_ocm_gem_well, insert_standard_gem_well},
         show::select_chromium_run_by_id,
@@ -22,7 +21,7 @@ pub async fn create_chromium_run(
     State(state): State<AppState>,
     user: AuthUser,
     Json(record): Json<NewChromiumRun>,
-) -> Result<Json<ChromiumRunDetailed>, Error> {
+) -> Result<Json<ChromiumRunDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| insert_chromium_run(tx, record).await)
         .await
@@ -31,7 +30,7 @@ pub async fn create_chromium_run(
 async fn insert_chromium_run(
     tx: &db::Transaction<'_>,
     NewChromiumRun { record, gem_wells }: NewChromiumRun,
-) -> Result<ChromiumRunDetailed, ErrorInner> {
+) -> Result<ChromiumRunDetailed, DbError> {
     let run_id = insert_chromium_run_record(tx, &record).await?;
 
     match gem_wells {
@@ -62,7 +61,7 @@ async fn insert_chromium_run(
 async fn insert_chromium_run_record(
     tx: &db::Transaction<'_>,
     record: &NewChromiumRunRecord,
-) -> Result<Uuid, ErrorInner> {
+) -> Result<Uuid, DbError> {
     tx.insert_returning_id(record).await
 }
 
@@ -112,8 +111,7 @@ pub mod test {
     use uuid::Uuid;
 
     use crate::{
-        db,
-        error::ErrorInner,
+        db::{self, DbError},
         handlers::{
             chromium_runs::create::insert_chromium_run,
             suspension_pools::create::test::insert_test_suspension_pool_and_suspensions,
@@ -138,7 +136,7 @@ pub mod test {
     pub async fn insert_test_standard_chromium_run<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewChromiumRun, ChromiumRunDetailed), ErrorInner>
+    ) -> Result<(NewChromiumRun, ChromiumRunDetailed), DbError>
     where
         F: FnMut(&mut NewChromiumRun),
     {
@@ -182,7 +180,7 @@ pub mod test {
     pub async fn insert_test_ocm_chromium_run<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewChromiumRun, ChromiumRunDetailed), ErrorInner>
+    ) -> Result<(NewChromiumRun, ChromiumRunDetailed), DbError>
     where
         F: FnMut(&mut NewChromiumRun),
     {
@@ -238,7 +236,7 @@ pub mod test {
     pub async fn insert_test_mixed_chromium_run<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewChromiumRun, ChromiumRunDetailed), ErrorInner>
+    ) -> Result<(NewChromiumRun, ChromiumRunDetailed), DbError>
     where
         F: FnMut(&mut NewChromiumRun),
     {

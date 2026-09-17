@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::libraries::{
         measurements::create::insert_library_measurements, show::select_library_by_id,
     },
@@ -19,7 +18,7 @@ pub async fn create_library(
     State(state): State<AppState>,
     user: AuthUser,
     Json(record): Json<NewLibrary>,
-) -> Result<Json<LibraryDetailed>, Error> {
+) -> Result<Json<LibraryDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| insert_library(tx, record).await)
         .await
@@ -32,7 +31,7 @@ async fn insert_library(
         measurements,
         preparers,
     }: NewLibrary,
-) -> Result<LibraryDetailed, ErrorInner> {
+) -> Result<LibraryDetailed, DbError> {
     let id = tx.insert_returning_id(&record).await?;
 
     let measurement_insertions = insert_library_measurements(tx, id, &measurements);
@@ -49,7 +48,7 @@ pub(super) async fn insert_library_preparers(
     tx: &db::Transaction<'_>,
     library_id: Uuid,
     preparer_ids: &[Uuid],
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let preparers: Vec<_> = preparer_ids
         .iter()
         .map(|&prepared_by| NewLibraryPreparer {
@@ -136,8 +135,7 @@ pub mod test {
     use uuid::Uuid;
 
     use crate::{
-        db,
-        error::ErrorInner,
+        db::{self, DbError},
         handlers::{
             cdna::create::test::insert_test_cdna_and_chromium_run, index_sets::DUAL_INDEX_SET_NAME,
             libraries::create::insert_library,
@@ -148,7 +146,7 @@ pub mod test {
     pub async fn insert_test_library<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewLibrary, LibraryDetailed), ErrorInner>
+    ) -> Result<(NewLibrary, LibraryDetailed), DbError>
     where
         F: FnMut(&mut NewLibrary),
     {

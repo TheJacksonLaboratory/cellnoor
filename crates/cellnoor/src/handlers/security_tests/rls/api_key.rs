@@ -9,8 +9,7 @@ use pretty_assertions::assert_eq;
 use uuid::Uuid;
 
 use crate::{
-    db,
-    error::ErrorInner,
+    db::{self, DbError},
     handlers::{
         api_keys::{
             create::test::insert_test_api_key, index::select_api_keys, update::update_api_key_by_id,
@@ -65,7 +64,7 @@ async fn user_cannot_update_unowned_api_key(client: &mut db::Client, api_key_id:
     .await
     .unwrap_err();
 
-    assert_matches!(error, ErrorInner::ResourceNotFound);
+    assert_matches!(error, DbError::ResourceNotFound);
 }
 
 async fn user_cannot_see_inaccessible_api_key(client: &mut db::Client, api_key_id: Uuid) {

@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self},
-    error::{Error, ErrorInner},
+    db::{self, DbError},
     handlers::{IdParam, institutions::show::select_institution_by_id},
     state::AppState,
 };
@@ -18,7 +17,7 @@ pub async fn update_institution(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(institution): Json<NewInstitution>,
-) -> Result<Json<Institution>, Error> {
+) -> Result<Json<Institution>, DbError> {
     state
         .in_transaction(user, async |tx| {
             update_institution_by_id(tx, id, &institution).await
@@ -30,7 +29,7 @@ async fn update_institution_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     updated_record: &NewInstitution,
-) -> Result<Institution, ErrorInner> {
+) -> Result<Institution, DbError> {
     tx.update(id, updated_record).await?;
 
     select_institution_by_id(tx, id).await

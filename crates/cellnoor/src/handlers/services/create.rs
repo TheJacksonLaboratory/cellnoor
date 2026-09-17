@@ -3,8 +3,7 @@ use cellnoor_types::service::{NewService, Service, ServiceField, ServiceSimpleFi
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::{
         permissions::grant_permissions,
         services::{access::add_people::insert_service_accesses, index::select_service_by_id},
@@ -17,7 +16,7 @@ pub async fn create_service(
     State(state): State<AppState>,
     user: AuthUser,
     Json(service): Json<NewService>,
-) -> Result<Json<Service>, Error> {
+) -> Result<Json<Service>, DbError> {
     state
         .in_transaction(user, async |tx| insert_service(tx, &service).await)
         .await
@@ -30,7 +29,7 @@ async fn insert_service(
         users,
         permissions_to_grant,
     }: &NewService,
-) -> Result<Service, ErrorInner> {
+) -> Result<Service, DbError> {
     let id = tx.insert_returning_id(record).await?;
     set_is_staff(tx, id, record.is_staff).await?;
     grant_permissions(tx, id, permissions_to_grant).await?;
@@ -62,8 +61,7 @@ pub mod test {
     use uuid::Uuid;
 
     use crate::{
-        db,
-        error::ErrorInner,
+        db::{self, DbError},
         handlers::services::create::insert_service,
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
@@ -71,7 +69,7 @@ pub mod test {
     pub async fn insert_test_service<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewService, Service), ErrorInner>
+    ) -> Result<(NewService, Service), DbError>
     where
         F: FnMut(&mut NewService),
     {

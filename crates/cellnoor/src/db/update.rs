@@ -4,7 +4,10 @@ use uuid::Uuid;
 
 use crate::db::{ColumnSlice, Sql};
 
-/// `update <relation> set <column> = $1, … where id = $n`
+/// Produces SQL like:
+/// ```sql
+/// update <relation> set <column> = $1, … where id = $n`
+/// ```
 pub(super) fn update_stmt<'a>(relation: &str, id: &'a Uuid, fields: &ColumnSlice<'a>) -> Sql<'a> {
     // Assume that `column = $n` is 32 characters at maximum, leaving room also
     // for the `update <relation> set` part

@@ -1,8 +1,11 @@
 use std::fs;
 
+use aide::OperationIo;
 use axum::{
     Json,
     extract::{Path, State},
+    http::StatusCode,
+    response::{IntoResponse, Response},
 };
 use camino::Utf8Path;
 use cellnoor_types::{
@@ -13,8 +16,8 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db,
-    error::{Error, ErrorInner},
+    db::{self, DbError},
+    error::error_response,
     handlers::{
         IdParam,
         chromium_datasets::{
@@ -25,12 +28,46 @@ use crate::{
     state::AppState,
 };
 
+#[derive(
+    Debug,
+    Clone,
+    thiserror::Error,
+    serde::Serialize,
+    schemars::JsonSchema,
+    OperationIo,
+    PartialEq,
+    Eq,
+)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum UpdateChromiumDatasetError {
+    #[error("{message}")]
+    RenameDatasetDirectoryFailed { message: String },
+    #[serde(untagged)]
+    #[error(transparent)]
+    Db(#[from] DbError),
+}
+
+impl UpdateChromiumDatasetError {
+    fn status(&self) -> StatusCode {
+        match self {
+            Self::RenameDatasetDirectoryFailed { .. } => StatusCode::UNPROCESSABLE_ENTITY,
+            Self::Db(e) => e.status(),
+        }
+    }
+}
+
+impl IntoResponse for UpdateChromiumDatasetError {
+    fn into_response(self) -> Response {
+        error_response(self.status(), self)
+    }
+}
+
 pub async fn update_chromium_dataset(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<ChromiumDatasetUpdate>,
-) -> Result<Json<ChromiumDatasetDetailed>, Error> {
+) -> Result<Json<ChromiumDatasetDetailed>, UpdateChromiumDatasetError> {
     state
         .in_transaction(user, async |tx| {
             update_chromium_dataset_by_id(
@@ -51,7 +88,7 @@ async fn update_chromium_dataset_by_id(
     static_files_dir: &Utf8Path,
     id: Uuid,
     update: &ChromiumDatasetUpdate,
-) -> Result<ChromiumDatasetDetailed, ErrorInner> {
+) -> Result<ChromiumDatasetDetailed, UpdateChromiumDatasetError> {
     let old_dataset_name = fetch_dataset_name(tx, id).await?;
 
     tx.update(id, update).await?;
@@ -81,7 +118,7 @@ fn rename_dataset_directories(
     project_names: &[NonemptyString],
     old_dataset_name: &str,
     new_dataset_name: &str,
-) -> Result<(), ErrorInner> {
+) -> Result<(), UpdateChromiumDatasetError> {
     for project_name in project_names {
         let project_dir = static_files_dir
             .join("projects")
@@ -95,8 +132,12 @@ fn rename_dataset_directories(
             continue;
         }
 
-        fs::rename(&old_dir, &new_dir).map_err(|e| ErrorInner::FileUpload {
-            message: format!("failed to rename dataset directory from {old_dir} to {new_dir}: {e}"),
+        fs::rename(&old_dir, &new_dir).map_err(|e| {
+            UpdateChromiumDatasetError::RenameDatasetDirectoryFailed {
+                message: format!(
+                    "failed to rename dataset directory from {old_dir} to {new_dir}: {e}"
+                ),
+            }
         })?;
     }
 
@@ -107,7 +148,7 @@ async fn fetch_dataset_name(
     tx: &db::Transaction<'_>,
 
     dataset_id: Uuid,
-) -> Result<NonemptyString, ErrorInner> {
+) -> Result<NonemptyString, DbError> {
     // In theory, we could just write a query that gets only the name, but it
     // might be wise to reuse code we have already written
     let ds = select_chromium_dataset_by_id(tx, "", dataset_id).await?;

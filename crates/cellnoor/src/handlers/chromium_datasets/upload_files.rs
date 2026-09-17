@@ -1,6 +1,11 @@
 use std::{collections::HashMap, fs, str::FromStr};
 
-use axum::extract::{Multipart, Path, State, multipart::Field};
+use aide::OperationIo;
+use axum::{
+    extract::{Multipart, Path, State, multipart::Field},
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use bytes::Bytes;
 use camino::{Utf8Path, Utf8PathBuf};
 use cellnoor_types::{Relation, nonempty::NonemptyString};
@@ -10,18 +15,61 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert, Sql},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert, Sql},
+    error::error_response,
     handlers::IdParam,
     state::AppState,
 };
+
+#[derive(
+    Debug,
+    Clone,
+    thiserror::Error,
+    serde::Serialize,
+    schemars::JsonSchema,
+    OperationIo,
+    PartialEq,
+    Eq,
+)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum UploadFilesError {
+    #[error("failed to read multipart form: {message}")]
+    Multipart { message: String },
+    #[error("{message}")]
+    ContentType { message: String },
+    #[error("{message}")]
+    Filename { message: String },
+    #[error("failed to parse uploaded file: {message}")]
+    Parse { message: String },
+    #[serde(untagged)]
+    #[error(transparent)]
+    Db(#[from] DbError),
+}
+
+impl UploadFilesError {
+    fn status(&self) -> StatusCode {
+        match self {
+            Self::Multipart { .. }
+            | Self::ContentType { .. }
+            | Self::Filename { .. }
+            | Self::Parse { .. } => StatusCode::UNPROCESSABLE_ENTITY,
+            Self::Db(e) => e.status(),
+        }
+    }
+}
+
+impl IntoResponse for UploadFilesError {
+    fn into_response(self) -> Response {
+        error_response(self.status(), self)
+    }
+}
 
 pub async fn upload_files(
     State(app_state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id: dataset_id }): Path<IdParam>,
     mut files: Multipart,
-) -> Result<(), Error> {
+) -> Result<(), UploadFilesError> {
     // Technically could be up to 768 but that's not happening any time soon
     const N_FILES: usize = 128;
 
@@ -29,8 +77,8 @@ pub async fn upload_files(
     let mut parsed_files = Vec::with_capacity(N_FILES);
 
     let dataset_with_project_names = {
-        let mut client = app_state.db_client(user).await?;
-        let tx = client.begin().await?;
+        let mut client = app_state.db_client(user).await.map_err(DbError::from)?;
+        let tx = client.begin().await.map_err(DbError::from)?;
 
         fetch_dataset_and_project_names(&tx, &dataset_id).await?
     };
@@ -38,7 +86,7 @@ pub async fn upload_files(
     while let Some(field) = files
         .next_field()
         .await
-        .map_err(|e| ErrorInner::FileUpload {
+        .map_err(|e| UploadFilesError::Multipart {
             message: e.to_string(),
         })?
     {
@@ -54,15 +102,15 @@ pub async fn upload_files(
 
     // Put database operations in their own scope to avoid blocking
     {
-        let mut client = app_state.db_client(user).await?;
-        let tx = client.begin().await?;
+        let mut client = app_state.db_client(user).await.map_err(DbError::from)?;
+        let tx = client.begin().await.map_err(DbError::from)?;
 
         let db_file_insertions = parsed_files
             .iter()
             .map(|(path, file)| write_file_to_db(&tx, dataset_id, path, file.as_ref()));
         futures::future::try_join_all(db_file_insertions).await?;
 
-        tx.commit().await?;
+        tx.commit().await.map_err(DbError::from)?;
     }
 
     tokio::task::spawn_blocking(move || {
@@ -82,7 +130,7 @@ async fn write_file_to_db(
     dataset_id: Uuid,
     path: &NonemptyString,
     parsed_file: Option<&serde_json::Value>,
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     // Ensure the raw file is inserted first because the parsed file depends on
     // the raw file's existence
     insert_raw_file(tx, dataset_id, path).await?;
@@ -97,7 +145,7 @@ pub(super) struct DatasetWithProjectNames {
 pub(super) async fn fetch_dataset_and_project_names(
     tx: &db::Transaction<'_>,
     dataset_id: &Uuid,
-) -> Result<DatasetWithProjectNames, ErrorInner> {
+) -> Result<DatasetWithProjectNames, DbError> {
     static SELECT_PROJECT_NAMES: &str = include_str!("upload_files/select_project_names.sql");
 
     let sql = Sql::new(SELECT_PROJECT_NAMES, vec![dataset_id]);
@@ -116,7 +164,7 @@ fn write_fileset_to_disk(
         project_names,
     }: &DatasetWithProjectNames,
     raw_files: &[(NonemptyString, Bytes)],
-) -> Result<(), ErrorInner> {
+) -> std::io::Result<()> {
     let chromium_dataset_dir = static_file_dir
         .join("chromium-datasets")
         .join(dataset_id.to_string());
@@ -145,49 +193,42 @@ fn write_fileset_to_disk(
     Ok(())
 }
 
-fn write_file_to_dataset_dir(path: &Utf8Path, raw_file: &[u8]) -> Result<(), ErrorInner> {
-    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+fn write_file_to_dataset_dir(path: &Utf8Path, raw_file: &[u8]) -> std::io::Result<()> {
+    fs::create_dir_all(path.parent().unwrap())?;
 
-    std::fs::write(path, raw_file).map_err(|e| ErrorInner::Other {
-        message: format!("failed to write file: {e}"),
-        sql_state: None,
-    })?;
-
-    Ok(())
+    fs::write(path, raw_file)
 }
 
-fn compress_file(raw_file: &[u8]) -> Result<Vec<u8>, ErrorInner> {
+fn compress_file(raw_file: &[u8]) -> std::io::Result<Vec<u8>> {
     let compression_level = if cfg!(debug_assertions) {
         zstd::DEFAULT_COMPRESSION_LEVEL
     } else {
         19
     };
 
-    zstd::encode_all(raw_file, compression_level).map_err(|e| ErrorInner::FileUpload {
-        message: format!("failed to write compressed file to disk: {e}"),
-    })
+    zstd::encode_all(raw_file, compression_level)
 }
 
 fn symlink_to_project_dirs(
     source: &Utf8Path,
     destinations: impl IntoIterator<Item = Utf8PathBuf>,
-) -> Result<(), ErrorInner> {
+) -> std::io::Result<()> {
     for dest in destinations {
-        fs::create_dir_all(dest.parent().unwrap()).unwrap();
+        fs::create_dir_all(dest.parent().unwrap())?;
 
         if dest.exists() {
             continue;
         }
 
-        std::os::unix::fs::symlink(source, &dest).map_err(|e| ErrorInner::FileUpload {
-            message: format!("unable to symlink {source} to {dest}: {e}"),
+        std::os::unix::fs::symlink(source, &dest).map_err(|e| {
+            std::io::Error::other(format!("unable to symlink {source} to {dest}: {e}"))
         })?;
     }
 
     Ok(())
 }
 
-async fn process_file(form_field: Field<'_>) -> Result<ProcessedFile, ErrorInner> {
+async fn process_file(form_field: Field<'_>) -> Result<ProcessedFile, UploadFilesError> {
     let content_type = AllowedContentType::from_multipart_form_field(&form_field)?;
 
     let path = extract_filename(form_field.file_name())
@@ -198,7 +239,7 @@ async fn process_file(form_field: Field<'_>) -> Result<ProcessedFile, ErrorInner
     let raw_data = form_field
         .bytes()
         .await
-        .map_err(|e| ErrorInner::FileUpload {
+        .map_err(|e| UploadFilesError::Multipart {
             message: format!("failed to extract data from form field: {e}"),
         })?;
 
@@ -218,13 +259,13 @@ struct ProcessedFile {
 fn parse_file(
     content_type: AllowedContentType,
     data: &[u8],
-) -> Result<Option<serde_json::Value>, ErrorInner> {
+) -> Result<Option<serde_json::Value>, UploadFilesError> {
     match content_type {
         AllowedContentType::Csv => parse_csv(data).map(Some),
         AllowedContentType::Json => {
             serde_json::from_slice(data)
                 .map(Some)
-                .map_err(|e| ErrorInner::FileUpload {
+                .map_err(|e| UploadFilesError::Parse {
                     message: format!("failed to parse JSON: {e}"),
                 })
         }
@@ -236,7 +277,7 @@ async fn insert_raw_file(
     tx: &db::Transaction<'_>,
     dataset_id: Uuid,
     path: &NonemptyString,
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     tx.insert(&NewRawFile { dataset_id, path }).await?;
 
     Ok(())
@@ -266,7 +307,7 @@ async fn insert_parsed_file(
     dataset_id: Uuid,
     path: &NonemptyString,
     parsed_file: Option<&serde_json::Value>,
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let Some(parsed_file) = parsed_file else {
         return Ok(());
     };
@@ -306,7 +347,7 @@ impl Insert for NewParsedFile<'_> {
     }
 }
 
-fn parse_csv(data: &[u8]) -> Result<serde_json::Value, ErrorInner> {
+fn parse_csv(data: &[u8]) -> Result<serde_json::Value, UploadFilesError> {
     type ParsedData = Vec<HashMap<String, TenxCsvValue>>;
 
     fn csv_value_to_serde(val: TenxCsvValue) -> serde_json::Value {
@@ -324,7 +365,7 @@ fn parse_csv(data: &[u8]) -> Result<serde_json::Value, ErrorInner> {
     let parsed = reader
         .deserialize()
         .collect::<Result<ParsedData, _>>()
-        .map_err(|e| ErrorInner::FileUpload {
+        .map_err(|e| UploadFilesError::Parse {
             message: format!("failed to parse CSV: {e}"),
         })?;
 
@@ -351,20 +392,20 @@ enum AllowedContentType {
 }
 
 impl AllowedContentType {
-    fn from_multipart_form_field(field: &Field<'_>) -> Result<Self, ErrorInner> {
+    fn from_multipart_form_field(field: &Field<'_>) -> Result<Self, UploadFilesError> {
         field
             .content_type()
             .map(AllowedContentType::from_str)
-            .ok_or(ErrorInner::FileUpload {
+            .ok_or(UploadFilesError::ContentType {
                 message: "file-upload must have content type".to_owned(),
             })?
-            .map_err(|_| ErrorInner::FileUpload {
+            .map_err(|_| UploadFilesError::ContentType {
                 message: format!("content-type must be one of: {:?}", Self::VARIANTS),
             })
     }
 }
 
-fn extract_filename(filename: Option<&str>) -> Result<&str, ErrorInner> {
+fn extract_filename(filename: Option<&str>) -> Result<&str, UploadFilesError> {
     const ALLOWED_FILENAMES: [&str; 7] = [
         "metrics_summary.csv",
         "qc_library_metrics.csv",
@@ -375,7 +416,7 @@ fn extract_filename(filename: Option<&str>) -> Result<&str, ErrorInner> {
         "web_summary.html",
     ];
 
-    let filename_error = Err(ErrorInner::FileUpload {
+    let filename_error = Err(UploadFilesError::Filename {
         message: format!(
             "uploaded files must have a filename which is one of {:?}",
             ALLOWED_FILENAMES
@@ -394,7 +435,7 @@ fn extract_filename(filename: Option<&str>) -> Result<&str, ErrorInner> {
     }
 
     if path.is_absolute() {
-        return Err(ErrorInner::FileUpload {
+        return Err(UploadFilesError::Filename {
             message: "path cannot be absolute".to_owned(),
         });
     }
@@ -411,7 +452,7 @@ fn extract_filename(filename: Option<&str>) -> Result<&str, ErrorInner> {
         Some(p) => p,
     };
 
-    let per_sample_outs_error = Err(ErrorInner::FileUpload {
+    let per_sample_outs_error = Err(UploadFilesError::Filename {
         message: "files nested into a directory must be nested into a \
                   'per_sample_outs/sample_name/' directory"
             .to_owned(),

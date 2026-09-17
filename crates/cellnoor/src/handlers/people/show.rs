@@ -10,8 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self},
-    error::{Error, ErrorInner},
+    db::{self, DbError},
     handlers::{IdParam, people::index::select_people},
     state::AppState,
 };
@@ -20,7 +19,7 @@ pub async fn show_person(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-) -> Result<Json<Person>, Error> {
+) -> Result<Json<Person>, DbError> {
     state
         .in_transaction(user, async |tx| select_person_by_id(tx, id).await)
         .await
@@ -29,7 +28,7 @@ pub async fn show_person(
 pub(super) async fn select_person_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-) -> Result<Person, ErrorInner> {
+) -> Result<Person, DbError> {
     tx.select_one(PersonPredicate::Id(UuidOperator::Eq(id)), select_people)
         .await
 }

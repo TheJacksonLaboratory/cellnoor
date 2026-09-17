@@ -9,8 +9,8 @@ use axum::{
 use cellnoor_types::service::{Service, ServiceQuery, ServiceSimpleFields, SimpleServiceQuery};
 
 use crate::{
+    db::DbError,
     auth::AuthUser,
-    error::Error,
     handlers::{
         delete_resource,
         services::{add_people_to_service, create_service, index_services, update_service},
@@ -40,6 +40,6 @@ async fn index_services_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleServiceQuery>,
-) -> Result<Json<Vec<Service>>, Error> {
+) -> Result<Json<Vec<Service>>, DbError> {
     index_services(state, user, Json(ServiceQuery::from_simple_query(q))).await
 }

@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::IdParam,
     state::AppState,
 };
@@ -18,7 +17,7 @@ pub async fn add_people_to_service(
     user: AuthUser,
     Path(IdParam { id: service_id }): Path<IdParam>,
     Json(people): Json<Vec<Uuid>>,
-) -> Result<Json<()>, Error> {
+) -> Result<Json<()>, DbError> {
     state
         .in_transaction(user, async |tx| {
             insert_service_accesses(tx, service_id, &people).await
@@ -30,7 +29,7 @@ pub(in super::super::super) async fn insert_service_accesses(
     tx: &db::Transaction<'_>,
     service_id: Uuid,
     people: &[Uuid],
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let accesses: Vec<_> = people
         .iter()
         .map(|&person_id| NewServiceAccess {

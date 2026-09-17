@@ -4,8 +4,7 @@ use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
-    db::{self, Sql},
-    error::{Error, ErrorInner},
+    db::{self, DbError, Sql},
     state::AppState,
 };
 
@@ -13,7 +12,7 @@ pub async fn create_multiplexing_tag(
     State(state): State<AppState>,
     user: AuthUser,
     Json(new): Json<NewMultiplexingTag>,
-) -> Result<Json<MultiplexingTag>, Error> {
+) -> Result<Json<MultiplexingTag>, DbError> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;
 
@@ -27,7 +26,7 @@ pub async fn create_multiplexing_tag(
 async fn insert_multiplexing_tag(
     tx: &db::Transaction<'_>,
     NewMultiplexingTag { tag_id, type_ }: &NewMultiplexingTag,
-) -> Result<MultiplexingTag, ErrorInner> {
+) -> Result<MultiplexingTag, DbError> {
     static INSERT_MULTIPLEXING_TAG: &str =
         "insert into multiplexing_tag (tag_id, type) values ($1, $2) returning multiplexing_tag";
 
@@ -46,15 +45,14 @@ pub mod tests {
     use uuid::Uuid;
 
     use crate::{
-        db,
-        error::ErrorInner,
+        db::{self, DbError},
         handlers::multiplexing_tags::create::insert_multiplexing_tag,
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
 
     pub async fn insert_test_multiplexing_tag(
         tx: &db::Transaction<'_>,
-    ) -> Result<MultiplexingTag, ErrorInner> {
+    ) -> Result<MultiplexingTag, DbError> {
         let new = NewMultiplexingTag {
             tag_id: Uuid::new_v4().to_string().to_nonempty_string(),
             type_: MultiplexingTagType::FlexBarcode,

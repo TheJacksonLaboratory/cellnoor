@@ -5,8 +5,7 @@ use secrecy::ExposeSecret;
 
 use crate::{
     auth::AuthUser,
-    db,
-    error::{Error, ErrorInner},
+    db::{self, DbError},
     settings::Settings,
 };
 
@@ -50,23 +49,25 @@ impl AppState {
 
     /// Run `work` in one transaction on behalf of `user`, committing it only if
     /// `work` succeeds.
-    pub async fn in_transaction<T>(
+    pub async fn in_transaction<T, E>(
         &self,
         user: AuthUser,
-        work: impl AsyncFnOnce(&db::Transaction<'_>) -> Result<T, ErrorInner>,
-    ) -> Result<Json<T>, Error> {
-        let mut client = self.db_client(user).await?;
-        let tx = client.begin().await?;
+        work: impl AsyncFnOnce(&db::Transaction<'_>) -> Result<T, E>,
+    ) -> Result<Json<T>, E>
+    where
+        E: From<DbError>,
+    {
+        let mut client = self.db_client(user).await.map_err(DbError::from)?;
+        let tx = client.begin().await.map_err(DbError::from)?;
 
         let response = work(&tx).await?;
 
-        tx.commit().await?;
+        tx.commit().await.map_err(DbError::from)?;
 
         Ok(Json(response))
     }
 }
 
-/// A module of test utilities to reduce boilerplate for writing tests.
 #[cfg(test)]
 pub mod test_util {
     use cellnoor_types::nonempty::NonemptyString;

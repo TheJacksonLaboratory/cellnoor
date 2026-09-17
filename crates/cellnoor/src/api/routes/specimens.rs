@@ -11,8 +11,8 @@ use cellnoor_types::specimen::{
 };
 
 use crate::{
+    db::DbError,
     auth::AuthUser,
-    error::Error,
     handlers::{
         delete_resource,
         specimens::{
@@ -47,7 +47,7 @@ async fn index_specimens_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleSpecimenQuery>,
-) -> Result<Json<Vec<SpecimenCompact>>, Error> {
+) -> Result<Json<Vec<SpecimenCompact>>, DbError> {
     index_specimens(state, user, Json(SpecimenQuery::from_simple_query(q))).await
 }
 
@@ -55,6 +55,6 @@ async fn index_specimens_detailed_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleSpecimenQuery>,
-) -> Result<Json<Vec<SpecimenDetailed>>, Error> {
+) -> Result<Json<Vec<SpecimenDetailed>>, DbError> {
     index_specimens_detailed(state, user, Json(SpecimenQuery::from_simple_query(q))).await
 }

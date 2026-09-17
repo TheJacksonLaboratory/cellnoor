@@ -1,16 +1,16 @@
 use jsonwebtoken::TokenData;
 use uuid::Uuid;
 
-use crate::{auth::AuthUser, error::ErrorInner};
+use crate::auth::{AuthError, AuthUser};
 
 pub(super) fn authenticate_with_jwt(
     token: &[u8],
     decoding_key: &jsonwebtoken::DecodingKey,
     validation: &jsonwebtoken::Validation,
-) -> Result<AuthUser, ErrorInner> {
+) -> Result<AuthUser, AuthError> {
     jsonwebtoken::decode(token, decoding_key, validation)
         .map(AuthUser::from_token_data)
-        .map_err(|e| ErrorInner::InvalidAuthToken {
+        .map_err(|e| AuthError::InvalidAuthToken {
             message: e.to_string(),
         })
 }

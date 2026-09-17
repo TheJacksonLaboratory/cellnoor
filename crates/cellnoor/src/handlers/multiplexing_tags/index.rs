@@ -3,15 +3,14 @@ use cellnoor_types::multiplexing_tag::MultiplexingTag;
 
 use crate::{
     auth::AuthUser,
-    db::{self, Sql},
-    error::{Error, ErrorInner},
+    db::{self, DbError, Sql},
     state::AppState,
 };
 
 pub async fn index_multiplexing_tags(
     State(state): State<AppState>,
     user: AuthUser,
-) -> Result<Json<Vec<MultiplexingTag>>, Error> {
+) -> Result<Json<Vec<MultiplexingTag>>, DbError> {
     state
         .in_transaction(user, async |tx| select_multiplexing_tags(tx).await)
         .await
@@ -19,7 +18,7 @@ pub async fn index_multiplexing_tags(
 
 pub async fn select_multiplexing_tags(
     tx: &db::Transaction<'_>,
-) -> Result<Vec<MultiplexingTag>, ErrorInner> {
+) -> Result<Vec<MultiplexingTag>, DbError> {
     static SELECT_MULTIPLEXING_TAGS: &str = include_str!("index/select.sql");
 
     let sql = Sql::new(SELECT_MULTIPLEXING_TAGS, vec![]);

@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::IdParam,
     state::AppState,
 };
@@ -18,7 +17,7 @@ pub async fn create_library_measurement(
     user: AuthUser,
     Path(IdParam { id: library_id }): Path<IdParam>,
     Json(record): Json<NewNucleicAcidMeasurement>,
-) -> Result<Json<()>, Error> {
+) -> Result<Json<()>, DbError> {
     state
         .in_transaction(user, async |tx| {
             insert_library_measurements(tx, library_id, std::slice::from_ref(&record)).await
@@ -30,7 +29,7 @@ pub(in super::super) async fn insert_library_measurements(
     tx: &db::Transaction<'_>,
     library_id: Uuid,
     records: &[NewNucleicAcidMeasurement],
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let rows: Vec<_> = records
         .iter()
         .map(|record| NewLibraryMeasurement { library_id, record })

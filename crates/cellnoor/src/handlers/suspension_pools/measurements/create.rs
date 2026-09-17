@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::IdParam,
     state::AppState,
 };
@@ -18,7 +17,7 @@ pub async fn create_suspension_pool_measurement(
     user: AuthUser,
     Path(IdParam { id: pool_id }): Path<IdParam>,
     Json(record): Json<NewSuspensionPoolMeasurement>,
-) -> Result<Json<()>, Error> {
+) -> Result<Json<()>, DbError> {
     state
         .in_transaction(user, async |tx| {
             insert_suspension_pool_measurements(tx, pool_id, std::slice::from_ref(&record)).await
@@ -30,7 +29,7 @@ pub(in super::super) async fn insert_suspension_pool_measurements(
     tx: &db::Transaction<'_>,
     pool_id: Uuid,
     records: &[NewSuspensionPoolMeasurement],
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let rows: Vec<_> = records
         .iter()
         .map(|record| NewSuspensionPoolMeasurementRow { pool_id, record })

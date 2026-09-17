@@ -11,8 +11,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::suspension_pools::{
         measurements::create::insert_suspension_pool_measurements,
         show::select_suspension_pool_by_id,
@@ -24,7 +23,7 @@ pub async fn create_suspension_pool(
     State(state): State<AppState>,
     user: AuthUser,
     Json(record): Json<NewSuspensionPool>,
-) -> Result<Json<SuspensionPoolDetailed>, Error> {
+) -> Result<Json<SuspensionPoolDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| insert_suspension_pool(tx, &record).await)
         .await
@@ -38,7 +37,7 @@ async fn insert_suspension_pool(
         preparers,
         suspensions,
     }: &NewSuspensionPool,
-) -> Result<SuspensionPoolDetailed, ErrorInner> {
+) -> Result<SuspensionPoolDetailed, DbError> {
     let tag_type: MultiplexingTagType = suspensions.into();
 
     let poolings: Vec<_> = match suspensions {
@@ -73,7 +72,7 @@ pub(super) async fn insert_suspension_pool_preparers(
     tx: &db::Transaction<'_>,
     pool_id: Uuid,
     preparer_ids: &[Uuid],
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let preparers: Vec<_> = preparer_ids
         .iter()
         .map(|&prepared_by| NewSuspensionPoolPreparer {
@@ -89,7 +88,7 @@ async fn insert_suspension_poolings(
     tx: &db::Transaction<'_>,
     pool_id: Uuid,
     suspensions: &[(Uuid, Option<&NonemptyString>, Option<MultiplexingTagType>)],
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let poolings: Vec<_> = suspensions
         .iter()
         .map(|(suspension_id, tag_id, tag_type)| NewSuspensionPooling {
@@ -201,8 +200,7 @@ pub mod test {
     use uuid::Uuid;
 
     use crate::{
-        db,
-        error::ErrorInner,
+        db::{self, DbError},
         handlers::{
             multiplexing_tags::create::tests::insert_test_multiplexing_tag,
             specimens::create::test::insert_test_specimen_and_project,
@@ -215,7 +213,7 @@ pub mod test {
     pub async fn insert_test_suspension_pool_and_suspensions<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewSuspensionPool, SuspensionPoolDetailed), ErrorInner>
+    ) -> Result<(NewSuspensionPool, SuspensionPoolDetailed), DbError>
     where
         F: FnMut(&mut NewSuspensionPool),
     {

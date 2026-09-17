@@ -4,13 +4,8 @@ use cellnoor_types::{
 };
 use uuid::Uuid;
 
-use crate::{
-    db::{self, FieldValues, Insert, Sql},
-    error::ErrorInner,
-};
+use crate::db::{self, DbError, FieldValues, Insert, Sql};
 
-/// One row of the `permission` table, which holds one resource and action per
-/// row.
 struct PermissionRow {
     principal_id: Uuid,
     permission: Permission,
@@ -51,7 +46,7 @@ pub(crate) async fn grant_permissions(
     tx: &db::Transaction<'_>,
     principal_id: Uuid,
     permissions: &[Permission],
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     // Row-level security decides whether the current user may hand each of
     // these out (see db/migrations/0028_principal-rls.up.sql). Granting a
     // permission that the principal already holds is not an error
@@ -63,7 +58,7 @@ pub(crate) async fn revoke_permissions(
     tx: &db::Transaction<'_>,
     principal_id: Uuid,
     permissions: &[Permission],
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     static REVOKE_PERMISSIONS: &str = "delete from permission where principal_id = $1 and action \
                                        = any($2) and resource = any($3)";
 

@@ -10,8 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::{AuthUser, hash_api_key},
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::api_keys::index::select_api_key_record_by_id,
     state::AppState,
 };
@@ -20,7 +19,7 @@ pub async fn create_api_key(
     State(state): State<AppState>,
     user: AuthUser,
     new_api_key: Option<Json<NewApiKey>>,
-) -> Result<Json<ApiKey>, Error> {
+) -> Result<Json<ApiKey>, DbError> {
     state
         .in_transaction(user, async |tx| {
             insert_api_key(tx, &new_api_key.unwrap_or_default()).await
@@ -35,7 +34,7 @@ async fn insert_api_key(
         owner_id,
         expires_at,
     }: &NewApiKey,
-) -> Result<ApiKey, ErrorInner> {
+) -> Result<ApiKey, DbError> {
     let secret = generate_secret();
 
     let record = NewApiKeyRecord {
@@ -110,8 +109,7 @@ pub mod test {
     use uuid::Uuid;
 
     use crate::{
-        db,
-        error::ErrorInner,
+        db::{self, DbError},
         handlers::api_keys::create::insert_api_key,
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
@@ -119,7 +117,7 @@ pub mod test {
     pub async fn insert_test_api_key<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewApiKey, ApiKey), ErrorInner>
+    ) -> Result<(NewApiKey, ApiKey), DbError>
     where
         F: FnMut(&mut NewApiKey),
     {

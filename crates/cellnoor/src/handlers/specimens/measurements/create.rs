@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::IdParam,
     state::AppState,
 };
@@ -18,7 +17,7 @@ pub async fn create_specimen_measurement(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<NewSpecimenMeasurement>,
-) -> Result<Json<()>, Error> {
+) -> Result<Json<()>, DbError> {
     state
         .in_transaction(user, async |tx| {
             insert_specimen_measurements(tx, id, std::slice::from_ref(&record)).await
@@ -30,7 +29,7 @@ pub(in super::super) async fn insert_specimen_measurements(
     tx: &db::Transaction<'_>,
     specimen_id: Uuid,
     records: &[NewSpecimenMeasurement],
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let rows: Vec<_> = records
         .iter()
         .map(|record| NewSpecimenMeasurementRow {

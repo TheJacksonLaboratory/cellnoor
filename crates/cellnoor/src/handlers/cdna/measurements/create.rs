@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::IdParam,
     state::AppState,
 };
@@ -18,7 +17,7 @@ pub async fn create_cdna_measurement(
     user: AuthUser,
     Path(IdParam { id: cdna_id }): Path<IdParam>,
     Json(record): Json<NewNucleicAcidMeasurement>,
-) -> Result<Json<()>, Error> {
+) -> Result<Json<()>, DbError> {
     state
         .in_transaction(user, async |tx| {
             insert_cdna_measurements(tx, cdna_id, std::slice::from_ref(&record)).await
@@ -30,7 +29,7 @@ pub(in super::super) async fn insert_cdna_measurements(
     tx: &db::Transaction<'_>,
     cdna_id: Uuid,
     records: &[NewNucleicAcidMeasurement],
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let rows: Vec<_> = records
         .iter()
         .map(|record| NewCdnaMeasurementRow { cdna_id, record })

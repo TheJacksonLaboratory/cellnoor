@@ -7,8 +7,7 @@ use axum::{
 };
 
 use crate::{
-    auth::AuthUser,
-    error::Error,
+    auth::{AuthError, AuthUser},
     handlers::file_auth::{authorize_dataset_dir_access, authorize_project_dir_access},
     state::AppState,
 };
@@ -50,7 +49,7 @@ pub fn router(state: AppState) -> Router<AppState> {
 
 async fn redirect_unauthenticated_user(
     State(state): State<AppState>,
-    user: Result<AuthUser, Error>,
+    user: Result<AuthUser, AuthError>,
     request: Request,
     next: Next,
 ) -> Result<Response, Redirect> {

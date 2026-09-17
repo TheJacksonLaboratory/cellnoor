@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self},
-    error::{Error, ErrorInner},
+    db::{self, DbError},
     handlers::{
         IdParam,
         specimens::{
@@ -24,7 +23,7 @@ pub async fn update_specimen(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<NewSpecimen>,
-) -> Result<Json<SpecimenDetailed>, Error> {
+) -> Result<Json<SpecimenDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| update_specimen_by_id(tx, id, record).await)
         .await
@@ -34,7 +33,7 @@ async fn update_specimen_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     record: NewSpecimen,
-) -> Result<SpecimenDetailed, ErrorInner> {
+) -> Result<SpecimenDetailed, DbError> {
     let (record, measurements) = split_new_specimen_for_insertion(record);
 
     tx.update(id, &record).await?;

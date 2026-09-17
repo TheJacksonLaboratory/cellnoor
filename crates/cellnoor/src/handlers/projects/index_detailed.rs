@@ -6,8 +6,7 @@ use cellnoor_types::{
 
 use crate::{
     auth::AuthUser,
-    db::{self, FilterableSqlBuilder},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FilterableSqlBuilder},
     state::AppState,
 };
 
@@ -15,7 +14,7 @@ pub async fn index_projects_detailed(
     State(state): State<AppState>,
     user: AuthUser,
     Json(query): Json<ProjectQuery>,
-) -> Result<Json<Vec<ProjectDetailed>>, Error> {
+) -> Result<Json<Vec<ProjectDetailed>>, DbError> {
     state
         .in_transaction(user, async |tx| select_projects_detailed(tx, &query).await)
         .await
@@ -25,7 +24,7 @@ pub async fn index_projects_detailed(
 pub(in super::super) async fn select_projects_detailed(
     tx: &db::Transaction<'_>,
     query: &ProjectQuery,
-) -> Result<Vec<ProjectDetailed>, ErrorInner> {
+) -> Result<Vec<ProjectDetailed>, DbError> {
     static SELECT_DETAILED_PROJECT: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
 

@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self},
-    error::{Error, ErrorInner},
+    db::{self, DbError},
     handlers::{
         IdParam,
         libraries::{
@@ -24,7 +23,7 @@ pub async fn update_library(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<LibraryUpdate>,
-) -> Result<Json<LibraryDetailed>, Error> {
+) -> Result<Json<LibraryDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| update_library_by_id(tx, id, &record).await)
         .await
@@ -38,7 +37,7 @@ async fn update_library_by_id(
         measurements,
         preparers,
     }: &LibraryUpdate,
-) -> Result<LibraryDetailed, ErrorInner> {
+) -> Result<LibraryDetailed, DbError> {
     tx.update(id, record).await?;
 
     let preparer_insertions = async {

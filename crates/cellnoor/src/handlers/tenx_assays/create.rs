@@ -12,8 +12,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert, Sql},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert, Sql},
     handlers::tenx_assays::create::chromium::insert_chromium_assay,
     state::AppState,
 };
@@ -24,7 +23,7 @@ pub async fn create_tenx_assay(
     State(state): State<AppState>,
     user: AuthUser,
     Json(new): Json<NewTenxAssay>,
-) -> Result<Json<TenxAssay>, Error> {
+) -> Result<Json<TenxAssay>, DbError> {
     state
         .in_transaction(user, async |tx| insert_tenx_assay(tx, &new).await)
         .await
@@ -33,7 +32,7 @@ pub async fn create_tenx_assay(
 async fn insert_tenx_assay(
     tx: &db::Transaction<'_>,
     new: &NewTenxAssay,
-) -> Result<TenxAssay, ErrorInner> {
+) -> Result<TenxAssay, DbError> {
     let assay_id = match new {
         NewTenxAssay::Chromium(chromium) => insert_chromium_assay(tx, chromium).await?,
     };
@@ -51,7 +50,7 @@ async fn insert_tenx_assay(
 async fn insert_library_type_specification(
     tx: &db::Transaction<'_>,
     record: &NewLibraryTypeSpecificationRecord<'_>,
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     tx.insert(record).await?;
 
     Ok(())

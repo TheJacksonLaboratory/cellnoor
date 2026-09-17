@@ -4,8 +4,7 @@ use cellnoor_types::{
 use uuid::Uuid;
 
 use crate::{
-    db::{self, FieldValues, Insert},
-    error::ErrorInner,
+    db::{self, DbError, FieldValues, Insert},
     handlers::tenx_assays::create::{
         NewLibraryTypeSpecificationRecord, insert_library_type_specification,
     },
@@ -14,7 +13,7 @@ use crate::{
 pub(super) async fn insert_chromium_assay(
     tx: &db::Transaction<'_>,
     assay: &NewChromiumAssay,
-) -> Result<Uuid, ErrorInner> {
+) -> Result<Uuid, DbError> {
     let library_types: Vec<_> = assay
         .library_type_specifications
         .iter()
@@ -47,7 +46,7 @@ pub(super) async fn insert_chromium_assay(
 async fn insert_chromium_assay_record(
     tx: &db::Transaction<'_>,
     record: &NewChromiumAssayRecord<'_>,
-) -> Result<Uuid, ErrorInner> {
+) -> Result<Uuid, DbError> {
     tx.insert_returning_id(record).await
 }
 
@@ -105,8 +104,7 @@ pub mod tests {
     use uuid::Uuid;
 
     use crate::{
-        db,
-        error::ErrorInner,
+        db::{self, DbError},
         handlers::{
             index_sets::insert_test_dual_index_set, tenx_assays::create::insert_tenx_assay,
         },
@@ -115,8 +113,12 @@ pub mod tests {
 
     pub async fn insert_test_chromium_assay(
         tx: &db::Transaction<'_>,
-    ) -> Result<(NewChromiumAssay, TenxAssay), ErrorInner> {
-        let index_set_name = insert_test_dual_index_set(tx).await?;
+    ) -> Result<(NewChromiumAssay, TenxAssay), DbError> {
+        // The fixture's index set is well-formed, so only the database can
+        // refuse it, and no test here reads that error
+        let index_set_name = insert_test_dual_index_set(tx)
+            .await
+            .expect("failed to insert the test index set");
         let kit_name = index_set_name[3..5].to_owned();
 
         let chromium_assay = NewChromiumAssay {

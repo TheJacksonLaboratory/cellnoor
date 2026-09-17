@@ -3,8 +3,7 @@ use cellnoor_types::project::{NewProject, ProjectDetailed, ProjectField};
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::projects::{access::add_people::insert_project_accesses, show::select_project_by_id},
     state::AppState,
 };
@@ -13,7 +12,7 @@ pub async fn create_project(
     State(state): State<AppState>,
     user: AuthUser,
     Json(project): Json<NewProject>,
-) -> Result<Json<ProjectDetailed>, Error> {
+) -> Result<Json<ProjectDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| insert_project(tx, &project).await)
         .await
@@ -22,7 +21,7 @@ pub async fn create_project(
 async fn insert_project(
     tx: &db::Transaction<'_>,
     new: &NewProject,
-) -> Result<ProjectDetailed, ErrorInner> {
+) -> Result<ProjectDetailed, DbError> {
     // `created_by` is omitted: the database fills it from `app_user_id()`
     let id = tx.insert_returning_id(new).await?;
 
@@ -56,8 +55,7 @@ pub mod test {
     use uuid::Uuid;
 
     use crate::{
-        db,
-        error::ErrorInner,
+        db::{self, DbError},
         handlers::{
             people::create::test::insert_test_person_and_institution,
             projects::create::insert_project,
@@ -69,11 +67,15 @@ pub mod test {
     pub async fn insert_test_project<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewProject, ProjectDetailed), ErrorInner>
+    ) -> Result<(NewProject, ProjectDetailed), DbError>
     where
         F: FnMut(&mut NewProject),
     {
-        let (_, person) = insert_test_person_and_institution(tx, |_| ()).await?;
+        // The fixture's person is valid, so only the database can refuse it,
+        // and no test here reads that error
+        let (_, person) = insert_test_person_and_institution(tx, |_| ())
+            .await
+            .expect("failed to insert the test person");
         let person_id = person.record.id;
 
         let mut new = NewProject {

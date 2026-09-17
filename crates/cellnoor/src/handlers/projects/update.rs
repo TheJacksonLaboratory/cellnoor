@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db,
-    error::{Error, ErrorInner},
+    db::{self, DbError},
     handlers::{
         IdParam,
         projects::{access::add_people::insert_project_accesses, show::select_project_by_id},
@@ -21,7 +20,7 @@ pub async fn update_project(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(project): Json<NewProject>,
-) -> Result<Json<ProjectDetailed>, Error> {
+) -> Result<Json<ProjectDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| {
             update_project_by_id(tx, id, &project).await
@@ -33,7 +32,7 @@ async fn update_project_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     updated_project: &NewProject,
-) -> Result<ProjectDetailed, ErrorInner> {
+) -> Result<ProjectDetailed, DbError> {
     tx.update(id, updated_project).await?;
 
     insert_project_accesses(tx, id, &updated_project.members).await?;

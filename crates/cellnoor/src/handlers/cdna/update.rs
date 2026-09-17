@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self},
-    error::{Error, ErrorInner},
+    db::{self, DbError},
     handlers::{
         IdParam,
         cdna::{
@@ -24,7 +23,7 @@ pub async fn update_cdna(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<CdnaUpdate>,
-) -> Result<Json<CdnaDetailed>, Error> {
+) -> Result<Json<CdnaDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| update_cdna_by_id(tx, id, &record).await)
         .await
@@ -38,7 +37,7 @@ async fn update_cdna_by_id(
         measurements,
         preparers,
     }: &CdnaUpdate,
-) -> Result<CdnaDetailed, ErrorInner> {
+) -> Result<CdnaDetailed, DbError> {
     tx.update(id, record).await?;
 
     let preparer_insertions = async {

@@ -4707,7 +4707,7 @@ export interface components {
         };
         /** @enum {string} */
         Action: "create" | "update" | "delete";
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         AnyValueOperator: {
             eq: unknown;
         } | {
@@ -4780,7 +4780,7 @@ export interface components {
             /** Format: date-time */
             expires_at?: string | null;
         };
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         Array_of_LibraryTypeOperator: {
             eq: components["schemas"]["LibraryType"][];
         } | {
@@ -4799,7 +4799,7 @@ export interface components {
          * @enum {string}
          */
         BlockEmbeddingMatrix: "carboxymethyl_cellulose" | "optimal_cutting_temperature_compound" | "paraffin";
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         BlockEmbeddingMatrixOperator: {
             eq: components["schemas"]["BlockEmbeddingMatrix"];
         } | {
@@ -5277,7 +5277,7 @@ export interface components {
             [key: string]: unknown;
         };
         Fixative: components["schemas"]["DithiobisSuccinimidylpropionate"] | components["schemas"]["FormaldehydeDerivative"];
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         FixativeOperator: {
             eq: components["schemas"]["Fixative"];
         } | {
@@ -5427,6 +5427,17 @@ export interface components {
             offset?: number;
             order_by?: components["schemas"]["OrderByInstitutionFieldSet"];
         };
+        /**
+         * @description A comparison operator for JSON values.
+         *
+         *     This is a superset of the basic operators and adds the following
+         *     JSON-specific methods present in PostgreSQL (https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY):
+         *     1. contains
+         *     2. is contained in
+         *     3. has key
+         *     4. has any of keys
+         *     5. has all of keys
+         */
         JsonOperator: {
             contains: unknown;
         } | {
@@ -5543,6 +5554,15 @@ export interface components {
          * @enum {string}
          */
         LibraryType: "antibody_capture" | "antigen_capture" | "chromatin_accessibility" | "crispr_guide_capture" | "custom" | "gene_expression" | "multiplexing_capture" | "vdj" | "vdj_b" | "vdj_t" | "vdj_t_gd";
+        /**
+         * @description A comparison operator for array values.
+         *
+         *     This is a superset of the basic operators and adds the following
+         *     array-specific methods present in PostgreSQL (https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY):
+         *     1. contains
+         *     2. is contained in
+         *     3. overlaps with
+         */
         LibraryTypeArrayOperator: {
             contains: components["schemas"]["LibraryType"][];
         } | {
@@ -5550,7 +5570,7 @@ export interface components {
         } | {
             overlaps: components["schemas"]["LibraryType"][];
         } | components["schemas"]["Array_of_LibraryTypeOperator"];
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         LibraryTypeOperator: {
             eq: components["schemas"]["LibraryType"];
         } | {
@@ -5686,7 +5706,7 @@ export interface components {
          * @enum {string}
          */
         MultiplexingTagType: "flex_barcode" | "flex_oligonucleotide_barcode" | "TotalSeq-A" | "TotalSeq-B" | "TotalSeq-C" | "genetic";
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         MultiplexingTagTypeOperator: {
             eq: components["schemas"]["MultiplexingTagType"];
         } | {
@@ -6673,10 +6693,6 @@ export interface components {
         Paths: {
             [key: string]: components["schemas"]["ReferenceOr"];
         };
-        /**
-         * @description Permission to take one action on one resource, which is one row of the
-         *     `permission` table.
-         */
         Permission: {
             action: components["schemas"]["Action"];
             resource: components["schemas"]["Resource"];
@@ -7036,13 +7052,7 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
-        /**
-         * @description A group of tables that a permission is granted on.
-         *
-         *     Which tables each one covers is defined in
-         *     /db/migrations/0031_data-rls.up.sql.
-         * @enum {string}
-         */
+        /** @enum {string} */
         Resource: "institution" | "person" | "account" | "project" | "specimen" | "assay_constant_data" | "chromium_experimental_data" | "chromium_dataset";
         Response: {
             /**
@@ -7092,7 +7102,7 @@ export interface components {
         };
         /** @enum {string} */
         SampleMultiplexing: "cellplex" | "flex_barcode" | "flex_oligonucleotide_barcode" | "hashtag" | "on_chip_multiplexing" | "singleplex";
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         SampleMultiplexingOperator: {
             eq: components["schemas"]["SampleMultiplexing"];
         } | {
@@ -7284,7 +7294,7 @@ export interface components {
         };
         /** @enum {string} */
         Species: "ambystoma_mexicanum" | "canis_familiaris" | "callithrix_jacchus" | "drosophila_melanogaster" | "gasterosteus_aculeatus" | "homo_sapiens" | "mus_musculus" | "rattus_norvegicus" | "sminthopsis_crassicaudata";
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         SpeciesOperator: {
             eq: components["schemas"]["Species"];
         } | {
@@ -7442,7 +7452,7 @@ export interface components {
          * @enum {string}
          */
         SpecimenType: "block" | "cell_pellet" | "rna_extract" | "suspension" | "tissue";
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         SpecimenTypeOperator: {
             eq: components["schemas"]["SpecimenType"];
         } | {
@@ -7459,8 +7469,8 @@ export interface components {
         /**
          * @description A comparison operator for string values.
          *
-         *     This is a superset of Operator<T> and adds string-specific methods present
-         *     in PostgreSQL:
+         *     This is a superset of the baisc operators and adds the following
+         *     string-specific methods present in PostgreSQL:
          *     1. like (https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE)
          *     2. trigram similar (https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS)
          */
@@ -7500,7 +7510,7 @@ export interface components {
         };
         /** @enum {string} */
         SuspensionContent: "cells" | "nuclei";
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         SuspensionContentOperator: {
             eq: components["schemas"]["SuspensionContent"];
         } | {
@@ -7820,7 +7830,7 @@ export interface components {
             protocol_url: components["schemas"]["StringOperator"];
         };
         ThermalPreservationMethod: components["schemas"]["ControlledRateFreezing"] | components["schemas"]["FlashFreezing"];
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         ThermalPreservationMethodOperator: {
             eq: components["schemas"]["ThermalPreservationMethod"];
         } | {
@@ -7834,7 +7844,7 @@ export interface components {
         } | {
             in: components["schemas"]["ThermalPreservationMethod"][];
         } | components["schemas"]["ThermalPreservationMethod"];
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         TimestampOperator: {
             /** Format: date-time */
             eq: string;
@@ -7865,7 +7875,7 @@ export interface components {
             preservation_state: "thermally_preserved";
             thermal_preservation_method: components["schemas"]["ThermalPreservationMethod"];
         };
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         UuidOperator: {
             /** Format: uuid */
             eq: string;
@@ -7884,7 +7894,7 @@ export interface components {
         } | {
             in: string[];
         } | string;
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         booleanOperator: {
             eq: boolean;
         } | {
@@ -7898,7 +7908,7 @@ export interface components {
         } | {
             in: boolean[];
         } | boolean;
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         floatOperator: {
             /** Format: float */
             eq: number;
@@ -7917,7 +7927,7 @@ export interface components {
         } | {
             in: number[];
         } | number;
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         int32Operator: {
             /** Format: int32 */
             eq: number;
@@ -7936,7 +7946,7 @@ export interface components {
         } | {
             in: number[];
         } | number;
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         int64Operator: {
             /** Format: int64 */
             eq: number;
@@ -7955,7 +7965,7 @@ export interface components {
         } | {
             in: number[];
         } | number;
-        /** @description A comparison operator for any scalar value. */
+        /** @description A simple comparison operator. */
         stringOperator: {
             eq: string;
         } | {

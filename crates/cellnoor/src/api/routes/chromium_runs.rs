@@ -12,8 +12,8 @@ use cellnoor_types::chromium_run::{
 };
 
 use crate::{
+    db::DbError,
     auth::AuthUser,
-    error::Error,
     handlers::{
         chromium_runs::{
             create_chromium_run, index_chromium_runs, index_chromium_runs_detailed,
@@ -49,7 +49,7 @@ async fn index_chromium_runs_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleChromiumRunQuery>,
-) -> Result<Json<Vec<ChromiumRunCompact>>, Error> {
+) -> Result<Json<Vec<ChromiumRunCompact>>, DbError> {
     index_chromium_runs(state, user, Json(ChromiumRunQuery::from_simple_query(q))).await
 }
 
@@ -57,6 +57,6 @@ async fn index_chromium_runs_detailed_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleChromiumRunQuery>,
-) -> Result<Json<Vec<ChromiumRunDetailed>>, Error> {
+) -> Result<Json<Vec<ChromiumRunDetailed>>, DbError> {
     index_chromium_runs_detailed(state, user, Json(ChromiumRunQuery::from_simple_query(q))).await
 }

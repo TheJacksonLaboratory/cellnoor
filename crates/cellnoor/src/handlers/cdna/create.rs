@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::cdna::{
         measurements::create::insert_cdna_measurements, show::select_cdna_by_id,
         split_new_cdna_for_insertion::split_new_cdna_for_insertion,
@@ -20,13 +19,13 @@ pub async fn create_cdna(
     State(state): State<AppState>,
     user: AuthUser,
     Json(record): Json<NewCdna>,
-) -> Result<Json<CdnaDetailed>, Error> {
+) -> Result<Json<CdnaDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| insert_cdna(tx, record).await)
         .await
 }
 
-async fn insert_cdna(tx: &db::Transaction<'_>, new: NewCdna) -> Result<CdnaDetailed, ErrorInner> {
+async fn insert_cdna(tx: &db::Transaction<'_>, new: NewCdna) -> Result<CdnaDetailed, DbError> {
     let (record, measurements, preparers) = split_new_cdna_for_insertion(new);
 
     let id = tx.insert_returning_id(&record).await?;
@@ -45,7 +44,7 @@ pub(super) async fn insert_cdna_preparers(
     tx: &db::Transaction<'_>,
     cdna_id: Uuid,
     preparer_ids: &[Uuid],
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let preparers: Vec<_> = preparer_ids
         .iter()
         .map(|&prepared_by| NewCdnaPreparer {
@@ -147,8 +146,7 @@ pub mod test {
     use uuid::Uuid;
 
     use crate::{
-        db,
-        error::ErrorInner,
+        db::{self, DbError},
         handlers::{
             cdna::create::insert_cdna,
             chromium_runs::create::test::insert_test_standard_chromium_run,
@@ -159,7 +157,7 @@ pub mod test {
     pub async fn insert_test_cdna_and_chromium_run<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewCdna, CdnaDetailed), ErrorInner>
+    ) -> Result<(NewCdna, CdnaDetailed), DbError>
     where
         F: FnMut(&mut NewCdna),
     {

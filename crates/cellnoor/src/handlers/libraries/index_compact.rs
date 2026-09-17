@@ -6,8 +6,7 @@ use cellnoor_types::{
 
 use crate::{
     auth::AuthUser,
-    db::{self, FilterableSqlBuilder},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FilterableSqlBuilder},
     state::AppState,
 };
 
@@ -22,7 +21,7 @@ pub async fn index_libraries(
     State(state): State<AppState>,
     user: AuthUser,
     Json(query): Json<LibraryQuery>,
-) -> Result<Json<Vec<LibraryCompact>>, Error> {
+) -> Result<Json<Vec<LibraryCompact>>, DbError> {
     state
         .in_transaction(user, async |tx| select_libraries_compact(tx, &query).await)
         .await
@@ -31,7 +30,7 @@ pub async fn index_libraries(
 async fn select_libraries_compact(
     tx: &db::Transaction<'_>,
     query: &LibraryQuery,
-) -> Result<Vec<LibraryCompact>, ErrorInner> {
+) -> Result<Vec<LibraryCompact>, DbError> {
     static SELECT_COMPACT_LIBRARIES: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
 

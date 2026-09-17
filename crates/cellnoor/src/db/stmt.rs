@@ -177,8 +177,6 @@ where
     }
 }
 
-/// A read selects the relation's whole row as a composite, so the relation goes
-/// back in here: `(institution).name`.
 fn write_column(clause: &mut String, relation: &str, column: &str) {
     write!(clause, "({relation}).{column}").unwrap();
 }

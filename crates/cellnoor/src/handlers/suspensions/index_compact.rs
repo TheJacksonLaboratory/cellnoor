@@ -6,8 +6,7 @@ use cellnoor_types::{
 
 use crate::{
     auth::AuthUser,
-    db::{self, FilterableSqlBuilder},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FilterableSqlBuilder},
     state::AppState,
 };
 
@@ -15,7 +14,7 @@ pub async fn index_suspensions(
     State(state): State<AppState>,
     user: AuthUser,
     Json(query): Json<SuspensionQuery>,
-) -> Result<Json<Vec<SuspensionCompact>>, Error> {
+) -> Result<Json<Vec<SuspensionCompact>>, DbError> {
     state
         .in_transaction(user, async |tx| {
             select_suspensions_compact(tx, &query).await
@@ -26,7 +25,7 @@ pub async fn index_suspensions(
 async fn select_suspensions_compact(
     tx: &db::Transaction<'_>,
     query: &SuspensionQuery,
-) -> Result<Vec<SuspensionCompact>, ErrorInner> {
+) -> Result<Vec<SuspensionCompact>, DbError> {
     static SELECT_COMPACT_SUSPENSION: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
 

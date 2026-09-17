@@ -4,8 +4,8 @@ use serde::Deserialize;
 
 use crate::{
     auth::AuthUser,
-    db::{self, Sql},
-    error::{Error, ErrorInner},
+    db::{self, DbError, Sql},
+    handlers::file_auth::FileAuthError,
     state::AppState,
 };
 
@@ -23,7 +23,7 @@ pub async fn authorize_project_dir_access(
         project_name,
         _file_path,
     }): Path<ProjectDir>,
-) -> Result<(), Error> {
+) -> Result<(), FileAuthError> {
     tracing::debug!(
         %project_name,
         file_path = _file_path.unwrap_or_default()
@@ -34,21 +34,16 @@ pub async fn authorize_project_dir_access(
         return Ok(());
     }
 
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
+    let mut client = state.db_client(user).await.map_err(DbError::from)?;
+    let tx = client.begin().await.map_err(DbError::from)?;
 
     project_exists(tx, &project_name)
         .await?
         .then_some(())
-        .ok_or(
-            ErrorInner::PermissionDenied {
-                message: "cannot access this project".to_owned(),
-            }
-            .into(),
-        )
+        .ok_or(FileAuthError::ProjectAccessDenied)
 }
 
-async fn project_exists(tx: db::Transaction<'_>, project_name: &str) -> Result<bool, ErrorInner> {
+async fn project_exists(tx: db::Transaction<'_>, project_name: &str) -> Result<bool, DbError> {
     static SELECT_DATASET: &str = "select exists (select 1 from project where name = $1)";
 
     tx.query_one_into(&Sql::new(SELECT_DATASET, vec![&project_name]))

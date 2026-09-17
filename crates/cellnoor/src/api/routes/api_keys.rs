@@ -9,8 +9,8 @@ use axum::{
 use cellnoor_types::api_key::{ApiKeyQuery, ApiKeyUpdate, SavedApiKeyRecord, SimpleApiKeyQuery};
 
 use crate::{
+    db::DbError,
     auth::AuthUser,
-    error::Error,
     handlers::{
         api_keys::{create_api_key, index_api_keys, update_api_key},
         delete_resource,
@@ -36,6 +36,6 @@ async fn index_api_keys_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleApiKeyQuery>,
-) -> Result<Json<Vec<SavedApiKeyRecord>>, Error> {
+) -> Result<Json<Vec<SavedApiKeyRecord>>, DbError> {
     index_api_keys(state, user, Json(ApiKeyQuery::from_simple_query(q))).await
 }

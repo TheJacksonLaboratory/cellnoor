@@ -8,8 +8,7 @@ use deadpool_postgres::tokio_postgres::Row;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FilterableSqlBuilder},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FilterableSqlBuilder},
     handlers::suspension_pools::index_compact::tagged_specimen_from_record,
     state::AppState,
 };
@@ -18,7 +17,7 @@ pub async fn index_cdna_detailed(
     State(state): State<AppState>,
     user: AuthUser,
     Json(query): Json<CdnaQuery>,
-) -> Result<Json<Vec<CdnaDetailed>>, Error> {
+) -> Result<Json<Vec<CdnaDetailed>>, DbError> {
     state
         .in_transaction(user, async |tx| select_cdna_detailed(tx, &query).await)
         .await
@@ -28,7 +27,7 @@ pub async fn index_cdna_detailed(
 pub(in super::super) async fn select_cdna_detailed(
     tx: &db::Transaction<'_>,
     query: &CdnaQuery,
-) -> Result<Vec<CdnaDetailed>, ErrorInner> {
+) -> Result<Vec<CdnaDetailed>, DbError> {
     static SELECT_DETAILED_CDNA: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
 

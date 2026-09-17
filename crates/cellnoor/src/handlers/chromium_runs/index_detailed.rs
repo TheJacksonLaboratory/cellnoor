@@ -7,8 +7,7 @@ use deadpool_postgres::tokio_postgres::Row;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FilterableSqlBuilder},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FilterableSqlBuilder},
     handlers::{
         chromium_runs::index_compact::chromium_run_links,
         suspension_pools::index_compact::tagged_specimen_from_record,
@@ -20,7 +19,7 @@ pub async fn index_chromium_runs_detailed(
     State(state): State<AppState>,
     user: AuthUser,
     Json(query): Json<ChromiumRunQuery>,
-) -> Result<Json<Vec<ChromiumRunDetailed>>, Error> {
+) -> Result<Json<Vec<ChromiumRunDetailed>>, DbError> {
     state
         .in_transaction(user, async |tx| {
             select_chromium_runs_detailed(tx, &query).await
@@ -32,7 +31,7 @@ pub async fn index_chromium_runs_detailed(
 pub(in super::super) async fn select_chromium_runs_detailed(
     tx: &db::Transaction<'_>,
     query: &ChromiumRunQuery,
-) -> Result<Vec<ChromiumRunDetailed>, ErrorInner> {
+) -> Result<Vec<ChromiumRunDetailed>, DbError> {
     static SELECT_DETAILED_CHROMIUM_RUNS: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
 

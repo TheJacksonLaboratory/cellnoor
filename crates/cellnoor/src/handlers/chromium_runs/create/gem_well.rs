@@ -8,8 +8,7 @@ use cellnoor_types::{
 use uuid::Uuid;
 
 use crate::{
-    db::{self, FieldValues, Insert},
-    error::ErrorInner,
+    db::{self, DbError, FieldValues, Insert},
     handlers::chromium_runs::create::gem_well::chip_loading::{
         insert_ocm_chip_loading, insert_standard_chip_loading,
     },
@@ -24,7 +23,7 @@ pub(super) async fn insert_standard_gem_well(
         loaded_entity,
     }: &NewStandardGemWell,
     chromium_run_id: Uuid,
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let gem_well = NewGemWellRecord {
         readable_id,
         chromium_run_id,
@@ -43,7 +42,7 @@ pub(super) async fn insert_ocm_gem_well(
         loading,
     }: &NewOcmGemWell,
     chromium_run_id: Uuid,
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let gem_well = NewGemWellRecord {
         readable_id,
         chromium_run_id,
@@ -63,7 +62,7 @@ pub(super) async fn insert_mixed_gem_well(
     tx: &db::Transaction<'_>,
     gem_well: &NewStandardOrOcmGemWell,
     chromium_run_id: Uuid,
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     match gem_well {
         NewStandardOrOcmGemWell::OnChipMultiplexing(ocm) => {
             insert_ocm_gem_well(tx, ocm, chromium_run_id).await
@@ -77,7 +76,7 @@ pub(super) async fn insert_mixed_gem_well(
 async fn insert_gem_well(
     tx: &db::Transaction<'_>,
     gem_well: &NewGemWellRecord<'_>,
-) -> Result<Uuid, ErrorInner> {
+) -> Result<Uuid, DbError> {
     tx.insert_returning_id(gem_well).await
 }
 

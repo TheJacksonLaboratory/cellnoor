@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     state::AppState,
 };
 
@@ -59,7 +58,7 @@ pub async fn delete_resource<T>(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-) -> Result<Json<()>, Error>
+) -> Result<Json<()>, DbError>
 where
     T: Relation,
 {
@@ -90,6 +89,6 @@ pub(crate) async fn set_is_staff(
     tx: &db::Transaction<'_>,
     id: Uuid,
     is_staff: bool,
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     tx.update(id, &IsStaff(is_staff)).await
 }

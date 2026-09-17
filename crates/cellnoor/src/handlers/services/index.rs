@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FilterableSqlBuilder},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FilterableSqlBuilder},
     state::AppState,
 };
 
@@ -16,7 +15,7 @@ pub async fn index_services(
     State(state): State<AppState>,
     user: AuthUser,
     Json(query): Json<ServiceQuery>,
-) -> Result<Json<Vec<Service>>, Error> {
+) -> Result<Json<Vec<Service>>, DbError> {
     state
         .in_transaction(user, async |tx| select_services(tx, &query).await)
         .await
@@ -25,7 +24,7 @@ pub async fn index_services(
 pub(in super::super) async fn select_services(
     tx: &db::Transaction<'_>,
     query: &ServiceQuery,
-) -> Result<Vec<Service>, ErrorInner> {
+) -> Result<Vec<Service>, DbError> {
     static SELECT_SERVICES: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select.sql"));
 
@@ -37,7 +36,7 @@ pub(in super::super) async fn select_services(
 pub(super) async fn select_service_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-) -> Result<Service, ErrorInner> {
+) -> Result<Service, DbError> {
     tx.select_one(ServicePredicate::Id(UuidOperator::Eq(id)), select_services)
         .await
 }

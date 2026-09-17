@@ -4,7 +4,10 @@ use postgres_types::ToSql;
 
 use crate::db::{ColumnSlice, Columns, Sql};
 
-/// `insert into <relation> (<columns>) values ($1, …) [returning <returning>]`
+/// Produces SQL like:
+/// ```sql
+/// insert into <relation> (<columns>) values ($1, …) [returning <returning>]
+/// ```
 pub(super) fn insert_stmt<'a>(
     relation: &str,
     fields: &ColumnSlice<'a>,
@@ -27,10 +30,10 @@ pub(super) fn insert_stmt<'a>(
     Sql(stmt, params)
 }
 
-/// `insert into <relation> (<columns>) values ($1, …), ($2, …)`
-///
-/// Every row names the same columns, so the first one decides the column list.
-/// `rows` must not be empty.
+/// Produces SQL like:
+/// ```sql
+/// insert into <relation> (<columns>) values ($1, ...), ($2, ...) [returning <returning>]
+/// ```
 pub(super) fn insert_many_stmt<'a>(
     relation: &str,
     rows: &[Columns<'a>],

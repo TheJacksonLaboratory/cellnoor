@@ -5,8 +5,8 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, Sql},
-    error::{Error, ErrorInner},
+    db::{self, DbError, Sql},
+    handlers::file_auth::FileAuthError,
     state::AppState,
 };
 
@@ -35,7 +35,7 @@ pub async fn authorize_dataset_dir_access(
         dataset_id,
         _file_path,
     }): Path<DatasetDir>,
-) -> Result<(), Error> {
+) -> Result<(), FileAuthError> {
     tracing::debug!(
         %dataset_type,
         %dataset_id,
@@ -47,18 +47,13 @@ pub async fn authorize_dataset_dir_access(
         return Ok(());
     }
 
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
+    let mut client = state.db_client(user).await.map_err(DbError::from)?;
+    let tx = client.begin().await.map_err(DbError::from)?;
 
     dataset_exists(tx, dataset_type, dataset_id)
         .await?
         .then_some(())
-        .ok_or(
-            ErrorInner::PermissionDenied {
-                message: "cannot access this dataset".to_owned(),
-            }
-            .into(),
-        )
+        .ok_or(FileAuthError::DatasetAccessDenied)
 }
 
 // Postgres row-level security will automatically hide what the user can't see
@@ -67,7 +62,7 @@ async fn dataset_exists(
     tx: db::Transaction<'_>,
     dataset_type: DatasetType,
     dataset_id: Uuid,
-) -> Result<bool, Error> {
+) -> Result<bool, DbError> {
     let exists = match dataset_type {
         DatasetType::ChromiumDatasets => chromium_dataset_exists(tx, dataset_id).await?,
     };
@@ -78,7 +73,7 @@ async fn dataset_exists(
 async fn chromium_dataset_exists(
     tx: db::Transaction<'_>,
     dataset_id: Uuid,
-) -> Result<bool, ErrorInner> {
+) -> Result<bool, DbError> {
     // We query chromium_dataset_to_specimen because that's accessible and has
     // row-level security enabled
     static SELECT_DATASET: &str = "select exists (select 1 from chromium_dataset_to_specimen \

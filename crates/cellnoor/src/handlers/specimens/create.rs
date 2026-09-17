@@ -5,8 +5,7 @@ use cellnoor_types::specimen::{
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::specimens::{
         measurements::create::insert_specimen_measurements, show::select_specimen_by_id,
         split_new_specimen_for_insertion::split_new_specimen_for_insertion,
@@ -18,7 +17,7 @@ pub async fn create_specimen(
     State(state): State<AppState>,
     user: AuthUser,
     Json(record): Json<NewSpecimen>,
-) -> Result<Json<SpecimenDetailed>, Error> {
+) -> Result<Json<SpecimenDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| insert_specimen(tx, record).await)
         .await
@@ -27,7 +26,7 @@ pub async fn create_specimen(
 async fn insert_specimen(
     tx: &db::Transaction<'_>,
     record: NewSpecimen,
-) -> Result<SpecimenDetailed, ErrorInner> {
+) -> Result<SpecimenDetailed, DbError> {
     let (record, measurements) = split_new_specimen_for_insertion(record);
 
     let id = tx.insert_returning_id(&record).await?;
@@ -103,8 +102,7 @@ pub mod test {
     use uuid::Uuid;
 
     use crate::{
-        db,
-        error::ErrorInner,
+        db::{self, DbError},
         handlers::{
             projects::create::test::insert_test_project, specimens::create::insert_specimen,
         },
@@ -114,7 +112,7 @@ pub mod test {
     pub async fn insert_test_specimen_and_project<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewSpecimen, SpecimenDetailed), ErrorInner>
+    ) -> Result<(NewSpecimen, SpecimenDetailed), DbError>
     where
         F: FnMut(&mut NewSpecimen),
     {
@@ -175,7 +173,7 @@ pub mod test {
 
         std::assert_matches!(
             error,
-            ErrorInner::DataConstraint {
+            DbError::DataConstraint {
                 resource: Some(_),
                 field: None,
                 message: _,

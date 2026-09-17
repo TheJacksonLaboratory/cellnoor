@@ -8,8 +8,7 @@ use deadpool_postgres::tokio_postgres::Row;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FilterableSqlBuilder},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FilterableSqlBuilder},
     handlers::suspension_pools::index_compact::tagged_specimen_from_record,
     state::AppState,
 };
@@ -18,7 +17,7 @@ pub async fn index_libraries_detailed(
     State(state): State<AppState>,
     user: AuthUser,
     Json(query): Json<LibraryQuery>,
-) -> Result<Json<Vec<LibraryDetailed>>, Error> {
+) -> Result<Json<Vec<LibraryDetailed>>, DbError> {
     state
         .in_transaction(user, async |tx| select_libraries_detailed(tx, &query).await)
         .await
@@ -28,7 +27,7 @@ pub async fn index_libraries_detailed(
 pub(in super::super) async fn select_libraries_detailed(
     tx: &db::Transaction<'_>,
     query: &LibraryQuery,
-) -> Result<Vec<LibraryDetailed>, ErrorInner> {
+) -> Result<Vec<LibraryDetailed>, DbError> {
     static SELECT_DETAILED_LIBRARIES: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_detailed.sql"));
 

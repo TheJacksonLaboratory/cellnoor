@@ -9,8 +9,7 @@ use pretty_assertions::assert_eq;
 use uuid::Uuid;
 
 use crate::{
-    db,
-    error::ErrorInner,
+    db::{self, DbError},
     handlers::{
         cdna::index_detailed::select_cdna_detailed,
         chromium_datasets::index_detailed::select_chromium_datasets_detailed,
@@ -58,7 +57,7 @@ fn may(resource: Resource, actions: &[Action]) -> Vec<Permission> {
 async fn assert_is_ok<F, Pred, Order, Ret>(tx: &db::Transaction<'_>, select_fn: F)
 where
     Order: OrderField,
-    F: AsyncFn(&db::Transaction, &ComplexQuery<Pred, Order>) -> Result<Ret, ErrorInner>,
+    F: AsyncFn(&db::Transaction, &ComplexQuery<Pred, Order>) -> Result<Ret, DbError>,
     Ret: Debug,
 {
     assert_matches!(select_fn(tx, &ComplexQuery::default()).await, Ok(_));
@@ -98,7 +97,7 @@ async fn user_without_permission_cannot_write() {
 
     let error = insert_test_institution(&tx, |_| ()).await.unwrap_err();
 
-    assert_matches!(error, ErrorInner::PermissionDenied { .. });
+    assert_matches!(error, DbError::PermissionDenied { .. });
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -157,7 +156,7 @@ async fn user_can_only_grant_permissions_they_hold() {
         .await
         .unwrap_err();
 
-    assert_matches!(error, ErrorInner::PermissionDenied { .. });
+    assert_matches!(error, DbError::PermissionDenied { .. });
     drop(tx);
 
     // But they can pass on the permission they do hold
@@ -201,7 +200,7 @@ async fn user_who_cannot_update_people_cannot_grant_anything() {
 
     assert_eq!(
         insert_test_institution(&tx, |_| ()).await.unwrap_err(),
-        ErrorInner::PermissionDenied {
+        DbError::PermissionDenied {
             message: "new row violates row-level security policy for resource \"institution\""
                 .to_owned()
         }

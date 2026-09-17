@@ -12,9 +12,12 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
-    handlers::{people::show::select_person_by_id, permissions::grant_permissions, set_is_staff},
+    db::{self, DbError, FieldValues, Insert},
+    handlers::{
+        people::{PersonError, show::select_person_by_id},
+        permissions::grant_permissions,
+        set_is_staff,
+    },
     state::AppState,
 };
 
@@ -22,13 +25,16 @@ pub async fn create_person(
     State(state): State<AppState>,
     user: AuthUser,
     Json(person): Json<NewPerson>,
-) -> Result<Json<Person>, Error> {
+) -> Result<Json<Person>, PersonError> {
     state
         .in_transaction(user, async |tx| insert_person(tx, &person).await)
         .await
 }
 
-async fn insert_person(tx: &db::Transaction<'_>, new: &NewPerson) -> Result<Person, ErrorInner> {
+async fn insert_person(
+    tx: &db::Transaction<'_>,
+    new: &NewPerson,
+) -> Result<Person, PersonError> {
     let NewPerson {
         simple,
         account,
@@ -57,7 +63,7 @@ async fn insert_account(
     tx: &db::Transaction<'_>,
     user_id: Uuid,
     account: &Account,
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     match account {
         Account::Microsoft {
             microsoft_entra_oid,
@@ -166,13 +172,10 @@ static EMAIL_REGEX: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$").unwrap()
 });
 
-pub(super) fn validate_email(email: &str) -> Result<(), ErrorInner> {
+pub(super) fn validate_email(email: &str) -> Result<(), PersonError> {
     if !EMAIL_REGEX.is_match(email) {
-        return Err(ErrorInner::DataConstraint {
-            resource: Some("person".to_owned()),
-            field: Some("email".to_owned()),
-            message: "invalid email".to_owned(),
-            detail: None,
+        return Err(PersonError::InvalidEmail {
+            email: email.to_owned(),
         });
     }
 
@@ -186,10 +189,10 @@ pub mod test {
     use uuid::Uuid;
 
     use crate::{
-        db,
-        error::ErrorInner,
+        db::{self, DbError},
         handlers::{
-            institutions::create::test::insert_test_institution, people::create::insert_person,
+            institutions::create::test::insert_test_institution,
+            people::{PersonError, create::insert_person},
         },
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
@@ -197,7 +200,7 @@ pub mod test {
     pub async fn insert_test_person_and_institution<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewPerson, Person), ErrorInner>
+    ) -> Result<(NewPerson, Person), PersonError>
     where
         F: FnMut(&mut NewPerson),
     {
@@ -263,10 +266,11 @@ pub mod test {
 
         assert_eq!(
             error,
-            ErrorInner::InvalidReference {
+            DbError::InvalidReference {
                 referencing_resource: "person".to_owned(),
                 referencing_field: "institution_id".to_owned(),
-            },
+            }
+            .into(),
         );
     }
 }

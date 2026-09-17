@@ -1,16 +1,17 @@
 use aide::OperationIo;
 pub use api_key::hash_api_key;
+pub use error::AuthError;
 use axum::{RequestPartsExt, extract::FromRequestParts, http::HeaderValue};
 use axum_extra::extract::CookieJar;
 use uuid::Uuid;
 
 use crate::{
     auth::{api_key::authenticate_with_api_key, jwt::authenticate_with_jwt},
-    error::{Error, ErrorInner},
     state::AppState,
 };
 
 mod api_key;
+mod error;
 mod jwt;
 
 /// The principal (a person or a service) on whose behalf a request runs.
@@ -43,7 +44,7 @@ impl AuthUser {
 }
 
 impl FromRequestParts<AppState> for AuthUser {
-    type Rejection = Error;
+    type Rejection = AuthError;
 
     async fn from_request_parts(
         parts: &mut axum::http::request::Parts,
@@ -64,7 +65,7 @@ impl FromRequestParts<AppState> for AuthUser {
         }
 
         let Some(api_key) = parts.headers.get("x-api-key").map(HeaderValue::as_bytes) else {
-            return Err(ErrorInner::NoAuthFound {
+            return Err(AuthError::NoAuthFound {
                 message: "failed to authenticate with JWT at cookie 'cellnoor-auth.session_data' \
                           and API key at header 'x-api-key'",
             }

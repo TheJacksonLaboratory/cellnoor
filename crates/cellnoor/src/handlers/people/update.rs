@@ -8,10 +8,10 @@ use uuid::Uuid;
 use crate::{
     auth::AuthUser,
     db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
     handlers::{
         IdParam,
         people::{
+            PersonError,
             create::{person_field_value_pairs, validate_email},
             show::select_person_by_id,
         },
@@ -26,7 +26,7 @@ pub async fn update_person(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(person): Json<PersonUpdate>,
-) -> Result<Json<Person>, Error> {
+) -> Result<Json<Person>, PersonError> {
     state
         .in_transaction(user, async |tx| update_person_by_id(tx, id, &person).await)
         .await
@@ -36,7 +36,7 @@ async fn update_person_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     update: &PersonUpdate,
-) -> Result<Person, ErrorInner> {
+) -> Result<Person, PersonError> {
     let PersonUpdate {
         simple,
         email,
@@ -50,7 +50,7 @@ async fn update_person_by_id(
     grant_permissions(tx, id, permissions_to_grant).await?;
     revoke_permissions(tx, id, permissions_to_revoke).await?;
 
-    select_person_by_id(tx, id).await
+    Ok(select_person_by_id(tx, id).await?)
 }
 
 impl Insert for PersonUpdate {

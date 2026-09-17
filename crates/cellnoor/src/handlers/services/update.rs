@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db,
-    error::{Error, ErrorInner},
+    db::{self, DbError},
     handlers::{
         IdParam,
         permissions::{grant_permissions, revoke_permissions},
@@ -23,7 +22,7 @@ pub async fn update_service(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(service): Json<ServiceUpdate>,
-) -> Result<Json<Service>, Error> {
+) -> Result<Json<Service>, DbError> {
     state
         .in_transaction(user, async |tx| {
             update_service_by_id(tx, id, &service).await
@@ -35,7 +34,7 @@ pub(in super::super) async fn update_service_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     update: &ServiceUpdate,
-) -> Result<Service, ErrorInner> {
+) -> Result<Service, DbError> {
     let ServiceUpdate {
         record,
         permissions_to_grant,

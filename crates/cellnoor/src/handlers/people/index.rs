@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FilterableSqlBuilder},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FilterableSqlBuilder},
     state::AppState,
 };
 
@@ -16,7 +15,7 @@ pub async fn index_people(
     State(state): State<AppState>,
     user: AuthUser,
     Json(query): Json<PersonQuery>,
-) -> Result<Json<Vec<Person>>, Error> {
+) -> Result<Json<Vec<Person>>, DbError> {
     state
         .in_transaction(user, async |tx| select_people(tx, &query).await)
         .await
@@ -25,7 +24,7 @@ pub async fn index_people(
 pub(in super::super) async fn select_people(
     tx: &db::Transaction<'_>,
     query: &PersonQuery,
-) -> Result<Vec<Person>, ErrorInner> {
+) -> Result<Vec<Person>, DbError> {
     static SELECT_PEOPLE: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select.sql"));
 

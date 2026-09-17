@@ -3,10 +3,9 @@ use cellnoor_types::Relation;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::index_sets::{
-        NewIndexKit,
+        IndexSetError, NewIndexKit,
         index_set_name::{IndexKitName, IndexSetName, IndexSetWellName},
         insert_index_kit,
         sequence::DnaSequence,
@@ -18,21 +17,16 @@ pub async fn create_single_index_sets(
     State(state): State<AppState>,
     user: AuthUser,
     Json(sets): Json<Vec<(String, [String; 4])>>,
-) -> Result<Json<()>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    insert_single_index_sets(&tx, &sets).await?;
-
-    tx.commit().await?;
-
-    Ok(Json(()))
+) -> Result<Json<()>, IndexSetError> {
+    state
+        .in_transaction(user, async |tx| insert_single_index_sets(tx, &sets).await)
+        .await
 }
 
 async fn insert_single_index_sets(
     tx: &db::Transaction<'_>,
     sets: &[(String, [String; 4])],
-) -> Result<(), ErrorInner> {
+) -> Result<(), IndexSetError> {
     let Some(first_index_set_name) = sets.iter().map(|(name, _)| IndexSetName::new(name)).next()
     else {
         return Ok(());
@@ -46,18 +40,13 @@ async fn insert_single_index_sets(
         let kit_name = index_set_name.kit_name();
 
         if kit_name != first_kit_name {
-            return Err(ErrorInner::DataConstraint {
-                resource: Some("dual_index_set".to_owned()),
-                field: Some("name".to_owned()),
-                message: "all index sets must share the same kit name".to_owned(),
-                detail: None,
-            });
+            return Err(IndexSetError::MixedKitNames);
         }
 
         let sequences: Vec<_> = sequences
             .iter()
             .map(|s| DnaSequence::new(s))
-            .collect::<Result<Vec<_>, ErrorInner>>()?;
+            .collect::<Result<Vec<_>, IndexSetError>>()?;
 
         let record = NewSingleIndexSetRecord {
             name: index_set_name,
@@ -85,7 +74,7 @@ async fn insert_single_index_sets(
 async fn insert_single_index_set(
     tx: &db::Transaction<'_>,
     record: NewSingleIndexSetRecord<'_>,
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     tx.insert(&record).await?;
 
     Ok(())
@@ -126,13 +115,14 @@ impl<'a> Insert for NewSingleIndexSetRecord<'a> {
 pub mod tests {
 
     use crate::{
-        db, error::ErrorInner, handlers::index_sets::single::create::insert_single_index_sets,
+        db::{self, DbError},
+        handlers::index_sets::{IndexSetError, single::create::insert_single_index_sets},
         state::test_util::db_client_as_admin,
     };
 
     pub async fn insert_test_single_index_set(
         tx: &db::Transaction<'_>,
-    ) -> Result<String, ErrorInner> {
+    ) -> Result<String, IndexSetError> {
         let name = "SI-GA-A1".to_owned();
 
         match insert_single_index_sets(
@@ -144,7 +134,7 @@ pub mod tests {
         )
         .await
         {
-            Ok(_) | Err(ErrorInner::DataConstraint { .. }) => Ok(name),
+            Ok(_) | Err(IndexSetError::Db(DbError::DataConstraint { .. })) => Ok(name),
             Err(e) => Err(e),
         }
     }

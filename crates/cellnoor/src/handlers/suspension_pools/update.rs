@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self},
-    error::{Error, ErrorInner},
+    db::{self, DbError},
     handlers::{
         IdParam,
         suspension_pools::{
@@ -25,7 +24,7 @@ pub async fn update_suspension_pool(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<SuspensionPoolUpdate>,
-) -> Result<Json<SuspensionPoolDetailed>, Error> {
+) -> Result<Json<SuspensionPoolDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| {
             update_suspension_pool_by_id(tx, id, &record).await
@@ -41,7 +40,7 @@ async fn update_suspension_pool_by_id(
         measurements,
         preparers,
     }: &SuspensionPoolUpdate,
-) -> Result<SuspensionPoolDetailed, ErrorInner> {
+) -> Result<SuspensionPoolDetailed, DbError> {
     tx.update(id, record).await?;
 
     let preparer_insertions = async {

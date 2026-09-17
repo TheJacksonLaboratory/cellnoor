@@ -93,10 +93,10 @@ where
     }
 }
 
-/// A number greater than zero, with no upper bound worth naming.
+/// A number greater than zero.
 pub type PositiveF32 = PositiveBounded<f32, { u32::MAX }>;
 
-/// A number greater than zero, with no upper bound worth naming.
+/// A number greater than zero.
 pub type PositiveI32 = PositiveBounded<i32, { u32::MAX }>;
 
 /// A number in `0 < n <= N`.

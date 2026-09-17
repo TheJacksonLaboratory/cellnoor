@@ -1,18 +1,20 @@
 pub use client::{Client, Pool, Transaction};
+pub use error::DbError;
 use postgres_types::ToSql;
 pub use stmt::{FilterableSqlBuilder, Sql};
 
 mod client;
+mod error;
 mod insert;
 mod stmt;
 #[cfg(test)]
 pub mod test_utils;
 mod update;
 
-/// The columns of one row, paired with the values to bind to them.
+/// The fieldnames of a row paired with their values.
 pub type FieldValues<'a, F> = Vec<(F, &'a (dyn ToSql + Sync))>;
 
-/// [`FieldValues`] with every field resolved to its column name.
+/// [`FieldValues`] with every fieldname converted to a `&'static str`
 type Columns<'a> = Vec<(&'static str, &'a (dyn ToSql + Sync))>;
 
 /// [`Columns`] as the statement builders read it.

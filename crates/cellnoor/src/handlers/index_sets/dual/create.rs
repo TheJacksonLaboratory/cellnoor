@@ -5,10 +5,9 @@ use cellnoor_types::{Relation, index_set::NewDualIndexSet};
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::index_sets::{
-        NewIndexKit,
+        IndexSetError, NewIndexKit,
         index_set_name::{IndexKitName, IndexSetName, IndexSetWellName},
         insert_index_kit,
         sequence::DnaSequence,
@@ -20,21 +19,16 @@ pub async fn create_dual_index_sets(
     State(state): State<AppState>,
     user: AuthUser,
     Json(sets): Json<HashMap<String, NewDualIndexSet>>,
-) -> Result<Json<()>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    insert_dual_index_sets(&tx, &sets).await?;
-
-    tx.commit().await?;
-
-    Ok(Json(()))
+) -> Result<Json<()>, IndexSetError> {
+    state
+        .in_transaction(user, async |tx| insert_dual_index_sets(tx, &sets).await)
+        .await
 }
 
 async fn insert_dual_index_sets(
     tx: &db::Transaction<'_>,
     sets: &HashMap<String, NewDualIndexSet>,
-) -> Result<(), ErrorInner> {
+) -> Result<(), IndexSetError> {
     let Some(first_index_set_name) = sets.keys().map(|name| IndexSetName::new(name)).next() else {
         return Ok(());
     };
@@ -63,12 +57,7 @@ async fn insert_dual_index_sets(
         let kit_name = index_set_name.kit_name();
 
         if kit_name != first_kit_name {
-            return Err(ErrorInner::DataConstraint {
-                resource: Some("dual_index_set".to_owned()),
-                field: Some("name".to_owned()),
-                message: "all index sets must share the same kit name".to_owned(),
-                detail: None,
-            });
+            return Err(IndexSetError::MixedKitNames);
         }
 
         let record = NewDualIndexSetRecord {
@@ -91,7 +80,7 @@ async fn insert_dual_index_sets(
 async fn insert_dual_index_set(
     tx: &db::Transaction<'_>,
     record: NewDualIndexSetRecord<'_>,
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     tx.insert(&record).await?;
 
     Ok(())
@@ -142,8 +131,7 @@ pub mod tests {
 
     use crate::{
         db::{self, Sql},
-        error::ErrorInner,
-        handlers::index_sets::dual::create::insert_dual_index_sets,
+        handlers::index_sets::{IndexSetError, dual::create::insert_dual_index_sets},
         state::test_util::db_client_as_admin,
     };
 
@@ -151,7 +139,7 @@ pub mod tests {
 
     pub async fn insert_test_dual_index_set(
         tx: &db::Transaction<'_>,
-    ) -> Result<String, ErrorInner> {
+    ) -> Result<String, IndexSetError> {
         let name = DUAL_INDEX_SET_NAME.to_owned();
 
         // Acquire a db lock to prevent a concurrency bug during testing

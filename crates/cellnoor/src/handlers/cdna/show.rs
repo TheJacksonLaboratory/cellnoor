@@ -10,8 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db,
-    error::{Error, ErrorInner},
+    db::{self, DbError},
     handlers::{IdParam, cdna::index_detailed::select_cdna_detailed},
     state::AppState,
 };
@@ -20,7 +19,7 @@ pub async fn show_cdna(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-) -> Result<Json<CdnaDetailed>, Error> {
+) -> Result<Json<CdnaDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| select_cdna_by_id(tx, id).await)
         .await
@@ -29,7 +28,7 @@ pub async fn show_cdna(
 pub(super) async fn select_cdna_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-) -> Result<CdnaDetailed, ErrorInner> {
+) -> Result<CdnaDetailed, DbError> {
     tx.select_one(
         CdnaPredicateInner::Id(UuidOperator::Eq(id)).into(),
         select_cdna_detailed,

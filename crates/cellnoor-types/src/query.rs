@@ -10,10 +10,6 @@ pub(crate) mod order_by;
 
 /// One column of one relation, used to order a query and to name the columns of
 /// an insert or update.
-///
-/// A filter or an order-by addresses the column as `(relation).column`, while
-/// an insert or update names it bare, so the relation is kept separate from the
-/// column's own name.
 pub trait Field: AsRef<str> + Copy {
     const RELATION: &'static str;
 }

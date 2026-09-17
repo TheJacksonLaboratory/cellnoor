@@ -11,8 +11,8 @@ use cellnoor_types::cdna::{
 };
 
 use crate::{
+    db::DbError,
     auth::AuthUser,
-    error::Error,
     handlers::{
         cdna::{
             create_cdna, create_cdna_measurement, index_cdna, index_cdna_detailed, show_cdna,
@@ -47,7 +47,7 @@ async fn index_cdna_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleCdnaQuery>,
-) -> Result<Json<Vec<CdnaCompact>>, Error> {
+) -> Result<Json<Vec<CdnaCompact>>, DbError> {
     index_cdna(state, user, Json(CdnaQuery::from_simple_query(q))).await
 }
 
@@ -55,6 +55,6 @@ async fn index_cdna_detailed_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleCdnaQuery>,
-) -> Result<Json<Vec<CdnaDetailed>>, Error> {
+) -> Result<Json<Vec<CdnaDetailed>>, DbError> {
     index_cdna_detailed(state, user, Json(CdnaQuery::from_simple_query(q))).await
 }

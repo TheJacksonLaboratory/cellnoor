@@ -10,11 +10,11 @@ use uuid::Uuid;
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(rename = "{P}Filter"))]
 pub enum Filter<P> {
-    /// Combines these predicates with logical and
+    /// Combines these predicates with logical 'and'
     AllOf(Vec<Filter<P>>),
-    /// Combines these predicates with logical or
+    /// Combines these predicates with logical 'or'
     AnyOf(Vec<Filter<P>>),
-    /// Negates this predicate with logical not
+    /// Negates this predicate with logical 'not'
     Not(Box<Filter<P>>),
     #[cfg_attr(feature = "serde", serde(untagged))]
     /// Apply just one boolean predicate
@@ -33,10 +33,6 @@ pub trait SqlOperator {
     fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync));
 }
 
-/// One boolean comparison against one column of a relation.
-///
-/// A read selects the relation's whole row as a composite, so the column is
-/// addressed as `(relation).column`.
 #[cfg(feature = "postgres-types")]
 #[derive(Clone, Copy, Debug)]
 pub struct Predicate<'a> {
@@ -54,7 +50,7 @@ pub trait AsPredicate {
     fn as_predicate(&self) -> Predicate<'_>;
 }
 
-/// A comparison operator for any scalar value.
+/// A simple comparison operator.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
@@ -119,8 +115,8 @@ pub type SimpleJsonOperator = Operator<serde_json::Value>;
 
 /// A comparison operator for string values.
 ///
-/// This is a superset of Operator<T> and adds string-specific methods present
-/// in PostgreSQL:
+/// This is a superset of the baisc operators and adds the following
+/// string-specific methods present in PostgreSQL:
 /// 1. like (https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE)
 /// 2. trigram similar (https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS)
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -160,6 +156,13 @@ impl From<SimpleStringOperator> for StringOperator {
     }
 }
 
+/// A comparison operator for array values.
+///
+/// This is a superset of the basic operators and adds the following
+/// array-specific methods present in PostgreSQL (https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY):
+/// 1. contains
+/// 2. is contained in
+/// 3. overlaps with
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
@@ -198,6 +201,15 @@ impl<T> From<SimpleArrayOperator<T>> for ArrayOperator<T> {
     }
 }
 
+/// A comparison operator for JSON values.
+///
+/// This is a superset of the basic operators and adds the following
+/// JSON-specific methods present in PostgreSQL (https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY):
+/// 1. contains
+/// 2. is contained in
+/// 3. has key
+/// 4. has any of keys
+/// 5. has all of keys
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]

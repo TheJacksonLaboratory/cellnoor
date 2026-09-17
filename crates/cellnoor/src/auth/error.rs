@@ -3,13 +3,8 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
-pub use dataset_dir::authorize_dataset_dir_access;
-pub use project_dir::authorize_project_dir_access;
 
 use crate::{db::DbError, error::error_response};
-
-mod dataset_dir;
-mod project_dir;
 
 #[derive(
     Debug,
@@ -22,26 +17,30 @@ mod project_dir;
     Eq,
 )]
 #[serde(tag = "type", rename_all = "snake_case")]
-pub enum FileAuthError {
-    #[error("cannot access this dataset")]
-    DatasetAccessDenied,
-    #[error("cannot access this project")]
-    ProjectAccessDenied,
+pub enum AuthError {
+    #[error("API key expired at {expired_at}")]
+    ExpiredApiKey { expired_at: jiff::Timestamp },
+    #[error("invalid auth token: {message}")]
+    InvalidAuthToken { message: String },
+    #[error("{message}")]
+    NoAuthFound { message: &'static str },
     #[serde(untagged)]
     #[error(transparent)]
     Db(#[from] DbError),
 }
 
-impl FileAuthError {
+impl AuthError {
     fn status(&self) -> StatusCode {
         match self {
-            Self::DatasetAccessDenied | Self::ProjectAccessDenied => StatusCode::UNAUTHORIZED,
+            Self::ExpiredApiKey { .. }
+            | Self::InvalidAuthToken { .. }
+            | Self::NoAuthFound { .. } => StatusCode::UNAUTHORIZED,
             Self::Db(e) => e.status(),
         }
     }
 }
 
-impl IntoResponse for FileAuthError {
+impl IntoResponse for AuthError {
     fn into_response(self) -> Response {
         error_response(self.status(), self)
     }

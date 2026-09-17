@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::IdParam,
     state::AppState,
 };
@@ -18,7 +17,7 @@ pub async fn create_suspension_measurement(
     user: AuthUser,
     Path(IdParam { id: suspension_id }): Path<IdParam>,
     Json(record): Json<NewSuspensionMeasurement>,
-) -> Result<Json<()>, Error> {
+) -> Result<Json<()>, DbError> {
     let mut client = state.db_client(user).await?;
 
     let tx = client.begin().await?;
@@ -37,7 +36,7 @@ pub(in super::super) async fn insert_suspension_measurements(
     tx: &db::Transaction<'_>,
     suspension_id: Uuid,
     records: &[NewSuspensionMeasurement],
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let rows: Vec<_> = records
         .iter()
         .map(|record| NewSuspensionMeasurementRow {

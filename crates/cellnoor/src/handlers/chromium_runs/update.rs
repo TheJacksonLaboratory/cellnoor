@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self},
-    error::{Error, ErrorInner},
+    db::{self, DbError},
     handlers::{IdParam, chromium_runs::show::select_chromium_run_by_id},
     state::AppState,
 };
@@ -18,7 +17,7 @@ pub async fn update_chromium_run(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<ChromiumRunUpdate>,
-) -> Result<Json<ChromiumRunDetailed>, Error> {
+) -> Result<Json<ChromiumRunDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| {
             update_chromium_run_by_id(tx, id, &record).await
@@ -30,7 +29,7 @@ async fn update_chromium_run_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     update: &ChromiumRunUpdate,
-) -> Result<ChromiumRunDetailed, ErrorInner> {
+) -> Result<ChromiumRunDetailed, DbError> {
     tx.update(id, update).await?;
     select_chromium_run_by_id(tx, id).await
 }

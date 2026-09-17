@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert},
     handlers::{IdParam, api_keys::index::select_api_key_record_by_id},
     state::AppState,
 };
@@ -18,7 +17,7 @@ pub async fn update_api_key(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
     Json(update): Json<ApiKeyUpdate>,
-) -> Result<Json<SavedApiKeyRecord>, Error> {
+) -> Result<Json<SavedApiKeyRecord>, DbError> {
     state
         .in_transaction(user, async |tx| update_api_key_by_id(tx, id, &update).await)
         .await
@@ -28,7 +27,7 @@ pub(in super::super) async fn update_api_key_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     update: &ApiKeyUpdate,
-) -> Result<SavedApiKeyRecord, ErrorInner> {
+) -> Result<SavedApiKeyRecord, DbError> {
     tx.update(id, update).await?;
 
     select_api_key_record_by_id(tx, id).await

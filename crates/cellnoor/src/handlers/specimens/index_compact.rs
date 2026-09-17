@@ -6,8 +6,7 @@ use cellnoor_types::{
 
 use crate::{
     auth::AuthUser,
-    db::{self, FilterableSqlBuilder},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FilterableSqlBuilder},
     state::AppState,
 };
 
@@ -15,7 +14,7 @@ pub async fn index_specimens(
     State(state): State<AppState>,
     user: AuthUser,
     Json(query): Json<SpecimenQuery>,
-) -> Result<Json<Vec<SpecimenCompact>>, Error> {
+) -> Result<Json<Vec<SpecimenCompact>>, DbError> {
     state
         .in_transaction(user, async |tx| select_specimens_compact(tx, &query).await)
         .await
@@ -24,7 +23,7 @@ pub async fn index_specimens(
 async fn select_specimens_compact(
     tx: &db::Transaction<'_>,
     query: &SpecimenQuery,
-) -> Result<Vec<SpecimenCompact>, ErrorInner> {
+) -> Result<Vec<SpecimenCompact>, DbError> {
     static SELECT_COMPACT_SPECIMEN: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
 

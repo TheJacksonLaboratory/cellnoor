@@ -13,8 +13,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{FilterableSqlBuilder, Insert, Sql, columns, insert, update},
-    error::ErrorInner,
+    db::{DbError, FilterableSqlBuilder, Insert, Sql, columns, insert, update},
 };
 
 #[derive(Debug, Clone)]
@@ -94,15 +93,19 @@ pub struct Transaction<'a> {
 }
 
 impl Transaction<'_> {
-    /// Run a filterable select, decoding each row's single column.
+    /// Run a filterable select.
     ///
-    /// Every such statement selects a relation's whole row as a composite, so
-    /// `T` is the type that maps to that relation.
+    /// Queries are generally of the form:
+    /// ```sql
+    /// select <table> from <table>;
+    /// ```
+    /// so this function takes the first (and only) column returned from the db
+    /// and maps it into `T`.
     pub async fn select<T, P, O>(
         &self,
         sql: &FilterableSqlBuilder,
         query: &ComplexQuery<P, O>,
-    ) -> Result<Vec<T>, ErrorInner>
+    ) -> Result<Vec<T>, DbError>
     where
         T: FromSqlOwned,
         P: AsPredicate,
@@ -111,8 +114,8 @@ impl Transaction<'_> {
         self.query_into(&sql.finish_with_query(query)).await
     }
 
-    /// Run a statement that takes no filter, decoding each row's single column.
-    pub async fn query_into<T>(&self, sql: &Sql<'_>) -> Result<Vec<T>, ErrorInner>
+    /// Run a statement that takes no filter, decoding the row's single column.
+    pub async fn query_into<T>(&self, sql: &Sql<'_>) -> Result<Vec<T>, DbError>
     where
         T: FromSqlOwned,
     {
@@ -121,13 +124,12 @@ impl Transaction<'_> {
         Ok(rows.iter().map(|row| row.get(0)).collect())
     }
 
-    /// Run a filterable select, for the few statements whose columns are read
-    /// by name rather than decoded as one composite.
+    /// Run a filterable select, returning the row's raw [`tokio_postgres::Row`](https://docs.rs/tokio-postgres/latest/tokio_postgres/row/struct.Row.html)
     pub async fn select_rows<P, O>(
         &self,
         sql: &FilterableSqlBuilder,
         query: &ComplexQuery<P, O>,
-    ) -> Result<Vec<Row>, ErrorInner>
+    ) -> Result<Vec<Row>, DbError>
     where
         P: AsPredicate,
         O: OrderField,
@@ -135,44 +137,46 @@ impl Transaction<'_> {
         self.query(&sql.finish_with_query(query)).await
     }
 
-    /// Select the one row matching a predicate, shaped by the same function
-    /// that the index endpoint uses.
+    /// Select the one row matching a predicate.
+    ///
+    /// This function is most useful for returning rows by primary key. See
+    /// `select_institution_by_id` for an example.
     pub async fn select_one<T, P, O>(
         &self,
         predicate: P,
-        select: impl AsyncFn(&Self, &ComplexQuery<P, O>) -> Result<Vec<T>, ErrorInner>,
-    ) -> Result<T, ErrorInner>
+        select: impl AsyncFn(&Self, &ComplexQuery<P, O>) -> Result<Vec<T>, DbError>,
+    ) -> Result<T, DbError>
     where
         O: OrderField,
     {
         let mut records = select(self, &ComplexQuery::from_filter(predicate)).await?;
 
         if records.len() != 1 {
-            return Err(ErrorInner::ResourceNotFound);
+            return Err(DbError::ResourceNotFound);
         }
 
         Ok(records.swap_remove(0))
     }
 
-    pub async fn query_one(&self, Sql(stmt, params): &Sql<'_>) -> Result<Row, ErrorInner> {
+    pub async fn query_one(&self, Sql(stmt, params): &Sql<'_>) -> Result<Row, DbError> {
         Ok(self.inner.query_one(stmt, params).await?)
     }
 
-    pub async fn query_one_into<T>(&self, sql: &Sql<'_>) -> Result<T, ErrorInner>
+    pub async fn query_one_into<T>(&self, sql: &Sql<'_>) -> Result<T, DbError>
     where
         T: FromSqlOwned,
     {
         Ok(self.query_one(sql).await?.get(0))
     }
 
-    async fn query(&self, Sql(stmt, params): &Sql<'_>) -> Result<Vec<Row>, ErrorInner> {
+    async fn query(&self, Sql(stmt, params): &Sql<'_>) -> Result<Vec<Row>, DbError> {
         Ok(self.inner.query(stmt, params).await?)
     }
 }
 
 impl Transaction<'_> {
     /// Insert one row and return the id the database assigned it.
-    pub async fn insert_returning_id<T>(&self, record: &T) -> Result<Uuid, ErrorInner>
+    pub async fn insert_returning_id<T>(&self, record: &T) -> Result<Uuid, DbError>
     where
         T: Insert,
     {
@@ -183,7 +187,7 @@ impl Transaction<'_> {
     }
 
     /// Insert one row into a relation that has no id to return.
-    pub async fn insert<T>(&self, record: &T) -> Result<(), ErrorInner>
+    pub async fn insert<T>(&self, record: &T) -> Result<(), DbError>
     where
         T: Insert,
     {
@@ -196,7 +200,7 @@ impl Transaction<'_> {
     }
 
     /// Insert every row in one statement.
-    pub async fn insert_many<T>(&self, records: &[T]) -> Result<(), ErrorInner>
+    pub async fn insert_many<T>(&self, records: &[T]) -> Result<(), DbError>
     where
         T: Insert,
     {
@@ -206,24 +210,21 @@ impl Transaction<'_> {
     /// Insert every row in one statement, skipping the rows that are already
     /// there. Only for relations whose primary key is the whole row, where
     /// re-inserting a row means nothing.
-    pub async fn insert_many_on_conflict_do_nothing<T>(
-        &self,
-        records: &[T],
-    ) -> Result<(), ErrorInner>
+    pub async fn insert_many_on_conflict_do_nothing<T>(&self, records: &[T]) -> Result<(), DbError>
     where
         T: Insert,
     {
         self.insert_rows(records, true).await
     }
 
-    pub async fn update<T>(&self, id: Uuid, record: &T) -> Result<(), ErrorInner>
+    pub async fn update<T>(&self, id: Uuid, record: &T) -> Result<(), DbError>
     where
         T: Insert,
     {
         let columns = columns(record);
 
         if columns.is_empty() {
-            return Err(ErrorInner::Other {
+            return Err(DbError::Other {
                 message: format!("no update provided for {}", T::NAME),
                 sql_state: None,
             });
@@ -234,13 +235,13 @@ impl Transaction<'_> {
             .await?;
 
         if n == 0 {
-            return Err(ErrorInner::ResourceNotFound);
+            return Err(DbError::ResourceNotFound);
         }
 
         Ok(())
     }
 
-    pub async fn delete<T>(&self, id: Uuid) -> Result<(), ErrorInner>
+    pub async fn delete<T>(&self, id: Uuid) -> Result<(), DbError>
     where
         T: Relation,
     {
@@ -249,13 +250,13 @@ impl Transaction<'_> {
         let n = self.execute(&Sql(stmt, vec![&id])).await?;
 
         if n == 0 {
-            return Err(ErrorInner::ResourceNotFound);
+            return Err(DbError::ResourceNotFound);
         }
 
         Ok(())
     }
 
-    pub async fn execute(&self, Sql(stmt, params): &Sql<'_>) -> Result<u64, ErrorInner> {
+    pub async fn execute(&self, Sql(stmt, params): &Sql<'_>) -> Result<u64, DbError> {
         Ok(self.inner.execute(stmt, params).await?)
     }
 
@@ -263,7 +264,7 @@ impl Transaction<'_> {
         &self,
         records: &[T],
         on_conflict_do_nothing: bool,
-    ) -> Result<(), ErrorInner>
+    ) -> Result<(), DbError>
     where
         T: Insert,
     {

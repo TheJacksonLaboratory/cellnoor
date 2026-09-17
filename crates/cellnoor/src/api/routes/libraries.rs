@@ -11,8 +11,8 @@ use cellnoor_types::library::{
 };
 
 use crate::{
+    db::DbError,
     auth::AuthUser,
-    error::Error,
     handlers::{
         delete_resource,
         libraries::{
@@ -47,7 +47,7 @@ async fn index_libraries_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleLibraryQuery>,
-) -> Result<Json<Vec<LibraryCompact>>, Error> {
+) -> Result<Json<Vec<LibraryCompact>>, DbError> {
     index_libraries(state, user, Json(LibraryQuery::from_simple_query(q))).await
 }
 
@@ -55,6 +55,6 @@ async fn index_libraries_detailed_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleLibraryQuery>,
-) -> Result<Json<Vec<LibraryDetailed>>, Error> {
+) -> Result<Json<Vec<LibraryDetailed>>, DbError> {
     index_libraries_detailed(state, user, Json(LibraryQuery::from_simple_query(q))).await
 }

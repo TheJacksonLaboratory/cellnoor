@@ -12,8 +12,8 @@ use cellnoor_types::chromium_dataset::{
 };
 
 use crate::{
+    db::DbError,
     auth::AuthUser,
-    error::Error,
     handlers::{
         chromium_datasets::{
             create_chromium_dataset, index_chromium_datasets, index_chromium_datasets_detailed,
@@ -55,7 +55,7 @@ async fn index_chromium_datasets_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleChromiumDatasetQuery>,
-) -> Result<Json<Vec<ChromiumDatasetCompact>>, Error> {
+) -> Result<Json<Vec<ChromiumDatasetCompact>>, DbError> {
     index_chromium_datasets(
         state,
         user,
@@ -68,7 +68,7 @@ async fn index_chromium_datasets_detailed_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleChromiumDatasetQuery>,
-) -> Result<Json<Vec<ChromiumDatasetDetailed>>, Error> {
+) -> Result<Json<Vec<ChromiumDatasetDetailed>>, DbError> {
     index_chromium_datasets_detailed(
         state,
         user,

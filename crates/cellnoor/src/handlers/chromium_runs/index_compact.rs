@@ -9,8 +9,7 @@ use cellnoor_types::{
 
 use crate::{
     auth::AuthUser,
-    db::{self, FilterableSqlBuilder},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FilterableSqlBuilder},
     state::AppState,
 };
 
@@ -18,7 +17,7 @@ pub async fn index_chromium_runs(
     State(state): State<AppState>,
     user: AuthUser,
     Json(query): Json<ChromiumRunQuery>,
-) -> Result<Json<Vec<ChromiumRunCompact>>, Error> {
+) -> Result<Json<Vec<ChromiumRunCompact>>, DbError> {
     state
         .in_transaction(user, async |tx| {
             select_chromium_runs_compact(tx, &query).await
@@ -29,7 +28,7 @@ pub async fn index_chromium_runs(
 async fn select_chromium_runs_compact(
     tx: &db::Transaction<'_>,
     query: &ChromiumRunQuery,
-) -> Result<Vec<ChromiumRunCompact>, ErrorInner> {
+) -> Result<Vec<ChromiumRunCompact>, DbError> {
     static SELECT_COMPACT_CHROMIUM_RUNS: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
 

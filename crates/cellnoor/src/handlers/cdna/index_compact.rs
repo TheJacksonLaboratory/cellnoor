@@ -6,8 +6,7 @@ use cellnoor_types::{
 
 use crate::{
     auth::AuthUser,
-    db::{self, FilterableSqlBuilder},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FilterableSqlBuilder},
     state::AppState,
 };
 
@@ -15,7 +14,7 @@ pub async fn index_cdna(
     State(state): State<AppState>,
     user: AuthUser,
     Json(query): Json<CdnaQuery>,
-) -> Result<Json<Vec<CdnaCompact>>, Error> {
+) -> Result<Json<Vec<CdnaCompact>>, DbError> {
     state
         .in_transaction(user, async |tx| select_cdna_compact(tx, &query).await)
         .await
@@ -24,7 +23,7 @@ pub async fn index_cdna(
 async fn select_cdna_compact(
     tx: &db::Transaction<'_>,
     query: &CdnaQuery,
-) -> Result<Vec<CdnaCompact>, ErrorInner> {
+) -> Result<Vec<CdnaCompact>, DbError> {
     static SELECT_COMPACT_CDNA: FilterableSqlBuilder =
         FilterableSqlBuilder::new(include_str!("index/select_compact.sql"));
 

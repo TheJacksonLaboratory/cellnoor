@@ -12,8 +12,8 @@ use cellnoor_types::suspension_pool::{
 };
 
 use crate::{
+    db::DbError,
     auth::AuthUser,
-    error::Error,
     handlers::{
         delete_resource,
         suspension_pools::{
@@ -51,7 +51,7 @@ async fn index_suspension_pools_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleSuspensionPoolQuery>,
-) -> Result<Json<Vec<SuspensionPoolCompact>>, Error> {
+) -> Result<Json<Vec<SuspensionPoolCompact>>, DbError> {
     index_suspension_pools(state, user, Json(SuspensionPoolQuery::from_simple_query(q))).await
 }
 
@@ -59,7 +59,7 @@ async fn index_suspension_pools_detailed_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimpleSuspensionPoolQuery>,
-) -> Result<Json<Vec<SuspensionPoolDetailed>>, Error> {
+) -> Result<Json<Vec<SuspensionPoolDetailed>>, DbError> {
     index_suspension_pools_detailed(state, user, Json(SuspensionPoolQuery::from_simple_query(q)))
         .await
 }

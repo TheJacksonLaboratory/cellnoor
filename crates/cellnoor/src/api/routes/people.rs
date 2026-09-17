@@ -9,8 +9,8 @@ use axum::{
 use cellnoor_types::person::{Person, PersonQuery, PersonUpdate, SimplePersonQuery};
 
 use crate::{
+    db::DbError,
     auth::AuthUser,
-    error::Error,
     handlers::{
         delete_resource,
         people::{create_person, index_people, show_person, update_person},
@@ -40,6 +40,6 @@ async fn index_people_simple(
     state: State<AppState>,
     user: AuthUser,
     Query(q): Query<SimplePersonQuery>,
-) -> Result<Json<Vec<Person>>, Error> {
+) -> Result<Json<Vec<Person>>, DbError> {
     index_people(state, user, Json(PersonQuery::from_simple_query(q))).await
 }

@@ -8,8 +8,7 @@ use pretty_assertions::assert_eq;
 use uuid::Uuid;
 
 use crate::{
-    db,
-    error::ErrorInner,
+    db::{self, DbError},
     handlers::{
         people::create::test::insert_test_person_and_institution,
         services::{
@@ -51,7 +50,7 @@ async fn user_cannot_update_unowned_service(client: &mut db::Client, service_id:
     .await
     .unwrap_err();
 
-    assert_matches!(error, ErrorInner::ResourceNotFound);
+    assert_matches!(error, DbError::ResourceNotFound);
 }
 
 async fn user_cannot_grant_access_to_unowned_service(client: &mut db::Client, service_id: Uuid) {
@@ -61,7 +60,7 @@ async fn user_cannot_grant_access_to_unowned_service(client: &mut db::Client, se
         .await
         .unwrap_err();
 
-    assert_matches!(error, ErrorInner::PermissionDenied { .. });
+    assert_matches!(error, DbError::PermissionDenied { .. });
 }
 
 async fn user_can_only_see_accessible_services(

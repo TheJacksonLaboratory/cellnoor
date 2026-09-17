@@ -10,8 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db,
-    error::{Error, ErrorInner},
+    db::{self, DbError},
     handlers::{IdParam, projects::index_detailed::select_projects_detailed},
     state::AppState,
 };
@@ -20,7 +19,7 @@ pub async fn show_project(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-) -> Result<Json<ProjectDetailed>, Error> {
+) -> Result<Json<ProjectDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| select_project_by_id(tx, id).await)
         .await
@@ -30,7 +29,7 @@ pub async fn show_project(
 pub(super) async fn select_project_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-) -> Result<ProjectDetailed, ErrorInner> {
+) -> Result<ProjectDetailed, DbError> {
     tx.select_one(
         ProjectPredicate::Id(UuidOperator::Eq(id)),
         select_projects_detailed,

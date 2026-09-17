@@ -1,4 +1,10 @@
-use axum::{Json, extract::State};
+use aide::OperationIo;
+use axum::{
+    Json,
+    extract::State,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use cellnoor_types::{
     Relation,
     chromium_dataset::{
@@ -9,17 +15,55 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert, Sql},
-    error::{Error, ErrorInner},
+    db::{self, DbError, FieldValues, Insert, Sql},
+    error::error_response,
     handlers::chromium_datasets::show::select_chromium_dataset_by_id,
     state::AppState,
 };
+
+#[derive(
+    Debug,
+    Clone,
+    thiserror::Error,
+    serde::Serialize,
+    schemars::JsonSchema,
+    OperationIo,
+    PartialEq,
+    Eq,
+)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum CreateChromiumDatasetError {
+    #[error("all libraries in a Chromium dataset must come from the same GEM well")]
+    LibrariesFromDifferentGemWells,
+    #[error("cannot have multiple instances of the same library type in one Chromium dataset")]
+    DuplicateLibraryType,
+    #[serde(untagged)]
+    #[error(transparent)]
+    Db(#[from] DbError),
+}
+
+impl CreateChromiumDatasetError {
+    fn status(&self) -> StatusCode {
+        match self {
+            Self::LibrariesFromDifferentGemWells | Self::DuplicateLibraryType => {
+                StatusCode::UNPROCESSABLE_ENTITY
+            }
+            Self::Db(e) => e.status(),
+        }
+    }
+}
+
+impl IntoResponse for CreateChromiumDatasetError {
+    fn into_response(self) -> Response {
+        error_response(self.status(), self)
+    }
+}
 
 pub async fn create_chromium_dataset(
     State(state): State<AppState>,
     user: AuthUser,
     Json(record): Json<NewChromiumDataset>,
-) -> Result<Json<ChromiumDatasetDetailed>, Error> {
+) -> Result<Json<ChromiumDatasetDetailed>, CreateChromiumDatasetError> {
     state
         .in_transaction(user, async |tx| {
             insert_chromium_dataset(tx, &state.public_files_url, record).await
@@ -34,20 +78,20 @@ async fn insert_chromium_dataset(
         record,
         library_ids,
     }: NewChromiumDataset,
-) -> Result<ChromiumDatasetDetailed, ErrorInner> {
+) -> Result<ChromiumDatasetDetailed, CreateChromiumDatasetError> {
     validate_libraries_have_same_gem_well(tx, library_ids.as_ref()).await?;
 
     let id = tx.insert_returning_id(&record).await?;
 
     insert_chromium_dataset_libraries(tx, id, library_ids.as_ref()).await?;
 
-    select_chromium_dataset_by_id(tx, raw_files_url, id).await
+    Ok(select_chromium_dataset_by_id(tx, raw_files_url, id).await?)
 }
 
 pub async fn validate_libraries_have_same_gem_well(
     tx: &db::Transaction<'_>,
     library_ids: &[Uuid],
-) -> Result<(), ErrorInner> {
+) -> Result<(), CreateChromiumDatasetError> {
     static SELECT_N_GEM_WELLS_AND_LIBRARY_TYPES: &str =
         include_str!("create/select_n_gem_wells_and_lib_types.sql");
 
@@ -59,24 +103,11 @@ pub async fn validate_libraries_have_same_gem_well(
         .map(|row| (row.get("n_gem_wells"), row.get("n_library_types")))?;
 
     if n_gem_wells != 1 {
-        return Err(ErrorInner::DataConstraint {
-            resource: Some("chromium_dataset".to_owned()),
-            field: Some("library_ids".to_owned()),
-            message: "all libraries in a Chromium dataset must come from the same GEM well"
-                .to_owned(),
-            detail: None,
-        });
+        return Err(CreateChromiumDatasetError::LibrariesFromDifferentGemWells);
     }
 
     if library_ids.len() as i64 != n_library_types {
-        return Err(ErrorInner::DataConstraint {
-            resource: Some("chromium_dataset".to_owned()),
-            field: Some("library_ids".to_owned()),
-            message: "cannot have multiple instances of the same library type in one Chromium \
-                      dataset"
-                .to_owned(),
-            detail: None,
-        });
+        return Err(CreateChromiumDatasetError::DuplicateLibraryType);
     }
 
     Ok(())
@@ -86,7 +117,7 @@ async fn insert_chromium_dataset_libraries(
     tx: &db::Transaction<'_>,
     dataset_id: Uuid,
     library_ids: &[Uuid],
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let rows: Vec<_> = library_ids
         .iter()
         .map(|&library_id| NewChromiumDatasetLibrary {
@@ -149,9 +180,8 @@ pub mod test {
 
     use crate::{
         db,
-        error::ErrorInner,
         handlers::{
-            chromium_datasets::create::insert_chromium_dataset,
+            chromium_datasets::create::{CreateChromiumDatasetError, insert_chromium_dataset},
             libraries::create::test::insert_test_library,
         },
         state::test_util::{ToNonemptyString, db_client_as_admin},
@@ -160,7 +190,7 @@ pub mod test {
     pub async fn insert_test_chromium_dataset<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
-    ) -> Result<(NewChromiumDataset, ChromiumDatasetDetailed), ErrorInner>
+    ) -> Result<(NewChromiumDataset, ChromiumDatasetDetailed), CreateChromiumDatasetError>
     where
         F: FnMut(&mut NewChromiumDataset),
     {
@@ -212,13 +242,7 @@ pub mod test {
 
         assert_eq!(
             err,
-            ErrorInner::DataConstraint {
-                resource: Some("chromium_dataset".to_owned()),
-                field: Some("library_ids".to_owned()),
-                message: "all libraries in a Chromium dataset must come from the same GEM well"
-                    .to_owned(),
-                detail: None,
-            }
+            CreateChromiumDatasetError::LibrariesFromDifferentGemWells
         );
     }
 }

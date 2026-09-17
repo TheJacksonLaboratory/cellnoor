@@ -1,21 +1,25 @@
 use cellnoor_types::api_key::SavedApiKeyRecord;
 use sha3::Digest;
 
-use crate::{auth::AuthUser, db, error::ErrorInner, state::AppState};
+use crate::{
+    auth::{AuthError, AuthUser},
+    db::{self, DbError},
+    state::AppState,
+};
 
 pub(super) async fn authenticate_with_api_key(
     state: &AppState,
     api_key: &[u8],
-) -> Result<AuthUser, ErrorInner> {
+) -> Result<AuthUser, AuthError> {
     let api_key_record = fetch_api_key_record_by_hash(&state.db_pool, api_key).await?;
 
     AuthUser::from_api_key_record(&api_key_record)
 }
 
 impl AuthUser {
-    fn from_api_key_record(api_key: &SavedApiKeyRecord) -> Result<Self, ErrorInner> {
+    fn from_api_key_record(api_key: &SavedApiKeyRecord) -> Result<Self, AuthError> {
         if api_key_is_expired(api_key) {
-            return Err(ErrorInner::ExpiredApiKey {
+            return Err(AuthError::ExpiredApiKey {
                 expired_at: api_key.expires_at.unwrap(),
             });
         }
@@ -39,7 +43,7 @@ fn api_key_is_expired(api_key: &SavedApiKeyRecord) -> bool {
 async fn fetch_api_key_record_by_hash(
     pool: &db::Pool,
     api_key: &[u8],
-) -> Result<SavedApiKeyRecord, ErrorInner> {
+) -> Result<SavedApiKeyRecord, DbError> {
     let hashed_key = hash_api_key(api_key);
 
     let row = pool

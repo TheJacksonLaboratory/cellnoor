@@ -8,15 +8,14 @@ use cellnoor_types::{
 use uuid::Uuid;
 
 use crate::{
-    db::{self, FieldValues, Insert},
-    error::ErrorInner,
+    db::{self, DbError, FieldValues, Insert},
 };
 
 pub(super) async fn insert_standard_chip_loading(
     tx: &db::Transaction<'_>,
     loading: &LoadedEntity,
     gem_well_id: Uuid,
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let chip_loading = NewChipLoadingRecord::from_standard_chip_loading(loading, gem_well_id);
 
     insert_chip_loading(tx, &chip_loading).await
@@ -26,7 +25,7 @@ pub(super) async fn insert_ocm_chip_loading(
     tx: &db::Transaction<'_>,
     loading: &OcmLoadedEntity,
     gem_well_id: Uuid,
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     let chip_loading = NewChipLoadingRecord::from_ocm_chip_loading(loading, gem_well_id);
 
     insert_chip_loading(tx, &chip_loading).await
@@ -35,7 +34,7 @@ pub(super) async fn insert_ocm_chip_loading(
 async fn insert_chip_loading(
     tx: &db::Transaction<'_>,
     chip_loading: &NewChipLoadingRecord,
-) -> Result<(), ErrorInner> {
+) -> Result<(), DbError> {
     tx.insert(chip_loading).await
 }
 
