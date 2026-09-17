@@ -12,8 +12,8 @@ use cellnoor_types::chromium_run::{
 };
 
 use crate::{
-    db::DbError,
     auth::AuthUser,
+    db::DbError,
     handlers::{
         chromium_runs::{
             create_chromium_run, index_chromium_runs, index_chromium_runs_detailed,

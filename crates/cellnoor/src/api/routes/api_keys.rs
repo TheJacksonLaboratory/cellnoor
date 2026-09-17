@@ -9,8 +9,8 @@ use axum::{
 use cellnoor_types::api_key::{ApiKeyQuery, ApiKeyUpdate, SavedApiKeyRecord, SimpleApiKeyQuery};
 
 use crate::{
-    db::DbError,
     auth::AuthUser,
+    db::DbError,
     handlers::{
         api_keys::{create_api_key, index_api_keys, update_api_key},
         delete_resource,

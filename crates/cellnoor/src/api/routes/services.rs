@@ -9,8 +9,8 @@ use axum::{
 use cellnoor_types::service::{Service, ServiceQuery, ServiceSimpleFields, SimpleServiceQuery};
 
 use crate::{
-    db::DbError,
     auth::AuthUser,
+    db::DbError,
     handlers::{
         delete_resource,
         services::{add_people_to_service, create_service, index_services, update_service},

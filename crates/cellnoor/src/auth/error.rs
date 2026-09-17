@@ -11,15 +11,7 @@ use axum::{
 
 use crate::{db::DbError, error::error_response};
 
-#[derive(
-    Debug,
-    Clone,
-    thiserror::Error,
-    serde::Serialize,
-    schemars::JsonSchema,
-    PartialEq,
-    Eq,
-)]
+#[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema, PartialEq, Eq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum AuthError {
     #[error("API key expired at {expired_at}")]

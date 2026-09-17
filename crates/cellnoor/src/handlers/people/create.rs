@@ -31,10 +31,7 @@ pub async fn create_person(
         .await
 }
 
-async fn insert_person(
-    tx: &db::Transaction<'_>,
-    new: &NewPerson,
-) -> Result<Person, PersonError> {
+async fn insert_person(tx: &db::Transaction<'_>, new: &NewPerson) -> Result<Person, PersonError> {
     let NewPerson {
         simple,
         account,

@@ -12,8 +12,8 @@ use cellnoor_types::chromium_dataset::{
 };
 
 use crate::{
-    db::DbError,
     auth::AuthUser,
+    db::DbError,
     handlers::{
         chromium_datasets::{
             create_chromium_dataset, index_chromium_datasets, index_chromium_datasets_detailed,

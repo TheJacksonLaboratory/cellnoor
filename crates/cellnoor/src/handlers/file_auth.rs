@@ -16,15 +16,7 @@ use crate::{db::DbError, error::error_response};
 mod dataset_dir;
 mod project_dir;
 
-#[derive(
-    Debug,
-    Clone,
-    thiserror::Error,
-    serde::Serialize,
-    schemars::JsonSchema,
-    PartialEq,
-    Eq,
-)]
+#[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema, PartialEq, Eq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum FileAuthError {
     #[error("cannot access this dataset")]

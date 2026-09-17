@@ -9,8 +9,8 @@ use axum::{
 use cellnoor_types::person::{Person, PersonQuery, PersonUpdate, SimplePersonQuery};
 
 use crate::{
-    db::DbError,
     auth::AuthUser,
+    db::DbError,
     handlers::{
         delete_resource,
         people::{create_person, index_people, show_person, update_person},

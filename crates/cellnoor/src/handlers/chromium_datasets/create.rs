@@ -25,15 +25,7 @@ use crate::{
     state::AppState,
 };
 
-#[derive(
-    Debug,
-    Clone,
-    thiserror::Error,
-    serde::Serialize,
-    schemars::JsonSchema,
-    PartialEq,
-    Eq,
-)]
+#[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema, PartialEq, Eq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum CreateChromiumDatasetError {
     #[error("all libraries in a Chromium dataset must come from the same GEM well")]

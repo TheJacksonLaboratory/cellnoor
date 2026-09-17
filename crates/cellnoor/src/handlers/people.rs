@@ -22,15 +22,7 @@ pub(super) mod index;
 pub(super) mod show;
 pub(super) mod update;
 
-#[derive(
-    Debug,
-    Clone,
-    thiserror::Error,
-    serde::Serialize,
-    schemars::JsonSchema,
-    PartialEq,
-    Eq,
-)]
+#[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema, PartialEq, Eq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum PersonError {
     #[error("invalid email '{email}'")]

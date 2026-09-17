@@ -11,8 +11,8 @@ use cellnoor_types::specimen::{
 };
 
 use crate::{
-    db::DbError,
     auth::AuthUser,
+    db::DbError,
     handlers::{
         delete_resource,
         specimens::{

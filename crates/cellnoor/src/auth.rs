@@ -4,9 +4,9 @@ use aide::{
     openapi::{Operation, Response as OpenApiResponse, StatusCode as OpenApiStatusCode},
 };
 pub use api_key::hash_api_key;
-pub use error::AuthError;
 use axum::{Json, RequestPartsExt, extract::FromRequestParts, http::HeaderValue};
 use axum_extra::extract::CookieJar;
+pub use error::AuthError;
 use uuid::Uuid;
 
 use crate::{
@@ -85,11 +85,10 @@ impl FromRequestParts<AppState> for AuthUser {
             return Err(AuthError::NoAuthFound {
                 message: "failed to authenticate with JWT at cookie 'cellnoor-auth.session_data' \
                           and API key at header 'x-api-key'",
-            }
-            .into());
+            });
         };
 
-        Ok(authenticate_with_api_key(state, api_key).await?)
+        authenticate_with_api_key(state, api_key).await
     }
 }
 

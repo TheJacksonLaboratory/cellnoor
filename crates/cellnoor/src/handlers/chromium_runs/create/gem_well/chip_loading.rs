@@ -7,9 +7,7 @@ use cellnoor_types::{
 };
 use uuid::Uuid;
 
-use crate::{
-    db::{self, DbError, FieldValues, Insert},
-};
+use crate::db::{self, DbError, FieldValues, Insert};
 
 pub(super) async fn insert_standard_chip_loading(
     tx: &db::Transaction<'_>,

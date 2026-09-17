@@ -12,8 +12,8 @@ use cellnoor_types::suspension::{
 };
 
 use crate::{
-    db::DbError,
     auth::AuthUser,
+    db::DbError,
     handlers::{
         delete_resource,
         suspensions::{
