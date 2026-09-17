@@ -46,3 +46,26 @@ pub(super) async fn select_chromium_dataset_by_id(
 
     Ok(results.swap_remove(0))
 }
+
+#[cfg(test)]
+mod test {
+    use pretty_assertions::assert_eq;
+    use uuid::Uuid;
+
+    use crate::{
+        db::DbError, handlers::chromium_datasets::show::select_chromium_dataset_by_id,
+        state::test_util::db_client_as_admin,
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn missing_dataset_not_found() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let error = select_chromium_dataset_by_id(&tx, "", Uuid::new_v4())
+            .await
+            .unwrap_err();
+
+        assert_eq!(error, DbError::ResourceNotFound);
+    }
+}

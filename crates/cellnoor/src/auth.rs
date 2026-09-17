@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use aide::{
     OperationInput, OperationOutput,
     generate::GenContext,
@@ -108,7 +110,9 @@ fn read_chunked_jwt(cookies: &CookieJar) -> String {
         .map(|cookie| cookie.name_value())
         .collect();
 
-    chunks.sort();
+    let number_part = |(_, n): (&str, &str)| u8::from_str(n).ok();
+
+    chunks.sort_by_key(|(cookiename, _)| cookiename.rsplit_once('.').map(number_part));
 
     chunks.into_iter().map(|(_, value)| value).collect()
 }
@@ -120,5 +124,46 @@ impl AuthUser {
             id,
             is_staff: false,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use axum::http::HeaderMap;
+    use axum_extra::extract::CookieJar;
+    use pretty_assertions::assert_str_eq;
+
+    use crate::auth::read_chunked_jwt;
+
+    fn cookie_jar(header: &str) -> CookieJar {
+        let mut headers = HeaderMap::new();
+        headers.insert("cookie", header.parse().unwrap());
+
+        CookieJar::from_headers(&headers)
+    }
+
+    #[test]
+    fn chunks_are_joined_in_name_order() {
+        let jar = cookie_jar(
+            "cellnoor-auth.session_data.1=second; unrelated=ignored; \
+             cellnoor-auth.session_data.0=first; cellnoor-auth.session_data.10=tenth",
+        );
+
+        assert_str_eq!(read_chunked_jwt(&jar), "firstsecondtenth");
+    }
+
+    #[test]
+    fn secure_chunks_are_joined_in_name_order() {
+        let jar = cookie_jar(
+            "__Secure-cellnoor-auth.session_data.1=second; \
+             __Secure-cellnoor-auth.session_data.0=first",
+        );
+
+        assert_str_eq!(read_chunked_jwt(&jar), "firstsecond");
+    }
+
+    #[test]
+    fn no_matching_cookie_reads_as_empty() {
+        assert_str_eq!(read_chunked_jwt(&cookie_jar("unrelated=ignored")), "");
     }
 }

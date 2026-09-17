@@ -101,3 +101,40 @@ pub type PositiveI32 = PositiveBounded<i32, { u32::MAX }>;
 
 /// A number in `0 < n <= N`.
 pub type PositiveBoundedF32<const N: u32> = PositiveBounded<f32, N>;
+
+#[cfg(test)]
+mod tests {
+    use crate::positive::{PositiveBoundedF32, PositiveF32};
+
+    #[test]
+    fn new_rejects_values_outside_the_bounds() {
+        assert!(PositiveF32::new(1.0).is_some());
+        assert!(PositiveF32::new(0.0).is_none());
+        assert!(PositiveF32::new(-1.0).is_none());
+
+        assert!(PositiveBoundedF32::<10>::new(10.0).is_some());
+        assert!(PositiveBoundedF32::<10>::new(10.5).is_none());
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg(test)]
+mod serde_tests {
+    use pretty_assertions::assert_eq;
+
+    use crate::positive::PositiveBoundedF32;
+
+    #[test]
+    fn deserialize_out_of_bounds_number_fails() {
+        let result: Result<Vec<PositiveBoundedF32<10>>, _> = serde_json::from_str("[10.5]");
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn deserialize_in_bounds_number_succeeds() {
+        let deserialized: [PositiveBoundedF32<10>; 1] = serde_json::from_str("[10.0]").unwrap();
+
+        assert_eq!(deserialized, [PositiveBoundedF32::<10>::new(10.0).unwrap()]);
+    }
+}

@@ -189,7 +189,10 @@ pub mod test {
         db::{self, DbError},
         handlers::{
             institutions::create::test::insert_test_institution,
-            people::{PersonError, create::insert_person},
+            people::{
+                PersonError,
+                create::{insert_person, validate_email},
+            },
         },
         state::test_util::{ToNonemptyString, db_client_as_admin},
     };
@@ -268,6 +271,16 @@ pub mod test {
                 referencing_field: "institution_id".to_owned(),
             }
             .into(),
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn invalid_email() {
+        assert_eq!(
+            validate_email("email").unwrap_err(),
+            PersonError::InvalidEmail {
+                email: "email".to_owned()
+            }
         );
     }
 }

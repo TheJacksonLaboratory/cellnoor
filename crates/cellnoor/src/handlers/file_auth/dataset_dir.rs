@@ -82,3 +82,50 @@ async fn chromium_dataset_exists(
     tx.query_one_into(&Sql::new(SELECT_DATASET, vec![&dataset_id]))
         .await
 }
+
+#[cfg(test)]
+mod test {
+    use crate::{
+        handlers::{
+            chromium_datasets::create::test::insert_test_chromium_dataset,
+            file_auth::dataset_dir::{DatasetType, dataset_exists},
+            people::create::test::insert_test_person_and_institution,
+        },
+        state::test_util::{db_client_as_admin, db_client_as_user},
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn only_project_member_sees_dataset() {
+        let mut admin = db_client_as_admin().await;
+        let tx = admin.begin().await.unwrap();
+
+        let (_, dataset) = insert_test_chromium_dataset(&tx, |_| ()).await.unwrap();
+        let (_, outsider) = insert_test_person_and_institution(&tx, |_| ())
+            .await
+            .unwrap();
+
+        // Commit so the data persists for the clients below
+        tx.commit().await.unwrap();
+
+        let dataset_id = *dataset.record.id;
+        let member_id = dataset.specimens[0].specimen.record.submitted_by;
+
+        let mut client = db_client_as_user(member_id).await;
+        let tx = client.begin().await.unwrap();
+
+        assert!(
+            dataset_exists(tx, DatasetType::ChromiumDatasets, dataset_id)
+                .await
+                .unwrap()
+        );
+
+        let mut client = db_client_as_user(outsider.record.id).await;
+        let tx = client.begin().await.unwrap();
+
+        assert!(
+            !dataset_exists(tx, DatasetType::ChromiumDatasets, dataset_id)
+                .await
+                .unwrap()
+        );
+    }
+}

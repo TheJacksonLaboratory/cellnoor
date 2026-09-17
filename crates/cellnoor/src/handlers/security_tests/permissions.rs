@@ -17,7 +17,7 @@ use crate::{
         institutions::{create::test::insert_test_institution, index::select_institutions},
         libraries::index_detailed::select_libraries_detailed,
         people::{create::test::insert_test_person_and_institution, index::select_people},
-        permissions::grant_permissions,
+        permissions::{grant_permissions, revoke_permissions},
         projects::{create::test::insert_test_project, index_detailed::select_projects_detailed},
         services::index::select_services,
         specimens::index_detailed::select_specimens_detailed,
@@ -204,5 +204,27 @@ async fn user_who_cannot_update_people_cannot_grant_anything() {
             message: "new row violates row-level security policy for resource \"institution\""
                 .to_owned()
         }
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn revoked_permission_disallows_writing() {
+    let user_id = create_test_user_with(false, may(Resource::Institution, &[Action::Create])).await;
+
+    let mut admin = db_client_as_admin().await;
+    let tx = admin.begin().await.unwrap();
+
+    revoke_permissions(&tx, user_id, &may(Resource::Institution, &[Action::Create]))
+        .await
+        .unwrap();
+
+    tx.commit().await.unwrap();
+
+    let mut client = db_client_as_user(user_id).await;
+    let tx = client.begin().await.unwrap();
+
+    assert_matches!(
+        insert_test_institution(&tx, |_| ()).await.unwrap_err(),
+        DbError::PermissionDenied { .. }
     );
 }

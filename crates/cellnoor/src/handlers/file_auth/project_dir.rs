@@ -49,3 +49,42 @@ async fn project_exists(tx: db::Transaction<'_>, project_name: &str) -> Result<b
     tx.query_one_into(&Sql::new(SELECT_DATASET, vec![&project_name]))
         .await
 }
+
+#[cfg(test)]
+mod test {
+    use crate::{
+        handlers::{
+            file_auth::project_dir::project_exists,
+            people::create::test::insert_test_person_and_institution,
+            projects::create::test::insert_test_project,
+        },
+        state::test_util::{db_client_as_admin, db_client_as_user},
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn only_project_member_sees_project() {
+        let mut admin = db_client_as_admin().await;
+        let tx = admin.begin().await.unwrap();
+
+        let (_, project) = insert_test_project(&tx, |_| ()).await.unwrap();
+        let (_, outsider) = insert_test_person_and_institution(&tx, |_| ())
+            .await
+            .unwrap();
+
+        // Commit so the data persists for the clients below
+        tx.commit().await.unwrap();
+
+        let project_name = project.record.project.name.as_ref().to_owned();
+        let member_id = project.record.members[0];
+
+        let mut client = db_client_as_user(member_id).await;
+        let tx = client.begin().await.unwrap();
+
+        assert!(project_exists(tx, &project_name).await.unwrap());
+
+        let mut client = db_client_as_user(outsider.record.id).await;
+        let tx = client.begin().await.unwrap();
+
+        assert!(!project_exists(tx, &project_name).await.unwrap());
+    }
+}

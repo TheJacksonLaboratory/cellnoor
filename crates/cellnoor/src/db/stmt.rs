@@ -191,7 +191,7 @@ mod tests {
     use pretty_assertions::{assert_eq, assert_str_eq};
     use uuid::Uuid;
 
-    use crate::db::stmt::write_where_clause_predicates;
+    use crate::db::stmt::{FilterableSqlBuilder, Sql, write_where_clause_predicates};
 
     type InstitutionFilter = Filter<InstitutionPredicate>;
 
@@ -276,5 +276,28 @@ mod tests {
         let actual_query = serde_json::to_value(query).unwrap();
 
         assert_eq!(expected_query, actual_query);
+    }
+
+    #[test]
+    fn full_statement_construction() {
+        static SELECT_INSTITUTIONS: FilterableSqlBuilder = FilterableSqlBuilder::new(
+            "select * from institution/* {where} */ group by (institution).id",
+        );
+
+        let query = InstitutionQuery {
+            filter: Some(InstitutionPredicate::Id(UuidOperator::Eq(Uuid::nil())).into()),
+            limit: Some(10),
+            offset: 5,
+            ..Default::default()
+        };
+
+        let Sql(stmt, bind_params) = SELECT_INSTITUTIONS.finish_with_query(&query);
+
+        assert_str_eq!(
+            stmt,
+            "select * from institution where (institution).id = ($1) group by (institution).id \
+             order by (institution).name desc limit $2 offset $3 "
+        );
+        assert_eq!(bind_params.len(), 3);
     }
 }
