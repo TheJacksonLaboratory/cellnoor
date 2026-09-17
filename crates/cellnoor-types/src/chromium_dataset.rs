@@ -1,5 +1,4 @@
 use macro_attributes::{base_model, select};
-use nonempty::{NonemptyString, NonemptyVec};
 pub use query::{
     ChromiumDatasetField, ChromiumDatasetPredicate, ChromiumDatasetPredicateInner,
     ChromiumDatasetQuery, SimpleChromiumDatasetQuery,
@@ -11,6 +10,7 @@ use crate::{
     chromium_dataset::record::ChromiumDatasetRecord,
     id::{Id, NoId},
     library::LibraryCompact,
+    nonempty::{NonemptyString, NonemptyVec},
     simple_links::SimpleLinks,
     suspension_pool::TaggedSpecimen,
     tenx_assay::TenxAssay,
@@ -21,7 +21,8 @@ mod query;
 mod record {
     use jiff::Timestamp;
     use macro_attributes::select;
-    use nonempty::NonemptyString;
+
+    use crate::nonempty::NonemptyString;
 
     #[select]
     #[cfg_attr(feature = "postgres-types", postgres(name = "chromium_dataset"))]

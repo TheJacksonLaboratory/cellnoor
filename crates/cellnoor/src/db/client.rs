@@ -13,7 +13,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{FilterableSqlBuilder, Insert, Sql, insert, update},
+    db::{FilterableSqlBuilder, Insert, Sql, columns, insert, update},
     error::ErrorInner,
 };
 
@@ -176,9 +176,9 @@ impl Transaction<'_> {
     where
         T: Insert,
     {
-        let fields = record.fields();
+        let columns = columns(record);
 
-        self.query_one_into(&insert::insert_stmt(T::NAME, &fields, Some("id")))
+        self.query_one_into(&insert::insert_stmt(T::NAME, &columns, Some("id")))
             .await
     }
 
@@ -187,9 +187,9 @@ impl Transaction<'_> {
     where
         T: Insert,
     {
-        let fields = record.fields();
+        let columns = columns(record);
 
-        self.execute(&insert::insert_stmt(T::NAME, &fields, None))
+        self.execute(&insert::insert_stmt(T::NAME, &columns, None))
             .await?;
 
         Ok(())
@@ -220,9 +220,9 @@ impl Transaction<'_> {
     where
         T: Insert,
     {
-        let fields = record.fields();
+        let columns = columns(record);
 
-        if fields.is_empty() {
+        if columns.is_empty() {
             return Err(ErrorInner::Other {
                 message: format!("no update provided for {}", T::NAME),
                 sql_state: None,
@@ -230,7 +230,7 @@ impl Transaction<'_> {
         }
 
         let n = self
-            .execute(&update::update_stmt(T::NAME, &id, &fields))
+            .execute(&update::update_stmt(T::NAME, &id, &columns))
             .await?;
 
         if n == 0 {
@@ -271,7 +271,7 @@ impl Transaction<'_> {
             return Ok(());
         }
 
-        let rows: Vec<_> = records.iter().map(Insert::fields).collect();
+        let rows: Vec<_> = records.iter().map(columns).collect();
 
         self.execute(&insert::insert_many_stmt(
             T::NAME,

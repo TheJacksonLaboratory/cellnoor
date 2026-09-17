@@ -4,9 +4,9 @@ use cellnoor_types::{
         creation::{CdnaVariableFields, NewCdna},
     },
     id::NoId,
+    nonempty::NonemptyVec,
     nucleic_acid_measurement::NewNucleicAcidMeasurement,
 };
-use nonempty::NonemptyVec;
 use uuid::Uuid;
 
 pub fn split_new_cdna_for_insertion(

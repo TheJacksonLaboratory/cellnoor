@@ -12,8 +12,9 @@ mod query;
 
 mod record {
     use macro_attributes::select;
-    use nonempty::NonemptyString;
     use uuid::Uuid;
+
+    use crate::nonempty::NonemptyString;
 
     #[select]
     #[cfg_attr(feature = "postgres-types", postgres(name = "institution"))]

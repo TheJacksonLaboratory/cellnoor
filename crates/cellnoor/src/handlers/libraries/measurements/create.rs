@@ -19,17 +19,11 @@ pub async fn create_library_measurement(
     Path(IdParam { id: library_id }): Path<IdParam>,
     Json(record): Json<NewNucleicAcidMeasurement>,
 ) -> Result<Json<()>, Error> {
-    let mut client = state.db_client(user).await?;
-
-    let tx = client.begin().await?;
-
-    let response = insert_library_measurements(&tx, library_id, std::slice::from_ref(&record))
+    state
+        .in_transaction(user, async |tx| {
+            insert_library_measurements(tx, library_id, std::slice::from_ref(&record)).await
+        })
         .await
-        .map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
 }
 
 pub(in super::super) async fn insert_library_measurements(

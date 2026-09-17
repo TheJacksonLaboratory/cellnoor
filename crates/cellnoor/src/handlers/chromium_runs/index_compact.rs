@@ -19,14 +19,11 @@ pub async fn index_chromium_runs(
     user: AuthUser,
     Json(query): Json<ChromiumRunQuery>,
 ) -> Result<Json<Vec<ChromiumRunCompact>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_chromium_runs_compact(&tx, &query).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| {
+            select_chromium_runs_compact(tx, &query).await
+        })
+        .await
 }
 
 async fn select_chromium_runs_compact(

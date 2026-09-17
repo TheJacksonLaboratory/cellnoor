@@ -1,5 +1,5 @@
-// This is necessary to prevent stupid warnings on the test binary
-#![cfg_attr(test, allow(dead_code_pub_in_binary))]
+//! Collections that cannot be empty.
+
 mod string;
 mod vec;
 

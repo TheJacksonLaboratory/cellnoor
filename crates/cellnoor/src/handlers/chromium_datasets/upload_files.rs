@@ -3,15 +3,14 @@ use std::{collections::HashMap, fs, str::FromStr};
 use axum::extract::{Multipart, Path, State, multipart::Field};
 use bytes::Bytes;
 use camino::{Utf8Path, Utf8PathBuf};
-use cellnoor_types::Relation;
+use cellnoor_types::{Relation, nonempty::NonemptyString};
 use csvranger::TenxCsvValue;
-use nonempty::NonemptyString;
 use strum::VariantNames;
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert, SqlBuilder},
+    db::{self, FieldValues, Insert, Sql},
     error::{Error, ErrorInner},
     handlers::IdParam,
     state::AppState,
@@ -68,7 +67,7 @@ pub async fn upload_files(
 
     tokio::task::spawn_blocking(move || {
         write_fileset_to_disk(
-            app_state.static_files_dir(),
+            &app_state.static_files_dir,
             dataset_id,
             &dataset_with_project_names,
             &raw_files,
@@ -90,19 +89,18 @@ async fn write_file_to_db(
     insert_parsed_file(tx, dataset_id, path, parsed_file).await
 }
 
-struct DatasetWithProjectNames {
-    dataset_name: NonemptyString,
-    project_names: Vec<NonemptyString>,
+pub(super) struct DatasetWithProjectNames {
+    pub dataset_name: NonemptyString,
+    pub project_names: Vec<NonemptyString>,
 }
 
-async fn fetch_dataset_and_project_names(
+pub(super) async fn fetch_dataset_and_project_names(
     tx: &db::Transaction<'_>,
     dataset_id: &Uuid,
 ) -> Result<DatasetWithProjectNames, ErrorInner> {
-    static SELECT_PROJECT_NAMES: SqlBuilder =
-        SqlBuilder::new(include_str!("upload_files/select_project_names.sql"));
+    static SELECT_PROJECT_NAMES: &str = include_str!("upload_files/select_project_names.sql");
 
-    let sql = SELECT_PROJECT_NAMES.finish_with_params(vec![dataset_id]);
+    let sql = Sql::new(SELECT_PROJECT_NAMES, vec![dataset_id]);
 
     tx.query_one(&sql).await.map(|r| DatasetWithProjectNames {
         dataset_name: r.get("dataset_name"),

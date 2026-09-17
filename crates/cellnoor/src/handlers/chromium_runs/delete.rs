@@ -1,43 +1,9 @@
-use axum::{
-    Json,
-    extract::{Path, State},
-};
-use cellnoor_types::chromium_run::SavedChromiumRunRecord;
-use uuid::Uuid;
-
-use crate::{
-    auth::AuthUser,
-    db,
-    error::{Error, ErrorInner},
-    handlers::IdParam,
-    state::AppState,
-};
-
-pub async fn delete_chromium_run(
-    State(state): State<AppState>,
-    user: AuthUser,
-    Path(IdParam { id }): Path<IdParam>,
-) -> Result<Json<()>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = delete_chromium_run_by_id(&tx, id).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
-}
-
-async fn delete_chromium_run_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    tx.delete::<SavedChromiumRunRecord>(id).await
-}
-
 #[cfg(test)]
 mod test {
+    use cellnoor_types::chromium_run::SavedChromiumRunRecord;
+
     use crate::{
-        handlers::chromium_runs::{
-            create::test::insert_test_standard_chromium_run, delete::delete_chromium_run_by_id,
-        },
+        handlers::chromium_runs::create::test::insert_test_standard_chromium_run,
         state::test_util::db_client_as_admin,
     };
 
@@ -50,7 +16,7 @@ mod test {
             .await
             .unwrap();
 
-        delete_chromium_run_by_id(&tx, *run.record.id)
+        tx.delete::<SavedChromiumRunRecord>(*run.record.id)
             .await
             .unwrap();
     }

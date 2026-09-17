@@ -1,5 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
+    SimpleLinks,
     cdna::{CdnaDetailed, CdnaQuery, SavedCdnaRecord},
     suspension_pool::SavedTaggedSpecimenRecord,
 };
@@ -9,10 +10,7 @@ use crate::{
     auth::AuthUser,
     db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
-    handlers::{
-        cdna::index_compact::cdna_simple_links,
-        suspension_pools::index_compact::tagged_specimen_from_record,
-    },
+    handlers::suspension_pools::index_compact::tagged_specimen_from_record,
     state::AppState,
 };
 
@@ -21,14 +19,9 @@ pub async fn index_cdna_detailed(
     user: AuthUser,
     Json(query): Json<CdnaQuery>,
 ) -> Result<Json<Vec<CdnaDetailed>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_cdna_detailed(&tx, &query).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| select_cdna_detailed(tx, &query).await)
+        .await
 }
 
 // Visibility required for tests
@@ -52,7 +45,7 @@ fn map_detailed_row(row: Row) -> CdnaDetailed {
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
 
     CdnaDetailed {
-        links: cdna_simple_links(*record.id),
+        links: SimpleLinks::from_str_and_id("/cdna", record.id),
         record,
         specimens: specimens
             .into_iter()

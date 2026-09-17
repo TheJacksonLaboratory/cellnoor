@@ -4,14 +4,12 @@ use crate::{
     Relation,
     chromium_run::SavedChromiumRunRecord,
     operator::{BoolOperator, JsonOperator, StringOperator, TimestampOperator, UuidOperator},
-    query::{ComplexQuery, Field, OrderField, SimpleQuery, filter::Filter},
+    query::{ComplexQuery, Field, OrderField, SimpleQuery},
     specimen::SpecimenPredicate,
     tenx_assay::TenxAssayPredicate,
 };
 
-#[predicate_enum]
-#[strum(prefix = "(chromium_run).")]
-#[strum_discriminants(name(ChromiumRunField), sort_field_enum)]
+#[predicate_enum(ChromiumRunField)]
 pub enum ChromiumRunPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),
@@ -31,30 +29,6 @@ pub enum ChromiumRunPredicate {
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(transparent)]
     ChromiumRun(ChromiumRunPredicateInner),
-}
-
-impl From<SpecimenPredicate> for ChromiumRunPredicate {
-    fn from(value: SpecimenPredicate) -> Self {
-        Self::Specimen(value)
-    }
-}
-
-impl From<TenxAssayPredicate> for ChromiumRunPredicate {
-    fn from(value: TenxAssayPredicate) -> Self {
-        Self::TenxAssay(value)
-    }
-}
-
-impl From<ChromiumRunPredicateInner> for ChromiumRunPredicate {
-    fn from(value: ChromiumRunPredicateInner) -> Self {
-        Self::ChromiumRun(value)
-    }
-}
-
-impl From<ChromiumRunPredicateInner> for Filter<ChromiumRunPredicate> {
-    fn from(value: ChromiumRunPredicateInner) -> Self {
-        Self::Leaf(value.into())
-    }
 }
 
 impl Field for ChromiumRunField {

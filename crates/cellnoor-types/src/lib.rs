@@ -14,9 +14,11 @@ pub mod index_set;
 pub mod institution;
 pub mod library;
 pub mod multiplexing_tag;
+pub mod nonempty;
 pub mod nucleic_acid_measurement;
 pub mod permission;
 pub mod person;
+pub mod positive;
 pub mod project;
 pub mod query;
 pub mod relation;
@@ -39,7 +41,7 @@ pub mod operator {
 pub mod filter {
     pub use crate::query::filter::Filter;
     #[cfg(feature = "postgres-types")]
-    pub use crate::query::filter::{AsPredicate, SqlOperator};
+    pub use crate::query::filter::{AsPredicate, Predicate, SqlOperator};
 }
 
 pub mod order_by {

@@ -7,9 +7,7 @@ use crate::{
     service::Service,
 };
 
-#[predicate_enum]
-#[strum(prefix = "(service_public).")]
-#[strum_discriminants(name(ServiceField), sort_field_enum)]
+#[predicate_enum(ServiceField)]
 pub enum ServicePredicate {
     Id(UuidOperator),
     Description(StringOperator),

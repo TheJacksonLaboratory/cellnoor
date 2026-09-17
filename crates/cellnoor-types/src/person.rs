@@ -1,9 +1,10 @@
 use macro_attributes::{base_model, select};
-use nonempty::NonemptyString;
 pub use query::{PersonField, PersonPredicate, PersonQuery, SimplePersonQuery};
 use uuid::Uuid;
 
-use crate::{Relation, permission::Permission, simple_links::SimpleLinks};
+use crate::{
+    Relation, nonempty::NonemptyString, permission::Permission, simple_links::SimpleLinks,
+};
 
 mod query;
 

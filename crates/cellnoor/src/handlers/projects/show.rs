@@ -21,14 +21,9 @@ pub async fn show_project(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
 ) -> Result<Json<ProjectDetailed>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_project_by_id(&tx, id).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| select_project_by_id(tx, id).await)
+        .await
 }
 
 // Visibility required for tests

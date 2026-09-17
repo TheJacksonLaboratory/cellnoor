@@ -12,7 +12,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert, SqlBuilder},
+    db::{self, FieldValues, Insert, Sql},
     error::{Error, ErrorInner},
     handlers::tenx_assays::create::chromium::insert_chromium_assay,
     state::AppState,
@@ -25,14 +25,9 @@ pub async fn create_tenx_assay(
     user: AuthUser,
     Json(new): Json<NewTenxAssay>,
 ) -> Result<Json<TenxAssay>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = insert_tenx_assay(&tx, &new).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| insert_tenx_assay(tx, &new).await)
+        .await
 }
 
 async fn insert_tenx_assay(
@@ -44,10 +39,10 @@ async fn insert_tenx_assay(
     };
 
     let assay = tx
-        .query_one_into(
-            &SqlBuilder::new("select tenx_assay from tenx_assay where id = $1")
-                .finish_with_params(vec![&assay_id]),
-        )
+        .query_one_into(&Sql::new(
+            "select tenx_assay from tenx_assay where id = $1",
+            vec![&assay_id],
+        ))
         .await?;
 
     Ok(assay)

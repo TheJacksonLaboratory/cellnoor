@@ -35,11 +35,23 @@ pub trait SqlOperator {
 
 /// One boolean comparison against one column of a relation.
 ///
+/// A read selects the relation's whole row as a composite, so the column is
+/// addressed as `(relation).column`.
+#[cfg(feature = "postgres-types")]
+#[derive(Clone, Copy, Debug)]
+pub struct Predicate<'a> {
+    pub relation: &'static str,
+    pub column: &'a str,
+    pub operator: &'static str,
+    pub value: &'a (dyn ToSql + Sync),
+}
+
+/// A type that renders as one boolean comparison.
+///
 /// Implemented by the `predicate_enum` and `predicate_enum_wrapper` macros.
 #[cfg(feature = "postgres-types")]
 pub trait AsPredicate {
-    /// The column, and the SQL operator and bind value to compare it against.
-    fn as_predicate(&self) -> (&str, (&'static str, &(dyn ToSql + Sync)));
+    fn as_predicate(&self) -> Predicate<'_>;
 }
 
 /// A comparison operator for any scalar value.

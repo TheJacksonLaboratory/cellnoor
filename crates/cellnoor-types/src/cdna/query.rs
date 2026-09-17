@@ -4,18 +4,13 @@ use crate::{
     Relation,
     cdna::{SavedCdnaRecord, creation::LibraryType},
     operator::{I32Operator, JsonOperator, StringOperator, TimestampOperator, UuidOperator},
-    query::{
-        ComplexQuery, Field, OrderField, SimpleQuery,
-        filter::{Filter, Operator},
-    },
+    query::{ComplexQuery, Field, OrderField, SimpleQuery, filter::Operator},
     specimen::SpecimenPredicate,
 };
 
 pub type LibraryTypeOperator = Operator<LibraryType>;
 
-#[predicate_enum]
-#[strum(prefix = "(cdna).")]
-#[strum_discriminants(name(CdnaField), sort_field_enum)]
+#[predicate_enum(CdnaField)]
 pub enum CdnaPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),
@@ -33,24 +28,6 @@ pub enum CdnaPredicate {
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(transparent)]
     Cdna(CdnaPredicateInner),
-}
-
-impl From<SpecimenPredicate> for CdnaPredicate {
-    fn from(value: SpecimenPredicate) -> Self {
-        Self::Specimen(value)
-    }
-}
-
-impl From<CdnaPredicateInner> for CdnaPredicate {
-    fn from(value: CdnaPredicateInner) -> Self {
-        Self::Cdna(value)
-    }
-}
-
-impl From<CdnaPredicateInner> for Filter<CdnaPredicate> {
-    fn from(value: CdnaPredicateInner) -> Self {
-        Self::Leaf(value.into())
-    }
 }
 
 impl Field for CdnaField {

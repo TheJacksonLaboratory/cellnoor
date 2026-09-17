@@ -3,13 +3,17 @@ pub use common::{
 };
 use jiff::Timestamp;
 use macro_attributes::{base_model, discriminant_unit_enum};
-use nonempty::NonemptyString;
 use uuid::Uuid;
 
-use crate::specimen::{
-    Species,
-    creation::{block::BlockFields, suspension::SuspensionSpecimenFields, tissue::TissueFields},
-    measurement::NewSpecimenMeasurement,
+use crate::{
+    nonempty::NonemptyString,
+    specimen::{
+        Species,
+        creation::{
+            block::BlockFields, suspension::SuspensionSpecimenFields, tissue::TissueFields,
+        },
+        measurement::NewSpecimenMeasurement,
+    },
 };
 
 pub mod block;

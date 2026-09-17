@@ -21,14 +21,11 @@ pub async fn index_chromium_runs_detailed(
     user: AuthUser,
     Json(query): Json<ChromiumRunQuery>,
 ) -> Result<Json<Vec<ChromiumRunDetailed>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_chromium_runs_detailed(&tx, &query).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| {
+            select_chromium_runs_detailed(tx, &query).await
+        })
+        .await
 }
 
 // Visibility required for tests
@@ -74,11 +71,13 @@ fn map_detailed_row(row: Row) -> ChromiumRunDetailed {
 mod test {
     use std::{collections::HashSet, hash::RandomState};
 
-    use cellnoor_types::chromium_run::creation::{
-        ChromiumRunGemWells, LoadedEntity, NewChromiumRun,
-        ocm::{NewOcmGemWell, OcmBarcodeId, OcmLoadedEntity},
+    use cellnoor_types::{
+        chromium_run::creation::{
+            ChromiumRunGemWells, LoadedEntity, NewChromiumRun,
+            ocm::{NewOcmGemWell, OcmBarcodeId, OcmLoadedEntity},
+        },
+        nonempty::NonemptyBoundedVec,
     };
-    use nonempty::NonemptyBoundedVec;
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 

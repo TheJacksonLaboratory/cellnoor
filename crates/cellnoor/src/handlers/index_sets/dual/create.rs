@@ -141,7 +141,7 @@ pub mod tests {
     use cellnoor_types::index_set::NewDualIndexSet;
 
     use crate::{
-        db::{self, SqlBuilder},
+        db::{self, Sql},
         error::ErrorInner,
         handlers::index_sets::dual::create::insert_dual_index_sets,
         state::test_util::db_client_as_admin,
@@ -155,15 +155,12 @@ pub mod tests {
         let name = DUAL_INDEX_SET_NAME.to_owned();
 
         // Acquire a db lock to prevent a concurrency bug during testing
-        static LOCK_TABLE: SqlBuilder =
-            SqlBuilder::new("select pg_advisory_xact_lock(hashtext($1))");
+        static LOCK_TABLE: &str = "select pg_advisory_xact_lock(hashtext($1))";
 
         let table = "dual_index_set";
-        tx.execute(&LOCK_TABLE.finish_with_params(vec![&table]))
-            .await?;
+        tx.execute(&Sql::new(LOCK_TABLE, vec![&table])).await?;
 
-        let sql =
-            SqlBuilder::new("select count(*) from dual_index_set").finish_with_params(Vec::new());
+        let sql = Sql::new("select count(*) from dual_index_set", Vec::new());
 
         let n: i64 = tx.query_one_into(&sql).await.unwrap();
 

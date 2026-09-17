@@ -1,8 +1,7 @@
 pub use chromium::NewChromiumAssay;
 use macro_attributes::base_model;
-use positive::PositiveI32;
 
-use crate::tenx_assay::LibraryType;
+use crate::{positive::PositiveI32, tenx_assay::LibraryType};
 
 mod chromium;
 

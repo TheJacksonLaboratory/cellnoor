@@ -7,15 +7,19 @@ use axum::{
     extract::{Query, State},
 };
 use cellnoor_types::chromium_run::{
-    ChromiumRunCompact, ChromiumRunDetailed, ChromiumRunQuery, SimpleChromiumRunQuery,
+    ChromiumRunCompact, ChromiumRunDetailed, ChromiumRunQuery, SavedChromiumRunRecord,
+    SimpleChromiumRunQuery,
 };
 
 use crate::{
     auth::AuthUser,
     error::Error,
-    handlers::chromium_runs::{
-        create_chromium_run, delete_chromium_run, index_chromium_runs,
-        index_chromium_runs_detailed, show_chromium_run, update_chromium_run,
+    handlers::{
+        chromium_runs::{
+            create_chromium_run, index_chromium_runs, index_chromium_runs_detailed,
+            show_chromium_run, update_chromium_run,
+        },
+        delete_resource,
     },
     state::AppState,
 };
@@ -37,7 +41,7 @@ fn id_router() -> ApiRouter<AppState> {
         "/",
         get(show_chromium_run)
             .put(update_chromium_run)
-            .delete(delete_chromium_run),
+            .delete(delete_resource::<SavedChromiumRunRecord>),
     )
 }
 

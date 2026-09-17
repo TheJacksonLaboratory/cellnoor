@@ -19,16 +19,11 @@ pub async fn update_institution(
     Path(IdParam { id }): Path<IdParam>,
     Json(institution): Json<NewInstitution>,
 ) -> Result<Json<Institution>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = update_institution_by_id(&tx, id, &institution)
+    state
+        .in_transaction(user, async |tx| {
+            update_institution_by_id(tx, id, &institution).await
+        })
         .await
-        .map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
 }
 
 async fn update_institution_by_id(

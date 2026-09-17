@@ -3,9 +3,9 @@ use std::sync::LazyLock;
 use axum::{Json, extract::State};
 use cellnoor_types::{
     Relation,
+    nonempty::NonemptyString,
     person::{Account, NewPerson, Person, PersonField, PersonSimpleFields},
 };
-use nonempty::NonemptyString;
 use postgres_types::ToSql;
 use regex::Regex;
 use uuid::Uuid;
@@ -23,15 +23,9 @@ pub async fn create_person(
     user: AuthUser,
     Json(person): Json<NewPerson>,
 ) -> Result<Json<Person>, Error> {
-    let mut client = state.db_client(user).await?;
-
-    let tx = client.begin().await?;
-
-    let response = insert_person(&tx, &person).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| insert_person(tx, &person).await)
+        .await
 }
 
 async fn insert_person(tx: &db::Transaction<'_>, new: &NewPerson) -> Result<Person, ErrorInner> {

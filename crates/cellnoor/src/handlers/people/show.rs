@@ -21,14 +21,9 @@ pub async fn show_person(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
 ) -> Result<Json<Person>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_person_by_id(&tx, id).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| select_person_by_id(tx, id).await)
+        .await
 }
 
 pub(super) async fn select_person_by_id(

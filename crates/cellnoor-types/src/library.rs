@@ -1,5 +1,4 @@
 use macro_attributes::base_model;
-use nonempty::NonemptyVec;
 pub use query::{
     LibraryField, LibraryPredicate, LibraryPredicateInner, LibraryQuery, SimpleLibraryQuery,
 };
@@ -9,6 +8,7 @@ use crate::{
     Relation,
     id::{Id, NoId},
     library::{measurement::LibraryMeasurement, record::LibraryRecord},
+    nonempty::NonemptyVec,
     nucleic_acid_measurement::NewNucleicAcidMeasurement,
     simple_links::SimpleLinks,
     suspension_pool::TaggedSpecimen,
@@ -20,9 +20,9 @@ mod query;
 mod record {
     use jiff::Timestamp;
     use macro_attributes::select;
-    use nonempty::NonemptyString;
-    use positive::PositiveI32;
     use uuid::Uuid;
+
+    use crate::{nonempty::NonemptyString, positive::PositiveI32};
 
     #[select]
     #[cfg_attr(feature = "postgres-types", postgres(name = "library"))]

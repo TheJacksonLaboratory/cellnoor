@@ -6,13 +6,14 @@ use axum::{
     Json,
     extract::{Query, State},
 };
-use cellnoor_types::service::{Service, ServiceQuery, SimpleServiceQuery};
+use cellnoor_types::service::{Service, ServiceQuery, ServiceSimpleFields, SimpleServiceQuery};
 
 use crate::{
     auth::AuthUser,
     error::Error,
-    handlers::services::{
-        add_people_to_service, create_service, delete_service, index_services, update_service,
+    handlers::{
+        delete_resource,
+        services::{add_people_to_service, create_service, index_services, update_service},
     },
     state::AppState,
 };
@@ -25,8 +26,13 @@ pub(super) fn router() -> ApiRouter<AppState> {
 }
 
 fn id_router() -> ApiRouter<AppState> {
+    // Deleting a service fires a trigger that drops the principal, which
+    // cascades to who has access to the service and to its API keys
     ApiRouter::new()
-        .api_route("/", put(update_service).delete(delete_service))
+        .api_route(
+            "/",
+            put(update_service).delete(delete_resource::<ServiceSimpleFields>),
+        )
         .api_route("/people", post(add_people_to_service))
 }
 

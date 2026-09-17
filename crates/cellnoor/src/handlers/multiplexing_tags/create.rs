@@ -4,7 +4,7 @@ use postgres_types::ToSql;
 
 use crate::{
     auth::AuthUser,
-    db::{self, SqlBuilder},
+    db::{self, Sql},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -28,13 +28,12 @@ async fn insert_multiplexing_tag(
     tx: &db::Transaction<'_>,
     NewMultiplexingTag { tag_id, type_ }: &NewMultiplexingTag,
 ) -> Result<MultiplexingTag, ErrorInner> {
-    static INSERT_MULTIPLEXING_TAG: SqlBuilder = SqlBuilder::new(
-        "insert into multiplexing_tag (tag_id, type) values ($1, $2) returning multiplexing_tag",
-    );
+    static INSERT_MULTIPLEXING_TAG: &str =
+        "insert into multiplexing_tag (tag_id, type) values ($1, $2) returning multiplexing_tag";
 
     let params: Vec<&(dyn ToSql + Sync)> = vec![tag_id, type_];
 
-    tx.query_one_into(&INSERT_MULTIPLEXING_TAG.finish_with_params(params))
+    tx.query_one_into(&Sql::new(INSERT_MULTIPLEXING_TAG, params))
         .await
 }
 

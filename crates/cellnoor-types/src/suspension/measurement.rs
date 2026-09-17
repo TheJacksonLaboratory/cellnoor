@@ -1,11 +1,11 @@
 use jiff::Timestamp;
 use macro_attributes::{base_model, select, unit_enum};
-use positive::{PositiveBoundedF32, PositiveF32};
 #[cfg(all(feature = "postgres-types", feature = "schemars"))]
 use postgres_types::Json;
 use uuid::Uuid;
 
 use crate::{
+    positive::{PositiveBoundedF32, PositiveF32},
     suspension::SuspensionContent,
     units::{Microliter, Micrometer, Milliliter},
 };

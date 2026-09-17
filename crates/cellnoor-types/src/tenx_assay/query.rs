@@ -12,9 +12,7 @@ use crate::{
 
 pub type SampleMultiplexingOperator = Operator<SampleMultiplexing>;
 
-#[predicate_enum]
-#[strum(prefix = "(tenx_assay).")]
-#[strum_discriminants(name(TenxAssayField), sort_field_enum)]
+#[predicate_enum(TenxAssayField)]
 pub enum TenxAssayPredicate {
     Id(UuidOperator),
     Name(StringOperator),

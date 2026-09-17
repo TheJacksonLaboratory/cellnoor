@@ -17,14 +17,9 @@ pub async fn index_people(
     user: AuthUser,
     Json(query): Json<PersonQuery>,
 ) -> Result<Json<Vec<Person>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_people(&tx, &query).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| select_people(tx, &query).await)
+        .await
 }
 
 pub(in super::super) async fn select_people(

@@ -1,12 +1,12 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
     Relation,
+    nonempty::NonemptyString,
     suspension_pool::{
         MultiplexingTagType, NewSuspensionPool, NewSuspensionPoolRecord, PooledSuspensions,
         SuspensionPoolDetailed, SuspensionPoolField,
     },
 };
-use nonempty::NonemptyString;
 use uuid::Uuid;
 
 use crate::{
@@ -25,15 +25,9 @@ pub async fn create_suspension_pool(
     user: AuthUser,
     Json(record): Json<NewSuspensionPool>,
 ) -> Result<Json<SuspensionPoolDetailed>, Error> {
-    let mut client = state.db_client(user).await?;
-
-    let tx = client.begin().await?;
-
-    let response = insert_suspension_pool(&tx, &record).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| insert_suspension_pool(tx, &record).await)
+        .await
 }
 
 async fn insert_suspension_pool(
@@ -192,6 +186,8 @@ pub mod test {
 
     use cellnoor_types::{
         id::NoId,
+        nonempty::NonemptyVec,
+        positive::PositiveBoundedF32,
         suspension::measurement::CellViability,
         suspension_pool::{
             NewSuspensionPool, NewSuspensionPoolRecord, PooledSuspensions, SuspensionPoolDetailed,
@@ -200,8 +196,6 @@ pub mod test {
         },
     };
     use jiff::Timestamp;
-    use nonempty::NonemptyVec;
-    use positive::PositiveBoundedF32;
     use postgres_types::Json;
     use pretty_assertions::assert_eq;
     use uuid::Uuid;

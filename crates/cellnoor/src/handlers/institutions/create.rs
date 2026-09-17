@@ -14,15 +14,9 @@ pub async fn create_institution(
     user: AuthUser,
     Json(institution): Json<NewInstitution>,
 ) -> Result<Json<Institution>, Error> {
-    let mut client = state.db_client(user).await?;
-
-    let tx = client.begin().await?;
-
-    let response = insert_institution(&tx, &institution).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| insert_institution(tx, &institution).await)
+        .await
 }
 
 async fn insert_institution(

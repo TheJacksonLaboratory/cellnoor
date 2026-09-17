@@ -1,10 +1,9 @@
 use jiff::Timestamp;
 use macro_attributes::{base_model, select};
-use nonempty::NonemptyString;
 pub use query::{ProjectField, ProjectPredicate, ProjectQuery, SimpleProjectQuery};
 use uuid::Uuid;
 
-use crate::{Relation, simple_links::SimpleLinks};
+use crate::{Relation, nonempty::NonemptyString, simple_links::SimpleLinks};
 
 mod query;
 

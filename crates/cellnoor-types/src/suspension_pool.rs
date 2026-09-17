@@ -1,5 +1,4 @@
 use macro_attributes::{base_model, discriminant_unit_enum, select};
-use nonempty::{NonemptyString, NonemptyVec};
 pub use query::{
     MultiplexingTagField, MultiplexingTagPredicate, MultiplexingTagTypeOperator,
     SimpleSuspensionPoolQuery, SuspensionPoolField, SuspensionPoolPredicate,
@@ -12,6 +11,7 @@ use crate::{
     chromium_run::creation::ocm::OcmBarcodeId,
     id::{Id, NoId},
     multiplexing_tag::MultiplexingTag,
+    nonempty::{NonemptyString, NonemptyVec},
     simple_links::SimpleLinks,
     specimen::{SavedSpecimenRecord, SpecimenCompact},
     suspension_pool::{measurement::SuspensionPoolMeasurement, record::SuspensionPoolRecord},
@@ -23,8 +23,9 @@ mod query;
 mod record {
     use jiff::Timestamp;
     use macro_attributes::select;
-    use nonempty::NonemptyString;
     use serde_json::Value;
+
+    use crate::nonempty::NonemptyString;
 
     #[select]
     #[cfg_attr(feature = "postgres-types", postgres(name = "suspension_pool"))]

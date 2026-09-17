@@ -21,15 +21,9 @@ pub async fn create_cdna(
     user: AuthUser,
     Json(record): Json<NewCdna>,
 ) -> Result<Json<CdnaDetailed>, Error> {
-    let mut client = state.db_client(user).await?;
-
-    let tx = client.begin().await?;
-
-    let response = insert_cdna(&tx, record).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| insert_cdna(tx, record).await)
+        .await
 }
 
 async fn insert_cdna(tx: &db::Transaction<'_>, new: NewCdna) -> Result<CdnaDetailed, ErrorInner> {
@@ -145,10 +139,10 @@ pub mod test {
             Concentration, NewNucleicAcidMeasurement, NucleicAcidMeasurementData,
             NucleicAcidMeasurementMethod,
         },
+        positive::PositiveI32,
         units::{Microliter, Nanogram},
     };
     use jiff::Timestamp;
-    use positive::PositiveI32;
     use postgres_types::Json;
     use uuid::Uuid;
 
@@ -196,7 +190,7 @@ pub mod test {
                     },
                 }),
             }],
-            preparers: nonempty::NonemptyVec::new(vec![person_id]).unwrap(),
+            preparers: cellnoor_types::nonempty::NonemptyVec::new(vec![person_id]).unwrap(),
             variable_fields: CdnaVariableFields::GeneExpression {
                 n_amplification_cycles: PositiveI32::new(10).unwrap(),
             },

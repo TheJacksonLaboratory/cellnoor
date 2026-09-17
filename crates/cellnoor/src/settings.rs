@@ -13,17 +13,17 @@ fn default_address() -> String {
 
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct Settings {
-    db: deadpool_postgres::Config,
+    pub db: deadpool_postgres::Config,
     #[serde(default)]
-    auth_secret: SecretString,
-    max_db_pool_size: Option<usize>,
+    pub auth_secret: SecretString,
+    pub max_db_pool_size: Option<usize>,
     #[serde(default = "default_address")]
-    listen_on: String,
-    public_files_url: String,
-    public_auth_url: String,
-    static_files_dir: String,
+    pub listen_on: String,
+    pub public_files_url: String,
+    pub public_auth_url: String,
+    pub static_files_dir: String,
     #[serde(default = "default_with_auth")]
-    with_auth: bool,
+    pub with_auth: bool,
 }
 
 impl Settings {
@@ -51,45 +51,5 @@ impl Settings {
         settings.db.user.get_or_insert("app".to_owned());
 
         Ok(settings)
-    }
-
-    #[must_use]
-    pub fn db_config(&self) -> &deadpool_postgres::Config {
-        &self.db
-    }
-
-    #[must_use]
-    pub fn auth_secret(&self) -> &SecretString {
-        &self.auth_secret
-    }
-
-    #[must_use]
-    pub fn listen_on(&self) -> &str {
-        &self.listen_on
-    }
-
-    #[must_use]
-    pub fn max_db_pool_size(&self) -> Option<usize> {
-        self.max_db_pool_size
-    }
-
-    #[must_use]
-    pub fn with_auth(&self) -> bool {
-        self.with_auth
-    }
-
-    #[must_use]
-    pub fn public_files_url(&self) -> &str {
-        &self.public_files_url
-    }
-
-    #[must_use]
-    pub fn public_auth_url(&self) -> &str {
-        &self.public_auth_url
-    }
-
-    #[must_use]
-    pub fn static_files_dir(&self) -> &str {
-        &self.static_files_dir
     }
 }

@@ -23,16 +23,11 @@ pub async fn show_chromium_dataset(
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
 ) -> Result<Json<ChromiumDatasetDetailed>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_chromium_dataset_by_id(&tx, state.public_files_url(), id)
+    state
+        .in_transaction(user, async |tx| {
+            select_chromium_dataset_by_id(tx, &state.public_files_url, id).await
+        })
         .await
-        .map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
 }
 
 pub(super) async fn select_chromium_dataset_by_id(

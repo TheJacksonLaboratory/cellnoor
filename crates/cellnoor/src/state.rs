@@ -1,8 +1,14 @@
-use camino::{Utf8Path, Utf8PathBuf};
+use axum::Json;
+use camino::Utf8PathBuf;
 use deadpool_postgres::PoolError;
 use secrecy::ExposeSecret;
 
-use crate::{auth::AuthUser, db, settings::Settings};
+use crate::{
+    auth::AuthUser,
+    db,
+    error::{Error, ErrorInner},
+    settings::Settings,
+};
 
 type JwtDecodingInfo = (jsonwebtoken::DecodingKey, jsonwebtoken::Validation);
 
@@ -10,30 +16,30 @@ type JwtDecodingInfo = (jsonwebtoken::DecodingKey, jsonwebtoken::Validation);
 // think this is a serious performance issue for like 100 bytes though
 #[derive(Clone)]
 pub struct AppState {
-    db_pool: db::Pool,
-    public_files_url: String,
-    public_auth_url: String,
-    static_files_dir: Utf8PathBuf,
+    pub db_pool: db::Pool,
+    pub public_files_url: String,
+    pub public_auth_url: String,
+    pub static_files_dir: Utf8PathBuf,
     // `None` disables authentication: every request then runs as the admin user
-    jwt_decoding_info: Option<&'static JwtDecodingInfo>,
+    pub jwt_decoding_info: Option<&'static JwtDecodingInfo>,
 }
 
 impl AppState {
     pub fn initialize(settings: &Settings) -> anyhow::Result<Self> {
-        let jwt_decoding_info = settings.with_auth().then(|| {
+        let jwt_decoding_info = settings.with_auth.then(|| {
             &*Box::leak(Box::new((
                 jsonwebtoken::DecodingKey::from_secret(
-                    settings.auth_secret().expose_secret().as_bytes(),
+                    settings.auth_secret.expose_secret().as_bytes(),
                 ),
                 jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::HS256),
             )))
         });
 
         Ok(Self {
-            db_pool: db::Pool::new(settings.db_config().to_owned(), settings.max_db_pool_size())?,
-            public_files_url: settings.public_files_url().to_owned(),
-            public_auth_url: settings.public_auth_url().to_owned(),
-            static_files_dir: Utf8PathBuf::from(settings.static_files_dir()),
+            db_pool: db::Pool::new(settings.db.clone(), settings.max_db_pool_size)?,
+            public_files_url: settings.public_files_url.clone(),
+            public_auth_url: settings.public_auth_url.clone(),
+            static_files_dir: Utf8PathBuf::from(&settings.static_files_dir),
             jwt_decoding_info,
         })
     }
@@ -42,31 +48,28 @@ impl AppState {
         self.db_pool.get(user).await
     }
 
-    pub fn db_pool(&self) -> &db::Pool {
-        &self.db_pool
-    }
+    /// Run `work` in one transaction on behalf of `user`, committing it only if
+    /// `work` succeeds.
+    pub async fn in_transaction<T>(
+        &self,
+        user: AuthUser,
+        work: impl AsyncFnOnce(&db::Transaction<'_>) -> Result<T, ErrorInner>,
+    ) -> Result<Json<T>, Error> {
+        let mut client = self.db_client(user).await?;
+        let tx = client.begin().await?;
 
-    pub fn jwt_decoding_info(&self) -> Option<&'static JwtDecodingInfo> {
-        self.jwt_decoding_info
-    }
+        let response = work(&tx).await?;
 
-    pub fn public_files_url(&self) -> &str {
-        &self.public_files_url
-    }
+        tx.commit().await?;
 
-    pub fn static_files_dir(&self) -> &Utf8Path {
-        &self.static_files_dir
-    }
-
-    pub fn public_auth_url(&self) -> &str {
-        &self.public_auth_url
+        Ok(Json(response))
     }
 }
 
 /// A module of test utilities to reduce boilerplate for writing tests.
 #[cfg(test)]
 pub mod test_util {
-    use nonempty::NonemptyString;
+    use cellnoor_types::nonempty::NonemptyString;
     use uuid::Uuid;
 
     use crate::{auth::AuthUser, db};

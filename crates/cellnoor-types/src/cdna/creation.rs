@@ -1,9 +1,10 @@
 use macro_attributes::{base_model, discriminant_unit_enum};
-use nonempty::NonemptyVec;
-use positive::PositiveI32;
 use uuid::Uuid;
 
-use crate::{cdna::CdnaSimpleFields, nucleic_acid_measurement::NewNucleicAcidMeasurement};
+use crate::{
+    cdna::CdnaSimpleFields, nonempty::NonemptyVec,
+    nucleic_acid_measurement::NewNucleicAcidMeasurement, positive::PositiveI32,
+};
 
 #[base_model]
 pub struct NewCdna {

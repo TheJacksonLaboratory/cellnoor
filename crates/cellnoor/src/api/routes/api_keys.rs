@@ -6,12 +6,15 @@ use axum::{
     Json,
     extract::{Query, State},
 };
-use cellnoor_types::api_key::{ApiKeyQuery, SavedApiKeyRecord, SimpleApiKeyQuery};
+use cellnoor_types::api_key::{ApiKeyQuery, ApiKeyUpdate, SavedApiKeyRecord, SimpleApiKeyQuery};
 
 use crate::{
     auth::AuthUser,
     error::Error,
-    handlers::api_keys::{create_api_key, delete_api_key, index_api_keys, update_api_key},
+    handlers::{
+        api_keys::{create_api_key, index_api_keys, update_api_key},
+        delete_resource,
+    },
     state::AppState,
 };
 
@@ -23,7 +26,10 @@ pub(super) fn router() -> ApiRouter<AppState> {
 }
 
 fn id_router() -> ApiRouter<AppState> {
-    ApiRouter::new().api_route("/", put(update_api_key).delete(delete_api_key))
+    ApiRouter::new().api_route(
+        "/",
+        put(update_api_key).delete(delete_resource::<ApiKeyUpdate>),
+    )
 }
 
 async fn index_api_keys_simple(

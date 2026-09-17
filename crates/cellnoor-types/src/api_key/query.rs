@@ -7,9 +7,7 @@ use crate::{
     query::{ComplexQuery, Field, OrderField, SimpleQuery},
 };
 
-#[predicate_enum]
-#[strum(prefix = "(api_key_public).")]
-#[strum_discriminants(name(ApiKeyField), sort_field_enum)]
+#[predicate_enum(ApiKeyField)]
 pub enum ApiKeyPredicate {
     Id(UuidOperator),
     Description(StringOperator),

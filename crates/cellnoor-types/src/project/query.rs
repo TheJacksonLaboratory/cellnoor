@@ -7,9 +7,7 @@ use crate::{
     query::{ComplexQuery, Field, OrderField, SimpleQuery},
 };
 
-#[predicate_enum]
-#[strum(prefix = "(project).")]
-#[strum_discriminants(name(ProjectField), sort_field_enum)]
+#[predicate_enum(ProjectField)]
 pub enum ProjectPredicate {
     Id(UuidOperator),
     Name(StringOperator),

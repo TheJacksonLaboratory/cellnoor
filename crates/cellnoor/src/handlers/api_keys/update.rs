@@ -19,14 +19,9 @@ pub async fn update_api_key(
     Path(IdParam { id }): Path<IdParam>,
     Json(update): Json<ApiKeyUpdate>,
 ) -> Result<Json<SavedApiKeyRecord>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = update_api_key_by_id(&tx, id, &update).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| update_api_key_by_id(tx, id, &update).await)
+        .await
 }
 
 pub(in super::super) async fn update_api_key_by_id(

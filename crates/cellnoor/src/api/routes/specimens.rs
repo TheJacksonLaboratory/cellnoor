@@ -7,15 +7,18 @@ use axum::{
     extract::{Query, State},
 };
 use cellnoor_types::specimen::{
-    SimpleSpecimenQuery, SpecimenCompact, SpecimenDetailed, SpecimenQuery,
+    SavedSpecimenRecord, SimpleSpecimenQuery, SpecimenCompact, SpecimenDetailed, SpecimenQuery,
 };
 
 use crate::{
     auth::AuthUser,
     error::Error,
-    handlers::specimens::{
-        create_specimen, create_specimen_measurement, delete_specimen, index_specimens,
-        index_specimens_detailed, show_specimen, update_specimen,
+    handlers::{
+        delete_resource,
+        specimens::{
+            create_specimen, create_specimen_measurement, index_specimens,
+            index_specimens_detailed, show_specimen, update_specimen,
+        },
     },
     state::AppState,
 };
@@ -35,7 +38,7 @@ fn id_router() -> ApiRouter<AppState> {
             "/",
             get(show_specimen)
                 .put(update_specimen)
-                .delete(delete_specimen),
+                .delete(delete_resource::<SavedSpecimenRecord>),
         )
         .api_route("/measurements", post(create_specimen_measurement))
 }

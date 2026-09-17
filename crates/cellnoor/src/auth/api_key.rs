@@ -7,7 +7,7 @@ pub(super) async fn authenticate_with_api_key(
     state: &AppState,
     api_key: &[u8],
 ) -> Result<AuthUser, ErrorInner> {
-    let api_key_record = fetch_api_key_record_by_hash(state.db_pool(), api_key).await?;
+    let api_key_record = fetch_api_key_record_by_hash(&state.db_pool, api_key).await?;
 
     AuthUser::from_api_key_record(&api_key_record)
 }

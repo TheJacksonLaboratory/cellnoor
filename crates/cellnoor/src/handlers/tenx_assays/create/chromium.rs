@@ -95,13 +95,13 @@ impl Insert for NewChromiumAssayRecord<'_> {
 pub mod tests {
     use cellnoor_types::{
         cdna::creation::LibraryType,
+        nonempty::{NonemptyBoundedVec, NonemptyVec},
+        positive::PositiveI32,
         tenx_assay::{
             SampleMultiplexing, TenxAssay,
             creation::{LibraryTypeSpecification, NewChromiumAssay, NewTenxAssay},
         },
     };
-    use nonempty::{NonemptyBoundedVec, NonemptyVec};
-    use positive::PositiveI32;
     use uuid::Uuid;
 
     use crate::{

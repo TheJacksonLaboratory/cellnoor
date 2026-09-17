@@ -4,26 +4,19 @@ use crate::{
     Relation,
     multiplexing_tag::MultiplexingTag,
     operator::{JsonOperator, StringOperator, TimestampOperator, UuidOperator},
-    query::{
-        ComplexQuery, Field, OrderField, SimpleQuery,
-        filter::{Filter, Operator},
-    },
+    query::{ComplexQuery, Field, OrderField, SimpleQuery, filter::Operator},
     specimen::SpecimenPredicate,
     suspension_pool::{MultiplexingTagType, SavedSuspensionPoolRecord},
 };
 
 pub type MultiplexingTagTypeOperator = Operator<MultiplexingTagType>;
 
-#[predicate_enum]
-#[strum(prefix = "(multiplexing_tag).")]
-#[strum_discriminants(name(MultiplexingTagField), sort_field_enum)]
+#[predicate_enum(MultiplexingTagField)]
 pub enum MultiplexingTagPredicate {
     Type(MultiplexingTagTypeOperator),
 }
 
-#[predicate_enum]
-#[strum(prefix = "(suspension_pool).")]
-#[strum_discriminants(name(SuspensionPoolField), sort_field_enum)]
+#[predicate_enum(SuspensionPoolField)]
 pub enum SuspensionPoolPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),
@@ -45,30 +38,6 @@ pub enum SuspensionPoolPredicate {
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(transparent)]
     SuspensionPool(SuspensionPoolPredicateInner),
-}
-
-impl From<SpecimenPredicate> for SuspensionPoolPredicate {
-    fn from(value: SpecimenPredicate) -> Self {
-        Self::Specimen(value)
-    }
-}
-
-impl From<MultiplexingTagPredicate> for SuspensionPoolPredicate {
-    fn from(value: MultiplexingTagPredicate) -> Self {
-        Self::MultiplexingTag(value)
-    }
-}
-
-impl From<SuspensionPoolPredicateInner> for SuspensionPoolPredicate {
-    fn from(value: SuspensionPoolPredicateInner) -> Self {
-        Self::SuspensionPool(value)
-    }
-}
-
-impl From<SuspensionPoolPredicateInner> for Filter<SuspensionPoolPredicate> {
-    fn from(value: SuspensionPoolPredicateInner) -> Self {
-        Self::Leaf(value.into())
-    }
 }
 
 impl Field for SuspensionPoolField {

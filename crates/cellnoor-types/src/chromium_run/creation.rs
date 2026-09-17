@@ -1,5 +1,4 @@
 use macro_attributes::base_model;
-use nonempty::NonemptyBoundedVec;
 use uuid::Uuid;
 
 use crate::{
@@ -10,6 +9,7 @@ use crate::{
         record::ChromiumRunRecord,
     },
     id::NoId,
+    nonempty::NonemptyBoundedVec,
 };
 
 pub mod mixed;

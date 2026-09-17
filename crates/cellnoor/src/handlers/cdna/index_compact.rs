@@ -3,7 +3,6 @@ use cellnoor_types::{
     SimpleLinks,
     cdna::{CdnaCompact, CdnaQuery, SavedCdnaRecord},
 };
-use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
@@ -17,14 +16,9 @@ pub async fn index_cdna(
     user: AuthUser,
     Json(query): Json<CdnaQuery>,
 ) -> Result<Json<Vec<CdnaCompact>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_cdna_compact(&tx, &query).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| select_cdna_compact(tx, &query).await)
+        .await
 }
 
 async fn select_cdna_compact(
@@ -42,13 +36,9 @@ async fn select_cdna_compact(
         .collect())
 }
 
-pub(super) fn cdna_simple_links(id: Uuid) -> SimpleLinks {
-    SimpleLinks::from_str_and_id("/cdna", id.into())
-}
-
 pub fn cdna_from_record(record: SavedCdnaRecord) -> CdnaCompact {
     CdnaCompact {
-        links: cdna_simple_links(*record.id),
+        links: SimpleLinks::from_str_and_id("/cdna", record.id),
         record,
     }
 }

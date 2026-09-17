@@ -1,5 +1,5 @@
 use axum::{Json, extract::State};
-use nonempty::NonemptyString;
+use cellnoor_types::nonempty::NonemptyString;
 use postgres_types::FromSql;
 use schemars::JsonSchema;
 use serde::Serialize;
@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, SqlBuilder},
+    db::{self, Sql},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -28,20 +28,15 @@ pub async fn index_accounts(
     State(state): State<AppState>,
     user: AuthUser,
 ) -> Result<Json<Vec<PersonAccount>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_accounts(&tx).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| select_accounts(tx).await)
+        .await
 }
 
 async fn select_accounts(tx: &db::Transaction<'_>) -> Result<Vec<PersonAccount>, ErrorInner> {
-    static SELECT_API_KEYS: SqlBuilder = SqlBuilder::new(include_str!("index/select.sql"));
+    static SELECT_API_KEYS: &str = include_str!("index/select.sql");
 
-    let sql = SELECT_API_KEYS.finish_with_params(vec![]);
+    let sql = Sql::new(SELECT_API_KEYS, vec![]);
 
     tx.query_into(&sql).await
 }

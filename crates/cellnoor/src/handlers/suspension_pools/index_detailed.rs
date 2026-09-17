@@ -20,16 +20,11 @@ pub async fn index_suspension_pools_detailed(
     user: AuthUser,
     Json(query): Json<SuspensionPoolQuery>,
 ) -> Result<Json<Vec<SuspensionPoolDetailed>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_suspension_pools_detailed(&tx, &query)
+    state
+        .in_transaction(user, async |tx| {
+            select_suspension_pools_detailed(tx, &query).await
+        })
         .await
-        .map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
 }
 
 // Visibility required for tests

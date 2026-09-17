@@ -6,12 +6,15 @@ use axum::{
     Json,
     extract::{Query, State},
 };
-use cellnoor_types::person::{Person, PersonQuery, SimplePersonQuery};
+use cellnoor_types::person::{Person, PersonQuery, PersonUpdate, SimplePersonQuery};
 
 use crate::{
     auth::AuthUser,
     error::Error,
-    handlers::people::{create_person, delete_person, index_people, show_person, update_person},
+    handlers::{
+        delete_resource,
+        people::{create_person, index_people, show_person, update_person},
+    },
     state::AppState,
 };
 
@@ -23,9 +26,13 @@ pub(super) fn router() -> ApiRouter<AppState> {
 }
 
 fn id_router() -> ApiRouter<AppState> {
+    // Deleting a person fires a trigger that drops the principal, which
+    // cascades to their accounts and keys
     ApiRouter::new().api_route(
         "/",
-        get(show_person).put(update_person).delete(delete_person),
+        get(show_person)
+            .put(update_person)
+            .delete(delete_resource::<PersonUpdate>),
     )
 }
 

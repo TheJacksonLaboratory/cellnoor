@@ -22,14 +22,11 @@ pub async fn update_project(
     Path(IdParam { id }): Path<IdParam>,
     Json(project): Json<NewProject>,
 ) -> Result<Json<ProjectDetailed>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = update_project_by_id(&tx, id, &project).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| {
+            update_project_by_id(tx, id, &project).await
+        })
+        .await
 }
 
 async fn update_project_by_id(

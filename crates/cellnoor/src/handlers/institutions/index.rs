@@ -1,7 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
-    id::Id,
     institution::{Institution, InstitutionQuery, SavedInstitutionRecord},
 };
 
@@ -17,14 +16,9 @@ pub async fn index_institutions(
     user: AuthUser,
     Json(query): Json<InstitutionQuery>,
 ) -> Result<Json<Vec<Institution>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_institutions(&tx, &query).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| select_institutions(tx, &query).await)
+        .await
 }
 
 pub(in super::super) async fn select_institutions(
@@ -42,13 +36,9 @@ pub(in super::super) async fn select_institutions(
         .collect())
 }
 
-fn institution_simple_links(id: Id) -> SimpleLinks {
-    SimpleLinks::from_str_and_id("/institutions", id)
-}
-
 fn institution_from_record(record: SavedInstitutionRecord) -> Institution {
     Institution {
-        links: institution_simple_links(record.id),
+        links: SimpleLinks::from_str_and_id("/institutions", record.id),
         record,
     }
 }

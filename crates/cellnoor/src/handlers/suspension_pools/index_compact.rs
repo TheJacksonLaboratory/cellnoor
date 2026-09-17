@@ -21,16 +21,11 @@ pub async fn index_suspension_pools(
     user: AuthUser,
     Json(query): Json<SuspensionPoolQuery>,
 ) -> Result<Json<Vec<SuspensionPoolCompact>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_suspension_pools_compact(&tx, &query)
+    state
+        .in_transaction(user, async |tx| {
+            select_suspension_pools_compact(tx, &query).await
+        })
         .await
-        .map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
 }
 
 async fn select_suspension_pools_compact(

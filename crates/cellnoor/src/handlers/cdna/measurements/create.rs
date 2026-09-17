@@ -19,17 +19,11 @@ pub async fn create_cdna_measurement(
     Path(IdParam { id: cdna_id }): Path<IdParam>,
     Json(record): Json<NewNucleicAcidMeasurement>,
 ) -> Result<Json<()>, Error> {
-    let mut client = state.db_client(user).await?;
-
-    let tx = client.begin().await?;
-
-    let response = insert_cdna_measurements(&tx, cdna_id, std::slice::from_ref(&record))
+    state
+        .in_transaction(user, async |tx| {
+            insert_cdna_measurements(tx, cdna_id, std::slice::from_ref(&record)).await
+        })
         .await
-        .map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
 }
 
 pub(in super::super) async fn insert_cdna_measurements(

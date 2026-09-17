@@ -1,7 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
-    id::Id,
     library::{LibraryCompact, LibraryQuery, SavedLibraryRecord},
 };
 
@@ -12,13 +11,9 @@ use crate::{
     state::AppState,
 };
 
-pub(super) fn library_simple_links(id: Id) -> SimpleLinks {
-    SimpleLinks::from_str_and_id("/libraries", id)
-}
-
 pub fn library_from_record(record: SavedLibraryRecord) -> LibraryCompact {
     LibraryCompact {
-        links: library_simple_links(record.id),
+        links: SimpleLinks::from_str_and_id("/libraries", record.id),
         record,
     }
 }
@@ -28,14 +23,9 @@ pub async fn index_libraries(
     user: AuthUser,
     Json(query): Json<LibraryQuery>,
 ) -> Result<Json<Vec<LibraryCompact>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_libraries_compact(&tx, &query).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| select_libraries_compact(tx, &query).await)
+        .await
 }
 
 async fn select_libraries_compact(

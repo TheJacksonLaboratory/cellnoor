@@ -25,14 +25,9 @@ pub async fn update_library(
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<LibraryUpdate>,
 ) -> Result<Json<LibraryDetailed>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = update_library_by_id(&tx, id, &record).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| update_library_by_id(tx, id, &record).await)
+        .await
 }
 
 async fn update_library_by_id(
@@ -64,8 +59,10 @@ async fn update_library_by_id(
 
 #[cfg(test)]
 mod test {
-    use cellnoor_types::library::{LibraryUpdate, NewLibraryRecord};
-    use positive::PositiveI32;
+    use cellnoor_types::{
+        library::{LibraryUpdate, NewLibraryRecord},
+        positive::PositiveI32,
+    };
     use uuid::Uuid;
 
     use crate::{

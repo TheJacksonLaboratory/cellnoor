@@ -16,9 +16,7 @@ pub type BlockEmbeddingMatrixOperator = Operator<BlockEmbeddingMatrix>;
 pub type FixativeOperator = Operator<Fixative>;
 pub type ThermalPreservationMethodOperator = Operator<ThermalPreservationMethod>;
 
-#[predicate_enum]
-#[strum(prefix = "(specimen).")]
-#[strum_discriminants(name(SpecimenField), sort_field_enum)]
+#[predicate_enum(SpecimenField)]
 pub enum SpecimenPredicate {
     Id(UuidOperator),
     ReadableId(StringOperator),

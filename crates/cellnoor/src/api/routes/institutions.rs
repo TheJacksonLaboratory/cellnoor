@@ -6,14 +6,18 @@ use axum::{
     Json,
     extract::{Query, State},
 };
-use cellnoor_types::institution::{Institution, InstitutionQuery, SimpleInstitutionQuery};
+use cellnoor_types::institution::{
+    Institution, InstitutionQuery, SavedInstitutionRecord, SimpleInstitutionQuery,
+};
 
 use crate::{
     auth::AuthUser,
     error::Error,
-    handlers::institutions::{
-        create_institution, delete_institution, index_institutions, show_institution,
-        update_institution,
+    handlers::{
+        delete_resource,
+        institutions::{
+            create_institution, index_institutions, show_institution, update_institution,
+        },
     },
     state::AppState,
 };
@@ -30,7 +34,7 @@ fn id_router() -> ApiRouter<AppState> {
         "/",
         get(show_institution)
             .put(update_institution)
-            .delete(delete_institution),
+            .delete(delete_resource::<SavedInstitutionRecord>),
     )
 }
 

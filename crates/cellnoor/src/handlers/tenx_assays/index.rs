@@ -3,7 +3,7 @@ use cellnoor_types::tenx_assay::TenxAssay;
 
 use crate::{
     auth::AuthUser,
-    db::{self, SqlBuilder},
+    db::{self, Sql},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -12,18 +12,13 @@ pub async fn index_tenx_assays(
     State(state): State<AppState>,
     user: AuthUser,
 ) -> Result<Json<Vec<TenxAssay>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_tenx_assays(&tx).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| select_tenx_assays(tx).await)
+        .await
 }
 
 async fn select_tenx_assays(tx: &db::Transaction<'_>) -> Result<Vec<TenxAssay>, ErrorInner> {
-    let sql = SqlBuilder::new(include_str!("index/select.sql")).finish_with_params(vec![]);
+    let sql = Sql::new(include_str!("index/select.sql"), vec![]);
 
     tx.query_into(&sql).await
 }

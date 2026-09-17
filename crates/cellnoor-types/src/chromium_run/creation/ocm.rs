@@ -1,7 +1,9 @@
 use macro_attributes::{base_model, unit_enum};
-use nonempty::{NonemptyBoundedVec, NonemptyString};
 
-use crate::chromium_run::creation::LoadedEntity;
+use crate::{
+    chromium_run::creation::LoadedEntity,
+    nonempty::{NonemptyBoundedVec, NonemptyString},
+};
 
 pub const MAX_SUSPENSIONS_PER_OCM_GEM_WELL: usize = 4;
 

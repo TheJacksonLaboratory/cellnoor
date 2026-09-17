@@ -1,14 +1,14 @@
 use axum::{Json, extract::State};
-use cellnoor_types::specimen::{SavedSpecimenRecordDetailed, SpecimenDetailed, SpecimenQuery};
+use cellnoor_types::{
+    SimpleLinks,
+    specimen::{SavedSpecimenRecordDetailed, SpecimenDetailed, SpecimenQuery},
+};
 
 use crate::{
     auth::AuthUser,
     db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
-    handlers::{
-        projects::index_compact::project_from_record,
-        specimens::index_compact::specimen_simple_links,
-    },
+    handlers::projects::index_compact::project_from_record,
     state::AppState,
 };
 
@@ -17,14 +17,9 @@ pub async fn index_specimens_detailed(
     user: AuthUser,
     Json(query): Json<SpecimenQuery>,
 ) -> Result<Json<Vec<SpecimenDetailed>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_specimens_detailed(&tx, &query).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| select_specimens_detailed(tx, &query).await)
+        .await
 }
 
 // Visibility required for tests
@@ -51,7 +46,7 @@ fn specimen_from_detailed_record(
     }: SavedSpecimenRecordDetailed,
 ) -> SpecimenDetailed {
     SpecimenDetailed {
-        links: specimen_simple_links(specimen.id),
+        links: SimpleLinks::from_str_and_id("/specimens", specimen.id),
         record: specimen,
         project: project_from_record(project),
         measurements,

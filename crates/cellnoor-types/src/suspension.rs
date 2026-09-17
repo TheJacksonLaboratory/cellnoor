@@ -1,5 +1,4 @@
 use macro_attributes::{base_model, select, unit_enum};
-use nonempty::NonemptyVec;
 pub use query::{
     SimpleSuspensionQuery, SuspensionContentOperator, SuspensionField, SuspensionPredicate,
     SuspensionPredicateInner, SuspensionQuery,
@@ -9,6 +8,7 @@ use uuid::Uuid;
 use crate::{
     Relation,
     id::{Id, NoId},
+    nonempty::NonemptyVec,
     simple_links::SimpleLinks,
     specimen::{SavedSpecimenRecord, SpecimenCompact},
     suspension::{
@@ -23,11 +23,10 @@ mod query;
 mod record {
     use jiff::Timestamp;
     use macro_attributes::select;
-    use nonempty::NonemptyString;
     use serde_json::Value;
     use uuid::Uuid;
 
-    use crate::suspension::SuspensionContent;
+    use crate::{nonempty::NonemptyString, suspension::SuspensionContent};
 
     #[select]
     #[cfg_attr(feature = "postgres-types", postgres(name = "suspension"))]

@@ -1,3 +1,5 @@
+//! Numbers that are greater than zero.
+
 #[cfg(feature = "postgres-types")]
 use bytes::BytesMut;
 #[cfg(feature = "postgres-types")]
@@ -91,4 +93,11 @@ where
     }
 }
 
-pub(crate) type Positive<T> = PositiveBounded<T, { u32::MAX }>;
+/// A number greater than zero, with no upper bound worth naming.
+pub type PositiveF32 = PositiveBounded<f32, { u32::MAX }>;
+
+/// A number greater than zero, with no upper bound worth naming.
+pub type PositiveI32 = PositiveBounded<i32, { u32::MAX }>;
+
+/// A number in `0 < n <= N`.
+pub type PositiveBoundedF32<const N: u32> = PositiveBounded<f32, N>;

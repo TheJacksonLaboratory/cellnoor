@@ -264,11 +264,8 @@ dependencies = [
  "deadpool-postgres",
  "dotenvy",
  "futures",
- "glob",
  "jiff",
  "jsonwebtoken",
- "nonempty",
- "positive",
  "postgres-types",
  "pretty_assertions",
  "rand 0.10.2",
@@ -295,14 +292,13 @@ dependencies = [
  "bytes",
  "jiff",
  "macro-attributes",
- "nonempty",
- "positive",
  "postgres-types",
  "pretty_assertions",
  "schemars",
  "serde",
  "serde_json",
  "strum",
+ "thiserror",
  "uuid",
 ]
 
@@ -893,12 +889,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "glob"
-version = "0.3.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e4eba85ea1d0a966a983acd07deee566e67395d2d96b6fb39e62b5a833f1eb0b"
-
-[[package]]
 name = "group"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1300,19 +1290,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nonempty"
-version = "0.0.0"
-dependencies = [
- "bytes",
- "postgres-types",
- "pretty_assertions",
- "schemars",
- "serde",
- "serde_json",
- "thiserror",
-]
-
-[[package]]
 name = "num-bigint"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1541,16 +1518,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a106d1259c23fac8e543272398ae0e3c0b8d33c88ed73d0cc71b0f1d902618"
 dependencies = [
  "portable-atomic",
-]
-
-[[package]]
-name = "positive"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "postgres-types",
- "schemars",
- "serde",
 ]
 
 [[package]]

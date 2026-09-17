@@ -6,10 +6,10 @@ use cellnoor_types::{
     },
     id::Id,
     library::SavedLibraryRecord,
+    nonempty::NonemptyString,
     suspension_pool::SavedTaggedSpecimenRecord,
 };
 use deadpool_postgres::tokio_postgres::Row;
-use nonempty::NonemptyString;
 
 use crate::{
     auth::AuthUser,
@@ -28,16 +28,11 @@ pub async fn index_chromium_datasets_detailed(
     user: AuthUser,
     Json(query): Json<ChromiumDatasetQuery>,
 ) -> Result<Json<Vec<ChromiumDatasetDetailed>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_chromium_datasets_detailed(&tx, state.public_files_url(), &query)
+    state
+        .in_transaction(user, async |tx| {
+            select_chromium_datasets_detailed(tx, &state.public_files_url, &query).await
+        })
         .await
-        .map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
 }
 
 // Visibility required for tests

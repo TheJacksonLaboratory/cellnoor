@@ -1,16 +1,14 @@
 use axum::{Json, extract::State};
-use cellnoor_types::suspension::{
-    SavedSuspensionRecordDetailed, SuspensionDetailed, SuspensionQuery,
+use cellnoor_types::{
+    SimpleLinks,
+    suspension::{SavedSuspensionRecordDetailed, SuspensionDetailed, SuspensionQuery},
 };
 
 use crate::{
     auth::AuthUser,
     db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
-    handlers::{
-        specimens::index_compact::specimen_from_record,
-        suspensions::index_compact::suspension_simple_links,
-    },
+    handlers::specimens::index_compact::specimen_from_record,
     state::AppState,
 };
 
@@ -19,14 +17,11 @@ pub async fn index_suspensions_detailed(
     user: AuthUser,
     Json(query): Json<SuspensionQuery>,
 ) -> Result<Json<Vec<SuspensionDetailed>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_suspensions_detailed(&tx, &query).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| {
+            select_suspensions_detailed(tx, &query).await
+        })
+        .await
 }
 
 // Visibility required for tests
@@ -54,7 +49,7 @@ fn suspension_from_detailed_record(
     }: SavedSuspensionRecordDetailed,
 ) -> SuspensionDetailed {
     SuspensionDetailed {
-        links: suspension_simple_links(suspension.id),
+        links: SimpleLinks::from_str_and_id("/suspensions", suspension.id),
         record: suspension,
         specimen: specimen_from_record(specimen),
         measurements,

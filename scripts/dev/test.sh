@@ -2,15 +2,9 @@
 
 set -euo pipefail
 
-docker_compose="docker compose --file compose.yaml --file compose.dev.yaml"
+trap 'scripts/dev/cleanup-docker.sh --yes' EXIT
 
-function cleanup_docker() {
-    $docker_compose rm --force --stop --volumes
-    $docker_compose volumes --format json | jq '.[].Name' --slurp | xargs --no-run-if-empty docker volume rm
-}
-trap cleanup_docker EXIT
-
-$docker_compose up db migrate --detach
+scripts/dev/compose.sh up db migrate --detach
 
 # docker compose reads .env on its own, but this shell needs the same values
 if [ -f .env ]; then

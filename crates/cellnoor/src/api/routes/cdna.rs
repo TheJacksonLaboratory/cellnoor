@@ -6,14 +6,19 @@ use axum::{
     Json,
     extract::{Query, State},
 };
-use cellnoor_types::cdna::{CdnaCompact, CdnaDetailed, CdnaQuery, SimpleCdnaQuery};
+use cellnoor_types::cdna::{
+    CdnaCompact, CdnaDetailed, CdnaQuery, SavedCdnaRecord, SimpleCdnaQuery,
+};
 
 use crate::{
     auth::AuthUser,
     error::Error,
-    handlers::cdna::{
-        create_cdna, create_cdna_measurement, delete_cdna, index_cdna, index_cdna_detailed,
-        show_cdna, update_cdna,
+    handlers::{
+        cdna::{
+            create_cdna, create_cdna_measurement, index_cdna, index_cdna_detailed, show_cdna,
+            update_cdna,
+        },
+        delete_resource,
     },
     state::AppState,
 };
@@ -29,7 +34,12 @@ pub(super) fn router() -> ApiRouter<AppState> {
 
 fn id_router() -> ApiRouter<AppState> {
     ApiRouter::new()
-        .api_route("/", get(show_cdna).put(update_cdna).delete(delete_cdna))
+        .api_route(
+            "/",
+            get(show_cdna)
+                .put(update_cdna)
+                .delete(delete_resource::<SavedCdnaRecord>),
+        )
         .api_route("/measurements", post(create_cdna_measurement))
 }
 

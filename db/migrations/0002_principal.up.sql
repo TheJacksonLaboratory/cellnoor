@@ -8,8 +8,8 @@ create table principal (
 
 create table permission (
     principal_id uuid references principal on delete cascade not null,
-    resource text not null,
     action text not null,
+    resource text not null,
 
     primary key (principal_id, resource, action)
 );

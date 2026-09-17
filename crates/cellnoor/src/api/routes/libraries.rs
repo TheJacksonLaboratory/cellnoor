@@ -6,14 +6,19 @@ use axum::{
     Json,
     extract::{Query, State},
 };
-use cellnoor_types::library::{LibraryCompact, LibraryDetailed, LibraryQuery, SimpleLibraryQuery};
+use cellnoor_types::library::{
+    LibraryCompact, LibraryDetailed, LibraryQuery, SavedLibraryRecord, SimpleLibraryQuery,
+};
 
 use crate::{
     auth::AuthUser,
     error::Error,
-    handlers::libraries::{
-        create_library, create_library_measurement, delete_library, index_libraries,
-        index_libraries_detailed, show_library, update_library,
+    handlers::{
+        delete_resource,
+        libraries::{
+            create_library, create_library_measurement, index_libraries, index_libraries_detailed,
+            show_library, update_library,
+        },
     },
     state::AppState,
 };
@@ -31,7 +36,9 @@ fn id_router() -> ApiRouter<AppState> {
     ApiRouter::new()
         .api_route(
             "/",
-            get(show_library).put(update_library).delete(delete_library),
+            get(show_library)
+                .put(update_library)
+                .delete(delete_resource::<SavedLibraryRecord>),
         )
         .api_route("/measurements", post(create_library_measurement))
 }

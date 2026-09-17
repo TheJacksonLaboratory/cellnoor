@@ -17,14 +17,9 @@ pub async fn index_api_keys(
     user: AuthUser,
     Json(query): Json<ApiKeyQuery>,
 ) -> Result<Json<Vec<SavedApiKeyRecord>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_api_keys(&tx, &query).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| select_api_keys(tx, &query).await)
+        .await
 }
 
 pub(in super::super) async fn select_api_keys(

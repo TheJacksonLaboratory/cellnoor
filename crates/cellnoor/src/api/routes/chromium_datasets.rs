@@ -8,16 +8,18 @@ use axum::{
 };
 use cellnoor_types::chromium_dataset::{
     ChromiumDatasetCompact, ChromiumDatasetDetailed, ChromiumDatasetQuery,
-    SimpleChromiumDatasetQuery,
+    SavedChromiumDatasetRecord, SimpleChromiumDatasetQuery,
 };
 
 use crate::{
     auth::AuthUser,
     error::Error,
-    handlers::chromium_datasets::{
-        create_chromium_dataset, delete_chromium_dataset, index_chromium_datasets,
-        index_chromium_datasets_detailed, show_chromium_dataset, update_chromium_dataset,
-        upload_files,
+    handlers::{
+        chromium_datasets::{
+            create_chromium_dataset, index_chromium_datasets, index_chromium_datasets_detailed,
+            show_chromium_dataset, update_chromium_dataset, upload_files,
+        },
+        delete_resource,
     },
     state::AppState,
 };
@@ -40,7 +42,7 @@ fn id_router() -> ApiRouter<AppState> {
             "/",
             get(show_chromium_dataset)
                 .put(update_chromium_dataset)
-                .delete(delete_chromium_dataset),
+                .delete(delete_resource::<SavedChromiumDatasetRecord>),
         )
         // Unfortunately we don't get openAPI documentation for this route
         .route(

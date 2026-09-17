@@ -20,15 +20,9 @@ pub async fn create_suspension(
     user: AuthUser,
     Json(record): Json<NewSuspension>,
 ) -> Result<Json<SuspensionDetailed>, Error> {
-    let mut client = state.db_client(user).await?;
-
-    let tx = client.begin().await?;
-
-    let response = insert_suspension(&tx, record).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| insert_suspension(tx, record).await)
+        .await
 }
 
 async fn insert_suspension(
@@ -127,6 +121,7 @@ impl Insert for NewSuspensionRecord {
 pub mod test {
     use cellnoor_types::{
         id::NoId,
+        positive::PositiveBoundedF32,
         suspension::{
             NewSuspension, NewSuspensionRecord, SuspensionContent, SuspensionDetailed,
             measurement::{
@@ -136,7 +131,6 @@ pub mod test {
         },
     };
     use jiff::Timestamp;
-    use positive::PositiveBoundedF32;
     use postgres_types::Json;
     use uuid::Uuid;
 
@@ -184,7 +178,7 @@ pub mod test {
                     post_hybridization: false,
                 }),
             }],
-            preparers: nonempty::NonemptyVec::new(vec![person_id]).unwrap(),
+            preparers: cellnoor_types::nonempty::NonemptyVec::new(vec![person_id]).unwrap(),
         };
 
         modify(&mut new);

@@ -2,17 +2,14 @@ use std::fmt::Write;
 
 use postgres_types::ToSql;
 
-use crate::db::{FieldValueSlice, Sql};
+use crate::db::{ColumnSlice, Columns, Sql};
 
 /// `insert into <relation> (<columns>) values ($1, …) [returning <returning>]`
-pub(super) fn insert_stmt<'a, F>(
+pub(super) fn insert_stmt<'a>(
     relation: &str,
-    fields: &FieldValueSlice<'a, F>,
+    fields: &ColumnSlice<'a>,
     returning: Option<&str>,
-) -> Sql<'a>
-where
-    F: AsRef<str>,
-{
+) -> Sql<'a> {
     // Should be more than enough space
     let mut stmt = String::with_capacity(512);
     let mut params = Vec::with_capacity(fields.len());
@@ -34,14 +31,11 @@ where
 ///
 /// Every row names the same columns, so the first one decides the column list.
 /// `rows` must not be empty.
-pub(super) fn insert_many_stmt<'a, F>(
+pub(super) fn insert_many_stmt<'a>(
     relation: &str,
-    rows: &[Vec<(F, &'a (dyn ToSql + Sync))>],
+    rows: &[Columns<'a>],
     on_conflict_do_nothing: bool,
-) -> Sql<'a>
-where
-    F: AsRef<str>,
-{
+) -> Sql<'a> {
     let first_row = &rows[0];
 
     let mut stmt = String::with_capacity(512);
@@ -68,23 +62,20 @@ where
     Sql(stmt, params)
 }
 
-fn write_columns<F>(stmt: &mut String, fields: &FieldValueSlice<'_, F>)
-where
-    F: AsRef<str>,
-{
+fn write_columns(stmt: &mut String, fields: &ColumnSlice<'_>) {
     for (i, (field, _)) in fields.iter().enumerate() {
         if i != 0 {
             stmt.push_str(", ");
         }
 
-        stmt.push_str(field.as_ref());
+        stmt.push_str(field);
     }
 }
 
-fn write_placeholders<'a, F>(
+fn write_placeholders<'a>(
     stmt: &mut String,
     params: &mut Vec<&'a (dyn ToSql + Sync)>,
-    fields: &FieldValueSlice<'a, F>,
+    fields: &ColumnSlice<'a>,
 ) {
     for (i, (_, value)) in fields.iter().enumerate() {
         if i != 0 {
@@ -98,7 +89,6 @@ fn write_placeholders<'a, F>(
 
 #[cfg(test)]
 mod tests {
-    use cellnoor_types::institution::InstitutionField;
     use deadpool_postgres::tokio_postgres::types::private::BytesMut;
     use postgres_types::{ToSql, Type};
     use pretty_assertions::assert_eq;
@@ -109,9 +99,9 @@ mod tests {
         insert::{insert_many_stmt, insert_stmt},
     };
 
-    static TEST_DATA: [(InstitutionField, &'static (dyn ToSql + Sync)); 2] = [
-        (InstitutionField::Name, &"name"),
-        (InstitutionField::MicrosoftEntraTenantId, &Uuid::nil()),
+    static TEST_DATA: [(&str, &'static (dyn ToSql + Sync)); 2] = [
+        ("name", &"name"),
+        ("microsoft_entra_tenant_id", &Uuid::nil()),
     ];
 
     fn test_insert_stmt() -> Sql<'static> {

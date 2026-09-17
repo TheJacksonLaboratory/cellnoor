@@ -1,7 +1,6 @@
 use macro_attributes::select;
-use nonempty::NonemptyString;
 
-use crate::{Relation, suspension_pool::MultiplexingTagType};
+use crate::{Relation, nonempty::NonemptyString, suspension_pool::MultiplexingTagType};
 
 #[select]
 #[derive(Eq, Hash)]

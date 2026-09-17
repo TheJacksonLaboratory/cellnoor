@@ -7,7 +7,6 @@ edition = "2024"
 name = "openapi"
 
 [dependencies]
-glob.workspace = true
 csv.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
@@ -16,7 +15,6 @@ camino.workspace = true
 rand.workspace = true
 aide.workspace = true
 csvranger.workspace = true
-positive = { path = "../positive" }
 jsonwebtoken.workspace = true
 bytes.workspace = true
 serde.workspace = true
@@ -42,11 +40,8 @@ sha3.workspace = true
 regex.workspace = true
 futures.workspace = true
 serde_json.workspace = true
-nonempty = { path = "../nonempty" }
 zstd.workspace = true
 
 [dev-dependencies]
-nonempty = { path = "../nonempty", features = ["postgres-types"] }
 uuid = { workspace = true, features = ["v4"] }
 pretty_assertions.workspace = true
-positive = { path = "../positive", features = ["postgres-types"] }

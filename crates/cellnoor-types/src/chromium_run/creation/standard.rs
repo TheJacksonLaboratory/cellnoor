@@ -1,7 +1,6 @@
 use macro_attributes::base_model;
-use nonempty::NonemptyString;
 
-use crate::chromium_run::creation::LoadedEntity;
+use crate::{chromium_run::creation::LoadedEntity, nonempty::NonemptyString};
 
 #[base_model]
 pub struct NewStandardGemWell {

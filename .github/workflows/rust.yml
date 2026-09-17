@@ -46,7 +46,7 @@ jobs:
 
       - name: Format
         working-directory: crates
-        run: cargo +nightly-2026-06-13 fmt -- --check
+        run: cargo +nightly-2026-09-13 fmt -- --check
 
   test:
     runs-on: ubuntu-latest

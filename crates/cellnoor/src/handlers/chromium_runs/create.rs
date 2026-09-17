@@ -1,4 +1,4 @@
-use axum::{Json as AxumJson, extract::State};
+use axum::{Json, extract::State};
 use cellnoor_types::chromium_run::{
     ChromiumRunDetailed, ChromiumRunField,
     creation::{ChromiumRunGemWells, NewChromiumRun, NewChromiumRunRecord},
@@ -21,17 +21,11 @@ mod gem_well;
 pub async fn create_chromium_run(
     State(state): State<AppState>,
     user: AuthUser,
-    AxumJson(record): AxumJson<NewChromiumRun>,
-) -> Result<AxumJson<ChromiumRunDetailed>, Error> {
-    let mut client = state.db_client(user).await?;
-
-    let tx = client.begin().await?;
-
-    let response = insert_chromium_run(&tx, record).await.map(AxumJson)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    Json(record): Json<NewChromiumRun>,
+) -> Result<Json<ChromiumRunDetailed>, Error> {
+    state
+        .in_transaction(user, async |tx| insert_chromium_run(tx, record).await)
+        .await
 }
 
 async fn insert_chromium_run(
@@ -112,9 +106,9 @@ pub mod test {
             },
         },
         id::NoId,
+        nonempty::NonemptyBoundedVec,
     };
     use jiff::Timestamp;
-    use nonempty::NonemptyBoundedVec;
     use uuid::Uuid;
 
     use crate::{

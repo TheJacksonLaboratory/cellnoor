@@ -1,10 +1,9 @@
 use jiff::Timestamp;
 use macro_attributes::{base_model, select};
-use nonempty::NonemptyString;
 pub use query::{ApiKeyField, ApiKeyPredicate, ApiKeyQuery, SimpleApiKeyQuery};
 use uuid::Uuid;
 
-use crate::Relation;
+use crate::{Relation, nonempty::NonemptyString};
 
 mod query;
 

@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::{
     auth::AuthUser,
-    db::{self, SqlBuilder},
+    db::{self, Sql},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -49,9 +49,8 @@ pub async fn authorize_project_dir_access(
 }
 
 async fn project_exists(tx: db::Transaction<'_>, project_name: &str) -> Result<bool, ErrorInner> {
-    static SELECT_DATASET: SqlBuilder =
-        SqlBuilder::new("select exists (select 1 from project where name = $1)");
+    static SELECT_DATASET: &str = "select exists (select 1 from project where name = $1)";
 
-    tx.query_one_into(&SELECT_DATASET.finish_with_params(vec![&project_name]))
+    tx.query_one_into(&Sql::new(SELECT_DATASET, vec![&project_name]))
         .await
 }

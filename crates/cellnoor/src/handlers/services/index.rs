@@ -17,14 +17,9 @@ pub async fn index_services(
     user: AuthUser,
     Json(query): Json<ServiceQuery>,
 ) -> Result<Json<Vec<Service>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_services(&tx, &query).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| select_services(tx, &query).await)
+        .await
 }
 
 pub(in super::super) async fn select_services(

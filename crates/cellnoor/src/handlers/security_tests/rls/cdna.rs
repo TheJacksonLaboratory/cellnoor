@@ -1,9 +1,9 @@
 use cellnoor_types::{
     cdna::{CdnaDetailed, CdnaPredicate, CdnaPredicateInner, CdnaQuery, creation::NewCdna},
     chromium_run::creation::{ChromiumRunGemWells, LoadedEntity, NewChromiumRun},
+    nonempty::NonemptyBoundedVec,
     operator::UuidOperator,
 };
-use nonempty::NonemptyBoundedVec;
 use uuid::Uuid;
 
 use crate::{

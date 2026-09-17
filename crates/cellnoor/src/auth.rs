@@ -51,7 +51,7 @@ impl FromRequestParts<AppState> for AuthUser {
     ) -> Result<Self, Self::Rejection> {
         // Without a JWT secret, authentication is disabled and every request
         // runs as the admin
-        let Some((secret, validation)) = state.jwt_decoding_info() else {
+        let Some((secret, validation)) = state.jwt_decoding_info else {
             return Ok(Self::admin());
         };
 

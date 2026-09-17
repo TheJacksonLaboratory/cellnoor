@@ -35,12 +35,14 @@ mod query;
 mod record {
     use jiff::Timestamp;
     use macro_attributes::select;
-    use nonempty::NonemptyString;
     use uuid::Uuid;
 
-    use crate::specimen::{
-        Fixative, Species, SpecimenType, ThermalPreservationMethod,
-        creation::block::BlockEmbeddingMatrix,
+    use crate::{
+        nonempty::NonemptyString,
+        specimen::{
+            Fixative, Species, SpecimenType, ThermalPreservationMethod,
+            creation::block::BlockEmbeddingMatrix,
+        },
     };
 
     #[select]
@@ -134,7 +136,7 @@ impl<'a> FromSql<'a> for ThermalPreservationMethod {
         ty: &postgres_types::Type,
         raw: &'a [u8],
     ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
-        let s = <nonempty::NonemptyString as FromSql>::from_sql(ty, raw)?;
+        let s = <crate::nonempty::NonemptyString as FromSql>::from_sql(ty, raw)?;
         let s = s.as_ref();
 
         let controlled_rate_freezing = ControlledRateFreezing::from_str(s).map(Self::Crf);
@@ -148,7 +150,7 @@ impl<'a> FromSql<'a> for ThermalPreservationMethod {
     fn accepts(ty: &postgres_types::Type) -> bool {
         use postgres_types::FromSql;
 
-        <::nonempty::NonemptyString as FromSql>::accepts(ty)
+        <crate::nonempty::NonemptyString as FromSql>::accepts(ty)
     }
 }
 
@@ -176,7 +178,7 @@ impl ToSql for ThermalPreservationMethod {
     where
         Self: Sized,
     {
-        <::nonempty::NonemptyString as ToSql>::accepts(ty) || <&str as ToSql>::accepts(ty)
+        <crate::nonempty::NonemptyString as ToSql>::accepts(ty) || <&str as ToSql>::accepts(ty)
     }
 }
 
@@ -194,7 +196,7 @@ impl<'a> FromSql<'a> for Fixative {
         ty: &postgres_types::Type,
         raw: &'a [u8],
     ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
-        let s = <nonempty::NonemptyString as FromSql>::from_sql(ty, raw)?;
+        let s = <crate::nonempty::NonemptyString as FromSql>::from_sql(ty, raw)?;
         let s = s.as_ref();
 
         let dsp =
@@ -209,7 +211,7 @@ impl<'a> FromSql<'a> for Fixative {
     fn accepts(ty: &postgres_types::Type) -> bool {
         use postgres_types::FromSql;
 
-        <::nonempty::NonemptyString as FromSql>::accepts(ty)
+        <crate::nonempty::NonemptyString as FromSql>::accepts(ty)
     }
 }
 
@@ -237,6 +239,6 @@ impl ToSql for Fixative {
     where
         Self: Sized,
     {
-        <::nonempty::NonemptyString as ToSql>::accepts(ty) || <&str as ToSql>::accepts(ty)
+        <crate::nonempty::NonemptyString as ToSql>::accepts(ty) || <&str as ToSql>::accepts(ty)
     }
 }

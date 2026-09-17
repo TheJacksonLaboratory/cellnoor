@@ -59,8 +59,8 @@ async fn redirect_unauthenticated_user(
         // just redirect to the file server after sign-in
         let redirect_to = format!(
             "{}?redirect_to={}{}",
-            state.public_auth_url(),
-            state.public_files_url(),
+            state.public_auth_url,
+            state.public_files_url,
             request.uri().path()
         );
 

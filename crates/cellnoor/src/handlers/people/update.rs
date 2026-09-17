@@ -27,14 +27,9 @@ pub async fn update_person(
     Path(IdParam { id }): Path<IdParam>,
     Json(person): Json<PersonUpdate>,
 ) -> Result<Json<Person>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = update_person_by_id(&tx, id, &person).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| update_person_by_id(tx, id, &person).await)
+        .await
 }
 
 async fn update_person_by_id(

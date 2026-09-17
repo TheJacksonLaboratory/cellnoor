@@ -1,12 +1,14 @@
 use jiff::Timestamp;
 use macro_attributes::base_model;
-use nonempty::NonemptyString;
-use positive::PositiveI32;
 #[cfg(all(feature = "postgres-types", feature = "schemars"))]
 use postgres_types::Json;
 use uuid::Uuid;
 
-use crate::units::{Microliter, Nanogram, Picogram};
+use crate::{
+    nonempty::NonemptyString,
+    positive::PositiveI32,
+    units::{Microliter, Nanogram, Picogram},
+};
 
 #[base_model]
 #[cfg_attr(feature = "schemars", schemars(rename = "{N}Concentration"))]

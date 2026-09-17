@@ -1,4 +1,4 @@
-use crate::Error;
+use crate::nonempty::Error;
 
 #[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]

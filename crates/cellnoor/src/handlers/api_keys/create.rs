@@ -2,9 +2,9 @@ use axum::{Json, extract::State};
 use cellnoor_types::{
     Relation,
     api_key::{ApiKey, NewApiKey},
+    nonempty::NonemptyString,
 };
 use jiff::Timestamp;
-use nonempty::NonemptyString;
 use rand::{RngExt, distr::Alphanumeric};
 use uuid::Uuid;
 
@@ -21,17 +21,11 @@ pub async fn create_api_key(
     user: AuthUser,
     new_api_key: Option<Json<NewApiKey>>,
 ) -> Result<Json<ApiKey>, Error> {
-    let mut client = state.db_client(user).await?;
-
-    let tx = client.begin().await?;
-
-    let response = insert_api_key(&tx, &new_api_key.unwrap_or_default())
+    state
+        .in_transaction(user, async |tx| {
+            insert_api_key(tx, &new_api_key.unwrap_or_default()).await
+        })
         .await
-        .map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
 }
 
 async fn insert_api_key(

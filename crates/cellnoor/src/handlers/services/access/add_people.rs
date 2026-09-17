@@ -19,16 +19,11 @@ pub async fn add_people_to_service(
     Path(IdParam { id: service_id }): Path<IdParam>,
     Json(people): Json<Vec<Uuid>>,
 ) -> Result<Json<()>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = insert_service_accesses(&tx, service_id, &people)
+    state
+        .in_transaction(user, async |tx| {
+            insert_service_accesses(tx, service_id, &people).await
+        })
         .await
-        .map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
 }
 
 pub(in super::super::super) async fn insert_service_accesses(

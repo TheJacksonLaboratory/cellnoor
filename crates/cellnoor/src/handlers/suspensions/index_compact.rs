@@ -1,7 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
-    id::Id,
     suspension::{SavedSuspensionRecord, SuspensionCompact, SuspensionQuery},
 };
 
@@ -17,14 +16,11 @@ pub async fn index_suspensions(
     user: AuthUser,
     Json(query): Json<SuspensionQuery>,
 ) -> Result<Json<Vec<SuspensionCompact>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_suspensions_compact(&tx, &query).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| {
+            select_suspensions_compact(tx, &query).await
+        })
+        .await
 }
 
 async fn select_suspensions_compact(
@@ -42,13 +38,9 @@ async fn select_suspensions_compact(
         .collect())
 }
 
-pub(super) fn suspension_simple_links(id: Id) -> SimpleLinks {
-    SimpleLinks::from_str_and_id("/suspensions", id)
-}
-
 pub fn suspension_from_record(record: SavedSuspensionRecord) -> SuspensionCompact {
     SuspensionCompact {
-        links: suspension_simple_links(record.id),
+        links: SimpleLinks::from_str_and_id("/suspensions", record.id),
         record,
     }
 }

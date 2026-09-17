@@ -25,14 +25,9 @@ pub async fn update_specimen(
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<NewSpecimen>,
 ) -> Result<Json<SpecimenDetailed>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = update_specimen_by_id(&tx, id, record).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| update_specimen_by_id(tx, id, record).await)
+        .await
 }
 
 async fn update_specimen_by_id(

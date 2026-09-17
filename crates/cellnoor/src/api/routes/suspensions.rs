@@ -7,15 +7,19 @@ use axum::{
     extract::{Query, State},
 };
 use cellnoor_types::suspension::{
-    SimpleSuspensionQuery, SuspensionCompact, SuspensionDetailed, SuspensionQuery,
+    SavedSuspensionRecord, SimpleSuspensionQuery, SuspensionCompact, SuspensionDetailed,
+    SuspensionQuery,
 };
 
 use crate::{
     auth::AuthUser,
     error::Error,
-    handlers::suspensions::{
-        create_suspension, create_suspension_measurement, delete_suspension, index_suspensions,
-        index_suspensions_detailed, show_suspension, update_suspension,
+    handlers::{
+        delete_resource,
+        suspensions::{
+            create_suspension, create_suspension_measurement, index_suspensions,
+            index_suspensions_detailed, show_suspension, update_suspension,
+        },
     },
     state::AppState,
 };
@@ -35,7 +39,7 @@ fn id_router() -> ApiRouter<AppState> {
             "/",
             get(show_suspension)
                 .put(update_suspension)
-                .delete(delete_suspension),
+                .delete(delete_resource::<SavedSuspensionRecord>),
         )
         .api_route("/measurements", post(create_suspension_measurement))
 }

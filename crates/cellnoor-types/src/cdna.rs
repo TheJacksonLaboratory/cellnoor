@@ -1,6 +1,5 @@
 use jiff::Timestamp;
 use macro_attributes::base_model;
-use nonempty::NonemptyString;
 pub use query::{
     CdnaField, CdnaPredicate, CdnaPredicateInner, CdnaQuery, LibraryTypeOperator, SimpleCdnaQuery,
 };
@@ -10,6 +9,7 @@ use crate::{
     Relation,
     cdna::{measurement::CdnaMeasurement, record::CdnaRecord},
     id::{Id, NoId},
+    nonempty::NonemptyString,
     nucleic_acid_measurement::NewNucleicAcidMeasurement,
     simple_links::SimpleLinks,
     suspension_pool::TaggedSpecimen,
@@ -33,11 +33,9 @@ impl Relation for CdnaSimpleFields {
 mod record {
     use jiff::Timestamp;
     use macro_attributes::select;
-    use nonempty::NonemptyString;
-    use positive::PositiveI32;
     use uuid::Uuid;
 
-    use crate::cdna::creation::LibraryType;
+    use crate::{cdna::creation::LibraryType, nonempty::NonemptyString, positive::PositiveI32};
 
     #[select]
     #[cfg_attr(feature = "postgres-types", postgres(name = "cdna"))]

@@ -22,11 +22,10 @@ pub mod query;
 mod record {
     use jiff::Timestamp;
     use macro_attributes::select;
-    use nonempty::NonemptyString;
     use serde_json::Value;
     use uuid::Uuid;
 
-    use crate::id::Id;
+    use crate::{id::Id, nonempty::NonemptyString};
 
     #[select]
     #[cfg_attr(feature = "postgres-types", postgres(name = "gem_well"))]

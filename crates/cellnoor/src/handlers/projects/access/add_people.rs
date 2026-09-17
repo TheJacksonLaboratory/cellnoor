@@ -19,16 +19,11 @@ pub async fn add_people_to_project(
     Path(IdParam { id: project_id }): Path<IdParam>,
     Json(people): Json<Vec<Uuid>>,
 ) -> Result<Json<()>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = insert_project_accesses(&tx, project_id, &people)
+    state
+        .in_transaction(user, async |tx| {
+            insert_project_accesses(tx, project_id, &people).await
+        })
         .await
-        .map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
 }
 
 pub(in super::super) async fn insert_project_accesses(

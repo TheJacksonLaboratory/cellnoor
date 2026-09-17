@@ -25,14 +25,9 @@ pub async fn update_cdna(
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<CdnaUpdate>,
 ) -> Result<Json<CdnaDetailed>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = update_cdna_by_id(&tx, id, &record).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| update_cdna_by_id(tx, id, &record).await)
+        .await
 }
 
 async fn update_cdna_by_id(

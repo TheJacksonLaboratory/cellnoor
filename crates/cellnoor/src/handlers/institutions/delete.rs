@@ -1,43 +1,9 @@
-use axum::{
-    Json,
-    extract::{Path, State},
-};
-use cellnoor_types::institution::SavedInstitutionRecord;
-use uuid::Uuid;
-
-use crate::{
-    auth::AuthUser,
-    db,
-    error::{Error, ErrorInner},
-    handlers::IdParam,
-    state::AppState,
-};
-
-pub async fn delete_institution(
-    State(state): State<AppState>,
-    user: AuthUser,
-    Path(IdParam { id }): Path<IdParam>,
-) -> Result<Json<()>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = delete_institution_by_id(&tx, id).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
-}
-
-async fn delete_institution_by_id(tx: &db::Transaction<'_>, id: Uuid) -> Result<(), ErrorInner> {
-    tx.delete::<SavedInstitutionRecord>(id).await
-}
-
 #[cfg(test)]
 mod test {
+    use cellnoor_types::institution::SavedInstitutionRecord;
+
     use crate::{
-        handlers::institutions::{
-            create::test::insert_test_institution, delete::delete_institution_by_id,
-        },
+        handlers::institutions::create::test::insert_test_institution,
         state::test_util::db_client_as_admin,
     };
 
@@ -47,7 +13,7 @@ mod test {
         let tx = client.begin().await.unwrap();
 
         let (_, institution) = insert_test_institution(&tx, |_| ()).await.unwrap();
-        delete_institution_by_id(&tx, *institution.record.id)
+        tx.delete::<SavedInstitutionRecord>(*institution.record.id)
             .await
             .unwrap();
     }

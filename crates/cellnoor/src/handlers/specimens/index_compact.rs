@@ -1,7 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
     SimpleLinks,
-    id::Id,
     specimen::{SavedSpecimenRecord, SpecimenCompact, SpecimenQuery},
 };
 
@@ -17,14 +16,9 @@ pub async fn index_specimens(
     user: AuthUser,
     Json(query): Json<SpecimenQuery>,
 ) -> Result<Json<Vec<SpecimenCompact>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_specimens_compact(&tx, &query).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| select_specimens_compact(tx, &query).await)
+        .await
 }
 
 async fn select_specimens_compact(
@@ -42,13 +36,9 @@ async fn select_specimens_compact(
         .collect())
 }
 
-pub(super) fn specimen_simple_links(id: Id) -> SimpleLinks {
-    SimpleLinks::from_str_and_id("/specimens", id)
-}
-
 pub fn specimen_from_record(record: SavedSpecimenRecord) -> SpecimenCompact {
     SpecimenCompact {
-        links: specimen_simple_links(record.id),
+        links: SimpleLinks::from_str_and_id("/specimens", record.id),
         record,
     }
 }

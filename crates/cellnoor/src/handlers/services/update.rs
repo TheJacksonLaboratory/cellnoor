@@ -24,14 +24,11 @@ pub async fn update_service(
     Path(IdParam { id }): Path<IdParam>,
     Json(service): Json<ServiceUpdate>,
 ) -> Result<Json<Service>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = update_service_by_id(&tx, id, &service).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| {
+            update_service_by_id(tx, id, &service).await
+        })
+        .await
 }
 
 pub(in super::super) async fn update_service_by_id(

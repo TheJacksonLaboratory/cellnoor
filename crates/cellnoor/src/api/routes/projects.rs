@@ -6,14 +6,19 @@ use axum::{
     Json,
     extract::{Query, State},
 };
-use cellnoor_types::project::{ProjectCompact, ProjectDetailed, ProjectQuery, SimpleProjectQuery};
+use cellnoor_types::project::{
+    ProjectCompact, ProjectDetailed, ProjectQuery, SavedProjectRecord, SimpleProjectQuery,
+};
 
 use crate::{
     auth::AuthUser,
     error::Error,
-    handlers::projects::{
-        add_people_to_project, create_project, delete_project, index_projects,
-        index_projects_detailed, show_project, update_project,
+    handlers::{
+        delete_resource,
+        projects::{
+            add_people_to_project, create_project, index_projects, index_projects_detailed,
+            show_project, update_project,
+        },
     },
     state::AppState,
 };
@@ -31,7 +36,9 @@ fn id_router() -> ApiRouter<AppState> {
     ApiRouter::new()
         .api_route(
             "/",
-            get(show_project).put(update_project).delete(delete_project),
+            get(show_project)
+                .put(update_project)
+                .delete(delete_resource::<SavedProjectRecord>),
         )
         .api_route("/people", post(add_people_to_project))
 }

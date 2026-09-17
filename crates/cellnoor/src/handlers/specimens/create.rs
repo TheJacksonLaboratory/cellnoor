@@ -19,15 +19,9 @@ pub async fn create_specimen(
     user: AuthUser,
     Json(record): Json<NewSpecimen>,
 ) -> Result<Json<SpecimenDetailed>, Error> {
-    let mut client = state.db_client(user).await?;
-
-    let tx = client.begin().await?;
-
-    let response = insert_specimen(&tx, record).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| insert_specimen(tx, record).await)
+        .await
 }
 
 async fn insert_specimen(
@@ -94,6 +88,7 @@ impl Insert for NewSpecimenRecord {
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
+        positive::PositiveBoundedF32,
         project::SavedProjectRecordDetailed,
         specimen::{
             Species, SpecimenDetailed,
@@ -104,7 +99,6 @@ pub mod test {
         },
     };
     use jiff::Timestamp;
-    use positive::PositiveBoundedF32;
     use postgres_types::Json;
     use uuid::Uuid;
 

@@ -5,7 +5,7 @@ use cellnoor_types::{
 use uuid::Uuid;
 
 use crate::{
-    db::{self, FieldValues, Insert, SqlBuilder},
+    db::{self, FieldValues, Insert, Sql},
     error::ErrorInner,
 };
 
@@ -31,8 +31,8 @@ impl Insert for PermissionRow {
 
         vec![
             ("principal_id", principal_id),
-            ("resource", &permission.resource),
             ("action", &permission.action),
+            ("resource", &permission.resource),
         ]
     }
 }
@@ -64,18 +64,19 @@ pub(crate) async fn revoke_permissions(
     principal_id: Uuid,
     permissions: &[Permission],
 ) -> Result<(), ErrorInner> {
-    static REVOKE_PERMISSIONS: SqlBuilder = SqlBuilder::new(
-        "delete from permission where principal_id = $1 and (resource, action) in (select * from \
-         unnest($2::text[], $3::text[]))",
-    );
+    static REVOKE_PERMISSIONS: &str = "delete from permission where principal_id = $1 and action \
+                                       = any($2) and resource = any($3)";
 
     // A delete matches a set of rows rather than adding them, so the
     // permissions go down as two parallel arrays
-    let (resources, actions): (Vec<Resource>, Vec<Action>) =
-        permissions.iter().map(|p| (p.resource, p.action)).unzip();
+    let (actions, resources): (Vec<Action>, Vec<Resource>) =
+        permissions.iter().map(|p| (p.action, p.resource)).unzip();
 
-    tx.execute(&REVOKE_PERMISSIONS.finish_with_params(vec![&principal_id, &resources, &actions]))
-        .await?;
+    tx.execute(&Sql::new(
+        REVOKE_PERMISSIONS,
+        vec![&principal_id, &actions, &resources],
+    ))
+    .await?;
 
     Ok(())
 }

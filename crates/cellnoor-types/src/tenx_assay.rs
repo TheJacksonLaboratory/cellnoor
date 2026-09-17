@@ -1,9 +1,8 @@
 use macro_attributes::{select, unit_enum};
-use nonempty::NonemptyString;
 pub use query::{SampleMultiplexingOperator, TenxAssayField, TenxAssayPredicate};
 use uuid::Uuid;
 
-use crate::{Relation, cdna::creation::LibraryType};
+use crate::{Relation, cdna::creation::LibraryType, nonempty::NonemptyString};
 
 pub mod creation;
 mod query;

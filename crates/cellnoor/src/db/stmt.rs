@@ -1,7 +1,7 @@
 use std::fmt::Write;
 
 use cellnoor_types::{
-    filter::{AsPredicate, Filter},
+    filter::{AsPredicate, Filter, Predicate},
     order_by::{OrderBy, OrderBySet},
     query::{ComplexQuery, OrderField},
 };
@@ -10,16 +10,9 @@ use postgres_types::ToSql;
 #[derive(Debug, Clone)]
 pub struct Sql<'a>(pub(super) String, pub(super) Vec<&'a (dyn ToSql + Sync)>);
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct SqlBuilder(&'static str);
-
-impl SqlBuilder {
-    pub const fn new(sql: &'static str) -> SqlBuilder {
-        SqlBuilder(sql)
-    }
-
-    pub fn finish_with_params<'a>(&self, params: Vec<&'a (dyn ToSql + Sync)>) -> Sql<'a> {
-        Sql(self.0.to_owned(), params)
+impl<'a> Sql<'a> {
+    pub fn new(stmt: &str, params: Vec<&'a (dyn ToSql + Sync)>) -> Self {
+        Self(stmt.to_owned(), params)
     }
 }
 
@@ -111,44 +104,31 @@ impl FilterableSqlBuilder {
     }
 }
 
-fn write_where_clause_predicates<'a, 'b, P>(
-    clause: &'a mut String,
-    bind_params: &mut Vec<&'b (dyn ToSql + Sync)>,
-    filter: &'b Filter<P>,
-) -> &'a mut String
-where
+fn write_where_clause_predicates<'a, P>(
+    clause: &mut String,
+    bind_params: &mut Vec<&'a (dyn ToSql + Sync)>,
+    filter: &'a Filter<P>,
+) where
     P: AsPredicate,
 {
     match filter {
-        Filter::Leaf(pred) => {
-            let (field, (operator, bind_param)) = pred.as_predicate();
+        Filter::Leaf(predicate) => {
+            let Predicate {
+                relation,
+                column,
+                operator,
+                value,
+            } = predicate.as_predicate();
 
-            bind_params.push(bind_param);
+            bind_params.push(value);
 
-            write!(clause, "{field} {operator} (${})", bind_params.len()).unwrap();
+            write_column(clause, relation, column);
+            write!(clause, " {operator} (${})", bind_params.len()).unwrap();
         }
 
-        Filter::AllOf(filters) | Filter::AnyOf(filters) => {
-            let (combinator, default) = if matches!(filter, Filter::AllOf(_)) {
-                (" and ", "true")
-            } else {
-                (" or ", "false")
-            };
-
-            if filters.is_empty() {
-                clause.push_str(default);
-            }
-
-            for (i, f) in filters.iter().enumerate() {
-                if i != 0 {
-                    clause.push_str(combinator);
-                }
-
-                clause.push('(');
-                write_where_clause_predicates(clause, bind_params, f);
-                clause.push(')');
-            }
-        }
+        // An empty set of predicates is the identity of its combinator
+        Filter::AllOf(filters) => write_combined(clause, bind_params, filters, " and ", "true"),
+        Filter::AnyOf(filters) => write_combined(clause, bind_params, filters, " or ", "false"),
 
         Filter::Not(filter) => {
             clause.push_str("not (");
@@ -156,41 +136,51 @@ where
             clause.push(')');
         }
     }
-
-    clause
 }
 
-/// A field names its column bare, so the relation it belongs to goes back in
-/// here: a read selects the relation's whole row as a composite.
+fn write_combined<'a, P>(
+    clause: &mut String,
+    bind_params: &mut Vec<&'a (dyn ToSql + Sync)>,
+    filters: &'a [Filter<P>],
+    combinator: &str,
+    identity: &str,
+) where
+    P: AsPredicate,
+{
+    if filters.is_empty() {
+        clause.push_str(identity);
+        return;
+    }
+
+    for (i, filter) in filters.iter().enumerate() {
+        if i != 0 {
+            clause.push_str(combinator);
+        }
+
+        clause.push('(');
+        write_where_clause_predicates(clause, bind_params, filter);
+        clause.push(')');
+    }
+}
+
 fn write_order_by_fields<O>(clause: &mut String, order_by_set: &OrderBySet<O>)
 where
     O: OrderField,
 {
-    fn direction(desc: bool) -> &'static str {
-        if desc { "desc" } else { "asc" }
-    }
-
-    match order_by_set {
-        OrderBySet::One(OrderBy { field, desc }) => {
-            write!(
-                clause,
-                "({}).{} {}",
-                O::RELATION,
-                field.as_ref(),
-                direction(*desc)
-            )
-            .unwrap();
+    for (i, OrderBy { field, desc }) in order_by_set.iter().enumerate() {
+        if i != 0 {
+            clause.push_str(", ");
         }
-        OrderBySet::Many(fields) => {
-            for (i, order_by) in fields.iter().copied().enumerate() {
-                if i != 0 {
-                    clause.push_str(", ");
-                }
 
-                write_order_by_fields(clause, &OrderBySet::One(order_by));
-            }
-        }
+        write_column(clause, O::RELATION, field.as_ref());
+        clause.push_str(if desc { " desc" } else { " asc" });
     }
+}
+
+/// A read selects the relation's whole row as a composite, so the relation goes
+/// back in here: `(institution).name`.
+fn write_column(clause: &mut String, relation: &str, column: &str) {
+    write!(clause, "({relation}).{column}").unwrap();
 }
 
 #[cfg(test)]

@@ -19,17 +19,11 @@ pub async fn create_suspension_pool_measurement(
     Path(IdParam { id: pool_id }): Path<IdParam>,
     Json(record): Json<NewSuspensionPoolMeasurement>,
 ) -> Result<Json<()>, Error> {
-    let mut client = state.db_client(user).await?;
-
-    let tx = client.begin().await?;
-
-    let response = insert_suspension_pool_measurements(&tx, pool_id, std::slice::from_ref(&record))
+    state
+        .in_transaction(user, async |tx| {
+            insert_suspension_pool_measurements(tx, pool_id, std::slice::from_ref(&record)).await
+        })
         .await
-        .map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
 }
 
 pub(in super::super) async fn insert_suspension_pool_measurements(

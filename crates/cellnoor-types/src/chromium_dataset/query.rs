@@ -5,14 +5,12 @@ use crate::{
     chromium_dataset::SavedChromiumDatasetRecord,
     library::LibraryPredicate,
     operator::{StringOperator, TimestampOperator, UuidOperator},
-    query::{ComplexQuery, Field, OrderField, SimpleQuery, filter::Filter},
+    query::{ComplexQuery, Field, OrderField, SimpleQuery},
     specimen::SpecimenPredicate,
     tenx_assay::TenxAssayPredicate,
 };
 
-#[predicate_enum]
-#[strum(prefix = "(chromium_dataset).")]
-#[strum_discriminants(name(ChromiumDatasetField), sort_field_enum)]
+#[predicate_enum(ChromiumDatasetField)]
 pub enum ChromiumDatasetPredicateInner {
     Id(UuidOperator),
     Name(StringOperator),
@@ -30,36 +28,6 @@ pub enum ChromiumDatasetPredicate {
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(transparent)]
     ChromiumDataset(ChromiumDatasetPredicateInner),
-}
-
-impl From<SpecimenPredicate> for ChromiumDatasetPredicate {
-    fn from(value: SpecimenPredicate) -> Self {
-        Self::Specimen(value)
-    }
-}
-
-impl From<TenxAssayPredicate> for ChromiumDatasetPredicate {
-    fn from(value: TenxAssayPredicate) -> Self {
-        Self::TenxAssay(value)
-    }
-}
-
-impl From<LibraryPredicate> for ChromiumDatasetPredicate {
-    fn from(value: LibraryPredicate) -> Self {
-        Self::Library(value)
-    }
-}
-
-impl From<ChromiumDatasetPredicateInner> for ChromiumDatasetPredicate {
-    fn from(value: ChromiumDatasetPredicateInner) -> Self {
-        Self::ChromiumDataset(value)
-    }
-}
-
-impl From<ChromiumDatasetPredicateInner> for Filter<ChromiumDatasetPredicate> {
-    fn from(value: ChromiumDatasetPredicateInner) -> Self {
-        Self::Leaf(value.into())
-    }
 }
 
 impl Field for ChromiumDatasetField {

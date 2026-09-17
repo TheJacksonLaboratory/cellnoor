@@ -22,11 +22,3 @@ jobs:
       - name: Check svelte code
         working-directory: packages/cellnoor-ui
         run: bun run --bun check
-
-      # - name: Lint and format
-      #   working-directory: packages/cellnoor-ui
-      #   run: bun run --bun lint
-
-      # - name: Test
-      #   working-directory: packages/cellnoor-ui
-      #   run: bun test

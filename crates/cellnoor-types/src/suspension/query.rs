@@ -5,19 +5,14 @@ use crate::{
     operator::{
         F32Operator, I64Operator, JsonOperator, StringOperator, TimestampOperator, UuidOperator,
     },
-    query::{
-        ComplexQuery, Field, OrderField, SimpleQuery,
-        filter::{Filter, Operator},
-    },
+    query::{ComplexQuery, Field, OrderField, SimpleQuery, filter::Operator},
     specimen::SpecimenPredicate,
     suspension::{SavedSuspensionRecord, SuspensionContent},
 };
 
 pub type SuspensionContentOperator = Operator<SuspensionContent>;
 
-#[predicate_enum]
-#[strum(prefix = "(suspension).")]
-#[strum_discriminants(name(SuspensionField), sort_field_enum)]
+#[predicate_enum(SuspensionField)]
 pub enum SuspensionPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),
@@ -36,24 +31,6 @@ pub enum SuspensionPredicate {
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(transparent)]
     Suspension(SuspensionPredicateInner),
-}
-
-impl From<SpecimenPredicate> for SuspensionPredicate {
-    fn from(value: SpecimenPredicate) -> Self {
-        Self::Specimen(value)
-    }
-}
-
-impl From<SuspensionPredicateInner> for SuspensionPredicate {
-    fn from(value: SuspensionPredicateInner) -> Self {
-        Self::Suspension(value)
-    }
-}
-
-impl From<SuspensionPredicateInner> for Filter<SuspensionPredicate> {
-    fn from(value: SuspensionPredicateInner) -> Self {
-        Self::Leaf(value.into())
-    }
 }
 
 impl Field for SuspensionField {

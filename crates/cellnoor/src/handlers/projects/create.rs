@@ -14,15 +14,9 @@ pub async fn create_project(
     user: AuthUser,
     Json(project): Json<NewProject>,
 ) -> Result<Json<ProjectDetailed>, Error> {
-    let mut client = state.db_client(user).await?;
-
-    let tx = client.begin().await?;
-
-    let response = insert_project(&tx, &project).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| insert_project(tx, &project).await)
+        .await
 }
 
 async fn insert_project(

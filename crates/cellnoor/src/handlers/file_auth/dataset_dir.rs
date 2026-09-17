@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, SqlBuilder},
+    db::{self, Sql},
     error::{Error, ErrorInner},
     state::AppState,
 };
@@ -81,11 +81,9 @@ async fn chromium_dataset_exists(
 ) -> Result<bool, ErrorInner> {
     // We query chromium_dataset_to_specimen because that's accessible and has
     // row-level security enabled
-    static SELECT_DATASET: SqlBuilder = SqlBuilder::new(
-        "select exists (select 1 from chromium_dataset_to_specimen where (chromium_dataset).id = \
-         $1)",
-    );
+    static SELECT_DATASET: &str = "select exists (select 1 from chromium_dataset_to_specimen \
+                                   where (chromium_dataset).id = $1)";
 
-    tx.query_one_into(&SELECT_DATASET.finish_with_params(vec![&dataset_id]))
+    tx.query_one_into(&Sql::new(SELECT_DATASET, vec![&dataset_id]))
         .await
 }

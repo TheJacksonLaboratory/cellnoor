@@ -6,13 +6,11 @@ use crate::{
     operator::{
         I32Operator, I64Operator, JsonOperator, StringOperator, TimestampOperator, UuidOperator,
     },
-    query::{ComplexQuery, Field, OrderField, SimpleQuery, filter::Filter},
+    query::{ComplexQuery, Field, OrderField, SimpleQuery},
     specimen::SpecimenPredicate,
 };
 
-#[predicate_enum]
-#[strum(prefix = "(library).")]
-#[strum_discriminants(name(LibraryField), sort_field_enum)]
+#[predicate_enum(LibraryField)]
 pub enum LibraryPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),
@@ -32,24 +30,6 @@ pub enum LibraryPredicate {
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(transparent)]
     Library(LibraryPredicateInner),
-}
-
-impl From<SpecimenPredicate> for LibraryPredicate {
-    fn from(value: SpecimenPredicate) -> Self {
-        Self::Specimen(value)
-    }
-}
-
-impl From<LibraryPredicateInner> for LibraryPredicate {
-    fn from(value: LibraryPredicateInner) -> Self {
-        Self::Library(value)
-    }
-}
-
-impl From<LibraryPredicateInner> for Filter<LibraryPredicate> {
-    fn from(value: LibraryPredicateInner) -> Self {
-        Self::Leaf(value.into())
-    }
 }
 
 impl Field for LibraryField {

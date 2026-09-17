@@ -18,15 +18,9 @@ pub async fn create_service(
     user: AuthUser,
     Json(service): Json<NewService>,
 ) -> Result<Json<Service>, Error> {
-    let mut client = state.db_client(user).await?;
-
-    let tx = client.begin().await?;
-
-    let response = insert_service(&tx, &service).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| insert_service(tx, &service).await)
+        .await
 }
 
 async fn insert_service(

@@ -25,14 +25,11 @@ pub async fn update_suspension(
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<SuspensionUpdate>,
 ) -> Result<Json<SuspensionDetailed>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = update_suspension_by_id(&tx, id, &record).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| {
+            update_suspension_by_id(tx, id, &record).await
+        })
+        .await
 }
 
 async fn update_suspension_by_id(

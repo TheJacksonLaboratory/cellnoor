@@ -19,16 +19,11 @@ pub async fn update_chromium_run(
     Path(IdParam { id }): Path<IdParam>,
     Json(record): Json<ChromiumRunUpdate>,
 ) -> Result<Json<ChromiumRunDetailed>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = update_chromium_run_by_id(&tx, id, &record)
+    state
+        .in_transaction(user, async |tx| {
+            update_chromium_run_by_id(tx, id, &record).await
+        })
         .await
-        .map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
 }
 
 async fn update_chromium_run_by_id(

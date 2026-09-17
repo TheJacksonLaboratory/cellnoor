@@ -7,9 +7,7 @@ use crate::{
     query::{ComplexQuery, Field, OrderField, SimpleQuery},
 };
 
-#[predicate_enum]
-#[strum(prefix = "(person_public).")]
-#[strum_discriminants(name(PersonField), sort_field_enum)]
+#[predicate_enum(PersonField)]
 pub enum PersonPredicate {
     Id(UuidOperator),
     Name(StringOperator),

@@ -7,16 +7,19 @@ use axum::{
     extract::{Query, State},
 };
 use cellnoor_types::suspension_pool::{
-    SimpleSuspensionPoolQuery, SuspensionPoolCompact, SuspensionPoolDetailed, SuspensionPoolQuery,
+    SavedSuspensionPoolRecord, SimpleSuspensionPoolQuery, SuspensionPoolCompact,
+    SuspensionPoolDetailed, SuspensionPoolQuery,
 };
 
 use crate::{
     auth::AuthUser,
     error::Error,
-    handlers::suspension_pools::{
-        create_suspension_pool, create_suspension_pool_measurement, delete_suspension_pool,
-        index_suspension_pools, index_suspension_pools_detailed, show_suspension_pool,
-        update_suspension_pool,
+    handlers::{
+        delete_resource,
+        suspension_pools::{
+            create_suspension_pool, create_suspension_pool_measurement, index_suspension_pools,
+            index_suspension_pools_detailed, show_suspension_pool, update_suspension_pool,
+        },
     },
     state::AppState,
 };
@@ -39,7 +42,7 @@ fn id_router() -> ApiRouter<AppState> {
             "/",
             get(show_suspension_pool)
                 .put(update_suspension_pool)
-                .delete(delete_suspension_pool),
+                .delete(delete_resource::<SavedSuspensionPoolRecord>),
         )
         .api_route("/measurements", post(create_suspension_pool_measurement))
 }

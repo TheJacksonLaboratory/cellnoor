@@ -20,15 +20,9 @@ pub async fn create_library(
     user: AuthUser,
     Json(record): Json<NewLibrary>,
 ) -> Result<Json<LibraryDetailed>, Error> {
-    let mut client = state.db_client(user).await?;
-
-    let tx = client.begin().await?;
-
-    let response = insert_library(&tx, record).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| insert_library(tx, record).await)
+        .await
 }
 
 async fn insert_library(
@@ -134,10 +128,10 @@ pub mod test {
             Concentration, NewNucleicAcidMeasurement, NucleicAcidMeasurementData,
             NucleicAcidMeasurementMethod,
         },
+        positive::PositiveI32,
         units::{Microliter, Nanogram},
     };
     use jiff::Timestamp;
-    use positive::PositiveI32;
     use postgres_types::Json;
     use uuid::Uuid;
 
@@ -189,7 +183,7 @@ pub mod test {
                     },
                 }),
             }],
-            preparers: nonempty::NonemptyVec::new(vec![person_id]).unwrap(),
+            preparers: cellnoor_types::nonempty::NonemptyVec::new(vec![person_id]).unwrap(),
         };
 
         modify(&mut new);

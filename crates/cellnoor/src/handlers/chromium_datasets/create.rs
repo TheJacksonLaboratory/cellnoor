@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert, SqlBuilder},
+    db::{self, FieldValues, Insert, Sql},
     error::{Error, ErrorInner},
     handlers::chromium_datasets::show::select_chromium_dataset_by_id,
     state::AppState,
@@ -20,17 +20,11 @@ pub async fn create_chromium_dataset(
     user: AuthUser,
     Json(record): Json<NewChromiumDataset>,
 ) -> Result<Json<ChromiumDatasetDetailed>, Error> {
-    let mut client = state.db_client(user).await?;
-
-    let tx = client.begin().await?;
-
-    let response = insert_chromium_dataset(&tx, state.public_files_url(), record)
+    state
+        .in_transaction(user, async |tx| {
+            insert_chromium_dataset(tx, &state.public_files_url, record).await
+        })
         .await
-        .map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
 }
 
 async fn insert_chromium_dataset(
@@ -54,10 +48,10 @@ pub async fn validate_libraries_have_same_gem_well(
     tx: &db::Transaction<'_>,
     library_ids: &[Uuid],
 ) -> Result<(), ErrorInner> {
-    static SELECT_N_GEM_WELLS_AND_LIBRARY_TYPES: SqlBuilder =
-        SqlBuilder::new(include_str!("create/select_n_gem_wells_and_lib_types.sql"));
+    static SELECT_N_GEM_WELLS_AND_LIBRARY_TYPES: &str =
+        include_str!("create/select_n_gem_wells_and_lib_types.sql");
 
-    let sql = SELECT_N_GEM_WELLS_AND_LIBRARY_TYPES.finish_with_params(vec![&library_ids]);
+    let sql = Sql::new(SELECT_N_GEM_WELLS_AND_LIBRARY_TYPES, vec![&library_ids]);
 
     let (n_gem_wells, n_library_types): (i64, i64) = tx
         .query_one(&sql)
@@ -147,9 +141,9 @@ pub mod test {
     use cellnoor_types::{
         chromium_dataset::{ChromiumDatasetDetailed, NewChromiumDataset, NewChromiumDatasetRecord},
         id::NoId,
+        nonempty::NonemptyVec,
     };
     use jiff::Timestamp;
-    use nonempty::NonemptyVec;
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 

@@ -3,7 +3,6 @@ use cellnoor_types::{
     SimpleLinks,
     project::{ProjectCompact, ProjectQuery, SavedProjectRecord},
 };
-use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
@@ -17,14 +16,9 @@ pub async fn index_projects(
     user: AuthUser,
     Json(query): Json<ProjectQuery>,
 ) -> Result<Json<Vec<ProjectCompact>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_projects_compact(&tx, &query).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| select_projects_compact(tx, &query).await)
+        .await
 }
 
 async fn select_projects_compact(
@@ -42,13 +36,9 @@ async fn select_projects_compact(
         .collect())
 }
 
-pub(super) fn project_simple_links(id: Uuid) -> SimpleLinks {
-    SimpleLinks::from_str_and_id("/projects", id.into())
-}
-
 pub fn project_from_record(record: SavedProjectRecord) -> ProjectCompact {
     ProjectCompact {
-        links: project_simple_links(record.id),
+        links: SimpleLinks::from_str_and_id("/projects", record.id.into()),
         record,
     }
 }

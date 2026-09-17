@@ -1,7 +1,6 @@
 use macro_attributes::base_model;
-use nonempty::NonemptyVec;
 
-use crate::query::OrderField;
+use crate::{nonempty::NonemptyVec, query::OrderField};
 
 #[base_model]
 #[derive(Copy)]
@@ -35,5 +34,16 @@ where
 impl<T: OrderField> Default for OrderBySet<T> {
     fn default() -> Self {
         Self::One(OrderBy::default())
+    }
+}
+
+impl<T: OrderField> OrderBySet<T> {
+    /// The fields to order by, in order.
+    pub fn iter(&self) -> impl Iterator<Item = OrderBy<T>> {
+        match self {
+            Self::One(order_by) => std::slice::from_ref(order_by).iter(),
+            Self::Many(order_bys) => order_bys.as_ref().iter(),
+        }
+        .copied()
     }
 }

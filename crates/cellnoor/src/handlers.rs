@@ -1,9 +1,15 @@
+use axum::{
+    Json,
+    extract::{Path, State},
+};
 use cellnoor_types::Relation;
 use uuid::Uuid;
 
 use crate::{
+    auth::AuthUser,
     db::{self, FieldValues, Insert},
-    error::ErrorInner,
+    error::{Error, ErrorInner},
+    state::AppState,
 };
 
 pub mod accounts;
@@ -45,19 +51,27 @@ pub struct IdParam {
     pub id: Uuid,
 }
 
+/// Delete one row of `T`'s relation by id.
+///
+/// Every resource registers this as its delete route, naming its own record
+/// type: `delete_resource::<SavedInstitutionRecord>`.
+pub async fn delete_resource<T>(
+    State(state): State<AppState>,
+    user: AuthUser,
+    Path(IdParam { id }): Path<IdParam>,
+) -> Result<Json<()>, Error>
+where
+    T: Relation,
+{
+    state
+        .in_transaction(user, async |tx| tx.delete::<T>(id).await)
+        .await
+}
+
 struct IsStaff(bool);
 
 impl Relation for IsStaff {
     const NAME: &'static str = "principal";
-}
-
-async fn f() {
-    use cellnoor_types::institution::SavedInstitutionRecord;
-    let x: deadpool_postgres::Client = todo!();
-    let y: SavedInstitutionRecord = x
-        .query_one_scalar("select institution from institution", &[])
-        .await
-        .unwrap();
 }
 
 impl Insert for IsStaff {

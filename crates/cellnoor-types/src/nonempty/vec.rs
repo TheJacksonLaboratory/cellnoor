@@ -5,7 +5,7 @@ use bytes::BytesMut;
 #[cfg(feature = "postgres-types")]
 use postgres_types::{ToSql, to_sql_checked};
 
-use crate::Error;
+use crate::nonempty::Error;
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]

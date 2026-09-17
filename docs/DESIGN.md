@@ -97,9 +97,7 @@ use crate::{
     operator::{StringOperator, UuidOperator}
 };
 
-#[predicate_enum]
-#[strum(prefix = "(institution).")]
-#[strum_discriminants(name(InstitutionField), sort_field_enum)]
+#[predicate_enum(InstitutionField)]
 pub enum InstitutionPredicate {
     Id(UuidOperator),
     Name(StringOperator),
@@ -107,7 +105,7 @@ pub enum InstitutionPredicate {
 }
 ```
 
-The important bit here is that the `#[predicate_enum]` macro derives [`strum::EnumDiscriminants`](https://docs.rs/strum/latest/strum/derive.EnumDiscriminants.html), which we name `InstitutionField`. Now, we get an enum of the institution's fields for free, which we can use for sorting results in the application. We also use this field-enum to construct insert-statements. For a `NewInstitution`, we implement a trait called [`Insert`](./crates/cellnoor/src/db.rs), which tells our database machinery how to convert a Rust struct to a list of fieldname-value pairs (simplified code shown):
+The important bit here is that the `#[predicate_enum]` macro derives [`strum::EnumDiscriminants`](https://docs.rs/strum/latest/strum/derive.EnumDiscriminants.html), naming the generated enum after the macro's argument: `InstitutionField`. Now, we get an enum of the institution's fields for free, which we can use for sorting results in the application. That enum also names the relation the fields belong to, through the `Field` trait, so a filter and an order-by both address a column as `(institution).name` without repeating the relation's name anywhere. We also use this field-enum to construct insert-statements. For a `NewInstitution`, we implement a trait called [`Insert`](./crates/cellnoor/src/db.rs), which tells our database machinery how to convert a Rust struct to a list of fieldname-value pairs (simplified code shown):
 
 ```rust
 impl Insert for NewInstitution {

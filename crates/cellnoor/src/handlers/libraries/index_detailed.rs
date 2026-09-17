@@ -1,5 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::{
+    SimpleLinks,
     library::{LibraryDetailed, LibraryQuery, SavedLibraryRecord},
     suspension_pool::SavedTaggedSpecimenRecord,
 };
@@ -9,10 +10,7 @@ use crate::{
     auth::AuthUser,
     db::{self, FilterableSqlBuilder},
     error::{Error, ErrorInner},
-    handlers::{
-        libraries::index_compact::library_simple_links,
-        suspension_pools::index_compact::tagged_specimen_from_record,
-    },
+    handlers::suspension_pools::index_compact::tagged_specimen_from_record,
     state::AppState,
 };
 
@@ -21,14 +19,9 @@ pub async fn index_libraries_detailed(
     user: AuthUser,
     Json(query): Json<LibraryQuery>,
 ) -> Result<Json<Vec<LibraryDetailed>>, Error> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = select_libraries_detailed(&tx, &query).await.map(Json)?;
-
-    tx.commit().await?;
-
-    Ok(response)
+    state
+        .in_transaction(user, async |tx| select_libraries_detailed(tx, &query).await)
+        .await
 }
 
 // Visibility required for tests
@@ -52,7 +45,7 @@ fn map_detailed_row(row: Row) -> LibraryDetailed {
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
 
     LibraryDetailed {
-        links: library_simple_links(record.id),
+        links: SimpleLinks::from_str_and_id("/libraries", record.id),
         record,
         specimens: specimens
             .into_iter()

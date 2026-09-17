@@ -3,8 +3,8 @@ use cellnoor_types::{
     chromium_run::creation::{
         mixed::NewStandardOrOcmGemWell, ocm::NewOcmGemWell, standard::NewStandardGemWell,
     },
+    nonempty::NonemptyString,
 };
-use nonempty::NonemptyString;
 use uuid::Uuid;
 
 use crate::{

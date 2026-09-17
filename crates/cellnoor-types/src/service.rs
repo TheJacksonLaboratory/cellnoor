@@ -1,10 +1,9 @@
 use jiff::Timestamp;
 use macro_attributes::{base_model, select};
-use nonempty::NonemptyString;
 pub use query::{ServiceField, ServicePredicate, ServiceQuery, SimpleServiceQuery};
 use uuid::Uuid;
 
-use crate::{Relation, permission::Permission};
+use crate::{Relation, nonempty::NonemptyString, permission::Permission};
 
 mod query;
 
