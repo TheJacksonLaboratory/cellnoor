@@ -1,6 +1,10 @@
 use std::fs;
 
-use aide::OperationIo;
+use aide::{
+    OperationOutput,
+    generate::GenContext,
+    openapi::{Operation, Response as OpenApiResponse, StatusCode as OpenApiStatusCode},
+};
 use axum::{
     Json,
     extract::{Path, State},
@@ -34,7 +38,6 @@ use crate::{
     thiserror::Error,
     serde::Serialize,
     schemars::JsonSchema,
-    OperationIo,
     PartialEq,
     Eq,
 )]
@@ -59,6 +62,28 @@ impl UpdateChromiumDatasetError {
 impl IntoResponse for UpdateChromiumDatasetError {
     fn into_response(self) -> Response {
         error_response(self.status(), self)
+    }
+}
+
+impl OperationOutput for UpdateChromiumDatasetError {
+    type Inner = Self;
+
+    fn operation_response(
+        ctx: &mut GenContext,
+        operation: &mut Operation,
+    ) -> Option<OpenApiResponse> {
+        Json::<Self>::operation_response(ctx, operation)
+    }
+
+    fn inferred_responses(
+        ctx: &mut GenContext,
+        operation: &mut Operation,
+    ) -> Vec<(Option<OpenApiStatusCode>, OpenApiResponse)> {
+        let Some(response) = Self::operation_response(ctx, operation) else {
+            return Vec::new();
+        };
+
+        vec![(None, response)]
     }
 }
 

@@ -1,7 +1,11 @@
-use aide::OperationIo;
+use aide::{
+    OperationInput, OperationOutput,
+    generate::GenContext,
+    openapi::{Operation, Response as OpenApiResponse, StatusCode as OpenApiStatusCode},
+};
 pub use api_key::hash_api_key;
 pub use error::AuthError;
-use axum::{RequestPartsExt, extract::FromRequestParts, http::HeaderValue};
+use axum::{Json, RequestPartsExt, extract::FromRequestParts, http::HeaderValue};
 use axum_extra::extract::CookieJar;
 use uuid::Uuid;
 
@@ -18,7 +22,7 @@ mod jwt;
 ///
 /// Outside of tests, the only way to construct an `AuthUser` is through its
 /// `axum::extract::FromRequestParts` implementation.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, OperationIo)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct AuthUser {
     id: Uuid,
     is_staff: bool,
@@ -40,6 +44,19 @@ impl AuthUser {
 
     pub fn is_staff(&self) -> bool {
         self.is_staff
+    }
+}
+
+impl OperationInput for AuthUser {
+    fn inferred_early_responses(
+        ctx: &mut GenContext,
+        operation: &mut Operation,
+    ) -> Vec<(Option<OpenApiStatusCode>, OpenApiResponse)> {
+        let Some(response) = Json::<AuthError>::operation_response(ctx, operation) else {
+            return Vec::new();
+        };
+
+        vec![(Some(OpenApiStatusCode::Code(401)), response)]
     }
 }
 

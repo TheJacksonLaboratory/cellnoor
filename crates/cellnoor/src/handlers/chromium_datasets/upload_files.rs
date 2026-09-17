@@ -1,7 +1,12 @@
 use std::{collections::HashMap, fs, str::FromStr};
 
-use aide::OperationIo;
+use aide::{
+    OperationOutput,
+    generate::GenContext,
+    openapi::{Operation, Response as OpenApiResponse, StatusCode as OpenApiStatusCode},
+};
 use axum::{
+    Json,
     extract::{Multipart, Path, State, multipart::Field},
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -27,7 +32,6 @@ use crate::{
     thiserror::Error,
     serde::Serialize,
     schemars::JsonSchema,
-    OperationIo,
     PartialEq,
     Eq,
 )]
@@ -61,6 +65,28 @@ impl UploadFilesError {
 impl IntoResponse for UploadFilesError {
     fn into_response(self) -> Response {
         error_response(self.status(), self)
+    }
+}
+
+impl OperationOutput for UploadFilesError {
+    type Inner = Self;
+
+    fn operation_response(
+        ctx: &mut GenContext,
+        operation: &mut Operation,
+    ) -> Option<OpenApiResponse> {
+        Json::<Self>::operation_response(ctx, operation)
+    }
+
+    fn inferred_responses(
+        ctx: &mut GenContext,
+        operation: &mut Operation,
+    ) -> Vec<(Option<OpenApiStatusCode>, OpenApiResponse)> {
+        let Some(response) = Self::operation_response(ctx, operation) else {
+            return Vec::new();
+        };
+
+        vec![(None, response)]
     }
 }
 

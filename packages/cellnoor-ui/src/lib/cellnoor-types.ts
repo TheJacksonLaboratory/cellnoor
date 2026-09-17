@@ -33,6 +33,22 @@ export interface paths {
                         "application/json": components["schemas"]["Institution"][];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -66,6 +82,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -82,6 +106,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -131,6 +163,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -147,6 +187,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -183,6 +231,22 @@ export interface paths {
                         "application/json": components["schemas"]["Institution"];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -217,6 +281,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -233,6 +305,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -255,6 +335,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": null;
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -293,6 +389,22 @@ export interface paths {
                         "application/json": components["schemas"]["Person"][];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -326,6 +438,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -342,6 +462,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PersonError"];
                     };
                 };
             };
@@ -391,6 +519,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -407,6 +543,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -443,6 +587,22 @@ export interface paths {
                         "application/json": components["schemas"]["Person"];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -477,6 +637,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -493,6 +661,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PersonError"];
                     };
                 };
             };
@@ -515,6 +691,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": null;
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -546,6 +738,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["PersonAccount"][];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -587,6 +795,22 @@ export interface paths {
                         "application/json": components["schemas"]["Service"][];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -620,6 +844,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -636,6 +868,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -685,6 +925,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -701,6 +949,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -751,6 +1007,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -767,6 +1031,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -789,6 +1061,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": null;
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -839,6 +1127,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -855,6 +1151,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -894,6 +1198,22 @@ export interface paths {
                         "application/json": components["schemas"]["SavedApiKeyRecord"][];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -916,6 +1236,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["ApiKey"];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -965,6 +1301,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -981,6 +1325,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1031,6 +1383,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -1047,6 +1407,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1069,6 +1437,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": null;
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1107,6 +1491,22 @@ export interface paths {
                         "application/json": components["schemas"]["ProjectCompact"][];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -1140,6 +1540,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -1156,6 +1564,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1193,6 +1609,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["ProjectDetailed"][];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1244,6 +1676,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -1260,6 +1700,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1309,6 +1757,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -1325,6 +1781,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1361,6 +1825,22 @@ export interface paths {
                         "application/json": components["schemas"]["ProjectDetailed"];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -1395,6 +1875,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -1411,6 +1899,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1433,6 +1929,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": null;
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1483,6 +1995,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -1499,6 +2019,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1551,6 +2079,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -1567,6 +2103,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["IndexSetError"];
                     };
                 };
             };
@@ -1618,6 +2162,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -1634,6 +2186,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["IndexSetError"];
                     };
                 };
             };
@@ -1666,6 +2226,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["TenxAssay"][];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1701,6 +2277,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -1717,6 +2301,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1749,6 +2341,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["MultiplexingTag"][];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1784,6 +2392,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -1800,6 +2416,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1839,6 +2463,22 @@ export interface paths {
                         "application/json": components["schemas"]["SpecimenCompact"][];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -1872,6 +2512,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -1888,6 +2536,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1925,6 +2581,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["SpecimenDetailed"][];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1976,6 +2648,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -1992,6 +2672,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2041,6 +2729,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -2057,6 +2753,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2093,6 +2797,22 @@ export interface paths {
                         "application/json": components["schemas"]["SpecimenDetailed"];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -2127,6 +2847,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -2143,6 +2871,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2165,6 +2901,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": null;
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2215,6 +2967,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -2231,6 +2991,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2270,6 +3038,22 @@ export interface paths {
                         "application/json": components["schemas"]["SuspensionCompact"][];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -2303,6 +3087,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -2319,6 +3111,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2356,6 +3156,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["SuspensionDetailed"][];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2407,6 +3223,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -2423,6 +3247,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2472,6 +3304,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -2488,6 +3328,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2524,6 +3372,22 @@ export interface paths {
                         "application/json": components["schemas"]["SuspensionDetailed"];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -2558,6 +3422,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -2574,6 +3446,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2596,6 +3476,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": null;
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2646,6 +3542,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -2662,6 +3566,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2701,6 +3613,22 @@ export interface paths {
                         "application/json": components["schemas"]["SuspensionPoolCompact"][];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -2734,6 +3662,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -2750,6 +3686,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2787,6 +3731,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["SuspensionPoolDetailed"][];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2838,6 +3798,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -2854,6 +3822,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2903,6 +3879,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -2919,6 +3903,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2955,6 +3947,22 @@ export interface paths {
                         "application/json": components["schemas"]["SuspensionPoolDetailed"];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -2989,6 +3997,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -3005,6 +4021,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3027,6 +4051,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": null;
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3077,6 +4117,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -3093,6 +4141,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3132,6 +4188,22 @@ export interface paths {
                         "application/json": components["schemas"]["ChromiumRunCompact"][];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -3165,6 +4237,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -3181,6 +4261,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3218,6 +4306,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["ChromiumRunDetailed"][];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3269,6 +4373,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -3285,6 +4397,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3334,6 +4454,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -3350,6 +4478,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3386,6 +4522,22 @@ export interface paths {
                         "application/json": components["schemas"]["ChromiumRunDetailed"];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -3420,6 +4572,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -3436,6 +4596,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3458,6 +4626,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": null;
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3496,6 +4680,22 @@ export interface paths {
                         "application/json": components["schemas"]["CdnaCompact"][];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -3529,6 +4729,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -3545,6 +4753,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3582,6 +4798,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["CdnaDetailed"][];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3633,6 +4865,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -3649,6 +4889,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3698,6 +4946,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -3714,6 +4970,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3750,6 +5014,22 @@ export interface paths {
                         "application/json": components["schemas"]["CdnaDetailed"];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -3784,6 +5064,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -3800,6 +5088,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3822,6 +5118,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": null;
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3872,6 +5184,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -3888,6 +5208,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3927,6 +5255,22 @@ export interface paths {
                         "application/json": components["schemas"]["LibraryCompact"][];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -3960,6 +5304,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -3976,6 +5328,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4013,6 +5373,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["LibraryDetailed"][];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4064,6 +5440,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -4080,6 +5464,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4129,6 +5521,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -4145,6 +5545,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4181,6 +5589,22 @@ export interface paths {
                         "application/json": components["schemas"]["LibraryDetailed"];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -4215,6 +5639,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -4231,6 +5663,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4253,6 +5693,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": null;
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4303,6 +5759,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -4319,6 +5783,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4358,6 +5830,22 @@ export interface paths {
                         "application/json": components["schemas"]["ChromiumDatasetCompact"][];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -4391,6 +5879,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -4407,6 +5903,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CreateChromiumDatasetError"];
                     };
                 };
             };
@@ -4444,6 +5948,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["ChromiumDatasetDetailed"][];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4495,6 +6015,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -4511,6 +6039,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4560,6 +6096,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -4576,6 +6120,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4612,6 +6164,22 @@ export interface paths {
                         "application/json": components["schemas"]["ChromiumDatasetDetailed"];
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -4646,6 +6214,14 @@ export interface paths {
                         "text/plain": string;
                     };
                 };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
                 /** @description Expected request with `Content-Type: application/json` */
                 415: {
                     headers: {
@@ -4662,6 +6238,14 @@ export interface paths {
                     };
                     content: {
                         "text/plain": string;
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UpdateChromiumDatasetError"];
                     };
                 };
             };
@@ -4684,6 +6268,22 @@ export interface paths {
                     };
                     content: {
                         "application/json": null;
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4794,6 +6394,20 @@ export interface components {
         } | {
             in: components["schemas"]["LibraryType"][][];
         } | components["schemas"]["LibraryType"][];
+        AuthError: {
+            /** Format: date-time */
+            expired_at: string;
+            /** @constant */
+            type: "expired_api_key";
+        } | {
+            message: string;
+            /** @constant */
+            type: "invalid_auth_token";
+        } | {
+            message: string;
+            /** @constant */
+            type: "no_auth_found";
+        } | components["schemas"]["DbError"];
         /**
          * @description Auto-generated discriminant enum variants
          * @enum {string}
@@ -5173,6 +6787,36 @@ export interface components {
         CookieStyle: "form";
         /** @enum {string} */
         CountingMethod: "bright_field" | "acridine_orange_propidium_iodide" | "trypan_blue";
+        CreateChromiumDatasetError: {
+            /** @constant */
+            type: "libraries_from_different_gem_wells";
+        } | {
+            /** @constant */
+            type: "duplicate_library_type";
+        } | components["schemas"]["DbError"];
+        DbError: {
+            /** @constant */
+            type: "resource_not_found";
+        } | {
+            referencing_field: string;
+            referencing_resource: string;
+            /** @constant */
+            type: "invalid_reference";
+        } | {
+            detail?: string | null;
+            field?: string | null;
+            message: string;
+            resource?: string | null;
+            /** @constant */
+            type: "data_constraint";
+        } | {
+            message: string;
+            /** @constant */
+            type: "permission_denied";
+        } | {
+            /** @constant */
+            type: "other";
+        };
         /** @enum {string} */
         DithiobisSuccinimidylpropionate: "dithiobis_succinimidylpropionate";
         /** @description A single encoding definition applied to a single schema property. */
@@ -5351,6 +6995,20 @@ export interface components {
         });
         /** @enum {string} */
         HeaderStyle: "simple";
+        IndexSetError: {
+            must_match: string;
+            name: string;
+            /** @constant */
+            type: "malformed_name";
+        } | {
+            must_match: string;
+            sequence: string;
+            /** @constant */
+            type: "malformed_sequence";
+        } | {
+            /** @constant */
+            type: "mixed_kit_names";
+        } | components["schemas"]["DbError"];
         /**
          * @description The object provides metadata about the API.
          *     The metadata MAY be used by the clients if needed,
@@ -6716,6 +8374,11 @@ export interface components {
             id: string;
             name: string;
         };
+        PersonError: {
+            email: string;
+            /** @constant */
+            type: "invalid_email";
+        } | components["schemas"]["DbError"];
         /**
          * @description Auto-generated discriminant enum variants
          * @enum {string}
@@ -7875,6 +9538,11 @@ export interface components {
             preservation_state: "thermally_preserved";
             thermal_preservation_method: components["schemas"]["ThermalPreservationMethod"];
         };
+        UpdateChromiumDatasetError: {
+            message: string;
+            /** @constant */
+            type: "rename_dataset_directory_failed";
+        } | components["schemas"]["DbError"];
         /** @description A simple comparison operator. */
         UuidOperator: {
             /** Format: uuid */
@@ -7997,6 +9665,7 @@ export type ApiKeyPredicateFilter = components['schemas']['ApiKeyPredicateFilter
 export type ApiKeyPredicateQuery = components['schemas']['ApiKeyPredicateQuery'];
 export type ApiKeyUpdate = components['schemas']['ApiKeyUpdate'];
 export type ArrayOfLibraryTypeOperator = components['schemas']['Array_of_LibraryTypeOperator'];
+export type AuthError = components['schemas']['AuthError'];
 export type BlockEmbeddingMatrix = components['schemas']['BlockEmbeddingMatrix'];
 export type BlockEmbeddingMatrixOperator = components['schemas']['BlockEmbeddingMatrixOperator'];
 export type BlockFields = components['schemas']['BlockFields'];
@@ -8034,6 +9703,8 @@ export type Contact = components['schemas']['Contact'];
 export type ControlledRateFreezing = components['schemas']['ControlledRateFreezing'];
 export type CookieStyle = components['schemas']['CookieStyle'];
 export type CountingMethod = components['schemas']['CountingMethod'];
+export type CreateChromiumDatasetError = components['schemas']['CreateChromiumDatasetError'];
+export type DbError = components['schemas']['DbError'];
 export type DithiobisSuccinimidylpropionate = components['schemas']['DithiobisSuccinimidylpropionate'];
 export type Encoding = components['schemas']['Encoding'];
 export type Example = components['schemas']['Example'];
@@ -8045,6 +9716,7 @@ export type FormaldehydeDerivative = components['schemas']['FormaldehydeDerivati
 export type GemWell = components['schemas']['GemWell'];
 export type Header = components['schemas']['Header'];
 export type HeaderStyle = components['schemas']['HeaderStyle'];
+export type IndexSetError = components['schemas']['IndexSetError'];
 export type Info = components['schemas']['Info'];
 export type Institution = components['schemas']['Institution'];
 export type InstitutionField = components['schemas']['InstitutionField'];
@@ -8137,6 +9809,7 @@ export type Paths = components['schemas']['Paths'];
 export type Permission = components['schemas']['Permission'];
 export type Person = components['schemas']['Person'];
 export type PersonAccount = components['schemas']['PersonAccount'];
+export type PersonError = components['schemas']['PersonError'];
 export type PersonField = components['schemas']['PersonField'];
 export type PersonLinks = components['schemas']['PersonLinks'];
 export type PersonPredicate = components['schemas']['PersonPredicate'];
@@ -8226,6 +9899,7 @@ export type ThermalPreservationMethod = components['schemas']['ThermalPreservati
 export type ThermalPreservationMethodOperator = components['schemas']['ThermalPreservationMethodOperator'];
 export type TimestampOperator = components['schemas']['TimestampOperator'];
 export type TissueFields = components['schemas']['TissueFields'];
+export type UpdateChromiumDatasetError = components['schemas']['UpdateChromiumDatasetError'];
 export type UuidOperator = components['schemas']['UuidOperator'];
 export type BooleanOperator = components['schemas']['booleanOperator'];
 export type FloatOperator = components['schemas']['floatOperator'];
