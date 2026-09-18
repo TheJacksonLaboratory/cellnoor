@@ -2,13 +2,13 @@
 -- the owner of the view, so row-level security applies
 create view person_public with (security_invoker = true) as (
     select
-        person.id,
-        person.name,
-        person.email,
-        person.institution_id,
-        principal.is_staff,
-        person.orcid
-    from person join principal on person.id = principal.id
+        id,
+        name,
+        email,
+        institution_id,
+        is_staff,
+        orcid
+    from person
 );
 
 create view person_account with (security_invoker = true) as (

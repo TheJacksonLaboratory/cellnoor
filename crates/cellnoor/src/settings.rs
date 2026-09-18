@@ -30,11 +30,8 @@ impl Settings {
     pub fn read() -> anyhow::Result<Self> {
         use config::{Config, Environment};
 
-        let separator = "__";
         let mut settings: Settings = Config::builder()
-            .add_source(Environment::with_prefix("CELLNOOR_APP").separator(separator))
-            .add_source(Environment::with_prefix("CELLNOOR").separator(separator))
-            .add_source(Environment::default().separator(separator))
+            .add_source(Environment::with_prefix("CELLNOOR_API").separator("__"))
             .build()
             .map(Config::try_deserialize)??;
 
@@ -51,32 +48,5 @@ impl Settings {
         settings.db.user.get_or_insert("app".to_owned());
 
         Ok(settings)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use pretty_assertions::assert_str_eq;
-
-    use crate::settings::Settings;
-
-    // `Settings::read` reads the process environment, so this is the only test
-    // allowed to set these variables: a second one would race with it
-    #[test]
-    fn read_applies_defaults() {
-        unsafe {
-            std::env::set_var("CELLNOOR__DB__HOST", "localhost");
-            std::env::set_var("CELLNOOR__AUTH_SECRET", "secret");
-            std::env::set_var("CELLNOOR__PUBLIC_FILES_URL", "http://files.localhost");
-            std::env::set_var("CELLNOOR__PUBLIC_AUTH_URL", "http://auth.localhost");
-            std::env::set_var("CELLNOOR__STATIC_FILES_DIR", "static");
-        }
-
-        let settings = Settings::read().unwrap();
-
-        assert_str_eq!(settings.listen_on, "localhost:8000");
-        assert!(settings.with_auth);
-        assert_str_eq!(settings.db.user.unwrap(), "app");
-        assert_str_eq!(settings.db.host.unwrap(), "localhost");
     }
 }

@@ -1,27 +1,11 @@
 use axum::{Json, extract::State};
-use cellnoor_types::nonempty::NonemptyString;
-use postgres_types::FromSql;
-use schemars::JsonSchema;
-use serde::Serialize;
-use uuid::Uuid;
+use cellnoor_types::account::PersonAccount;
 
 use crate::{
     auth::AuthUser,
     db::{self, DbError, Sql},
     state::AppState,
 };
-
-// We don't define this in cellnoor-types because it's not really a public
-// endpoint
-#[derive(Clone, Debug, Serialize, JsonSchema, FromSql)]
-#[postgres(name = "person_account")]
-pub struct PersonAccount {
-    id: Uuid,
-    name: NonemptyString,
-    email: Option<NonemptyString>,
-    auth_provider: String,
-    auth_provider_user_id: String,
-}
 
 pub async fn index_accounts(
     State(state): State<AppState>,

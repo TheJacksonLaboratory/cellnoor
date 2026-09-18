@@ -5,6 +5,7 @@
 pub use relation::Relation;
 pub use simple_links::SimpleLinks;
 
+pub mod account;
 pub mod api_key;
 pub mod cdna;
 pub mod chromium_dataset;

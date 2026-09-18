@@ -3,7 +3,9 @@
 create table principal (
     id uuid primary key,
     -- Staff see every project, and so everything descending from one (see db/migrations/0031_data-rls.up.sql)
-    is_staff boolean not null default false
+    is_staff boolean not null default false,
+
+    unique (id, is_staff)
 );
 
 create table permission (
@@ -23,15 +25,18 @@ create table permission (
 -- In this situation, we still want to keep a record of the first John Doe, but that person just doesn't own the email
 -- anymore. The first John Doe's email becomes `null`, with john.doe@jax.org now belonging to the new John Doe
 create table person (
-    id uuid primary key default uuidv7() references principal on delete cascade,
+    id uuid primary key default uuidv7(),
     name case_insensitive_text not null,
     email case_insensitive_text unique,
     email_verified boolean not null default false,
     institution_id uuid references institution not null,
+    is_staff boolean not null default false,
     image text,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now(),
-    orcid case_insensitive_text unique
+    orcid case_insensitive_text unique,
+
+    foreign key (id, is_staff) references principal (id, is_staff) on update cascade on delete cascade
 );
 
 -- better-auth infects everything, so this table has to comply with
@@ -56,9 +61,6 @@ create table service (
     created_at timestamptz not null default now()
 );
 
--- Every person and service is a principal, so a principal is created and dropped alongside them. These are
--- `security definer` so that the bookkeeping isn't subject to the policies on `principal`: whether the person or
--- service may be written at all has already been decided by that table's own policies
 create function create_principal() returns trigger language plpgsql security definer as $$
     begin
         insert into principal (id) values (new.id);
