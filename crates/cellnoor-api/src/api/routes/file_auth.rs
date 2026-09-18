@@ -1,6 +1,6 @@
 use axum::{
     Router,
-    extract::{Request, State},
+    extract::Request,
     middleware::Next,
     response::{Redirect, Response},
     routing::get,
@@ -48,20 +48,14 @@ pub fn router(state: AppState) -> Router<AppState> {
 }
 
 async fn redirect_unauthenticated_user(
-    State(state): State<AppState>,
     user: Result<AuthUser, AuthError>,
     request: Request,
     next: Next,
 ) -> Result<Response, Redirect> {
     if user.is_err() {
         // Since this route is meant for file authentication, we can confidently
-        // just redirect to the file server after sign-in
-        let redirect_to = format!(
-            "{}?redirect_to={}{}",
-            state.public_auth_url,
-            state.public_files_url,
-            request.uri().path()
-        );
+        // just redirect to the intended file-server path after sign-in
+        let redirect_to = format!("/sign-in?redirect_to=/files/{}", request.uri().path());
 
         tracing::debug!("redirecting user to: {redirect_to}");
         return Err(Redirect::to(&redirect_to));

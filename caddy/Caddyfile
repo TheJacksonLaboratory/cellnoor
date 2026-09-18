@@ -1,31 +1,36 @@
-{$PUBLIC_AUTH_URL} {
+api.{$CELLNOOR_PUBLIC_BASE_URL} {
     encode
-    {$TLS_SETTINGS}
-    reverse_proxy unix/{$AUTH_SOCKET}
+    {$CELLNOOR_TLS_SETTINGS}
+    reverse_proxy unix+h2c/{$CELLNOOR_API_SOCKET}
 }
 
-{$PUBLIC_API_URL} {
+{$CELLNOOR_PUBLIC_BASE_URL} {
     encode
-    {$TLS_SETTINGS}
-    reverse_proxy unix+h2c/{$API_SOCKET}
-}
+    {$CELLNOOR_TLS_SETTINGS}
 
-{$PUBLIC_UI_URL} {
-    encode
-    {$TLS_SETTINGS}
-    reverse_proxy /* unix/{$UI_SOCKET}
-}
-
-{$PUBLIC_FILES_URL} {
-    root {$STATIC_FILES_DIR}
-    encode
-    {$TLS_SETTINGS}
-
-    forward_auth unix+h2c/{$API_SOCKET} {
-        uri /file-auth{path}
+    handle /api/auth/* {
+        reverse_proxy unix/{$CELLNOOR_AUTH_SOCKET}
     }
 
-    file_server browse {
-        precompressed
+    handle /api/* {
+        reverse_proxy unix+h2c/{$CELLNOOR_API_SOCKET}
+    }
+
+    handle_path /files/* {
+        root {$CELLNOOR_STATIC_FILES_DIR}
+
+        forward_auth unix+h2c/{$CELLNOOR_API_SOCKET} {
+            uri /file-auth{path}
+        }
+
+        file_server browse {
+            precompressed
+        }
+    }
+
+    handle {
+        root {$CELLNOOR_UI_DIR}
+        try_files {path} /index.html
+        file_server
     }
 }

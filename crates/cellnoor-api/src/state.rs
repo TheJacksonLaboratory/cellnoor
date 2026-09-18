@@ -16,8 +16,6 @@ type JwtDecodingInfo = (jsonwebtoken::DecodingKey, jsonwebtoken::Validation);
 #[derive(Clone)]
 pub struct AppState {
     pub db_pool: db::Pool,
-    pub public_files_url: String,
-    pub public_auth_url: String,
     pub static_files_dir: Utf8PathBuf,
     // `None` disables authentication: every request then runs as the admin user
     pub jwt_decoding_info: Option<&'static JwtDecodingInfo>,
@@ -36,8 +34,6 @@ impl AppState {
 
         Ok(Self {
             db_pool: db::Pool::new(settings.db.clone(), settings.max_db_pool_size)?,
-            public_files_url: settings.public_files_url.clone(),
-            public_auth_url: settings.public_auth_url.clone(),
             static_files_dir: Utf8PathBuf::from(&settings.static_files_dir),
             jwt_decoding_info,
         })

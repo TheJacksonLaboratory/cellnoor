@@ -2,6 +2,6 @@
 
 set -euo pipefail
 
-cargo run --manifest-path crates/Cargo.toml --package cellnoor --bin openapi >openapi.json
+cargo run --manifest-path crates/Cargo.toml --package cellnoor-api --bin openapi >openapi.json
 
-bunx openapi-typescript openapi.json -o packages/cellnoor-ui/src/lib/cellnoor-types.ts --root-types --root-types-no-schema-prefix --enum-values --default-non-nullable false
+bunx openapi-typescript openapi.json -o packages/cellnoor-client/cellnoor-types.ts --root-types --root-types-no-schema-prefix --enum-values --default-non-nullable false

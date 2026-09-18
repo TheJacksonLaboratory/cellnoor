@@ -14,19 +14,19 @@ volumes:
   static-files:
 secrets:
   root_db_password:
-    environment: CELLNOOR_ROOT_DB_PASSWORD
+    environment: CELLNOOR_DB_ROOT_PASSWORD
   app_db_password:
-    environment: CELLNOOR_APP_DB_PASSWORD
+    environment: CELLNOOR_API__DB__PASSWORD
   auth_db_password:
-    environment: CELLNOOR_AUTH_DB_PASSWORD
+    environment: CELLNOOR_AUTH__DB_PASSWORD
   auth_secret:
-    environment: CELLNOOR_AUTH_SECRET
+    environment: CELLNOOR_AUTH__AUTH_SECRET
   microsoft_entra_tenant_id:
-    environment: CELLNOOR_MICROSOFT_ENTRA_TENANT_ID
+    environment: CELLNOOR_AUTH__MICROSOFT_ENTRA_TENANT_ID
   microsoft_entra_client_id:
-    environment: CELLNOOR_MICROSOFT_ENTRA_CLIENT_ID
+    environment: CELLNOOR_AUTH__MICROSOFT_ENTRA_CLIENT_ID
   microsoft_entra_client_secret:
-    environment: CELLNOOR_MICROSOFT_ENTRA_CLIENT_SECRET
+    environment: CELLNOOR_AUTH__MICROSOFT_ENTRA_CLIENT_SECRET
 services:
   db:
     image: postgres:18-alpine
@@ -69,9 +69,9 @@ services:
       tags:
         - ghcr.io/thejacksonlaboratory/cellnoor-auth:latest
     environment:
-      DB_NAME: &db_name postgres
-      DB_HOST: &db_host /run/postgresql
-      UNIX_DOMAIN_SOCKET: &auth_socket /run/cellnoor-auth/cellnoor-auth.sock
+      CELLNOOR_AUTH__DB_NAME: &db_name postgres
+      CELLNOOR_AUTH__DB_HOST: &db_host /run/postgresql
+      CELLNOOR_AUTH__UNIX_DOMAIN_SOCKET: &auth_socket /run/cellnoor-auth/cellnoor-auth.sock
     secrets:
       [
         auth_db_password,
@@ -82,7 +82,7 @@ services:
       ]
     volumes:
       [*db_socket_volume, &auth_socket_volume auth-socket:/run/cellnoor-auth]
-  cellnoor:
+  cellnoor-api:
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -91,21 +91,21 @@ services:
       target: final
       args:
         UID: &uid "10001"
-        SOCKET: &api_socket /run/cellnoor/cellnoor.sock
+        SOCKET: &api_socket /run/cellnoor-api/cellnoor-api.sock
         STATIC_FILES_DIR: &static_files_dir /static-files
       tags:
-        - ghcr.io/thejacksonlaboratory/cellnoor:latest
+        - ghcr.io/thejacksonlaboratory/cellnoor-api:latest
     environment:
-      DB__HOST: *db_host
+      CELLNOOR_API__DB__HOST: *db_host
       # This is hardcoded for simplicity, but it may behoove us to set an explicit dbname in the db service definition
       # and use that here
-      DB__DBNAME: postgres
-      STATIC_FILES_DIR: *static_files_dir
-      LISTEN_ON: *api_socket
+      CELLNOOR_API__DB__DBNAME: postgres
+      CELLNOOR_API__STATIC_FILES_DIR: *static_files_dir
+      CELLNOOR_API__LISTEN_ON: *api_socket
     secrets: [auth_secret, app_db_password]
     volumes:
       - *db_socket_volume
-      - &api_socket_volume api-socket:/run/cellnoor
+      - &api_socket_volume api-socket:/run/cellnoor-api
       - &static_files_volume static-files:/static-files
     healthcheck:
       test: curl --fail --http2-prior-knowledge --unix-socket /run/cellnoor/cellnoor.sock http://localhost/health || exit 1
@@ -120,36 +120,14 @@ services:
       target: final
       args:
         UID: *uid
-        SOCKET_PATH: &ui_socket /run/cellnoor-ui/cellnoor-ui.sock
       tags:
         - ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
-    environment:
-      # https://github.com/oven-sh/bun/issues/14299
-      HOST: ""
-      # https://svelte.dev/docs/kit/adapter-node#Environment-variables-PORT-HOST-and-SOCKET_PATH
-      SOCKET_PATH: *ui_socket
-      API_SOCKET: *api_socket
-    depends_on:
-      cellnoor:
-        condition: service_healthy
-    healthcheck:
-      test: curl --fail --unix-socket /run/cellnoor-ui/cellnoor-ui.sock http://localhost/health || exit 1
-      interval: 5m
-      start_period: 10s
-      start_interval: 0.5s
-      timeout: 5s
-      retries: 10
-    volumes:
-      - *api_socket_volume
-      - &ui_socket_volume ui-socket:/run/cellnoor-ui
-    secrets: [auth_secret]
   caddy:
     image: caddy:2-alpine
     environment:
-      AUTH_SOCKET: *auth_socket
-      API_SOCKET: *api_socket
-      UI_SOCKET: *ui_socket
-      STATIC_FILES_DIR: *static_files_dir
+      CELLNOOR_AUTH_SOCKET: *auth_socket
+      CELLNOOR_API_SOCKET: *api_socket
+      CELLNOOR_STATIC_FILES_DIR: *static_files_dir
     restart: always
     cap_add:
       - NET_ADMIN
@@ -164,10 +142,9 @@ services:
         caddy-config:/config,
         *auth_socket_volume,
         *api_socket_volume,
-        *ui_socket_volume,
         *static_files_volume,
       ]
     pull_policy: always
     depends_on:
-      cellnoor:
+      cellnoor-api:
         condition: service_healthy

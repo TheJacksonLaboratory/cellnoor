@@ -19,8 +19,6 @@ pub struct Settings {
     pub max_db_pool_size: Option<usize>,
     #[serde(default = "default_address")]
     pub listen_on: String,
-    pub public_files_url: String,
-    pub public_auth_url: String,
     pub static_files_dir: String,
     #[serde(default = "default_with_auth")]
     pub with_auth: bool,

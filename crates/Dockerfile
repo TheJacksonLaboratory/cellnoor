@@ -10,18 +10,16 @@ WORKDIR /app
 # Build the app, bind-mounting all the workspace crates and cache-mounting useful directories
 RUN --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
-    --mount=type=bind,source=cellnoor,target=cellnoor \
+    --mount=type=bind,source=cellnoor-api,target=cellnoor-api \
     --mount=type=bind,source=cellnoor-types,target=cellnoor-types \
-    --mount=type=bind,source=nonempty,target=nonempty \
-    --mount=type=bind,source=positive,target=positive \
     --mount=type=cache,target=/app/target/ \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
-    cargo build --profile ${BUILD_PROFILE} --package cellnoor --features ssr && \
+    cargo build --profile ${BUILD_PROFILE} --package cellnoor-api && \
     if [ ${BUILD_PROFILE} = "dev" ]; then \
-        cp ./target/debug/cellnoor /bin/cellnoor; \
+    cp ./target/debug/cellnoor-api /bin/cellnoor-api; \
     else \
-        cp ./target/${BUILD_PROFILE}/cellnoor /bin/cellnoor; \
+    cp ./target/${BUILD_PROFILE}/cellnoor-api /bin/cellnoor-api; \
     fi
 
 FROM debian:trixie AS final
@@ -31,7 +29,7 @@ RUN apt update && \
 
 RUN mkdir app
 
-COPY --from=build /bin/cellnoor /bin/
+COPY --from=build /bin/cellnoor-api /bin/
 
 ARG UID=10001
 ARG SOCKET
@@ -48,4 +46,4 @@ RUN adduser \
 RUN mkdir -p "$(dirname ${SOCKET})" ${STATIC_FILES_DIR} && chown appuser "$(dirname ${SOCKET})" ${STATIC_FILES_DIR}
 USER appuser
 
-CMD ["/bin/cellnoor"]
+CMD ["/bin/cellnoor-api"]

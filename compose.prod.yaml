@@ -4,30 +4,23 @@ services:
     image: ghcr.io/thejacksonlaboratory/cellnoor-auth:latest
     pull_policy: always
     environment:
-      PUBLIC_AUTH_URL: &public_auth_url ${CELLNOOR_AUTH_URL}
       NODE_ENV: &node_env production
-  cellnoor:
+  cellnoor-api:
     build: !reset null
-    image: ghcr.io/thejacksonlaboratory/cellnoor:latest
+    image: ghcr.io/thejacksonlaboratory/cellnoor-api:latest
     pull_policy: always
     environment:
-      MAX_DB_POOL_SIZE: "4"
-      PUBLIC_AUTH_URL: *public_auth_url
-      PUBLIC_FILES_URL: &public_files_url ${CELLNOOR_FILES_URL}
+      CELLNOOR_API__MAX_DB_POOL_SIZE: "4"
   cellnoor-ui:
     build: !reset null
     image: ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
     pull_policy: always
     environment:
-      PUBLIC_AUTH_URL: *public_auth_url
       NODE_ENV: *node_env
   caddy:
     environment:
-      PUBLIC_AUTH_URL: *public_auth_url
-      PUBLIC_API_URL: ${CELLNOOR_API_URL}
-      PUBLIC_UI_URL: ${CELLNOOR_UI_URL}
-      PUBLIC_FILES_URL: *public_files_url
-      TLS_SETTINGS: tls /run/secrets/tls_certificate /run/secrets/tls_key
+      CELLNOOR_PUBLIC_BASE_URL: ${CELLNOOR_PUBLIC_BASE_URL}
+      CELLNOOR_TLS_SETTINGS: tls /run/secrets/tls_certificate /run/secrets/tls_key
     ports:
       - "3000:3000"
       - "3001:3001"
