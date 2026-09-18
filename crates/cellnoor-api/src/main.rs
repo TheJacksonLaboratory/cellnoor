@@ -1,5 +1,5 @@
 use anyhow::Context;
-use cellnoor::{api, settings::Settings};
+use cellnoor_api::{api, settings::Settings};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
