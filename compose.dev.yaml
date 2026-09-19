@@ -14,4 +14,4 @@ services:
       NODE_ENV: *node_env
   caddy:
     environment:
-      CELLNOOR_PUBLIC_BASE_URL: cellnoor.localhost
+      CELLNOOR_CADDY__PUBLIC_BASE_URL: cellnoor.localhost

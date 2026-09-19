@@ -87,21 +87,13 @@ pub async fn update_chromium_dataset(
 ) -> Result<Json<ChromiumDatasetDetailed>, UpdateChromiumDatasetError> {
     state
         .in_transaction(user, async |tx| {
-            update_chromium_dataset_by_id(
-                tx,
-                &state.public_files_url,
-                &state.static_files_dir,
-                id,
-                &record,
-            )
-            .await
+            update_chromium_dataset_by_id(tx, &state.static_files_dir, id, &record).await
         })
         .await
 }
 
 async fn update_chromium_dataset_by_id(
     tx: &db::Transaction<'_>,
-    files_url: &str,
     static_files_dir: &Utf8Path,
     id: Uuid,
     update: &ChromiumDatasetUpdate,
@@ -109,7 +101,7 @@ async fn update_chromium_dataset_by_id(
     let old_dataset_name = fetch_dataset_name(tx, id).await?;
 
     tx.update(id, update).await?;
-    let updated = select_chromium_dataset_by_id(tx, files_url, id).await?;
+    let updated = select_chromium_dataset_by_id(tx, id).await?;
 
     if old_dataset_name != updated.record.name {
         let DatasetWithProjectNames { project_names, .. } =
@@ -168,7 +160,7 @@ async fn fetch_dataset_name(
 ) -> Result<NonemptyString, DbError> {
     // In theory, we could just write a query that gets only the name, but it
     // might be wise to reuse code we have already written
-    let ds = select_chromium_dataset_by_id(tx, "", dataset_id).await?;
+    let ds = select_chromium_dataset_by_id(tx, dataset_id).await?;
 
     Ok(ds.record.name)
 }
@@ -199,7 +191,7 @@ mod tests {
             delivered_at: ds.record.delivered_at,
         };
 
-        update_chromium_dataset_by_id(&tx, "", &Utf8PathBuf::new(), id, &update)
+        update_chromium_dataset_by_id(&tx, &Utf8PathBuf::new(), id, &update)
             .await
             .unwrap();
     }

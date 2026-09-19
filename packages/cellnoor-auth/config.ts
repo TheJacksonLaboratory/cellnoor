@@ -25,7 +25,7 @@ async function readSecret(name: string): Promise<string> {
 }
 
 interface Config {
-  publicAuthUrl: string;
+  publicBaseUrl: string;
   unixDomainSocket?: string;
   dbPassword: string;
   dbHost: string;
@@ -58,9 +58,9 @@ export async function readConfig(): Promise<Config> {
   }
 
   appConfig = {
-    publicAuthUrl: readRequiredEnvVar("public_auth_url"),
+    publicBaseUrl: readRequiredEnvVar("public_base_url"),
     unixDomainSocket: readEnvVar("unix_domain_socket"),
-    dbPassword: await readSecret("auth_db_password"),
+    dbPassword: await readSecret("db_password"),
     dbHost: readRequiredEnvVar("db_host"),
     dbPort,
     dbName: readRequiredEnvVar("db_name"),

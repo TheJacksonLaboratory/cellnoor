@@ -72,10 +72,8 @@ async fn user_can_access_every_view() {
 
     tokio::join!(
         assert_is_ok(tx, select_cdna_detailed),
-        assert_is_ok(tx, async |tx, q| select_chromium_datasets_detailed(
-            tx, "", q
-        )
-        .await),
+        assert_is_ok(tx, async |tx, q| select_chromium_datasets_detailed(tx, q)
+            .await),
         assert_is_ok(tx, select_chromium_runs_detailed),
         assert_is_ok(tx, select_institutions),
         assert_is_ok(tx, select_libraries_detailed),

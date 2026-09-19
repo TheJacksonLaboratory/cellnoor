@@ -23,22 +23,19 @@ pub async fn show_chromium_dataset(
     Path(IdParam { id }): Path<IdParam>,
 ) -> Result<Json<ChromiumDatasetDetailed>, DbError> {
     state
-        .in_transaction(user, async |tx| {
-            select_chromium_dataset_by_id(tx, &state.public_files_url, id).await
-        })
+        .in_transaction(user, async |tx| select_chromium_dataset_by_id(tx, id).await)
         .await
 }
 
 pub(super) async fn select_chromium_dataset_by_id(
     tx: &db::Transaction<'_>,
-    raw_files_url: &str,
     id: Uuid,
 ) -> Result<ChromiumDatasetDetailed, DbError> {
     let query = ChromiumDatasetQuery::from_filter(
         ChromiumDatasetPredicateInner::Id(UuidOperator::Eq(id)).into(),
     );
 
-    let mut results = select_chromium_datasets_detailed(tx, raw_files_url, &query).await?;
+    let mut results = select_chromium_datasets_detailed(tx, &query).await?;
 
     if results.len() != 1 {
         return Err(DbError::ResourceNotFound);
@@ -62,7 +59,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let error = select_chromium_dataset_by_id(&tx, "", Uuid::new_v4())
+        let error = select_chromium_dataset_by_id(&tx, Uuid::new_v4())
             .await
             .unwrap_err();
 

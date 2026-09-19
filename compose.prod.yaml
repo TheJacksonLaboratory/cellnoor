@@ -19,8 +19,8 @@ services:
       NODE_ENV: *node_env
   caddy:
     environment:
-      CELLNOOR_PUBLIC_BASE_URL: ${CELLNOOR_PUBLIC_BASE_URL}
-      CELLNOOR_TLS_SETTINGS: tls /run/secrets/tls_certificate /run/secrets/tls_key
+      CELLNOOR_CADDY__PUBLIC_BASE_URL: ${CELLNOOR_PUBLIC_BASE_URL}
+      CELLNOOR_CADDY__TLS_SETTINGS: tls /run/secrets/tls_certificate /run/secrets/tls_key
     ports:
       - "3000:3000"
       - "3001:3001"

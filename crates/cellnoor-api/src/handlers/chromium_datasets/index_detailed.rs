@@ -29,7 +29,7 @@ pub async fn index_chromium_datasets_detailed(
 ) -> Result<Json<Vec<ChromiumDatasetDetailed>>, DbError> {
     state
         .in_transaction(user, async |tx| {
-            select_chromium_datasets_detailed(tx, &state.public_files_url, &query).await
+            select_chromium_datasets_detailed(tx, &query).await
         })
         .await
 }
@@ -37,7 +37,6 @@ pub async fn index_chromium_datasets_detailed(
 // Visibility required for tests
 pub(in super::super) async fn select_chromium_datasets_detailed(
     tx: &db::Transaction<'_>,
-    raw_files_url: &str,
     query: &ChromiumDatasetQuery,
 ) -> Result<Vec<ChromiumDatasetDetailed>, DbError> {
     static SELECT_DETAILED_CHROMIUM_DATASETS: FilterableSqlBuilder =
@@ -47,18 +46,18 @@ pub(in super::super) async fn select_chromium_datasets_detailed(
         .select_rows(&SELECT_DETAILED_CHROMIUM_DATASETS, query)
         .await?
         .into_iter()
-        .map(|row| map_detailed_row(raw_files_url, row))
+        .map(|row| map_detailed_row(row))
         .collect())
 }
 
-fn map_detailed_row(raw_files_url: &str, row: Row) -> ChromiumDatasetDetailed {
+fn map_detailed_row(row: Row) -> ChromiumDatasetDetailed {
     let record: SavedChromiumDatasetRecord = row.get("chromium_dataset");
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
     let libraries: Vec<SavedLibraryRecord> = row.get("libraries");
     let raw_file_paths: Vec<NonemptyString> = row.get("raw_file_paths");
 
     ChromiumDatasetDetailed {
-        links: chromium_dataset_detailed_links(raw_files_url, record.id, &raw_file_paths),
+        links: chromium_dataset_detailed_links(record.id, &raw_file_paths),
         record,
         assay: row.get("assay"),
         libraries: libraries.into_iter().map(library_from_record).collect(),
@@ -71,16 +70,15 @@ fn map_detailed_row(raw_files_url: &str, row: Row) -> ChromiumDatasetDetailed {
 }
 
 fn chromium_dataset_detailed_links(
-    public_files_url: &str,
     id: Id,
     raw_file_paths: &[NonemptyString],
 ) -> ChromiumDatasetDetailedLinks {
     ChromiumDatasetDetailedLinks {
         simple: chromium_dataset_links(id),
-        file_dir: format!("{public_files_url}/chromium-datasets/{id}"),
+        file_dir: format!("/files/chromium-datasets/{id}"),
         raw_files: raw_file_paths
             .iter()
-            .map(|p| format!("{public_files_url}/chromium-datasets/{id}/{p}"))
+            .map(|p| format!("/files/chromium-datasets/{id}/{p}"))
             .collect(),
     }
 }

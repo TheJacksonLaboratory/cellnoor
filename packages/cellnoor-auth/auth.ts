@@ -3,7 +3,7 @@ import { readConfig } from "./config";
 import { getDbClient } from "./db";
 
 const {
-  publicAuthUrl,
+  publicBaseUrl,
   authSecret,
   microsoftEntraTenantId,
   microsoftEntraClientId,
@@ -25,7 +25,7 @@ async function deleteUnnecessaryAccountFields(
 }
 
 export const auth = betterAuth({
-  baseURL: publicAuthUrl,
+  baseURL: publicBaseUrl,
   secret: authSecret,
   database: await getDbClient(),
   user: {
@@ -52,6 +52,13 @@ export const auth = betterAuth({
       refreshCache: true,
     },
     storeSessionInDatabase: false,
+  },
+  secondaryStorage: {
+    get: () => null,
+    getAndDelete: () => null,
+    increment: () => 0,
+    set: () => null,
+    delete: () => null,
   },
   account: {
     fields: {
@@ -98,6 +105,7 @@ export const auth = betterAuth({
   },
   advanced: {
     cookiePrefix: "cellnoor-auth",
-    database: { generateId: "uuid" },
+    database: { generateId: "uuid", validateSchema: false },
   },
+  logger: { level: "error" },
 });

@@ -125,9 +125,9 @@ services:
   caddy:
     image: caddy:2-alpine
     environment:
-      CELLNOOR_AUTH_SOCKET: *auth_socket
-      CELLNOOR_API_SOCKET: *api_socket
-      CELLNOOR_STATIC_FILES_DIR: *static_files_dir
+      CELLNOOR_CADDY__AUTH_SOCKET: *auth_socket
+      CELLNOOR_CADDY__API_SOCKET: *api_socket
+      CELLNOOR_CADDY__STATIC_FILES_DIR: *static_files_dir
     restart: always
     cap_add:
       - NET_ADMIN

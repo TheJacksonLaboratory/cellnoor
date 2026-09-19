@@ -34,5 +34,9 @@
 	"imports": {
 		"#lib": "./src/lib/index.js",
 		"#lib/*": "./src/lib/*"
+	},
+	"dependencies": {
+		"@fontsource-variable/comfortaa": "^5.3.0",
+		"better-auth": "^1.7.5"
 	}
 }

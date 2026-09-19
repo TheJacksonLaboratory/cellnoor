@@ -82,15 +82,12 @@ pub async fn create_chromium_dataset(
     Json(record): Json<NewChromiumDataset>,
 ) -> Result<Json<ChromiumDatasetDetailed>, CreateChromiumDatasetError> {
     state
-        .in_transaction(user, async |tx| {
-            insert_chromium_dataset(tx, &state.public_files_url, record).await
-        })
+        .in_transaction(user, async |tx| insert_chromium_dataset(tx, record).await)
         .await
 }
 
 async fn insert_chromium_dataset(
     tx: &db::Transaction<'_>,
-    raw_files_url: &str,
     NewChromiumDataset {
         record,
         library_ids,
@@ -102,7 +99,7 @@ async fn insert_chromium_dataset(
 
     insert_chromium_dataset_libraries(tx, id, library_ids.as_ref()).await?;
 
-    Ok(select_chromium_dataset_by_id(tx, raw_files_url, id).await?)
+    Ok(select_chromium_dataset_by_id(tx, id).await?)
 }
 
 pub async fn validate_libraries_have_same_gem_well(
@@ -224,7 +221,7 @@ pub mod test {
 
         modify(&mut new);
 
-        let inserted = insert_chromium_dataset(tx, "files", new.clone()).await?;
+        let inserted = insert_chromium_dataset(tx, new.clone()).await?;
         Ok((new, inserted))
     }
 
@@ -253,9 +250,7 @@ pub mod test {
             library_ids: NonemptyVec::new(vec![*library1.record.id, *library2.record.id]).unwrap(),
         };
 
-        let err = insert_chromium_dataset(&tx, "files", new)
-            .await
-            .unwrap_err();
+        let err = insert_chromium_dataset(&tx, new).await.unwrap_err();
 
         assert_eq!(
             err,
