@@ -1,15 +1,11 @@
 <script lang="ts">
-	import { createAuthClient } from 'better-auth/svelte';
-
-	const authClient = createAuthClient();
-
-	const redirectTo = () =>
-		window.location.search ? new URLSearchParams(window.location.search).get('redirect_to') : '/';
+	import { page } from '$app/state';
+	import { authClient } from '#lib/auth.js';
 
 	async function signInWithMicrosoft() {
 		return await authClient.signIn.social({
 			provider: 'microsoft',
-			callbackURL: redirectTo() ?? '/'
+			callbackURL: page.url.searchParams.get('redirect_to') ?? '/'
 		});
 	}
 </script>

@@ -36,6 +36,7 @@
 		"#lib/*": "./src/lib/*"
 	},
 	"dependencies": {
+		"@ark-ui/svelte": "^5.24.2",
 		"@fontsource-variable/comfortaa": "^5.3.0",
 		"better-auth": "^1.7.5"
 	}
