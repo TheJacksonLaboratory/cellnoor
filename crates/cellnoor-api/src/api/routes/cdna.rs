@@ -48,7 +48,12 @@ async fn index_cdna_simple(
     user: AuthUser,
     Query(q): Query<SimpleCdnaQuery>,
 ) -> Result<Json<Vec<CdnaCompact>>, DbError> {
-    index_cdna(state, user, Json(CdnaQuery::from_simple_query(q))).await
+    index_cdna(
+        state,
+        user,
+        crate::extract::JsonExtractor(CdnaQuery::from_simple_query(q)),
+    )
+    .await
 }
 
 async fn index_cdna_detailed_simple(
@@ -56,5 +61,10 @@ async fn index_cdna_detailed_simple(
     user: AuthUser,
     Query(q): Query<SimpleCdnaQuery>,
 ) -> Result<Json<Vec<CdnaDetailed>>, DbError> {
-    index_cdna_detailed(state, user, Json(CdnaQuery::from_simple_query(q))).await
+    index_cdna_detailed(
+        state,
+        user,
+        crate::extract::JsonExtractor(CdnaQuery::from_simple_query(q)),
+    )
+    .await
 }

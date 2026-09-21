@@ -25,7 +25,7 @@ use crate::{
 pub async fn index_chromium_datasets_detailed(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<ChromiumDatasetQuery>,
+    crate::extract::JsonExtractor(query): crate::extract::JsonExtractor<ChromiumDatasetQuery>,
 ) -> Result<Json<Vec<ChromiumDatasetDetailed>>, DbError> {
     state
         .in_transaction(user, async |tx| {

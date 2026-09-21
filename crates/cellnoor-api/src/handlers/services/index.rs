@@ -14,7 +14,7 @@ use crate::{
 pub async fn index_services(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<ServiceQuery>,
+    crate::extract::JsonExtractor(query): crate::extract::JsonExtractor<ServiceQuery>,
 ) -> Result<Json<Vec<Service>>, DbError> {
     state
         .in_transaction(user, async |tx| select_services(tx, &query).await)

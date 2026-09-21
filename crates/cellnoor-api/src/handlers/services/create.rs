@@ -15,7 +15,7 @@ use crate::{
 pub async fn create_service(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(service): Json<NewService>,
+    crate::extract::JsonExtractor(service): crate::extract::JsonExtractor<NewService>,
 ) -> Result<Json<Service>, DbError> {
     state
         .in_transaction(user, async |tx| insert_service(tx, &service).await)

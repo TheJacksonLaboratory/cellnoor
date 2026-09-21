@@ -16,7 +16,7 @@ pub async fn create_specimen_measurement(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(record): Json<NewSpecimenMeasurement>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<NewSpecimenMeasurement>,
 ) -> Result<Json<()>, DbError> {
     state
         .in_transaction(user, async |tx| {

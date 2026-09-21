@@ -18,7 +18,7 @@ use crate::{
 pub async fn create_cdna(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(record): Json<NewCdna>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<NewCdna>,
 ) -> Result<Json<CdnaDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| insert_cdna(tx, record).await)

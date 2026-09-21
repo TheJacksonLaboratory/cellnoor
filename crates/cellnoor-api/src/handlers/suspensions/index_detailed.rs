@@ -14,7 +14,7 @@ use crate::{
 pub async fn index_suspensions_detailed(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<SuspensionQuery>,
+    crate::extract::JsonExtractor(query): crate::extract::JsonExtractor<SuspensionQuery>,
 ) -> Result<Json<Vec<SuspensionDetailed>>, DbError> {
     state
         .in_transaction(user, async |tx| {

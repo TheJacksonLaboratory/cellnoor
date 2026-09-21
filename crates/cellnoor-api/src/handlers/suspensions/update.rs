@@ -22,7 +22,7 @@ pub async fn update_suspension(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(record): Json<SuspensionUpdate>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<SuspensionUpdate>,
 ) -> Result<Json<SuspensionDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| {

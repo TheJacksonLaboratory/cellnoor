@@ -13,7 +13,7 @@ use crate::{
 pub async fn index_specimens(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<SpecimenQuery>,
+    crate::extract::JsonExtractor(query): crate::extract::JsonExtractor<SpecimenQuery>,
 ) -> Result<Json<Vec<SpecimenCompact>>, DbError> {
     state
         .in_transaction(user, async |tx| select_specimens_compact(tx, &query).await)

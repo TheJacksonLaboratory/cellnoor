@@ -17,7 +17,7 @@ use crate::{
 pub async fn create_library(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(record): Json<NewLibrary>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<NewLibrary>,
 ) -> Result<Json<LibraryDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| insert_library(tx, record).await)

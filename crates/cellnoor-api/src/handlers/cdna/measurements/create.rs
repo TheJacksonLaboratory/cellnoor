@@ -16,7 +16,7 @@ pub async fn create_cdna_measurement(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id: cdna_id }): Path<IdParam>,
-    Json(record): Json<NewNucleicAcidMeasurement>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<NewNucleicAcidMeasurement>,
 ) -> Result<Json<()>, DbError> {
     state
         .in_transaction(user, async |tx| {

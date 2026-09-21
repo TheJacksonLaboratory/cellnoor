@@ -25,7 +25,7 @@ pub async fn update_person(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(person): Json<PersonUpdate>,
+    crate::extract::JsonExtractor(person): crate::extract::JsonExtractor<PersonUpdate>,
 ) -> Result<Json<Person>, PersonError> {
     state
         .in_transaction(user, async |tx| update_person_by_id(tx, id, &person).await)

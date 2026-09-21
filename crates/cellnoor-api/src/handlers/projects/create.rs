@@ -11,7 +11,7 @@ use crate::{
 pub async fn create_project(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(project): Json<NewProject>,
+    crate::extract::JsonExtractor(project): crate::extract::JsonExtractor<NewProject>,
 ) -> Result<Json<ProjectDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| insert_project(tx, &project).await)

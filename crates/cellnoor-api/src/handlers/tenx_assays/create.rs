@@ -22,7 +22,7 @@ mod chromium;
 pub async fn create_tenx_assay(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(new): Json<NewTenxAssay>,
+    crate::extract::JsonExtractor(new): crate::extract::JsonExtractor<NewTenxAssay>,
 ) -> Result<Json<TenxAssay>, DbError> {
     state
         .in_transaction(user, async |tx| insert_tenx_assay(tx, &new).await)

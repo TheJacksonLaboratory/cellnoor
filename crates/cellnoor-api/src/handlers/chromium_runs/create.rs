@@ -20,7 +20,7 @@ mod gem_well;
 pub async fn create_chromium_run(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(record): Json<NewChromiumRun>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<NewChromiumRun>,
 ) -> Result<Json<ChromiumRunDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| insert_chromium_run(tx, record).await)

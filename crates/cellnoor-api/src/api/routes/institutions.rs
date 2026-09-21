@@ -43,5 +43,10 @@ async fn index_institutions_simple(
     user: AuthUser,
     Query(q): Query<SimpleInstitutionQuery>,
 ) -> Result<Json<Vec<Institution>>, DbError> {
-    index_institutions(state, user, Json(InstitutionQuery::from_simple_query(q))).await
+    index_institutions(
+        state,
+        user,
+        crate::extract::JsonExtractor(InstitutionQuery::from_simple_query(q)),
+    )
+    .await
 }

@@ -41,5 +41,10 @@ async fn index_services_simple(
     user: AuthUser,
     Query(q): Query<SimpleServiceQuery>,
 ) -> Result<Json<Vec<Service>>, DbError> {
-    index_services(state, user, Json(ServiceQuery::from_simple_query(q))).await
+    index_services(
+        state,
+        user,
+        crate::extract::JsonExtractor(ServiceQuery::from_simple_query(q)),
+    )
+    .await
 }

@@ -16,7 +16,7 @@ pub async fn create_suspension_pool_measurement(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id: pool_id }): Path<IdParam>,
-    Json(record): Json<NewSuspensionPoolMeasurement>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<NewSuspensionPoolMeasurement>,
 ) -> Result<Json<()>, DbError> {
     state
         .in_transaction(user, async |tx| {

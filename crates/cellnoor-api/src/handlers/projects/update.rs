@@ -19,7 +19,7 @@ pub async fn update_project(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(project): Json<NewProject>,
+    crate::extract::JsonExtractor(project): crate::extract::JsonExtractor<NewProject>,
 ) -> Result<Json<ProjectDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| {

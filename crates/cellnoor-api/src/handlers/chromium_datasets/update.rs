@@ -83,7 +83,7 @@ pub async fn update_chromium_dataset(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(record): Json<ChromiumDatasetUpdate>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<ChromiumDatasetUpdate>,
 ) -> Result<Json<ChromiumDatasetDetailed>, UpdateChromiumDatasetError> {
     state
         .in_transaction(user, async |tx| {

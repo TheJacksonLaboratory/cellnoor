@@ -16,7 +16,7 @@ use crate::{
 pub async fn index_libraries_detailed(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<LibraryQuery>,
+    crate::extract::JsonExtractor(query): crate::extract::JsonExtractor<LibraryQuery>,
 ) -> Result<Json<Vec<LibraryDetailed>>, DbError> {
     state
         .in_transaction(user, async |tx| select_libraries_detailed(tx, &query).await)

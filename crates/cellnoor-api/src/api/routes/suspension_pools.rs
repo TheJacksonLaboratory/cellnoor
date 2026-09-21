@@ -52,7 +52,12 @@ async fn index_suspension_pools_simple(
     user: AuthUser,
     Query(q): Query<SimpleSuspensionPoolQuery>,
 ) -> Result<Json<Vec<SuspensionPoolCompact>>, DbError> {
-    index_suspension_pools(state, user, Json(SuspensionPoolQuery::from_simple_query(q))).await
+    index_suspension_pools(
+        state,
+        user,
+        crate::extract::JsonExtractor(SuspensionPoolQuery::from_simple_query(q)),
+    )
+    .await
 }
 
 async fn index_suspension_pools_detailed_simple(
@@ -60,6 +65,10 @@ async fn index_suspension_pools_detailed_simple(
     user: AuthUser,
     Query(q): Query<SimpleSuspensionPoolQuery>,
 ) -> Result<Json<Vec<SuspensionPoolDetailed>>, DbError> {
-    index_suspension_pools_detailed(state, user, Json(SuspensionPoolQuery::from_simple_query(q)))
-        .await
+    index_suspension_pools_detailed(
+        state,
+        user,
+        crate::extract::JsonExtractor(SuspensionPoolQuery::from_simple_query(q)),
+    )
+    .await
 }

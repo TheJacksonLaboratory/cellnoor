@@ -22,7 +22,7 @@ pub async fn update_cdna(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(record): Json<CdnaUpdate>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<CdnaUpdate>,
 ) -> Result<Json<CdnaDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| update_cdna_by_id(tx, id, &record).await)

@@ -48,7 +48,12 @@ async fn index_projects_simple(
     user: AuthUser,
     Query(q): Query<SimpleProjectQuery>,
 ) -> Result<Json<Vec<ProjectCompact>>, DbError> {
-    index_projects(state, user, Json(ProjectQuery::from_simple_query(q))).await
+    index_projects(
+        state,
+        user,
+        crate::extract::JsonExtractor(ProjectQuery::from_simple_query(q)),
+    )
+    .await
 }
 
 async fn index_projects_detailed_simple(
@@ -56,5 +61,10 @@ async fn index_projects_detailed_simple(
     user: AuthUser,
     Query(q): Query<SimpleProjectQuery>,
 ) -> Result<Json<Vec<ProjectDetailed>>, DbError> {
-    index_projects_detailed(state, user, Json(ProjectQuery::from_simple_query(q))).await
+    index_projects_detailed(
+        state,
+        user,
+        crate::extract::JsonExtractor(ProjectQuery::from_simple_query(q)),
+    )
+    .await
 }

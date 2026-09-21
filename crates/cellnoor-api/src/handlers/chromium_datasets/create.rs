@@ -79,7 +79,7 @@ impl OperationOutput for CreateChromiumDatasetError {
 pub async fn create_chromium_dataset(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(record): Json<NewChromiumDataset>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<NewChromiumDataset>,
 ) -> Result<Json<ChromiumDatasetDetailed>, CreateChromiumDatasetError> {
     state
         .in_transaction(user, async |tx| insert_chromium_dataset(tx, record).await)

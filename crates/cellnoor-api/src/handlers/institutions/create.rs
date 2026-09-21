@@ -11,7 +11,7 @@ use crate::{
 pub async fn create_institution(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(institution): Json<NewInstitution>,
+    crate::extract::JsonExtractor(institution): crate::extract::JsonExtractor<NewInstitution>,
 ) -> Result<Json<Institution>, DbError> {
     state
         .in_transaction(user, async |tx| insert_institution(tx, &institution).await)

@@ -13,7 +13,7 @@ use crate::{
 pub async fn index_cdna(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<CdnaQuery>,
+    crate::extract::JsonExtractor(query): crate::extract::JsonExtractor<CdnaQuery>,
 ) -> Result<Json<Vec<CdnaCompact>>, DbError> {
     state
         .in_transaction(user, async |tx| select_cdna_compact(tx, &query).await)

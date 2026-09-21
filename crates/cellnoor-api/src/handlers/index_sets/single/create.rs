@@ -16,7 +16,7 @@ use crate::{
 pub async fn create_single_index_sets(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(sets): Json<Vec<(String, [String; 4])>>,
+    crate::extract::JsonExtractor(sets): crate::extract::JsonExtractor<Vec<(String, [String; 4])>>,
 ) -> Result<Json<()>, IndexSetError> {
     state
         .in_transaction(user, async |tx| insert_single_index_sets(tx, &sets).await)

@@ -14,7 +14,7 @@ use crate::{
 pub async fn index_api_keys(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<ApiKeyQuery>,
+    crate::extract::JsonExtractor(query): crate::extract::JsonExtractor<ApiKeyQuery>,
 ) -> Result<Json<Vec<SavedApiKeyRecord>>, DbError> {
     state
         .in_transaction(user, async |tx| select_api_keys(tx, &query).await)

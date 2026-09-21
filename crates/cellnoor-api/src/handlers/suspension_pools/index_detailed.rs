@@ -17,7 +17,7 @@ use crate::{
 pub async fn index_suspension_pools_detailed(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<SuspensionPoolQuery>,
+    crate::extract::JsonExtractor(query): crate::extract::JsonExtractor<SuspensionPoolQuery>,
 ) -> Result<Json<Vec<SuspensionPoolDetailed>>, DbError> {
     state
         .in_transaction(user, async |tx| {

@@ -37,5 +37,10 @@ async fn index_api_keys_simple(
     user: AuthUser,
     Query(q): Query<SimpleApiKeyQuery>,
 ) -> Result<Json<Vec<SavedApiKeyRecord>>, DbError> {
-    index_api_keys(state, user, Json(ApiKeyQuery::from_simple_query(q))).await
+    index_api_keys(
+        state,
+        user,
+        crate::extract::JsonExtractor(ApiKeyQuery::from_simple_query(q)),
+    )
+    .await
 }

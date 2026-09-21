@@ -17,7 +17,7 @@ use crate::{
 pub async fn create_suspension(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(record): Json<NewSuspension>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<NewSuspension>,
 ) -> Result<Json<SuspensionDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| insert_suspension(tx, record).await)

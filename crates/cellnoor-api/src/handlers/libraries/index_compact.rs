@@ -20,7 +20,7 @@ pub fn library_from_record(record: SavedLibraryRecord) -> LibraryCompact {
 pub async fn index_libraries(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<LibraryQuery>,
+    crate::extract::JsonExtractor(query): crate::extract::JsonExtractor<LibraryQuery>,
 ) -> Result<Json<Vec<LibraryCompact>>, DbError> {
     state
         .in_transaction(user, async |tx| select_libraries_compact(tx, &query).await)

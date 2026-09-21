@@ -13,7 +13,7 @@ use crate::{
 pub async fn index_institutions(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<InstitutionQuery>,
+    crate::extract::JsonExtractor(query): crate::extract::JsonExtractor<InstitutionQuery>,
 ) -> Result<Json<Vec<Institution>>, DbError> {
     state
         .in_transaction(user, async |tx| select_institutions(tx, &query).await)

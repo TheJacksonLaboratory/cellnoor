@@ -59,7 +59,7 @@ async fn index_chromium_datasets_simple(
     index_chromium_datasets(
         state,
         user,
-        Json(ChromiumDatasetQuery::from_simple_query(q)),
+        crate::extract::JsonExtractor(ChromiumDatasetQuery::from_simple_query(q)),
     )
     .await
 }
@@ -72,7 +72,7 @@ async fn index_chromium_datasets_detailed_simple(
     index_chromium_datasets_detailed(
         state,
         user,
-        Json(ChromiumDatasetQuery::from_simple_query(q)),
+        crate::extract::JsonExtractor(ChromiumDatasetQuery::from_simple_query(q)),
     )
     .await
 }

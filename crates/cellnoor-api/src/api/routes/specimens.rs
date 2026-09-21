@@ -48,7 +48,12 @@ async fn index_specimens_simple(
     user: AuthUser,
     Query(q): Query<SimpleSpecimenQuery>,
 ) -> Result<Json<Vec<SpecimenCompact>>, DbError> {
-    index_specimens(state, user, Json(SpecimenQuery::from_simple_query(q))).await
+    index_specimens(
+        state,
+        user,
+        crate::extract::JsonExtractor(SpecimenQuery::from_simple_query(q)),
+    )
+    .await
 }
 
 async fn index_specimens_detailed_simple(
@@ -56,5 +61,10 @@ async fn index_specimens_detailed_simple(
     user: AuthUser,
     Query(q): Query<SimpleSpecimenQuery>,
 ) -> Result<Json<Vec<SpecimenDetailed>>, DbError> {
-    index_specimens_detailed(state, user, Json(SpecimenQuery::from_simple_query(q))).await
+    index_specimens_detailed(
+        state,
+        user,
+        crate::extract::JsonExtractor(SpecimenQuery::from_simple_query(q)),
+    )
+    .await
 }

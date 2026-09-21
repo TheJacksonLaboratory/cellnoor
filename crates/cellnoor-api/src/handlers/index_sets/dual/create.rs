@@ -18,7 +18,7 @@ use crate::{
 pub async fn create_dual_index_sets(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(sets): Json<HashMap<String, NewDualIndexSet>>,
+    crate::extract::JsonExtractor(sets): crate::extract::JsonExtractor<HashMap<String, NewDualIndexSet>>,
 ) -> Result<Json<()>, IndexSetError> {
     state
         .in_transaction(user, async |tx| insert_dual_index_sets(tx, &sets).await)

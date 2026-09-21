@@ -22,7 +22,7 @@ pub async fn update_library(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(record): Json<LibraryUpdate>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<LibraryUpdate>,
 ) -> Result<Json<LibraryDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| update_library_by_id(tx, id, &record).await)

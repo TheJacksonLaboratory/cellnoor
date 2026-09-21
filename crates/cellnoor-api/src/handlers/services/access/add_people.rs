@@ -16,7 +16,7 @@ pub async fn add_people_to_service(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id: service_id }): Path<IdParam>,
-    Json(people): Json<Vec<Uuid>>,
+    crate::extract::JsonExtractor(people): crate::extract::JsonExtractor<Vec<Uuid>>,
 ) -> Result<Json<()>, DbError> {
     state
         .in_transaction(user, async |tx| {

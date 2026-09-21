@@ -14,7 +14,7 @@ use crate::{
 pub async fn index_people(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<PersonQuery>,
+    crate::extract::JsonExtractor(query): crate::extract::JsonExtractor<PersonQuery>,
 ) -> Result<Json<Vec<Person>>, DbError> {
     state
         .in_transaction(user, async |tx| select_people(tx, &query).await)

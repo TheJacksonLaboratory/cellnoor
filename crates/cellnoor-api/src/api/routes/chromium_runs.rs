@@ -50,7 +50,12 @@ async fn index_chromium_runs_simple(
     user: AuthUser,
     Query(q): Query<SimpleChromiumRunQuery>,
 ) -> Result<Json<Vec<ChromiumRunCompact>>, DbError> {
-    index_chromium_runs(state, user, Json(ChromiumRunQuery::from_simple_query(q))).await
+    index_chromium_runs(
+        state,
+        user,
+        crate::extract::JsonExtractor(ChromiumRunQuery::from_simple_query(q)),
+    )
+    .await
 }
 
 async fn index_chromium_runs_detailed_simple(
@@ -58,5 +63,10 @@ async fn index_chromium_runs_detailed_simple(
     user: AuthUser,
     Query(q): Query<SimpleChromiumRunQuery>,
 ) -> Result<Json<Vec<ChromiumRunDetailed>>, DbError> {
-    index_chromium_runs_detailed(state, user, Json(ChromiumRunQuery::from_simple_query(q))).await
+    index_chromium_runs_detailed(
+        state,
+        user,
+        crate::extract::JsonExtractor(ChromiumRunQuery::from_simple_query(q)),
+    )
+    .await
 }

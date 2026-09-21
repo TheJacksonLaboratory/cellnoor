@@ -48,7 +48,12 @@ async fn index_libraries_simple(
     user: AuthUser,
     Query(q): Query<SimpleLibraryQuery>,
 ) -> Result<Json<Vec<LibraryCompact>>, DbError> {
-    index_libraries(state, user, Json(LibraryQuery::from_simple_query(q))).await
+    index_libraries(
+        state,
+        user,
+        crate::extract::JsonExtractor(LibraryQuery::from_simple_query(q)),
+    )
+    .await
 }
 
 async fn index_libraries_detailed_simple(
@@ -56,5 +61,10 @@ async fn index_libraries_detailed_simple(
     user: AuthUser,
     Query(q): Query<SimpleLibraryQuery>,
 ) -> Result<Json<Vec<LibraryDetailed>>, DbError> {
-    index_libraries_detailed(state, user, Json(LibraryQuery::from_simple_query(q))).await
+    index_libraries_detailed(
+        state,
+        user,
+        crate::extract::JsonExtractor(LibraryQuery::from_simple_query(q)),
+    )
+    .await
 }

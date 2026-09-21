@@ -16,7 +16,7 @@ pub async fn update_chromium_run(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(record): Json<ChromiumRunUpdate>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<ChromiumRunUpdate>,
 ) -> Result<Json<ChromiumRunDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| {

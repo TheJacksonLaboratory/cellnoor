@@ -11,7 +11,7 @@ use crate::{
 pub async fn create_multiplexing_tag(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(new): Json<NewMultiplexingTag>,
+    crate::extract::JsonExtractor(new): crate::extract::JsonExtractor<NewMultiplexingTag>,
 ) -> Result<Json<MultiplexingTag>, DbError> {
     let mut client = state.db_client(user).await?;
     let tx = client.begin().await?;

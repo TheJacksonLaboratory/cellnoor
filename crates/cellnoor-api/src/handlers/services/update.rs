@@ -21,7 +21,7 @@ pub async fn update_service(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(service): Json<ServiceUpdate>,
+    crate::extract::JsonExtractor(service): crate::extract::JsonExtractor<ServiceUpdate>,
 ) -> Result<Json<Service>, DbError> {
     state
         .in_transaction(user, async |tx| {

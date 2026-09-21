@@ -16,7 +16,7 @@ pub async fn create_suspension_measurement(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id: suspension_id }): Path<IdParam>,
-    Json(record): Json<NewSuspensionMeasurement>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<NewSuspensionMeasurement>,
 ) -> Result<Json<()>, DbError> {
     let mut client = state.db_client(user).await?;
 

@@ -16,7 +16,7 @@ use crate::{
 pub async fn create_specimen(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(record): Json<NewSpecimen>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<NewSpecimen>,
 ) -> Result<Json<SpecimenDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| insert_specimen(tx, record).await)

@@ -13,7 +13,7 @@ use crate::{
 pub async fn index_projects(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<ProjectQuery>,
+    crate::extract::JsonExtractor(query): crate::extract::JsonExtractor<ProjectQuery>,
 ) -> Result<Json<Vec<ProjectCompact>>, DbError> {
     state
         .in_transaction(user, async |tx| select_projects_compact(tx, &query).await)

@@ -16,7 +16,7 @@ pub async fn update_api_key(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(update): Json<ApiKeyUpdate>,
+    crate::extract::JsonExtractor(update): crate::extract::JsonExtractor<ApiKeyUpdate>,
 ) -> Result<Json<SavedApiKeyRecord>, DbError> {
     state
         .in_transaction(user, async |tx| update_api_key_by_id(tx, id, &update).await)

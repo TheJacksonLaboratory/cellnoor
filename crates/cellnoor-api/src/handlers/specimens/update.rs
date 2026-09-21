@@ -22,7 +22,7 @@ pub async fn update_specimen(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(record): Json<NewSpecimen>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<NewSpecimen>,
 ) -> Result<Json<SpecimenDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| update_specimen_by_id(tx, id, record).await)

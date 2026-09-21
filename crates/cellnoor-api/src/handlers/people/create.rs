@@ -24,7 +24,7 @@ use crate::{
 pub async fn create_person(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(person): Json<NewPerson>,
+    crate::extract::JsonExtractor(person): crate::extract::JsonExtractor<NewPerson>,
 ) -> Result<Json<Person>, PersonError> {
     state
         .in_transaction(user, async |tx| insert_person(tx, &person).await)

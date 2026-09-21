@@ -23,7 +23,7 @@ pub async fn update_suspension_pool(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(record): Json<SuspensionPoolUpdate>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<SuspensionPoolUpdate>,
 ) -> Result<Json<SuspensionPoolDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| {

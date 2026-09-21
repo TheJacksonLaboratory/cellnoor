@@ -22,7 +22,7 @@ use crate::{
 pub async fn create_suspension_pool(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(record): Json<NewSuspensionPool>,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<NewSuspensionPool>,
 ) -> Result<Json<SuspensionPoolDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| insert_suspension_pool(tx, &record).await)

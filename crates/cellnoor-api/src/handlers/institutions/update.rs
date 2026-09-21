@@ -16,7 +16,7 @@ pub async fn update_institution(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    Json(institution): Json<NewInstitution>,
+    crate::extract::JsonExtractor(institution): crate::extract::JsonExtractor<NewInstitution>,
 ) -> Result<Json<Institution>, DbError> {
     state
         .in_transaction(user, async |tx| {

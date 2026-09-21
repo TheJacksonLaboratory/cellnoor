@@ -41,5 +41,10 @@ async fn index_people_simple(
     user: AuthUser,
     Query(q): Query<SimplePersonQuery>,
 ) -> Result<Json<Vec<Person>>, DbError> {
-    index_people(state, user, Json(PersonQuery::from_simple_query(q))).await
+    index_people(
+        state,
+        user,
+        crate::extract::JsonExtractor(PersonQuery::from_simple_query(q)),
+    )
+    .await
 }

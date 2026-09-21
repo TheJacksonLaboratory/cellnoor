@@ -16,7 +16,7 @@ use crate::{
 pub async fn index_chromium_runs(
     State(state): State<AppState>,
     user: AuthUser,
-    Json(query): Json<ChromiumRunQuery>,
+    crate::extract::JsonExtractor(query): crate::extract::JsonExtractor<ChromiumRunQuery>,
 ) -> Result<Json<Vec<ChromiumRunCompact>>, DbError> {
     state
         .in_transaction(user, async |tx| {
