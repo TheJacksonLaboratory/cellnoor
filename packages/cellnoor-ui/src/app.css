@@ -1,0 +1,12 @@
+:root {
+	--jax-cyan: #0085ca;
+	--jax-navy: #05396b;
+	--sm-gap: 0.5rem;
+	--md-gap: 1rem;
+	--bg-gap: 2rem;
+}
+
+body {
+	margin: 0;
+	font-family: system-ui, sans-serif;
+}

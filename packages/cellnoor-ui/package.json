@@ -15,21 +15,20 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
-		"@sveltejs/adapter-static": "next",
-		"@sveltejs/kit": "next",
-		"@sveltejs/vite-plugin-svelte": "^7.1.2",
-		"@types/node": "^24",
+		"@sveltejs/adapter-static": "^4.0.0-next.4",
+		"@sveltejs/kit": "^3.0.0-next.0",
+		"@sveltejs/vite-plugin-svelte": "^7.2.0",
 		"eslint": "^10.4.1",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.19.0",
 		"globals": "^17.6.0",
 		"prettier": "^3.8.3",
 		"prettier-plugin-svelte": "^4.1.0",
-		"svelte": "^5.56.1",
+		"svelte": "^5.56.7",
 		"svelte-check": "^4.6.0",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.60.1",
-		"vite": "^8.0.16"
+		"vite": "^8.1.5"
 	},
 	"imports": {
 		"#lib": "./src/lib/index.js",
@@ -37,7 +36,7 @@
 	},
 	"dependencies": {
 		"@ark-ui/svelte": "^5.24.2",
-		"@fontsource-variable/comfortaa": "^5.3.0",
-		"better-auth": "^1.7.5"
+		"better-auth": "^1.7.5",
+		"cellnoor-client": "link:cellnoor-client"
 	}
 }
