@@ -1,11 +1,9 @@
-use std::sync::Arc;
-
 use aide::{
     axum::ApiRouter,
     openapi::{ApiKeyLocation, OpenApi, SecurityScheme},
     redoc::Redoc,
 };
-use axum::{Extension, Json, Router, routing::get};
+use axum::{Json, Router, routing::get};
 
 use crate::state::AppState;
 
@@ -56,28 +54,41 @@ pub fn router() -> (OpenApi, Router<AppState>) {
 
     let mut api_docs = OpenApi::default();
 
-    let router = router
-        .finish_api_with(&mut api_docs, |api_docs| {
-            api_docs
-                .title("cellnoor RESTful API")
-                .version("0.1.0")
-                .security_scheme(
-                    "api_key",
-                    SecurityScheme::ApiKey {
-                        location: ApiKeyLocation::Header,
-                        name: "x-api-key".to_owned(),
-                        extensions: Default::default(),
-                        description: None,
-                    },
-                )
-                .security_requirement("api_key")
-        })
-        .layer(Extension(Arc::new(api_docs.clone())));
+    let router = router.finish_api_with(&mut api_docs, |api_docs| {
+        api_docs
+            .title("cellnoor RESTful API")
+            .security_scheme(
+                "api_key",
+                SecurityScheme::ApiKey {
+                    location: ApiKeyLocation::Header,
+                    name: "x-api-key".to_owned(),
+                    extensions: Default::default(),
+                    description: None,
+                },
+            )
+            .security_requirement("api_key")
+    });
 
     (api_docs, router)
 }
 
-#[axum::debug_handler]
-async fn show_api_docs(Extension(api_docs): Extension<Arc<OpenApi>>) -> Json<Arc<OpenApi>> {
-    axum::Json(api_docs)
+const OPEN_API_DOCS: &[u8] = include_bytes!("../../../../openapi.json");
+
+async fn show_api_docs() -> Json<serde_json::Value> {
+    axum::Json(serde_json::from_slice(OPEN_API_DOCS).unwrap())
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::api::{router, routes::OPEN_API_DOCS};
+
+    #[test]
+    fn committed_api_docs_match_generated() {
+        let committed: serde_json::Value = serde_json::from_slice(OPEN_API_DOCS).unwrap();
+
+        let (generated, _) = router();
+        let generated = serde_json::to_value(generated).unwrap();
+
+        assert_eq!(committed, generated);
+    }
 }

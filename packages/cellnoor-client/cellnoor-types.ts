@@ -41,14 +41,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -59,11 +51,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewInstitution"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -79,7 +67,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -96,7 +84,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -105,15 +93,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -140,11 +120,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["InstitutionPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -160,7 +136,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -177,7 +153,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -186,15 +162,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -239,14 +207,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put: {
@@ -258,11 +218,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewInstitution"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -278,7 +234,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -295,7 +251,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -304,15 +260,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -343,14 +291,6 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["AuthError"];
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -397,14 +337,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -415,11 +347,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewPerson"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -435,7 +363,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -452,7 +380,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -461,7 +389,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 default: {
@@ -496,11 +424,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["PersonPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -516,7 +440,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -533,7 +457,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -542,15 +466,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -595,14 +511,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put: {
@@ -614,11 +522,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["PersonUpdate"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -634,7 +538,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -651,7 +555,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -660,7 +564,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 default: {
@@ -701,14 +605,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         options?: never;
@@ -746,14 +642,6 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["AuthError"];
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -803,14 +691,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -821,11 +701,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewService"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -841,7 +717,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -858,7 +734,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -867,15 +743,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -902,11 +770,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ServicePredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -922,7 +786,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -939,7 +803,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -948,15 +812,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -984,11 +840,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ServiceUpdate"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -1004,7 +856,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -1021,7 +873,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -1030,15 +882,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -1071,14 +915,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         options?: never;
@@ -1104,11 +940,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": string[];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -1124,7 +956,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -1141,7 +973,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -1150,15 +982,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -1206,14 +1030,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -1246,14 +1062,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         delete?: never;
@@ -1278,11 +1086,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ApiKeyPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -1298,7 +1102,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -1315,7 +1119,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -1324,15 +1128,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -1360,11 +1156,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ApiKeyUpdate"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -1380,7 +1172,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -1397,7 +1189,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -1406,15 +1198,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -1445,14 +1229,6 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["AuthError"];
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1499,14 +1275,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -1517,11 +1285,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewProject"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -1537,7 +1301,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -1554,7 +1318,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -1563,15 +1327,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -1619,14 +1375,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -1653,11 +1401,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ProjectPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -1673,7 +1417,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -1690,7 +1434,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -1699,15 +1443,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -1734,11 +1470,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ProjectPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -1754,7 +1486,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -1771,7 +1503,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -1780,15 +1512,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -1833,14 +1557,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put: {
@@ -1852,11 +1568,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewProject"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -1872,7 +1584,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -1889,7 +1601,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -1898,15 +1610,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -1939,14 +1643,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         options?: never;
@@ -1972,11 +1668,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": string[];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -1992,7 +1684,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -2009,7 +1701,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -2018,15 +1710,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -2053,14 +1737,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": [
-                        string,
-                        string[]
-                    ][];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -2076,7 +1753,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -2093,7 +1770,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -2102,7 +1779,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 default: {
@@ -2137,13 +1814,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        [key: string]: components["schemas"]["NewDualIndexSet"];
-                    };
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -2159,7 +1830,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -2176,7 +1847,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -2185,7 +1856,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 default: {
@@ -2236,14 +1907,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -2254,11 +1917,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewTenxAssay"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -2274,7 +1933,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -2291,7 +1950,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -2300,15 +1959,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -2351,14 +2002,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -2369,11 +2012,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["MultiplexingTag"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -2389,7 +2028,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -2406,7 +2045,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -2415,15 +2054,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -2471,14 +2102,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -2489,11 +2112,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewSpecimen"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -2509,7 +2128,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -2526,7 +2145,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -2535,15 +2154,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -2591,14 +2202,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -2625,11 +2228,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SpecimenPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -2645,7 +2244,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -2662,7 +2261,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -2671,15 +2270,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -2706,11 +2297,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SpecimenPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -2726,7 +2313,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -2743,7 +2330,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -2752,15 +2339,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -2805,14 +2384,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put: {
@@ -2824,11 +2395,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewSpecimen"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -2844,7 +2411,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -2861,7 +2428,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -2870,15 +2437,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -2911,14 +2470,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         options?: never;
@@ -2944,11 +2495,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewSpecimenMeasurement"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -2964,7 +2511,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -2981,7 +2528,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -2990,15 +2537,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -3046,14 +2585,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -3064,11 +2595,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewSuspension"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -3084,7 +2611,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -3101,7 +2628,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -3110,15 +2637,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -3166,14 +2685,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -3200,11 +2711,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SuspensionPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -3220,7 +2727,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -3237,7 +2744,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -3246,15 +2753,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -3281,11 +2780,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SuspensionPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -3301,7 +2796,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -3318,7 +2813,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -3327,15 +2822,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -3380,14 +2867,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put: {
@@ -3399,11 +2878,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SuspensionUpdate"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -3419,7 +2894,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -3436,7 +2911,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -3445,15 +2920,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -3486,14 +2953,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         options?: never;
@@ -3519,11 +2978,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewSuspensionMeasurement"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -3539,7 +2994,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -3556,7 +3011,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -3565,15 +3020,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -3621,14 +3068,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -3639,11 +3078,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewSuspensionPool"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -3659,7 +3094,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -3676,7 +3111,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -3685,15 +3120,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -3741,14 +3168,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -3775,11 +3194,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SuspensionPoolPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -3795,7 +3210,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -3812,7 +3227,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -3821,15 +3236,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -3856,11 +3263,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SuspensionPoolPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -3876,7 +3279,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -3893,7 +3296,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -3902,15 +3305,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -3955,14 +3350,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put: {
@@ -3974,11 +3361,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SuspensionPoolUpdate"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -3994,7 +3377,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -4011,7 +3394,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -4020,15 +3403,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -4061,14 +3436,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         options?: never;
@@ -4094,11 +3461,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewSuspensionPoolMeasurement"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -4114,7 +3477,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -4131,7 +3494,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -4140,15 +3503,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -4196,14 +3551,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -4214,11 +3561,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewChromiumRun"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -4234,7 +3577,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -4251,7 +3594,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -4260,15 +3603,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -4316,14 +3651,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -4350,11 +3677,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ChromiumRunPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -4370,7 +3693,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -4387,7 +3710,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -4396,15 +3719,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -4431,11 +3746,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ChromiumRunPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -4451,7 +3762,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -4468,7 +3779,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -4477,15 +3788,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -4530,14 +3833,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put: {
@@ -4549,11 +3844,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ChromiumRunRecord"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -4569,7 +3860,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -4586,7 +3877,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -4595,15 +3886,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -4634,14 +3917,6 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["AuthError"];
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4688,14 +3963,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -4706,11 +3973,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewCdna"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -4726,7 +3989,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -4743,7 +4006,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -4752,15 +4015,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -4808,14 +4063,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -4842,11 +4089,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CdnaPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -4862,7 +4105,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -4879,7 +4122,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -4888,15 +4131,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -4923,11 +4158,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CdnaPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -4943,7 +4174,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -4960,7 +4191,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -4969,15 +4200,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -5022,14 +4245,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put: {
@@ -5041,11 +4256,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CdnaUpdate"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -5061,7 +4272,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -5078,7 +4289,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -5087,15 +4298,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -5128,14 +4331,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         options?: never;
@@ -5161,11 +4356,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewNucleicAcidMeasurement"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -5181,7 +4372,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -5198,7 +4389,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -5207,15 +4398,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -5263,14 +4446,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -5281,11 +4456,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewLibrary"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -5301,7 +4472,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -5318,7 +4489,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -5327,15 +4498,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -5383,14 +4546,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -5417,11 +4572,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["LibraryPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -5437,7 +4588,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -5454,7 +4605,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -5463,15 +4614,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -5498,11 +4641,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["LibraryPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -5518,7 +4657,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -5535,7 +4674,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -5544,15 +4683,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -5597,14 +4728,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put: {
@@ -5616,11 +4739,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["LibraryUpdate"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -5636,7 +4755,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -5653,7 +4772,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -5662,15 +4781,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -5703,14 +4814,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         options?: never;
@@ -5736,11 +4839,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewNucleicAcidMeasurement"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -5756,7 +4855,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -5773,7 +4872,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -5782,15 +4881,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -5838,14 +4929,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -5856,11 +4939,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["NewChromiumDataset"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -5876,7 +4955,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -5893,7 +4972,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -5902,7 +4981,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 default: {
@@ -5958,14 +5037,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put?: never;
@@ -5992,11 +5063,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ChromiumDatasetPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -6012,7 +5079,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -6029,7 +5096,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -6038,15 +5105,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -6073,11 +5132,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ChromiumDatasetPredicateQuery"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -6093,7 +5148,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -6110,7 +5165,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -6119,15 +5174,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
-                    };
-                };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
             };
@@ -6172,14 +5219,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         put: {
@@ -6191,11 +5230,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ChromiumDatasetRecord"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 200: {
                     headers: {
@@ -6211,7 +5246,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 401: {
@@ -6228,7 +5263,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 /** @description Failed to deserialize the JSON body into the target type */
@@ -6237,7 +5272,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
+                        "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
                 default: {
@@ -6278,14 +5313,6 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DbError"];
-                    };
-                };
             };
         };
         options?: never;
@@ -6297,30 +5324,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        Account: {
-            /** @constant */
-            auth_provider: "microsoft";
-            /** Format: uuid */
-            microsoft_entra_oid: string;
-        } | {
-            email: string;
-        };
-        /** @enum {string} */
-        Action: "create" | "update" | "delete";
-        /** @description A simple comparison operator. */
-        AnyValueOperator: {
-            eq: unknown;
-        } | {
-            lt: unknown;
-        } | {
-            lte: unknown;
-        } | {
-            gt: unknown;
-        } | {
-            gte: unknown;
-        } | {
-            in: unknown[];
-        } | unknown;
         ApiKey: {
             /** Format: date-time */
             created_at: string;
@@ -6339,61 +5342,6 @@ export interface components {
          * @enum {string}
          */
         ApiKeyField: "id" | "description" | "owner_id" | "owner_is_staff" | "created_at" | "expires_at";
-        /** @enum {string} */
-        ApiKeyLocation: "query" | "header" | "cookie";
-        ApiKeyPredicate: {
-            id: components["schemas"]["UuidOperator"];
-        } | {
-            description: components["schemas"]["StringOperator"];
-        } | {
-            owner_id: components["schemas"]["UuidOperator"];
-        } | {
-            owner_is_staff: components["schemas"]["booleanOperator"];
-        } | {
-            created_at: components["schemas"]["TimestampOperator"];
-        } | {
-            expires_at: components["schemas"]["TimestampOperator"];
-        };
-        ApiKeyPredicateFilter: {
-            all_of: components["schemas"]["ApiKeyPredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["ApiKeyPredicateFilter"][];
-        } | {
-            not: components["schemas"]["ApiKeyPredicateFilter"];
-        } | components["schemas"]["ApiKeyPredicate"];
-        ApiKeyPredicateQuery: {
-            filter?: components["schemas"]["ApiKeyPredicateFilter"] | null;
-            /**
-             * Format: int64
-             * @default null
-             */
-            limit?: number | null;
-            /**
-             * Format: int64
-             * @default 0
-             */
-            offset?: number;
-            order_by?: components["schemas"]["OrderByApiKeyFieldSet"];
-        };
-        ApiKeyUpdate: {
-            description?: string | null;
-            /** Format: date-time */
-            expires_at?: string | null;
-        };
-        /** @description A simple comparison operator. */
-        Array_of_LibraryTypeOperator: {
-            eq: components["schemas"]["LibraryType"][];
-        } | {
-            lt: components["schemas"]["LibraryType"][];
-        } | {
-            lte: components["schemas"]["LibraryType"][];
-        } | {
-            gt: components["schemas"]["LibraryType"][];
-        } | {
-            gte: components["schemas"]["LibraryType"][];
-        } | {
-            in: components["schemas"]["LibraryType"][][];
-        } | components["schemas"]["LibraryType"][];
         AuthError: {
             /** Format: date-time */
             expired_at: string;
@@ -6413,35 +5361,6 @@ export interface components {
          * @enum {string}
          */
         BlockEmbeddingMatrix: "carboxymethyl_cellulose" | "optimal_cutting_temperature_compound" | "paraffin";
-        /** @description A simple comparison operator. */
-        BlockEmbeddingMatrixOperator: {
-            eq: components["schemas"]["BlockEmbeddingMatrix"];
-        } | {
-            lt: components["schemas"]["BlockEmbeddingMatrix"];
-        } | {
-            lte: components["schemas"]["BlockEmbeddingMatrix"];
-        } | {
-            gt: components["schemas"]["BlockEmbeddingMatrix"];
-        } | {
-            gte: components["schemas"]["BlockEmbeddingMatrix"];
-        } | {
-            in: components["schemas"]["BlockEmbeddingMatrix"][];
-        } | components["schemas"]["BlockEmbeddingMatrix"];
-        BlockFields: {
-            /** @constant */
-            embedded_in: "carboxymethyl_cellulose";
-            fixative?: components["schemas"]["FormaldehydeDerivative"] | null;
-            thermal_preservation_method: components["schemas"]["FlashFreezing"];
-        } | {
-            /** @constant */
-            embedded_in: "optimal_cutting_temperature_compound";
-            fixative?: components["schemas"]["FormaldehydeDerivative"] | null;
-            thermal_preservation_method: components["schemas"]["FlashFreezing"];
-        } | {
-            /** @constant */
-            embedded_in: "paraffin";
-            fixative: components["schemas"]["FormaldehydeDerivative"];
-        };
         CdnaCompact: {
             additional_data?: unknown;
             /** Format: uuid */
@@ -6493,53 +5412,6 @@ export interface components {
             /** Format: uuid */
             measured_by: string;
         };
-        CdnaPredicate: {
-            specimen: components["schemas"]["SpecimenPredicate"];
-        } | components["schemas"]["CdnaPredicateInner"];
-        CdnaPredicateFilter: {
-            all_of: components["schemas"]["CdnaPredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["CdnaPredicateFilter"][];
-        } | {
-            not: components["schemas"]["CdnaPredicateFilter"];
-        } | components["schemas"]["CdnaPredicate"];
-        CdnaPredicateInner: {
-            id: components["schemas"]["UuidOperator"];
-        } | {
-            readable_id: components["schemas"]["StringOperator"];
-        } | {
-            library_type: components["schemas"]["LibraryTypeOperator"];
-        } | {
-            prepared_at: components["schemas"]["TimestampOperator"];
-        } | {
-            gem_well_id: components["schemas"]["UuidOperator"];
-        } | {
-            n_amplification_cycles: components["schemas"]["int32Operator"];
-        } | {
-            additional_data: components["schemas"]["JsonOperator"];
-        };
-        CdnaPredicateQuery: {
-            filter?: components["schemas"]["CdnaPredicateFilter"] | null;
-            /**
-             * Format: int64
-             * @default null
-             */
-            limit?: number | null;
-            /**
-             * Format: int64
-             * @default 0
-             */
-            offset?: number;
-            order_by?: components["schemas"]["OrderByCdnaFieldSet"];
-        };
-        CdnaUpdate: {
-            additional_data?: unknown;
-            measurements?: components["schemas"]["NewNucleicAcidMeasurement"][] | null;
-            /** Format: date-time */
-            prepared_at: string;
-            preparers?: string[] | null;
-            readable_id: string;
-        };
         CellViability: {
             /** Format: float */
             value: number;
@@ -6582,46 +5454,6 @@ export interface components {
             dataset_id: string;
             path: string;
         };
-        ChromiumDatasetPredicate: {
-            specimen: components["schemas"]["SpecimenPredicate"];
-        } | {
-            tenx_assay: components["schemas"]["TenxAssayPredicate"];
-        } | {
-            library: components["schemas"]["LibraryPredicate"];
-        } | components["schemas"]["ChromiumDatasetPredicateInner"];
-        ChromiumDatasetPredicateFilter: {
-            all_of: components["schemas"]["ChromiumDatasetPredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["ChromiumDatasetPredicateFilter"][];
-        } | {
-            not: components["schemas"]["ChromiumDatasetPredicateFilter"];
-        } | components["schemas"]["ChromiumDatasetPredicate"];
-        ChromiumDatasetPredicateInner: {
-            id: components["schemas"]["UuidOperator"];
-        } | {
-            name: components["schemas"]["StringOperator"];
-        } | {
-            delivered_at: components["schemas"]["TimestampOperator"];
-        };
-        ChromiumDatasetPredicateQuery: {
-            filter?: components["schemas"]["ChromiumDatasetPredicateFilter"] | null;
-            /**
-             * Format: int64
-             * @default null
-             */
-            limit?: number | null;
-            /**
-             * Format: int64
-             * @default 0
-             */
-            offset?: number;
-            order_by?: components["schemas"]["OrderByChromiumDatasetFieldSet"];
-        };
-        ChromiumDatasetRecord: {
-            /** Format: date-time */
-            delivered_at: string;
-            name: string;
-        };
         ChromiumRunCompact: {
             additional_data?: unknown;
             /** Format: uuid */
@@ -6662,129 +5494,8 @@ export interface components {
             suspension_pools: string;
             suspensions: string;
         };
-        ChromiumRunPredicate: {
-            specimen: components["schemas"]["SpecimenPredicate"];
-        } | {
-            tenx_assay: components["schemas"]["TenxAssayPredicate"];
-        } | components["schemas"]["ChromiumRunPredicateInner"];
-        ChromiumRunPredicateFilter: {
-            all_of: components["schemas"]["ChromiumRunPredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["ChromiumRunPredicateFilter"][];
-        } | {
-            not: components["schemas"]["ChromiumRunPredicateFilter"];
-        } | components["schemas"]["ChromiumRunPredicate"];
-        ChromiumRunPredicateInner: {
-            id: components["schemas"]["UuidOperator"];
-        } | {
-            readable_id: components["schemas"]["StringOperator"];
-        } | {
-            assay_id: components["schemas"]["UuidOperator"];
-        } | {
-            run_at: components["schemas"]["TimestampOperator"];
-        } | {
-            run_by: components["schemas"]["UuidOperator"];
-        } | {
-            succeeded: components["schemas"]["booleanOperator"];
-        } | {
-            additional_data: components["schemas"]["JsonOperator"];
-        };
-        ChromiumRunPredicateQuery: {
-            filter?: components["schemas"]["ChromiumRunPredicateFilter"] | null;
-            /**
-             * Format: int64
-             * @default null
-             */
-            limit?: number | null;
-            /**
-             * Format: int64
-             * @default 0
-             */
-            offset?: number;
-            order_by?: components["schemas"]["OrderByChromiumRunFieldSet"];
-        };
-        ChromiumRunRecord: {
-            additional_data?: unknown;
-            /** Format: uuid */
-            assay_id: string;
-            readable_id: string;
-            /** Format: date-time */
-            run_at: string;
-            /** Format: uuid */
-            run_by: string;
-            succeeded: boolean;
-        };
-        /**
-         * @description Holds a set of reusable objects for different aspects of the OAS.
-         *     All objects defined within the components object will have no effect
-         *     on the API unless they are explicitly referenced from properties
-         *     outside the components object.
-         */
-        Components: {
-            /** @description An object to hold reusable Callback Objects. */
-            callbacks?: {
-                [key: string]: components["schemas"]["ReferenceOr8"];
-            };
-            /** @description An object to hold reusable Example Objects. */
-            examples?: {
-                [key: string]: components["schemas"]["ReferenceOr3"];
-            };
-            /** @description An object to hold reusable Header Objects. */
-            headers?: {
-                [key: string]: components["schemas"]["ReferenceOr4"];
-            };
-            /** @description An object to hold reusable Link Objects. */
-            links?: {
-                [key: string]: components["schemas"]["ReferenceOr7"];
-            };
-            /** @description An object to hold reusable Parameter Objects. */
-            parameters?: {
-                [key: string]: components["schemas"]["ReferenceOr2"];
-            };
-            /** @description An object to hold reusable Path Item Objects. */
-            pathItems?: {
-                [key: string]: components["schemas"]["ReferenceOr"];
-            };
-            /** @description An object to hold reusable Request Body Objects. */
-            requestBodies?: {
-                [key: string]: components["schemas"]["ReferenceOr5"];
-            };
-            /** @description An object to hold reusable Response Objects. */
-            responses?: {
-                [key: string]: components["schemas"]["ReferenceOr6"];
-            };
-            /** @description An object to hold reusable Schema Objects. */
-            schemas?: {
-                [key: string]: components["schemas"]["SchemaObject"];
-            };
-            /** @description An object to hold reusable Security Scheme Objects. */
-            securitySchemes?: {
-                [key: string]: components["schemas"]["ReferenceOr9"];
-            };
-        } & {
-            [key: string]: unknown;
-        };
-        /** @description Contact information for the exposed API. */
-        Contact: {
-            /**
-             * @description The email address of the contact person/organization.
-             *     This MUST be in the format of an email address.
-             */
-            email?: string | null;
-            /** @description The identifying name of the contact person/organization. */
-            name?: string | null;
-            /**
-             * @description The URL pointing to the contact information.
-             *     This MUST be in the format of a URL.
-             */
-            url?: string | null;
-        } & {
-            [key: string]: unknown;
-        };
         /** @enum {string} */
         ControlledRateFreezing: "controlled_rate_freezing";
-        /** @enum {string} */
-        CookieStyle: "form";
         /** @enum {string} */
         CountingMethod: "bright_field" | "acridine_orange_propidium_iodide" | "trypan_blue";
         CreateChromiumDatasetError: {
@@ -6819,122 +5530,7 @@ export interface components {
         };
         /** @enum {string} */
         DithiobisSuccinimidylpropionate: "dithiobis_succinimidylpropionate";
-        /** @description A single encoding definition applied to a single schema property. */
-        Encoding: {
-            /**
-             * @description Determines whether the parameter value SHOULD allow reserved characters,
-             *     as defined by RFC3986 :/?#[]@!$&'()*+,;= to be included without
-             *     percent-encoding. The default value is false. This property SHALL be
-             *     ignored if the request body media type is not
-             *     application/x-www-form-urlencoded or multipart/form-data. If a value is
-             *     explicitly defined, then the value of `contentType` (implicit or
-             *     explicit) SHALL be ignored.
-             */
-            allowReserved?: boolean;
-            /**
-             * @description The Content-Type for encoding a specific property.
-             *     Default value depends on the property type:
-             *     for object - application/json;
-             *     for array – the default is defined based on the inner type.
-             *     for all other cases the default is `application/octet-stream`.
-             *     The value can be a specific media type (e.g. application/json),
-             *     a wildcard media type (e.g. image/*), or a comma-separated list of the
-             *     two types.
-             */
-            contentType?: string | null;
-            /**
-             * @description When this is true, property values of type array or object generate
-             *     separate parameters for each value of the array, or key-value-pair
-             *     of the map. For other types of properties this property has no effect.
-             *     When style is form, the default value is true.
-             *     For all other styles, the default value is false. This property
-             *     SHALL be ignored if the request body media type is
-             *     not application/x-www-form-urlencoded or multipart/form-data. If a value
-             *     is explicitly defined, then the value of `contentType` (implicit or
-             *     explicit) SHALL be ignored.
-             *
-             *     In this Library this value defaults to false always despite the
-             *     specification.
-             */
-            explode?: boolean;
-            /**
-             * @description A map allowing additional information to be provided as headers,
-             *     for example Content-Disposition. Content-Type is described separately
-             *     and SHALL be ignored in this section. This property SHALL be ignored
-             *     if the request body media type is not a multipart.
-             */
-            headers?: {
-                [key: string]: components["schemas"]["ReferenceOr4"];
-            };
-            /**
-             * @description Describes how a specific property value will be serialized depending
-             *     on its type. See Parameter Object for details on the style property.
-             *     The behavior follows the same values as query parameters, including
-             *     default values. This property SHALL be ignored if the request body
-             *     media type is not application/x-www-form-urlencoded  or
-             *     multipart/form-data. If a value is explicitly defined, then the value of
-             *     `contentType` (implicit or explicit) SHALL be ignored.
-             */
-            style?: components["schemas"]["QueryStyle"] | null;
-        } & {
-            [key: string]: unknown;
-        };
-        Example: {
-            /**
-             * @description Long description for the example.
-             *     CommonMark syntax MAY be used for rich text representation.
-             */
-            description?: string | null;
-            /**
-             * @description A URI that points to the literal example.
-             *     This provides the capability to reference examples that cannot
-             *     easily be included in JSON or YAML documents. The `value` field and
-             *     `externalValue` field are mutually exclusive. See the rules for
-             *     resolving Relative References.
-             */
-            externalValue?: string | null;
-            /** @description Short description for the example. */
-            summary?: string | null;
-            /**
-             * @description Embedded literal example. The `value` field and `externalValue`
-             *     field are mutually exclusive. To represent examples of
-             *     media types that cannot naturally represented in JSON or YAML,
-             *     use a string value to contain the example, escaping where necessary.
-             */
-            value?: unknown;
-        } & {
-            [key: string]: unknown;
-        };
-        /** @description Allows referencing an external resource for extended documentation. */
-        ExternalDocumentation: {
-            /**
-             * @description A description of the target documentation.
-             *     CommonMark syntax MAY be used for rich text representation.
-             */
-            description?: string | null;
-            /**
-             * @description REQUIRED. The URL for the target documentation.
-             *     This MUST be in the format of a URL.
-             */
-            url: string;
-        } & {
-            [key: string]: unknown;
-        };
         Fixative: components["schemas"]["DithiobisSuccinimidylpropionate"] | components["schemas"]["FormaldehydeDerivative"];
-        /** @description A simple comparison operator. */
-        FixativeOperator: {
-            eq: components["schemas"]["Fixative"];
-        } | {
-            lt: components["schemas"]["Fixative"];
-        } | {
-            lte: components["schemas"]["Fixative"];
-        } | {
-            gt: components["schemas"]["Fixative"];
-        } | {
-            gte: components["schemas"]["Fixative"];
-        } | {
-            in: components["schemas"]["Fixative"][];
-        } | components["schemas"]["Fixative"];
         /** @enum {string} */
         FlashFreezing: "flash_freezing";
         /** @enum {string} */
@@ -6947,54 +5543,6 @@ export interface components {
             readable_id: string;
             specimens: components["schemas"]["TaggedSpecimen"][];
         };
-        /**
-         * @description The Header Object follows the structure of the Parameter Object with the
-         *     following changes:
-         *
-         *     1) name MUST NOT be specified, it is given in the corresponding headers map.
-         *     2) in MUST NOT be specified, it is implicitly in header.
-         *     3) All traits that are affected by the location MUST be applicable to a
-         *     location of header (for example, style).
-         */
-        Header: ({
-            content?: unknown;
-            /**
-             * @description Specifies that a parameter is deprecated and SHOULD
-             *     be transitioned out of usage.
-             */
-            deprecated?: boolean | null;
-            /**
-             * @description A brief description of the parameter. This could
-             *     contain examples of use. CommonMark syntax MAY be
-             *     used for rich text representation.
-             */
-            description?: string | null;
-            example?: unknown;
-            examples?: {
-                [key: string]: components["schemas"]["ReferenceOr3"];
-            };
-            /**
-             * @description Determines whether this parameter is mandatory.
-             *     If the parameter location is "path", this property
-             *     is REQUIRED and its value MUST be true. Otherwise,
-             *     the property MAY be included and its default value
-             *     is false.
-             */
-            required?: boolean;
-            schema?: unknown;
-            /** @default simple */
-            style?: components["schemas"]["HeaderStyle"];
-        } & {
-            [key: string]: unknown;
-        }) & ({
-            schema: components["schemas"]["SchemaObject"];
-        } | {
-            content: {
-                [key: string]: components["schemas"]["MediaType"];
-            };
-        });
-        /** @enum {string} */
-        HeaderStyle: "simple";
         IndexSetError: {
             must_match: string;
             name: string;
@@ -7009,39 +5557,6 @@ export interface components {
             /** @constant */
             type: "mixed_kit_names";
         } | components["schemas"]["DbError"];
-        /**
-         * @description The object provides metadata about the API.
-         *     The metadata MAY be used by the clients if needed,
-         *     and MAY be presented in editing or documentation generation tools for
-         *     convenience.
-         */
-        Info: {
-            /** @description The contact information for the exposed API. */
-            contact?: components["schemas"]["Contact"] | null;
-            /**
-             * @description A description of the API.
-             *     CommonMark syntax MAY be used for rich text representation.
-             */
-            description?: string | null;
-            /** @description The license information for the exposed API. */
-            license?: components["schemas"]["License"] | null;
-            /** @description A short summary of the API. */
-            summary?: string | null;
-            /**
-             * @description A URL to the Terms of Service for the API.
-             *     This MUST be in the format of a URL.
-             */
-            termsOfService?: string | null;
-            /** @description REQUIRED. The title of the application. */
-            title: string;
-            /**
-             * @description REQUIRED. The version of the OpenAPI document (which is distinct from
-             *     the OpenAPI Specification version or the API implementation version).
-             */
-            version: string;
-        } & {
-            [key: string]: unknown;
-        };
         Institution: {
             /** Format: uuid */
             id: string;
@@ -7057,56 +5572,11 @@ export interface components {
          * @enum {string}
          */
         InstitutionField: "id" | "name" | "microsoft_entra_tenant_id";
-        InstitutionPredicate: {
-            id: components["schemas"]["UuidOperator"];
-        } | {
-            name: components["schemas"]["StringOperator"];
-        } | {
-            microsoft_entra_tenant_id: components["schemas"]["UuidOperator"];
+        JsonRejection: {
+            message: string;
+            /** Format: uint16 */
+            status: number;
         };
-        InstitutionPredicateFilter: {
-            all_of: components["schemas"]["InstitutionPredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["InstitutionPredicateFilter"][];
-        } | {
-            not: components["schemas"]["InstitutionPredicateFilter"];
-        } | components["schemas"]["InstitutionPredicate"];
-        InstitutionPredicateQuery: {
-            filter?: components["schemas"]["InstitutionPredicateFilter"] | null;
-            /**
-             * Format: int64
-             * @default null
-             */
-            limit?: number | null;
-            /**
-             * Format: int64
-             * @default 0
-             */
-            offset?: number;
-            order_by?: components["schemas"]["OrderByInstitutionFieldSet"];
-        };
-        /**
-         * @description A comparison operator for JSON values.
-         *
-         *     This is a superset of the basic operators and adds the following
-         *     JSON-specific methods present in PostgreSQL (https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY):
-         *     1. contains
-         *     2. is contained in
-         *     3. has key
-         *     4. has any of keys
-         *     5. has all of keys
-         */
-        JsonOperator: {
-            contains: unknown;
-        } | {
-            is_contained_in: unknown;
-        } | {
-            has_key: string;
-        } | {
-            has_any_of_keys: string[];
-        } | {
-            has_all_of_keys: string[];
-        } | components["schemas"]["AnyValueOperator"];
         LibraryCompact: {
             additional_data?: unknown;
             /** Format: uuid */
@@ -7164,187 +5634,16 @@ export interface components {
             /** Format: uuid */
             measured_by: string;
         };
-        LibraryPredicate: {
-            specimen: components["schemas"]["SpecimenPredicate"];
-        } | components["schemas"]["LibraryPredicateInner"];
-        LibraryPredicateFilter: {
-            all_of: components["schemas"]["LibraryPredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["LibraryPredicateFilter"][];
-        } | {
-            not: components["schemas"]["LibraryPredicateFilter"];
-        } | components["schemas"]["LibraryPredicate"];
-        LibraryPredicateInner: {
-            id: components["schemas"]["UuidOperator"];
-        } | {
-            readable_id: components["schemas"]["StringOperator"];
-        } | {
-            cdna_id: components["schemas"]["UuidOperator"];
-        } | {
-            single_index_set_name: components["schemas"]["StringOperator"];
-        } | {
-            dual_index_set_name: components["schemas"]["StringOperator"];
-        } | {
-            number_of_sample_index_pcr_cycles: components["schemas"]["int32Operator"];
-        } | {
-            target_reads_per_cell: components["schemas"]["int64Operator"];
-        } | {
-            prepared_at: components["schemas"]["TimestampOperator"];
-        } | {
-            additional_data: components["schemas"]["JsonOperator"];
-        };
-        LibraryPredicateQuery: {
-            filter?: components["schemas"]["LibraryPredicateFilter"] | null;
-            /**
-             * Format: int64
-             * @default null
-             */
-            limit?: number | null;
-            /**
-             * Format: int64
-             * @default 0
-             */
-            offset?: number;
-            order_by?: components["schemas"]["OrderByLibraryFieldSet"];
-        };
         /**
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
         LibraryType: "antibody_capture" | "antigen_capture" | "chromatin_accessibility" | "crispr_guide_capture" | "custom" | "gene_expression" | "multiplexing_capture" | "vdj" | "vdj_b" | "vdj_t" | "vdj_t_gd";
-        /**
-         * @description A comparison operator for array values.
-         *
-         *     This is a superset of the basic operators and adds the following
-         *     array-specific methods present in PostgreSQL (https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY):
-         *     1. contains
-         *     2. is contained in
-         *     3. overlaps with
-         */
-        LibraryTypeArrayOperator: {
-            contains: components["schemas"]["LibraryType"][];
-        } | {
-            is_contained_in: components["schemas"]["LibraryType"][];
-        } | {
-            overlaps: components["schemas"]["LibraryType"][];
-        } | components["schemas"]["Array_of_LibraryTypeOperator"];
-        /** @description A simple comparison operator. */
-        LibraryTypeOperator: {
-            eq: components["schemas"]["LibraryType"];
-        } | {
-            lt: components["schemas"]["LibraryType"];
-        } | {
-            lte: components["schemas"]["LibraryType"];
-        } | {
-            gt: components["schemas"]["LibraryType"];
-        } | {
-            gte: components["schemas"]["LibraryType"];
-        } | {
-            in: components["schemas"]["LibraryType"][];
-        } | components["schemas"]["LibraryType"];
-        LibraryTypeSpecification: {
-            /** Format: int32 */
-            "cdna_volume_\u00B5l": number;
-            index_kit: string;
-            library_type: components["schemas"]["LibraryType"];
-            /** Format: int32 */
-            "library_volume_\u00B5l": number;
-        };
-        LibraryUpdate: {
-            additional_data?: unknown;
-            /** Format: uuid */
-            cdna_id: string;
-            dual_index_set_name?: string | null;
-            measurements?: components["schemas"]["NewNucleicAcidMeasurement"][] | null;
-            /** Format: int32 */
-            number_of_sample_index_pcr_cycles: number;
-            /** Format: date-time */
-            prepared_at: string;
-            preparers?: string[] | null;
-            readable_id: string;
-            single_index_set_name?: string | null;
-            /** Format: int32 */
-            target_reads_per_cell?: number | null;
-        };
-        /** @description License information for the exposed API. */
-        License: {
-            /** @description An [SPDX](https://spdx.org/spdx-specification-21-web-version#h.jxpfx0ykyb60) license expression for the API. The `identifier` field is mutually exclusive of the `url` field. */
-            identifier?: string | null;
-            /** @description REQUIRED. The license name used for the API. */
-            name: string;
-            /**
-             * @description A URL to the license used for the API. This MUST be in the form of a
-             *     URL. The `url` field is mutually exclusive of the `identifier` field.
-             */
-            url?: string | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /**
-         * @description The Link object represents a possible design-time link for a response.
-         *     The presence of a link does not guarantee the caller's ability to
-         *     successfully invoke it, rather it provides a known relationship and
-         *     traversal mechanism between responses and other operations.
-         *
-         *     Unlike dynamic links (i.e. links provided in the response payload),
-         *     the OAS linking mechanism does not require link information in the runtime
-         *     response.
-         *
-         *     For computing links, and providing instructions to execute them,
-         *     a runtime expression is used for accessing values in an operation
-         *     and using them as parameters while invoking the linked operation.
-         */
-        Link: ({
-            /**
-             * @description A description of the link.
-             *     CommonMark syntax MAY be used for rich text representation.
-             */
-            description?: string | null;
-            operationId?: unknown;
-            operationRef?: unknown;
-            /**
-             * @description A map representing parameters to pass to an operation
-             *     as specified with operationId or identified via operationRef.
-             *     The key is the parameter name to be used, whereas the value
-             *     can be a constant or an expression to be evaluated and passed
-             *     to the linked operation. The parameter name can be qualified
-             *     using the parameter location [{in}.]{name} for operations
-             *     that use the same parameter name in different locations (e.g. path.id).
-             */
-            parameters?: {
-                [key: string]: unknown;
-            };
-            /**
-             * @description A literal value or {expression} to use as a request body
-             *     when calling the target operation.
-             */
-            requestBody?: unknown;
-            /** @description A server object to be used by the target operation. */
-            server?: components["schemas"]["Server"] | null;
-        } & {
-            [key: string]: unknown;
-        }) & ({
-            operationRef: string;
-        } | {
-            operationId: string;
-        });
         MeanDiameter: {
             object: components["schemas"]["SuspensionContent"];
             unit: components["schemas"]["Micrometer"];
             /** Format: float */
             value: number;
-        };
-        MediaType: {
-            encoding?: {
-                [key: string]: components["schemas"]["Encoding"];
-            };
-            example?: unknown;
-            examples?: {
-                [key: string]: components["schemas"]["ReferenceOr3"];
-            };
-            schema?: components["schemas"]["SchemaObject"] | null;
-        } & {
-            [key: string]: unknown;
         };
         /** @enum {string} */
         Microliter: "microliter";
@@ -7356,28 +5655,11 @@ export interface components {
             tag_id: string;
             type: components["schemas"]["MultiplexingTagType"];
         };
-        MultiplexingTagPredicate: {
-            type: components["schemas"]["MultiplexingTagTypeOperator"];
-        };
         /**
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
         MultiplexingTagType: "flex_barcode" | "flex_oligonucleotide_barcode" | "TotalSeq-A" | "TotalSeq-B" | "TotalSeq-C" | "genetic";
-        /** @description A simple comparison operator. */
-        MultiplexingTagTypeOperator: {
-            eq: components["schemas"]["MultiplexingTagType"];
-        } | {
-            lt: components["schemas"]["MultiplexingTagType"];
-        } | {
-            lte: components["schemas"]["MultiplexingTagType"];
-        } | {
-            gt: components["schemas"]["MultiplexingTagType"];
-        } | {
-            gte: components["schemas"]["MultiplexingTagType"];
-        } | {
-            in: components["schemas"]["MultiplexingTagType"][];
-        } | components["schemas"]["MultiplexingTagType"];
         /** @enum {string} */
         Nanogram: "nanogram";
         NanogramConcentration: {
@@ -7393,271 +5675,6 @@ export interface components {
             /** Format: uuid */
             owner_id?: string | null;
         };
-        NewCdna: {
-            additional_data?: unknown;
-            /** Format: uuid */
-            gem_well_id: string;
-            measurements: components["schemas"]["NewNucleicAcidMeasurement"][];
-            /** Format: date-time */
-            prepared_at: string;
-            preparers: string[];
-            readable_id: string;
-        } & ({
-            /** @constant */
-            library_type: "antibody_capture";
-        } | {
-            /** @constant */
-            library_type: "antigen_capture";
-        } | {
-            /** @constant */
-            library_type: "chromatin_accessibility";
-        } | {
-            /** @constant */
-            library_type: "crispr_guide_capture";
-        } | {
-            /** @constant */
-            library_type: "custom";
-        } | {
-            /** @constant */
-            library_type: "gene_expression";
-            /** Format: int32 */
-            n_amplification_cycles: number;
-        } | {
-            /** @constant */
-            library_type: "multiplexing_capture";
-        } | {
-            /** @constant */
-            library_type: "vdj";
-        } | {
-            /** @constant */
-            library_type: "vdj_b";
-        } | {
-            /** @constant */
-            library_type: "vdj_t";
-        } | {
-            /** @constant */
-            library_type: "vdj_t_gd";
-        });
-        NewChromiumAssay: {
-            chemistry_version: string;
-            chromium_chip: string;
-            cmdlines: string[];
-            library_type_specifications: components["schemas"]["LibraryTypeSpecification"][];
-            name: string;
-            protocol_url: string;
-            sample_multiplexing: components["schemas"]["SampleMultiplexing"];
-        };
-        NewChromiumDataset: {
-            /** Format: date-time */
-            delivered_at: string;
-            library_ids: string[];
-            name: string;
-        };
-        NewChromiumRun: {
-            additional_data?: unknown;
-            /** Format: uuid */
-            assay_id: string;
-            readable_id: string;
-            /** Format: date-time */
-            run_at: string;
-            /** Format: uuid */
-            run_by: string;
-            succeeded: boolean;
-        } & ({
-            gem_wells: components["schemas"]["NewStandardOrOcmGemWell"][];
-            /** @constant */
-            plexy: "mixed";
-        } | {
-            gem_wells: components["schemas"]["NewOcmGemWell"][];
-            /** @constant */
-            plexy: "on_chip_multiplexing";
-        } | {
-            gem_wells: components["schemas"]["NewStandardGemWell"][];
-            /** @constant */
-            plexy: "standard";
-        });
-        NewDualIndexSet: {
-            index2_workflow_a_i5: string;
-            index2_workflow_b_i5: string;
-            index_i7: string;
-        };
-        NewInstitution: {
-            /** Format: uuid */
-            microsoft_entra_tenant_id: string;
-            name: string;
-        };
-        NewLibrary: {
-            additional_data?: unknown;
-            /** Format: uuid */
-            cdna_id: string;
-            dual_index_set_name?: string | null;
-            measurements: components["schemas"]["NewNucleicAcidMeasurement"][];
-            /** Format: int32 */
-            number_of_sample_index_pcr_cycles: number;
-            /** Format: date-time */
-            prepared_at: string;
-            preparers: string[];
-            readable_id: string;
-            single_index_set_name?: string | null;
-            /** Format: int32 */
-            target_reads_per_cell?: number | null;
-        };
-        NewNucleicAcidMeasurement: {
-            data: components["schemas"]["NucleicAcidMeasurementData"];
-            /** Format: date-time */
-            measured_at: string;
-            /** Format: uuid */
-            measured_by: string;
-        };
-        NewOcmGemWell: {
-            loading: components["schemas"]["OcmLoadedEntity"][];
-            readable_id: string;
-        };
-        NewPerson: {
-            account: components["schemas"]["Account"];
-            /** Format: uuid */
-            institution_id: string;
-            is_staff: boolean;
-            name: string;
-            orcid?: string | null;
-            permissions_to_grant: components["schemas"]["Permission"][];
-        };
-        NewProject: {
-            /** Format: date-time */
-            ended_at: string;
-            members: string[];
-            name: string;
-            /** Format: date-time */
-            started_at: string;
-        };
-        NewService: {
-            description?: string | null;
-            is_staff: boolean;
-            permissions_to_grant: components["schemas"]["Permission"][];
-            users: string[];
-        };
-        NewSpecimen: {
-            additional_data?: unknown;
-            host_species?: components["schemas"]["Species"] | null;
-            measurements: components["schemas"]["NewSpecimenMeasurement"][];
-            name: string;
-            /** Format: uuid */
-            project_id: string;
-            readable_id: string;
-            /** Format: date-time */
-            received_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
-            species: components["schemas"]["Species"];
-            /** Format: uuid */
-            submitted_by: string;
-            tissue: string;
-        } & (({
-            /** @constant */
-            type: "block";
-        } & components["schemas"]["BlockFields"]) | {
-            thermal_preservation_method: components["schemas"]["FlashFreezing"];
-            /** @constant */
-            type: "cell_pellet";
-        } | {
-            /** @constant */
-            type: "rna_extract";
-        } | ({
-            /** @constant */
-            type: "suspension";
-        } & components["schemas"]["SuspensionSpecimenFields"]) | ({
-            /** @constant */
-            type: "tissue";
-        } & components["schemas"]["TissueFields"]));
-        NewSpecimenMeasurement: {
-            data: components["schemas"]["SpecimenMeasurementData"];
-            /** Format: date-time */
-            measured_at: string;
-            /** Format: uuid */
-            measured_by: string;
-        };
-        NewStandardGemWell: {
-            readable_id: string;
-        } | {
-            /** Format: uuid */
-            suspension_id: string;
-        } | {
-            /** Format: uuid */
-            suspension_pool_id: string;
-        };
-        NewStandardOrOcmGemWell: ({
-            /** @constant */
-            plexy: "on_chip_multiplexing";
-        } & components["schemas"]["NewOcmGemWell"]) | ({
-            /** @constant */
-            plexy: "standard";
-        } & components["schemas"]["NewStandardGemWell"]);
-        NewSuspension: {
-            additional_data?: unknown;
-            content: components["schemas"]["SuspensionContent"];
-            /** Format: date-time */
-            created_at: string;
-            /** Format: float */
-            lysis_duration_minutes?: number | null;
-            measurements: components["schemas"]["NewSuspensionMeasurement"][];
-            preparers: string[];
-            readable_id: string;
-            /** Format: uuid */
-            specimen_id: string;
-            /** Format: int64 */
-            target_cell_recovery?: number | null;
-        };
-        NewSuspensionMeasurement: {
-            data: components["schemas"]["SuspensionMeasurementData"];
-            /** Format: date-time */
-            measured_at: string;
-            /** Format: uuid */
-            measured_by: string;
-        };
-        NewSuspensionPool: {
-            additional_data?: unknown;
-            measurements: components["schemas"]["NewSuspensionPoolMeasurement"][];
-            name: string;
-            /** Format: date-time */
-            pooled_at: string;
-            preparers: string[];
-            readable_id: string;
-        } | {
-            /** @constant */
-            multiplexing_tag_type: "flex_barcode";
-            suspensions: components["schemas"]["TaggedSuspension"][];
-        } | {
-            /** @constant */
-            multiplexing_tag_type: "flex_oligonucleotide_barcode";
-            suspensions: components["schemas"]["TaggedSuspension"][];
-        } | {
-            /** @constant */
-            multiplexing_tag_type: "TotalSeq-A";
-            suspensions: components["schemas"]["TaggedSuspension"][];
-        } | {
-            /** @constant */
-            multiplexing_tag_type: "TotalSeq-B";
-            suspensions: components["schemas"]["TaggedSuspension"][];
-        } | {
-            /** @constant */
-            multiplexing_tag_type: "TotalSeq-C";
-            suspensions: components["schemas"]["TaggedSuspension"][];
-        } | {
-            suspensions: string[];
-        };
-        NewSuspensionPoolMeasurement: {
-            data: components["schemas"]["SuspensionMeasurementQuantity"];
-            /** Format: date-time */
-            measured_at: string;
-            /** Format: uuid */
-            measured_by: string;
-        };
-        NewTenxAssay: {
-            /** @constant */
-            platform: "chromium";
-        } & components["schemas"]["NewChromiumAssay"];
         NucleicAcidMeasurementData: {
             instrument_name: string;
         } & ({
@@ -7675,686 +5692,8 @@ export interface components {
             /** @constant */
             type: "Fluorometric";
         });
-        OAuth2Flows: (({
-            implicit: {
-                authorizationUrl: string;
-                refreshUrl?: string | null;
-                /** @default {} */
-                scopes?: {
-                    [key: string]: string;
-                };
-            };
-        } | {
-            password: {
-                refreshUrl?: string | null;
-                /** @default {} */
-                scopes?: {
-                    [key: string]: string;
-                };
-                tokenUrl: string;
-            };
-        } | {
-            clientCredentials: {
-                refreshUrl?: string | null;
-                /** @default {} */
-                scopes?: {
-                    [key: string]: string;
-                };
-                tokenUrl: string;
-            };
-        } | {
-            authorizationCode: {
-                authorizationUrl: string;
-                refreshUrl?: string | null;
-                /** @default {} */
-                scopes?: {
-                    [key: string]: string;
-                };
-                tokenUrl: string;
-            };
-        }) | unknown) & (({
-            implicit: {
-                authorizationUrl: string;
-                refreshUrl?: string | null;
-                /** @default {} */
-                scopes?: {
-                    [key: string]: string;
-                };
-            };
-        } | {
-            password: {
-                refreshUrl?: string | null;
-                /** @default {} */
-                scopes?: {
-                    [key: string]: string;
-                };
-                tokenUrl: string;
-            };
-        } | {
-            clientCredentials: {
-                refreshUrl?: string | null;
-                /** @default {} */
-                scopes?: {
-                    [key: string]: string;
-                };
-                tokenUrl: string;
-            };
-        } | {
-            authorizationCode: {
-                authorizationUrl: string;
-                refreshUrl?: string | null;
-                /** @default {} */
-                scopes?: {
-                    [key: string]: string;
-                };
-                tokenUrl: string;
-            };
-        }) | unknown) & (({
-            implicit: {
-                authorizationUrl: string;
-                refreshUrl?: string | null;
-                /** @default {} */
-                scopes?: {
-                    [key: string]: string;
-                };
-            };
-        } | {
-            password: {
-                refreshUrl?: string | null;
-                /** @default {} */
-                scopes?: {
-                    [key: string]: string;
-                };
-                tokenUrl: string;
-            };
-        } | {
-            clientCredentials: {
-                refreshUrl?: string | null;
-                /** @default {} */
-                scopes?: {
-                    [key: string]: string;
-                };
-                tokenUrl: string;
-            };
-        } | {
-            authorizationCode: {
-                authorizationUrl: string;
-                refreshUrl?: string | null;
-                /** @default {} */
-                scopes?: {
-                    [key: string]: string;
-                };
-                tokenUrl: string;
-            };
-        }) | unknown) & (({
-            implicit: {
-                authorizationUrl: string;
-                refreshUrl?: string | null;
-                /** @default {} */
-                scopes?: {
-                    [key: string]: string;
-                };
-            };
-        } | {
-            password: {
-                refreshUrl?: string | null;
-                /** @default {} */
-                scopes?: {
-                    [key: string]: string;
-                };
-                tokenUrl: string;
-            };
-        } | {
-            clientCredentials: {
-                refreshUrl?: string | null;
-                /** @default {} */
-                scopes?: {
-                    [key: string]: string;
-                };
-                tokenUrl: string;
-            };
-        } | {
-            authorizationCode: {
-                authorizationUrl: string;
-                refreshUrl?: string | null;
-                /** @default {} */
-                scopes?: {
-                    [key: string]: string;
-                };
-                tokenUrl: string;
-            };
-        }) | unknown);
         /** @enum {string} */
         OcmBarcodeId: "ob1" | "ob2" | "ob3" | "ob4";
-        OcmLoadedEntity: {
-            ocm_barcode_id: components["schemas"]["OcmBarcodeId"];
-        } | {
-            /** Format: uuid */
-            suspension_id: string;
-        } | {
-            /** Format: uuid */
-            suspension_pool_id: string;
-        };
-        OpenApi: {
-            /** @description An element to hold various schemas for the document. */
-            components?: components["schemas"]["Components"] | null;
-            /** @description Additional external documentation. */
-            externalDocs?: components["schemas"]["ExternalDocumentation"] | null;
-            /**
-             * @description REQUIRED. Provides metadata about the API.
-             *     The metadata MAY be used by tooling as required.
-             */
-            info: components["schemas"]["Info"];
-            /**
-             * @description The default value for the `$schema` keyword within Schema Objects
-             *     contained within this OAS document. This MUST be in the form of a URI.
-             */
-            jsonSchemaDialect?: string | null;
-            openapi: string;
-            /** @description The available paths and operations for the API. */
-            paths?: components["schemas"]["Paths"] | null;
-            /**
-             * @description A declaration of which security mechanisms can be used across the API.
-             *
-             *     The list of values includes alternative security requirement objects
-             *     that can be used. Only one of the security requirement objects need to
-             *     be satisfied to authorize a request. Individual operations can override
-             *     this definition. Global security settings may be overridden on a
-             *     per-path basis.
-             */
-            security?: {
-                [key: string]: string[];
-            }[];
-            /**
-             * @description An array of Server Objects, which provide connectivity information to a
-             *     target server. If the servers property is not provided, or is an empty
-             *     array, the default value would be a Server Object with a url value of /.
-             */
-            servers?: components["schemas"]["Server"][];
-            /**
-             * @description A list of tags used by the document with additional metadata.
-             *
-             *     The order of the tags can be used to reflect on their order by the
-             *     parsing tools. Not all tags that are used by the Operation Object
-             *     must be declared. The tags that are not declared MAY be organized
-             *     randomly or based on the tool's logic. Each tag name in the list
-             *     MUST be unique.
-             */
-            tags?: components["schemas"]["Tag"][];
-            /**
-             * @description The incoming webhooks that MAY be received as part of this API and that
-             *     the API consumer MAY choose to implement. Closely related to the
-             *     `callbacks` feature, this section describes requests initiated other
-             *     than by an API call, for example by an out of band registration. The key
-             *     name is a unique string to refer to each webhook, while the (optionally
-             *     referenced) Path Item Object describes a request that may be initiated
-             *     by the API provider and the expected responses.
-             */
-            webhooks?: {
-                [key: string]: components["schemas"]["ReferenceOr"];
-            };
-        } & {
-            [key: string]: unknown;
-        };
-        /** @description Describes a single API operation on a path. */
-        Operation: {
-            /** @description Callbacks for the operation. */
-            callbacks?: {
-                [key: string]: components["schemas"]["ReferenceOr8"];
-            };
-            /** @description Declares this operation to be deprecated.Default value is false. */
-            deprecated?: boolean;
-            /**
-             * @description A verbose explanation of the operation behavior.
-             *     CommonMark syntax MAY be used for rich text representation.
-             */
-            description?: string | null;
-            /** @description Additional external documentation for this operation. */
-            externalDocs?: components["schemas"]["ExternalDocumentation"] | null;
-            /**
-             * @description Unique string used to identify the operation.
-             *     The id MUST be unique among all operations described in the API.
-             *     Tools and libraries MAY use the operationId to uniquely identify
-             *     an operation, therefore, it is RECOMMENDED to follow common
-             *     programming naming conventions.
-             */
-            operationId?: string | null;
-            /**
-             * @description A list of parameters that are applicable for this operation.
-             *     If a parameter is already defined at the Path Item, the new
-             *     definition will override it but can never remove it.
-             *     The list MUST NOT include duplicated parameters. A unique
-             *     parameter is defined by a combination of a name and location.
-             *     The list can use the Reference Object to link to parameters
-             *     that are defined at the OpenAPI Object's components/parameters.
-             */
-            parameters?: components["schemas"]["ReferenceOr2"][];
-            /**
-             * @description The request body applicable for this operation.
-             *     The requestBody is fully supported in HTTP methods
-             *     where the HTTP 1.1 specification RFC7231 has explicitly
-             *     defined semantics for request bodies. In other cases where
-             *     the HTTP spec is vague (such as
-             *     [GET](https://tools.ietf.org/html/rfc7231#section-4.3.1),
-             *     [HEAD](https://tools.ietf.org/html/rfc7231#section-4.3.2) and
-             *     [DELETE](https://tools.ietf.org/html/rfc7231#section-4.3.5)),
-             *     requestBody is permitted but does not have well-defined semantics and
-             *     SHOULD be avoided if possible.
-             */
-            requestBody?: components["schemas"]["ReferenceOr5"] | null;
-            /**
-             * @description The list of possible responses as they are returned
-             *     from executing this operation.
-             */
-            responses?: components["schemas"]["Responses"] | null;
-            /**
-             * @description A declaration of which security mechanisms can be used for this
-             *     operation. The list of values includes alternative security
-             *     requirement objects that can be used. Only one of the security
-             *     requirement objects need to be satisfied to authorize a request.
-             *     This definition overrides any declared top-level security. To remove
-             *     a top-level security declaration, an empty array can be used.
-             */
-            security?: {
-                [key: string]: string[];
-            }[];
-            /**
-             * @description An alternative server array to service this operation.
-             *     If an alternative server object is specified at the
-             *     Path Item Object or Root level, it will be overridden by this value.
-             */
-            servers?: components["schemas"]["Server"][];
-            /** @description A short summary of what the operation does. */
-            summary?: string | null;
-            /**
-             * @description A list of tags for API documentation control.
-             *     Tags can be used for logical grouping of operations
-             *     by resources or any other qualifier.
-             */
-            tags?: string[];
-        } & {
-            [key: string]: unknown;
-        };
-        OrderByApiKeyField: {
-            /** @default true */
-            desc?: boolean;
-            field?: components["schemas"]["ApiKeyField"];
-        };
-        OrderByApiKeyFieldSet: components["schemas"]["OrderByApiKeyField"] | components["schemas"]["OrderByApiKeyField"][];
-        OrderByCdnaField: {
-            /** @default true */
-            desc?: boolean;
-            field?: components["schemas"]["CdnaField"];
-        };
-        OrderByCdnaFieldSet: components["schemas"]["OrderByCdnaField"] | components["schemas"]["OrderByCdnaField"][];
-        OrderByChromiumDatasetField: {
-            /** @default true */
-            desc?: boolean;
-            field?: components["schemas"]["ChromiumDatasetField"];
-        };
-        OrderByChromiumDatasetFieldSet: components["schemas"]["OrderByChromiumDatasetField"] | components["schemas"]["OrderByChromiumDatasetField"][];
-        OrderByChromiumRunField: {
-            /** @default true */
-            desc?: boolean;
-            field?: components["schemas"]["ChromiumRunField"];
-        };
-        OrderByChromiumRunFieldSet: components["schemas"]["OrderByChromiumRunField"] | components["schemas"]["OrderByChromiumRunField"][];
-        OrderByInstitutionField: {
-            /** @default true */
-            desc?: boolean;
-            field?: components["schemas"]["InstitutionField"];
-        };
-        OrderByInstitutionFieldSet: components["schemas"]["OrderByInstitutionField"] | components["schemas"]["OrderByInstitutionField"][];
-        OrderByLibraryField: {
-            /** @default true */
-            desc?: boolean;
-            field?: components["schemas"]["LibraryField"];
-        };
-        OrderByLibraryFieldSet: components["schemas"]["OrderByLibraryField"] | components["schemas"]["OrderByLibraryField"][];
-        OrderByPersonField: {
-            /** @default false */
-            desc?: boolean;
-            field?: components["schemas"]["PersonField"];
-        };
-        OrderByPersonFieldSet: components["schemas"]["OrderByPersonField"] | components["schemas"]["OrderByPersonField"][];
-        OrderByProjectField: {
-            /** @default true */
-            desc?: boolean;
-            field?: components["schemas"]["ProjectField"];
-        };
-        OrderByProjectFieldSet: components["schemas"]["OrderByProjectField"] | components["schemas"]["OrderByProjectField"][];
-        OrderByServiceField: {
-            /** @default true */
-            desc?: boolean;
-            field?: components["schemas"]["ServiceField"];
-        };
-        OrderByServiceFieldSet: components["schemas"]["OrderByServiceField"] | components["schemas"]["OrderByServiceField"][];
-        OrderBySpecimenField: {
-            /** @default true */
-            desc?: boolean;
-            field?: components["schemas"]["SpecimenField"];
-        };
-        OrderBySpecimenFieldSet: components["schemas"]["OrderBySpecimenField"] | components["schemas"]["OrderBySpecimenField"][];
-        OrderBySuspensionField: {
-            /** @default true */
-            desc?: boolean;
-            field?: components["schemas"]["SuspensionField"];
-        };
-        OrderBySuspensionFieldSet: components["schemas"]["OrderBySuspensionField"] | components["schemas"]["OrderBySuspensionField"][];
-        OrderBySuspensionPoolField: {
-            /** @default true */
-            desc?: boolean;
-            field?: components["schemas"]["SuspensionPoolField"];
-        };
-        OrderBySuspensionPoolFieldSet: components["schemas"]["OrderBySuspensionPoolField"] | components["schemas"]["OrderBySuspensionPoolField"][];
-        Parameter: (({
-            /**
-             * @description Sets the ability to pass empty-valued parameters. This is
-             *     valid only for query parameters and allows sending a parameter
-             *     with an empty value. Default value is false. If style is used,
-             *     and if behavior is n/a (cannot be serialized), the value of
-             *     allowEmptyValue SHALL be ignored.
-             */
-            allow_empty_value?: boolean | null;
-            /**
-             * @description Determines whether the parameter value SHOULD allow reserved
-             *     characters, as defined by RFC3986 :/?#[]@!$&'()*+,;= to be included
-             *     without percent-encoding. This property only applies to parameters
-             *     with an in value of query. The default value is false.
-             */
-            allow_reserved?: boolean;
-            content?: unknown;
-            /**
-             * @description Specifies that a parameter is deprecated and SHOULD
-             *     be transitioned out of usage.
-             */
-            deprecated?: boolean | null;
-            /**
-             * @description A brief description of the parameter. This could
-             *     contain examples of use. CommonMark syntax MAY be
-             *     used for rich text representation.
-             */
-            description?: string | null;
-            example?: unknown;
-            examples?: {
-                [key: string]: components["schemas"]["ReferenceOr3"];
-            };
-            explode?: boolean | null;
-            /** @constant */
-            in: "query";
-            /**
-             * @description REQUIRED. The name of the parameter. Parameter names are case sensitive.
-             *     If in is "path", the name field MUST correspond to the associated path
-             *     segment from the path field in the Paths Object. See Path Templating for
-             *     further information.
-             *
-             *     If in is "header" and the name field is "Accept", "Content-Type" or
-             *     "Authorization", the parameter definition SHALL be ignored.
-             *
-             *     For all other cases, the name corresponds to the parameter name
-             *     used by the in property.
-             */
-            name: string;
-            /**
-             * @description Determines whether this parameter is mandatory.
-             *     If the parameter location is "path", this property
-             *     is REQUIRED and its value MUST be true. Otherwise,
-             *     the property MAY be included and its default value
-             *     is false.
-             */
-            required?: boolean;
-            schema?: unknown;
-            /**
-             * @description Describes how the parameter value will be serialized depending on
-             *     the type of the parameter value. Default values (based on value of
-             *     in): for query - form; for path - simple; for header - simple; for
-             *     cookie - form.
-             */
-            style?: components["schemas"]["QueryStyle"];
-        } & {
-            [key: string]: unknown;
-        }) & ({
-            schema: components["schemas"]["SchemaObject"];
-        } | {
-            content: {
-                [key: string]: components["schemas"]["MediaType"];
-            };
-        })) | (({
-            content?: unknown;
-            /**
-             * @description Specifies that a parameter is deprecated and SHOULD
-             *     be transitioned out of usage.
-             */
-            deprecated?: boolean | null;
-            /**
-             * @description A brief description of the parameter. This could
-             *     contain examples of use. CommonMark syntax MAY be
-             *     used for rich text representation.
-             */
-            description?: string | null;
-            example?: unknown;
-            examples?: {
-                [key: string]: components["schemas"]["ReferenceOr3"];
-            };
-            explode?: boolean | null;
-            /** @constant */
-            in: "header";
-            /**
-             * @description REQUIRED. The name of the parameter. Parameter names are case sensitive.
-             *     If in is "path", the name field MUST correspond to the associated path
-             *     segment from the path field in the Paths Object. See Path Templating for
-             *     further information.
-             *
-             *     If in is "header" and the name field is "Accept", "Content-Type" or
-             *     "Authorization", the parameter definition SHALL be ignored.
-             *
-             *     For all other cases, the name corresponds to the parameter name
-             *     used by the in property.
-             */
-            name: string;
-            /**
-             * @description Determines whether this parameter is mandatory.
-             *     If the parameter location is "path", this property
-             *     is REQUIRED and its value MUST be true. Otherwise,
-             *     the property MAY be included and its default value
-             *     is false.
-             */
-            required?: boolean;
-            schema?: unknown;
-            /**
-             * @description Describes how the parameter value will be serialized depending on
-             *     the type of the parameter value. Default values (based on value of
-             *     in): for query - form; for path - simple; for header - simple; for
-             *     cookie - form.
-             */
-            style?: components["schemas"]["HeaderStyle"];
-        } & {
-            [key: string]: unknown;
-        }) & ({
-            schema: components["schemas"]["SchemaObject"];
-        } | {
-            content: {
-                [key: string]: components["schemas"]["MediaType"];
-            };
-        })) | (({
-            content?: unknown;
-            /**
-             * @description Specifies that a parameter is deprecated and SHOULD
-             *     be transitioned out of usage.
-             */
-            deprecated?: boolean | null;
-            /**
-             * @description A brief description of the parameter. This could
-             *     contain examples of use. CommonMark syntax MAY be
-             *     used for rich text representation.
-             */
-            description?: string | null;
-            example?: unknown;
-            examples?: {
-                [key: string]: components["schemas"]["ReferenceOr3"];
-            };
-            explode?: boolean | null;
-            /** @constant */
-            in: "path";
-            /**
-             * @description REQUIRED. The name of the parameter. Parameter names are case sensitive.
-             *     If in is "path", the name field MUST correspond to the associated path
-             *     segment from the path field in the Paths Object. See Path Templating for
-             *     further information.
-             *
-             *     If in is "header" and the name field is "Accept", "Content-Type" or
-             *     "Authorization", the parameter definition SHALL be ignored.
-             *
-             *     For all other cases, the name corresponds to the parameter name
-             *     used by the in property.
-             */
-            name: string;
-            /**
-             * @description Determines whether this parameter is mandatory.
-             *     If the parameter location is "path", this property
-             *     is REQUIRED and its value MUST be true. Otherwise,
-             *     the property MAY be included and its default value
-             *     is false.
-             */
-            required?: boolean;
-            schema?: unknown;
-            /**
-             * @description Describes how the parameter value will be serialized depending on
-             *     the type of the parameter value. Default values (based on value of
-             *     in): for query - form; for path - simple; for header - simple; for
-             *     cookie - form.
-             */
-            style?: components["schemas"]["PathStyle"];
-        } & {
-            [key: string]: unknown;
-        }) & ({
-            schema: components["schemas"]["SchemaObject"];
-        } | {
-            content: {
-                [key: string]: components["schemas"]["MediaType"];
-            };
-        })) | (({
-            content?: unknown;
-            /**
-             * @description Specifies that a parameter is deprecated and SHOULD
-             *     be transitioned out of usage.
-             */
-            deprecated?: boolean | null;
-            /**
-             * @description A brief description of the parameter. This could
-             *     contain examples of use. CommonMark syntax MAY be
-             *     used for rich text representation.
-             */
-            description?: string | null;
-            example?: unknown;
-            examples?: {
-                [key: string]: components["schemas"]["ReferenceOr3"];
-            };
-            explode?: boolean | null;
-            /** @constant */
-            in: "cookie";
-            /**
-             * @description REQUIRED. The name of the parameter. Parameter names are case sensitive.
-             *     If in is "path", the name field MUST correspond to the associated path
-             *     segment from the path field in the Paths Object. See Path Templating for
-             *     further information.
-             *
-             *     If in is "header" and the name field is "Accept", "Content-Type" or
-             *     "Authorization", the parameter definition SHALL be ignored.
-             *
-             *     For all other cases, the name corresponds to the parameter name
-             *     used by the in property.
-             */
-            name: string;
-            /**
-             * @description Determines whether this parameter is mandatory.
-             *     If the parameter location is "path", this property
-             *     is REQUIRED and its value MUST be true. Otherwise,
-             *     the property MAY be included and its default value
-             *     is false.
-             */
-            required?: boolean;
-            schema?: unknown;
-            /**
-             * @description Describes how the parameter value will be serialized depending on
-             *     the type of the parameter value. Default values (based on value of
-             *     in): for query - form; for path - simple; for header - simple; for
-             *     cookie - form.
-             */
-            style?: components["schemas"]["CookieStyle"];
-        } & {
-            [key: string]: unknown;
-        }) & ({
-            schema: components["schemas"]["SchemaObject"];
-        } | {
-            content: {
-                [key: string]: components["schemas"]["MediaType"];
-            };
-        }));
-        /**
-         * @description Describes the operations available on a single path.
-         *     A Path Item MAY be empty, due to ACL constraints.
-         *     The path itself is still exposed to the documentation
-         *     viewer but they will not know which operations and
-         *     parameters are available.
-         */
-        PathItem: {
-            /**
-             * @description Allows for a referenced definition of this path item. The referenced
-             *     structure MUST be in the form of a Path Item Object.  In case a Path
-             *     Item Object field appears both in the defined object and the referenced
-             *     object, the behavior is undefined. See the rules for resolving Relative
-             *     References.
-             */
-            $ref?: string | null;
-            delete?: components["schemas"]["Operation"] | null;
-            /**
-             * @description An optional, string description, intended to apply to all operations in
-             *     this path. CommonMark syntax MAY be used for rich text representation.
-             */
-            description?: string | null;
-            get?: components["schemas"]["Operation"] | null;
-            head?: components["schemas"]["Operation"] | null;
-            options?: components["schemas"]["Operation"] | null;
-            /**
-             * @description A list of parameters that are applicable for all the
-             *     operations described under this path. These parameters
-             *     can be overridden at the operation level, but cannot be
-             *     removed there. The list MUST NOT include duplicated parameters.
-             *     A unique parameter is defined by a combination of a name and location.
-             *     The list can use the Reference Object to link to parameters that
-             *     are defined at the OpenAPI Object's components/parameters.
-             */
-            parameters?: components["schemas"]["ReferenceOr2"][];
-            patch?: components["schemas"]["Operation"] | null;
-            post?: components["schemas"]["Operation"] | null;
-            put?: components["schemas"]["Operation"] | null;
-            /** @description An alternative server array to service all operations in this path. */
-            servers?: components["schemas"]["Server"][];
-            /**
-             * @description An optional, string summary, intended to apply to all operations in
-             *     this path.
-             */
-            summary?: string | null;
-            trace?: components["schemas"]["Operation"] | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** @enum {string} */
-        PathStyle: "matrix" | "label" | "simple";
-        /**
-         * @description Holds the relative paths to the individual endpoints and
-         *     their operations. The path is appended to the URL from the
-         *     Server Object in order to construct the full URL. The Paths
-         *     MAY be empty, due to Access Control List (ACL) constraints.
-         */
-        Paths: {
-            [key: string]: components["schemas"]["ReferenceOr"];
-        };
-        Permission: {
-            action: components["schemas"]["Action"];
-            resource: components["schemas"]["Resource"];
-        };
         Person: {
             email?: string | null;
             /** Format: uuid */
@@ -8387,50 +5726,6 @@ export interface components {
         PersonLinks: {
             projects: string;
             self: string;
-        };
-        PersonPredicate: {
-            id: components["schemas"]["UuidOperator"];
-        } | {
-            name: components["schemas"]["StringOperator"];
-        } | {
-            email: components["schemas"]["StringOperator"];
-        } | {
-            institution_id: components["schemas"]["UuidOperator"];
-        } | {
-            is_staff: components["schemas"]["booleanOperator"];
-        } | {
-            orcid: components["schemas"]["StringOperator"];
-        };
-        PersonPredicateFilter: {
-            all_of: components["schemas"]["PersonPredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["PersonPredicateFilter"][];
-        } | {
-            not: components["schemas"]["PersonPredicateFilter"];
-        } | components["schemas"]["PersonPredicate"];
-        PersonPredicateQuery: {
-            filter?: components["schemas"]["PersonPredicateFilter"] | null;
-            /**
-             * Format: int64
-             * @default null
-             */
-            limit?: number | null;
-            /**
-             * Format: int64
-             * @default 0
-             */
-            offset?: number;
-            order_by?: components["schemas"]["OrderByPersonFieldSet"];
-        };
-        PersonUpdate: {
-            email: string;
-            /** Format: uuid */
-            institution_id: string;
-            is_staff: boolean;
-            name: string;
-            orcid?: string | null;
-            permissions_to_grant: components["schemas"]["Permission"][];
-            permissions_to_revoke: components["schemas"]["Permission"][];
         };
         /** @enum {string} */
         Picogram: "picogram";
@@ -8474,311 +5769,8 @@ export interface components {
          * @enum {string}
          */
         ProjectField: "id" | "name" | "created_by" | "started_at" | "ended_at";
-        ProjectPredicate: {
-            id: components["schemas"]["UuidOperator"];
-        } | {
-            name: components["schemas"]["StringOperator"];
-        } | {
-            created_by: components["schemas"]["UuidOperator"];
-        } | {
-            started_at: components["schemas"]["TimestampOperator"];
-        } | {
-            ended_at: components["schemas"]["TimestampOperator"];
-        };
-        ProjectPredicateFilter: {
-            all_of: components["schemas"]["ProjectPredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["ProjectPredicateFilter"][];
-        } | {
-            not: components["schemas"]["ProjectPredicateFilter"];
-        } | components["schemas"]["ProjectPredicate"];
-        ProjectPredicateQuery: {
-            filter?: components["schemas"]["ProjectPredicateFilter"] | null;
-            /**
-             * Format: int64
-             * @default null
-             */
-            limit?: number | null;
-            /**
-             * Format: int64
-             * @default 0
-             */
-            offset?: number;
-            order_by?: components["schemas"]["OrderByProjectFieldSet"];
-        };
-        /** @enum {string} */
-        QueryStyle: "form" | "spaceDelimited" | "pipeDelimited" | "deepObject";
-        ReferenceOr: {
-            /**
-             * @description REQUIRED. The reference identifier. This MUST be in the form of a
-             *     URI.
-             */
-            $ref: string;
-            /**
-             * @description A description which by default SHOULD override that of the
-             *     referenced component. CommonMark syntax MAY be used for rich text
-             *     representation. If the referenced object-type does not allow a
-             *     `description` field, then this field has no effect.
-             */
-            description?: string | null;
-            /**
-             * @description A short summary which by default SHOULD override that of the
-             *     referenced component. If the referenced object-type does not allow a
-             *     `summary` field, then this field has no effect.
-             */
-            summary?: string | null;
-        } | components["schemas"]["PathItem"];
-        ReferenceOr2: {
-            /**
-             * @description REQUIRED. The reference identifier. This MUST be in the form of a
-             *     URI.
-             */
-            $ref: string;
-            /**
-             * @description A description which by default SHOULD override that of the
-             *     referenced component. CommonMark syntax MAY be used for rich text
-             *     representation. If the referenced object-type does not allow a
-             *     `description` field, then this field has no effect.
-             */
-            description?: string | null;
-            /**
-             * @description A short summary which by default SHOULD override that of the
-             *     referenced component. If the referenced object-type does not allow a
-             *     `summary` field, then this field has no effect.
-             */
-            summary?: string | null;
-        } | components["schemas"]["Parameter"];
-        ReferenceOr3: {
-            /**
-             * @description REQUIRED. The reference identifier. This MUST be in the form of a
-             *     URI.
-             */
-            $ref: string;
-            /**
-             * @description A description which by default SHOULD override that of the
-             *     referenced component. CommonMark syntax MAY be used for rich text
-             *     representation. If the referenced object-type does not allow a
-             *     `description` field, then this field has no effect.
-             */
-            description?: string | null;
-            /**
-             * @description A short summary which by default SHOULD override that of the
-             *     referenced component. If the referenced object-type does not allow a
-             *     `summary` field, then this field has no effect.
-             */
-            summary?: string | null;
-        } | components["schemas"]["Example"];
-        ReferenceOr4: {
-            /**
-             * @description REQUIRED. The reference identifier. This MUST be in the form of a
-             *     URI.
-             */
-            $ref: string;
-            /**
-             * @description A description which by default SHOULD override that of the
-             *     referenced component. CommonMark syntax MAY be used for rich text
-             *     representation. If the referenced object-type does not allow a
-             *     `description` field, then this field has no effect.
-             */
-            description?: string | null;
-            /**
-             * @description A short summary which by default SHOULD override that of the
-             *     referenced component. If the referenced object-type does not allow a
-             *     `summary` field, then this field has no effect.
-             */
-            summary?: string | null;
-        } | components["schemas"]["Header"];
-        ReferenceOr5: {
-            /**
-             * @description REQUIRED. The reference identifier. This MUST be in the form of a
-             *     URI.
-             */
-            $ref: string;
-            /**
-             * @description A description which by default SHOULD override that of the
-             *     referenced component. CommonMark syntax MAY be used for rich text
-             *     representation. If the referenced object-type does not allow a
-             *     `description` field, then this field has no effect.
-             */
-            description?: string | null;
-            /**
-             * @description A short summary which by default SHOULD override that of the
-             *     referenced component. If the referenced object-type does not allow a
-             *     `summary` field, then this field has no effect.
-             */
-            summary?: string | null;
-        } | components["schemas"]["RequestBody"];
-        ReferenceOr6: {
-            /**
-             * @description REQUIRED. The reference identifier. This MUST be in the form of a
-             *     URI.
-             */
-            $ref: string;
-            /**
-             * @description A description which by default SHOULD override that of the
-             *     referenced component. CommonMark syntax MAY be used for rich text
-             *     representation. If the referenced object-type does not allow a
-             *     `description` field, then this field has no effect.
-             */
-            description?: string | null;
-            /**
-             * @description A short summary which by default SHOULD override that of the
-             *     referenced component. If the referenced object-type does not allow a
-             *     `summary` field, then this field has no effect.
-             */
-            summary?: string | null;
-        } | components["schemas"]["Response"];
-        ReferenceOr7: {
-            /**
-             * @description REQUIRED. The reference identifier. This MUST be in the form of a
-             *     URI.
-             */
-            $ref: string;
-            /**
-             * @description A description which by default SHOULD override that of the
-             *     referenced component. CommonMark syntax MAY be used for rich text
-             *     representation. If the referenced object-type does not allow a
-             *     `description` field, then this field has no effect.
-             */
-            description?: string | null;
-            /**
-             * @description A short summary which by default SHOULD override that of the
-             *     referenced component. If the referenced object-type does not allow a
-             *     `summary` field, then this field has no effect.
-             */
-            summary?: string | null;
-        } | components["schemas"]["Link"];
-        ReferenceOr8: {
-            /**
-             * @description REQUIRED. The reference identifier. This MUST be in the form of a
-             *     URI.
-             */
-            $ref: string;
-            /**
-             * @description A description which by default SHOULD override that of the
-             *     referenced component. CommonMark syntax MAY be used for rich text
-             *     representation. If the referenced object-type does not allow a
-             *     `description` field, then this field has no effect.
-             */
-            description?: string | null;
-            /**
-             * @description A short summary which by default SHOULD override that of the
-             *     referenced component. If the referenced object-type does not allow a
-             *     `summary` field, then this field has no effect.
-             */
-            summary?: string | null;
-        } | {
-            [key: string]: components["schemas"]["ReferenceOr"];
-        };
-        ReferenceOr9: {
-            /**
-             * @description REQUIRED. The reference identifier. This MUST be in the form of a
-             *     URI.
-             */
-            $ref: string;
-            /**
-             * @description A description which by default SHOULD override that of the
-             *     referenced component. CommonMark syntax MAY be used for rich text
-             *     representation. If the referenced object-type does not allow a
-             *     `description` field, then this field has no effect.
-             */
-            description?: string | null;
-            /**
-             * @description A short summary which by default SHOULD override that of the
-             *     referenced component. If the referenced object-type does not allow a
-             *     `summary` field, then this field has no effect.
-             */
-            summary?: string | null;
-        } | components["schemas"]["SecurityScheme"];
-        RequestBody: {
-            /**
-             * @description REQUIRED. The content of the request body.
-             *     The key is a media type or media type range and
-             *     the value describes it. For requests that match
-             *     multiple keys, only the most specific key is applicable.
-             *      e.g. text/plain overrides text/*
-             */
-            content?: {
-                [key: string]: components["schemas"]["MediaType"];
-            };
-            /**
-             * @description A brief description of the request body.
-             *     This could contain examples of use.
-             *     CommonMark syntax MAY be used for rich text representation.
-             */
-            description?: string | null;
-            /**
-             * @description Determines if the request body is required in the
-             *     request. Defaults to false.
-             */
-            required?: boolean;
-        } & {
-            [key: string]: unknown;
-        };
-        /** @enum {string} */
-        Resource: "institution" | "person" | "account" | "project" | "specimen" | "assay_constant_data" | "chromium_experimental_data" | "chromium_dataset";
-        Response: {
-            /**
-             * @description A map containing descriptions of potential response payloads.
-             *     The key is a media type or media type range and the value
-             *     describes it. For responses that match multiple keys,
-             *     only the most specific key is applicable. e.g. text/plain
-             *     overrides text/*
-             */
-            content?: {
-                [key: string]: components["schemas"]["MediaType"];
-            };
-            /**
-             * @description REQUIRED. A description of the response.
-             *     CommonMark syntax MAY be used for rich text representation.
-             */
-            description: string;
-            /**
-             * @description Maps a header name to its definition.
-             *     RFC7230 states header names are case insensitive.
-             *     If a response header is defined with the name "Content-Type",
-             *     it SHALL be ignored.
-             */
-            headers?: {
-                [key: string]: components["schemas"]["ReferenceOr4"];
-            };
-            /**
-             * @description A map of operations links that can be followed from the response.
-             *     The key of the map is a short name for the link, following
-             *     the naming constraints of the names for Component Objects.
-             */
-            links?: {
-                [key: string]: components["schemas"]["ReferenceOr7"];
-            };
-        } & {
-            [key: string]: unknown;
-        };
-        Responses: {
-            /**
-             * @description The documentation of responses other than the ones declared
-             *     for specific HTTP response codes. Use this field to cover
-             *     undeclared responses.
-             */
-            default?: components["schemas"]["ReferenceOr6"] | null;
-        } & {
-            [key: string]: components["schemas"]["ReferenceOr6"];
-        };
         /** @enum {string} */
         SampleMultiplexing: "cellplex" | "flex_barcode" | "flex_oligonucleotide_barcode" | "hashtag" | "on_chip_multiplexing" | "singleplex";
-        /** @description A simple comparison operator. */
-        SampleMultiplexingOperator: {
-            eq: components["schemas"]["SampleMultiplexing"];
-        } | {
-            lt: components["schemas"]["SampleMultiplexing"];
-        } | {
-            lte: components["schemas"]["SampleMultiplexing"];
-        } | {
-            gt: components["schemas"]["SampleMultiplexing"];
-        } | {
-            gte: components["schemas"]["SampleMultiplexing"];
-        } | {
-            in: components["schemas"]["SampleMultiplexing"][];
-        } | components["schemas"]["SampleMultiplexing"];
         SavedApiKeyRecord: {
             /** Format: date-time */
             created_at: string;
@@ -8790,117 +5782,6 @@ export interface components {
             /** Format: uuid */
             owner_id: string;
             owner_is_staff: boolean;
-        };
-        SchemaObject: {
-            /**
-             * @description A free-form property to include an example of an instance for this
-             *     schema. To represent examples that cannot be naturally represented in
-             *     JSON or YAML, a string value can be used to contain the example with
-             *     escaping where necessary. **Deprecated:** The `example` property has
-             *     been deprecated in favor of the JSON Schema `examples` keyword. Use
-             *     of `example` is discouraged, and later versions of this
-             *     specification may remove it.
-             */
-            example?: unknown;
-            /** @description Additional external documentation for this schema. */
-            externalDocs?: components["schemas"]["ExternalDocumentation"] | null;
-        };
-        /**
-         * @description Defines a security scheme that can be used by the operations.
-         *     Supported schemes are HTTP authentication, an API key (either as a
-         *     header or as a query parameter), OAuth2's common flows (implicit, password,
-         *     application and access code) as defined in RFC6749, and OpenID Connect
-         *     Discovery.
-         */
-        SecurityScheme: ({
-            description?: string | null;
-            in: components["schemas"]["ApiKeyLocation"];
-            name: string;
-            /** @constant */
-            type: "apiKey";
-        } & {
-            [key: string]: unknown;
-        }) | ({
-            bearerFormat?: string | null;
-            description?: string | null;
-            scheme: string;
-            /** @constant */
-            type: "http";
-        } & {
-            [key: string]: unknown;
-        }) | ({
-            description?: string | null;
-            flows: components["schemas"]["OAuth2Flows"];
-            /** @constant */
-            type: "oauth2";
-        } & {
-            [key: string]: unknown;
-        }) | ({
-            description?: string | null;
-            openIdConnectUrl: string;
-            /** @constant */
-            type: "openIdConnect";
-        } & {
-            [key: string]: unknown;
-        }) | ({
-            description?: string | null;
-            /** @constant */
-            type: "mutualTLS";
-        } & {
-            [key: string]: unknown;
-        });
-        /** @description An object representing a Server. */
-        Server: {
-            /**
-             * @description An optional string describing the host designated
-             *     by the URL. CommonMark syntax MAY be used for rich
-             *     text representation.
-             */
-            description?: string | null;
-            /**
-             * @description REQUIRED. A URL to the target host.
-             *     This URL supports Server Variables and MAY be relative,
-             *     to indicate that the host location is relative to the
-             *     location where the OpenAPI document is being served.
-             *     Variable substitutions will be made when a variable
-             *     is named in {brackets}.
-             */
-            url: string;
-            /**
-             * @description A map between a variable name and its value.
-             *     The value is used for substitution in the server's URL template.
-             */
-            variables?: {
-                [key: string]: components["schemas"]["ServerVariable"];
-            };
-        } & {
-            [key: string]: unknown;
-        };
-        /**
-         * @description An object representing a Server Variable
-         *     for server URL template substitution.
-         */
-        ServerVariable: {
-            /**
-             * @description REQUIRED. The default value to use for substitution,
-             *     and to send, if an alternate value is not supplied.
-             *     Unlike the Schema Object's default, this value MUST
-             *     be provided by the consumer.
-             */
-            default: string;
-            /**
-             * @description An optional description for the server
-             *     variable. CommonMark syntax MAY be used
-             *     for rich text representation.
-             */
-            description?: string | null;
-            /**
-             * @description An enumeration of string values to be
-             *     used if the substitution options are from a limited set.
-             */
-            enum?: string[];
-        } & {
-            [key: string]: unknown;
         };
         Service: {
             /** Format: date-time */
@@ -8917,60 +5798,8 @@ export interface components {
          * @enum {string}
          */
         ServiceField: "id" | "description" | "owned_by" | "is_staff" | "created_at";
-        ServicePredicate: {
-            id: components["schemas"]["UuidOperator"];
-        } | {
-            description: components["schemas"]["StringOperator"];
-        } | {
-            owned_by: components["schemas"]["UuidOperator"];
-        } | {
-            is_staff: components["schemas"]["booleanOperator"];
-        } | {
-            created_at: components["schemas"]["TimestampOperator"];
-        };
-        ServicePredicateFilter: {
-            all_of: components["schemas"]["ServicePredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["ServicePredicateFilter"][];
-        } | {
-            not: components["schemas"]["ServicePredicateFilter"];
-        } | components["schemas"]["ServicePredicate"];
-        ServicePredicateQuery: {
-            filter?: components["schemas"]["ServicePredicateFilter"] | null;
-            /**
-             * Format: int64
-             * @default null
-             */
-            limit?: number | null;
-            /**
-             * Format: int64
-             * @default 0
-             */
-            offset?: number;
-            order_by?: components["schemas"]["OrderByServiceFieldSet"];
-        };
-        ServiceUpdate: {
-            description?: string | null;
-            is_staff: boolean;
-            permissions_to_grant: components["schemas"]["Permission"][];
-            permissions_to_revoke: components["schemas"]["Permission"][];
-        };
         /** @enum {string} */
         Species: "ambystoma_mexicanum" | "canis_familiaris" | "callithrix_jacchus" | "drosophila_melanogaster" | "gasterosteus_aculeatus" | "homo_sapiens" | "mus_musculus" | "rattus_norvegicus" | "sminthopsis_crassicaudata";
-        /** @description A simple comparison operator. */
-        SpeciesOperator: {
-            eq: components["schemas"]["Species"];
-        } | {
-            lt: components["schemas"]["Species"];
-        } | {
-            lte: components["schemas"]["Species"];
-        } | {
-            gt: components["schemas"]["Species"];
-        } | {
-            gte: components["schemas"]["Species"];
-        } | {
-            in: components["schemas"]["Species"][];
-        } | components["schemas"]["Species"];
         SpecimenCompact: {
             additional_data?: unknown;
             embedded_in?: components["schemas"]["BlockEmbeddingMatrix"] | null;
@@ -9056,96 +5885,11 @@ export interface components {
             /** Format: float */
             value: number;
         });
-        SpecimenPredicate: {
-            id: components["schemas"]["UuidOperator"];
-        } | {
-            readable_id: components["schemas"]["StringOperator"];
-        } | {
-            name: components["schemas"]["StringOperator"];
-        } | {
-            submitted_by: components["schemas"]["UuidOperator"];
-        } | {
-            project_id: components["schemas"]["UuidOperator"];
-        } | {
-            received_at: components["schemas"]["TimestampOperator"];
-        } | {
-            species: components["schemas"]["SpeciesOperator"];
-        } | {
-            host_species: components["schemas"]["SpeciesOperator"];
-        } | {
-            returned_at: components["schemas"]["TimestampOperator"];
-        } | {
-            returned_by: components["schemas"]["UuidOperator"];
-        } | {
-            type: components["schemas"]["SpecimenTypeOperator"];
-        } | {
-            embedded_in: components["schemas"]["BlockEmbeddingMatrixOperator"];
-        } | {
-            fixative: components["schemas"]["FixativeOperator"];
-        } | {
-            thermal_preservation_method: components["schemas"]["ThermalPreservationMethodOperator"];
-        } | {
-            tissue: components["schemas"]["StringOperator"];
-        } | {
-            additional_data: components["schemas"]["JsonOperator"];
-        };
-        SpecimenPredicateFilter: {
-            all_of: components["schemas"]["SpecimenPredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["SpecimenPredicateFilter"][];
-        } | {
-            not: components["schemas"]["SpecimenPredicateFilter"];
-        } | components["schemas"]["SpecimenPredicate"];
-        SpecimenPredicateQuery: {
-            filter?: components["schemas"]["SpecimenPredicateFilter"] | null;
-            /**
-             * Format: int64
-             * @default null
-             */
-            limit?: number | null;
-            /**
-             * Format: int64
-             * @default 0
-             */
-            offset?: number;
-            order_by?: components["schemas"]["OrderBySpecimenFieldSet"];
-        };
         /**
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
         SpecimenType: "block" | "cell_pellet" | "rna_extract" | "suspension" | "tissue";
-        /** @description A simple comparison operator. */
-        SpecimenTypeOperator: {
-            eq: components["schemas"]["SpecimenType"];
-        } | {
-            lt: components["schemas"]["SpecimenType"];
-        } | {
-            lte: components["schemas"]["SpecimenType"];
-        } | {
-            gt: components["schemas"]["SpecimenType"];
-        } | {
-            gte: components["schemas"]["SpecimenType"];
-        } | {
-            in: components["schemas"]["SpecimenType"][];
-        } | components["schemas"]["SpecimenType"];
-        /**
-         * @description A comparison operator for string values.
-         *
-         *     This is a superset of the baisc operators and adds the following
-         *     string-specific methods present in PostgreSQL:
-         *     1. like (https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE)
-         *     2. trigram similar (https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS)
-         */
-        StringOperator: {
-            like: string;
-        } | {
-            like_any: string[];
-        } | {
-            trgm: string;
-        } | {
-            trgm_any: string[];
-        } | components["schemas"]["stringOperator"];
         SuspensionCompact: {
             additional_data?: unknown;
             content: components["schemas"]["SuspensionContent"];
@@ -9173,20 +5917,6 @@ export interface components {
         };
         /** @enum {string} */
         SuspensionContent: "cells" | "nuclei";
-        /** @description A simple comparison operator. */
-        SuspensionContentOperator: {
-            eq: components["schemas"]["SuspensionContent"];
-        } | {
-            lt: components["schemas"]["SuspensionContent"];
-        } | {
-            lte: components["schemas"]["SuspensionContent"];
-        } | {
-            gt: components["schemas"]["SuspensionContent"];
-        } | {
-            gte: components["schemas"]["SuspensionContent"];
-        } | {
-            in: components["schemas"]["SuspensionContent"][];
-        } | components["schemas"]["SuspensionContent"];
         SuspensionDetailed: {
             additional_data?: unknown;
             content: components["schemas"]["SuspensionContent"];
@@ -9295,142 +6025,10 @@ export interface components {
             /** Format: uuid */
             pool_id: string;
         };
-        SuspensionPoolPredicate: {
-            specimen: components["schemas"]["SpecimenPredicate"];
-        } | {
-            multiplexing_tag: components["schemas"]["MultiplexingTagPredicate"];
-        } | components["schemas"]["SuspensionPoolPredicateInner"];
-        SuspensionPoolPredicateFilter: {
-            all_of: components["schemas"]["SuspensionPoolPredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["SuspensionPoolPredicateFilter"][];
-        } | {
-            not: components["schemas"]["SuspensionPoolPredicateFilter"];
-        } | components["schemas"]["SuspensionPoolPredicate"];
-        SuspensionPoolPredicateInner: {
-            id: components["schemas"]["UuidOperator"];
-        } | {
-            readable_id: components["schemas"]["StringOperator"];
-        } | {
-            name: components["schemas"]["StringOperator"];
-        } | {
-            pooled_at: components["schemas"]["TimestampOperator"];
-        } | {
-            additional_data: components["schemas"]["JsonOperator"];
-        };
-        SuspensionPoolPredicateQuery: {
-            filter?: components["schemas"]["SuspensionPoolPredicateFilter"] | null;
-            /**
-             * Format: int64
-             * @default null
-             */
-            limit?: number | null;
-            /**
-             * Format: int64
-             * @default 0
-             */
-            offset?: number;
-            order_by?: components["schemas"]["OrderBySuspensionPoolFieldSet"];
-        };
-        SuspensionPoolUpdate: {
-            additional_data?: unknown;
-            measurements?: components["schemas"]["NewSuspensionPoolMeasurement"][] | null;
-            name: string;
-            /** Format: date-time */
-            pooled_at: string;
-            preparers?: string[] | null;
-            readable_id: string;
-        };
-        SuspensionPredicate: {
-            specimen: components["schemas"]["SpecimenPredicate"];
-        } | components["schemas"]["SuspensionPredicateInner"];
-        SuspensionPredicateFilter: {
-            all_of: components["schemas"]["SuspensionPredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["SuspensionPredicateFilter"][];
-        } | {
-            not: components["schemas"]["SuspensionPredicateFilter"];
-        } | components["schemas"]["SuspensionPredicate"];
-        SuspensionPredicateInner: {
-            id: components["schemas"]["UuidOperator"];
-        } | {
-            readable_id: components["schemas"]["StringOperator"];
-        } | {
-            specimen_id: components["schemas"]["UuidOperator"];
-        } | {
-            content: components["schemas"]["SuspensionContentOperator"];
-        } | {
-            created_at: components["schemas"]["TimestampOperator"];
-        } | {
-            lysis_duration_minutes: components["schemas"]["floatOperator"];
-        } | {
-            target_cell_recovery: components["schemas"]["int64Operator"];
-        } | {
-            additional_data: components["schemas"]["JsonOperator"];
-        };
-        SuspensionPredicateQuery: {
-            filter?: components["schemas"]["SuspensionPredicateFilter"] | null;
-            /**
-             * Format: int64
-             * @default null
-             */
-            limit?: number | null;
-            /**
-             * Format: int64
-             * @default 0
-             */
-            offset?: number;
-            order_by?: components["schemas"]["OrderBySuspensionFieldSet"];
-        };
-        SuspensionSpecimenFields: {
-            fixative: components["schemas"]["Fixative"];
-            /** @constant */
-            preservation_state: "fixed";
-        } | {
-            /** @constant */
-            preservation_state: "fresh";
-        } | {
-            /** @constant */
-            preservation_state: "thermally_preserved";
-            thermal_preservation_method: components["schemas"]["ControlledRateFreezing"];
-        };
-        SuspensionUpdate: {
-            additional_data?: unknown;
-            content: components["schemas"]["SuspensionContent"];
-            /** Format: date-time */
-            created_at: string;
-            /** Format: float */
-            lysis_duration_minutes?: number | null;
-            measurements?: components["schemas"]["NewSuspensionMeasurement"][] | null;
-            preparers?: string[] | null;
-            readable_id: string;
-            /** Format: uuid */
-            specimen_id: string;
-            /** Format: int64 */
-            target_cell_recovery?: number | null;
-        };
         SuspensionVolume: {
             unit: components["schemas"]["Microliter"];
             /** Format: float */
             value: number;
-        };
-        /**
-         * @description Adds metadata to a single tag that is used by the
-         *     Operation Object. It is not mandatory to have a
-         *     Tag Object per tag defined in the Operation Object instances.
-         */
-        Tag: {
-            /**
-             * @description A description for the tag.
-             *     CommonMark syntax MAY be used for rich text representation.
-             */
-            description?: string | null;
-            /** @description Additional external documentation for this tag. */
-            externalDocs?: components["schemas"]["ExternalDocumentation"] | null;
-            /** @description REQUIRED. The name of the tag. */
-            name: string;
-        } & {
-            [key: string]: unknown;
         };
         TaggedSpecimen: {
             additional_data?: unknown;
@@ -9461,11 +6059,6 @@ export interface components {
             tissue: string;
             type_: components["schemas"]["SpecimenType"];
         };
-        TaggedSuspension: {
-            /** Format: uuid */
-            suspension_id: string;
-            tag_id: string;
-        };
         TenxAssay: {
             chemistry_version: string;
             chromium_chip?: string | null;
@@ -9477,176 +6070,12 @@ export interface components {
             protocol_url: string;
             sample_multiplexing?: components["schemas"]["SampleMultiplexing"] | null;
         };
-        TenxAssayPredicate: {
-            id: components["schemas"]["UuidOperator"];
-        } | {
-            name: components["schemas"]["StringOperator"];
-        } | {
-            library_types: components["schemas"]["LibraryTypeArrayOperator"];
-        } | {
-            sample_multiplexing: components["schemas"]["SampleMultiplexingOperator"];
-        } | {
-            chemistry_version: components["schemas"]["StringOperator"];
-        } | {
-            chromium_chip: components["schemas"]["StringOperator"];
-        } | {
-            protocol_url: components["schemas"]["StringOperator"];
-        };
         ThermalPreservationMethod: components["schemas"]["ControlledRateFreezing"] | components["schemas"]["FlashFreezing"];
-        /** @description A simple comparison operator. */
-        ThermalPreservationMethodOperator: {
-            eq: components["schemas"]["ThermalPreservationMethod"];
-        } | {
-            lt: components["schemas"]["ThermalPreservationMethod"];
-        } | {
-            lte: components["schemas"]["ThermalPreservationMethod"];
-        } | {
-            gt: components["schemas"]["ThermalPreservationMethod"];
-        } | {
-            gte: components["schemas"]["ThermalPreservationMethod"];
-        } | {
-            in: components["schemas"]["ThermalPreservationMethod"][];
-        } | components["schemas"]["ThermalPreservationMethod"];
-        /** @description A simple comparison operator. */
-        TimestampOperator: {
-            /** Format: date-time */
-            eq: string;
-        } | {
-            /** Format: date-time */
-            lt: string;
-        } | {
-            /** Format: date-time */
-            lte: string;
-        } | {
-            /** Format: date-time */
-            gt: string;
-        } | {
-            /** Format: date-time */
-            gte: string;
-        } | {
-            in: string[];
-        } | string;
-        TissueFields: {
-            fixative: components["schemas"]["Fixative"];
-            /** @constant */
-            preservation_state: "fixed";
-        } | {
-            /** @constant */
-            preservation_state: "fresh";
-        } | {
-            /** @constant */
-            preservation_state: "thermally_preserved";
-            thermal_preservation_method: components["schemas"]["ThermalPreservationMethod"];
-        };
         UpdateChromiumDatasetError: {
             message: string;
             /** @constant */
             type: "rename_dataset_directory_failed";
         } | components["schemas"]["DbError"];
-        /** @description A simple comparison operator. */
-        UuidOperator: {
-            /** Format: uuid */
-            eq: string;
-        } | {
-            /** Format: uuid */
-            lt: string;
-        } | {
-            /** Format: uuid */
-            lte: string;
-        } | {
-            /** Format: uuid */
-            gt: string;
-        } | {
-            /** Format: uuid */
-            gte: string;
-        } | {
-            in: string[];
-        } | string;
-        /** @description A simple comparison operator. */
-        booleanOperator: {
-            eq: boolean;
-        } | {
-            lt: boolean;
-        } | {
-            lte: boolean;
-        } | {
-            gt: boolean;
-        } | {
-            gte: boolean;
-        } | {
-            in: boolean[];
-        } | boolean;
-        /** @description A simple comparison operator. */
-        floatOperator: {
-            /** Format: float */
-            eq: number;
-        } | {
-            /** Format: float */
-            lt: number;
-        } | {
-            /** Format: float */
-            lte: number;
-        } | {
-            /** Format: float */
-            gt: number;
-        } | {
-            /** Format: float */
-            gte: number;
-        } | {
-            in: number[];
-        } | number;
-        /** @description A simple comparison operator. */
-        int32Operator: {
-            /** Format: int32 */
-            eq: number;
-        } | {
-            /** Format: int32 */
-            lt: number;
-        } | {
-            /** Format: int32 */
-            lte: number;
-        } | {
-            /** Format: int32 */
-            gt: number;
-        } | {
-            /** Format: int32 */
-            gte: number;
-        } | {
-            in: number[];
-        } | number;
-        /** @description A simple comparison operator. */
-        int64Operator: {
-            /** Format: int64 */
-            eq: number;
-        } | {
-            /** Format: int64 */
-            lt: number;
-        } | {
-            /** Format: int64 */
-            lte: number;
-        } | {
-            /** Format: int64 */
-            gt: number;
-        } | {
-            /** Format: int64 */
-            gte: number;
-        } | {
-            in: number[];
-        } | number;
-        /** @description A simple comparison operator. */
-        stringOperator: {
-            eq: string;
-        } | {
-            lt: string;
-        } | {
-            lte: string;
-        } | {
-            gt: string;
-        } | {
-            gte: string;
-        } | {
-            in: string[];
-        } | string;
     };
     responses: never;
     parameters: never;
@@ -9654,220 +6083,77 @@ export interface components {
     headers: never;
     pathItems: never;
 }
-export type Account = components['schemas']['Account'];
-export type Action = components['schemas']['Action'];
-export type AnyValueOperator = components['schemas']['AnyValueOperator'];
 export type ApiKey = components['schemas']['ApiKey'];
 export type ApiKeyField = components['schemas']['ApiKeyField'];
-export type ApiKeyLocation = components['schemas']['ApiKeyLocation'];
-export type ApiKeyPredicate = components['schemas']['ApiKeyPredicate'];
-export type ApiKeyPredicateFilter = components['schemas']['ApiKeyPredicateFilter'];
-export type ApiKeyPredicateQuery = components['schemas']['ApiKeyPredicateQuery'];
-export type ApiKeyUpdate = components['schemas']['ApiKeyUpdate'];
-export type ArrayOfLibraryTypeOperator = components['schemas']['Array_of_LibraryTypeOperator'];
 export type AuthError = components['schemas']['AuthError'];
 export type BlockEmbeddingMatrix = components['schemas']['BlockEmbeddingMatrix'];
-export type BlockEmbeddingMatrixOperator = components['schemas']['BlockEmbeddingMatrixOperator'];
-export type BlockFields = components['schemas']['BlockFields'];
 export type CdnaCompact = components['schemas']['CdnaCompact'];
 export type CdnaDetailed = components['schemas']['CdnaDetailed'];
 export type CdnaField = components['schemas']['CdnaField'];
 export type CdnaMeasurement = components['schemas']['CdnaMeasurement'];
-export type CdnaPredicate = components['schemas']['CdnaPredicate'];
-export type CdnaPredicateFilter = components['schemas']['CdnaPredicateFilter'];
-export type CdnaPredicateInner = components['schemas']['CdnaPredicateInner'];
-export type CdnaPredicateQuery = components['schemas']['CdnaPredicateQuery'];
-export type CdnaUpdate = components['schemas']['CdnaUpdate'];
 export type CellViability = components['schemas']['CellViability'];
 export type ChromiumDatasetCompact = components['schemas']['ChromiumDatasetCompact'];
 export type ChromiumDatasetDetailed = components['schemas']['ChromiumDatasetDetailed'];
 export type ChromiumDatasetDetailedLinks = components['schemas']['ChromiumDatasetDetailedLinks'];
 export type ChromiumDatasetField = components['schemas']['ChromiumDatasetField'];
 export type ChromiumDatasetParsedFile = components['schemas']['ChromiumDatasetParsedFile'];
-export type ChromiumDatasetPredicate = components['schemas']['ChromiumDatasetPredicate'];
-export type ChromiumDatasetPredicateFilter = components['schemas']['ChromiumDatasetPredicateFilter'];
-export type ChromiumDatasetPredicateInner = components['schemas']['ChromiumDatasetPredicateInner'];
-export type ChromiumDatasetPredicateQuery = components['schemas']['ChromiumDatasetPredicateQuery'];
-export type ChromiumDatasetRecord = components['schemas']['ChromiumDatasetRecord'];
 export type ChromiumRunCompact = components['schemas']['ChromiumRunCompact'];
 export type ChromiumRunDetailed = components['schemas']['ChromiumRunDetailed'];
 export type ChromiumRunField = components['schemas']['ChromiumRunField'];
 export type ChromiumRunLinks = components['schemas']['ChromiumRunLinks'];
-export type ChromiumRunPredicate = components['schemas']['ChromiumRunPredicate'];
-export type ChromiumRunPredicateFilter = components['schemas']['ChromiumRunPredicateFilter'];
-export type ChromiumRunPredicateInner = components['schemas']['ChromiumRunPredicateInner'];
-export type ChromiumRunPredicateQuery = components['schemas']['ChromiumRunPredicateQuery'];
-export type ChromiumRunRecord = components['schemas']['ChromiumRunRecord'];
-export type Components = components['schemas']['Components'];
-export type Contact = components['schemas']['Contact'];
 export type ControlledRateFreezing = components['schemas']['ControlledRateFreezing'];
-export type CookieStyle = components['schemas']['CookieStyle'];
 export type CountingMethod = components['schemas']['CountingMethod'];
 export type CreateChromiumDatasetError = components['schemas']['CreateChromiumDatasetError'];
 export type DbError = components['schemas']['DbError'];
 export type DithiobisSuccinimidylpropionate = components['schemas']['DithiobisSuccinimidylpropionate'];
-export type Encoding = components['schemas']['Encoding'];
-export type Example = components['schemas']['Example'];
-export type ExternalDocumentation = components['schemas']['ExternalDocumentation'];
 export type Fixative = components['schemas']['Fixative'];
-export type FixativeOperator = components['schemas']['FixativeOperator'];
 export type FlashFreezing = components['schemas']['FlashFreezing'];
 export type FormaldehydeDerivative = components['schemas']['FormaldehydeDerivative'];
 export type GemWell = components['schemas']['GemWell'];
-export type Header = components['schemas']['Header'];
-export type HeaderStyle = components['schemas']['HeaderStyle'];
 export type IndexSetError = components['schemas']['IndexSetError'];
-export type Info = components['schemas']['Info'];
 export type Institution = components['schemas']['Institution'];
 export type InstitutionField = components['schemas']['InstitutionField'];
-export type InstitutionPredicate = components['schemas']['InstitutionPredicate'];
-export type InstitutionPredicateFilter = components['schemas']['InstitutionPredicateFilter'];
-export type InstitutionPredicateQuery = components['schemas']['InstitutionPredicateQuery'];
-export type JsonOperator = components['schemas']['JsonOperator'];
+export type JsonRejection = components['schemas']['JsonRejection'];
 export type LibraryCompact = components['schemas']['LibraryCompact'];
 export type LibraryDetailed = components['schemas']['LibraryDetailed'];
 export type LibraryField = components['schemas']['LibraryField'];
 export type LibraryMeasurement = components['schemas']['LibraryMeasurement'];
-export type LibraryPredicate = components['schemas']['LibraryPredicate'];
-export type LibraryPredicateFilter = components['schemas']['LibraryPredicateFilter'];
-export type LibraryPredicateInner = components['schemas']['LibraryPredicateInner'];
-export type LibraryPredicateQuery = components['schemas']['LibraryPredicateQuery'];
 export type LibraryType = components['schemas']['LibraryType'];
-export type LibraryTypeArrayOperator = components['schemas']['LibraryTypeArrayOperator'];
-export type LibraryTypeOperator = components['schemas']['LibraryTypeOperator'];
-export type LibraryTypeSpecification = components['schemas']['LibraryTypeSpecification'];
-export type LibraryUpdate = components['schemas']['LibraryUpdate'];
-export type License = components['schemas']['License'];
-export type Link = components['schemas']['Link'];
 export type MeanDiameter = components['schemas']['MeanDiameter'];
-export type MediaType = components['schemas']['MediaType'];
 export type Microliter = components['schemas']['Microliter'];
 export type Micrometer = components['schemas']['Micrometer'];
 export type Milliliter = components['schemas']['Milliliter'];
 export type MultiplexingTag = components['schemas']['MultiplexingTag'];
-export type MultiplexingTagPredicate = components['schemas']['MultiplexingTagPredicate'];
 export type MultiplexingTagType = components['schemas']['MultiplexingTagType'];
-export type MultiplexingTagTypeOperator = components['schemas']['MultiplexingTagTypeOperator'];
 export type Nanogram = components['schemas']['Nanogram'];
 export type NanogramConcentration = components['schemas']['NanogramConcentration'];
 export type NewApiKey = components['schemas']['NewApiKey'];
-export type NewCdna = components['schemas']['NewCdna'];
-export type NewChromiumAssay = components['schemas']['NewChromiumAssay'];
-export type NewChromiumDataset = components['schemas']['NewChromiumDataset'];
-export type NewChromiumRun = components['schemas']['NewChromiumRun'];
-export type NewDualIndexSet = components['schemas']['NewDualIndexSet'];
-export type NewInstitution = components['schemas']['NewInstitution'];
-export type NewLibrary = components['schemas']['NewLibrary'];
-export type NewNucleicAcidMeasurement = components['schemas']['NewNucleicAcidMeasurement'];
-export type NewOcmGemWell = components['schemas']['NewOcmGemWell'];
-export type NewPerson = components['schemas']['NewPerson'];
-export type NewProject = components['schemas']['NewProject'];
-export type NewService = components['schemas']['NewService'];
-export type NewSpecimen = components['schemas']['NewSpecimen'];
-export type NewSpecimenMeasurement = components['schemas']['NewSpecimenMeasurement'];
-export type NewStandardGemWell = components['schemas']['NewStandardGemWell'];
-export type NewStandardOrOcmGemWell = components['schemas']['NewStandardOrOcmGemWell'];
-export type NewSuspension = components['schemas']['NewSuspension'];
-export type NewSuspensionMeasurement = components['schemas']['NewSuspensionMeasurement'];
-export type NewSuspensionPool = components['schemas']['NewSuspensionPool'];
-export type NewSuspensionPoolMeasurement = components['schemas']['NewSuspensionPoolMeasurement'];
-export type NewTenxAssay = components['schemas']['NewTenxAssay'];
 export type NucleicAcidMeasurementData = components['schemas']['NucleicAcidMeasurementData'];
-export type OAuth2Flows = components['schemas']['OAuth2Flows'];
 export type OcmBarcodeId = components['schemas']['OcmBarcodeId'];
-export type OcmLoadedEntity = components['schemas']['OcmLoadedEntity'];
-export type OpenApi = components['schemas']['OpenApi'];
-export type Operation = components['schemas']['Operation'];
-export type OrderByApiKeyField = components['schemas']['OrderByApiKeyField'];
-export type OrderByApiKeyFieldSet = components['schemas']['OrderByApiKeyFieldSet'];
-export type OrderByCdnaField = components['schemas']['OrderByCdnaField'];
-export type OrderByCdnaFieldSet = components['schemas']['OrderByCdnaFieldSet'];
-export type OrderByChromiumDatasetField = components['schemas']['OrderByChromiumDatasetField'];
-export type OrderByChromiumDatasetFieldSet = components['schemas']['OrderByChromiumDatasetFieldSet'];
-export type OrderByChromiumRunField = components['schemas']['OrderByChromiumRunField'];
-export type OrderByChromiumRunFieldSet = components['schemas']['OrderByChromiumRunFieldSet'];
-export type OrderByInstitutionField = components['schemas']['OrderByInstitutionField'];
-export type OrderByInstitutionFieldSet = components['schemas']['OrderByInstitutionFieldSet'];
-export type OrderByLibraryField = components['schemas']['OrderByLibraryField'];
-export type OrderByLibraryFieldSet = components['schemas']['OrderByLibraryFieldSet'];
-export type OrderByPersonField = components['schemas']['OrderByPersonField'];
-export type OrderByPersonFieldSet = components['schemas']['OrderByPersonFieldSet'];
-export type OrderByProjectField = components['schemas']['OrderByProjectField'];
-export type OrderByProjectFieldSet = components['schemas']['OrderByProjectFieldSet'];
-export type OrderByServiceField = components['schemas']['OrderByServiceField'];
-export type OrderByServiceFieldSet = components['schemas']['OrderByServiceFieldSet'];
-export type OrderBySpecimenField = components['schemas']['OrderBySpecimenField'];
-export type OrderBySpecimenFieldSet = components['schemas']['OrderBySpecimenFieldSet'];
-export type OrderBySuspensionField = components['schemas']['OrderBySuspensionField'];
-export type OrderBySuspensionFieldSet = components['schemas']['OrderBySuspensionFieldSet'];
-export type OrderBySuspensionPoolField = components['schemas']['OrderBySuspensionPoolField'];
-export type OrderBySuspensionPoolFieldSet = components['schemas']['OrderBySuspensionPoolFieldSet'];
-export type Parameter = components['schemas']['Parameter'];
-export type PathItem = components['schemas']['PathItem'];
-export type PathStyle = components['schemas']['PathStyle'];
-export type Paths = components['schemas']['Paths'];
-export type Permission = components['schemas']['Permission'];
 export type Person = components['schemas']['Person'];
 export type PersonAccount = components['schemas']['PersonAccount'];
 export type PersonError = components['schemas']['PersonError'];
 export type PersonField = components['schemas']['PersonField'];
 export type PersonLinks = components['schemas']['PersonLinks'];
-export type PersonPredicate = components['schemas']['PersonPredicate'];
-export type PersonPredicateFilter = components['schemas']['PersonPredicateFilter'];
-export type PersonPredicateQuery = components['schemas']['PersonPredicateQuery'];
-export type PersonUpdate = components['schemas']['PersonUpdate'];
 export type Picogram = components['schemas']['Picogram'];
 export type PicogramConcentration = components['schemas']['PicogramConcentration'];
 export type ProjectCompact = components['schemas']['ProjectCompact'];
 export type ProjectDetailed = components['schemas']['ProjectDetailed'];
 export type ProjectField = components['schemas']['ProjectField'];
-export type ProjectPredicate = components['schemas']['ProjectPredicate'];
-export type ProjectPredicateFilter = components['schemas']['ProjectPredicateFilter'];
-export type ProjectPredicateQuery = components['schemas']['ProjectPredicateQuery'];
-export type QueryStyle = components['schemas']['QueryStyle'];
-export type ReferenceOr = components['schemas']['ReferenceOr'];
-export type ReferenceOr2 = components['schemas']['ReferenceOr2'];
-export type ReferenceOr3 = components['schemas']['ReferenceOr3'];
-export type ReferenceOr4 = components['schemas']['ReferenceOr4'];
-export type ReferenceOr5 = components['schemas']['ReferenceOr5'];
-export type ReferenceOr6 = components['schemas']['ReferenceOr6'];
-export type ReferenceOr7 = components['schemas']['ReferenceOr7'];
-export type ReferenceOr8 = components['schemas']['ReferenceOr8'];
-export type ReferenceOr9 = components['schemas']['ReferenceOr9'];
-export type RequestBody = components['schemas']['RequestBody'];
-export type Resource = components['schemas']['Resource'];
-export type Response = components['schemas']['Response'];
-export type Responses = components['schemas']['Responses'];
 export type SampleMultiplexing = components['schemas']['SampleMultiplexing'];
-export type SampleMultiplexingOperator = components['schemas']['SampleMultiplexingOperator'];
 export type SavedApiKeyRecord = components['schemas']['SavedApiKeyRecord'];
-export type SchemaObject = components['schemas']['SchemaObject'];
-export type SecurityScheme = components['schemas']['SecurityScheme'];
-export type Server = components['schemas']['Server'];
-export type ServerVariable = components['schemas']['ServerVariable'];
 export type Service = components['schemas']['Service'];
 export type ServiceField = components['schemas']['ServiceField'];
-export type ServicePredicate = components['schemas']['ServicePredicate'];
-export type ServicePredicateFilter = components['schemas']['ServicePredicateFilter'];
-export type ServicePredicateQuery = components['schemas']['ServicePredicateQuery'];
-export type ServiceUpdate = components['schemas']['ServiceUpdate'];
 export type Species = components['schemas']['Species'];
-export type SpeciesOperator = components['schemas']['SpeciesOperator'];
 export type SpecimenCompact = components['schemas']['SpecimenCompact'];
 export type SpecimenDetailed = components['schemas']['SpecimenDetailed'];
 export type SpecimenField = components['schemas']['SpecimenField'];
 export type SpecimenMeasurement = components['schemas']['SpecimenMeasurement'];
 export type SpecimenMeasurementData = components['schemas']['SpecimenMeasurementData'];
-export type SpecimenPredicate = components['schemas']['SpecimenPredicate'];
-export type SpecimenPredicateFilter = components['schemas']['SpecimenPredicateFilter'];
-export type SpecimenPredicateQuery = components['schemas']['SpecimenPredicateQuery'];
 export type SpecimenType = components['schemas']['SpecimenType'];
-export type SpecimenTypeOperator = components['schemas']['SpecimenTypeOperator'];
-export type StringOperator = components['schemas']['stringOperator'];
 export type SuspensionCompact = components['schemas']['SuspensionCompact'];
 export type SuspensionConcentration = components['schemas']['SuspensionConcentration'];
 export type SuspensionContent = components['schemas']['SuspensionContent'];
-export type SuspensionContentOperator = components['schemas']['SuspensionContentOperator'];
 export type SuspensionDetailed = components['schemas']['SuspensionDetailed'];
 export type SuspensionField = components['schemas']['SuspensionField'];
 export type SuspensionMeasurement = components['schemas']['SuspensionMeasurement'];
@@ -9878,33 +6164,11 @@ export type SuspensionPoolDetailed = components['schemas']['SuspensionPoolDetail
 export type SuspensionPoolField = components['schemas']['SuspensionPoolField'];
 export type SuspensionPoolLinks = components['schemas']['SuspensionPoolLinks'];
 export type SuspensionPoolMeasurement = components['schemas']['SuspensionPoolMeasurement'];
-export type SuspensionPoolPredicate = components['schemas']['SuspensionPoolPredicate'];
-export type SuspensionPoolPredicateFilter = components['schemas']['SuspensionPoolPredicateFilter'];
-export type SuspensionPoolPredicateInner = components['schemas']['SuspensionPoolPredicateInner'];
-export type SuspensionPoolPredicateQuery = components['schemas']['SuspensionPoolPredicateQuery'];
-export type SuspensionPoolUpdate = components['schemas']['SuspensionPoolUpdate'];
-export type SuspensionPredicate = components['schemas']['SuspensionPredicate'];
-export type SuspensionPredicateFilter = components['schemas']['SuspensionPredicateFilter'];
-export type SuspensionPredicateInner = components['schemas']['SuspensionPredicateInner'];
-export type SuspensionPredicateQuery = components['schemas']['SuspensionPredicateQuery'];
-export type SuspensionSpecimenFields = components['schemas']['SuspensionSpecimenFields'];
-export type SuspensionUpdate = components['schemas']['SuspensionUpdate'];
 export type SuspensionVolume = components['schemas']['SuspensionVolume'];
-export type Tag = components['schemas']['Tag'];
 export type TaggedSpecimen = components['schemas']['TaggedSpecimen'];
-export type TaggedSuspension = components['schemas']['TaggedSuspension'];
 export type TenxAssay = components['schemas']['TenxAssay'];
-export type TenxAssayPredicate = components['schemas']['TenxAssayPredicate'];
 export type ThermalPreservationMethod = components['schemas']['ThermalPreservationMethod'];
-export type ThermalPreservationMethodOperator = components['schemas']['ThermalPreservationMethodOperator'];
-export type TimestampOperator = components['schemas']['TimestampOperator'];
-export type TissueFields = components['schemas']['TissueFields'];
 export type UpdateChromiumDatasetError = components['schemas']['UpdateChromiumDatasetError'];
-export type UuidOperator = components['schemas']['UuidOperator'];
-export type BooleanOperator = components['schemas']['booleanOperator'];
-export type FloatOperator = components['schemas']['floatOperator'];
-export type Int32Operator = components['schemas']['int32Operator'];
-export type Int64Operator = components['schemas']['int64Operator'];
 export type $defs = Record<string, never>;
 type FlattenedDeepRequired<T> = {
     [K in keyof T]-?: FlattenedDeepRequired<T[K] extends unknown[] | undefined | null ? Extract<T[K], unknown[]>[number] : T[K]>;
@@ -9914,20 +6178,16 @@ type ReadonlyArray<T> = [
 ] extends [
     unknown[]
 ] ? Readonly<Exclude<T, undefined>> : Readonly<Exclude<T, undefined>[]>;
-export const actionValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Action"]> = ["create", "update", "delete"];
 export const apiKeyFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ApiKeyField"]> = ["id", "description", "owner_id", "owner_is_staff", "created_at", "expires_at"];
-export const apiKeyLocationValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ApiKeyLocation"]> = ["query", "header", "cookie"];
 export const blockEmbeddingMatrixValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["BlockEmbeddingMatrix"]> = ["carboxymethyl_cellulose", "optimal_cutting_temperature_compound", "paraffin"];
 export const cdnaFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["CdnaField"]> = ["id", "readable_id", "library_type", "prepared_at", "gem_well_id", "n_amplification_cycles", "additional_data"];
 export const chromiumDatasetFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ChromiumDatasetField"]> = ["id", "name", "delivered_at"];
 export const chromiumRunFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ChromiumRunField"]> = ["id", "readable_id", "assay_id", "run_at", "run_by", "succeeded", "additional_data"];
 export const controlledRateFreezingValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ControlledRateFreezing"]> = ["controlled_rate_freezing"];
-export const cookieStyleValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["CookieStyle"]> = ["form"];
 export const countingMethodValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["CountingMethod"]> = ["bright_field", "acridine_orange_propidium_iodide", "trypan_blue"];
 export const dithiobisSuccinimidylpropionateValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["DithiobisSuccinimidylpropionate"]> = ["dithiobis_succinimidylpropionate"];
 export const flashFreezingValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["FlashFreezing"]> = ["flash_freezing"];
 export const formaldehydeDerivativeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["FormaldehydeDerivative"]> = ["formaldehyde_derivative"];
-export const headerStyleValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["HeaderStyle"]> = ["simple"];
 export const institutionFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["InstitutionField"]> = ["id", "name", "microsoft_entra_tenant_id"];
 export const libraryFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["LibraryField"]> = ["id", "readable_id", "cdna_id", "single_index_set_name", "dual_index_set_name", "number_of_sample_index_pcr_cycles", "target_reads_per_cell", "prepared_at", "additional_data"];
 export const libraryTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["LibraryType"]> = ["antibody_capture", "antigen_capture", "chromatin_accessibility", "crispr_guide_capture", "custom", "gene_expression", "multiplexing_capture", "vdj", "vdj_b", "vdj_t", "vdj_t_gd"];
@@ -9937,12 +6197,9 @@ export const milliliterValues: ReadonlyArray<FlattenedDeepRequired<components>["
 export const multiplexingTagTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["MultiplexingTagType"]> = ["flex_barcode", "flex_oligonucleotide_barcode", "TotalSeq-A", "TotalSeq-B", "TotalSeq-C", "genetic"];
 export const nanogramValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Nanogram"]> = ["nanogram"];
 export const ocmBarcodeIdValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["OcmBarcodeId"]> = ["ob1", "ob2", "ob3", "ob4"];
-export const pathStyleValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["PathStyle"]> = ["matrix", "label", "simple"];
 export const personFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["PersonField"]> = ["id", "name", "email", "institution_id", "is_staff", "orcid"];
 export const picogramValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Picogram"]> = ["picogram"];
 export const projectFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ProjectField"]> = ["id", "name", "created_by", "started_at", "ended_at"];
-export const queryStyleValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["QueryStyle"]> = ["form", "spaceDelimited", "pipeDelimited", "deepObject"];
-export const resourceValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Resource"]> = ["institution", "person", "account", "project", "specimen", "assay_constant_data", "chromium_experimental_data", "chromium_dataset"];
 export const sampleMultiplexingValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SampleMultiplexing"]> = ["cellplex", "flex_barcode", "flex_oligonucleotide_barcode", "hashtag", "on_chip_multiplexing", "singleplex"];
 export const serviceFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ServiceField"]> = ["id", "description", "owned_by", "is_staff", "created_at"];
 export const speciesValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Species"]> = ["ambystoma_mexicanum", "canis_familiaris", "callithrix_jacchus", "drosophila_melanogaster", "gasterosteus_aculeatus", "homo_sapiens", "mus_musculus", "rattus_norvegicus", "sminthopsis_crassicaudata"];

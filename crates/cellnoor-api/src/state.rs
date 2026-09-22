@@ -11,8 +11,6 @@ use crate::{
 
 type JwtDecodingInfo = (jsonwebtoken::DecodingKey, jsonwebtoken::Validation);
 
-// In theory, we shouldn't really be cloning strings on every request. I don't
-// think this is a serious performance issue for like 100 bytes though
 #[derive(Clone)]
 pub struct AppState {
     pub db_pool: db::Pool,
