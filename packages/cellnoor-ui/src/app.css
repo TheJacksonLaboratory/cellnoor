@@ -1,12 +1,26 @@
 :root {
-	--jax-cyan: #0085ca;
-	--jax-navy: #05396b;
+	/* These are the colors of the Jackson Laboratory */
+	--color-primary: #05396b;
+	--color-secondary: #0085ca;
 	--sm-gap: 0.5rem;
 	--md-gap: 1rem;
-	--bg-gap: 2rem;
 }
 
 body {
 	margin: 0;
 	font-family: system-ui, sans-serif;
+}
+
+button {
+	font: inherit;
+	padding: var(--sm-gap);
+	border: var(--color-secondary) solid 1px;
+	border-radius: 0.5rem;
+	background: var(--color-primary);
+	color: white;
+	cursor: pointer;
+
+	&:hover {
+		background: black;
+	}
 }

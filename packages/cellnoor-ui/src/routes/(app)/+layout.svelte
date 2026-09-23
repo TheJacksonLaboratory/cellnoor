@@ -1,18 +1,26 @@
 <script lang="ts">
-	const links = ['Specimens', 'Libraries', 'Chromium Datasets'];
+	import { authClient } from '#lib/auth.ts';
+	import { afterNavigate, goto } from '$app/navigation';
 
-	let { data, children } = $props();
+	let { children } = $props();
+
+	let datasetsMenu: HTMLDivElement;
+	afterNavigate(() => datasetsMenu.hidePopover());
 </script>
 
 <nav>
-	<a class="brand" href="/">
-		<span>cellnoor</span>
-	</a>
-	{#each links as link (link)}
-		<a href={`/${link.replace(' ', '-').toLowerCase()}`}>{link}</a>
-	{/each}
+	<a class="brand" href="/">cellnoor</a>
+	<a href="/specimens">Specimens</a>
+	<a href="/libraries">Libraries</a>
+	<button class="menu-trigger" popovertarget="datasets-menu">Datasets</button>
+	<div id="datasets-menu" popover bind:this={datasetsMenu}>
+		<a href="/chromium-datasets">Chromium Datasets</a>
+	</div>
 
-	<a href="/profile">{data.user.name}</a>
+	<button
+		onclick={() => authClient.signOut({ fetchOptions: { onSuccess: () => goto('/sign-in') } })}
+		>Sign Out</button
+	>
 </nav>
 
 {@render children()}
@@ -24,21 +32,39 @@
 		margin-inline-end: auto;
 	}
 
+	.menu-trigger {
+		anchor-name: --datasets;
+		background: none;
+		color: black;
+
+		&:hover {
+			color: var(--color-primary);
+		}
+	}
+
+	#datasets-menu {
+		position-anchor: --datasets;
+		position-area: bottom span-right;
+		inset: auto;
+		margin: var(--sm-gap);
+		padding: var(--sm-gap);
+		border: 1px solid var(--color-secondary);
+		border-radius: 0.5rem;
+	}
+
 	nav {
 		display: flex;
 		align-items: center;
 		gap: var(--md-gap);
 		padding: var(--md-gap);
-		border-bottom: 1px solid var(--jax-cyan);
+		border-bottom: 1px solid var(--color-secondary);
 
 		a {
-			display: flex;
-			align-items: center;
 			text-decoration: none;
 			color: black;
 
 			&:hover {
-				color: var(--jax-cyan);
+				color: var(--color-primary);
 			}
 		}
 	}

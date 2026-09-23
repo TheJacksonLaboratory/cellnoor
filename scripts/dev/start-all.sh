@@ -16,9 +16,12 @@ quiet() {
 }
 
 cleanup() {
+	trap '' TERM
+	kill 0
+	wait
+	tail -n +1 "$logs"/{api,auth,ui-watch,caddy}.log 2>/dev/null || true
 	quiet cleanup scripts/dev/cleanup-docker.sh --yes
 	rm -rf "$sockets" "$logs"
-	kill 0
 }
 trap cleanup EXIT
 
@@ -73,10 +76,10 @@ quiet api-build cargo build --manifest-path crates/Cargo.toml --package cellnoor
 quiet ui-build bun run --bun --cwd packages/cellnoor-ui check
 quiet auth-install bun install --cwd packages/cellnoor-auth
 
-quiet api ./crates/target/debug/cellnoor-api &
-quiet auth bun --cwd packages/cellnoor-auth index.ts &
-quiet ui-watch bun run --cwd packages/cellnoor-ui build --watch &
-quiet caddy caddy run --config caddy/Caddyfile --watch &
+./crates/target/debug/cellnoor-api >"$logs/api.log" 2>&1 &
+bun --cwd packages/cellnoor-auth index.ts >"$logs/auth.log" 2>&1 &
+bun run --cwd packages/cellnoor-ui build --watch >"$logs/ui-watch.log" 2>&1 &
+caddy run --config caddy/Caddyfile --watch >"$logs/caddy.log" 2>&1 &
 
 until [[ -S $CELLNOOR_API__LISTEN_ON && -S $CELLNOOR_AUTH__UNIX_DOMAIN_SOCKET ]]; do
 	[[ $(jobs -rp | wc -l) -eq 4 ]] || exit 1

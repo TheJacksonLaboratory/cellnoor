@@ -31,7 +31,6 @@ create table person (
     email_verified boolean not null default false,
     institution_id uuid references institution not null,
     is_staff boolean not null default false,
-    image text,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now(),
     orcid case_insensitive_text unique,

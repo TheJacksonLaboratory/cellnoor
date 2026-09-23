@@ -9,6 +9,4 @@ export async function load({ url }) {
 	if (!user) {
 		redirect(307, `/sign-in?redirect_to=${url.pathname}`);
 	}
-
-	return { user };
 }
