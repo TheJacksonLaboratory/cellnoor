@@ -4,10 +4,20 @@
 set -euo pipefail
 
 sockets=$(mktemp -d)
+logs=$(mktemp -d)
+
+quiet() {
+	local name=$1
+	shift
+	"$@" >"$logs/$name.log" 2>&1 || {
+		cat "$logs/$name.log" >&2
+		return 1
+	}
+}
 
 cleanup() {
-	scripts/dev/cleanup-docker.sh --yes
-	rm -rf "$sockets"
+	quiet cleanup scripts/dev/cleanup-docker.sh --yes
+	rm -rf "$sockets" "$logs"
 	kill 0
 }
 trap cleanup EXIT
@@ -52,13 +62,29 @@ export CELLNOOR_CADDY__UI_DIR="$PWD/packages/cellnoor-ui/build"
 
 mkdir -p "$static_files_dir"
 
-scripts/dev/compose.sh up db --wait
-scripts/dev/compose.sh up migrate
+quiet colima colima start
 
-cargo run --manifest-path crates/Cargo.toml --package cellnoor-api --bin cellnoor-api &
-(cd packages/cellnoor-auth && bun install && bun index.ts) &
-bun run --cwd packages/cellnoor-ui build --watch &
-caddy run --config caddy/Caddyfile --watch &
-echo "app running on https://$host"
+# Set up the db
+quiet db scripts/dev/compose.sh up db --wait
+quiet migrate scripts/dev/compose.sh run --rm migrate
 
-wait
+# Build the 3 services in the foreground so that we fail early if something is wrong
+quiet api-build cargo build --manifest-path crates/Cargo.toml --package cellnoor-api --bin cellnoor-api
+quiet ui-build bun run --bun --cwd packages/cellnoor-ui check
+quiet auth-install bun install --cwd packages/cellnoor-auth
+
+quiet api ./crates/target/debug/cellnoor-api &
+quiet auth bun --cwd packages/cellnoor-auth index.ts &
+quiet ui-watch bun run --cwd packages/cellnoor-ui build --watch &
+quiet caddy caddy run --config caddy/Caddyfile --watch &
+
+until [[ -S $CELLNOOR_API__LISTEN_ON && -S $CELLNOOR_AUTH__UNIX_DOMAIN_SOCKET ]]; do
+	[[ $(jobs -rp | wc -l) -eq 4 ]] || exit 1
+	sleep 0.1
+done
+
+echo "cellnoor running on https://$host"
+
+while [[ $(jobs -rp | wc -l) -eq 4 ]]; do sleep 1; done
+
+exit 1

@@ -8,7 +8,7 @@ create table tenx_assay (
     chromium_chip case_insensitive_text,
     cmdlines case_insensitive_text[],
 
-    unique (name, library_types, sample_multiplexing, chemistry_version)
+    unique (name, library_types, sample_multiplexing, chemistry_version, chromium_chip)
 );
 
 -- Both array columns are normalized the same way, on the same events
