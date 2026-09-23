@@ -41,7 +41,6 @@ regex.workspace = true
 futures.workspace = true
 serde_json.workspace = true
 zstd.workspace = true
-indexmap.workspace = true
 
 [dev-dependencies]
 uuid = { workspace = true, features = ["v4"] }

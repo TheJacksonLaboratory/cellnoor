@@ -1,5 +1,3 @@
-#![allow(clippy::doc_markdown)]
-
 #[cfg(feature = "postgres-types")]
 use postgres_types::ToSql;
 use uuid::Uuid;
@@ -10,11 +8,11 @@ use uuid::Uuid;
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(rename = "{P}Filter"))]
 pub enum Filter<P> {
-    /// Combines these predicates with logical 'and'
+    /// Combines these predicates with logical `and`
     AllOf(Vec<Filter<P>>),
-    /// Combines these predicates with logical 'or'
+    /// Combines these predicates with logical `or`
     AnyOf(Vec<Filter<P>>),
-    /// Negates this predicate with logical 'not'
+    /// Negates this predicate with logical `not`
     Not(Box<Filter<P>>),
     #[cfg_attr(feature = "serde", serde(untagged))]
     /// Apply just one boolean predicate
@@ -57,20 +55,20 @@ pub trait AsPredicate {
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(rename = "{T}Operator"))]
 pub enum Operator<T> {
-    /// equals (=)
+    /// equals (`=`)
     Eq(T),
-    /// less than (<)
+    /// less than (`<`)
     Lt(T),
-    /// less than or equal to (<=)
+    /// less than or equal to (`<=`)
     Lte(T),
-    /// greater than (>)
+    /// greater than (`>`)
     Gt(T),
-    /// greater than or equal to (>=)
+    /// greater than or equal to (`>=`)
     Gte(T),
-    /// is contained in (= any($1))
+    /// is contained in (`= any($1)`)
     In(Vec<T>),
-    /// equals (=), but (de)serializes as '{"field": "value"}' instead of
-    /// '{"field": {"eq": "value"}}'
+    /// equals (`=`), but (de)serializes as `{"field": "value"}` instead of
+    /// `{"field": {"eq": "value"}}`
     #[cfg(feature = "serde")]
     #[serde(untagged)]
     ImplicitEq(T),
@@ -115,22 +113,22 @@ pub type SimpleJsonOperator = Operator<serde_json::Value>;
 
 /// A comparison operator for string values.
 ///
-/// This is a superset of the baisc operators and adds the following
+/// This is a superset of the basic operators and adds the following
 /// string-specific methods present in PostgreSQL:
-/// 1. like (https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE)
-/// 2. trigram similar (https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS)
+/// 1. `like` (https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE)
+/// 2. trigram similarity (`%`) (https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS)
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub enum StringOperator {
-    /// PostgreSQL like
+    /// PostgreSQL `like`
     Like(String),
-    /// PostgreSQL like any
+    /// PostgreSQL `like any`
     LikeAny(Vec<String>),
-    /// PostgreSQL trigram similar to (%)
+    /// PostgreSQL trigram similar to (`%`)
     Trgm(String),
-    /// PostgreSQL trigram similar to any (% any)
+    /// PostgreSQL trigram similar to any (`% any`)
     TrgmAny(Vec<String>),
     /// All other operators
     #[cfg_attr(feature = "serde", serde(untagged))]
@@ -160,20 +158,20 @@ impl From<SimpleStringOperator> for StringOperator {
 ///
 /// This is a superset of the basic operators and adds the following
 /// array-specific methods present in PostgreSQL (https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY):
-/// 1. contains
-/// 2. is contained in
-/// 3. overlaps with
+/// 1. contains (`@>`)
+/// 2. is contained in (`<@`)
+/// 3. overlaps with (`&&`)
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(rename = "{T}ArrayOperator"))]
 pub enum ArrayOperator<T> {
-    /// PostgreSQL contains (@>)
+    /// PostgreSQL contains (`@>`)
     Contains(Vec<T>),
-    /// PostgreSQL is contained in (<@)
+    /// PostgreSQL is contained in (`<@`)
     IsContainedIn(Vec<T>),
-    /// PostgreSQL overlaps (&&)
+    /// PostgreSQL overlaps (`&&`)
     Overlaps(Vec<T>),
     /// All other operators
     #[cfg_attr(feature = "serde", serde(untagged))]
@@ -205,25 +203,25 @@ impl<T> From<SimpleArrayOperator<T>> for ArrayOperator<T> {
 ///
 /// This is a superset of the basic operators and adds the following
 /// JSON-specific methods present in PostgreSQL (https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY):
-/// 1. contains
-/// 2. is contained in
-/// 3. has key
-/// 4. has any of keys
-/// 5. has all of keys
+/// 1. contains (`@>`)
+/// 2. is contained in (`<@`)
+/// 3. has key (`?`)
+/// 4. has any of keys (`?|`)
+/// 5. has all of keys (`?&`)
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub enum JsonOperator {
-    /// PostgreSQL contains (@>)
+    /// PostgreSQL contains (`@>`)
     Contains(serde_json::Value),
-    /// PostgreSQL is contained in (<@)
+    /// PostgreSQL is contained in (`<@`)
     IsContainedIn(serde_json::Value),
-    /// PostgreSQL has key (?)
+    /// PostgreSQL has key (`?`)
     HasKey(String),
-    /// PostgreSQL has any of keys (?|)
+    /// PostgreSQL has any of keys (`?|`)
     HasAnyOfKeys(Vec<String>),
-    /// PostgreSQL has all of keys (?&)
+    /// PostgreSQL has all of keys (`?&`)
     HasAllOfKeys(Vec<String>),
     /// All other operators
     #[cfg_attr(feature = "serde", serde(untagged))]

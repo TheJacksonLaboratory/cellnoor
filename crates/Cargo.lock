@@ -264,7 +264,6 @@ dependencies = [
  "deadpool-postgres",
  "dotenvy",
  "futures",
- "indexmap",
  "jiff",
  "jsonwebtoken",
  "postgres-types",

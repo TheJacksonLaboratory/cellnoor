@@ -21,7 +21,7 @@ pub use single::create::tests::insert_test_single_index_set;
 use crate::{
     db::{self, DbError, FieldValues, Insert},
     error::error_response,
-    handlers::index_sets::index_set_name::IndexKitName,
+    handlers::{index_sets::index_set_name::IndexKitName, specific_error_inferred_early_responses},
 };
 
 mod dual;
@@ -67,22 +67,11 @@ impl IntoResponse for IndexSetError {
 impl OperationOutput for IndexSetError {
     type Inner = Self;
 
-    fn operation_response(
-        ctx: &mut GenContext,
-        operation: &mut Operation,
-    ) -> Option<OpenApiResponse> {
-        Json::<Self>::operation_response(ctx, operation)
-    }
-
     fn inferred_responses(
         ctx: &mut GenContext,
         operation: &mut Operation,
     ) -> Vec<(Option<OpenApiStatusCode>, OpenApiResponse)> {
-        let Some(response) = Self::operation_response(ctx, operation) else {
-            return Vec::new();
-        };
-
-        vec![(None, response)]
+        specific_error_inferred_early_responses::<Self>(ctx, operation)
     }
 }
 

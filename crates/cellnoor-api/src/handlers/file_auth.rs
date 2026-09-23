@@ -11,7 +11,9 @@ use axum::{
 pub use dataset_dir::authorize_dataset_dir_access;
 pub use project_dir::authorize_project_dir_access;
 
-use crate::{db::DbError, error::error_response};
+use crate::{
+    db::DbError, error::error_response, handlers::specific_error_inferred_early_responses,
+};
 
 mod dataset_dir;
 mod project_dir;
@@ -46,21 +48,13 @@ impl IntoResponse for FileAuthError {
 impl OperationOutput for FileAuthError {
     type Inner = Self;
 
-    fn operation_response(
-        ctx: &mut GenContext,
-        operation: &mut Operation,
-    ) -> Option<OpenApiResponse> {
-        Json::<Self>::operation_response(ctx, operation)
-    }
-
     fn inferred_responses(
         ctx: &mut GenContext,
         operation: &mut Operation,
     ) -> Vec<(Option<OpenApiStatusCode>, OpenApiResponse)> {
-        let Some(response) = Self::operation_response(ctx, operation) else {
-            return Vec::new();
-        };
+        let mut responses = specific_error_inferred_early_responses::<Self>(ctx, operation);
+        let (_, response) = responses.swap_remove(0);
 
-        vec![(None, response)]
+        vec![(Some(aide::openapi::StatusCode::Code(401)), response)]
     }
 }

@@ -22,7 +22,7 @@ use crate::{
     auth::AuthUser,
     db::{self, DbError, FieldValues, Insert, Sql},
     error::error_response,
-    handlers::IdParam,
+    handlers::{IdParam, specific_error_inferred_early_responses},
     state::AppState,
 };
 
@@ -63,22 +63,11 @@ impl IntoResponse for UploadFilesError {
 impl OperationOutput for UploadFilesError {
     type Inner = Self;
 
-    fn operation_response(
-        ctx: &mut GenContext,
-        operation: &mut Operation,
-    ) -> Option<OpenApiResponse> {
-        Json::<Self>::operation_response(ctx, operation)
-    }
-
     fn inferred_responses(
         ctx: &mut GenContext,
         operation: &mut Operation,
     ) -> Vec<(Option<OpenApiStatusCode>, OpenApiResponse)> {
-        let Some(response) = Self::operation_response(ctx, operation) else {
-            return Vec::new();
-        };
-
-        vec![(None, response)]
+        specific_error_inferred_early_responses::<Self>(ctx, operation)
     }
 }
 

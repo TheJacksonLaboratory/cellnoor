@@ -63,7 +63,6 @@ uuid = { version = "1.23.0", features = ["serde"] }
 tokio = {version = "1.52.1", features = ["macros", "rt-multi-thread"]}
 deadpool-postgres = { version = "0.14.1", features = ["serde"] }
 zstd = { version = "0.13.3" }
-indexmap = { version = "2.14.2" }
 
 [workspace.lints.clippy]
 missing_errors_doc = "allow"

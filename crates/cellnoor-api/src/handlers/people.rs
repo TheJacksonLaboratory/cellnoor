@@ -13,7 +13,9 @@ pub use index::index_people;
 pub use show::show_person;
 pub use update::update_person;
 
-use crate::{db::DbError, error::error_response};
+use crate::{
+    db::DbError, error::error_response, handlers::specific_error_inferred_early_responses,
+};
 
 pub(super) mod create;
 #[cfg(test)]
@@ -50,21 +52,10 @@ impl IntoResponse for PersonError {
 impl OperationOutput for PersonError {
     type Inner = Self;
 
-    fn operation_response(
-        ctx: &mut GenContext,
-        operation: &mut Operation,
-    ) -> Option<OpenApiResponse> {
-        Json::<Self>::operation_response(ctx, operation)
-    }
-
     fn inferred_responses(
         ctx: &mut GenContext,
         operation: &mut Operation,
     ) -> Vec<(Option<OpenApiStatusCode>, OpenApiResponse)> {
-        let Some(response) = Self::operation_response(ctx, operation) else {
-            return Vec::new();
-        };
-
-        vec![(None, response)]
+        specific_error_inferred_early_responses::<Self>(ctx, operation)
     }
 }

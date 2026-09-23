@@ -1,4 +1,4 @@
-use aide::OperationIo;
+use aide::OperationOutput;
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -10,16 +10,7 @@ use deadpool_postgres::{
 
 use crate::error::error_response;
 
-#[derive(
-    Debug,
-    Clone,
-    thiserror::Error,
-    serde::Serialize,
-    schemars::JsonSchema,
-    PartialEq,
-    Eq,
-    OperationIo,
-)]
+#[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema, PartialEq, Eq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum DbError {
     #[error("resource not found")]
@@ -57,6 +48,22 @@ impl DbError {
             Self::PermissionDenied { .. } => StatusCode::UNAUTHORIZED,
             Self::Other { .. } => StatusCode::INTERNAL_SERVER_ERROR,
         }
+    }
+}
+
+impl OperationOutput for DbError {
+    type Inner = Self;
+
+    fn inferred_responses(
+        ctx: &mut aide::generate::GenContext,
+        operation: &mut aide::openapi::Operation,
+    ) -> Vec<(Option<aide::openapi::StatusCode>, aide::openapi::Response)> {
+        // Every operation can return a DbError, so we just let this one be the
+        // default for all of them
+        vec![(
+            None,
+            axum::Json::<DbError>::operation_response(ctx, operation).unwrap(),
+        )]
     }
 }
 

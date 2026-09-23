@@ -28,6 +28,7 @@ use crate::{
             show::select_chromium_dataset_by_id,
             upload_files::{DatasetWithProjectNames, fetch_dataset_and_project_names},
         },
+        specific_error_inferred_early_responses,
     },
     state::AppState,
 };
@@ -60,22 +61,11 @@ impl IntoResponse for UpdateChromiumDatasetError {
 impl OperationOutput for UpdateChromiumDatasetError {
     type Inner = Self;
 
-    fn operation_response(
-        ctx: &mut GenContext,
-        operation: &mut Operation,
-    ) -> Option<OpenApiResponse> {
-        Json::<Self>::operation_response(ctx, operation)
-    }
-
     fn inferred_responses(
         ctx: &mut GenContext,
         operation: &mut Operation,
     ) -> Vec<(Option<OpenApiStatusCode>, OpenApiResponse)> {
-        let Some(response) = Self::operation_response(ctx, operation) else {
-            return Vec::new();
-        };
-
-        vec![(None, response)]
+        specific_error_inferred_early_responses::<Self>(ctx, operation)
     }
 }
 

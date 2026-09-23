@@ -1,4 +1,3 @@
-use aide::OperationIo;
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -6,16 +5,7 @@ use axum::{
 
 use crate::{db::DbError, error::error_response};
 
-#[derive(
-    Debug,
-    Clone,
-    thiserror::Error,
-    serde::Serialize,
-    schemars::JsonSchema,
-    PartialEq,
-    Eq,
-    OperationIo,
-)]
+#[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema, PartialEq, Eq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum AuthError {
     #[error("API key expired at {expired_at}")]
@@ -31,12 +21,7 @@ pub enum AuthError {
 
 impl AuthError {
     fn status(&self) -> StatusCode {
-        match self {
-            Self::ExpiredApiKey { .. }
-            | Self::InvalidAuthToken { .. }
-            | Self::NoAuthFound { .. } => StatusCode::UNAUTHORIZED,
-            Self::Db(e) => e.status(),
-        }
+        StatusCode::UNAUTHORIZED
     }
 }
 

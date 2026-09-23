@@ -54,9 +54,9 @@ impl OperationInput for AuthUser {
         ctx: &mut GenContext,
         operation: &mut Operation,
     ) -> Vec<(Option<OpenApiStatusCode>, OpenApiResponse)> {
-        let Some(response) = Json::<AuthError>::operation_response(ctx, operation) else {
-            return Vec::new();
-        };
+        // All 401 errors are AuthErrors, so we just reserve this status code in
+        // the generated schema
+        let response = Json::<AuthError>::operation_response(ctx, operation).unwrap();
 
         vec![(Some(OpenApiStatusCode::Code(401)), response)]
     }

@@ -41,6 +41,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -51,7 +59,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewInstitution"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -61,7 +73,7 @@ export interface paths {
                         "application/json": components["schemas"]["Institution"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -78,7 +90,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -87,13 +99,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -120,7 +131,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["InstitutionPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -130,7 +145,7 @@ export interface paths {
                         "application/json": components["schemas"]["Institution"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -147,7 +162,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -156,13 +171,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -207,6 +221,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -218,7 +240,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewInstitution"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -228,7 +254,7 @@ export interface paths {
                         "application/json": components["schemas"]["Institution"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -245,7 +271,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -254,13 +280,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -291,6 +316,14 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -337,6 +370,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -347,7 +388,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewPerson"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -357,7 +402,7 @@ export interface paths {
                         "application/json": components["schemas"]["Person"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -374,7 +419,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -383,16 +428,7 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
                 422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["JsonRejection"];
-                    };
-                };
-                default: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -424,7 +460,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PersonPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -434,7 +474,7 @@ export interface paths {
                         "application/json": components["schemas"]["Person"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -451,7 +491,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -460,13 +500,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -511,6 +550,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -522,7 +569,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PersonUpdate"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -532,7 +583,7 @@ export interface paths {
                         "application/json": components["schemas"]["Person"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -549,7 +600,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -558,16 +609,7 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
                 422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["JsonRejection"];
-                    };
-                };
-                default: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -603,6 +645,14 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -642,6 +692,14 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -691,6 +749,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -701,7 +767,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewService"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -711,7 +781,7 @@ export interface paths {
                         "application/json": components["schemas"]["Service"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -728,7 +798,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -737,13 +807,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -770,7 +839,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ServicePredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -780,7 +853,7 @@ export interface paths {
                         "application/json": components["schemas"]["Service"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -797,7 +870,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -806,13 +879,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -840,7 +912,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ServiceUpdate"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -850,7 +926,7 @@ export interface paths {
                         "application/json": components["schemas"]["Service"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -867,7 +943,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -876,13 +952,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -915,6 +990,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         options?: never;
@@ -940,7 +1023,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": string[];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -950,7 +1037,7 @@ export interface paths {
                         "application/json": null;
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -967,7 +1054,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -976,13 +1063,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1030,6 +1116,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -1062,6 +1156,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         delete?: never;
@@ -1086,7 +1188,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ApiKeyPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -1096,7 +1202,7 @@ export interface paths {
                         "application/json": components["schemas"]["SavedApiKeyRecord"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -1113,7 +1219,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -1122,13 +1228,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1156,7 +1261,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ApiKeyUpdate"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -1166,7 +1275,7 @@ export interface paths {
                         "application/json": components["schemas"]["SavedApiKeyRecord"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -1183,7 +1292,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -1192,13 +1301,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1229,6 +1337,14 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1275,6 +1391,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -1285,7 +1409,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewProject"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -1295,7 +1423,7 @@ export interface paths {
                         "application/json": components["schemas"]["ProjectDetailed"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -1312,7 +1440,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -1321,13 +1449,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1375,6 +1502,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -1401,7 +1536,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ProjectPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -1411,7 +1550,7 @@ export interface paths {
                         "application/json": components["schemas"]["ProjectCompact"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -1428,7 +1567,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -1437,13 +1576,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1470,7 +1608,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ProjectPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -1480,7 +1622,7 @@ export interface paths {
                         "application/json": components["schemas"]["ProjectDetailed"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -1497,7 +1639,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -1506,13 +1648,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1557,6 +1698,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -1568,7 +1717,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewProject"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -1578,7 +1731,7 @@ export interface paths {
                         "application/json": components["schemas"]["ProjectDetailed"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -1595,7 +1748,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -1604,13 +1757,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1643,6 +1795,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         options?: never;
@@ -1668,7 +1828,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": string[];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -1678,7 +1842,7 @@ export interface paths {
                         "application/json": null;
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -1695,7 +1859,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -1704,13 +1868,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -1737,7 +1900,14 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": [
+                        string,
+                        string[]
+                    ][];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -1747,7 +1917,7 @@ export interface paths {
                         "application/json": null;
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -1764,7 +1934,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -1773,16 +1943,7 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
                 422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["JsonRejection"];
-                    };
-                };
-                default: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1814,7 +1975,13 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": {
+                        [key: string]: components["schemas"]["NewDualIndexSet"];
+                    };
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -1824,7 +1991,7 @@ export interface paths {
                         "application/json": null;
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -1841,7 +2008,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -1850,16 +2017,7 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
                 422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["JsonRejection"];
-                    };
-                };
-                default: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1907,6 +2065,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -1917,7 +2083,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewTenxAssay"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -1927,7 +2097,7 @@ export interface paths {
                         "application/json": components["schemas"]["TenxAssay"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -1944,7 +2114,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -1953,13 +2123,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2002,6 +2171,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -2012,7 +2189,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MultiplexingTag"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -2022,7 +2203,7 @@ export interface paths {
                         "application/json": components["schemas"]["MultiplexingTag"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -2039,7 +2220,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -2048,13 +2229,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2102,6 +2282,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -2112,7 +2300,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewSpecimen"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -2122,7 +2314,7 @@ export interface paths {
                         "application/json": components["schemas"]["SpecimenDetailed"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -2139,7 +2331,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -2148,13 +2340,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2202,6 +2393,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -2228,7 +2427,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SpecimenPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -2238,7 +2441,7 @@ export interface paths {
                         "application/json": components["schemas"]["SpecimenCompact"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -2255,7 +2458,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -2264,13 +2467,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2297,7 +2499,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SpecimenPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -2307,7 +2513,7 @@ export interface paths {
                         "application/json": components["schemas"]["SpecimenDetailed"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -2324,7 +2530,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -2333,13 +2539,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2384,6 +2589,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -2395,7 +2608,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewSpecimen"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -2405,7 +2622,7 @@ export interface paths {
                         "application/json": components["schemas"]["SpecimenDetailed"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -2422,7 +2639,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -2431,13 +2648,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2470,6 +2686,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         options?: never;
@@ -2495,7 +2719,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewSpecimenMeasurement"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -2505,7 +2733,7 @@ export interface paths {
                         "application/json": null;
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -2522,7 +2750,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -2531,13 +2759,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2585,6 +2812,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -2595,7 +2830,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewSuspension"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -2605,7 +2844,7 @@ export interface paths {
                         "application/json": components["schemas"]["SuspensionDetailed"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -2622,7 +2861,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -2631,13 +2870,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2685,6 +2923,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -2711,7 +2957,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SuspensionPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -2721,7 +2971,7 @@ export interface paths {
                         "application/json": components["schemas"]["SuspensionCompact"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -2738,7 +2988,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -2747,13 +2997,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2780,7 +3029,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SuspensionPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -2790,7 +3043,7 @@ export interface paths {
                         "application/json": components["schemas"]["SuspensionDetailed"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -2807,7 +3060,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -2816,13 +3069,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2867,6 +3119,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -2878,7 +3138,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SuspensionUpdate"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -2888,7 +3152,7 @@ export interface paths {
                         "application/json": components["schemas"]["SuspensionDetailed"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -2905,7 +3169,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -2914,13 +3178,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -2953,6 +3216,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         options?: never;
@@ -2978,7 +3249,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewSuspensionMeasurement"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -2988,7 +3263,7 @@ export interface paths {
                         "application/json": null;
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -3005,7 +3280,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -3014,13 +3289,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3068,6 +3342,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -3078,7 +3360,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewSuspensionPool"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -3088,7 +3374,7 @@ export interface paths {
                         "application/json": components["schemas"]["SuspensionPoolDetailed"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -3105,7 +3391,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -3114,13 +3400,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3168,6 +3453,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -3194,7 +3487,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SuspensionPoolPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -3204,7 +3501,7 @@ export interface paths {
                         "application/json": components["schemas"]["SuspensionPoolCompact"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -3221,7 +3518,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -3230,13 +3527,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3263,7 +3559,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SuspensionPoolPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -3273,7 +3573,7 @@ export interface paths {
                         "application/json": components["schemas"]["SuspensionPoolDetailed"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -3290,7 +3590,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -3299,13 +3599,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3350,6 +3649,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -3361,7 +3668,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SuspensionPoolUpdate"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -3371,7 +3682,7 @@ export interface paths {
                         "application/json": components["schemas"]["SuspensionPoolDetailed"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -3388,7 +3699,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -3397,13 +3708,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3436,6 +3746,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         options?: never;
@@ -3461,7 +3779,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewSuspensionPoolMeasurement"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -3471,7 +3793,7 @@ export interface paths {
                         "application/json": null;
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -3488,7 +3810,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -3497,13 +3819,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3551,6 +3872,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -3561,7 +3890,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewChromiumRun"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -3571,7 +3904,7 @@ export interface paths {
                         "application/json": components["schemas"]["ChromiumRunDetailed"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -3588,7 +3921,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -3597,13 +3930,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3651,6 +3983,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -3677,7 +4017,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ChromiumRunPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -3687,7 +4031,7 @@ export interface paths {
                         "application/json": components["schemas"]["ChromiumRunCompact"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -3704,7 +4048,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -3713,13 +4057,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3746,7 +4089,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ChromiumRunPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -3756,7 +4103,7 @@ export interface paths {
                         "application/json": components["schemas"]["ChromiumRunDetailed"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -3773,7 +4120,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -3782,13 +4129,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3833,6 +4179,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -3844,7 +4198,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ChromiumRunRecord"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -3854,7 +4212,7 @@ export interface paths {
                         "application/json": components["schemas"]["ChromiumRunDetailed"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -3871,7 +4229,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -3880,13 +4238,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3917,6 +4274,14 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -3963,6 +4328,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -3973,7 +4346,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewCdna"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -3983,7 +4360,7 @@ export interface paths {
                         "application/json": components["schemas"]["CdnaDetailed"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4000,7 +4377,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -4009,13 +4386,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4063,6 +4439,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -4089,7 +4473,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CdnaPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -4099,7 +4487,7 @@ export interface paths {
                         "application/json": components["schemas"]["CdnaCompact"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4116,7 +4504,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -4125,13 +4513,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4158,7 +4545,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CdnaPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -4168,7 +4559,7 @@ export interface paths {
                         "application/json": components["schemas"]["CdnaDetailed"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4185,7 +4576,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -4194,13 +4585,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4245,6 +4635,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -4256,7 +4654,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CdnaUpdate"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -4266,7 +4668,7 @@ export interface paths {
                         "application/json": components["schemas"]["CdnaDetailed"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4283,7 +4685,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -4292,13 +4694,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4331,6 +4732,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         options?: never;
@@ -4356,7 +4765,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewNucleicAcidMeasurement"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -4366,7 +4779,7 @@ export interface paths {
                         "application/json": null;
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4383,7 +4796,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -4392,13 +4805,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4446,6 +4858,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -4456,7 +4876,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewLibrary"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -4466,7 +4890,7 @@ export interface paths {
                         "application/json": components["schemas"]["LibraryDetailed"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4483,7 +4907,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -4492,13 +4916,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4546,6 +4969,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -4572,7 +5003,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["LibraryPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -4582,7 +5017,7 @@ export interface paths {
                         "application/json": components["schemas"]["LibraryCompact"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4599,7 +5034,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -4608,13 +5043,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4641,7 +5075,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["LibraryPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -4651,7 +5089,7 @@ export interface paths {
                         "application/json": components["schemas"]["LibraryDetailed"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4668,7 +5106,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -4677,13 +5115,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4728,6 +5165,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -4739,7 +5184,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["LibraryUpdate"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -4749,7 +5198,7 @@ export interface paths {
                         "application/json": components["schemas"]["LibraryDetailed"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4766,7 +5215,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -4775,13 +5224,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4814,6 +5262,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         options?: never;
@@ -4839,7 +5295,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewNucleicAcidMeasurement"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -4849,7 +5309,7 @@ export interface paths {
                         "application/json": null;
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4866,7 +5326,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -4875,13 +5335,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -4929,6 +5388,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -4939,7 +5406,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewChromiumDataset"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -4949,7 +5420,7 @@ export interface paths {
                         "application/json": components["schemas"]["ChromiumDatasetDetailed"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -4966,7 +5437,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -4975,16 +5446,7 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
                 422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["JsonRejection"];
-                    };
-                };
-                default: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -5037,6 +5499,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put?: never;
@@ -5063,7 +5533,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ChromiumDatasetPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -5073,7 +5547,7 @@ export interface paths {
                         "application/json": components["schemas"]["ChromiumDatasetCompact"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -5090,7 +5564,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -5099,13 +5573,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -5132,7 +5605,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ChromiumDatasetPredicateQuery"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -5142,7 +5619,7 @@ export interface paths {
                         "application/json": components["schemas"]["ChromiumDatasetDetailed"][];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -5159,7 +5636,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -5168,13 +5645,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["JsonRejection"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -5219,6 +5695,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         put: {
@@ -5230,7 +5714,11 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ChromiumDatasetRecord"];
+                };
+            };
             responses: {
                 200: {
                     headers: {
@@ -5240,7 +5728,7 @@ export interface paths {
                         "application/json": components["schemas"]["ChromiumDatasetDetailed"];
                     };
                 };
-                /** @description Failed to parse the request body as JSON */
+                /** @description failed to parse request body as JSON of the correct type */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -5257,7 +5745,7 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                /** @description Expected request with `Content-Type: application/json` */
+                /** @description expected request with 'Content-Type: application/json' */
                 415: {
                     headers: {
                         [name: string]: unknown;
@@ -5266,16 +5754,7 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                /** @description Failed to deserialize the JSON body into the target type */
                 422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["JsonRejection"];
-                    };
-                };
-                default: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -5313,6 +5792,14 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
             };
         };
         options?: never;
@@ -5324,6 +5811,30 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        Account: {
+            /** @constant */
+            auth_provider: "microsoft";
+            /** Format: uuid */
+            microsoft_entra_oid: string;
+        } | {
+            email: string;
+        };
+        /** @enum {string} */
+        Action: "create" | "update" | "delete";
+        /** @description A simple comparison operator. */
+        AnyValueOperator: {
+            eq: unknown;
+        } | {
+            lt: unknown;
+        } | {
+            lte: unknown;
+        } | {
+            gt: unknown;
+        } | {
+            gte: unknown;
+        } | {
+            in: unknown[];
+        } | unknown;
         ApiKey: {
             /** Format: date-time */
             created_at: string;
@@ -5342,6 +5853,59 @@ export interface components {
          * @enum {string}
          */
         ApiKeyField: "id" | "description" | "owner_id" | "owner_is_staff" | "created_at" | "expires_at";
+        ApiKeyPredicate: {
+            id: components["schemas"]["UuidOperator"];
+        } | {
+            description: components["schemas"]["StringOperator"];
+        } | {
+            owner_id: components["schemas"]["UuidOperator"];
+        } | {
+            owner_is_staff: components["schemas"]["booleanOperator"];
+        } | {
+            created_at: components["schemas"]["TimestampOperator"];
+        } | {
+            expires_at: components["schemas"]["TimestampOperator"];
+        };
+        ApiKeyPredicateFilter: {
+            all_of: components["schemas"]["ApiKeyPredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["ApiKeyPredicateFilter"][];
+        } | {
+            not: components["schemas"]["ApiKeyPredicateFilter"];
+        } | components["schemas"]["ApiKeyPredicate"];
+        ApiKeyPredicateQuery: {
+            filter?: components["schemas"]["ApiKeyPredicateFilter"] | null;
+            /**
+             * Format: int64
+             * @default null
+             */
+            limit?: number | null;
+            /**
+             * Format: int64
+             * @default 0
+             */
+            offset?: number;
+            order_by?: components["schemas"]["OrderByApiKeyFieldSet"];
+        };
+        ApiKeyUpdate: {
+            description?: string | null;
+            /** Format: date-time */
+            expires_at?: string | null;
+        };
+        /** @description A simple comparison operator. */
+        Array_of_LibraryTypeOperator: {
+            eq: components["schemas"]["LibraryType"][];
+        } | {
+            lt: components["schemas"]["LibraryType"][];
+        } | {
+            lte: components["schemas"]["LibraryType"][];
+        } | {
+            gt: components["schemas"]["LibraryType"][];
+        } | {
+            gte: components["schemas"]["LibraryType"][];
+        } | {
+            in: components["schemas"]["LibraryType"][][];
+        } | components["schemas"]["LibraryType"][];
         AuthError: {
             /** Format: date-time */
             expired_at: string;
@@ -5361,6 +5925,35 @@ export interface components {
          * @enum {string}
          */
         BlockEmbeddingMatrix: "carboxymethyl_cellulose" | "optimal_cutting_temperature_compound" | "paraffin";
+        /** @description A simple comparison operator. */
+        BlockEmbeddingMatrixOperator: {
+            eq: components["schemas"]["BlockEmbeddingMatrix"];
+        } | {
+            lt: components["schemas"]["BlockEmbeddingMatrix"];
+        } | {
+            lte: components["schemas"]["BlockEmbeddingMatrix"];
+        } | {
+            gt: components["schemas"]["BlockEmbeddingMatrix"];
+        } | {
+            gte: components["schemas"]["BlockEmbeddingMatrix"];
+        } | {
+            in: components["schemas"]["BlockEmbeddingMatrix"][];
+        } | components["schemas"]["BlockEmbeddingMatrix"];
+        BlockFields: {
+            /** @constant */
+            embedded_in: "carboxymethyl_cellulose";
+            fixative?: components["schemas"]["FormaldehydeDerivative"] | null;
+            thermal_preservation_method: components["schemas"]["FlashFreezing"];
+        } | {
+            /** @constant */
+            embedded_in: "optimal_cutting_temperature_compound";
+            fixative?: components["schemas"]["FormaldehydeDerivative"] | null;
+            thermal_preservation_method: components["schemas"]["FlashFreezing"];
+        } | {
+            /** @constant */
+            embedded_in: "paraffin";
+            fixative: components["schemas"]["FormaldehydeDerivative"];
+        };
         CdnaCompact: {
             additional_data?: unknown;
             /** Format: uuid */
@@ -5412,6 +6005,53 @@ export interface components {
             /** Format: uuid */
             measured_by: string;
         };
+        CdnaPredicate: {
+            specimen: components["schemas"]["SpecimenPredicate"];
+        } | components["schemas"]["CdnaPredicateInner"];
+        CdnaPredicateFilter: {
+            all_of: components["schemas"]["CdnaPredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["CdnaPredicateFilter"][];
+        } | {
+            not: components["schemas"]["CdnaPredicateFilter"];
+        } | components["schemas"]["CdnaPredicate"];
+        CdnaPredicateInner: {
+            id: components["schemas"]["UuidOperator"];
+        } | {
+            readable_id: components["schemas"]["StringOperator"];
+        } | {
+            library_type: components["schemas"]["LibraryTypeOperator"];
+        } | {
+            prepared_at: components["schemas"]["TimestampOperator"];
+        } | {
+            gem_well_id: components["schemas"]["UuidOperator"];
+        } | {
+            n_amplification_cycles: components["schemas"]["int32Operator"];
+        } | {
+            additional_data: components["schemas"]["JsonOperator"];
+        };
+        CdnaPredicateQuery: {
+            filter?: components["schemas"]["CdnaPredicateFilter"] | null;
+            /**
+             * Format: int64
+             * @default null
+             */
+            limit?: number | null;
+            /**
+             * Format: int64
+             * @default 0
+             */
+            offset?: number;
+            order_by?: components["schemas"]["OrderByCdnaFieldSet"];
+        };
+        CdnaUpdate: {
+            additional_data?: unknown;
+            measurements?: components["schemas"]["NewNucleicAcidMeasurement"][] | null;
+            /** Format: date-time */
+            prepared_at: string;
+            preparers?: string[] | null;
+            readable_id: string;
+        };
         CellViability: {
             /** Format: float */
             value: number;
@@ -5454,6 +6094,46 @@ export interface components {
             dataset_id: string;
             path: string;
         };
+        ChromiumDatasetPredicate: {
+            specimen: components["schemas"]["SpecimenPredicate"];
+        } | {
+            tenx_assay: components["schemas"]["TenxAssayPredicate"];
+        } | {
+            library: components["schemas"]["LibraryPredicate"];
+        } | components["schemas"]["ChromiumDatasetPredicateInner"];
+        ChromiumDatasetPredicateFilter: {
+            all_of: components["schemas"]["ChromiumDatasetPredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["ChromiumDatasetPredicateFilter"][];
+        } | {
+            not: components["schemas"]["ChromiumDatasetPredicateFilter"];
+        } | components["schemas"]["ChromiumDatasetPredicate"];
+        ChromiumDatasetPredicateInner: {
+            id: components["schemas"]["UuidOperator"];
+        } | {
+            name: components["schemas"]["StringOperator"];
+        } | {
+            delivered_at: components["schemas"]["TimestampOperator"];
+        };
+        ChromiumDatasetPredicateQuery: {
+            filter?: components["schemas"]["ChromiumDatasetPredicateFilter"] | null;
+            /**
+             * Format: int64
+             * @default null
+             */
+            limit?: number | null;
+            /**
+             * Format: int64
+             * @default 0
+             */
+            offset?: number;
+            order_by?: components["schemas"]["OrderByChromiumDatasetFieldSet"];
+        };
+        ChromiumDatasetRecord: {
+            /** Format: date-time */
+            delivered_at: string;
+            name: string;
+        };
         ChromiumRunCompact: {
             additional_data?: unknown;
             /** Format: uuid */
@@ -5494,6 +6174,58 @@ export interface components {
             suspension_pools: string;
             suspensions: string;
         };
+        ChromiumRunPredicate: {
+            specimen: components["schemas"]["SpecimenPredicate"];
+        } | {
+            tenx_assay: components["schemas"]["TenxAssayPredicate"];
+        } | components["schemas"]["ChromiumRunPredicateInner"];
+        ChromiumRunPredicateFilter: {
+            all_of: components["schemas"]["ChromiumRunPredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["ChromiumRunPredicateFilter"][];
+        } | {
+            not: components["schemas"]["ChromiumRunPredicateFilter"];
+        } | components["schemas"]["ChromiumRunPredicate"];
+        ChromiumRunPredicateInner: {
+            id: components["schemas"]["UuidOperator"];
+        } | {
+            readable_id: components["schemas"]["StringOperator"];
+        } | {
+            assay_id: components["schemas"]["UuidOperator"];
+        } | {
+            run_at: components["schemas"]["TimestampOperator"];
+        } | {
+            run_by: components["schemas"]["UuidOperator"];
+        } | {
+            succeeded: components["schemas"]["booleanOperator"];
+        } | {
+            additional_data: components["schemas"]["JsonOperator"];
+        };
+        ChromiumRunPredicateQuery: {
+            filter?: components["schemas"]["ChromiumRunPredicateFilter"] | null;
+            /**
+             * Format: int64
+             * @default null
+             */
+            limit?: number | null;
+            /**
+             * Format: int64
+             * @default 0
+             */
+            offset?: number;
+            order_by?: components["schemas"]["OrderByChromiumRunFieldSet"];
+        };
+        ChromiumRunRecord: {
+            additional_data?: unknown;
+            /** Format: uuid */
+            assay_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            run_at: string;
+            /** Format: uuid */
+            run_by: string;
+            succeeded: boolean;
+        };
         /** @enum {string} */
         ControlledRateFreezing: "controlled_rate_freezing";
         /** @enum {string} */
@@ -5531,6 +6263,20 @@ export interface components {
         /** @enum {string} */
         DithiobisSuccinimidylpropionate: "dithiobis_succinimidylpropionate";
         Fixative: components["schemas"]["DithiobisSuccinimidylpropionate"] | components["schemas"]["FormaldehydeDerivative"];
+        /** @description A simple comparison operator. */
+        FixativeOperator: {
+            eq: components["schemas"]["Fixative"];
+        } | {
+            lt: components["schemas"]["Fixative"];
+        } | {
+            lte: components["schemas"]["Fixative"];
+        } | {
+            gt: components["schemas"]["Fixative"];
+        } | {
+            gte: components["schemas"]["Fixative"];
+        } | {
+            in: components["schemas"]["Fixative"][];
+        } | components["schemas"]["Fixative"];
         /** @enum {string} */
         FlashFreezing: "flash_freezing";
         /** @enum {string} */
@@ -5572,6 +6318,56 @@ export interface components {
          * @enum {string}
          */
         InstitutionField: "id" | "name" | "microsoft_entra_tenant_id";
+        InstitutionPredicate: {
+            id: components["schemas"]["UuidOperator"];
+        } | {
+            name: components["schemas"]["StringOperator"];
+        } | {
+            microsoft_entra_tenant_id: components["schemas"]["UuidOperator"];
+        };
+        InstitutionPredicateFilter: {
+            all_of: components["schemas"]["InstitutionPredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["InstitutionPredicateFilter"][];
+        } | {
+            not: components["schemas"]["InstitutionPredicateFilter"];
+        } | components["schemas"]["InstitutionPredicate"];
+        InstitutionPredicateQuery: {
+            filter?: components["schemas"]["InstitutionPredicateFilter"] | null;
+            /**
+             * Format: int64
+             * @default null
+             */
+            limit?: number | null;
+            /**
+             * Format: int64
+             * @default 0
+             */
+            offset?: number;
+            order_by?: components["schemas"]["OrderByInstitutionFieldSet"];
+        };
+        /**
+         * @description A comparison operator for JSON values.
+         *
+         *     This is a superset of the basic operators and adds the following
+         *     JSON-specific methods present in PostgreSQL (https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY):
+         *     1. contains (`@>`)
+         *     2. is contained in (`<@`)
+         *     3. has key (`?`)
+         *     4. has any of keys (`?|`)
+         *     5. has all of keys (`?&`)
+         */
+        JsonOperator: {
+            contains: unknown;
+        } | {
+            is_contained_in: unknown;
+        } | {
+            has_key: string;
+        } | {
+            has_any_of_keys: string[];
+        } | {
+            has_all_of_keys: string[];
+        } | components["schemas"]["AnyValueOperator"];
         JsonRejection: {
             message: string;
             /** Format: uint16 */
@@ -5634,11 +6430,108 @@ export interface components {
             /** Format: uuid */
             measured_by: string;
         };
+        LibraryPredicate: {
+            specimen: components["schemas"]["SpecimenPredicate"];
+        } | components["schemas"]["LibraryPredicateInner"];
+        LibraryPredicateFilter: {
+            all_of: components["schemas"]["LibraryPredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["LibraryPredicateFilter"][];
+        } | {
+            not: components["schemas"]["LibraryPredicateFilter"];
+        } | components["schemas"]["LibraryPredicate"];
+        LibraryPredicateInner: {
+            id: components["schemas"]["UuidOperator"];
+        } | {
+            readable_id: components["schemas"]["StringOperator"];
+        } | {
+            cdna_id: components["schemas"]["UuidOperator"];
+        } | {
+            single_index_set_name: components["schemas"]["StringOperator"];
+        } | {
+            dual_index_set_name: components["schemas"]["StringOperator"];
+        } | {
+            number_of_sample_index_pcr_cycles: components["schemas"]["int32Operator"];
+        } | {
+            target_reads_per_cell: components["schemas"]["int64Operator"];
+        } | {
+            prepared_at: components["schemas"]["TimestampOperator"];
+        } | {
+            additional_data: components["schemas"]["JsonOperator"];
+        };
+        LibraryPredicateQuery: {
+            filter?: components["schemas"]["LibraryPredicateFilter"] | null;
+            /**
+             * Format: int64
+             * @default null
+             */
+            limit?: number | null;
+            /**
+             * Format: int64
+             * @default 0
+             */
+            offset?: number;
+            order_by?: components["schemas"]["OrderByLibraryFieldSet"];
+        };
         /**
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
         LibraryType: "antibody_capture" | "antigen_capture" | "chromatin_accessibility" | "crispr_guide_capture" | "custom" | "gene_expression" | "multiplexing_capture" | "vdj" | "vdj_b" | "vdj_t" | "vdj_t_gd";
+        /**
+         * @description A comparison operator for array values.
+         *
+         *     This is a superset of the basic operators and adds the following
+         *     array-specific methods present in PostgreSQL (https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY):
+         *     1. contains (`@>`)
+         *     2. is contained in (`<@`)
+         *     3. overlaps with (`&&`)
+         */
+        LibraryTypeArrayOperator: {
+            contains: components["schemas"]["LibraryType"][];
+        } | {
+            is_contained_in: components["schemas"]["LibraryType"][];
+        } | {
+            overlaps: components["schemas"]["LibraryType"][];
+        } | components["schemas"]["Array_of_LibraryTypeOperator"];
+        /** @description A simple comparison operator. */
+        LibraryTypeOperator: {
+            eq: components["schemas"]["LibraryType"];
+        } | {
+            lt: components["schemas"]["LibraryType"];
+        } | {
+            lte: components["schemas"]["LibraryType"];
+        } | {
+            gt: components["schemas"]["LibraryType"];
+        } | {
+            gte: components["schemas"]["LibraryType"];
+        } | {
+            in: components["schemas"]["LibraryType"][];
+        } | components["schemas"]["LibraryType"];
+        LibraryTypeSpecification: {
+            /** Format: int32 */
+            "cdna_volume_\u00B5l": number;
+            index_kit: string;
+            library_type: components["schemas"]["LibraryType"];
+            /** Format: int32 */
+            "library_volume_\u00B5l": number;
+        };
+        LibraryUpdate: {
+            additional_data?: unknown;
+            /** Format: uuid */
+            cdna_id: string;
+            dual_index_set_name?: string | null;
+            measurements?: components["schemas"]["NewNucleicAcidMeasurement"][] | null;
+            /** Format: int32 */
+            number_of_sample_index_pcr_cycles: number;
+            /** Format: date-time */
+            prepared_at: string;
+            preparers?: string[] | null;
+            readable_id: string;
+            single_index_set_name?: string | null;
+            /** Format: int32 */
+            target_reads_per_cell?: number | null;
+        };
         MeanDiameter: {
             object: components["schemas"]["SuspensionContent"];
             unit: components["schemas"]["Micrometer"];
@@ -5655,11 +6548,28 @@ export interface components {
             tag_id: string;
             type: components["schemas"]["MultiplexingTagType"];
         };
+        MultiplexingTagPredicate: {
+            type: components["schemas"]["MultiplexingTagTypeOperator"];
+        };
         /**
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
         MultiplexingTagType: "flex_barcode" | "flex_oligonucleotide_barcode" | "TotalSeq-A" | "TotalSeq-B" | "TotalSeq-C" | "genetic";
+        /** @description A simple comparison operator. */
+        MultiplexingTagTypeOperator: {
+            eq: components["schemas"]["MultiplexingTagType"];
+        } | {
+            lt: components["schemas"]["MultiplexingTagType"];
+        } | {
+            lte: components["schemas"]["MultiplexingTagType"];
+        } | {
+            gt: components["schemas"]["MultiplexingTagType"];
+        } | {
+            gte: components["schemas"]["MultiplexingTagType"];
+        } | {
+            in: components["schemas"]["MultiplexingTagType"][];
+        } | components["schemas"]["MultiplexingTagType"];
         /** @enum {string} */
         Nanogram: "nanogram";
         NanogramConcentration: {
@@ -5675,6 +6585,271 @@ export interface components {
             /** Format: uuid */
             owner_id?: string | null;
         };
+        NewCdna: {
+            additional_data?: unknown;
+            /** Format: uuid */
+            gem_well_id: string;
+            measurements: components["schemas"]["NewNucleicAcidMeasurement"][];
+            /** Format: date-time */
+            prepared_at: string;
+            preparers: string[];
+            readable_id: string;
+        } & ({
+            /** @constant */
+            library_type: "antibody_capture";
+        } | {
+            /** @constant */
+            library_type: "antigen_capture";
+        } | {
+            /** @constant */
+            library_type: "chromatin_accessibility";
+        } | {
+            /** @constant */
+            library_type: "crispr_guide_capture";
+        } | {
+            /** @constant */
+            library_type: "custom";
+        } | {
+            /** @constant */
+            library_type: "gene_expression";
+            /** Format: int32 */
+            n_amplification_cycles: number;
+        } | {
+            /** @constant */
+            library_type: "multiplexing_capture";
+        } | {
+            /** @constant */
+            library_type: "vdj";
+        } | {
+            /** @constant */
+            library_type: "vdj_b";
+        } | {
+            /** @constant */
+            library_type: "vdj_t";
+        } | {
+            /** @constant */
+            library_type: "vdj_t_gd";
+        });
+        NewChromiumAssay: {
+            chemistry_version: string;
+            chromium_chip: string;
+            cmdlines: string[];
+            library_type_specifications: components["schemas"]["LibraryTypeSpecification"][];
+            name: string;
+            protocol_url: string;
+            sample_multiplexing: components["schemas"]["SampleMultiplexing"];
+        };
+        NewChromiumDataset: {
+            /** Format: date-time */
+            delivered_at: string;
+            library_ids: string[];
+            name: string;
+        };
+        NewChromiumRun: {
+            additional_data?: unknown;
+            /** Format: uuid */
+            assay_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            run_at: string;
+            /** Format: uuid */
+            run_by: string;
+            succeeded: boolean;
+        } & ({
+            gem_wells: components["schemas"]["NewStandardOrOcmGemWell"][];
+            /** @constant */
+            plexy: "mixed";
+        } | {
+            gem_wells: components["schemas"]["NewOcmGemWell"][];
+            /** @constant */
+            plexy: "on_chip_multiplexing";
+        } | {
+            gem_wells: components["schemas"]["NewStandardGemWell"][];
+            /** @constant */
+            plexy: "standard";
+        });
+        NewDualIndexSet: {
+            index2_workflow_a_i5: string;
+            index2_workflow_b_i5: string;
+            index_i7: string;
+        };
+        NewInstitution: {
+            /** Format: uuid */
+            microsoft_entra_tenant_id: string;
+            name: string;
+        };
+        NewLibrary: {
+            additional_data?: unknown;
+            /** Format: uuid */
+            cdna_id: string;
+            dual_index_set_name?: string | null;
+            measurements: components["schemas"]["NewNucleicAcidMeasurement"][];
+            /** Format: int32 */
+            number_of_sample_index_pcr_cycles: number;
+            /** Format: date-time */
+            prepared_at: string;
+            preparers: string[];
+            readable_id: string;
+            single_index_set_name?: string | null;
+            /** Format: int32 */
+            target_reads_per_cell?: number | null;
+        };
+        NewNucleicAcidMeasurement: {
+            data: components["schemas"]["NucleicAcidMeasurementData"];
+            /** Format: date-time */
+            measured_at: string;
+            /** Format: uuid */
+            measured_by: string;
+        };
+        NewOcmGemWell: {
+            loading: components["schemas"]["OcmLoadedEntity"][];
+            readable_id: string;
+        };
+        NewPerson: {
+            account: components["schemas"]["Account"];
+            /** Format: uuid */
+            institution_id: string;
+            is_staff: boolean;
+            name: string;
+            orcid?: string | null;
+            permissions_to_grant: components["schemas"]["Permission"][];
+        };
+        NewProject: {
+            /** Format: date-time */
+            ended_at: string;
+            members: string[];
+            name: string;
+            /** Format: date-time */
+            started_at: string;
+        };
+        NewService: {
+            description?: string | null;
+            is_staff: boolean;
+            permissions_to_grant: components["schemas"]["Permission"][];
+            users: string[];
+        };
+        NewSpecimen: {
+            additional_data?: unknown;
+            host_species?: components["schemas"]["Species"] | null;
+            measurements: components["schemas"]["NewSpecimenMeasurement"][];
+            name: string;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by: string;
+            tissue: string;
+        } & (({
+            /** @constant */
+            type: "block";
+        } & components["schemas"]["BlockFields"]) | {
+            thermal_preservation_method: components["schemas"]["FlashFreezing"];
+            /** @constant */
+            type: "cell_pellet";
+        } | {
+            /** @constant */
+            type: "rna_extract";
+        } | ({
+            /** @constant */
+            type: "suspension";
+        } & components["schemas"]["SuspensionSpecimenFields"]) | ({
+            /** @constant */
+            type: "tissue";
+        } & components["schemas"]["TissueFields"]));
+        NewSpecimenMeasurement: {
+            data: components["schemas"]["SpecimenMeasurementData"];
+            /** Format: date-time */
+            measured_at: string;
+            /** Format: uuid */
+            measured_by: string;
+        };
+        NewStandardGemWell: {
+            readable_id: string;
+        } | {
+            /** Format: uuid */
+            suspension_id: string;
+        } | {
+            /** Format: uuid */
+            suspension_pool_id: string;
+        };
+        NewStandardOrOcmGemWell: ({
+            /** @constant */
+            plexy: "on_chip_multiplexing";
+        } & components["schemas"]["NewOcmGemWell"]) | ({
+            /** @constant */
+            plexy: "standard";
+        } & components["schemas"]["NewStandardGemWell"]);
+        NewSuspension: {
+            additional_data?: unknown;
+            content: components["schemas"]["SuspensionContent"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: float */
+            lysis_duration_minutes?: number | null;
+            measurements: components["schemas"]["NewSuspensionMeasurement"][];
+            preparers: string[];
+            readable_id: string;
+            /** Format: uuid */
+            specimen_id: string;
+            /** Format: int64 */
+            target_cell_recovery?: number | null;
+        };
+        NewSuspensionMeasurement: {
+            data: components["schemas"]["SuspensionMeasurementData"];
+            /** Format: date-time */
+            measured_at: string;
+            /** Format: uuid */
+            measured_by: string;
+        };
+        NewSuspensionPool: {
+            additional_data?: unknown;
+            measurements: components["schemas"]["NewSuspensionPoolMeasurement"][];
+            name: string;
+            /** Format: date-time */
+            pooled_at: string;
+            preparers: string[];
+            readable_id: string;
+        } | {
+            /** @constant */
+            multiplexing_tag_type: "flex_barcode";
+            suspensions: components["schemas"]["TaggedSuspension"][];
+        } | {
+            /** @constant */
+            multiplexing_tag_type: "flex_oligonucleotide_barcode";
+            suspensions: components["schemas"]["TaggedSuspension"][];
+        } | {
+            /** @constant */
+            multiplexing_tag_type: "TotalSeq-A";
+            suspensions: components["schemas"]["TaggedSuspension"][];
+        } | {
+            /** @constant */
+            multiplexing_tag_type: "TotalSeq-B";
+            suspensions: components["schemas"]["TaggedSuspension"][];
+        } | {
+            /** @constant */
+            multiplexing_tag_type: "TotalSeq-C";
+            suspensions: components["schemas"]["TaggedSuspension"][];
+        } | {
+            suspensions: string[];
+        };
+        NewSuspensionPoolMeasurement: {
+            data: components["schemas"]["SuspensionMeasurementQuantity"];
+            /** Format: date-time */
+            measured_at: string;
+            /** Format: uuid */
+            measured_by: string;
+        };
+        NewTenxAssay: {
+            /** @constant */
+            platform: "chromium";
+        } & components["schemas"]["NewChromiumAssay"];
         NucleicAcidMeasurementData: {
             instrument_name: string;
         } & ({
@@ -5694,6 +6869,91 @@ export interface components {
         });
         /** @enum {string} */
         OcmBarcodeId: "ob1" | "ob2" | "ob3" | "ob4";
+        OcmLoadedEntity: {
+            ocm_barcode_id: components["schemas"]["OcmBarcodeId"];
+        } | {
+            /** Format: uuid */
+            suspension_id: string;
+        } | {
+            /** Format: uuid */
+            suspension_pool_id: string;
+        };
+        OrderByApiKeyField: {
+            /** @default true */
+            desc?: boolean;
+            field?: components["schemas"]["ApiKeyField"];
+        };
+        OrderByApiKeyFieldSet: components["schemas"]["OrderByApiKeyField"] | components["schemas"]["OrderByApiKeyField"][];
+        OrderByCdnaField: {
+            /** @default true */
+            desc?: boolean;
+            field?: components["schemas"]["CdnaField"];
+        };
+        OrderByCdnaFieldSet: components["schemas"]["OrderByCdnaField"] | components["schemas"]["OrderByCdnaField"][];
+        OrderByChromiumDatasetField: {
+            /** @default true */
+            desc?: boolean;
+            field?: components["schemas"]["ChromiumDatasetField"];
+        };
+        OrderByChromiumDatasetFieldSet: components["schemas"]["OrderByChromiumDatasetField"] | components["schemas"]["OrderByChromiumDatasetField"][];
+        OrderByChromiumRunField: {
+            /** @default true */
+            desc?: boolean;
+            field?: components["schemas"]["ChromiumRunField"];
+        };
+        OrderByChromiumRunFieldSet: components["schemas"]["OrderByChromiumRunField"] | components["schemas"]["OrderByChromiumRunField"][];
+        OrderByInstitutionField: {
+            /** @default true */
+            desc?: boolean;
+            field?: components["schemas"]["InstitutionField"];
+        };
+        OrderByInstitutionFieldSet: components["schemas"]["OrderByInstitutionField"] | components["schemas"]["OrderByInstitutionField"][];
+        OrderByLibraryField: {
+            /** @default true */
+            desc?: boolean;
+            field?: components["schemas"]["LibraryField"];
+        };
+        OrderByLibraryFieldSet: components["schemas"]["OrderByLibraryField"] | components["schemas"]["OrderByLibraryField"][];
+        OrderByPersonField: {
+            /** @default false */
+            desc?: boolean;
+            field?: components["schemas"]["PersonField"];
+        };
+        OrderByPersonFieldSet: components["schemas"]["OrderByPersonField"] | components["schemas"]["OrderByPersonField"][];
+        OrderByProjectField: {
+            /** @default true */
+            desc?: boolean;
+            field?: components["schemas"]["ProjectField"];
+        };
+        OrderByProjectFieldSet: components["schemas"]["OrderByProjectField"] | components["schemas"]["OrderByProjectField"][];
+        OrderByServiceField: {
+            /** @default true */
+            desc?: boolean;
+            field?: components["schemas"]["ServiceField"];
+        };
+        OrderByServiceFieldSet: components["schemas"]["OrderByServiceField"] | components["schemas"]["OrderByServiceField"][];
+        OrderBySpecimenField: {
+            /** @default true */
+            desc?: boolean;
+            field?: components["schemas"]["SpecimenField"];
+        };
+        OrderBySpecimenFieldSet: components["schemas"]["OrderBySpecimenField"] | components["schemas"]["OrderBySpecimenField"][];
+        OrderBySuspensionField: {
+            /** @default true */
+            desc?: boolean;
+            field?: components["schemas"]["SuspensionField"];
+        };
+        OrderBySuspensionFieldSet: components["schemas"]["OrderBySuspensionField"] | components["schemas"]["OrderBySuspensionField"][];
+        OrderBySuspensionPoolField: {
+            /** @default true */
+            desc?: boolean;
+            field?: components["schemas"]["SuspensionPoolField"];
+        };
+        OrderBySuspensionPoolFieldSet: components["schemas"]["OrderBySuspensionPoolField"] | components["schemas"]["OrderBySuspensionPoolField"][];
+        Permission: {
+            action: components["schemas"]["Action"];
+            resource: components["schemas"]["Resource"];
+        };
         Person: {
             email?: string | null;
             /** Format: uuid */
@@ -5726,6 +6986,50 @@ export interface components {
         PersonLinks: {
             projects: string;
             self: string;
+        };
+        PersonPredicate: {
+            id: components["schemas"]["UuidOperator"];
+        } | {
+            name: components["schemas"]["StringOperator"];
+        } | {
+            email: components["schemas"]["StringOperator"];
+        } | {
+            institution_id: components["schemas"]["UuidOperator"];
+        } | {
+            is_staff: components["schemas"]["booleanOperator"];
+        } | {
+            orcid: components["schemas"]["StringOperator"];
+        };
+        PersonPredicateFilter: {
+            all_of: components["schemas"]["PersonPredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["PersonPredicateFilter"][];
+        } | {
+            not: components["schemas"]["PersonPredicateFilter"];
+        } | components["schemas"]["PersonPredicate"];
+        PersonPredicateQuery: {
+            filter?: components["schemas"]["PersonPredicateFilter"] | null;
+            /**
+             * Format: int64
+             * @default null
+             */
+            limit?: number | null;
+            /**
+             * Format: int64
+             * @default 0
+             */
+            offset?: number;
+            order_by?: components["schemas"]["OrderByPersonFieldSet"];
+        };
+        PersonUpdate: {
+            email: string;
+            /** Format: uuid */
+            institution_id: string;
+            is_staff: boolean;
+            name: string;
+            orcid?: string | null;
+            permissions_to_grant: components["schemas"]["Permission"][];
+            permissions_to_revoke: components["schemas"]["Permission"][];
         };
         /** @enum {string} */
         Picogram: "picogram";
@@ -5769,8 +7073,56 @@ export interface components {
          * @enum {string}
          */
         ProjectField: "id" | "name" | "created_by" | "started_at" | "ended_at";
+        ProjectPredicate: {
+            id: components["schemas"]["UuidOperator"];
+        } | {
+            name: components["schemas"]["StringOperator"];
+        } | {
+            created_by: components["schemas"]["UuidOperator"];
+        } | {
+            started_at: components["schemas"]["TimestampOperator"];
+        } | {
+            ended_at: components["schemas"]["TimestampOperator"];
+        };
+        ProjectPredicateFilter: {
+            all_of: components["schemas"]["ProjectPredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["ProjectPredicateFilter"][];
+        } | {
+            not: components["schemas"]["ProjectPredicateFilter"];
+        } | components["schemas"]["ProjectPredicate"];
+        ProjectPredicateQuery: {
+            filter?: components["schemas"]["ProjectPredicateFilter"] | null;
+            /**
+             * Format: int64
+             * @default null
+             */
+            limit?: number | null;
+            /**
+             * Format: int64
+             * @default 0
+             */
+            offset?: number;
+            order_by?: components["schemas"]["OrderByProjectFieldSet"];
+        };
+        /** @enum {string} */
+        Resource: "institution" | "person" | "account" | "project" | "specimen" | "assay_constant_data" | "chromium_experimental_data" | "chromium_dataset";
         /** @enum {string} */
         SampleMultiplexing: "cellplex" | "flex_barcode" | "flex_oligonucleotide_barcode" | "hashtag" | "on_chip_multiplexing" | "singleplex";
+        /** @description A simple comparison operator. */
+        SampleMultiplexingOperator: {
+            eq: components["schemas"]["SampleMultiplexing"];
+        } | {
+            lt: components["schemas"]["SampleMultiplexing"];
+        } | {
+            lte: components["schemas"]["SampleMultiplexing"];
+        } | {
+            gt: components["schemas"]["SampleMultiplexing"];
+        } | {
+            gte: components["schemas"]["SampleMultiplexing"];
+        } | {
+            in: components["schemas"]["SampleMultiplexing"][];
+        } | components["schemas"]["SampleMultiplexing"];
         SavedApiKeyRecord: {
             /** Format: date-time */
             created_at: string;
@@ -5798,8 +7150,60 @@ export interface components {
          * @enum {string}
          */
         ServiceField: "id" | "description" | "owned_by" | "is_staff" | "created_at";
+        ServicePredicate: {
+            id: components["schemas"]["UuidOperator"];
+        } | {
+            description: components["schemas"]["StringOperator"];
+        } | {
+            owned_by: components["schemas"]["UuidOperator"];
+        } | {
+            is_staff: components["schemas"]["booleanOperator"];
+        } | {
+            created_at: components["schemas"]["TimestampOperator"];
+        };
+        ServicePredicateFilter: {
+            all_of: components["schemas"]["ServicePredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["ServicePredicateFilter"][];
+        } | {
+            not: components["schemas"]["ServicePredicateFilter"];
+        } | components["schemas"]["ServicePredicate"];
+        ServicePredicateQuery: {
+            filter?: components["schemas"]["ServicePredicateFilter"] | null;
+            /**
+             * Format: int64
+             * @default null
+             */
+            limit?: number | null;
+            /**
+             * Format: int64
+             * @default 0
+             */
+            offset?: number;
+            order_by?: components["schemas"]["OrderByServiceFieldSet"];
+        };
+        ServiceUpdate: {
+            description?: string | null;
+            is_staff: boolean;
+            permissions_to_grant: components["schemas"]["Permission"][];
+            permissions_to_revoke: components["schemas"]["Permission"][];
+        };
         /** @enum {string} */
         Species: "ambystoma_mexicanum" | "canis_familiaris" | "callithrix_jacchus" | "drosophila_melanogaster" | "gasterosteus_aculeatus" | "homo_sapiens" | "mus_musculus" | "rattus_norvegicus" | "sminthopsis_crassicaudata";
+        /** @description A simple comparison operator. */
+        SpeciesOperator: {
+            eq: components["schemas"]["Species"];
+        } | {
+            lt: components["schemas"]["Species"];
+        } | {
+            lte: components["schemas"]["Species"];
+        } | {
+            gt: components["schemas"]["Species"];
+        } | {
+            gte: components["schemas"]["Species"];
+        } | {
+            in: components["schemas"]["Species"][];
+        } | components["schemas"]["Species"];
         SpecimenCompact: {
             additional_data?: unknown;
             embedded_in?: components["schemas"]["BlockEmbeddingMatrix"] | null;
@@ -5885,11 +7289,96 @@ export interface components {
             /** Format: float */
             value: number;
         });
+        SpecimenPredicate: {
+            id: components["schemas"]["UuidOperator"];
+        } | {
+            readable_id: components["schemas"]["StringOperator"];
+        } | {
+            name: components["schemas"]["StringOperator"];
+        } | {
+            submitted_by: components["schemas"]["UuidOperator"];
+        } | {
+            project_id: components["schemas"]["UuidOperator"];
+        } | {
+            received_at: components["schemas"]["TimestampOperator"];
+        } | {
+            species: components["schemas"]["SpeciesOperator"];
+        } | {
+            host_species: components["schemas"]["SpeciesOperator"];
+        } | {
+            returned_at: components["schemas"]["TimestampOperator"];
+        } | {
+            returned_by: components["schemas"]["UuidOperator"];
+        } | {
+            type: components["schemas"]["SpecimenTypeOperator"];
+        } | {
+            embedded_in: components["schemas"]["BlockEmbeddingMatrixOperator"];
+        } | {
+            fixative: components["schemas"]["FixativeOperator"];
+        } | {
+            thermal_preservation_method: components["schemas"]["ThermalPreservationMethodOperator"];
+        } | {
+            tissue: components["schemas"]["StringOperator"];
+        } | {
+            additional_data: components["schemas"]["JsonOperator"];
+        };
+        SpecimenPredicateFilter: {
+            all_of: components["schemas"]["SpecimenPredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["SpecimenPredicateFilter"][];
+        } | {
+            not: components["schemas"]["SpecimenPredicateFilter"];
+        } | components["schemas"]["SpecimenPredicate"];
+        SpecimenPredicateQuery: {
+            filter?: components["schemas"]["SpecimenPredicateFilter"] | null;
+            /**
+             * Format: int64
+             * @default null
+             */
+            limit?: number | null;
+            /**
+             * Format: int64
+             * @default 0
+             */
+            offset?: number;
+            order_by?: components["schemas"]["OrderBySpecimenFieldSet"];
+        };
         /**
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
         SpecimenType: "block" | "cell_pellet" | "rna_extract" | "suspension" | "tissue";
+        /** @description A simple comparison operator. */
+        SpecimenTypeOperator: {
+            eq: components["schemas"]["SpecimenType"];
+        } | {
+            lt: components["schemas"]["SpecimenType"];
+        } | {
+            lte: components["schemas"]["SpecimenType"];
+        } | {
+            gt: components["schemas"]["SpecimenType"];
+        } | {
+            gte: components["schemas"]["SpecimenType"];
+        } | {
+            in: components["schemas"]["SpecimenType"][];
+        } | components["schemas"]["SpecimenType"];
+        /**
+         * @description A comparison operator for string values.
+         *
+         *     This is a superset of the basic operators and adds the following
+         *     string-specific methods present in PostgreSQL:
+         *     1. `like` (https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE)
+         *     2. trigram similarity (`%`) (https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS)
+         */
+        StringOperator: {
+            like: string;
+        } | {
+            like_any: string[];
+        } | {
+            trgm: string;
+        } | {
+            trgm_any: string[];
+        } | components["schemas"]["stringOperator"];
         SuspensionCompact: {
             additional_data?: unknown;
             content: components["schemas"]["SuspensionContent"];
@@ -5917,6 +7406,20 @@ export interface components {
         };
         /** @enum {string} */
         SuspensionContent: "cells" | "nuclei";
+        /** @description A simple comparison operator. */
+        SuspensionContentOperator: {
+            eq: components["schemas"]["SuspensionContent"];
+        } | {
+            lt: components["schemas"]["SuspensionContent"];
+        } | {
+            lte: components["schemas"]["SuspensionContent"];
+        } | {
+            gt: components["schemas"]["SuspensionContent"];
+        } | {
+            gte: components["schemas"]["SuspensionContent"];
+        } | {
+            in: components["schemas"]["SuspensionContent"][];
+        } | components["schemas"]["SuspensionContent"];
         SuspensionDetailed: {
             additional_data?: unknown;
             content: components["schemas"]["SuspensionContent"];
@@ -6025,6 +7528,120 @@ export interface components {
             /** Format: uuid */
             pool_id: string;
         };
+        SuspensionPoolPredicate: {
+            specimen: components["schemas"]["SpecimenPredicate"];
+        } | {
+            multiplexing_tag: components["schemas"]["MultiplexingTagPredicate"];
+        } | components["schemas"]["SuspensionPoolPredicateInner"];
+        SuspensionPoolPredicateFilter: {
+            all_of: components["schemas"]["SuspensionPoolPredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["SuspensionPoolPredicateFilter"][];
+        } | {
+            not: components["schemas"]["SuspensionPoolPredicateFilter"];
+        } | components["schemas"]["SuspensionPoolPredicate"];
+        SuspensionPoolPredicateInner: {
+            id: components["schemas"]["UuidOperator"];
+        } | {
+            readable_id: components["schemas"]["StringOperator"];
+        } | {
+            name: components["schemas"]["StringOperator"];
+        } | {
+            pooled_at: components["schemas"]["TimestampOperator"];
+        } | {
+            additional_data: components["schemas"]["JsonOperator"];
+        };
+        SuspensionPoolPredicateQuery: {
+            filter?: components["schemas"]["SuspensionPoolPredicateFilter"] | null;
+            /**
+             * Format: int64
+             * @default null
+             */
+            limit?: number | null;
+            /**
+             * Format: int64
+             * @default 0
+             */
+            offset?: number;
+            order_by?: components["schemas"]["OrderBySuspensionPoolFieldSet"];
+        };
+        SuspensionPoolUpdate: {
+            additional_data?: unknown;
+            measurements?: components["schemas"]["NewSuspensionPoolMeasurement"][] | null;
+            name: string;
+            /** Format: date-time */
+            pooled_at: string;
+            preparers?: string[] | null;
+            readable_id: string;
+        };
+        SuspensionPredicate: {
+            specimen: components["schemas"]["SpecimenPredicate"];
+        } | components["schemas"]["SuspensionPredicateInner"];
+        SuspensionPredicateFilter: {
+            all_of: components["schemas"]["SuspensionPredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["SuspensionPredicateFilter"][];
+        } | {
+            not: components["schemas"]["SuspensionPredicateFilter"];
+        } | components["schemas"]["SuspensionPredicate"];
+        SuspensionPredicateInner: {
+            id: components["schemas"]["UuidOperator"];
+        } | {
+            readable_id: components["schemas"]["StringOperator"];
+        } | {
+            specimen_id: components["schemas"]["UuidOperator"];
+        } | {
+            content: components["schemas"]["SuspensionContentOperator"];
+        } | {
+            created_at: components["schemas"]["TimestampOperator"];
+        } | {
+            lysis_duration_minutes: components["schemas"]["floatOperator"];
+        } | {
+            target_cell_recovery: components["schemas"]["int64Operator"];
+        } | {
+            additional_data: components["schemas"]["JsonOperator"];
+        };
+        SuspensionPredicateQuery: {
+            filter?: components["schemas"]["SuspensionPredicateFilter"] | null;
+            /**
+             * Format: int64
+             * @default null
+             */
+            limit?: number | null;
+            /**
+             * Format: int64
+             * @default 0
+             */
+            offset?: number;
+            order_by?: components["schemas"]["OrderBySuspensionFieldSet"];
+        };
+        SuspensionSpecimenFields: {
+            fixative: components["schemas"]["Fixative"];
+            /** @constant */
+            preservation_state: "fixed";
+        } | {
+            /** @constant */
+            preservation_state: "fresh";
+        } | {
+            /** @constant */
+            preservation_state: "thermally_preserved";
+            thermal_preservation_method: components["schemas"]["ControlledRateFreezing"];
+        };
+        SuspensionUpdate: {
+            additional_data?: unknown;
+            content: components["schemas"]["SuspensionContent"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: float */
+            lysis_duration_minutes?: number | null;
+            measurements?: components["schemas"]["NewSuspensionMeasurement"][] | null;
+            preparers?: string[] | null;
+            readable_id: string;
+            /** Format: uuid */
+            specimen_id: string;
+            /** Format: int64 */
+            target_cell_recovery?: number | null;
+        };
         SuspensionVolume: {
             unit: components["schemas"]["Microliter"];
             /** Format: float */
@@ -6059,6 +7676,11 @@ export interface components {
             tissue: string;
             type_: components["schemas"]["SpecimenType"];
         };
+        TaggedSuspension: {
+            /** Format: uuid */
+            suspension_id: string;
+            tag_id: string;
+        };
         TenxAssay: {
             chemistry_version: string;
             chromium_chip?: string | null;
@@ -6070,12 +7692,176 @@ export interface components {
             protocol_url: string;
             sample_multiplexing?: components["schemas"]["SampleMultiplexing"] | null;
         };
+        TenxAssayPredicate: {
+            id: components["schemas"]["UuidOperator"];
+        } | {
+            name: components["schemas"]["StringOperator"];
+        } | {
+            library_types: components["schemas"]["LibraryTypeArrayOperator"];
+        } | {
+            sample_multiplexing: components["schemas"]["SampleMultiplexingOperator"];
+        } | {
+            chemistry_version: components["schemas"]["StringOperator"];
+        } | {
+            chromium_chip: components["schemas"]["StringOperator"];
+        } | {
+            protocol_url: components["schemas"]["StringOperator"];
+        };
         ThermalPreservationMethod: components["schemas"]["ControlledRateFreezing"] | components["schemas"]["FlashFreezing"];
+        /** @description A simple comparison operator. */
+        ThermalPreservationMethodOperator: {
+            eq: components["schemas"]["ThermalPreservationMethod"];
+        } | {
+            lt: components["schemas"]["ThermalPreservationMethod"];
+        } | {
+            lte: components["schemas"]["ThermalPreservationMethod"];
+        } | {
+            gt: components["schemas"]["ThermalPreservationMethod"];
+        } | {
+            gte: components["schemas"]["ThermalPreservationMethod"];
+        } | {
+            in: components["schemas"]["ThermalPreservationMethod"][];
+        } | components["schemas"]["ThermalPreservationMethod"];
+        /** @description A simple comparison operator. */
+        TimestampOperator: {
+            /** Format: date-time */
+            eq: string;
+        } | {
+            /** Format: date-time */
+            lt: string;
+        } | {
+            /** Format: date-time */
+            lte: string;
+        } | {
+            /** Format: date-time */
+            gt: string;
+        } | {
+            /** Format: date-time */
+            gte: string;
+        } | {
+            in: string[];
+        } | string;
+        TissueFields: {
+            fixative: components["schemas"]["Fixative"];
+            /** @constant */
+            preservation_state: "fixed";
+        } | {
+            /** @constant */
+            preservation_state: "fresh";
+        } | {
+            /** @constant */
+            preservation_state: "thermally_preserved";
+            thermal_preservation_method: components["schemas"]["ThermalPreservationMethod"];
+        };
         UpdateChromiumDatasetError: {
             message: string;
             /** @constant */
             type: "rename_dataset_directory_failed";
         } | components["schemas"]["DbError"];
+        /** @description A simple comparison operator. */
+        UuidOperator: {
+            /** Format: uuid */
+            eq: string;
+        } | {
+            /** Format: uuid */
+            lt: string;
+        } | {
+            /** Format: uuid */
+            lte: string;
+        } | {
+            /** Format: uuid */
+            gt: string;
+        } | {
+            /** Format: uuid */
+            gte: string;
+        } | {
+            in: string[];
+        } | string;
+        /** @description A simple comparison operator. */
+        booleanOperator: {
+            eq: boolean;
+        } | {
+            lt: boolean;
+        } | {
+            lte: boolean;
+        } | {
+            gt: boolean;
+        } | {
+            gte: boolean;
+        } | {
+            in: boolean[];
+        } | boolean;
+        /** @description A simple comparison operator. */
+        floatOperator: {
+            /** Format: float */
+            eq: number;
+        } | {
+            /** Format: float */
+            lt: number;
+        } | {
+            /** Format: float */
+            lte: number;
+        } | {
+            /** Format: float */
+            gt: number;
+        } | {
+            /** Format: float */
+            gte: number;
+        } | {
+            in: number[];
+        } | number;
+        /** @description A simple comparison operator. */
+        int32Operator: {
+            /** Format: int32 */
+            eq: number;
+        } | {
+            /** Format: int32 */
+            lt: number;
+        } | {
+            /** Format: int32 */
+            lte: number;
+        } | {
+            /** Format: int32 */
+            gt: number;
+        } | {
+            /** Format: int32 */
+            gte: number;
+        } | {
+            in: number[];
+        } | number;
+        /** @description A simple comparison operator. */
+        int64Operator: {
+            /** Format: int64 */
+            eq: number;
+        } | {
+            /** Format: int64 */
+            lt: number;
+        } | {
+            /** Format: int64 */
+            lte: number;
+        } | {
+            /** Format: int64 */
+            gt: number;
+        } | {
+            /** Format: int64 */
+            gte: number;
+        } | {
+            in: number[];
+        } | number;
+        /** @description A simple comparison operator. */
+        stringOperator: {
+            eq: string;
+        } | {
+            lt: string;
+        } | {
+            lte: string;
+        } | {
+            gt: string;
+        } | {
+            gte: string;
+        } | {
+            in: string[];
+        } | string;
     };
     responses: never;
     parameters: never;
@@ -6083,77 +7869,184 @@ export interface components {
     headers: never;
     pathItems: never;
 }
+export type Account = components['schemas']['Account'];
+export type Action = components['schemas']['Action'];
+export type AnyValueOperator = components['schemas']['AnyValueOperator'];
 export type ApiKey = components['schemas']['ApiKey'];
 export type ApiKeyField = components['schemas']['ApiKeyField'];
+export type ApiKeyPredicate = components['schemas']['ApiKeyPredicate'];
+export type ApiKeyPredicateFilter = components['schemas']['ApiKeyPredicateFilter'];
+export type ApiKeyPredicateQuery = components['schemas']['ApiKeyPredicateQuery'];
+export type ApiKeyUpdate = components['schemas']['ApiKeyUpdate'];
+export type ArrayOfLibraryTypeOperator = components['schemas']['Array_of_LibraryTypeOperator'];
 export type AuthError = components['schemas']['AuthError'];
 export type BlockEmbeddingMatrix = components['schemas']['BlockEmbeddingMatrix'];
+export type BlockEmbeddingMatrixOperator = components['schemas']['BlockEmbeddingMatrixOperator'];
+export type BlockFields = components['schemas']['BlockFields'];
 export type CdnaCompact = components['schemas']['CdnaCompact'];
 export type CdnaDetailed = components['schemas']['CdnaDetailed'];
 export type CdnaField = components['schemas']['CdnaField'];
 export type CdnaMeasurement = components['schemas']['CdnaMeasurement'];
+export type CdnaPredicate = components['schemas']['CdnaPredicate'];
+export type CdnaPredicateFilter = components['schemas']['CdnaPredicateFilter'];
+export type CdnaPredicateInner = components['schemas']['CdnaPredicateInner'];
+export type CdnaPredicateQuery = components['schemas']['CdnaPredicateQuery'];
+export type CdnaUpdate = components['schemas']['CdnaUpdate'];
 export type CellViability = components['schemas']['CellViability'];
 export type ChromiumDatasetCompact = components['schemas']['ChromiumDatasetCompact'];
 export type ChromiumDatasetDetailed = components['schemas']['ChromiumDatasetDetailed'];
 export type ChromiumDatasetDetailedLinks = components['schemas']['ChromiumDatasetDetailedLinks'];
 export type ChromiumDatasetField = components['schemas']['ChromiumDatasetField'];
 export type ChromiumDatasetParsedFile = components['schemas']['ChromiumDatasetParsedFile'];
+export type ChromiumDatasetPredicate = components['schemas']['ChromiumDatasetPredicate'];
+export type ChromiumDatasetPredicateFilter = components['schemas']['ChromiumDatasetPredicateFilter'];
+export type ChromiumDatasetPredicateInner = components['schemas']['ChromiumDatasetPredicateInner'];
+export type ChromiumDatasetPredicateQuery = components['schemas']['ChromiumDatasetPredicateQuery'];
+export type ChromiumDatasetRecord = components['schemas']['ChromiumDatasetRecord'];
 export type ChromiumRunCompact = components['schemas']['ChromiumRunCompact'];
 export type ChromiumRunDetailed = components['schemas']['ChromiumRunDetailed'];
 export type ChromiumRunField = components['schemas']['ChromiumRunField'];
 export type ChromiumRunLinks = components['schemas']['ChromiumRunLinks'];
+export type ChromiumRunPredicate = components['schemas']['ChromiumRunPredicate'];
+export type ChromiumRunPredicateFilter = components['schemas']['ChromiumRunPredicateFilter'];
+export type ChromiumRunPredicateInner = components['schemas']['ChromiumRunPredicateInner'];
+export type ChromiumRunPredicateQuery = components['schemas']['ChromiumRunPredicateQuery'];
+export type ChromiumRunRecord = components['schemas']['ChromiumRunRecord'];
 export type ControlledRateFreezing = components['schemas']['ControlledRateFreezing'];
 export type CountingMethod = components['schemas']['CountingMethod'];
 export type CreateChromiumDatasetError = components['schemas']['CreateChromiumDatasetError'];
 export type DbError = components['schemas']['DbError'];
 export type DithiobisSuccinimidylpropionate = components['schemas']['DithiobisSuccinimidylpropionate'];
 export type Fixative = components['schemas']['Fixative'];
+export type FixativeOperator = components['schemas']['FixativeOperator'];
 export type FlashFreezing = components['schemas']['FlashFreezing'];
 export type FormaldehydeDerivative = components['schemas']['FormaldehydeDerivative'];
 export type GemWell = components['schemas']['GemWell'];
 export type IndexSetError = components['schemas']['IndexSetError'];
 export type Institution = components['schemas']['Institution'];
 export type InstitutionField = components['schemas']['InstitutionField'];
+export type InstitutionPredicate = components['schemas']['InstitutionPredicate'];
+export type InstitutionPredicateFilter = components['schemas']['InstitutionPredicateFilter'];
+export type InstitutionPredicateQuery = components['schemas']['InstitutionPredicateQuery'];
+export type JsonOperator = components['schemas']['JsonOperator'];
 export type JsonRejection = components['schemas']['JsonRejection'];
 export type LibraryCompact = components['schemas']['LibraryCompact'];
 export type LibraryDetailed = components['schemas']['LibraryDetailed'];
 export type LibraryField = components['schemas']['LibraryField'];
 export type LibraryMeasurement = components['schemas']['LibraryMeasurement'];
+export type LibraryPredicate = components['schemas']['LibraryPredicate'];
+export type LibraryPredicateFilter = components['schemas']['LibraryPredicateFilter'];
+export type LibraryPredicateInner = components['schemas']['LibraryPredicateInner'];
+export type LibraryPredicateQuery = components['schemas']['LibraryPredicateQuery'];
 export type LibraryType = components['schemas']['LibraryType'];
+export type LibraryTypeArrayOperator = components['schemas']['LibraryTypeArrayOperator'];
+export type LibraryTypeOperator = components['schemas']['LibraryTypeOperator'];
+export type LibraryTypeSpecification = components['schemas']['LibraryTypeSpecification'];
+export type LibraryUpdate = components['schemas']['LibraryUpdate'];
 export type MeanDiameter = components['schemas']['MeanDiameter'];
 export type Microliter = components['schemas']['Microliter'];
 export type Micrometer = components['schemas']['Micrometer'];
 export type Milliliter = components['schemas']['Milliliter'];
 export type MultiplexingTag = components['schemas']['MultiplexingTag'];
+export type MultiplexingTagPredicate = components['schemas']['MultiplexingTagPredicate'];
 export type MultiplexingTagType = components['schemas']['MultiplexingTagType'];
+export type MultiplexingTagTypeOperator = components['schemas']['MultiplexingTagTypeOperator'];
 export type Nanogram = components['schemas']['Nanogram'];
 export type NanogramConcentration = components['schemas']['NanogramConcentration'];
 export type NewApiKey = components['schemas']['NewApiKey'];
+export type NewCdna = components['schemas']['NewCdna'];
+export type NewChromiumAssay = components['schemas']['NewChromiumAssay'];
+export type NewChromiumDataset = components['schemas']['NewChromiumDataset'];
+export type NewChromiumRun = components['schemas']['NewChromiumRun'];
+export type NewDualIndexSet = components['schemas']['NewDualIndexSet'];
+export type NewInstitution = components['schemas']['NewInstitution'];
+export type NewLibrary = components['schemas']['NewLibrary'];
+export type NewNucleicAcidMeasurement = components['schemas']['NewNucleicAcidMeasurement'];
+export type NewOcmGemWell = components['schemas']['NewOcmGemWell'];
+export type NewPerson = components['schemas']['NewPerson'];
+export type NewProject = components['schemas']['NewProject'];
+export type NewService = components['schemas']['NewService'];
+export type NewSpecimen = components['schemas']['NewSpecimen'];
+export type NewSpecimenMeasurement = components['schemas']['NewSpecimenMeasurement'];
+export type NewStandardGemWell = components['schemas']['NewStandardGemWell'];
+export type NewStandardOrOcmGemWell = components['schemas']['NewStandardOrOcmGemWell'];
+export type NewSuspension = components['schemas']['NewSuspension'];
+export type NewSuspensionMeasurement = components['schemas']['NewSuspensionMeasurement'];
+export type NewSuspensionPool = components['schemas']['NewSuspensionPool'];
+export type NewSuspensionPoolMeasurement = components['schemas']['NewSuspensionPoolMeasurement'];
+export type NewTenxAssay = components['schemas']['NewTenxAssay'];
 export type NucleicAcidMeasurementData = components['schemas']['NucleicAcidMeasurementData'];
 export type OcmBarcodeId = components['schemas']['OcmBarcodeId'];
+export type OcmLoadedEntity = components['schemas']['OcmLoadedEntity'];
+export type OrderByApiKeyField = components['schemas']['OrderByApiKeyField'];
+export type OrderByApiKeyFieldSet = components['schemas']['OrderByApiKeyFieldSet'];
+export type OrderByCdnaField = components['schemas']['OrderByCdnaField'];
+export type OrderByCdnaFieldSet = components['schemas']['OrderByCdnaFieldSet'];
+export type OrderByChromiumDatasetField = components['schemas']['OrderByChromiumDatasetField'];
+export type OrderByChromiumDatasetFieldSet = components['schemas']['OrderByChromiumDatasetFieldSet'];
+export type OrderByChromiumRunField = components['schemas']['OrderByChromiumRunField'];
+export type OrderByChromiumRunFieldSet = components['schemas']['OrderByChromiumRunFieldSet'];
+export type OrderByInstitutionField = components['schemas']['OrderByInstitutionField'];
+export type OrderByInstitutionFieldSet = components['schemas']['OrderByInstitutionFieldSet'];
+export type OrderByLibraryField = components['schemas']['OrderByLibraryField'];
+export type OrderByLibraryFieldSet = components['schemas']['OrderByLibraryFieldSet'];
+export type OrderByPersonField = components['schemas']['OrderByPersonField'];
+export type OrderByPersonFieldSet = components['schemas']['OrderByPersonFieldSet'];
+export type OrderByProjectField = components['schemas']['OrderByProjectField'];
+export type OrderByProjectFieldSet = components['schemas']['OrderByProjectFieldSet'];
+export type OrderByServiceField = components['schemas']['OrderByServiceField'];
+export type OrderByServiceFieldSet = components['schemas']['OrderByServiceFieldSet'];
+export type OrderBySpecimenField = components['schemas']['OrderBySpecimenField'];
+export type OrderBySpecimenFieldSet = components['schemas']['OrderBySpecimenFieldSet'];
+export type OrderBySuspensionField = components['schemas']['OrderBySuspensionField'];
+export type OrderBySuspensionFieldSet = components['schemas']['OrderBySuspensionFieldSet'];
+export type OrderBySuspensionPoolField = components['schemas']['OrderBySuspensionPoolField'];
+export type OrderBySuspensionPoolFieldSet = components['schemas']['OrderBySuspensionPoolFieldSet'];
+export type Permission = components['schemas']['Permission'];
 export type Person = components['schemas']['Person'];
 export type PersonAccount = components['schemas']['PersonAccount'];
 export type PersonError = components['schemas']['PersonError'];
 export type PersonField = components['schemas']['PersonField'];
 export type PersonLinks = components['schemas']['PersonLinks'];
+export type PersonPredicate = components['schemas']['PersonPredicate'];
+export type PersonPredicateFilter = components['schemas']['PersonPredicateFilter'];
+export type PersonPredicateQuery = components['schemas']['PersonPredicateQuery'];
+export type PersonUpdate = components['schemas']['PersonUpdate'];
 export type Picogram = components['schemas']['Picogram'];
 export type PicogramConcentration = components['schemas']['PicogramConcentration'];
 export type ProjectCompact = components['schemas']['ProjectCompact'];
 export type ProjectDetailed = components['schemas']['ProjectDetailed'];
 export type ProjectField = components['schemas']['ProjectField'];
+export type ProjectPredicate = components['schemas']['ProjectPredicate'];
+export type ProjectPredicateFilter = components['schemas']['ProjectPredicateFilter'];
+export type ProjectPredicateQuery = components['schemas']['ProjectPredicateQuery'];
+export type Resource = components['schemas']['Resource'];
 export type SampleMultiplexing = components['schemas']['SampleMultiplexing'];
+export type SampleMultiplexingOperator = components['schemas']['SampleMultiplexingOperator'];
 export type SavedApiKeyRecord = components['schemas']['SavedApiKeyRecord'];
 export type Service = components['schemas']['Service'];
 export type ServiceField = components['schemas']['ServiceField'];
+export type ServicePredicate = components['schemas']['ServicePredicate'];
+export type ServicePredicateFilter = components['schemas']['ServicePredicateFilter'];
+export type ServicePredicateQuery = components['schemas']['ServicePredicateQuery'];
+export type ServiceUpdate = components['schemas']['ServiceUpdate'];
 export type Species = components['schemas']['Species'];
+export type SpeciesOperator = components['schemas']['SpeciesOperator'];
 export type SpecimenCompact = components['schemas']['SpecimenCompact'];
 export type SpecimenDetailed = components['schemas']['SpecimenDetailed'];
 export type SpecimenField = components['schemas']['SpecimenField'];
 export type SpecimenMeasurement = components['schemas']['SpecimenMeasurement'];
 export type SpecimenMeasurementData = components['schemas']['SpecimenMeasurementData'];
+export type SpecimenPredicate = components['schemas']['SpecimenPredicate'];
+export type SpecimenPredicateFilter = components['schemas']['SpecimenPredicateFilter'];
+export type SpecimenPredicateQuery = components['schemas']['SpecimenPredicateQuery'];
 export type SpecimenType = components['schemas']['SpecimenType'];
+export type SpecimenTypeOperator = components['schemas']['SpecimenTypeOperator'];
+export type StringOperator = components['schemas']['stringOperator'];
 export type SuspensionCompact = components['schemas']['SuspensionCompact'];
 export type SuspensionConcentration = components['schemas']['SuspensionConcentration'];
 export type SuspensionContent = components['schemas']['SuspensionContent'];
+export type SuspensionContentOperator = components['schemas']['SuspensionContentOperator'];
 export type SuspensionDetailed = components['schemas']['SuspensionDetailed'];
 export type SuspensionField = components['schemas']['SuspensionField'];
 export type SuspensionMeasurement = components['schemas']['SuspensionMeasurement'];
@@ -6164,11 +8057,32 @@ export type SuspensionPoolDetailed = components['schemas']['SuspensionPoolDetail
 export type SuspensionPoolField = components['schemas']['SuspensionPoolField'];
 export type SuspensionPoolLinks = components['schemas']['SuspensionPoolLinks'];
 export type SuspensionPoolMeasurement = components['schemas']['SuspensionPoolMeasurement'];
+export type SuspensionPoolPredicate = components['schemas']['SuspensionPoolPredicate'];
+export type SuspensionPoolPredicateFilter = components['schemas']['SuspensionPoolPredicateFilter'];
+export type SuspensionPoolPredicateInner = components['schemas']['SuspensionPoolPredicateInner'];
+export type SuspensionPoolPredicateQuery = components['schemas']['SuspensionPoolPredicateQuery'];
+export type SuspensionPoolUpdate = components['schemas']['SuspensionPoolUpdate'];
+export type SuspensionPredicate = components['schemas']['SuspensionPredicate'];
+export type SuspensionPredicateFilter = components['schemas']['SuspensionPredicateFilter'];
+export type SuspensionPredicateInner = components['schemas']['SuspensionPredicateInner'];
+export type SuspensionPredicateQuery = components['schemas']['SuspensionPredicateQuery'];
+export type SuspensionSpecimenFields = components['schemas']['SuspensionSpecimenFields'];
+export type SuspensionUpdate = components['schemas']['SuspensionUpdate'];
 export type SuspensionVolume = components['schemas']['SuspensionVolume'];
 export type TaggedSpecimen = components['schemas']['TaggedSpecimen'];
+export type TaggedSuspension = components['schemas']['TaggedSuspension'];
 export type TenxAssay = components['schemas']['TenxAssay'];
+export type TenxAssayPredicate = components['schemas']['TenxAssayPredicate'];
 export type ThermalPreservationMethod = components['schemas']['ThermalPreservationMethod'];
+export type ThermalPreservationMethodOperator = components['schemas']['ThermalPreservationMethodOperator'];
+export type TimestampOperator = components['schemas']['TimestampOperator'];
+export type TissueFields = components['schemas']['TissueFields'];
 export type UpdateChromiumDatasetError = components['schemas']['UpdateChromiumDatasetError'];
+export type UuidOperator = components['schemas']['UuidOperator'];
+export type BooleanOperator = components['schemas']['booleanOperator'];
+export type FloatOperator = components['schemas']['floatOperator'];
+export type Int32Operator = components['schemas']['int32Operator'];
+export type Int64Operator = components['schemas']['int64Operator'];
 export type $defs = Record<string, never>;
 type FlattenedDeepRequired<T> = {
     [K in keyof T]-?: FlattenedDeepRequired<T[K] extends unknown[] | undefined | null ? Extract<T[K], unknown[]>[number] : T[K]>;
@@ -6178,6 +8092,7 @@ type ReadonlyArray<T> = [
 ] extends [
     unknown[]
 ] ? Readonly<Exclude<T, undefined>> : Readonly<Exclude<T, undefined>[]>;
+export const actionValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Action"]> = ["create", "update", "delete"];
 export const apiKeyFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ApiKeyField"]> = ["id", "description", "owner_id", "owner_is_staff", "created_at", "expires_at"];
 export const blockEmbeddingMatrixValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["BlockEmbeddingMatrix"]> = ["carboxymethyl_cellulose", "optimal_cutting_temperature_compound", "paraffin"];
 export const cdnaFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["CdnaField"]> = ["id", "readable_id", "library_type", "prepared_at", "gem_well_id", "n_amplification_cycles", "additional_data"];
@@ -6200,6 +8115,7 @@ export const ocmBarcodeIdValues: ReadonlyArray<FlattenedDeepRequired<components>
 export const personFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["PersonField"]> = ["id", "name", "email", "institution_id", "is_staff", "orcid"];
 export const picogramValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Picogram"]> = ["picogram"];
 export const projectFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ProjectField"]> = ["id", "name", "created_by", "started_at", "ended_at"];
+export const resourceValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Resource"]> = ["institution", "person", "account", "project", "specimen", "assay_constant_data", "chromium_experimental_data", "chromium_dataset"];
 export const sampleMultiplexingValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SampleMultiplexing"]> = ["cellplex", "flex_barcode", "flex_oligonucleotide_barcode", "hashtag", "on_chip_multiplexing", "singleplex"];
 export const serviceFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ServiceField"]> = ["id", "description", "owned_by", "is_staff", "created_at"];
 export const speciesValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Species"]> = ["ambystoma_mexicanum", "canis_familiaris", "callithrix_jacchus", "drosophila_melanogaster", "gasterosteus_aculeatus", "homo_sapiens", "mus_musculus", "rattus_norvegicus", "sminthopsis_crassicaudata"];

@@ -6,35 +6,57 @@ use axum::{extract::FromRequest, response::IntoResponse};
 use schemars::JsonSchema;
 use serde::Serialize;
 
+use crate::db::DbError;
+
 #[derive(FromRequest, Debug, Clone, PartialEq, Serialize)]
 #[from_request(via(axum::Json), rejection(JsonRejection))]
 pub struct JsonExtractor<T>(pub T);
 
 impl<T: JsonSchema> OperationInput for JsonExtractor<T> {
-    fn inferred_early_responses(
+    fn operation_input(
         ctx: &mut aide::generate::GenContext,
         operation: &mut aide::openapi::Operation,
-    ) -> Vec<(Option<aide::openapi::StatusCode>, aide::openapi::Response)> {
-        let mut responses = axum::Json::<T>::inferred_early_responses(ctx, operation);
-        for (_, resp) in &mut responses {
-            let schema = SchemaObject {
-                json_schema: ctx.schema.subschema_for::<JsonRejection>(),
-                example: None,
-                external_docs: None,
-            };
+    ) {
+        axum::Json::<T>::operation_input(ctx, operation);
+    }
 
-            resp.content = [(
+    fn inferred_early_responses(
+        ctx: &mut aide::generate::GenContext,
+        _operation: &mut aide::openapi::Operation,
+    ) -> Vec<(Option<aide::openapi::StatusCode>, aide::openapi::Response)> {
+        // Adapted from https://docs.rs/aide/0.16.0-alpha.4/src/aide/axum/inputs.rs.html#103
+        let schema = SchemaObject {
+            json_schema: ctx.schema.subschema_for::<JsonRejection>(),
+            example: None,
+            external_docs: None,
+        };
+
+        let response = |description: &'static str| aide::openapi::Response {
+            description: description.to_owned(),
+            content: [(
                 "application/json".to_owned(),
                 MediaType {
-                    schema: Some(schema),
+                    schema: Some(schema.clone()),
                     ..Default::default()
                 },
             )]
             .into_iter()
-            .collect();
-        }
+            .collect(),
+            ..Default::default()
+        };
 
-        responses
+        // We only use 400 and 415 here and leave 422 for more specific errors.
+        // See ./handlers/chromium_datasets/create.rs for an example
+        vec![
+            (
+                Some(aide::openapi::StatusCode::Code(400)),
+                response("failed to parse request body as JSON of the correct type"),
+            ),
+            (
+                Some(aide::openapi::StatusCode::Code(415)),
+                response("expected request with 'Content-Type: application/json'"),
+            ),
+        ]
     }
 }
 
