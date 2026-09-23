@@ -10,9 +10,7 @@ const {
   microsoftEntraClientSecret,
 } = await readConfig();
 
-async function deleteUnnecessaryAccountFields(
-  account: Account,
-) {
+async function deleteUnnecessaryAccountFields(account: Account) {
   delete account.accessToken;
   delete account.refreshToken;
   delete account.accessTokenExpiresAt;
@@ -86,7 +84,7 @@ export const auth = betterAuth({
   socialProviders: {
     microsoft: {
       disableIdTokenSignIn: true,
-      profilePhotoSize: 48,
+      disableProfilePhoto: true,
       tenantId: microsoftEntraTenantId,
       clientId: microsoftEntraClientId,
       clientSecret: microsoftEntraClientSecret,
@@ -94,7 +92,9 @@ export const auth = betterAuth({
       async mapProfileToUser({ tid }) {
         const dbClient = await getDbClient();
 
-        const { rows: [{ institution_id }] } = await dbClient.query(
+        const {
+          rows: [{ institution_id }],
+        } = await dbClient.query(
           `select institution.id as institution_id from institution where institution.microsoft_entra_tenant_id = $1::uuid`,
           [tid],
         );
