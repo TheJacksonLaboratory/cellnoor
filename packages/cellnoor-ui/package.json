@@ -37,7 +37,6 @@
 	"dependencies": {
 		"@lucide/svelte": "^1.47.0",
 		"better-auth": "^1.7.5",
-		"bits-ui": "^2.19.3",
 		"cellnoor-client": "link:cellnoor-client"
 	}
 }
