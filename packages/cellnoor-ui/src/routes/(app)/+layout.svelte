@@ -25,7 +25,9 @@
 	>
 </nav>
 
-{@render children()}
+<main>
+	{@render children()}
+</main>
 
 <style>
 	nav {
@@ -72,5 +74,9 @@
 			display: block;
 			padding-block: var(--sm-gap);
 		}
+	}
+
+	main {
+		padding: var(--md-gap);
 	}
 </style>

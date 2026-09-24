@@ -24,3 +24,14 @@ button {
 		background: black;
 	}
 }
+
+table {
+	border-collapse: collapse;
+}
+
+th,
+td {
+	padding: var(--sm-gap);
+	border-block-end: 1px solid var(--color-secondary);
+	text-align: start;
+}

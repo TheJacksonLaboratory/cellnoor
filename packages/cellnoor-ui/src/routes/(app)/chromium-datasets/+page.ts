@@ -1,7 +1,12 @@
 import { cellnoorClient } from '#lib/client.ts';
+import { error } from '@sveltejs/kit';
 
 export async function load() {
-	const { data, error } = await cellnoorClient.GET('/chromium-datasets');
+	const response = await cellnoorClient.POST('/chromium-datasets/search/detailed', { body: {} });
 
-	return { datasets: data, error };
+	if (response.error) {
+		error(response.response.status, { ...response.error, message: 'something went wrong' });
+	}
+
+	return { datasets: response.data, datasetIds: response.data.map((ds) => ds.id) };
 }
