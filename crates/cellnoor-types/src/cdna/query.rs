@@ -11,6 +11,7 @@ use crate::{
 pub type LibraryTypeOperator = Operator<LibraryType>;
 
 #[predicate_enum(CdnaField)]
+#[cfg_attr(feature = "schemars", schemars(inline))]
 pub enum CdnaPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),

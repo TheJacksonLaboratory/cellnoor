@@ -13,6 +13,7 @@ use crate::{
 pub type SuspensionContentOperator = Operator<SuspensionContent>;
 
 #[predicate_enum(SuspensionField)]
+#[cfg_attr(feature = "schemars", schemars(inline))]
 pub enum SuspensionPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),

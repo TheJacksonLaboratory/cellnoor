@@ -17,6 +17,7 @@ pub enum MultiplexingTagPredicate {
 }
 
 #[predicate_enum(SuspensionPoolField)]
+#[cfg_attr(feature = "schemars", schemars(inline))]
 pub enum SuspensionPoolPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),

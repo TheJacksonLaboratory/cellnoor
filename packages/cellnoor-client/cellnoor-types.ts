@@ -6007,15 +6007,7 @@ export interface components {
         };
         CdnaPredicate: {
             specimen: components["schemas"]["SpecimenPredicate"];
-        } | components["schemas"]["CdnaPredicateInner"];
-        CdnaPredicateFilter: {
-            all_of: components["schemas"]["CdnaPredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["CdnaPredicateFilter"][];
-        } | {
-            not: components["schemas"]["CdnaPredicateFilter"];
-        } | components["schemas"]["CdnaPredicate"];
-        CdnaPredicateInner: {
+        } | ({
             id: components["schemas"]["UuidOperator"];
         } | {
             readable_id: components["schemas"]["StringOperator"];
@@ -6029,7 +6021,14 @@ export interface components {
             n_amplification_cycles: components["schemas"]["int32Operator"];
         } | {
             additional_data: components["schemas"]["JsonOperator"];
-        };
+        });
+        CdnaPredicateFilter: {
+            all_of: components["schemas"]["CdnaPredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["CdnaPredicateFilter"][];
+        } | {
+            not: components["schemas"]["CdnaPredicateFilter"];
+        } | components["schemas"]["CdnaPredicate"];
         CdnaPredicateQuery: {
             filter?: components["schemas"]["CdnaPredicateFilter"] | null;
             /**
@@ -6100,7 +6099,13 @@ export interface components {
             tenx_assay: components["schemas"]["TenxAssayPredicate"];
         } | {
             library: components["schemas"]["LibraryPredicate"];
-        } | components["schemas"]["ChromiumDatasetPredicateInner"];
+        } | ({
+            id: components["schemas"]["UuidOperator"];
+        } | {
+            name: components["schemas"]["StringOperator"];
+        } | {
+            delivered_at: components["schemas"]["TimestampOperator"];
+        });
         ChromiumDatasetPredicateFilter: {
             all_of: components["schemas"]["ChromiumDatasetPredicateFilter"][];
         } | {
@@ -6108,13 +6113,6 @@ export interface components {
         } | {
             not: components["schemas"]["ChromiumDatasetPredicateFilter"];
         } | components["schemas"]["ChromiumDatasetPredicate"];
-        ChromiumDatasetPredicateInner: {
-            id: components["schemas"]["UuidOperator"];
-        } | {
-            name: components["schemas"]["StringOperator"];
-        } | {
-            delivered_at: components["schemas"]["TimestampOperator"];
-        };
         ChromiumDatasetPredicateQuery: {
             filter?: components["schemas"]["ChromiumDatasetPredicateFilter"] | null;
             /**
@@ -6178,15 +6176,7 @@ export interface components {
             specimen: components["schemas"]["SpecimenPredicate"];
         } | {
             tenx_assay: components["schemas"]["TenxAssayPredicate"];
-        } | components["schemas"]["ChromiumRunPredicateInner"];
-        ChromiumRunPredicateFilter: {
-            all_of: components["schemas"]["ChromiumRunPredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["ChromiumRunPredicateFilter"][];
-        } | {
-            not: components["schemas"]["ChromiumRunPredicateFilter"];
-        } | components["schemas"]["ChromiumRunPredicate"];
-        ChromiumRunPredicateInner: {
+        } | ({
             id: components["schemas"]["UuidOperator"];
         } | {
             readable_id: components["schemas"]["StringOperator"];
@@ -6200,7 +6190,14 @@ export interface components {
             succeeded: components["schemas"]["booleanOperator"];
         } | {
             additional_data: components["schemas"]["JsonOperator"];
-        };
+        });
+        ChromiumRunPredicateFilter: {
+            all_of: components["schemas"]["ChromiumRunPredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["ChromiumRunPredicateFilter"][];
+        } | {
+            not: components["schemas"]["ChromiumRunPredicateFilter"];
+        } | components["schemas"]["ChromiumRunPredicate"];
         ChromiumRunPredicateQuery: {
             filter?: components["schemas"]["ChromiumRunPredicateFilter"] | null;
             /**
@@ -6432,15 +6429,7 @@ export interface components {
         };
         LibraryPredicate: {
             specimen: components["schemas"]["SpecimenPredicate"];
-        } | components["schemas"]["LibraryPredicateInner"];
-        LibraryPredicateFilter: {
-            all_of: components["schemas"]["LibraryPredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["LibraryPredicateFilter"][];
-        } | {
-            not: components["schemas"]["LibraryPredicateFilter"];
-        } | components["schemas"]["LibraryPredicate"];
-        LibraryPredicateInner: {
+        } | ({
             id: components["schemas"]["UuidOperator"];
         } | {
             readable_id: components["schemas"]["StringOperator"];
@@ -6458,7 +6447,14 @@ export interface components {
             prepared_at: components["schemas"]["TimestampOperator"];
         } | {
             additional_data: components["schemas"]["JsonOperator"];
-        };
+        });
+        LibraryPredicateFilter: {
+            all_of: components["schemas"]["LibraryPredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["LibraryPredicateFilter"][];
+        } | {
+            not: components["schemas"]["LibraryPredicateFilter"];
+        } | components["schemas"]["LibraryPredicate"];
         LibraryPredicateQuery: {
             filter?: components["schemas"]["LibraryPredicateFilter"] | null;
             /**
@@ -7532,15 +7528,7 @@ export interface components {
             specimen: components["schemas"]["SpecimenPredicate"];
         } | {
             multiplexing_tag: components["schemas"]["MultiplexingTagPredicate"];
-        } | components["schemas"]["SuspensionPoolPredicateInner"];
-        SuspensionPoolPredicateFilter: {
-            all_of: components["schemas"]["SuspensionPoolPredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["SuspensionPoolPredicateFilter"][];
-        } | {
-            not: components["schemas"]["SuspensionPoolPredicateFilter"];
-        } | components["schemas"]["SuspensionPoolPredicate"];
-        SuspensionPoolPredicateInner: {
+        } | ({
             id: components["schemas"]["UuidOperator"];
         } | {
             readable_id: components["schemas"]["StringOperator"];
@@ -7550,7 +7538,14 @@ export interface components {
             pooled_at: components["schemas"]["TimestampOperator"];
         } | {
             additional_data: components["schemas"]["JsonOperator"];
-        };
+        });
+        SuspensionPoolPredicateFilter: {
+            all_of: components["schemas"]["SuspensionPoolPredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["SuspensionPoolPredicateFilter"][];
+        } | {
+            not: components["schemas"]["SuspensionPoolPredicateFilter"];
+        } | components["schemas"]["SuspensionPoolPredicate"];
         SuspensionPoolPredicateQuery: {
             filter?: components["schemas"]["SuspensionPoolPredicateFilter"] | null;
             /**
@@ -7576,15 +7571,7 @@ export interface components {
         };
         SuspensionPredicate: {
             specimen: components["schemas"]["SpecimenPredicate"];
-        } | components["schemas"]["SuspensionPredicateInner"];
-        SuspensionPredicateFilter: {
-            all_of: components["schemas"]["SuspensionPredicateFilter"][];
-        } | {
-            any_of: components["schemas"]["SuspensionPredicateFilter"][];
-        } | {
-            not: components["schemas"]["SuspensionPredicateFilter"];
-        } | components["schemas"]["SuspensionPredicate"];
-        SuspensionPredicateInner: {
+        } | ({
             id: components["schemas"]["UuidOperator"];
         } | {
             readable_id: components["schemas"]["StringOperator"];
@@ -7600,7 +7587,14 @@ export interface components {
             target_cell_recovery: components["schemas"]["int64Operator"];
         } | {
             additional_data: components["schemas"]["JsonOperator"];
-        };
+        });
+        SuspensionPredicateFilter: {
+            all_of: components["schemas"]["SuspensionPredicateFilter"][];
+        } | {
+            any_of: components["schemas"]["SuspensionPredicateFilter"][];
+        } | {
+            not: components["schemas"]["SuspensionPredicateFilter"];
+        } | components["schemas"]["SuspensionPredicate"];
         SuspensionPredicateQuery: {
             filter?: components["schemas"]["SuspensionPredicateFilter"] | null;
             /**
@@ -7889,7 +7883,6 @@ export type CdnaField = components['schemas']['CdnaField'];
 export type CdnaMeasurement = components['schemas']['CdnaMeasurement'];
 export type CdnaPredicate = components['schemas']['CdnaPredicate'];
 export type CdnaPredicateFilter = components['schemas']['CdnaPredicateFilter'];
-export type CdnaPredicateInner = components['schemas']['CdnaPredicateInner'];
 export type CdnaPredicateQuery = components['schemas']['CdnaPredicateQuery'];
 export type CdnaUpdate = components['schemas']['CdnaUpdate'];
 export type CellViability = components['schemas']['CellViability'];
@@ -7900,7 +7893,6 @@ export type ChromiumDatasetField = components['schemas']['ChromiumDatasetField']
 export type ChromiumDatasetParsedFile = components['schemas']['ChromiumDatasetParsedFile'];
 export type ChromiumDatasetPredicate = components['schemas']['ChromiumDatasetPredicate'];
 export type ChromiumDatasetPredicateFilter = components['schemas']['ChromiumDatasetPredicateFilter'];
-export type ChromiumDatasetPredicateInner = components['schemas']['ChromiumDatasetPredicateInner'];
 export type ChromiumDatasetPredicateQuery = components['schemas']['ChromiumDatasetPredicateQuery'];
 export type ChromiumDatasetRecord = components['schemas']['ChromiumDatasetRecord'];
 export type ChromiumRunCompact = components['schemas']['ChromiumRunCompact'];
@@ -7909,7 +7901,6 @@ export type ChromiumRunField = components['schemas']['ChromiumRunField'];
 export type ChromiumRunLinks = components['schemas']['ChromiumRunLinks'];
 export type ChromiumRunPredicate = components['schemas']['ChromiumRunPredicate'];
 export type ChromiumRunPredicateFilter = components['schemas']['ChromiumRunPredicateFilter'];
-export type ChromiumRunPredicateInner = components['schemas']['ChromiumRunPredicateInner'];
 export type ChromiumRunPredicateQuery = components['schemas']['ChromiumRunPredicateQuery'];
 export type ChromiumRunRecord = components['schemas']['ChromiumRunRecord'];
 export type ControlledRateFreezing = components['schemas']['ControlledRateFreezing'];
@@ -7936,7 +7927,6 @@ export type LibraryField = components['schemas']['LibraryField'];
 export type LibraryMeasurement = components['schemas']['LibraryMeasurement'];
 export type LibraryPredicate = components['schemas']['LibraryPredicate'];
 export type LibraryPredicateFilter = components['schemas']['LibraryPredicateFilter'];
-export type LibraryPredicateInner = components['schemas']['LibraryPredicateInner'];
 export type LibraryPredicateQuery = components['schemas']['LibraryPredicateQuery'];
 export type LibraryType = components['schemas']['LibraryType'];
 export type LibraryTypeArrayOperator = components['schemas']['LibraryTypeArrayOperator'];
@@ -8059,12 +8049,10 @@ export type SuspensionPoolLinks = components['schemas']['SuspensionPoolLinks'];
 export type SuspensionPoolMeasurement = components['schemas']['SuspensionPoolMeasurement'];
 export type SuspensionPoolPredicate = components['schemas']['SuspensionPoolPredicate'];
 export type SuspensionPoolPredicateFilter = components['schemas']['SuspensionPoolPredicateFilter'];
-export type SuspensionPoolPredicateInner = components['schemas']['SuspensionPoolPredicateInner'];
 export type SuspensionPoolPredicateQuery = components['schemas']['SuspensionPoolPredicateQuery'];
 export type SuspensionPoolUpdate = components['schemas']['SuspensionPoolUpdate'];
 export type SuspensionPredicate = components['schemas']['SuspensionPredicate'];
 export type SuspensionPredicateFilter = components['schemas']['SuspensionPredicateFilter'];
-export type SuspensionPredicateInner = components['schemas']['SuspensionPredicateInner'];
 export type SuspensionPredicateQuery = components['schemas']['SuspensionPredicateQuery'];
 export type SuspensionSpecimenFields = components['schemas']['SuspensionSpecimenFields'];
 export type SuspensionUpdate = components['schemas']['SuspensionUpdate'];

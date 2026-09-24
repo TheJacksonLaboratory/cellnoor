@@ -11,6 +11,7 @@ use crate::{
 };
 
 #[predicate_enum(ChromiumDatasetField)]
+#[cfg_attr(feature = "schemars", schemars(inline))]
 pub enum ChromiumDatasetPredicateInner {
     Id(UuidOperator),
     Name(StringOperator),

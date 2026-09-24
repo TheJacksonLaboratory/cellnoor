@@ -11,6 +11,7 @@ use crate::{
 };
 
 #[predicate_enum(LibraryField)]
+#[cfg_attr(feature = "schemars", schemars(inline))]
 pub enum LibraryPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),

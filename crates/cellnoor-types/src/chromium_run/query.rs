@@ -10,6 +10,7 @@ use crate::{
 };
 
 #[predicate_enum(ChromiumRunField)]
+#[cfg_attr(feature = "schemars", schemars(inline))]
 pub enum ChromiumRunPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),

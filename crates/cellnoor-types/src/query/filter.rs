@@ -1,11 +1,10 @@
+use macro_attributes::base_model;
 #[cfg(feature = "postgres-types")]
 use postgres_types::ToSql;
 use uuid::Uuid;
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[base_model]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
-#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(rename = "{P}Filter"))]
 pub enum Filter<P> {
     /// Combines these predicates with logical `and`
