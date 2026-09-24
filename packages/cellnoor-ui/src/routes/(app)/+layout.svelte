@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { authClient } from '#lib/auth.ts';
 	import { afterNavigate, goto } from '$app/navigation';
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 
 	let { children } = $props();
 
-	let datasetsMenu: HTMLDivElement;
+	let datasetsMenu: HTMLElement;
 	afterNavigate(() => datasetsMenu.hidePopover());
 </script>
 
@@ -12,9 +13,10 @@
 	<a class="brand" href="/">cellnoor</a>
 	<a href="/specimens">Specimens</a>
 	<a href="/libraries">Libraries</a>
-	<button class="menu-trigger" popovertarget="datasets-menu">Datasets</button>
+
+	<button popovertarget="datasets-menu">Datasets <ChevronDown size={16} /></button>
 	<div id="datasets-menu" popover bind:this={datasetsMenu}>
-		<a href="/chromium-datasets">Chromium Datasets</a>
+		<a href="/chromium-datasets">Chromium</a>
 	</div>
 
 	<button
@@ -26,46 +28,49 @@
 {@render children()}
 
 <style>
+	nav {
+		display: flex;
+		align-items: center;
+		gap: var(--md-gap);
+		padding-block: var(--sm-gap);
+		padding-inline: var(--md-gap);
+		border-block-end: 1px solid var(--color-secondary);
+	}
+
 	.brand {
 		font-family: 'Comfortaa Variable', system-ui, sans-serif;
 		font-size: 2rem;
 		margin-inline-end: auto;
 	}
 
-	.menu-trigger {
-		anchor-name: --datasets;
-		background: none;
-		color: black;
+	a,
+	[popovertarget] {
+		color: inherit;
+		text-decoration: none;
 
 		&:hover {
 			color: var(--color-primary);
 		}
 	}
 
-	#datasets-menu {
-		position-anchor: --datasets;
-		position-area: bottom span-right;
-		inset: auto;
-		margin: var(--sm-gap);
-		padding: var(--sm-gap);
-		border: 1px solid var(--color-secondary);
-		border-radius: 0.5rem;
-	}
-
-	nav {
+	[popovertarget] {
 		display: flex;
 		align-items: center;
-		gap: var(--md-gap);
-		padding: var(--md-gap);
-		border-bottom: 1px solid var(--color-secondary);
+		gap: 0.25em;
+		padding: 0;
+		font: inherit;
+		background: none;
+		border: none;
+		cursor: pointer;
+	}
 
+	[popover] {
+		position-area: block-end span-inline-end;
+		margin: 0;
+		border: 1px solid var(--color-secondary);
 		a {
-			text-decoration: none;
-			color: black;
-
-			&:hover {
-				color: var(--color-primary);
-			}
+			display: block;
+			padding-block: var(--sm-gap);
 		}
 	}
 </style>

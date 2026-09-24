@@ -1,3 +1,3 @@
 import { createCellnoorClient } from 'cellnoor-client';
 
-export const cellnoorClient = createCellnoorClient();
+export const cellnoorClient = createCellnoorClient({ baseUrl: '/api' });
