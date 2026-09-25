@@ -16,7 +16,7 @@ use crate::{
             index::select_services, update::update_service_by_id,
         },
     },
-    state::test_util::{ToNonemptyString, db_client_as_admin, db_client_as_user},
+    state::dev_util::{ToNonemptyString, db_client_as_admin, db_client_as_user},
 };
 
 // Creates a service account owned by `user`: the database default sets

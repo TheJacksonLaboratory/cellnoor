@@ -47,7 +47,7 @@ pub mod tests {
     use crate::{
         db::{self, DbError},
         handlers::multiplexing_tags::create::insert_multiplexing_tag,
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     pub async fn insert_test_multiplexing_tag(

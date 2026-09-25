@@ -44,7 +44,7 @@ mod test {
         handlers::institutions::{
             create::test::insert_test_institution, update::update_institution_by_id,
         },
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     #[tokio::test(flavor = "multi_thread")]

@@ -17,7 +17,7 @@ use crate::{
             index_detailed::select_suspensions_detailed,
         },
     },
-    state::test_util::{db_client_as_admin, db_client_as_user},
+    state::dev_util::{db_client_as_admin, db_client_as_user},
 };
 
 async fn insert_accessible_suspension(

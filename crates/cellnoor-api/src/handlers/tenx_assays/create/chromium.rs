@@ -108,7 +108,7 @@ pub mod tests {
         handlers::{
             index_sets::insert_test_dual_index_set, tenx_assays::create::insert_tenx_assay,
         },
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     pub async fn insert_test_chromium_assay(

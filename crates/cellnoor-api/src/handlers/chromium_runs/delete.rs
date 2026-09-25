@@ -4,7 +4,7 @@ mod test {
 
     use crate::{
         handlers::chromium_runs::create::test::insert_test_standard_chromium_run,
-        state::test_util::db_client_as_admin,
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

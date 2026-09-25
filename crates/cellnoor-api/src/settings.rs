@@ -3,7 +3,7 @@ use std::fs;
 use anyhow::Context;
 use secrecy::{ExposeSecret, SecretString};
 
-fn default_with_auth() -> bool {
+fn default_auth() -> bool {
     true
 }
 
@@ -20,8 +20,11 @@ pub struct Settings {
     #[serde(default = "default_address")]
     pub listen_on: String,
     pub static_files_dir: String,
-    #[serde(default = "default_with_auth")]
-    pub with_auth: bool,
+    #[serde(default = "default_auth")]
+    pub auth: bool,
+    #[cfg(feature = "dev")]
+    #[serde(default)]
+    pub dummy_data: bool,
 }
 
 impl Settings {

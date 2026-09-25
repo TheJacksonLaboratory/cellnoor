@@ -55,7 +55,7 @@ mod test {
 
     use crate::{
         handlers::services::{create::test::insert_test_service, update::update_service_by_id},
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     #[tokio::test(flavor = "multi_thread")]

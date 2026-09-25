@@ -56,7 +56,7 @@ pub mod test {
     use crate::{
         db::{self, DbError},
         handlers::institutions::create::insert_institution,
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     pub async fn insert_test_institution<F>(

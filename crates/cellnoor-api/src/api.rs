@@ -5,6 +5,8 @@ use tokio::net::{TcpListener, UnixListener};
 use tower_http::{normalize_path::NormalizePath, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+#[cfg(feature = "dev")]
+use crate::db::dummy_data::populate_dummy_data;
 use crate::{settings::Settings, state::AppState};
 
 mod routes;
@@ -13,6 +15,11 @@ pub async fn serve(settings: &Settings) -> anyhow::Result<()> {
     let app_addr = settings.listen_on.clone();
 
     let app_state = AppState::initialize(settings).context("failed to initialize app state")?;
+
+    #[cfg(feature = "dev")]
+    if settings.dummy_data {
+        populate_dummy_data(app_state.clone()).await;
+    }
 
     let api = api(app_state);
 

@@ -111,7 +111,7 @@ pub mod test {
     use crate::{
         db::{self, DbError},
         handlers::api_keys::create::insert_api_key,
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     pub async fn insert_test_api_key<F>(

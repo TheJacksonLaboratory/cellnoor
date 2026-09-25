@@ -60,7 +60,7 @@ pub mod test {
             people::create::test::insert_test_person_and_institution,
             projects::create::insert_project,
         },
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     // This one returns a `Result` because a different test needs that

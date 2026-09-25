@@ -72,7 +72,7 @@ mod test {
                 access::add_people::insert_service_accesses, create::test::insert_test_service,
             },
         },
-        state::test_util::db_client_as_admin,
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

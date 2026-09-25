@@ -42,6 +42,9 @@ futures.workspace = true
 serde_json.workspace = true
 zstd.workspace = true
 
+[features]
+dev = []
+
 [dev-dependencies]
 uuid = { workspace = true, features = ["v4"] }
 pretty_assertions.workspace = true

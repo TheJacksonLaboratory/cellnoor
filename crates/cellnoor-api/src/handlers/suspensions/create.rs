@@ -139,7 +139,7 @@ pub mod test {
             specimens::create::test::insert_test_specimen_and_project,
             suspensions::create::insert_suspension,
         },
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     pub async fn insert_test_suspension_and_specimen<F>(

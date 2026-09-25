@@ -58,7 +58,7 @@ mod test {
             people::create::test::insert_test_person_and_institution,
             projects::create::test::insert_test_project,
         },
-        state::test_util::{db_client_as_admin, db_client_as_user},
+        state::dev_util::{db_client_as_admin, db_client_as_user},
     };
 
     #[tokio::test(flavor = "multi_thread")]

@@ -194,7 +194,7 @@ pub mod test {
                 create::{insert_person, validate_email},
             },
         },
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     pub async fn insert_test_person_and_institution<F>(

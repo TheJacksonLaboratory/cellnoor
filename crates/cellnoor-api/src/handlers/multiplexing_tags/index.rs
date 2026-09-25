@@ -32,7 +32,7 @@ mod test {
         handlers::multiplexing_tags::{
             create::tests::insert_test_multiplexing_tag, index::select_multiplexing_tags,
         },
-        state::test_util::db_client_as_admin,
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

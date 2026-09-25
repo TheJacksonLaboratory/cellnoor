@@ -140,7 +140,7 @@ pub mod test {
             cdna::create::test::insert_test_cdna_and_chromium_run, index_sets::DUAL_INDEX_SET_NAME,
             libraries::create::insert_library,
         },
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     pub async fn insert_test_library<F>(

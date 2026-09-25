@@ -52,7 +52,7 @@ mod test {
     use crate::{
         db::test_utils::ensure_fields_are_selectable,
         handlers::services::{create::test::insert_test_service, index::select_services},
-        state::test_util::db_client_as_admin,
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

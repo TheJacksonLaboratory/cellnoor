@@ -10,7 +10,7 @@ use crate::{
     handlers::projects::{
         create::test::insert_test_project, index_detailed::select_projects_detailed,
     },
-    state::test_util::{db_client_as_admin, db_client_as_user},
+    state::dev_util::{db_client_as_admin, db_client_as_user},
 };
 
 async fn insert_accessible_project(tx: &db::Transaction<'_>) -> (NewProject, ProjectDetailed) {

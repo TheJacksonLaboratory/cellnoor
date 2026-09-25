@@ -51,7 +51,7 @@ mod test {
 
     use crate::{
         db::DbError, handlers::chromium_datasets::show::select_chromium_dataset_by_id,
-        state::test_util::db_client_as_admin,
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

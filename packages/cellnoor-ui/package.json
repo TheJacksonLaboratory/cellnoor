@@ -35,6 +35,7 @@
 		"#lib/*": "./src/lib/*"
 	},
 	"dependencies": {
+		"@ark-ui/svelte": "^5.24.2",
 		"@lucide/svelte": "^1.47.0",
 		"better-auth": "^1.7.5",
 		"cellnoor-client": "link:cellnoor-client"

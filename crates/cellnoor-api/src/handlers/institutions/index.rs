@@ -56,7 +56,7 @@ mod test {
         handlers::institutions::{
             create::test::insert_test_institution, index::select_institutions,
         },
-        state::test_util::db_client_as_admin,
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

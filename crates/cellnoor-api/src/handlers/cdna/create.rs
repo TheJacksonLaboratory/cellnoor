@@ -151,7 +151,7 @@ pub mod test {
             cdna::create::insert_cdna,
             chromium_runs::create::test::insert_test_standard_chromium_run,
         },
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     pub async fn insert_test_cdna_and_chromium_run<F>(

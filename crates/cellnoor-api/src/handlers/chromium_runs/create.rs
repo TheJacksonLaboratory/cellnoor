@@ -118,7 +118,7 @@ pub mod test {
             suspensions::create::test::insert_test_suspension_and_specimen,
             tenx_assays::create::insert_test_chromium_assay,
         },
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     pub fn new_record(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRecord {

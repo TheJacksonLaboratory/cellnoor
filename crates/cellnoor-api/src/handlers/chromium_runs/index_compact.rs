@@ -70,7 +70,7 @@ mod test {
             create::test::insert_test_standard_chromium_run,
             index_compact::select_chromium_runs_compact,
         },
-        state::test_util::db_client_as_admin,
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

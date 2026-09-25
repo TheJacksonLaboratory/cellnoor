@@ -117,7 +117,7 @@ pub mod tests {
     use crate::{
         db::{self, DbError},
         handlers::index_sets::{IndexSetError, single::create::insert_single_index_sets},
-        state::test_util::db_client_as_admin,
+        state::dev_util::db_client_as_admin,
     };
 
     pub async fn insert_test_single_index_set(

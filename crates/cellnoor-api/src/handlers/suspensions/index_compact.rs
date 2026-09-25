@@ -59,7 +59,7 @@ mod test {
             create::test::insert_test_suspension_and_specimen,
             index_compact::select_suspensions_compact,
         },
-        state::test_util::db_client_as_admin,
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

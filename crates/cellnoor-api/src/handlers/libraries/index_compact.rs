@@ -56,7 +56,7 @@ mod test {
         handlers::libraries::{
             create::test::insert_test_library, index_compact::select_libraries_compact,
         },
-        state::test_util::db_client_as_admin,
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

@@ -207,7 +207,7 @@ pub mod test {
             suspension_pools::create::insert_suspension_pool,
             suspensions::create::test::insert_test_suspension_and_specimen,
         },
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     pub async fn insert_test_suspension_pool_and_suspensions<F>(

@@ -91,7 +91,7 @@ mod test {
             file_auth::dataset_dir::{DatasetType, dataset_exists},
             people::create::test::insert_test_person_and_institution,
         },
-        state::test_util::{db_client_as_admin, db_client_as_user},
+        state::dev_util::{db_client_as_admin, db_client_as_user},
     };
 
     #[tokio::test(flavor = "multi_thread")]

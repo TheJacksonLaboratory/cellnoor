@@ -85,7 +85,7 @@ mod test {
             create::test::insert_test_suspension_pool_and_suspensions,
             index_compact::select_suspension_pools_compact,
         },
-        state::test_util::db_client_as_admin,
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

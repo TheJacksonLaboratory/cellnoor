@@ -106,7 +106,7 @@ pub mod test {
         handlers::{
             projects::create::test::insert_test_project, specimens::create::insert_specimen,
         },
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     pub async fn insert_test_specimen_and_project<F>(

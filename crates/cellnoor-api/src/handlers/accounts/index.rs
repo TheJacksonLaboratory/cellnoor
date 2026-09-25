@@ -31,7 +31,7 @@ mod tests {
             accounts::index::select_accounts,
             people::create::test::insert_test_person_and_institution,
         },
-        state::test_util::db_client_as_admin,
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test]

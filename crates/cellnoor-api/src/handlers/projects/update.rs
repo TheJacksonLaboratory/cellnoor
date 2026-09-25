@@ -44,7 +44,7 @@ async fn update_project_by_id(
 mod tests {
     use crate::{
         handlers::projects::{create::test::insert_test_project, update::update_project_by_id},
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     #[tokio::test(flavor = "multi_thread")]

@@ -24,7 +24,7 @@ use crate::{
         suspension_pools::index_detailed::select_suspension_pools_detailed,
         suspensions::index_detailed::select_suspensions_detailed,
     },
-    state::test_util::{db_client_as_admin, db_client_as_user},
+    state::dev_util::{db_client_as_admin, db_client_as_user},
 };
 
 async fn create_test_user() -> Uuid {

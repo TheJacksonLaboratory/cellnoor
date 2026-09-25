@@ -18,7 +18,9 @@ use crate::{
 pub async fn create_dual_index_sets(
     State(state): State<AppState>,
     user: AuthUser,
-    crate::extract::JsonExtractor(sets): crate::extract::JsonExtractor<HashMap<String, NewDualIndexSet>>,
+    crate::extract::JsonExtractor(sets): crate::extract::JsonExtractor<
+        HashMap<String, NewDualIndexSet>,
+    >,
 ) -> Result<Json<()>, IndexSetError> {
     state
         .in_transaction(user, async |tx| insert_dual_index_sets(tx, &sets).await)
@@ -132,7 +134,7 @@ pub mod tests {
     use crate::{
         db::{self, Sql},
         handlers::index_sets::{IndexSetError, dual::create::insert_dual_index_sets},
-        state::test_util::db_client_as_admin,
+        state::dev_util::db_client_as_admin,
     };
 
     pub const DUAL_INDEX_SET_NAME: &str = "SI-TT-A1";

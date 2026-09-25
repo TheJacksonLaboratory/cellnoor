@@ -190,7 +190,7 @@ pub mod test {
             chromium_datasets::create::{CreateChromiumDatasetError, insert_chromium_dataset},
             libraries::create::test::insert_test_library,
         },
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     pub async fn insert_test_chromium_dataset<F>(

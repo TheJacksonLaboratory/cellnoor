@@ -4,6 +4,8 @@ use postgres_types::ToSql;
 pub use stmt::{FilterableSqlBuilder, Sql};
 
 mod client;
+#[cfg(feature = "dev")]
+pub mod dummy_data;
 mod error;
 mod insert;
 mod stmt;

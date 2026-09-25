@@ -3,7 +3,7 @@ mod test {
     use cellnoor_types::service::ServiceSimpleFields;
 
     use crate::{
-        handlers::services::create::test::insert_test_service, state::test_util::db_client_as_admin,
+        handlers::services::create::test::insert_test_service, state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

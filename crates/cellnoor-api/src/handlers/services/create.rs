@@ -63,7 +63,7 @@ pub mod test {
     use crate::{
         db::{self, DbError},
         handlers::services::create::insert_service,
-        state::test_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     pub async fn insert_test_service<F>(

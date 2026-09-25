@@ -1,3 +1,5 @@
+#[cfg(not(feature = "dev"))]
+use anyhow::ensure;
 use axum::Json;
 use camino::Utf8PathBuf;
 use deadpool_postgres::PoolError;
@@ -21,7 +23,13 @@ pub struct AppState {
 
 impl AppState {
     pub fn initialize(settings: &Settings) -> anyhow::Result<Self> {
-        let jwt_decoding_info = settings.with_auth.then(|| {
+        #[cfg(not(feature = "dev"))]
+        ensure!(
+            settings.auth,
+            "authentication must be turned on for prod builds"
+        );
+
+        let jwt_decoding_info = settings.auth.then(|| {
             &*Box::leak(Box::new((
                 jsonwebtoken::DecodingKey::from_secret(
                     settings.auth_secret.expose_secret().as_bytes(),
@@ -62,16 +70,18 @@ impl AppState {
     }
 }
 
-#[cfg(test)]
-pub mod test_util {
+#[cfg(any(test, feature = "dev"))]
+pub mod dev_util {
     use cellnoor_types::nonempty::NonemptyString;
+    #[cfg(test)]
     use uuid::Uuid;
 
     use crate::{auth::AuthUser, db};
 
+    #[cfg(test)]
     pub fn test_db_pool() -> db::Pool {
-        // This looks like it won't compile but it will when you run
-        // ./scripts/dev/test.sh
+        // IDE will say this won't compile, but it will when you run
+        // scripts/dev/test.sh
         db::Pool::from_url(env!("CELLNOOR_TEST_DB_URL"))
     }
 
@@ -79,6 +89,7 @@ pub mod test_util {
         test_db_pool().get(AuthUser::admin()).await.unwrap()
     }
 
+    #[cfg(test)]
     pub async fn db_client_as_user(user: Uuid) -> db::Client {
         test_db_pool()
             .get(AuthUser::new_as_user(user))

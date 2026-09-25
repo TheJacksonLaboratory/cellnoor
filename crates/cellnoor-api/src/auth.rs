@@ -31,6 +31,7 @@ pub struct AuthUser {
 }
 
 impl AuthUser {
+    #[cfg(feature = "dev")]
     /// The admin user has the nil UUID (see
     /// /db/migrations/0025_insert-admin.up.sql)
     pub(crate) fn admin() -> Self {

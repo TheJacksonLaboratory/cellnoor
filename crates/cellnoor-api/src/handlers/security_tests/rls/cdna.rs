@@ -16,7 +16,7 @@ use crate::{
         security_tests::rls::specimen::insert_inaccessible_specimen,
         suspensions::create::test::insert_test_suspension_and_specimen,
     },
-    state::test_util::{db_client_as_admin, db_client_as_user},
+    state::dev_util::{db_client_as_admin, db_client_as_user},
 };
 
 async fn insert_accessible_cdna(tx: &db::Transaction<'_>) -> (NewCdna, CdnaDetailed) {

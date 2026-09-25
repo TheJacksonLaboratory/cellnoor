@@ -19,7 +19,7 @@ use crate::{
             access::add_people::insert_service_accesses, create::test::insert_test_service,
         },
     },
-    state::test_util::{ToNonemptyString, db_client_as_admin, db_client_as_user},
+    state::dev_util::{ToNonemptyString, db_client_as_admin, db_client_as_user},
 };
 
 async fn create_person_api_key_for(user: Uuid) -> ApiKey {
