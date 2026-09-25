@@ -127,6 +127,70 @@ impl Insert for NewCdnaRecord {
     }
 }
 
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_test_cdna_and_chromium_run<F>(
+    tx: &db::Transaction<'_>,
+    mut modify: F,
+) -> Result<(NewCdna, CdnaDetailed), DbError>
+where
+    F: FnMut(&mut NewCdna),
+{
+    use cellnoor_types::{
+        cdna::creation::CdnaVariableFields,
+        nucleic_acid_measurement::{
+            Concentration, NewNucleicAcidMeasurement, NucleicAcidMeasurementData,
+            NucleicAcidMeasurementMethod,
+        },
+        positive::PositiveI32,
+        units::{Microliter, Nanogram},
+    };
+    use jiff::Timestamp;
+    use postgres_types::Json;
+
+    use crate::{
+        handlers::chromium_runs::create::insert_test_standard_chromium_run,
+        state::dev_util::ToNonemptyString,
+    };
+
+    let (_, run) = insert_test_standard_chromium_run(tx, |_| ()).await?;
+
+    let gem_well_id = *run.gem_wells[0].record.id;
+    let person_id = run.record.run_by;
+    let prepared_at = run.record.run_at;
+
+    let mut new = NewCdna {
+        simple: CdnaSimpleFields {
+            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+            prepared_at,
+            additional_data: None,
+        },
+        gem_well_id,
+        measurements: vec![NewNucleicAcidMeasurement {
+            measured_by: person_id,
+            measured_at: Timestamp::now(),
+            data: Json(NucleicAcidMeasurementData {
+                instrument_name: "Qubit".to_nonempty_string(),
+                method: NucleicAcidMeasurementMethod::Fluorometric {
+                    concentration: Concentration {
+                        value: PositiveI32::new(50).unwrap(),
+                        numerator_unit: Nanogram::Nanogram,
+                        denominator_unit: Microliter::Microliter,
+                    },
+                },
+            }),
+        }],
+        preparers: cellnoor_types::nonempty::NonemptyVec::new(vec![person_id]).unwrap(),
+        variable_fields: CdnaVariableFields::GeneExpression {
+            n_amplification_cycles: PositiveI32::new(10).unwrap(),
+        },
+    };
+
+    modify(&mut new);
+
+    let inserted = insert_cdna(tx, new.clone()).await?;
+    Ok((new, inserted))
+}
+
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
@@ -145,60 +209,14 @@ pub mod test {
     use postgres_types::Json;
     use uuid::Uuid;
 
+    use super::insert_test_cdna_and_chromium_run;
     use crate::{
         db::{self, DbError},
         handlers::{
-            cdna::create::insert_cdna,
-            chromium_runs::create::test::insert_test_standard_chromium_run,
+            cdna::create::insert_cdna, chromium_runs::create::insert_test_standard_chromium_run,
         },
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
-
-    pub async fn insert_test_cdna_and_chromium_run<F>(
-        tx: &db::Transaction<'_>,
-        mut modify: F,
-    ) -> Result<(NewCdna, CdnaDetailed), DbError>
-    where
-        F: FnMut(&mut NewCdna),
-    {
-        let (_, run) = insert_test_standard_chromium_run(tx, |_| ()).await?;
-
-        let gem_well_id = *run.gem_wells[0].record.id;
-        let person_id = run.record.run_by;
-        let prepared_at = run.record.run_at;
-
-        let mut new = NewCdna {
-            simple: CdnaSimpleFields {
-                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                prepared_at,
-                additional_data: None,
-            },
-            gem_well_id,
-            measurements: vec![NewNucleicAcidMeasurement {
-                measured_by: person_id,
-                measured_at: Timestamp::now(),
-                data: Json(NucleicAcidMeasurementData {
-                    instrument_name: "Qubit".to_nonempty_string(),
-                    method: NucleicAcidMeasurementMethod::Fluorometric {
-                        concentration: Concentration {
-                            value: PositiveI32::new(50).unwrap(),
-                            numerator_unit: Nanogram::Nanogram,
-                            denominator_unit: Microliter::Microliter,
-                        },
-                    },
-                }),
-            }],
-            preparers: cellnoor_types::nonempty::NonemptyVec::new(vec![person_id]).unwrap(),
-            variable_fields: CdnaVariableFields::GeneExpression {
-                n_amplification_cycles: PositiveI32::new(10).unwrap(),
-            },
-        };
-
-        modify(&mut new);
-
-        let inserted = insert_cdna(tx, new.clone()).await?;
-        Ok((new, inserted))
-    }
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {

@@ -43,7 +43,7 @@ async fn update_project_by_id(
 #[cfg(test)]
 mod tests {
     use crate::{
-        handlers::projects::{create::test::insert_test_project, update::update_project_by_id},
+        handlers::projects::{create::insert_test_project, update::update_project_by_id},
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 

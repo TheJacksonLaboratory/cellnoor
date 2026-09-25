@@ -116,6 +116,69 @@ impl Insert for NewSuspensionRecord {
     }
 }
 
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_test_suspension_and_specimen<F>(
+    tx: &db::Transaction<'_>,
+    mut modify: F,
+) -> Result<(NewSuspension, SuspensionDetailed), DbError>
+where
+    F: FnMut(&mut NewSuspension),
+{
+    use cellnoor_types::{
+        id::NoId,
+        positive::PositiveBoundedF32,
+        suspension::{
+            SuspensionContent,
+            measurement::{
+                CellViability, NewSuspensionMeasurement, SuspensionMeasurementData,
+                SuspensionMeasurementQuantity,
+            },
+        },
+    };
+    use jiff::Timestamp;
+    use postgres_types::Json;
+
+    use crate::{
+        handlers::specimens::create::insert_test_specimen_and_project,
+        state::dev_util::ToNonemptyString,
+    };
+
+    let (_, specimen) = insert_test_specimen_and_project(tx, |_| ()).await?;
+    let specimen_record = &specimen.record;
+    let specimen_id = *specimen_record.id;
+    let person_id = specimen_record.submitted_by;
+
+    let mut new = NewSuspension {
+        record: NewSuspensionRecord {
+            id: NoId,
+            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+            specimen_id,
+            specimen_received_at: specimen.record.received_at,
+            content: SuspensionContent::Cells,
+            created_at: Timestamp::now(),
+            lysis_duration_minutes: None,
+            target_cell_recovery: None,
+            additional_data: None,
+        },
+        measurements: vec![NewSuspensionMeasurement {
+            measured_by: person_id,
+            measured_at: Timestamp::now(),
+            data: Json(SuspensionMeasurementData {
+                quantity: SuspensionMeasurementQuantity::Viability(CellViability {
+                    value: PositiveBoundedF32::new(0.5).unwrap(),
+                }),
+                post_hybridization: false,
+            }),
+        }],
+        preparers: cellnoor_types::nonempty::NonemptyVec::new(vec![person_id]).unwrap(),
+    };
+
+    modify(&mut new);
+
+    let inserted = insert_suspension(tx, new.clone()).await?;
+    Ok((new, inserted))
+}
+
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
@@ -133,57 +196,15 @@ pub mod test {
     use postgres_types::Json;
     use uuid::Uuid;
 
+    use super::insert_test_suspension_and_specimen;
     use crate::{
         db::{self, DbError},
         handlers::{
-            specimens::create::test::insert_test_specimen_and_project,
+            specimens::create::insert_test_specimen_and_project,
             suspensions::create::insert_suspension,
         },
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
-
-    pub async fn insert_test_suspension_and_specimen<F>(
-        tx: &db::Transaction<'_>,
-        mut modify: F,
-    ) -> Result<(NewSuspension, SuspensionDetailed), DbError>
-    where
-        F: FnMut(&mut NewSuspension),
-    {
-        let (_, specimen) = insert_test_specimen_and_project(tx, |_| ()).await?;
-        let specimen_record = &specimen.record;
-        let specimen_id = *specimen_record.id;
-        let person_id = specimen_record.submitted_by;
-
-        let mut new = NewSuspension {
-            record: NewSuspensionRecord {
-                id: NoId,
-                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                specimen_id,
-                specimen_received_at: specimen.record.received_at,
-                content: SuspensionContent::Cells,
-                created_at: Timestamp::now(),
-                lysis_duration_minutes: None,
-                target_cell_recovery: None,
-                additional_data: None,
-            },
-            measurements: vec![NewSuspensionMeasurement {
-                measured_by: person_id,
-                measured_at: Timestamp::now(),
-                data: Json(SuspensionMeasurementData {
-                    quantity: SuspensionMeasurementQuantity::Viability(CellViability {
-                        value: PositiveBoundedF32::new(0.5).unwrap(),
-                    }),
-                    post_hybridization: false,
-                }),
-            }],
-            preparers: cellnoor_types::nonempty::NonemptyVec::new(vec![person_id]).unwrap(),
-        };
-
-        modify(&mut new);
-
-        let inserted = insert_suspension(tx, new.clone()).await?;
-        Ok((new, inserted))
-    }
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {

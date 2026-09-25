@@ -90,6 +90,56 @@ impl Insert for NewChromiumAssayRecord<'_> {
     }
 }
 
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_test_chromium_assay(
+    tx: &db::Transaction<'_>,
+) -> Result<(NewChromiumAssay, cellnoor_types::tenx_assay::TenxAssay), DbError> {
+    use cellnoor_types::{
+        nonempty::{NonemptyBoundedVec, NonemptyVec},
+        positive::PositiveI32,
+        tenx_assay::{
+            SampleMultiplexing,
+            creation::{LibraryTypeSpecification, NewTenxAssay},
+        },
+    };
+
+    use crate::{
+        handlers::{
+            index_sets::insert_test_dual_index_set, tenx_assays::create::insert_tenx_assay,
+        },
+        state::dev_util::ToNonemptyString,
+    };
+
+    // The fixture's index set is well-formed, so only the database can
+    // refuse it, and no test here reads that error
+    let index_set_name = insert_test_dual_index_set(tx)
+        .await
+        .expect("failed to insert the test index set");
+    let kit_name = index_set_name[3..5].to_owned();
+
+    let chromium_assay = NewChromiumAssay {
+        name: Uuid::new_v4().to_string().to_nonempty_string(),
+        chemistry_version: "v1".to_nonempty_string(),
+        protocol_url: "https://10xgenomics.com".to_nonempty_string(),
+        sample_multiplexing: SampleMultiplexing::Singleplex,
+        chromium_chip: "GEM-X FX".to_nonempty_string(),
+        cmdlines: NonemptyVec::new(vec!["cellranger count".to_nonempty_string()]).unwrap(),
+        library_type_specifications: NonemptyBoundedVec::new(vec![LibraryTypeSpecification {
+            library_type: LibraryType::GeneExpression,
+            index_kit: kit_name,
+            cdna_volume_µl: PositiveI32::new(50).unwrap(),
+            library_volume_µl: PositiveI32::new(50).unwrap(),
+        }])
+        .unwrap(),
+    };
+
+    let assay = NewTenxAssay::Chromium(chromium_assay.clone());
+
+    let inserted = insert_tenx_assay(tx, &assay).await?;
+
+    Ok((chromium_assay, inserted))
+}
+
 #[cfg(test)]
 pub mod tests {
     use cellnoor_types::{
@@ -103,6 +153,7 @@ pub mod tests {
     };
     use uuid::Uuid;
 
+    use super::insert_test_chromium_assay;
     use crate::{
         db::{self, DbError},
         handlers::{
@@ -110,39 +161,6 @@ pub mod tests {
         },
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
-
-    pub async fn insert_test_chromium_assay(
-        tx: &db::Transaction<'_>,
-    ) -> Result<(NewChromiumAssay, TenxAssay), DbError> {
-        // The fixture's index set is well-formed, so only the database can
-        // refuse it, and no test here reads that error
-        let index_set_name = insert_test_dual_index_set(tx)
-            .await
-            .expect("failed to insert the test index set");
-        let kit_name = index_set_name[3..5].to_owned();
-
-        let chromium_assay = NewChromiumAssay {
-            name: Uuid::new_v4().to_string().to_nonempty_string(),
-            chemistry_version: "v1".to_nonempty_string(),
-            protocol_url: "https://10xgenomics.com".to_nonempty_string(),
-            sample_multiplexing: SampleMultiplexing::Singleplex,
-            chromium_chip: "GEM-X FX".to_nonempty_string(),
-            cmdlines: NonemptyVec::new(vec!["cellranger count".to_nonempty_string()]).unwrap(),
-            library_type_specifications: NonemptyBoundedVec::new(vec![LibraryTypeSpecification {
-                library_type: LibraryType::GeneExpression,
-                index_kit: kit_name,
-                cdna_volume_µl: PositiveI32::new(50).unwrap(),
-                library_volume_µl: PositiveI32::new(50).unwrap(),
-            }])
-            .unwrap(),
-        };
-
-        let assay = NewTenxAssay::Chromium(chromium_assay.clone());
-
-        let inserted = insert_tenx_assay(tx, &assay).await?;
-
-        Ok((chromium_assay, inserted))
-    }
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {

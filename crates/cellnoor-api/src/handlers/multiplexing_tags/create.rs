@@ -36,6 +36,23 @@ async fn insert_multiplexing_tag(
         .await
 }
 
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_test_multiplexing_tag(
+    tx: &db::Transaction<'_>,
+) -> Result<MultiplexingTag, DbError> {
+    use cellnoor_types::suspension_pool::MultiplexingTagType;
+    use uuid::Uuid;
+
+    use crate::state::dev_util::ToNonemptyString;
+
+    let new = NewMultiplexingTag {
+        tag_id: Uuid::new_v4().to_string().to_nonempty_string(),
+        type_: MultiplexingTagType::FlexBarcode,
+    };
+
+    insert_multiplexing_tag(tx, &new).await
+}
+
 #[cfg(test)]
 pub mod tests {
     use cellnoor_types::{
@@ -44,22 +61,12 @@ pub mod tests {
     };
     use uuid::Uuid;
 
+    use super::insert_test_multiplexing_tag;
     use crate::{
         db::{self, DbError},
         handlers::multiplexing_tags::create::insert_multiplexing_tag,
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
-
-    pub async fn insert_test_multiplexing_tag(
-        tx: &db::Transaction<'_>,
-    ) -> Result<MultiplexingTag, DbError> {
-        let new = NewMultiplexingTag {
-            tag_id: Uuid::new_v4().to_string().to_nonempty_string(),
-            type_: MultiplexingTagType::FlexBarcode,
-        };
-
-        insert_multiplexing_tag(tx, &new).await
-    }
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {

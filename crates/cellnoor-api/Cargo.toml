@@ -41,9 +41,10 @@ regex.workspace = true
 futures.workspace = true
 serde_json.workspace = true
 zstd.workspace = true
+pretty_assertions = { workspace = true, optional = true }
 
 [features]
-dev = []
+dev = ["uuid/v4", "pretty_assertions"]
 
 [dev-dependencies]
 uuid = { workspace = true, features = ["v4"] }

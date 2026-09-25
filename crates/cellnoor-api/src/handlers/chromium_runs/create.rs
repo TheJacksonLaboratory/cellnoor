@@ -92,6 +92,83 @@ impl Insert for NewChromiumRunRecord {
     }
 }
 
+#[cfg(any(test, feature = "dev"))]
+pub fn new_record(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRecord {
+    use cellnoor_types::id::NoId;
+    use jiff::Timestamp;
+
+    use crate::state::dev_util::ToNonemptyString;
+
+    NewChromiumRunRecord {
+        id: NoId,
+        readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+        assay_id,
+        run_at: Timestamp::now(),
+        run_by,
+        succeeded: true,
+        additional_data: None,
+    }
+}
+
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_test_standard_chromium_run<F>(
+    tx: &db::Transaction<'_>,
+    mut modify: F,
+) -> Result<(NewChromiumRun, ChromiumRunDetailed), DbError>
+where
+    F: FnMut(&mut NewChromiumRun),
+{
+    use cellnoor_types::{
+        chromium_run::creation::{LoadedEntity, standard::NewStandardGemWell},
+        nonempty::NonemptyBoundedVec,
+    };
+
+    use crate::{
+        handlers::{
+            suspension_pools::create::insert_test_suspension_pool_and_suspensions,
+            suspensions::create::insert_test_suspension_and_specimen,
+            tenx_assays::create::insert_test_chromium_assay,
+        },
+        state::dev_util::ToNonemptyString,
+    };
+
+    let (_, suspension) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+    let (_, pool) = insert_test_suspension_pool_and_suspensions(tx, |_| ()).await?;
+
+    let person_id = suspension.preparers[0];
+
+    let (_, assay) = insert_test_chromium_assay(tx).await?;
+    let assay_id = assay.id;
+
+    // To exercise the ability of a mulitply loaded chip, the chromium run
+    // has two GEM wells
+    let gem_well1 = NewStandardGemWell {
+        readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+        loaded_entity: LoadedEntity::Suspension {
+            suspension_id: *suspension.record.id,
+        },
+    };
+
+    let gem_well2 = NewStandardGemWell {
+        readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+        loaded_entity: LoadedEntity::SuspensionPool {
+            suspension_pool_id: *pool.record.id,
+        },
+    };
+
+    let mut new = NewChromiumRun {
+        record: new_record(assay_id, person_id),
+        gem_wells: ChromiumRunGemWells::Standard {
+            gem_wells: NonemptyBoundedVec::new(vec![gem_well1, gem_well2]).unwrap(),
+        },
+    };
+
+    modify(&mut new);
+
+    let inserted = insert_chromium_run(tx, new.clone()).await?;
+    Ok((new, inserted))
+}
+
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
@@ -110,72 +187,17 @@ pub mod test {
     use jiff::Timestamp;
     use uuid::Uuid;
 
+    use super::{insert_test_standard_chromium_run, new_record};
     use crate::{
         db::{self, DbError},
         handlers::{
             chromium_runs::create::insert_chromium_run,
-            suspension_pools::create::test::insert_test_suspension_pool_and_suspensions,
-            suspensions::create::test::insert_test_suspension_and_specimen,
+            suspension_pools::create::insert_test_suspension_pool_and_suspensions,
+            suspensions::create::insert_test_suspension_and_specimen,
             tenx_assays::create::insert_test_chromium_assay,
         },
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
-
-    pub fn new_record(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRecord {
-        NewChromiumRunRecord {
-            id: NoId,
-            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-            assay_id,
-            run_at: Timestamp::now(),
-            run_by,
-            succeeded: true,
-            additional_data: None,
-        }
-    }
-
-    pub async fn insert_test_standard_chromium_run<F>(
-        tx: &db::Transaction<'_>,
-        mut modify: F,
-    ) -> Result<(NewChromiumRun, ChromiumRunDetailed), DbError>
-    where
-        F: FnMut(&mut NewChromiumRun),
-    {
-        let (_, suspension) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
-        let (_, pool) = insert_test_suspension_pool_and_suspensions(tx, |_| ()).await?;
-
-        let person_id = suspension.preparers[0];
-
-        let (_, assay) = insert_test_chromium_assay(tx).await?;
-        let assay_id = assay.id;
-
-        // To exercise the ability of a mulitply loaded chip, the chromium run
-        // has two GEM wells
-        let gem_well1 = NewStandardGemWell {
-            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-            loaded_entity: LoadedEntity::Suspension {
-                suspension_id: *suspension.record.id,
-            },
-        };
-
-        let gem_well2 = NewStandardGemWell {
-            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-            loaded_entity: LoadedEntity::SuspensionPool {
-                suspension_pool_id: *pool.record.id,
-            },
-        };
-
-        let mut new = NewChromiumRun {
-            record: new_record(assay_id, person_id),
-            gem_wells: ChromiumRunGemWells::Standard {
-                gem_wells: NonemptyBoundedVec::new(vec![gem_well1, gem_well2]).unwrap(),
-            },
-        };
-
-        modify(&mut new);
-
-        let inserted = insert_chromium_run(tx, new.clone()).await?;
-        Ok((new, inserted))
-    }
 
     pub async fn insert_test_ocm_chromium_run<F>(
         tx: &db::Transaction<'_>,

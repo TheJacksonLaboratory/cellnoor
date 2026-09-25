@@ -45,6 +45,31 @@ impl Insert for NewInstitution {
     }
 }
 
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_test_institution<F>(
+    tx: &db::Transaction<'_>,
+    mut modify: F,
+) -> Result<(NewInstitution, Institution), DbError>
+where
+    F: FnMut(&mut NewInstitution),
+{
+    use cellnoor_types::id::NoId;
+    use uuid::Uuid;
+
+    use crate::state::dev_util::ToNonemptyString;
+
+    let mut new = NewInstitution {
+        id: NoId,
+        name: Uuid::new_v4().to_string().to_nonempty_string(),
+        microsoft_entra_tenant_id: Uuid::new_v4(),
+    };
+
+    modify(&mut new);
+
+    let inserted = insert_institution(tx, &new).await?;
+    Ok((new, inserted))
+}
+
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
@@ -53,30 +78,12 @@ pub mod test {
     };
     use uuid::Uuid;
 
+    use super::insert_test_institution;
     use crate::{
         db::{self, DbError},
         handlers::institutions::create::insert_institution,
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
-
-    pub async fn insert_test_institution<F>(
-        tx: &db::Transaction<'_>,
-        mut modify: F,
-    ) -> Result<(NewInstitution, Institution), DbError>
-    where
-        F: FnMut(&mut NewInstitution),
-    {
-        let mut new = NewInstitution {
-            id: NoId,
-            name: Uuid::new_v4().to_string().to_nonempty_string(),
-            microsoft_entra_tenant_id: Uuid::new_v4(),
-        };
-
-        modify(&mut new);
-
-        let inserted = insert_institution(tx, &new).await?;
-        Ok((new, inserted))
-    }
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {

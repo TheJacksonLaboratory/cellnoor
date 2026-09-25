@@ -49,7 +49,7 @@ mod test {
 
     use crate::{
         handlers::specimens::{
-            create::test::insert_test_specimen_and_project, update::update_specimen_by_id,
+            create::insert_test_specimen_and_project, update::update_specimen_by_id,
         },
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };

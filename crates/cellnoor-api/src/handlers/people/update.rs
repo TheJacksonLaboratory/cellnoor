@@ -75,7 +75,7 @@ mod test {
 
     use crate::{
         handlers::people::{
-            create::test::insert_test_person_and_institution, update::update_person_by_id,
+            create::insert_test_person_and_institution, update::update_person_by_id,
         },
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };

@@ -41,7 +41,7 @@ mod test {
 
     use crate::{
         handlers::chromium_runs::{
-            create::test::insert_test_standard_chromium_run, update::update_chromium_run_by_id,
+            create::insert_test_standard_chromium_run, update::update_chromium_run_by_id,
         },
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };

@@ -13,7 +13,7 @@ use crate::{
     handlers::{
         security_tests::rls::specimen::insert_inaccessible_specimen,
         suspensions::{
-            create::test::insert_test_suspension_and_specimen,
+            create::insert_test_suspension_and_specimen,
             index_detailed::select_suspensions_detailed,
         },
     },

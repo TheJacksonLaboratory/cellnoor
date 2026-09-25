@@ -66,7 +66,7 @@ mod test {
 
     use crate::{
         handlers::suspension_pools::{
-            create::test::insert_test_suspension_pool_and_suspensions,
+            create::insert_test_suspension_pool_and_suspensions,
             update::update_suspension_pool_by_id,
         },
         state::dev_util::{ToNonemptyString, db_client_as_admin},

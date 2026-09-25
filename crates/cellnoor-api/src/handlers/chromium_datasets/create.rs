@@ -173,10 +173,42 @@ impl Insert for NewChromiumDatasetRecord {
     }
 }
 
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_test_chromium_dataset<F>(
+    tx: &db::Transaction<'_>,
+    mut modify: F,
+) -> Result<(NewChromiumDataset, ChromiumDatasetDetailed), CreateChromiumDatasetError>
+where
+    F: FnMut(&mut NewChromiumDataset),
+{
+    use cellnoor_types::{id::NoId, nonempty::NonemptyVec};
+    use jiff::Timestamp;
+
+    use crate::{
+        handlers::libraries::create::insert_test_library, state::dev_util::ToNonemptyString,
+    };
+
+    let (_, library) = insert_test_library(tx, |_| ()).await?;
+
+    let mut new = NewChromiumDataset {
+        record: NewChromiumDatasetRecord {
+            id: NoId,
+            name: Uuid::new_v4().to_string().to_nonempty_string(),
+            delivered_at: Timestamp::now(),
+        },
+        library_ids: NonemptyVec::new(vec![*library.record.id]).unwrap(),
+    };
+
+    modify(&mut new);
+
+    let inserted = insert_chromium_dataset(tx, new.clone()).await?;
+    Ok((new, inserted))
+}
+
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
-        chromium_dataset::{ChromiumDatasetDetailed, NewChromiumDataset, NewChromiumDatasetRecord},
+        chromium_dataset::{NewChromiumDataset, NewChromiumDatasetRecord},
         id::NoId,
         nonempty::NonemptyVec,
     };
@@ -184,38 +216,14 @@ pub mod test {
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
+    use super::insert_test_chromium_dataset;
     use crate::{
-        db,
         handlers::{
             chromium_datasets::create::{CreateChromiumDatasetError, insert_chromium_dataset},
-            libraries::create::test::insert_test_library,
+            libraries::create::insert_test_library,
         },
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
-
-    pub async fn insert_test_chromium_dataset<F>(
-        tx: &db::Transaction<'_>,
-        mut modify: F,
-    ) -> Result<(NewChromiumDataset, ChromiumDatasetDetailed), CreateChromiumDatasetError>
-    where
-        F: FnMut(&mut NewChromiumDataset),
-    {
-        let (_, library) = insert_test_library(tx, |_| ()).await?;
-
-        let mut new = NewChromiumDataset {
-            record: NewChromiumDatasetRecord {
-                id: NoId,
-                name: Uuid::new_v4().to_string().to_nonempty_string(),
-                delivered_at: Timestamp::now(),
-            },
-            library_ids: NonemptyVec::new(vec![*library.record.id]).unwrap(),
-        };
-
-        modify(&mut new);
-
-        let inserted = insert_chromium_dataset(tx, new.clone()).await?;
-        Ok((new, inserted))
-    }
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {

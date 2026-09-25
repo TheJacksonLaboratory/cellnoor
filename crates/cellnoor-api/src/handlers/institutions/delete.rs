@@ -3,7 +3,7 @@ mod test {
     use cellnoor_types::institution::SavedInstitutionRecord;
 
     use crate::{
-        handlers::institutions::create::test::insert_test_institution,
+        handlers::institutions::create::insert_test_institution,
         state::dev_util::db_client_as_admin,
     };
 

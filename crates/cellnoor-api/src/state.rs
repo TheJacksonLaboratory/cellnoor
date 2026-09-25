@@ -1,5 +1,3 @@
-#[cfg(not(feature = "dev"))]
-use anyhow::ensure;
 use axum::Json;
 use camino::Utf8PathBuf;
 use deadpool_postgres::PoolError;
@@ -17,18 +15,12 @@ type JwtDecodingInfo = (jsonwebtoken::DecodingKey, jsonwebtoken::Validation);
 pub struct AppState {
     pub db_pool: db::Pool,
     pub static_files_dir: Utf8PathBuf,
-    // `None` disables authentication: every request then runs as the admin user
+    // `None` disables authentication, so every request runs as the admin user
     pub jwt_decoding_info: Option<&'static JwtDecodingInfo>,
 }
 
 impl AppState {
     pub fn initialize(settings: &Settings) -> anyhow::Result<Self> {
-        #[cfg(not(feature = "dev"))]
-        ensure!(
-            settings.auth,
-            "authentication must be turned on for prod builds"
-        );
-
         let jwt_decoding_info = settings.auth.then(|| {
             &*Box::leak(Box::new((
                 jsonwebtoken::DecodingKey::from_secret(
@@ -76,6 +68,7 @@ pub mod dev_util {
     #[cfg(test)]
     use uuid::Uuid;
 
+    #[cfg(test)]
     use crate::{auth::AuthUser, db};
 
     #[cfg(test)]
@@ -85,8 +78,9 @@ pub mod dev_util {
         db::Pool::from_url(env!("CELLNOOR_TEST_DB_URL"))
     }
 
+    #[cfg(test)]
     pub async fn db_client_as_admin() -> db::Client {
-        test_db_pool().get(AuthUser::admin()).await.unwrap()
+        test_db_pool().get(AuthUser::dev_admin()).await.unwrap()
     }
 
     #[cfg(test)]

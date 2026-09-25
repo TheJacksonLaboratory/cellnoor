@@ -46,7 +46,7 @@ pub(in super::super) async fn select_chromium_datasets_detailed(
         .select_rows(&SELECT_DETAILED_CHROMIUM_DATASETS, query)
         .await?
         .into_iter()
-        .map(|row| map_detailed_row(row))
+        .map(map_detailed_row)
         .collect())
 }
 

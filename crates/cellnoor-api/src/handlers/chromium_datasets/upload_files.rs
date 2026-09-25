@@ -6,7 +6,6 @@ use aide::{
     openapi::{Operation, Response as OpenApiResponse, StatusCode as OpenApiStatusCode},
 };
 use axum::{
-    Json,
     extract::{Multipart, Path, State, multipart::Field},
     http::StatusCode,
     response::{IntoResponse, Response},

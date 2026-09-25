@@ -55,8 +55,8 @@ mod test {
     use crate::{
         handlers::{
             file_auth::project_dir::project_exists,
-            people::create::test::insert_test_person_and_institution,
-            projects::create::test::insert_test_project,
+            people::create::insert_test_person_and_institution,
+            projects::create::insert_test_project,
         },
         state::dev_util::{db_client_as_admin, db_client_as_user},
     };

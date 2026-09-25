@@ -4,7 +4,6 @@ use aide::{
     openapi::{Operation, Response as OpenApiResponse, StatusCode as OpenApiStatusCode},
 };
 use axum::{
-    Json,
     http::StatusCode,
     response::{IntoResponse, Response},
 };

@@ -14,7 +14,7 @@ use crate::{
         api_keys::{
             create::test::insert_test_api_key, index::select_api_keys, update::update_api_key_by_id,
         },
-        people::create::test::insert_test_person_and_institution,
+        people::create::insert_test_person_and_institution,
         services::{
             access::add_people::insert_service_accesses, create::test::insert_test_service,
         },

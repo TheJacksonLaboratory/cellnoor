@@ -118,6 +118,73 @@ impl Insert for NewLibraryRecord {
     }
 }
 
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_test_library<F>(
+    tx: &db::Transaction<'_>,
+    mut modify: F,
+) -> Result<(NewLibrary, LibraryDetailed), DbError>
+where
+    F: FnMut(&mut NewLibrary),
+{
+    use cellnoor_types::{
+        id::NoId,
+        nucleic_acid_measurement::{
+            Concentration, NewNucleicAcidMeasurement, NucleicAcidMeasurementData,
+            NucleicAcidMeasurementMethod,
+        },
+        positive::PositiveI32,
+        units::{Microliter, Nanogram},
+    };
+    use jiff::Timestamp;
+    use postgres_types::Json;
+
+    use crate::{
+        handlers::{
+            cdna::create::insert_test_cdna_and_chromium_run, index_sets::DUAL_INDEX_SET_NAME,
+        },
+        state::dev_util::ToNonemptyString,
+    };
+
+    let (_, cdna) = insert_test_cdna_and_chromium_run(tx, |_| ()).await?;
+
+    let person_id = cdna.preparers[0];
+
+    let mut new = NewLibrary {
+        record: NewLibraryRecord {
+            id: NoId,
+            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+            cdna_id: *cdna.record.id,
+            cdna_prepared_at: cdna.record.prepared_at,
+            single_index_set_name: None,
+            dual_index_set_name: Some(DUAL_INDEX_SET_NAME.to_owned()),
+            number_of_sample_index_pcr_cycles: PositiveI32::new(8).unwrap(),
+            target_reads_per_cell: Some(PositiveI32::new(50_000).unwrap()),
+            prepared_at: Timestamp::now(),
+            additional_data: None,
+        },
+        measurements: vec![NewNucleicAcidMeasurement {
+            measured_by: person_id,
+            measured_at: Timestamp::now(),
+            data: Json(NucleicAcidMeasurementData {
+                instrument_name: "Qubit".to_nonempty_string(),
+                method: NucleicAcidMeasurementMethod::Fluorometric {
+                    concentration: Concentration {
+                        value: PositiveI32::new(20).unwrap(),
+                        numerator_unit: Nanogram::Nanogram,
+                        denominator_unit: Microliter::Microliter,
+                    },
+                },
+            }),
+        }],
+        preparers: cellnoor_types::nonempty::NonemptyVec::new(vec![person_id]).unwrap(),
+    };
+
+    modify(&mut new);
+
+    let inserted = insert_library(tx, new.clone()).await?;
+    Ok((new, inserted))
+}
+
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
@@ -134,61 +201,15 @@ pub mod test {
     use postgres_types::Json;
     use uuid::Uuid;
 
+    use super::insert_test_library;
     use crate::{
         db::{self, DbError},
         handlers::{
-            cdna::create::test::insert_test_cdna_and_chromium_run, index_sets::DUAL_INDEX_SET_NAME,
+            cdna::create::insert_test_cdna_and_chromium_run, index_sets::DUAL_INDEX_SET_NAME,
             libraries::create::insert_library,
         },
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
-
-    pub async fn insert_test_library<F>(
-        tx: &db::Transaction<'_>,
-        mut modify: F,
-    ) -> Result<(NewLibrary, LibraryDetailed), DbError>
-    where
-        F: FnMut(&mut NewLibrary),
-    {
-        let (_, cdna) = insert_test_cdna_and_chromium_run(tx, |_| ()).await?;
-
-        let person_id = cdna.preparers[0];
-
-        let mut new = NewLibrary {
-            record: NewLibraryRecord {
-                id: NoId,
-                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                cdna_id: *cdna.record.id,
-                cdna_prepared_at: cdna.record.prepared_at,
-                single_index_set_name: None,
-                dual_index_set_name: Some(DUAL_INDEX_SET_NAME.to_owned()),
-                number_of_sample_index_pcr_cycles: PositiveI32::new(8).unwrap(),
-                target_reads_per_cell: Some(PositiveI32::new(50_000).unwrap()),
-                prepared_at: Timestamp::now(),
-                additional_data: None,
-            },
-            measurements: vec![NewNucleicAcidMeasurement {
-                measured_by: person_id,
-                measured_at: Timestamp::now(),
-                data: Json(NucleicAcidMeasurementData {
-                    instrument_name: "Qubit".to_nonempty_string(),
-                    method: NucleicAcidMeasurementMethod::Fluorometric {
-                        concentration: Concentration {
-                            value: PositiveI32::new(20).unwrap(),
-                            numerator_unit: Nanogram::Nanogram,
-                            denominator_unit: Microliter::Microliter,
-                        },
-                    },
-                }),
-            }],
-            preparers: cellnoor_types::nonempty::NonemptyVec::new(vec![person_id]).unwrap(),
-        };
-
-        modify(&mut new);
-
-        let inserted = insert_library(tx, new.clone()).await?;
-        Ok((new, inserted))
-    }
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {

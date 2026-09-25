@@ -6347,7 +6347,7 @@ export interface components {
          * @description A comparison operator for JSON values.
          *
          *     This is a superset of the basic operators and adds the following
-         *     JSON-specific methods present in PostgreSQL (https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY):
+         *     JSON-specific methods present in PostgreSQL (<https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY)>:
          *     1. contains (`@>`)
          *     2. is contained in (`<@`)
          *     3. has key (`?`)
@@ -6478,7 +6478,7 @@ export interface components {
          * @description A comparison operator for array values.
          *
          *     This is a superset of the basic operators and adds the following
-         *     array-specific methods present in PostgreSQL (https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY):
+         *     array-specific methods present in PostgreSQL (<https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY)>:
          *     1. contains (`@>`)
          *     2. is contained in (`<@`)
          *     3. overlaps with (`&&`)
@@ -7363,8 +7363,8 @@ export interface components {
          *
          *     This is a superset of the basic operators and adds the following
          *     string-specific methods present in PostgreSQL:
-         *     1. `like` (https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE)
-         *     2. trigram similarity (`%`) (https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS)
+         *     1. `like` (<https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE>)
+         *     2. trigram similarity (`%`) (<https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS>)
          */
         StringOperator: {
             like: string;

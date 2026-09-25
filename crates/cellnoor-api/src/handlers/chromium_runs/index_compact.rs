@@ -67,8 +67,7 @@ mod test {
     use crate::{
         db::test_utils::ensure_fields_are_selectable,
         handlers::chromium_runs::{
-            create::test::insert_test_standard_chromium_run,
-            index_compact::select_chromium_runs_compact,
+            create::insert_test_standard_chromium_run, index_compact::select_chromium_runs_compact,
         },
         state::dev_util::db_client_as_admin,
     };

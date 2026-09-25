@@ -54,7 +54,7 @@ mod test {
     use crate::{
         db::test_utils::ensure_fields_are_selectable,
         handlers::libraries::{
-            create::test::insert_test_library, index_compact::select_libraries_compact,
+            create::insert_test_library, index_compact::select_libraries_compact,
         },
         state::dev_util::db_client_as_admin,
     };

@@ -3,7 +3,7 @@ mod test {
     use cellnoor_types::chromium_run::SavedChromiumRunRecord;
 
     use crate::{
-        handlers::chromium_runs::create::test::insert_test_standard_chromium_run,
+        handlers::chromium_runs::create::insert_test_standard_chromium_run,
         state::dev_util::db_client_as_admin,
     };
 

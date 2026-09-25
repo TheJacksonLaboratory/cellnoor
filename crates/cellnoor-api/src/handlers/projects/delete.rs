@@ -3,7 +3,7 @@ mod test {
     use cellnoor_types::project::SavedProjectRecord;
 
     use crate::{
-        handlers::projects::create::test::insert_test_project, state::dev_util::db_client_as_admin,
+        handlers::projects::create::insert_test_project, state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

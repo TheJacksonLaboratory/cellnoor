@@ -30,7 +30,7 @@ pub async fn select_multiplexing_tags(
 mod test {
     use crate::{
         handlers::multiplexing_tags::{
-            create::tests::insert_test_multiplexing_tag, index::select_multiplexing_tags,
+            create::insert_test_multiplexing_tag, index::select_multiplexing_tags,
         },
         state::dev_util::db_client_as_admin,
     };

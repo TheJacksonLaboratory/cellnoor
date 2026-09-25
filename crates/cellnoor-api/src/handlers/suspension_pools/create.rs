@@ -178,6 +178,83 @@ impl Insert for NewSuspensionPoolRecord {
     }
 }
 
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_test_suspension_pool_and_suspensions<F>(
+    tx: &db::Transaction<'_>,
+    mut modify: F,
+) -> Result<(NewSuspensionPool, SuspensionPoolDetailed), DbError>
+where
+    F: FnMut(&mut NewSuspensionPool),
+{
+    use cellnoor_types::{
+        id::NoId,
+        nonempty::NonemptyVec,
+        positive::PositiveBoundedF32,
+        suspension::measurement::CellViability,
+        suspension_pool::{
+            TaggedSuspension,
+            measurement::{NewSuspensionPoolMeasurement, SuspensionPoolMeasurementData},
+        },
+    };
+    use jiff::Timestamp;
+    use postgres_types::Json;
+
+    use crate::{
+        handlers::{
+            multiplexing_tags::create::insert_test_multiplexing_tag,
+            suspensions::create::insert_test_suspension_and_specimen,
+        },
+        state::dev_util::ToNonemptyString,
+    };
+
+    let (_, suspension1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+    let (_, suspension2) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+
+    let multiplexing_tag1_id = insert_test_multiplexing_tag(tx).await?;
+    let multiplexing_tag2_id = insert_test_multiplexing_tag(tx).await?;
+
+    let suspension1_id = *suspension1.record.id;
+    let suspension2_id = *suspension2.record.id;
+
+    let person_id = suspension1.specimen.record.submitted_by;
+
+    let mut new = NewSuspensionPool {
+        record: NewSuspensionPoolRecord {
+            id: NoId,
+            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+            name: "pool".to_nonempty_string(),
+            pooled_at: Timestamp::now(),
+            additional_data: None,
+        },
+        measurements: vec![NewSuspensionPoolMeasurement {
+            measured_by: person_id,
+            measured_at: Timestamp::now(),
+            data: Json(SuspensionPoolMeasurementData::Viability(CellViability {
+                value: PositiveBoundedF32::new(0.5).unwrap(),
+            })),
+        }],
+        preparers: NonemptyVec::new(vec![person_id]).unwrap(),
+        suspensions: PooledSuspensions::FlexBarcode {
+            suspensions: NonemptyVec::new(vec![
+                TaggedSuspension {
+                    suspension_id: suspension1_id,
+                    tag_id: multiplexing_tag1_id.tag_id,
+                },
+                TaggedSuspension {
+                    suspension_id: suspension2_id,
+                    tag_id: multiplexing_tag2_id.tag_id,
+                },
+            ])
+            .unwrap(),
+        },
+    };
+
+    modify(&mut new);
+
+    let inserted = insert_suspension_pool(tx, &new).await?;
+    Ok((new, inserted))
+}
+
 #[cfg(test)]
 pub mod test {
 
@@ -199,71 +276,17 @@ pub mod test {
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
+    use super::insert_test_suspension_pool_and_suspensions;
     use crate::{
         db::{self, DbError},
         handlers::{
-            multiplexing_tags::create::tests::insert_test_multiplexing_tag,
-            specimens::create::test::insert_test_specimen_and_project,
+            multiplexing_tags::create::insert_test_multiplexing_tag,
+            specimens::create::insert_test_specimen_and_project,
             suspension_pools::create::insert_suspension_pool,
-            suspensions::create::test::insert_test_suspension_and_specimen,
+            suspensions::create::insert_test_suspension_and_specimen,
         },
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
-
-    pub async fn insert_test_suspension_pool_and_suspensions<F>(
-        tx: &db::Transaction<'_>,
-        mut modify: F,
-    ) -> Result<(NewSuspensionPool, SuspensionPoolDetailed), DbError>
-    where
-        F: FnMut(&mut NewSuspensionPool),
-    {
-        let (_, suspension1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
-        let (_, suspension2) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
-
-        let multiplexing_tag1_id = insert_test_multiplexing_tag(tx).await?;
-        let multiplexing_tag2_id = insert_test_multiplexing_tag(tx).await?;
-
-        let suspension1_id = *suspension1.record.id;
-        let suspension2_id = *suspension2.record.id;
-
-        let person_id = suspension1.specimen.record.submitted_by;
-
-        let mut new = NewSuspensionPool {
-            record: NewSuspensionPoolRecord {
-                id: NoId,
-                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-                name: "pool".to_nonempty_string(),
-                pooled_at: Timestamp::now(),
-                additional_data: None,
-            },
-            measurements: vec![NewSuspensionPoolMeasurement {
-                measured_by: person_id,
-                measured_at: Timestamp::now(),
-                data: Json(SuspensionPoolMeasurementData::Viability(CellViability {
-                    value: PositiveBoundedF32::new(0.5).unwrap(),
-                })),
-            }],
-            preparers: NonemptyVec::new(vec![person_id]).unwrap(),
-            suspensions: PooledSuspensions::FlexBarcode {
-                suspensions: NonemptyVec::new(vec![
-                    TaggedSuspension {
-                        suspension_id: suspension1_id,
-                        tag_id: multiplexing_tag1_id.tag_id,
-                    },
-                    TaggedSuspension {
-                        suspension_id: suspension2_id,
-                        tag_id: multiplexing_tag2_id.tag_id,
-                    },
-                ])
-                .unwrap(),
-            },
-        };
-
-        modify(&mut new);
-
-        let inserted = insert_suspension_pool(tx, &new).await?;
-        Ok((new, inserted))
-    }
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {

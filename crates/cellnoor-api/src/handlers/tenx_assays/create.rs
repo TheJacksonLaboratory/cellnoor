@@ -6,8 +6,8 @@ use cellnoor_types::{
         creation::{LibraryTypeSpecification, NewTenxAssay},
     },
 };
-#[cfg(test)]
-pub use chromium::tests::insert_test_chromium_assay;
+#[cfg(any(test, feature = "dev"))]
+pub use chromium::insert_test_chromium_assay;
 use uuid::Uuid;
 
 use crate::{

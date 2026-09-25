@@ -9,12 +9,10 @@ use uuid::Uuid;
 use crate::{
     db,
     handlers::{
-        cdna::{
-            create::test::insert_test_cdna_and_chromium_run, index_detailed::select_cdna_detailed,
-        },
-        chromium_runs::create::test::insert_test_standard_chromium_run,
+        cdna::{create::insert_test_cdna_and_chromium_run, index_detailed::select_cdna_detailed},
+        chromium_runs::create::insert_test_standard_chromium_run,
         security_tests::rls::specimen::insert_inaccessible_specimen,
-        suspensions::create::test::insert_test_suspension_and_specimen,
+        suspensions::create::insert_test_suspension_and_specimen,
     },
     state::dev_util::{db_client_as_admin, db_client_as_user},
 };

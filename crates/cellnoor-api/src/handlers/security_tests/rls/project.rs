@@ -7,9 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     db,
-    handlers::projects::{
-        create::test::insert_test_project, index_detailed::select_projects_detailed,
-    },
+    handlers::projects::{create::insert_test_project, index_detailed::select_projects_detailed},
     state::dev_util::{db_client_as_admin, db_client_as_user},
 };
 

@@ -49,6 +49,7 @@ export CELLNOOR_AUTH__UNIX_DOMAIN_SOCKET="$sockets/auth.sock"
 export CELLNOOR_AUTH__PUBLIC_BASE_URL="https://$host"
 
 # cellnoor-api configuration
+export CELLNOOR_API__DUMMY_DATA=true
 export CELLNOOR_API__DB__HOST="$db_host"
 export CELLNOOR_API__DB__PASSWORD="$db_password"
 export CELLNOOR_API__DB__DBNAME="$db_name"
@@ -72,7 +73,7 @@ quiet db scripts/dev/compose.sh up db --wait
 quiet migrate scripts/dev/compose.sh run --rm migrate
 
 # Build the 3 services in the foreground so that we fail early if something is wrong
-quiet api-build cargo build --manifest-path crates/Cargo.toml --package cellnoor-api --bin cellnoor-api
+quiet api-build cargo build --manifest-path crates/Cargo.toml --package cellnoor-api --bin cellnoor-api --features dev
 quiet ui-build bun run --bun --cwd packages/cellnoor-ui check
 quiet auth-install bun install --cwd packages/cellnoor-auth
 

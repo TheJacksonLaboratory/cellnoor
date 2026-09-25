@@ -53,9 +53,7 @@ mod test {
 
     use crate::{
         db::test_utils::ensure_fields_are_selectable,
-        handlers::institutions::{
-            create::test::insert_test_institution, index::select_institutions,
-        },
+        handlers::institutions::{create::insert_test_institution, index::select_institutions},
         state::dev_util::db_client_as_admin,
     };
 

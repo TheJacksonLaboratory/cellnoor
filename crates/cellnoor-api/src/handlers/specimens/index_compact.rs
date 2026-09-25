@@ -53,7 +53,7 @@ mod test {
     use crate::{
         db::test_utils::ensure_fields_are_selectable,
         handlers::specimens::{
-            create::test::insert_test_specimen_and_project, index_compact::select_specimens_compact,
+            create::insert_test_specimen_and_project, index_compact::select_specimens_compact,
         },
         state::dev_util::db_client_as_admin,
     };

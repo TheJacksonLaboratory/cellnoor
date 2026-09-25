@@ -6,8 +6,6 @@ use axum::{extract::FromRequest, response::IntoResponse};
 use schemars::JsonSchema;
 use serde::Serialize;
 
-use crate::db::DbError;
-
 #[derive(FromRequest, Debug, Clone, PartialEq, Serialize)]
 #[from_request(via(axum::Json), rejection(JsonRejection))]
 pub struct JsonExtractor<T>(pub T);

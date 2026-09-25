@@ -84,6 +84,69 @@ impl Insert for NewSpecimenRecord {
     }
 }
 
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_test_specimen_and_project<F>(
+    tx: &db::Transaction<'_>,
+    mut modify: F,
+) -> Result<(NewSpecimen, SpecimenDetailed), DbError>
+where
+    F: FnMut(&mut NewSpecimen),
+{
+    use cellnoor_types::{
+        positive::PositiveBoundedF32,
+        project::SavedProjectRecordDetailed,
+        specimen::{
+            Species,
+            creation::{FlashFreezing, SpecimenVariableFields, block::BlockFields},
+            measurement::{
+                NewSpecimenMeasurement, SpecimenMeasurementData, SpecimenMeasurementQuantity,
+            },
+        },
+    };
+    use jiff::Timestamp;
+    use postgres_types::Json;
+    use uuid::Uuid;
+
+    use crate::{
+        handlers::projects::create::insert_test_project, state::dev_util::ToNonemptyString,
+    };
+
+    let (_, inserted_project) = insert_test_project(tx, |_| ()).await?;
+    let SavedProjectRecordDetailed { project, members } = inserted_project.record;
+    let mut new = NewSpecimen {
+        readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+        name: Uuid::new_v4().to_string().to_nonempty_string(),
+        submitted_by: members[0],
+        received_at: Timestamp::now(),
+        project_id: project.id,
+        species: Species::MusMusculus,
+        host_species: None,
+        returned_by: None,
+        returned_at: None,
+        tissue: "tissue".to_nonempty_string(),
+        additional_data: None,
+        measurements: vec![NewSpecimenMeasurement {
+            measured_by: members[0],
+            measured_at: Timestamp::now(),
+            data: Json(SpecimenMeasurementData {
+                instrument_name: None,
+                quantity: SpecimenMeasurementQuantity::Rin {
+                    value: PositiveBoundedF32::new(5.0).unwrap(),
+                },
+            }),
+        }],
+        variable_fields: SpecimenVariableFields::Block(BlockFields::CarboxymethylCellulose {
+            fixative: None,
+            thermal_preservation_method: FlashFreezing::FlashFreezing,
+        }),
+    };
+
+    modify(&mut new);
+
+    let inserted = insert_specimen(tx, new.clone()).await?;
+    Ok((new, inserted))
+}
+
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::{
@@ -101,56 +164,12 @@ pub mod test {
     use postgres_types::Json;
     use uuid::Uuid;
 
+    use super::insert_test_specimen_and_project;
     use crate::{
         db::{self, DbError},
-        handlers::{
-            projects::create::test::insert_test_project, specimens::create::insert_specimen,
-        },
+        handlers::{projects::create::insert_test_project, specimens::create::insert_specimen},
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
-
-    pub async fn insert_test_specimen_and_project<F>(
-        tx: &db::Transaction<'_>,
-        mut modify: F,
-    ) -> Result<(NewSpecimen, SpecimenDetailed), DbError>
-    where
-        F: FnMut(&mut NewSpecimen),
-    {
-        let (_, inserted_project) = insert_test_project(tx, |_| ()).await?;
-        let SavedProjectRecordDetailed { project, members } = inserted_project.record;
-        let mut new = NewSpecimen {
-            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-            name: Uuid::new_v4().to_string().to_nonempty_string(),
-            submitted_by: members[0],
-            received_at: Timestamp::now(),
-            project_id: project.id,
-            species: Species::MusMusculus,
-            host_species: None,
-            returned_by: None,
-            returned_at: None,
-            tissue: "tissue".to_nonempty_string(),
-            additional_data: None,
-            measurements: vec![NewSpecimenMeasurement {
-                measured_by: members[0],
-                measured_at: Timestamp::now(),
-                data: Json(SpecimenMeasurementData {
-                    instrument_name: None,
-                    quantity: SpecimenMeasurementQuantity::Rin {
-                        value: PositiveBoundedF32::new(5.0).unwrap(),
-                    },
-                }),
-            }],
-            variable_fields: SpecimenVariableFields::Block(BlockFields::CarboxymethylCellulose {
-                fixative: None,
-                thermal_preservation_method: FlashFreezing::FlashFreezing,
-            }),
-        };
-
-        modify(&mut new);
-
-        let inserted = insert_specimen(tx, new.clone()).await?;
-        Ok((new, inserted))
-    }
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {

@@ -42,7 +42,7 @@ mod test {
 
     use crate::{
         handlers::institutions::{
-            create::test::insert_test_institution, update::update_institution_by_id,
+            create::insert_test_institution, update::update_institution_by_id,
         },
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };

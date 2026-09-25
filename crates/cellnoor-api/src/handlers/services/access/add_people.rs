@@ -67,7 +67,7 @@ impl Insert for NewServiceAccess {
 mod test {
     use crate::{
         handlers::{
-            people::create::test::insert_test_person_and_institution,
+            people::create::insert_test_person_and_institution,
             services::{
                 access::add_people::insert_service_accesses, create::test::insert_test_service,
             },

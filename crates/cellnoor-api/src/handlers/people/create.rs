@@ -179,16 +179,50 @@ pub(super) fn validate_email(email: &str) -> Result<(), PersonError> {
     Ok(())
 }
 
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_test_person_and_institution<F>(
+    tx: &db::Transaction<'_>,
+    mut modify: F,
+) -> Result<(NewPerson, Person), PersonError>
+where
+    F: FnMut(&mut NewPerson),
+{
+    use crate::{
+        handlers::institutions::create::insert_test_institution, state::dev_util::ToNonemptyString,
+    };
+
+    let (_, institution) = insert_test_institution(tx, |_| ()).await?;
+
+    let mut new = NewPerson {
+        simple: PersonSimpleFields {
+            name: Uuid::new_v4().to_string().to_nonempty_string(),
+            institution_id: *institution.record.id,
+            is_staff: false,
+            orcid: None,
+        },
+        account: Account::Microsoft {
+            microsoft_entra_oid: Uuid::new_v4(),
+        },
+        permissions_to_grant: Vec::new(),
+    };
+
+    modify(&mut new);
+
+    let inserted = insert_person(tx, &new).await?;
+    Ok((new, inserted))
+}
+
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::person::{Account, NewPerson, Person, PersonSimpleFields};
     use pretty_assertions::{assert_eq, assert_str_eq};
     use uuid::Uuid;
 
+    use super::insert_test_person_and_institution;
     use crate::{
         db::{self, DbError},
         handlers::{
-            institutions::create::test::insert_test_institution,
+            institutions::create::insert_test_institution,
             people::{
                 PersonError,
                 create::{insert_person, validate_email},
@@ -196,34 +230,6 @@ pub mod test {
         },
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
-
-    pub async fn insert_test_person_and_institution<F>(
-        tx: &db::Transaction<'_>,
-        mut modify: F,
-    ) -> Result<(NewPerson, Person), PersonError>
-    where
-        F: FnMut(&mut NewPerson),
-    {
-        let (_, institution) = insert_test_institution(tx, |_| ()).await?;
-
-        let mut new = NewPerson {
-            simple: PersonSimpleFields {
-                name: Uuid::new_v4().to_string().to_nonempty_string(),
-                institution_id: *institution.record.id,
-                is_staff: false,
-                orcid: None,
-            },
-            account: Account::Microsoft {
-                microsoft_entra_oid: Uuid::new_v4(),
-            },
-            permissions_to_grant: Vec::new(),
-        };
-
-        modify(&mut new);
-
-        let inserted = insert_person(tx, &new).await?;
-        Ok((new, inserted))
-    }
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {

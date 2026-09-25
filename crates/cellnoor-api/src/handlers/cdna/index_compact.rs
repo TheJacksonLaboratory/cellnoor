@@ -54,7 +54,7 @@ mod test {
     use crate::{
         db::test_utils::ensure_fields_are_selectable,
         handlers::cdna::{
-            create::test::insert_test_cdna_and_chromium_run, index_compact::select_cdna_compact,
+            create::insert_test_cdna_and_chromium_run, index_compact::select_cdna_compact,
         },
         state::dev_util::db_client_as_admin,
     };

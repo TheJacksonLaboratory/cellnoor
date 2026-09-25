@@ -65,8 +65,7 @@ mod test {
     use crate::{
         db::test_utils::ensure_fields_are_selectable,
         handlers::chromium_datasets::{
-            create::test::insert_test_chromium_dataset,
-            index_compact::select_chromium_datasets_compact,
+            create::insert_test_chromium_dataset, index_compact::select_chromium_datasets_compact,
         },
         state::dev_util::db_client_as_admin,
     };

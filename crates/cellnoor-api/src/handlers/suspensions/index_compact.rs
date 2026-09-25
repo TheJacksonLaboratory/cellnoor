@@ -56,8 +56,7 @@ mod test {
     use crate::{
         db::test_utils::ensure_fields_are_selectable,
         handlers::suspensions::{
-            create::test::insert_test_suspension_and_specimen,
-            index_compact::select_suspensions_compact,
+            create::insert_test_suspension_and_specimen, index_compact::select_suspensions_compact,
         },
         state::dev_util::db_client_as_admin,
     };

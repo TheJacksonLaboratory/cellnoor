@@ -65,7 +65,7 @@ mod test {
     use uuid::Uuid;
 
     use crate::{
-        handlers::libraries::{create::test::insert_test_library, update::update_library_by_id},
+        handlers::libraries::{create::insert_test_library, update::update_library_by_id},
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 

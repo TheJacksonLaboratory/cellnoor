@@ -83,13 +83,13 @@ mod test {
     use crate::{
         handlers::{
             chromium_runs::{
-                create::test::{
-                    insert_test_mixed_chromium_run, insert_test_ocm_chromium_run,
+                create::{
                     insert_test_standard_chromium_run, new_record,
+                    test::{insert_test_mixed_chromium_run, insert_test_ocm_chromium_run},
                 },
                 show::select_chromium_run_by_id,
             },
-            suspensions::create::test::insert_test_suspension_and_specimen,
+            suspensions::create::insert_test_suspension_and_specimen,
             tenx_assays::create::insert_test_chromium_assay,
         },
         state::dev_util::{ToNonemptyString, db_client_as_admin},

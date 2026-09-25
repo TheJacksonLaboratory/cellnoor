@@ -62,9 +62,7 @@ mod test {
     use uuid::Uuid;
 
     use crate::{
-        handlers::cdna::{
-            create::test::insert_test_cdna_and_chromium_run, update::update_cdna_by_id,
-        },
+        handlers::cdna::{create::insert_test_cdna_and_chromium_run, update::update_cdna_by_id},
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 

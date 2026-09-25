@@ -82,7 +82,7 @@ mod test {
     use crate::{
         db::test_utils::ensure_fields_are_selectable,
         handlers::suspension_pools::{
-            create::test::insert_test_suspension_pool_and_suspensions,
+            create::insert_test_suspension_pool_and_suspensions,
             index_compact::select_suspension_pools_compact,
         },
         state::dev_util::db_client_as_admin,

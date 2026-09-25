@@ -52,9 +52,7 @@ mod test {
 
     use crate::{
         db::test_utils::ensure_fields_are_selectable,
-        handlers::projects::{
-            create::test::insert_test_project, index_compact::select_projects_compact,
-        },
+        handlers::projects::{create::insert_test_project, index_compact::select_projects_compact},
         state::dev_util::db_client_as_admin,
     };
 

@@ -87,9 +87,9 @@ async fn chromium_dataset_exists(
 mod test {
     use crate::{
         handlers::{
-            chromium_datasets::create::test::insert_test_chromium_dataset,
+            chromium_datasets::create::insert_test_chromium_dataset,
             file_auth::dataset_dir::{DatasetType, dataset_exists},
-            people::create::test::insert_test_person_and_institution,
+            people::create::insert_test_person_and_institution,
         },
         state::dev_util::{db_client_as_admin, db_client_as_user},
     };

@@ -28,8 +28,7 @@ async fn select_accounts(tx: &db::Transaction<'_>) -> Result<Vec<PersonAccount>,
 mod tests {
     use crate::{
         handlers::{
-            accounts::index::select_accounts,
-            people::create::test::insert_test_person_and_institution,
+            accounts::index::select_accounts, people::create::insert_test_person_and_institution,
         },
         state::dev_util::db_client_as_admin,
     };

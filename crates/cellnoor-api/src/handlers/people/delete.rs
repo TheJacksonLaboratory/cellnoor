@@ -3,7 +3,7 @@ mod test {
     use cellnoor_types::person::PersonUpdate;
 
     use crate::{
-        handlers::people::create::test::insert_test_person_and_institution,
+        handlers::people::create::insert_test_person_and_institution,
         state::dev_util::db_client_as_admin,
     };
 
