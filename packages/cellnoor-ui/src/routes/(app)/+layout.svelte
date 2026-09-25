@@ -75,8 +75,4 @@
 			padding-block: var(--sm-gap);
 		}
 	}
-
-	main {
-		padding: var(--md-gap);
-	}
 </style>

@@ -29,8 +29,7 @@
 <FilterLayout>
 	{#snippet filters()}
 		<fieldset>
-			<legend>Specimen</legend>
-			<MultiSelect label="Project" name="project" items={projectIdNamePairs} />
+			<legend>Specimen Information</legend>
 			<MultiText label="Name" name="specimen_name" />
 			<MultiSelect label="Species" name="species" items={speciesValues.map(toItem)} />
 			<DateRange label="Received" name="received" />
@@ -51,9 +50,10 @@
 			<MultiSelect label="Name" name="assay" items={deduplicatedAssayNames.map(toItem)} />
 		</fieldset>
 		<fieldset>
-			<legend>Dataset</legend>
+			<legend>Dataset Information</legend>
 			<MultiText label="Name" name="name" />
 			<DateRange label="Delivered" name="delivered" />
+			<MultiSelect label="Project" name="project" items={projectIdNamePairs} />
 		</fieldset>
 	{/snippet}
 

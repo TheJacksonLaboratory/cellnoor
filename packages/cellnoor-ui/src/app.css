@@ -35,3 +35,13 @@ td {
 	border-block-end: 1px solid var(--color-secondary);
 	text-align: start;
 }
+
+fieldset {
+	background: lightgray;
+}
+
+.badge {
+	padding-inline: var(--sm-gap);
+	border-radius: 0.5rem;
+	background: lightblue;
+}

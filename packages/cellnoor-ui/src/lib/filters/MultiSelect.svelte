@@ -4,10 +4,13 @@
 	import { useFilter } from '@ark-ui/svelte/locale';
 	import { Portal } from '@ark-ui/svelte/portal';
 	import X from '@lucide/svelte/icons/x';
+	import { getSubmitFilters } from './FilterLayout.svelte';
 
 	let { label, name, items }: { label: string; name: string; items: [string, string][] } = $props();
 
 	let selectedItems = $derived(page.url.searchParams.getAll(name));
+
+	const submit = getSubmitFilters();
 
 	const filters = useFilter({ sensitivity: 'base' });
 
@@ -25,18 +28,22 @@
 	multiple
 	openOnClick
 	bind:value={selectedItems}
+	onValueChange={submit}
 	onInputValueChange={(details) => filter(details.inputValue)}
 >
 	<Combobox.Label>{label}</Combobox.Label>
 	<Combobox.Control>
 		{#each selectedItems as itemValue (itemValue)}
 			{@const itemLabel = items.find(([v]) => v === itemValue)?.[1]}
-			<span>
+			<span class="badge">
 				{itemLabel}
 				<button
 					type="button"
 					aria-label="Remove {itemLabel}"
-					onclick={() => (selectedItems = selectedItems.filter((v) => v !== itemValue))}
+					onclick={() => {
+						selectedItems = selectedItems.filter((v) => v !== itemValue);
+						submit();
+					}}
 					><X size={14} /></button
 				>
 			</span>
@@ -59,6 +66,23 @@
 </Combobox.Root>
 
 <style>
+	button {
+		display: inline-flex;
+		vertical-align: middle;
+		padding: 0;
+	}
+
+	:global([data-scope='combobox'][data-part='control']) {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--sm-gap);
+	}
+
+	:global([data-scope='combobox'][data-part='input']) {
+		flex-basis: 100%;
+	}
+
 	:global([data-scope='combobox'][data-part='content']) {
 		max-height: 20rem;
 		overflow-y: auto;
