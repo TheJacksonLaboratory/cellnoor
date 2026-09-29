@@ -8,14 +8,6 @@ import {
 	type SpecimenType
 } from 'cellnoor-client/cellnoor-types.js';
 
-export type QueryParameter =
-	| 'specimen.name'
-	| 'specimen.type'
-	| 'specimen.species'
-	| 'specimen.embedded_in'
-	| 'specimen.thermal_preservation_method'
-	| 'specimen.fixative';
-
 export async function load({ url, parent }) {
 	const datasets = await getDatasets(url.searchParams);
 
@@ -40,8 +32,12 @@ export async function load({ url, parent }) {
 async function getDatasets(q: URLSearchParams) {
 	const all_of: ChromiumDatasetPredicate[] = [
 		{ specimen: { name: { trgm_any_unless_empty: getQueryParam(q, 'specimen.name') } } },
-		{ specimen: { type: { in: getQueryParam(q, 'specimen.type') as SpecimenType[] } } },
-		{ specimen: { species: { in: getQueryParam(q, 'specimen.species') as Species[] } } }
+		{
+			specimen: { type: { in_unless_empty: getQueryParam(q, 'specimen.type') as SpecimenType[] } }
+		},
+		{
+			specimen: { species: { in_unless_empty: getQueryParam(q, 'specimen.species') as Species[] } }
+		}
 	];
 
 	const apiQuery = {
@@ -53,7 +49,7 @@ async function getDatasets(q: URLSearchParams) {
 		await cellnoorClient.POST('/chromium-datasets/search/detailed', { body: apiQuery })
 	);
 
-	return { datasets };
+	return datasets;
 }
 
 function getQueryParam(q: URLSearchParams, name: QueryParameter) {

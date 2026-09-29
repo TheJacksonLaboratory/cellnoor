@@ -1,21 +1,20 @@
 <script lang="ts">
-	import { getFormContext } from './context';
+	import { getFormSubmissionFn } from './context';
 
 	let { label, value = $bindable() }: { label: string; value: string } = $props();
 
-	const form = getFormContext();
-	const submit = () => form.requestSubmit();
+	const submitForm = getFormSubmissionFn();
 </script>
 
 <fieldset>
 	<legend>{label}</legend>
 	<label>
 		From
-		<input type="date" bind:value onchange={submit} />
+		<input type="date" bind:value onchange={submitForm} />
 	</label>
 	<label>
 		To
-		<input type="date" bind:value onchange={submit} />
+		<input type="date" bind:value onchange={submitForm} />
 	</label>
 </fieldset>
 

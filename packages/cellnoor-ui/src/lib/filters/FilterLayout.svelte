@@ -1,13 +1,14 @@
 <script lang="ts">
-	import { type Snippet } from 'svelte';
-	import { setFormContext } from './context';
+	import { tick, type Snippet } from 'svelte';
+	import { setFormSubmissionFn } from './context';
 
 	let { filters, children }: { filters: Snippet; children: Snippet } = $props();
 
-	let form: HTMLFormElement | null = $state(null);
-	$effect(() => {
+	let form = $state<HTMLFormElement>();
+	setFormSubmissionFn(async () => {
 		if (form) {
-			setFormContext(form);
+			await tick();
+			form.requestSubmit();
 		}
 	});
 </script>

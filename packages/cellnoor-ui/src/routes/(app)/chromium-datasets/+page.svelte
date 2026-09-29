@@ -24,43 +24,15 @@
 		<fieldset>
 			<legend>Specimen Information</legend>
 			<MultiSelect name="specimen.species" fieldLabel="Species" options={species} />
-			<MultiSelect fieldLabel="Type" name="specimen.type" options={specimenTypes} />
+			<MultiSelect name="specimen.type" fieldLabel="Type" options={specimenTypes} />
 		</fieldset>
 	{/snippet}
 
 	<table>
-		<thead>
-			<tr>
-				<th>
-					<input
-						type="checkbox"
-						checked={datasetIds.length > 0 && selectedDatasets.length === datasetIds.length}
-						onchange={(e) => (selectedDatasets = e.currentTarget.checked ? datasetIds : [])}
-						aria-label="Select all"
-					/>
-				</th>
-				<th>Name</th>
-				<th>Delivered</th>
-				<th>Assay</th>
-				<th>Specimens</th>
-			</tr>
-		</thead>
 		<tbody>
-			{#each datasets as { id, name, delivered_at, assay, specimens } (id)}
-				<tr>
-					<td>
-						<input
-							type="checkbox"
-							bind:group={selectedDatasets}
-							value={id}
-							aria-label="Select {name}"
-						/>
-					</td>
-					<td>{name}</td>
-					<td>{new Date(delivered_at).toLocaleDateString()}</td>
-					<td>{assay.name} ({assay.chemistry_version})</td>
-					<td>{specimens.map((s) => s.name).join('\n')}</td>
-				</tr>
+			{#each datasets as ds (ds.id)}
+				<tr><td>{ds.id}</td></tr>
+				<tr><td>{ds.specimens.map((s) => s.species).join('\n')}</td></tr>
 			{/each}
 		</tbody>
 	</table>

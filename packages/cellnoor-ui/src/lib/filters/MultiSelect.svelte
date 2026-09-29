@@ -1,6 +1,6 @@
-<script lang="ts" generics="QueryParameterName extends string">
+<script lang="ts">
 	import { Combobox } from 'bits-ui';
-	import { getFormContext } from './context';
+	import { getFormSubmissionFn } from './context';
 	import { Check, ChevronsUpDown } from '@lucide/svelte';
 	import { page } from '$app/state';
 
@@ -9,7 +9,7 @@
 		fieldLabel,
 		options
 	}: {
-		name: QueryParameterName;
+		name: string;
 		fieldLabel: string;
 		options: { value: string; label: string }[];
 	} = $props();
@@ -24,35 +24,37 @@
 
 	const filteredOptions = $derived(await filterOptions());
 
-	const form = getFormContext();
-	const submit = () => form.requestSubmit();
+	const submitForm = getFormSubmissionFn();
 </script>
 
-<Combobox.Root
-	{name}
-	type="multiple"
-	value={page.url.searchParams.getAll(name)}
-	onValueChange={submit}
-	onOpenChangeComplete={(isOpen) => (isOpen ? null : submit())}
->
-	<div>
-		<Combobox.Input oninput={(e) => (searchValue = e.currentTarget.value)} />
-		<Combobox.Trigger>
-			<ChevronsUpDown />
-		</Combobox.Trigger>
-	</div>
-	<Combobox.Portal>
-		<Combobox.Content>
-			{#each filteredOptions as opt (opt.value)}
-				<Combobox.Item {...opt}>
-					{#snippet children({ selected })}
-						{opt.label}
-						{#if selected}
-							<Check />
-						{/if}
-					{/snippet}
-				</Combobox.Item>
-			{/each}
-		</Combobox.Content>
-	</Combobox.Portal>
-</Combobox.Root>
+<label
+	>{fieldLabel}
+	<Combobox.Root
+		{name}
+		type="multiple"
+		value={page.url.searchParams.getAll(name)}
+		onValueChange={submitForm}
+		onOpenChangeComplete={(isOpen) => (isOpen ? null : submitForm())}
+	>
+		<div>
+			<Combobox.Input oninput={(e) => (searchValue = e.currentTarget.value)} />
+			<Combobox.Trigger>
+				<ChevronsUpDown />
+			</Combobox.Trigger>
+		</div>
+		<Combobox.Portal>
+			<Combobox.Content>
+				{#each filteredOptions as opt (opt.value)}
+					<Combobox.Item {...opt}>
+						{#snippet children({ selected })}
+							{opt.label}
+							{#if selected}
+								<Check />
+							{/if}
+						{/snippet}
+					</Combobox.Item>
+				{/each}
+			</Combobox.Content>
+		</Combobox.Portal>
+	</Combobox.Root>
+</label>

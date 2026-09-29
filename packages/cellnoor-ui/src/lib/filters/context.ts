@@ -1,3 +1,3 @@
 import { createContext } from 'svelte';
 
-export const [getFormContext, setFormContext] = createContext<HTMLFormElement>();
+export const [getFormSubmissionFn, setFormSubmissionFn] = createContext<() => Promise<void>>();
