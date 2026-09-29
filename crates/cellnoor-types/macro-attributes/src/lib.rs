@@ -165,7 +165,7 @@ pub fn predicate_enum_wrapper(_attr: TokenStream, input: TokenStream) -> TokenSt
 
             impl From<#wrapped> for crate::query::filter::Filter<#wrapper> {
                 fn from(predicate: #wrapped) -> Self {
-                    Self::Leaf(predicate.into())
+                    Self::Predicate(predicate.into())
                 }
             }
         }

@@ -77,15 +77,15 @@ mod test {
 
         let id = *inserted.record.id;
 
-        let pre_update = CdnaUpdate {
+        let update = CdnaUpdate {
             record: CdnaSimpleFields {
-                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                readable_id: crate::db::dummy_data::random_name_for("cdna"),
                 ..insert_input.simple
             },
             measurements: None,
             preparers: None,
         };
 
-        update_cdna_by_id(&tx, id, &pre_update).await.unwrap();
+        update_cdna_by_id(&tx, id, &update).await.unwrap();
     }
 }

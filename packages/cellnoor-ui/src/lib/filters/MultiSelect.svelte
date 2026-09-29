@@ -1,97 +1,58 @@
-<script lang="ts">
+<script lang="ts" generics="QueryParameterName extends string">
+	import { Combobox } from 'bits-ui';
+	import { getFormContext } from './context';
+	import { Check, ChevronsUpDown } from '@lucide/svelte';
 	import { page } from '$app/state';
-	import { Combobox, useListCollection } from '@ark-ui/svelte/combobox';
-	import { useFilter } from '@ark-ui/svelte/locale';
-	import { Portal } from '@ark-ui/svelte/portal';
-	import X from '@lucide/svelte/icons/x';
-	import { getSubmitFilters } from './FilterLayout.svelte';
 
-	let { label, name, items }: { label: string; name: string; items: [string, string][] } = $props();
+	let {
+		name,
+		fieldLabel,
+		options
+	}: {
+		name: QueryParameterName;
+		fieldLabel: string;
+		options: { value: string; label: string }[];
+	} = $props();
 
-	let selectedItems = $derived(page.url.searchParams.getAll(name));
+	let searchValue = $state('');
 
-	const submit = getSubmitFilters();
+	async function filterOptions() {
+		return searchValue
+			? options.filter((opt) => opt.value.toLowerCase().includes(searchValue.toLowerCase()))
+			: options;
+	}
 
-	const filters = useFilter({ sensitivity: 'base' });
+	const filteredOptions = $derived(await filterOptions());
 
-	// You have to pass a closure here to make svelte shut up
-	const { collection, filter } = useListCollection(() => ({
-		initialItems: items,
-		itemToValue: ([itemValue]) => itemValue,
-		itemToString: ([, itemLabel]) => itemLabel,
-		filter: filters().contains
-	}));
+	const form = getFormContext();
+	const submit = () => form.requestSubmit();
 </script>
 
 <Combobox.Root
-	{collection}
-	multiple
-	openOnClick
-	bind:value={selectedItems}
+	{name}
+	type="multiple"
+	value={page.url.searchParams.getAll(name)}
 	onValueChange={submit}
-	onInputValueChange={(details) => filter(details.inputValue)}
+	onOpenChangeComplete={(isOpen) => (isOpen ? null : submit())}
 >
-	<Combobox.Label>{label}</Combobox.Label>
-	<Combobox.Control>
-		{#each selectedItems as itemValue (itemValue)}
-			{@const itemLabel = items.find(([v]) => v === itemValue)?.[1]}
-			<span class="badge">
-				{itemLabel}
-				<button
-					type="button"
-					aria-label="Remove {itemLabel}"
-					onclick={() => {
-						selectedItems = selectedItems.filter((v) => v !== itemValue);
-						submit();
-					}}
-					><X size={14} /></button
-				>
-			</span>
-			<input type="hidden" {name} value={itemValue} />
-		{/each}
-		<Combobox.Input />
-	</Combobox.Control>
-	<Portal>
-		<Combobox.Positioner>
-			<Combobox.Content>
-				{#each collection().items as item (item[0])}
-					<Combobox.Item {item}>
-						<Combobox.ItemText>{item[1]}</Combobox.ItemText>
-						<Combobox.ItemIndicator>✓</Combobox.ItemIndicator>
-					</Combobox.Item>
-				{/each}
-			</Combobox.Content>
-		</Combobox.Positioner>
-	</Portal>
+	<div>
+		<Combobox.Input oninput={(e) => (searchValue = e.currentTarget.value)} />
+		<Combobox.Trigger>
+			<ChevronsUpDown />
+		</Combobox.Trigger>
+	</div>
+	<Combobox.Portal>
+		<Combobox.Content>
+			{#each filteredOptions as opt (opt.value)}
+				<Combobox.Item {...opt}>
+					{#snippet children({ selected })}
+						{opt.label}
+						{#if selected}
+							<Check />
+						{/if}
+					{/snippet}
+				</Combobox.Item>
+			{/each}
+		</Combobox.Content>
+	</Combobox.Portal>
 </Combobox.Root>
-
-<style>
-	button {
-		display: inline-flex;
-		vertical-align: middle;
-		padding: 0;
-	}
-
-	:global([data-scope='combobox'][data-part='control']) {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: var(--sm-gap);
-	}
-
-	:global([data-scope='combobox'][data-part='input']) {
-		flex-basis: 100%;
-	}
-
-	:global([data-scope='combobox'][data-part='content']) {
-		max-height: 20rem;
-		overflow-y: auto;
-		background: white;
-		border: 1px solid var(--color-secondary);
-	}
-
-	:global([data-scope='combobox'][data-part='item'][data-highlighted]) {
-		background: var(--color-secondary);
-		color: white;
-	}
-</style>

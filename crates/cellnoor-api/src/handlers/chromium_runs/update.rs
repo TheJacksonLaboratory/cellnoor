@@ -59,7 +59,7 @@ mod test {
 
         let update = ChromiumRunUpdate {
             id: NoId,
-            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+            readable_id: crate::db::dummy_data::random_name_for("chromium_run"),
             assay_id: record.assay_id,
             run_at: record.run_at,
             run_by: record.run_by,

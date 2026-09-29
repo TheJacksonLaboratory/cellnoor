@@ -151,7 +151,7 @@ where
     let mut new = NewSuspension {
         record: NewSuspensionRecord {
             id: NoId,
-            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+            readable_id: crate::db::dummy_data::random_name_for("suspension"),
             specimen_id,
             specimen_received_at: specimen.record.received_at,
             content: SuspensionContent::Cells,

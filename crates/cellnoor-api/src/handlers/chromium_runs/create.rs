@@ -93,7 +93,11 @@ impl Insert for NewChromiumRunRecord {
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub fn new_record(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRecord {
+pub async fn new_record(
+    tx: &db::Transaction<'_>,
+    assay_id: Uuid,
+    run_by: Uuid,
+) -> NewChromiumRunRecord {
     use cellnoor_types::id::NoId;
     use jiff::Timestamp;
 
@@ -101,7 +105,7 @@ pub fn new_record(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRecord {
 
     NewChromiumRunRecord {
         id: NoId,
-        readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+        readable_id: crate::db::dummy_data::random_name_for("chromium_run"),
         assay_id,
         run_at: Timestamp::now(),
         run_by,
@@ -143,21 +147,21 @@ where
     // To exercise the ability of a mulitply loaded chip, the chromium run
     // has two GEM wells
     let gem_well1 = NewStandardGemWell {
-        readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+        readable_id: crate::db::dummy_data::random_name_for("gem_well"),
         loaded_entity: LoadedEntity::Suspension {
             suspension_id: *suspension.record.id,
         },
     };
 
     let gem_well2 = NewStandardGemWell {
-        readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+        readable_id: crate::db::dummy_data::random_name_for("gem_well"),
         loaded_entity: LoadedEntity::SuspensionPool {
             suspension_pool_id: *pool.record.id,
         },
     };
 
     let mut new = NewChromiumRun {
-        record: new_record(assay_id, person_id),
+        record: new_record(tx, assay_id, person_id).await,
         gem_wells: ChromiumRunGemWells::Standard {
             gem_wells: NonemptyBoundedVec::new(vec![gem_well1, gem_well2]).unwrap(),
         },
@@ -234,16 +238,16 @@ pub mod test {
         ];
         let gem_wells = vec![
             NewOcmGemWell {
-                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                readable_id: crate::db::dummy_data::random_name_for("gem_well"),
                 loading: NonemptyBoundedVec::new(loadings.clone()).unwrap(),
             },
             NewOcmGemWell {
-                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                readable_id: crate::db::dummy_data::random_name_for("gem_well"),
                 loading: NonemptyBoundedVec::new(loadings).unwrap(),
             },
         ];
         let mut new = NewChromiumRun {
-            record: new_record(assay_id, person_id),
+            record: new_record(tx, assay_id, person_id).await,
             gem_wells: ChromiumRunGemWells::OnChipMultiplexing {
                 gem_wells: NonemptyBoundedVec::new(gem_wells).unwrap(),
             },
@@ -271,17 +275,17 @@ pub mod test {
         let assay_id = assay.id;
 
         let mut new = NewChromiumRun {
-            record: new_record(assay_id, person_id),
+            record: new_record(tx, assay_id, person_id).await,
             gem_wells: ChromiumRunGemWells::Mixed {
                 gem_wells: NonemptyBoundedVec::new(vec![
                     NewStandardOrOcmGemWell::Standard(NewStandardGemWell {
-                        readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                        readable_id: crate::db::dummy_data::random_name_for("gem_well"),
                         loaded_entity: LoadedEntity::Suspension {
                             suspension_id: *s1.record.id,
                         },
                     }),
                     NewStandardOrOcmGemWell::OnChipMultiplexing(NewOcmGemWell {
-                        readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                        readable_id: crate::db::dummy_data::random_name_for("gem_well"),
                         loading: NonemptyBoundedVec::new(vec![OcmLoadedEntity {
                             loaded_entity: LoadedEntity::Suspension {
                                 suspension_id: *s2.record.id,

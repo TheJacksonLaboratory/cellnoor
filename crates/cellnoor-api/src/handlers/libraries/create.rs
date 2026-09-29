@@ -152,7 +152,7 @@ where
     let mut new = NewLibrary {
         record: NewLibraryRecord {
             id: NoId,
-            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+            readable_id: crate::db::dummy_data::random_name_for("library"),
             cdna_id: *cdna.record.id,
             cdna_prepared_at: cdna.record.prepared_at,
             single_index_set_name: None,

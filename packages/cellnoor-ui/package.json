@@ -26,6 +26,7 @@
 		"prettier-plugin-svelte": "^4.1.0",
 		"svelte": "^5.56.7",
 		"svelte-check": "^4.6.0",
+		"temporal-spec": "^1.0.1",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.60.1",
 		"vite": "^8.1.5"
@@ -38,6 +39,7 @@
 		"@ark-ui/svelte": "^5.24.2",
 		"@lucide/svelte": "^1.47.0",
 		"better-auth": "^1.7.5",
+		"bits-ui": "^2.19.3",
 		"cellnoor-client": "link:cellnoor-client"
 	}
 }

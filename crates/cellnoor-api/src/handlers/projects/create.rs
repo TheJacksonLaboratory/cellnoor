@@ -72,7 +72,7 @@ where
     let person_id = person.record.id;
 
     let mut new = NewProject {
-        name: Uuid::new_v4().to_string().to_nonempty_string(),
+        name: crate::db::dummy_data::random_name_for("project"),
         started_at: Timestamp::now(),
         ended_at: Timestamp::MAX,
         members: vec![person_id],

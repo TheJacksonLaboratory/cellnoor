@@ -46,7 +46,7 @@ pub async fn insert_test_multiplexing_tag(
     use crate::state::dev_util::ToNonemptyString;
 
     let new = NewMultiplexingTag {
-        tag_id: Uuid::new_v4().to_string().to_nonempty_string(),
+        tag_id: crate::db::dummy_data::random_name_for("multiplexing_tag"),
         type_: MultiplexingTagType::FlexBarcode,
     };
 

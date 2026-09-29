@@ -122,7 +122,7 @@ pub mod test {
         F: FnMut(&mut NewApiKey),
     {
         let mut new = NewApiKey {
-            description: Some(Uuid::new_v4().to_string().to_nonempty_string()),
+            description: Some(crate::db::dummy_data::random_name_for("api_key")),
             owner_id: None,
             expires_at: None,
         };

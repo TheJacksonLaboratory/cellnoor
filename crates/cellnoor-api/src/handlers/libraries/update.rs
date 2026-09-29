@@ -79,7 +79,7 @@ mod test {
 
         let pre_update = LibraryUpdate {
             record: NewLibraryRecord {
-                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                readable_id: crate::db::dummy_data::random_name_for("library"),
                 number_of_sample_index_pcr_cycles: PositiveI32::new(12).unwrap(),
                 ..insert_input.record
             },

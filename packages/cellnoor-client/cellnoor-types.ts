@@ -5834,6 +5834,8 @@ export interface components {
             gte: unknown;
         } | {
             in: unknown[];
+        } | {
+            in_unless_empty: unknown[];
         } | unknown;
         ApiKey: {
             /** Format: date-time */
@@ -5905,6 +5907,8 @@ export interface components {
             gte: components["schemas"]["LibraryType"][];
         } | {
             in: components["schemas"]["LibraryType"][][];
+        } | {
+            in_unless_empty: components["schemas"]["LibraryType"][][];
         } | components["schemas"]["LibraryType"][];
         AuthError: {
             /** Format: date-time */
@@ -5938,6 +5942,8 @@ export interface components {
             gte: components["schemas"]["BlockEmbeddingMatrix"];
         } | {
             in: components["schemas"]["BlockEmbeddingMatrix"][];
+        } | {
+            in_unless_empty: components["schemas"]["BlockEmbeddingMatrix"][];
         } | components["schemas"]["BlockEmbeddingMatrix"];
         BlockFields: {
             /** @constant */
@@ -6273,6 +6279,8 @@ export interface components {
             gte: components["schemas"]["Fixative"];
         } | {
             in: components["schemas"]["Fixative"][];
+        } | {
+            in_unless_empty: components["schemas"]["Fixative"][];
         } | components["schemas"]["Fixative"];
         /** @enum {string} */
         FlashFreezing: "flash_freezing";
@@ -6503,6 +6511,8 @@ export interface components {
             gte: components["schemas"]["LibraryType"];
         } | {
             in: components["schemas"]["LibraryType"][];
+        } | {
+            in_unless_empty: components["schemas"]["LibraryType"][];
         } | components["schemas"]["LibraryType"];
         LibraryTypeSpecification: {
             /** Format: int32 */
@@ -6565,6 +6575,8 @@ export interface components {
             gte: components["schemas"]["MultiplexingTagType"];
         } | {
             in: components["schemas"]["MultiplexingTagType"][];
+        } | {
+            in_unless_empty: components["schemas"]["MultiplexingTagType"][];
         } | components["schemas"]["MultiplexingTagType"];
         /** @enum {string} */
         Nanogram: "nanogram";
@@ -7118,6 +7130,8 @@ export interface components {
             gte: components["schemas"]["SampleMultiplexing"];
         } | {
             in: components["schemas"]["SampleMultiplexing"][];
+        } | {
+            in_unless_empty: components["schemas"]["SampleMultiplexing"][];
         } | components["schemas"]["SampleMultiplexing"];
         SavedApiKeyRecord: {
             /** Format: date-time */
@@ -7199,6 +7213,8 @@ export interface components {
             gte: components["schemas"]["Species"];
         } | {
             in: components["schemas"]["Species"][];
+        } | {
+            in_unless_empty: components["schemas"]["Species"][];
         } | components["schemas"]["Species"];
         SpecimenCompact: {
             additional_data?: unknown;
@@ -7357,6 +7373,8 @@ export interface components {
             gte: components["schemas"]["SpecimenType"];
         } | {
             in: components["schemas"]["SpecimenType"][];
+        } | {
+            in_unless_empty: components["schemas"]["SpecimenType"][];
         } | components["schemas"]["SpecimenType"];
         /**
          * @description A comparison operator for string values.
@@ -7371,9 +7389,13 @@ export interface components {
         } | {
             like_any: string[];
         } | {
+            like_any_unless_empty: string[];
+        } | {
             trgm: string;
         } | {
             trgm_any: string[];
+        } | {
+            trgm_any_unless_empty: string[];
         } | components["schemas"]["stringOperator"];
         SuspensionCompact: {
             additional_data?: unknown;
@@ -7415,6 +7437,8 @@ export interface components {
             gte: components["schemas"]["SuspensionContent"];
         } | {
             in: components["schemas"]["SuspensionContent"][];
+        } | {
+            in_unless_empty: components["schemas"]["SuspensionContent"][];
         } | components["schemas"]["SuspensionContent"];
         SuspensionDetailed: {
             additional_data?: unknown;
@@ -7715,6 +7739,8 @@ export interface components {
             gte: components["schemas"]["ThermalPreservationMethod"];
         } | {
             in: components["schemas"]["ThermalPreservationMethod"][];
+        } | {
+            in_unless_empty: components["schemas"]["ThermalPreservationMethod"][];
         } | components["schemas"]["ThermalPreservationMethod"];
         /** @description A simple comparison operator. */
         TimestampOperator: {
@@ -7734,6 +7760,8 @@ export interface components {
             gte: string;
         } | {
             in: string[];
+        } | {
+            in_unless_empty: string[];
         } | string;
         TissueFields: {
             fixative: components["schemas"]["Fixative"];
@@ -7770,6 +7798,8 @@ export interface components {
             gte: string;
         } | {
             in: string[];
+        } | {
+            in_unless_empty: string[];
         } | string;
         /** @description A simple comparison operator. */
         booleanOperator: {
@@ -7784,6 +7814,8 @@ export interface components {
             gte: boolean;
         } | {
             in: boolean[];
+        } | {
+            in_unless_empty: boolean[];
         } | boolean;
         /** @description A simple comparison operator. */
         floatOperator: {
@@ -7803,6 +7835,8 @@ export interface components {
             gte: number;
         } | {
             in: number[];
+        } | {
+            in_unless_empty: number[];
         } | number;
         /** @description A simple comparison operator. */
         int32Operator: {
@@ -7822,6 +7856,8 @@ export interface components {
             gte: number;
         } | {
             in: number[];
+        } | {
+            in_unless_empty: number[];
         } | number;
         /** @description A simple comparison operator. */
         int64Operator: {
@@ -7841,6 +7877,8 @@ export interface components {
             gte: number;
         } | {
             in: number[];
+        } | {
+            in_unless_empty: number[];
         } | number;
         /** @description A simple comparison operator. */
         stringOperator: {
@@ -7855,6 +7893,8 @@ export interface components {
             gte: string;
         } | {
             in: string[];
+        } | {
+            in_unless_empty: string[];
         } | string;
     };
     responses: never;

@@ -75,7 +75,7 @@ pub mod test {
     {
         let mut new = NewService {
             record: ServiceSimpleFields {
-                description: Some(Uuid::new_v4().to_string().to_nonempty_string()),
+                description: Some(crate::db::dummy_data::random_name_for("service")),
                 is_staff: false,
             },
             users: vec![Uuid::nil()],

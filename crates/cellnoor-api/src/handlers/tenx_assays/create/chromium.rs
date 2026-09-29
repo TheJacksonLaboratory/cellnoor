@@ -118,7 +118,7 @@ pub async fn insert_test_chromium_assay(
     let kit_name = index_set_name[3..5].to_owned();
 
     let chromium_assay = NewChromiumAssay {
-        name: Uuid::new_v4().to_string().to_nonempty_string(),
+        name: crate::db::dummy_data::random_name_for("tenx_assay"),
         chemistry_version: "v1".to_nonempty_string(),
         protocol_url: "https://10xgenomics.com".to_nonempty_string(),
         sample_multiplexing: SampleMultiplexing::Singleplex,

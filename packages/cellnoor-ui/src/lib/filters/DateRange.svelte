@@ -1,31 +1,21 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { getSubmitFilters } from './FilterLayout.svelte';
+	import { getFormContext } from './context';
 
-	let { label, name }: { label: string; name: string } = $props();
+	let { label, value = $bindable() }: { label: string; value: string } = $props();
 
-	const submit = getSubmitFilters();
+	const form = getFormContext();
+	const submit = () => form.requestSubmit();
 </script>
 
 <fieldset>
 	<legend>{label}</legend>
 	<label>
 		From
-		<input
-			type="date"
-			name="{name}_from"
-			value={page.url.searchParams.get(`${name}_from`) ?? ''}
-			onchange={submit}
-		/>
+		<input type="date" bind:value onchange={submit} />
 	</label>
 	<label>
 		To
-		<input
-			type="date"
-			name="{name}_to"
-			value={page.url.searchParams.get(`${name}_to`) ?? ''}
-			onchange={submit}
-		/>
+		<input type="date" bind:value onchange={submit} />
 	</label>
 </fieldset>
 

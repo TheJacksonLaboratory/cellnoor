@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { authClient } from '#lib/auth.js';
+	import { authClient } from '#lib/auth.ts';
 
 	async function signInWithMicrosoft() {
 		return await authClient.signIn.social({

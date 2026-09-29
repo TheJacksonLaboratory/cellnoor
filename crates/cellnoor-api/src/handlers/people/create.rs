@@ -195,7 +195,7 @@ where
 
     let mut new = NewPerson {
         simple: PersonSimpleFields {
-            name: Uuid::new_v4().to_string().to_nonempty_string(),
+            name: crate::db::dummy_data::random_name_for("person"),
             institution_id: *institution.record.id,
             is_staff: false,
             orcid: None,

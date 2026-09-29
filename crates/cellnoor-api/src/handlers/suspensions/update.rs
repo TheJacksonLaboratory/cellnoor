@@ -83,7 +83,7 @@ mod test {
 
         let pre_update = SuspensionUpdate {
             record: NewSuspensionRecord {
-                readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                readable_id: crate::db::dummy_data::random_name_for("suspension"),
                 content: SuspensionContent::Nuclei,
                 ..insert_input.record
             },

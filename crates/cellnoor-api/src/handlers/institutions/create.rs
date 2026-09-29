@@ -60,7 +60,7 @@ where
 
     let mut new = NewInstitution {
         id: NoId,
-        name: Uuid::new_v4().to_string().to_nonempty_string(),
+        name: crate::db::dummy_data::random_name_for("institution"),
         microsoft_entra_tenant_id: Uuid::new_v4(),
     };
 

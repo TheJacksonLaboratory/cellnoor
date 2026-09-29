@@ -1,19 +1,14 @@
-<script module lang="ts">
-	import { createContext } from 'svelte';
-
-	export const [getSubmitFilters, setSubmitFilters] = createContext<() => void>();
-</script>
-
 <script lang="ts">
-	import { tick, type Snippet } from 'svelte';
+	import { type Snippet } from 'svelte';
+	import { setFormContext } from './context';
 
 	let { filters, children }: { filters: Snippet; children: Snippet } = $props();
 
-	let form: HTMLFormElement;
-
-	setSubmitFilters(async () => {
-		await tick();
-		form.requestSubmit();
+	let form: HTMLFormElement | null = $state(null);
+	$effect(() => {
+		if (form) {
+			setFormContext(form);
+		}
 	});
 </script>
 
@@ -32,7 +27,6 @@
 		grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
 	}
 
-	form,
 	.data {
 		padding: var(--md-gap);
 	}

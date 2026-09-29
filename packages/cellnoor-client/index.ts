@@ -1,6 +1,6 @@
 import createClient from "openapi-fetch";
 import type { Client, ClientOptions } from "openapi-fetch";
-import type { components, paths } from "./cellnoor-types";
+import type { paths } from "./cellnoor-types";
 
 export type CellnoorClient = Client<paths>;
 export type { paths };

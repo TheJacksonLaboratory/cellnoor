@@ -15,12 +15,12 @@ pub enum Filter<P> {
     Not(Box<Filter<P>>),
     #[cfg_attr(feature = "serde", serde(untagged))]
     /// Apply just one boolean predicate
-    Leaf(P),
+    Predicate(P),
 }
 
 impl<P> From<P> for Filter<P> {
     fn from(predicate: P) -> Self {
-        Self::Leaf(predicate)
+        Self::Predicate(predicate)
     }
 }
 
@@ -66,6 +66,8 @@ pub enum Operator<T> {
     Gte(T),
     /// is contained in (`= any($1)`)
     In(Vec<T>),
+    /// is contained in (`= any($1)`) only if the array is nonempty
+    InUnlessEmpty(Vec<T>),
     /// equals (`=`), but (de)serializes as `{"field": "value"}` instead of
     /// `{"field": {"eq": "value"}}`
     #[cfg(feature = "serde")]
@@ -86,6 +88,7 @@ where
             Self::Gt(v) => (">", v),
             Self::Gte(v) => (">=", v),
             Self::In(v) => ("= any", v),
+            Self::InUnlessEmpty(v) => (if v.is_empty() { "= all" } else { "= any" }, v),
             #[cfg(feature = "serde")]
             Self::ImplicitEq(v) => ("=", v),
         }
@@ -125,10 +128,16 @@ pub enum StringOperator {
     Like(String),
     /// PostgreSQL `like any`
     LikeAny(Vec<String>),
+    /// PostgreSQL `like any` only if the array is nonempty, otherwise `like
+    /// all`
+    LikeAnyUnlessEmpty(Vec<String>),
     /// PostgreSQL trigram similar to (`%`)
     Trgm(String),
     /// PostgreSQL trigram similar to any (`% any`)
     TrgmAny(Vec<String>),
+    /// PostgreSQL `trgm any` only if the array is nonempty, otherwise `trgm
+    /// all`
+    TrgmAnyUnlessEmpty(Vec<String>),
     /// All other operators
     #[cfg_attr(feature = "serde", serde(untagged))]
     Simple(SimpleStringOperator),
@@ -140,8 +149,10 @@ impl SqlOperator for StringOperator {
         match self {
             Self::Like(s) => ("like", s),
             Self::LikeAny(s) => ("like any", s),
+            Self::LikeAnyUnlessEmpty(s) => (if s.is_empty() { "like all" } else { "like any" }, s),
             Self::Trgm(s) => ("%", s),
             Self::TrgmAny(s) => ("% any", s),
+            Self::TrgmAnyUnlessEmpty(s) => (if s.is_empty() { "% all" } else { "% any" }, s),
             Self::Simple(op) => op.as_sql_operator_and_value(),
         }
     }

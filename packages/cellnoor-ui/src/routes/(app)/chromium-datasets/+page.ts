@@ -1,53 +1,69 @@
 import { cellnoorClient, unwrap } from '#lib/client.ts';
 import {
 	blockEmbeddingMatrixValues,
-	controlledRateFreezingValues,
-	flashFreezingValues,
 	speciesValues,
 	specimenTypeValues,
-	type ChromiumDatasetPredicateFilter as Filter
-} from 'cellnoor-client/cellnoor-types';
+	type ChromiumDatasetPredicate,
+	type Species,
+	type SpecimenType
+} from 'cellnoor-client/cellnoor-types.js';
 
-export async function load({ url }) {
-	const q = url.searchParams;
+export type QueryParameter =
+	| 'specimen.name'
+	| 'specimen.type'
+	| 'specimen.species'
+	| 'specimen.embedded_in'
+	| 'specimen.thermal_preservation_method'
+	| 'specimen.fixative';
 
-	const oneOf = <T extends string>(key: string, values: readonly T[]) =>
-		q.getAll(key).filter((v): v is T => values.some((value) => value === v));
+export async function load({ url, parent }) {
+	const datasets = await getDatasets(url.searchParams);
 
-	const nonEmpty = <T>(values: T[], toFilter: (values: T[]) => Filter) =>
-		values.length > 0 ? toFilter(values) : undefined;
+	const { projects, tenxAssays } = await parent();
 
-	const toTimestamp = (key: string, toFilter: (timestamp: string) => Filter) => {
-		const value = q.get(key);
-		return value ? toFilter(new Date(`${value}T00:00`).toISOString()) : undefined;
+	return {
+		datasets,
+		projects: toComboboxOptions(projects),
+		assays: toComboboxOptions(tenxAssays),
+		specimenTypes: specimenTypeValues.map(toSimpleComboboxOption),
+		species: speciesValues.map(toSimpleComboboxOption),
+		fixative: ['dithiobis_succinimidyl_propionate', 'formaldehyde_derivative'].map(
+			toSimpleComboboxOption
+		),
+		embeddingMatrices: blockEmbeddingMatrixValues.map(toSimpleComboboxOption),
+		thermalPreservationMethods: ['controlled_rate_freezing', 'flash_freezing'].map(
+			toSimpleComboboxOption
+		)
+	};
+}
+
+async function getDatasets(q: URLSearchParams) {
+	const all_of: ChromiumDatasetPredicate[] = [
+		{ specimen: { name: { trgm_any_unless_empty: getQueryParam(q, 'specimen.name') } } },
+		{ specimen: { type: { in: getQueryParam(q, 'specimen.type') as SpecimenType[] } } },
+		{ specimen: { species: { in: getQueryParam(q, 'specimen.species') as Species[] } } }
+	];
+
+	const apiQuery = {
+		filter: { all_of },
+		limit: 100
 	};
 
-	const all_of = [
-		nonEmpty(q.getAll('project'), (v) => ({ specimen: { project_id: { in: v } } })),
-		nonEmpty(q.getAll('specimen_name'), (v) => ({ specimen: { name: { trgm_any: v } } })),
-		nonEmpty(oneOf('species', speciesValues), (v) => ({ specimen: { species: { in: v } } })),
-		toTimestamp('received_from', (t) => ({ specimen: { received_at: { gte: t } } })),
-		toTimestamp('received_to', (t) => ({ specimen: { received_at: { lte: t } } })),
-		nonEmpty(oneOf('specimen_type', specimenTypeValues), (v) => ({
-			specimen: { type: { in: v } }
-		})),
-		nonEmpty(oneOf('embedded_in', blockEmbeddingMatrixValues), (v) => ({
-			specimen: { embedded_in: { in: v } }
-		})),
-		nonEmpty(oneOf('thermal_preservation', [...controlledRateFreezingValues, ...flashFreezingValues]), (v) => ({
-			specimen: { thermal_preservation_method: { in: v } }
-		})),
-		nonEmpty(q.getAll('assay'), (v) => ({ tenx_assay: { name: { in: v } } })),
-		nonEmpty(q.getAll('name'), (v) => ({ name: { trgm_any: v } })),
-		toTimestamp('delivered_from', (t) => ({ delivered_at: { gte: t } })),
-		toTimestamp('delivered_to', (t) => ({ delivered_at: { lte: t } }))
-	].filter((f) => f !== undefined);
-
 	const datasets = unwrap(
-		await cellnoorClient.POST('/chromium-datasets/search/detailed', {
-			body: { filter: all_of.length > 0 ? { all_of } : undefined }
-		})
+		await cellnoorClient.POST('/chromium-datasets/search/detailed', { body: apiQuery })
 	);
 
-	return { datasets, datasetIds: datasets.map((ds) => ds.id) };
+	return { datasets };
+}
+
+function getQueryParam(q: URLSearchParams, name: QueryParameter) {
+	return q.getAll(name);
+}
+
+function toComboboxOptions(items: { id: string; name: string }[]) {
+	return items.map((i) => ({ value: i.id, label: i.name }));
+}
+
+function toSimpleComboboxOption(item: string) {
+	return { value: item, label: item };
 }

@@ -112,7 +112,7 @@ fn write_where_clause_predicates<'a, P>(
     P: AsPredicate,
 {
     match filter {
-        Filter::Leaf(predicate) => {
+        Filter::Predicate(predicate) => {
             let Predicate {
                 relation,
                 column,

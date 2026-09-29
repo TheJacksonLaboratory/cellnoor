@@ -262,10 +262,10 @@ mod test {
         let person_id = s1.specimen.record.submitted_by;
 
         let new = NewChromiumRun {
-            record: new_record(assay_id, person_id),
+            record: new_record(&tx, assay_id, person_id).await,
             gem_wells: ChromiumRunGemWells::OnChipMultiplexing {
                 gem_wells: NonemptyBoundedVec::new(vec![NewOcmGemWell {
-                    readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+                    readable_id: crate::db::dummy_data::random_name_for("gem_well"),
                     loading: NonemptyBoundedVec::new(vec![
                         OcmLoadedEntity {
                             loaded_entity: LoadedEntity::Suspension {

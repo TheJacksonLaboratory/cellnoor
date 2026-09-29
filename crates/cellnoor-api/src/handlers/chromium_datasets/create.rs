@@ -193,7 +193,7 @@ where
     let mut new = NewChromiumDataset {
         record: NewChromiumDatasetRecord {
             id: NoId,
-            name: Uuid::new_v4().to_string().to_nonempty_string(),
+            name: crate::db::dummy_data::random_name_for("chromium_dataset"),
             delivered_at: Timestamp::now(),
         },
         library_ids: NonemptyVec::new(vec![*library.record.id]).unwrap(),
@@ -244,7 +244,7 @@ pub mod test {
         let new = NewChromiumDataset {
             record: NewChromiumDatasetRecord {
                 id: NoId,
-                name: Uuid::new_v4().to_string().to_nonempty_string(),
+                name: crate::db::dummy_data::random_name_for("chromium_dataset"),
                 delivered_at: Timestamp::now(),
             },
             library_ids: NonemptyVec::new(vec![*library1.record.id, *library2.record.id]).unwrap(),

@@ -114,8 +114,8 @@ where
     let (_, inserted_project) = insert_test_project(tx, |_| ()).await?;
     let SavedProjectRecordDetailed { project, members } = inserted_project.record;
     let mut new = NewSpecimen {
-        readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
-        name: Uuid::new_v4().to_string().to_nonempty_string(),
+        readable_id: crate::db::dummy_data::random_name_for("specimen"),
+        name: crate::db::dummy_data::random_name_for("specimen"),
         submitted_by: members[0],
         received_at: Timestamp::now(),
         project_id: project.id,

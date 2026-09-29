@@ -221,7 +221,7 @@ where
     let mut new = NewSuspensionPool {
         record: NewSuspensionPoolRecord {
             id: NoId,
-            readable_id: Uuid::new_v4().to_string().to_nonempty_string(),
+            readable_id: crate::db::dummy_data::random_name_for("suspension_pool"),
             name: "pool".to_nonempty_string(),
             pooled_at: Timestamp::now(),
             additional_data: None,

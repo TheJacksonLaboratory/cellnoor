@@ -62,7 +62,7 @@ mod test {
         let (mut update, inserted) = insert_test_specimen_and_project(&tx, |_| ()).await.unwrap();
         let id = *inserted.record.id;
 
-        update.readable_id = Uuid::new_v4().to_string().to_nonempty_string();
+        update.readable_id = crate::db::dummy_data::random_name_for("specimen");
         update.measurements = vec![];
 
         update_specimen_by_id(&tx, id, update).await.unwrap();
