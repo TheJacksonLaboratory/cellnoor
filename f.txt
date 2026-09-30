@@ -1,0 +1,4 @@
+There may be some garbage CSS, HTML, and JS in this design. Evaluate it critically and make sure to simplify and improve it where possible. I don't know what framework the design uses, but obviously this project uses svelte, so
+  you may need to port some thingss. I am not using Tailwind CSS - only vanilla *MODERN* CSS. Make sure that any styles you implement become reusable classes wherever it makes sense. For example, I think this design has 3 font sizes
+  - it may be worthwhile to extract each of those into a class and give it a semantic meaning, like "heading" or "subheading" or something along those lines. Same goes for buttons, links, etc. Where a style would only be useful in
+  a component, use Svelte's local component-scoped styling.
