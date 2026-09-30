@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { DbError } from 'cellnoor-client/cellnoor-types';
-
-	const { error } = $props();
-	const structuredError: DbError = $derived(JSON.parse(error.message));
+	import { page } from '$app/state';
 </script>
 
 <!-- TODO: improve this error page with some kind of expand details button -->
 <div>
-	{error.message}
+	{page.error?.message}
+	{#if page.error?.error}
+		<pre>{JSON.stringify(page.error.error, null, 2)}</pre>
+	{/if}
 </div>

@@ -14,12 +14,13 @@
 	<a href="/specimens">Specimens</a>
 	<a href="/libraries">Libraries</a>
 
-	<button popovertarget="datasets-menu">Datasets <ChevronDown size={16} /></button>
-	<div id="datasets-menu" popover bind:this={datasetsMenu}>
-		<a href="/chromium-datasets">Chromium</a>
+	<button popovertarget="datasets-menu">Datasets <ChevronDown size="1em" /></button>
+	<div id="datasets-menu" class="card menu" popover bind:this={datasetsMenu}>
+		<a class="menu-item" href="/chromium-datasets">Chromium</a>
 	</div>
 
 	<button
+		class="button"
 		onclick={() => authClient.signOut({ fetchOptions: { onSuccess: () => goto('/sign-in') } })}
 		>Sign Out</button
 	>
@@ -33,32 +34,32 @@
 	nav {
 		display: flex;
 		align-items: center;
-		gap: var(--md-gap);
-		padding-block: var(--sm-gap);
-		padding-inline: var(--md-gap);
-		border-block-end: 1px solid var(--color-secondary);
+		gap: var(--space-lg);
+		padding: var(--space-sm) var(--space-lg);
+		border-block-end: 1px solid var(--color-primary);
+		font-size: large;
 	}
 
 	.brand {
 		font-family: 'Comfortaa Variable', system-ui, sans-serif;
-		font-size: 2rem;
+		font-size: xx-large;
 		margin-inline-end: auto;
 	}
 
-	a,
+	nav > a,
 	[popovertarget] {
 		color: inherit;
-		text-decoration: none;
 
 		&:hover {
 			color: var(--color-primary);
+			text-decoration: none;
 		}
 	}
 
 	[popovertarget] {
 		display: flex;
 		align-items: center;
-		gap: 0.25em;
+		gap: var(--space-xs);
 		padding: 0;
 		font: inherit;
 		background: none;
@@ -68,11 +69,6 @@
 
 	[popover] {
 		position-area: block-end span-inline-end;
-		margin: 0;
-		border: 1px solid var(--color-secondary);
-		a {
-			display: block;
-			padding-block: var(--sm-gap);
-		}
+		margin: var(--space-xs) 0 0;
 	}
 </style>

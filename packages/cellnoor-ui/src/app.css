@@ -1,9 +1,142 @@
-:root {
-	/* These are the colors of the Jackson Laboratory */
-	--color-primary: #05396b;
+@layer reset, base, components;
+
+@layer reset {
+	*,
+	::before,
+	::after {
+		box-sizing: border-box;
+	}
+
+	ul[class] {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
 }
 
-body {
-	margin: 0;
-	font-family: system-ui, sans-serif;
+@layer base {
+	:root {
+		/* These are the colors of the Jackson Laboratory */
+		--color-primary: #05396b;
+		--color-link: #0177b2;
+		--color-surface: #f4f8fc;
+		--color-muted: #565656;
+		--color-border: #8a8a8a;
+
+		--border: 1px solid var(--color-border);
+		--radius: 0.25rem;
+
+		--space-xs: 0.25rem;
+		--space-sm: 0.5rem;
+		--space-md: 1rem;
+		--space-lg: 1.5rem;
+		--space-xl: 2rem;
+
+		accent-color: var(--color-primary);
+	}
+
+	body {
+		margin: 0;
+		font-family: system-ui, sans-serif;
+	}
+
+	a {
+		color: var(--color-link);
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+
+@layer components {
+	.heading,
+	.subheading {
+		margin: 0;
+		font-weight: bolder;
+	}
+
+	.heading {
+		font-size: x-large;
+	}
+
+	.subheading {
+		font-size: large;
+	}
+
+	.label {
+		font-weight: bold;
+	}
+
+	.link-arrow::after {
+		content: ' ↗' / '';
+	}
+
+	.muted {
+		color: var(--color-muted);
+	}
+
+	.stack,
+	.field {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-md);
+	}
+
+	.field {
+		gap: var(--space-xs);
+	}
+
+	.cluster {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-xs) var(--space-md);
+	}
+
+	.divided > * + * {
+		border-block-start: var(--border);
+	}
+
+	.input,
+	.button {
+		padding: var(--space-xs) var(--space-sm);
+		border: var(--border);
+		border-radius: var(--radius);
+		font: inherit;
+		background: none;
+	}
+
+	.button {
+		color: var(--color-primary);
+		cursor: pointer;
+	}
+
+	.card {
+		border: var(--border);
+		border-radius: var(--radius);
+	}
+
+	.menu {
+		max-block-size: 50dvh;
+		overflow: auto;
+		padding: 0;
+		background: white;
+	}
+
+	.menu-item {
+		display: flex;
+		justify-content: space-between;
+		padding: var(--space-sm);
+		color: inherit;
+		cursor: pointer;
+
+		&:hover,
+		&[data-highlighted] {
+			background: var(--color-primary);
+			color: white;
+			text-decoration: none;
+		}
+	}
 }

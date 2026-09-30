@@ -6,6 +6,7 @@
       "name": "cellnoor-ui",
       "dependencies": {
         "@ark-ui/svelte": "^5.24.2",
+        "@fontsource-variable/comfortaa": "^5.3.0",
         "@lucide/svelte": "^1.47.0",
         "better-auth": "^1.7.5",
         "bits-ui": "^2.19.3",
@@ -77,6 +78,8 @@
     "@floating-ui/dom": ["@floating-ui/dom@1.8.0", "", { "dependencies": { "@floating-ui/core": "^1.8.0", "@floating-ui/utils": "^0.2.12" } }, "sha512-yXSrzeHZBTZadLOlfyhCkJHNeLJnHRnRInwdZ40L7ZiaAtrBwoYlsDrX3v5zB1Utk7CLfzcOVnVVWoXEky7Ceg=="],
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.12", "", {}, "sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww=="],
+
+    "@fontsource-variable/comfortaa": ["@fontsource-variable/comfortaa@5.3.0", "", {}, "sha512-al/XR/3rUwZRLPAgAN7VsHKudQ27++W2sEQPhRpkg7x9a8VISekS3eQr4c3lICNWDfflz+gVes8dfekL/yY+Ng=="],
 
     "@humanfs/core": ["@humanfs/core@0.19.2", "", { "dependencies": { "@humanfs/types": "^0.15.0" } }, "sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA=="],
 

@@ -1,60 +1,75 @@
 <script lang="ts">
 	import { Combobox } from 'bits-ui';
-	import { getFormSubmissionFn } from './context';
-	import { Check, ChevronsUpDown } from '@lucide/svelte';
+	import { Check, ChevronDown } from '@lucide/svelte';
 	import { page } from '$app/state';
+	import { getFormSubmissionFn } from './context';
+	import SelectedValues from './SelectedValues.svelte';
 
 	let {
 		name,
-		fieldLabel,
+		label,
 		options
 	}: {
 		name: string;
-		fieldLabel: string;
+		label: string;
 		options: { value: string; label: string }[];
 	} = $props();
 
+	const id = $props.id();
+
+	let value = $derived(page.url.searchParams.getAll(name));
 	let searchValue = $state('');
+	let control: HTMLElement | null = $state(null);
 
-	async function filterOptions() {
-		return searchValue
-			? options.filter((opt) => opt.value.toLowerCase().includes(searchValue.toLowerCase()))
-			: options;
-	}
-
-	const filteredOptions = $derived(await filterOptions());
+	const filteredOptions = $derived(
+		options.filter((opt) => opt.label.toLowerCase().includes(searchValue.toLowerCase()))
+	);
 
 	const submitForm = getFormSubmissionFn();
 </script>
 
-<label
-	>{fieldLabel}
-	<Combobox.Root
-		{name}
-		type="multiple"
-		value={page.url.searchParams.getAll(name)}
-		onValueChange={submitForm}
-		onOpenChangeComplete={(isOpen) => (isOpen ? null : submitForm())}
-	>
-		<div>
-			<Combobox.Input oninput={(e) => (searchValue = e.currentTarget.value)} />
-			<Combobox.Trigger>
-				<ChevronsUpDown />
+<div class="field">
+	<label class="label" for={id}>{label}</label>
+	<SelectedValues bind:values={value} {options} />
+	<Combobox.Root {name} type="multiple" bind:value onValueChange={submitForm}>
+		<div class="control" bind:this={control}>
+			<Combobox.Input
+				{id}
+				class="input"
+				placeholder="Select or type"
+				oninput={(e) => (searchValue = e.currentTarget.value)}
+			/>
+			<Combobox.Trigger class="button">
+				<ChevronDown size="1em" />
 			</Combobox.Trigger>
 		</div>
 		<Combobox.Portal>
-			<Combobox.Content>
+			<Combobox.Content class="card menu" style="inline-size: var(--bits-combobox-anchor-width)">
 				{#each filteredOptions as opt (opt.value)}
-					<Combobox.Item {...opt}>
+					<Combobox.Item class="menu-item" {...opt}>
 						{#snippet children({ selected })}
 							{opt.label}
 							{#if selected}
-								<Check />
+								<Check size="1em" />
 							{/if}
 						{/snippet}
 					</Combobox.Item>
+				{:else}
+					<div class="empty">No matching options</div>
 				{/each}
 			</Combobox.Content>
 		</Combobox.Portal>
 	</Combobox.Root>
-</label>
+</div>
+
+<style>
+	.control {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: var(--space-xs);
+	}
+
+	.empty {
+		padding: var(--space-sm);
+	}
+</style>

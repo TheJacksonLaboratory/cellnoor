@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../app.css';
+	import '@fontsource-variable/comfortaa';
 	import favicon from '#lib/assets/favicon.png';
 
 	let { children } = $props();
