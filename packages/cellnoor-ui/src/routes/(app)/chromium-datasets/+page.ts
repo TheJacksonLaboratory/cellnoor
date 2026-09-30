@@ -23,7 +23,7 @@ export async function load({ url, parent }) {
 		assays: [...new Set(tenxAssays.map((a) => a.name))].map(toSimpleComboboxOption),
 		specimenTypes: specimenTypeValues.map(toSimpleComboboxOption),
 		species: speciesValues.map(toSimpleComboboxOption),
-		fixatives: ['dithiobis_succinimidyl_propionate', 'formaldehyde_derivative'].map(
+		fixatives: ['dithiobis_succinimidylpropionate', 'formaldehyde_derivative'].map(
 			toSimpleComboboxOption
 		),
 		embeddingMatrices: blockEmbeddingMatrixValues.map(toSimpleComboboxOption),
