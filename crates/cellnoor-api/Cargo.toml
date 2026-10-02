@@ -3,9 +3,6 @@ name = "cellnoor-api"
 version = "0.1.0"
 edition = "2024"
 
-[[bin]]
-name = "openapi"
-
 [dependencies]
 csv.workspace = true
 tracing.workspace = true

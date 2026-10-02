@@ -1902,10 +1902,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": [
-                        string,
-                        string[]
-                    ][];
+                    "application/json": components["schemas"]["NewSingleIndexSet"][];
                 };
             };
             responses: {
@@ -6736,6 +6733,10 @@ export interface components {
             permissions_to_grant: components["schemas"]["Permission"][];
             users: string[];
         };
+        NewSingleIndexSet: [
+            string,
+            string[]
+        ];
         NewSpecimen: {
             additional_data?: unknown;
             host_species?: components["schemas"]["Species"] | null;
@@ -7996,6 +7997,7 @@ export type NewOcmGemWell = components['schemas']['NewOcmGemWell'];
 export type NewPerson = components['schemas']['NewPerson'];
 export type NewProject = components['schemas']['NewProject'];
 export type NewService = components['schemas']['NewService'];
+export type NewSingleIndexSet = components['schemas']['NewSingleIndexSet'];
 export type NewSpecimen = components['schemas']['NewSpecimen'];
 export type NewSpecimenMeasurement = components['schemas']['NewSpecimenMeasurement'];
 export type NewStandardGemWell = components['schemas']['NewStandardGemWell'];
