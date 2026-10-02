@@ -67,7 +67,8 @@ mod test {
     use crate::{
         db::test_utils::ensure_fields_are_selectable,
         handlers::chromium_runs::{
-            create::insert_test_standard_chromium_run, index_compact::select_chromium_runs_compact,
+            TestChromiumRunKind, create::insert_test_chromium_run,
+            index_compact::select_chromium_runs_compact,
         },
         state::dev_util::db_client_as_admin,
     };
@@ -77,7 +78,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, run) = insert_test_standard_chromium_run(&tx, |_| ())
+        let run = insert_test_chromium_run(&tx, TestChromiumRunKind::Standard, |_| ())
             .await
             .unwrap();
         let id = *run.record.id;

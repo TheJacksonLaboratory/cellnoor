@@ -53,8 +53,9 @@ mod test {
 
     use crate::{
         db::test_utils::ensure_fields_are_selectable,
-        handlers::libraries::{
-            create::insert_test_library, index_compact::select_libraries_compact,
+        handlers::{
+            chromium_runs::create::TestChromiumRunKind,
+            libraries::{create::insert_test_library, index_compact::select_libraries_compact},
         },
         state::dev_util::db_client_as_admin,
     };
@@ -64,7 +65,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, inserted) = insert_test_library(&tx, |_| ()).await.unwrap();
+        let (_, inserted) = insert_test_library(&tx, TestChromiumRunKind::Standard, |_| ())
+            .await
+            .unwrap();
 
         let libraries = select_libraries_compact(
             &tx,

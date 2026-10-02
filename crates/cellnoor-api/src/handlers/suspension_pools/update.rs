@@ -62,7 +62,6 @@ async fn update_suspension_pool_by_id(
 #[cfg(test)]
 mod test {
     use cellnoor_types::suspension_pool::{NewSuspensionPoolRecord, SuspensionPoolUpdate};
-    use uuid::Uuid;
 
     use crate::{
         handlers::suspension_pools::{

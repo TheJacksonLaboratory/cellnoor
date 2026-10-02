@@ -57,12 +57,8 @@ where
     F: FnMut(&mut NewProject),
 {
     use jiff::Timestamp;
-    use uuid::Uuid;
 
-    use crate::{
-        handlers::people::create::insert_test_person_and_institution,
-        state::dev_util::ToNonemptyString,
-    };
+    use crate::handlers::people::create::insert_test_person_and_institution;
 
     // The fixture's person is valid, so only the database can refuse it,
     // and no test here reads that error
@@ -88,18 +84,8 @@ where
 #[cfg(test)]
 pub mod test {
 
-    use cellnoor_types::project::{NewProject, ProjectDetailed};
-    use jiff::Timestamp;
-    use uuid::Uuid;
-
     use super::insert_test_project;
-    use crate::{
-        db::{self, DbError},
-        handlers::{
-            people::create::insert_test_person_and_institution, projects::create::insert_project,
-        },
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
-    };
+    use crate::state::dev_util::db_client_as_admin;
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {

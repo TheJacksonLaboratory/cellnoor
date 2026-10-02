@@ -53,8 +53,9 @@ mod test {
 
     use crate::{
         db::test_utils::ensure_fields_are_selectable,
-        handlers::cdna::{
-            create::insert_test_cdna_and_chromium_run, index_compact::select_cdna_compact,
+        handlers::{
+            cdna::{create::insert_test_cdna_and_chromium_run, index_compact::select_cdna_compact},
+            chromium_runs::create::TestChromiumRunKind,
         },
         state::dev_util::db_client_as_admin,
     };
@@ -64,9 +65,10 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, inserted) = insert_test_cdna_and_chromium_run(&tx, |_| ())
-            .await
-            .unwrap();
+        let (_, inserted) =
+            insert_test_cdna_and_chromium_run(&tx, TestChromiumRunKind::Standard, |_| ())
+                .await
+                .unwrap();
 
         let cdnas = select_cdna_compact(
             &tx,

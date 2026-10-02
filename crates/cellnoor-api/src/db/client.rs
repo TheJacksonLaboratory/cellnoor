@@ -172,9 +172,7 @@ impl Transaction<'_> {
     async fn query(&self, Sql(stmt, params): &Sql<'_>) -> Result<Vec<Row>, DbError> {
         Ok(self.inner.query(stmt, params).await?)
     }
-}
 
-impl Transaction<'_> {
     /// Insert one row and return the id the database assigned it.
     pub async fn insert_returning_id<T>(&self, record: &T) -> Result<Uuid, DbError>
     where
@@ -283,6 +281,15 @@ impl Transaction<'_> {
 
         Ok(())
     }
+
+    #[cfg(any(test, feature = "dev"))]
+    pub async fn lock_table(&self, table: &str) -> Result<(), DbError> {
+        static LOCK_TABLE: &str = "select pg_advisory_xact_lock(hashtext($1))";
+
+        self.execute(&Sql::new(LOCK_TABLE, vec![&table])).await?;
+
+        Ok(())
+    }
 }
 
 impl<'a> Transaction<'a> {
@@ -292,7 +299,7 @@ impl<'a> Transaction<'a> {
 
     /// Begin a nested transaction, starting a PostgreSQL savepoint
     pub async fn begin(&'a mut self) -> Result<Transaction<'a>, TokioPgError> {
-        let Self { user, inner } = self;
+        let Self { user, inner, .. } = self;
 
         Ok(Self {
             user: *user,

@@ -93,15 +93,9 @@ impl Insert for NewChromiumRunRecord {
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn new_record(
-    tx: &db::Transaction<'_>,
-    assay_id: Uuid,
-    run_by: Uuid,
-) -> NewChromiumRunRecord {
+pub async fn new_record(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRecord {
     use cellnoor_types::id::NoId;
     use jiff::Timestamp;
-
-    use crate::state::dev_util::ToNonemptyString;
 
     NewChromiumRunRecord {
         id: NoId,
@@ -115,7 +109,7 @@ pub async fn new_record(
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn insert_test_standard_chromium_run<F>(
+async fn insert_test_standard_chromium_run<F>(
     tx: &db::Transaction<'_>,
     mut modify: F,
 ) -> Result<(NewChromiumRun, ChromiumRunDetailed), DbError>
@@ -127,13 +121,10 @@ where
         nonempty::NonemptyBoundedVec,
     };
 
-    use crate::{
-        handlers::{
-            suspension_pools::create::insert_test_suspension_pool_and_suspensions,
-            suspensions::create::insert_test_suspension_and_specimen,
-            tenx_assays::create::insert_test_chromium_assay,
-        },
-        state::dev_util::ToNonemptyString,
+    use crate::handlers::{
+        suspension_pools::create::insert_test_suspension_pool_and_suspensions,
+        suspensions::create::insert_test_suspension_and_specimen,
+        tenx_assays::create::insert_chromium_assays,
     };
 
     let (_, suspension) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
@@ -141,8 +132,7 @@ where
 
     let person_id = suspension.preparers[0];
 
-    let (_, assay) = insert_test_chromium_assay(tx).await?;
-    let assay_id = assay.id;
+    let assay_id = insert_chromium_assays(tx).await?.singleplex;
 
     // To exercise the ability of a mulitply loaded chip, the chromium run
     // has two GEM wells
@@ -161,7 +151,7 @@ where
     };
 
     let mut new = NewChromiumRun {
-        record: new_record(tx, assay_id, person_id).await,
+        record: new_record(assay_id, person_id).await,
         gem_wells: ChromiumRunGemWells::Standard {
             gem_wells: NonemptyBoundedVec::new(vec![gem_well1, gem_well2]).unwrap(),
         },
@@ -173,137 +163,233 @@ where
     Ok((new, inserted))
 }
 
-#[cfg(test)]
-pub mod test {
+#[cfg(any(test, feature = "dev"))]
+async fn insert_test_ocm_chromium_run<F>(
+    tx: &db::Transaction<'_>,
+    mut modify: F,
+) -> Result<(NewChromiumRun, ChromiumRunDetailed), DbError>
+where
+    F: FnMut(&mut NewChromiumRun),
+{
     use cellnoor_types::{
-        chromium_run::{
-            ChromiumRunDetailed,
-            creation::{
-                ChromiumRunGemWells, LoadedEntity, NewChromiumRun, NewChromiumRunRecord,
-                mixed::NewStandardOrOcmGemWell,
-                ocm::{NewOcmGemWell, OcmBarcodeId, OcmLoadedEntity},
-                standard::NewStandardGemWell,
-            },
+        chromium_run::creation::{
+            LoadedEntity,
+            ocm::{NewOcmGemWell, OcmBarcodeId, OcmLoadedEntity},
         },
-        id::NoId,
         nonempty::NonemptyBoundedVec,
     };
-    use jiff::Timestamp;
-    use uuid::Uuid;
 
-    use super::{insert_test_standard_chromium_run, new_record};
-    use crate::{
-        db::{self, DbError},
-        handlers::{
-            chromium_runs::create::insert_chromium_run,
-            suspension_pools::create::insert_test_suspension_pool_and_suspensions,
-            suspensions::create::insert_test_suspension_and_specimen,
-            tenx_assays::create::insert_test_chromium_assay,
-        },
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
+    use crate::handlers::{
+        suspensions::create::insert_test_suspension_and_specimen,
+        tenx_assays::create::insert_chromium_assays,
     };
 
-    pub async fn insert_test_ocm_chromium_run<F>(
-        tx: &db::Transaction<'_>,
-        mut modify: F,
-    ) -> Result<(NewChromiumRun, ChromiumRunDetailed), DbError>
-    where
-        F: FnMut(&mut NewChromiumRun),
-    {
-        let (_, s1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
-        let (_, s2) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+    let (_, s1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+    let (_, s2) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
 
-        let person_id = s1.preparers[0];
+    let person_id = s1.preparers[0];
 
-        let (_, assay) = insert_test_chromium_assay(tx).await?;
-        let assay_id = assay.id;
+    let assay_id = insert_chromium_assays(tx).await?.ocm;
 
-        // To exercise the ability of a mulitply loaded chip, each GEM well has
-        // two suspensions, and the chromium run has two GEM wells.
-        // However, this time, the two GEM wells are basically
-        // equivalent so we can see if we get duplicate specimens
-        let loadings = vec![
-            OcmLoadedEntity {
-                loaded_entity: LoadedEntity::Suspension {
-                    suspension_id: *s1.record.id,
-                },
-                ocm_barcode_id: OcmBarcodeId::Ob1,
+    // To exercise the ability of a mulitply loaded chip, each GEM well has
+    // two suspensions, and the chromium run has two GEM wells.
+    // However, this time, the two GEM wells are basically
+    // equivalent so we can see if we get duplicate specimens
+    let loadings = vec![
+        OcmLoadedEntity {
+            loaded_entity: LoadedEntity::Suspension {
+                suspension_id: *s1.record.id,
             },
-            OcmLoadedEntity {
-                loaded_entity: LoadedEntity::Suspension {
-                    suspension_id: *s2.record.id,
-                },
-                ocm_barcode_id: OcmBarcodeId::Ob2,
+            ocm_barcode_id: OcmBarcodeId::Ob1,
+        },
+        OcmLoadedEntity {
+            loaded_entity: LoadedEntity::Suspension {
+                suspension_id: *s2.record.id,
             },
-        ];
-        let gem_wells = vec![
-            NewOcmGemWell {
-                readable_id: crate::db::dummy_data::random_name_for("gem_well"),
-                loading: NonemptyBoundedVec::new(loadings.clone()).unwrap(),
-            },
-            NewOcmGemWell {
-                readable_id: crate::db::dummy_data::random_name_for("gem_well"),
-                loading: NonemptyBoundedVec::new(loadings).unwrap(),
-            },
-        ];
-        let mut new = NewChromiumRun {
-            record: new_record(tx, assay_id, person_id).await,
-            gem_wells: ChromiumRunGemWells::OnChipMultiplexing {
-                gem_wells: NonemptyBoundedVec::new(gem_wells).unwrap(),
-            },
-        };
+            ocm_barcode_id: OcmBarcodeId::Ob2,
+        },
+    ];
+    let gem_wells = vec![
+        NewOcmGemWell {
+            readable_id: crate::db::dummy_data::random_name_for("gem_well"),
+            loading: NonemptyBoundedVec::new(loadings.clone()).unwrap(),
+        },
+        NewOcmGemWell {
+            readable_id: crate::db::dummy_data::random_name_for("gem_well"),
+            loading: NonemptyBoundedVec::new(loadings).unwrap(),
+        },
+    ];
+    let mut new = NewChromiumRun {
+        record: new_record(assay_id, person_id).await,
+        gem_wells: ChromiumRunGemWells::OnChipMultiplexing {
+            gem_wells: NonemptyBoundedVec::new(gem_wells).unwrap(),
+        },
+    };
 
-        modify(&mut new);
+    modify(&mut new);
 
-        let inserted = insert_chromium_run(tx, new.clone()).await?;
-        Ok((new, inserted))
-    }
+    let inserted = insert_chromium_run(tx, new.clone()).await?;
+    Ok((new, inserted))
+}
 
-    pub async fn insert_test_mixed_chromium_run<F>(
-        tx: &db::Transaction<'_>,
-        mut modify: F,
-    ) -> Result<(NewChromiumRun, ChromiumRunDetailed), DbError>
-    where
-        F: FnMut(&mut NewChromiumRun),
-    {
-        let (_, s1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
-        let (_, s2) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+#[cfg(any(test, feature = "dev"))]
+async fn insert_test_mixed_chromium_run<F>(
+    tx: &db::Transaction<'_>,
+    mut modify: F,
+) -> Result<(NewChromiumRun, ChromiumRunDetailed), DbError>
+where
+    F: FnMut(&mut NewChromiumRun),
+{
+    use cellnoor_types::{
+        chromium_run::creation::{
+            LoadedEntity,
+            mixed::NewStandardOrOcmGemWell,
+            ocm::{NewOcmGemWell, OcmBarcodeId, OcmLoadedEntity},
+            standard::NewStandardGemWell,
+        },
+        nonempty::NonemptyBoundedVec,
+    };
 
-        let person_id = s1.preparers[0];
+    use crate::handlers::{
+        suspensions::create::insert_test_suspension_and_specimen,
+        tenx_assays::create::insert_chromium_assays,
+    };
 
-        let (_, assay) = insert_test_chromium_assay(tx).await?;
-        let assay_id = assay.id;
+    let (_, s1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+    let (_, s2) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
 
-        let mut new = NewChromiumRun {
-            record: new_record(tx, assay_id, person_id).await,
-            gem_wells: ChromiumRunGemWells::Mixed {
-                gem_wells: NonemptyBoundedVec::new(vec![
-                    NewStandardOrOcmGemWell::Standard(NewStandardGemWell {
-                        readable_id: crate::db::dummy_data::random_name_for("gem_well"),
+    let person_id = s1.preparers[0];
+
+    let assay_id = insert_chromium_assays(tx).await?.ocm;
+
+    let mut new = NewChromiumRun {
+        record: new_record(assay_id, person_id).await,
+        gem_wells: ChromiumRunGemWells::Mixed {
+            gem_wells: NonemptyBoundedVec::new(vec![
+                NewStandardOrOcmGemWell::Standard(NewStandardGemWell {
+                    readable_id: crate::db::dummy_data::random_name_for("gem_well"),
+                    loaded_entity: LoadedEntity::Suspension {
+                        suspension_id: *s1.record.id,
+                    },
+                }),
+                NewStandardOrOcmGemWell::OnChipMultiplexing(NewOcmGemWell {
+                    readable_id: crate::db::dummy_data::random_name_for("gem_well"),
+                    loading: NonemptyBoundedVec::new(vec![OcmLoadedEntity {
                         loaded_entity: LoadedEntity::Suspension {
-                            suspension_id: *s1.record.id,
+                            suspension_id: *s2.record.id,
                         },
-                    }),
-                    NewStandardOrOcmGemWell::OnChipMultiplexing(NewOcmGemWell {
-                        readable_id: crate::db::dummy_data::random_name_for("gem_well"),
-                        loading: NonemptyBoundedVec::new(vec![OcmLoadedEntity {
-                            loaded_entity: LoadedEntity::Suspension {
-                                suspension_id: *s2.record.id,
-                            },
-                            ocm_barcode_id: OcmBarcodeId::Ob1,
-                        }])
-                        .unwrap(),
-                    }),
-                ])
-                .unwrap(),
-            },
-        };
+                        ocm_barcode_id: OcmBarcodeId::Ob1,
+                    }])
+                    .unwrap(),
+                }),
+            ])
+            .unwrap(),
+        },
+    };
 
-        modify(&mut new);
+    modify(&mut new);
 
-        let inserted = insert_chromium_run(tx, new.clone()).await?;
-        Ok((new, inserted))
+    let inserted = insert_chromium_run(tx, new.clone()).await?;
+    Ok((new, inserted))
+}
+
+#[cfg(any(test, feature = "dev"))]
+async fn insert_test_flex_chromium_run<F>(
+    tx: &db::Transaction<'_>,
+    mut modify: F,
+) -> Result<(NewChromiumRun, ChromiumRunDetailed), DbError>
+where
+    F: FnMut(&mut NewChromiumRun),
+{
+    use cellnoor_types::{
+        chromium_run::creation::{LoadedEntity, standard::NewStandardGemWell},
+        nonempty::{NonemptyBoundedVec, NonemptyVec},
+        suspension_pool::{PooledSuspensions, TaggedSuspension},
+    };
+
+    use crate::handlers::{
+        multiplexing_tags::create::insert_test_multiplexing_tag,
+        suspension_pools::create::insert_test_suspension_pool_and_suspensions,
+        suspensions::create::insert_test_suspension_and_specimen,
+        tenx_assays::create::insert_chromium_assays,
+    };
+
+    let mut suspensions = Vec::with_capacity(32);
+    for _ in 0..32 {
+        let (_, suspension) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+        let tag = insert_test_multiplexing_tag(tx).await?;
+
+        suspensions.push(TaggedSuspension {
+            suspension_id: *suspension.record.id,
+            tag_id: tag.tag_id,
+        });
     }
+
+    let (_, pool) = insert_test_suspension_pool_and_suspensions(tx, |pool| {
+        pool.suspensions = PooledSuspensions::FlexOligonucleotideBarcode {
+            suspensions: NonemptyVec::new(suspensions.clone()).unwrap(),
+        };
+    })
+    .await?;
+
+    let person_id = pool.preparers[0];
+
+    let assay_id = insert_chromium_assays(tx).await?.flex;
+
+    let mut new = NewChromiumRun {
+        record: new_record(assay_id, person_id).await,
+        gem_wells: ChromiumRunGemWells::Standard {
+            gem_wells: NonemptyBoundedVec::new(vec![NewStandardGemWell {
+                readable_id: crate::db::dummy_data::random_name_for("gem_well"),
+                loaded_entity: LoadedEntity::SuspensionPool {
+                    suspension_pool_id: *pool.record.id,
+                },
+            }])
+            .unwrap(),
+        },
+    };
+
+    modify(&mut new);
+
+    let inserted = insert_chromium_run(tx, new.clone()).await?;
+    Ok((new, inserted))
+}
+
+#[cfg(any(test, feature = "dev"))]
+#[derive(Clone, Copy, strum::VariantArray)]
+pub enum TestChromiumRunKind {
+    Standard,
+    Mixed,
+    OnChipMultiplexing,
+    Flex,
+}
+
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_test_chromium_run(
+    tx: &db::Transaction<'_>,
+    kind: TestChromiumRunKind,
+    modify: impl FnMut(&mut NewChromiumRun),
+) -> Result<ChromiumRunDetailed, DbError> {
+    use TestChromiumRunKind::*;
+
+    let (_, run) = match kind {
+        Standard => insert_test_standard_chromium_run(tx, modify).await?,
+        Mixed => insert_test_mixed_chromium_run(tx, modify).await?,
+        OnChipMultiplexing => insert_test_ocm_chromium_run(tx, modify).await?,
+        Flex => insert_test_flex_chromium_run(tx, modify).await?,
+    };
+
+    Ok(run)
+}
+
+#[cfg(test)]
+pub mod test {
+
+    use super::{
+        insert_test_flex_chromium_run, insert_test_mixed_chromium_run,
+        insert_test_ocm_chromium_run, insert_test_standard_chromium_run,
+    };
+    use crate::state::dev_util::db_client_as_admin;
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert_standard() {
@@ -329,5 +415,13 @@ pub mod test {
         let tx = client.begin().await.unwrap();
 
         insert_test_mixed_chromium_run(&tx, |_| ()).await.unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn insert_flex() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        insert_test_flex_chromium_run(&tx, |_| ()).await.unwrap();
     }
 }

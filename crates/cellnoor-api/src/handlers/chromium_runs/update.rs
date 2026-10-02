@@ -37,13 +37,13 @@ async fn update_chromium_run_by_id(
 #[cfg(test)]
 mod test {
     use cellnoor_types::{chromium_run::ChromiumRunUpdate, id::NoId};
-    use uuid::Uuid;
 
     use crate::{
         handlers::chromium_runs::{
-            create::insert_test_standard_chromium_run, update::update_chromium_run_by_id,
+            TestChromiumRunKind, create::insert_test_chromium_run,
+            update::update_chromium_run_by_id,
         },
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]
@@ -51,7 +51,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, run) = insert_test_standard_chromium_run(&tx, |_| ())
+        let run = insert_test_chromium_run(&tx, TestChromiumRunKind::Standard, |_| ())
             .await
             .unwrap();
         let record = &run.record;

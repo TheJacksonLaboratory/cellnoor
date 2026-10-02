@@ -62,7 +62,10 @@
 	}
 
 	.subheading {
-		font-size: large;
+		font-size: small;
+		text-transform: uppercase;
+		color: var(--color-muted);
+		font-family: 'Comfortaa Variable', system-ui, sans-serif;
 	}
 
 	.label {

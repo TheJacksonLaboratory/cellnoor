@@ -138,10 +138,7 @@ where
     use jiff::Timestamp;
     use postgres_types::Json;
 
-    use crate::{
-        handlers::specimens::create::insert_test_specimen_and_project,
-        state::dev_util::ToNonemptyString,
-    };
+    use crate::handlers::specimens::create::insert_test_specimen_and_project;
 
     let (_, specimen) = insert_test_specimen_and_project(tx, |_| ()).await?;
     let specimen_record = &specimen.record;
@@ -181,30 +178,9 @@ where
 
 #[cfg(test)]
 pub mod test {
-    use cellnoor_types::{
-        id::NoId,
-        positive::PositiveBoundedF32,
-        suspension::{
-            NewSuspension, NewSuspensionRecord, SuspensionContent, SuspensionDetailed,
-            measurement::{
-                CellViability, NewSuspensionMeasurement, SuspensionMeasurementData,
-                SuspensionMeasurementQuantity,
-            },
-        },
-    };
-    use jiff::Timestamp;
-    use postgres_types::Json;
-    use uuid::Uuid;
 
     use super::insert_test_suspension_and_specimen;
-    use crate::{
-        db::{self, DbError},
-        handlers::{
-            specimens::create::insert_test_specimen_and_project,
-            suspensions::create::insert_suspension,
-        },
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
-    };
+    use crate::state::dev_util::db_client_as_admin;
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {

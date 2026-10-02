@@ -91,9 +91,16 @@ impl Insert for NewChromiumAssayRecord<'_> {
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn insert_test_chromium_assay(
+pub struct TestChromiumAssayIds {
+    pub flex: Uuid,
+    pub ocm: Uuid,
+    pub singleplex: Uuid,
+}
+
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_chromium_assays(
     tx: &db::Transaction<'_>,
-) -> Result<(NewChromiumAssay, cellnoor_types::tenx_assay::TenxAssay), DbError> {
+) -> Result<TestChromiumAssayIds, DbError> {
     use cellnoor_types::{
         nonempty::{NonemptyBoundedVec, NonemptyVec},
         positive::PositiveI32,
@@ -104,69 +111,111 @@ pub async fn insert_test_chromium_assay(
     };
 
     use crate::{
+        db::Sql,
         handlers::{
-            index_sets::insert_test_dual_index_set, tenx_assays::create::insert_tenx_assay,
+            index_sets::{
+                FLEX_DUAL_INDEX_SET_NAME, GENE_EXPRESSION_DUAL_INDEX_SET_NAME,
+                insert_test_dual_index_sets,
+            },
+            tenx_assays::create::insert_tenx_assay,
         },
         state::dev_util::ToNonemptyString,
     };
 
-    // The fixture's index set is well-formed, so only the database can
-    // refuse it, and no test here reads that error
-    let index_set_name = insert_test_dual_index_set(tx)
+    async fn select_or_insert(
+        tx: &db::Transaction<'_>,
+        assay: NewChromiumAssay,
+    ) -> Result<Uuid, DbError> {
+        static SELECT_ID: &str =
+            "select id from tenx_assay where name = $1::case_insensitive_text and \
+             sample_multiplexing = $2::case_insensitive_text and chemistry_version = \
+             $3::case_insensitive_text and chromium_chip = $4::case_insensitive_text";
+
+        let sql = Sql::new(
+            SELECT_ID,
+            vec![
+                &assay.name,
+                &assay.sample_multiplexing,
+                &assay.chemistry_version,
+                &assay.chromium_chip,
+            ],
+        );
+
+        if let Some(&id) = tx.query_into::<Uuid>(&sql).await?.first() {
+            return Ok(id);
+        }
+
+        Ok(insert_tenx_assay(tx, &NewTenxAssay::Chromium(assay))
+            .await?
+            .id)
+    }
+
+    insert_test_dual_index_sets(tx)
         .await
         .expect("failed to insert the test index set");
-    let kit_name = index_set_name[3..5].to_owned();
 
-    let chromium_assay = NewChromiumAssay {
-        name: crate::db::dummy_data::random_name_for("tenx_assay"),
-        chemistry_version: "v1".to_nonempty_string(),
-        protocol_url: "https://10xgenomics.com".to_nonempty_string(),
+    tx.lock_table("tenx_assay").await?;
+
+    let gene_expression = NonemptyBoundedVec::new(vec![LibraryTypeSpecification {
+        library_type: LibraryType::GeneExpression,
+        index_kit: GENE_EXPRESSION_DUAL_INDEX_SET_NAME[3..5].to_owned(),
+        cdna_volume_µl: PositiveI32::new(40).unwrap(),
+        library_volume_µl: PositiveI32::new(35).unwrap(),
+    }])
+    .unwrap();
+
+    let singleplex = NewChromiumAssay {
+        name: "Universal 3' Gene Expression".to_nonempty_string(),
+        chemistry_version: "v4 - GEM-X".to_nonempty_string(),
+        protocol_url: "https://www.10xgenomics.com/support/universal-three-prime-gene-expression/documentation/steps/library-prep/chromium-gem-x-single-cell-3-v4-gene-expression-user-guide".to_nonempty_string(),
         sample_multiplexing: SampleMultiplexing::Singleplex,
-        chromium_chip: "GEM-X FX".to_nonempty_string(),
-        cmdlines: NonemptyVec::new(vec!["cellranger count".to_nonempty_string()]).unwrap(),
-        library_type_specifications: NonemptyBoundedVec::new(vec![LibraryTypeSpecification {
-            library_type: LibraryType::GeneExpression,
-            index_kit: kit_name,
-            cdna_volume_µl: PositiveI32::new(50).unwrap(),
-            library_volume_µl: PositiveI32::new(50).unwrap(),
-        }])
+        chromium_chip: "GEM-X 3'".to_nonempty_string(),
+        cmdlines: NonemptyVec::new(vec![
+            "cellranger count".to_nonempty_string(),
+            "cellranger multi".to_nonempty_string(),
+        ])
         .unwrap(),
+        library_type_specifications: gene_expression.clone(),
     };
 
-    let assay = NewTenxAssay::Chromium(chromium_assay.clone());
+    let flex = NewChromiumAssay {
+        name: "Flex Gene Expression".to_nonempty_string(),
+        chemistry_version: "v2 - GEM-X".to_nonempty_string(),
+        protocol_url: "https://www.10xgenomics.com/support/flex-gene-expression/documentation/steps/library-prep/gem-x-flex-v2-for-multiplexed-samples".to_nonempty_string(),
+        sample_multiplexing: SampleMultiplexing::FlexOligonucleotideBarcode,
+        chromium_chip: "GEM-X FX".to_nonempty_string(),
+        cmdlines: NonemptyVec::new(vec!["cellranger multi".to_nonempty_string()]).unwrap(),
+        library_type_specifications: NonemptyBoundedVec::new(vec![LibraryTypeSpecification{library_type: LibraryType::GeneExpression, index_kit: FLEX_DUAL_INDEX_SET_NAME[3..5].to_owned(), cdna_volume_µl: PositiveI32::new(100).unwrap(), library_volume_µl: PositiveI32::new(40).unwrap()}]).unwrap(),
+    };
 
-    let inserted = insert_tenx_assay(tx, &assay).await?;
+    let ocm = NewChromiumAssay {
+        name: "Universal 3' Gene Expression".to_nonempty_string(),
+        chemistry_version: "v4 - GEM-X".to_nonempty_string(),
+        protocol_url: "https://www.10xgenomics.com/support/universal-three-prime-gene-expression/documentation/steps/library-prep/gem-x-universal-3-prime-gene-expression-v-4-4-plex-reagent-kits".to_nonempty_string(),
+        sample_multiplexing: SampleMultiplexing::OnChipMultiplexing,
+        chromium_chip: "GEM-X OCM 3'".to_nonempty_string(),
+        cmdlines: NonemptyVec::new(vec!["cellranger multi".to_nonempty_string()]).unwrap(),
+        library_type_specifications: gene_expression,
+    };
 
-    Ok((chromium_assay, inserted))
+    Ok(TestChromiumAssayIds {
+        flex: select_or_insert(tx, flex).await?,
+        ocm: select_or_insert(tx, ocm).await?,
+        singleplex: select_or_insert(tx, singleplex).await?,
+    })
 }
 
 #[cfg(test)]
 pub mod tests {
-    use cellnoor_types::{
-        cdna::creation::LibraryType,
-        nonempty::{NonemptyBoundedVec, NonemptyVec},
-        positive::PositiveI32,
-        tenx_assay::{
-            SampleMultiplexing, TenxAssay,
-            creation::{LibraryTypeSpecification, NewChromiumAssay, NewTenxAssay},
-        },
-    };
-    use uuid::Uuid;
 
-    use super::insert_test_chromium_assay;
-    use crate::{
-        db::{self, DbError},
-        handlers::{
-            index_sets::insert_test_dual_index_set, tenx_assays::create::insert_tenx_assay,
-        },
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
-    };
+    use super::insert_chromium_assays;
+    use crate::state::dev_util::db_client_as_admin;
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        insert_test_chromium_assay(&tx).await.unwrap();
+        insert_chromium_assays(&tx).await.unwrap();
     }
 }

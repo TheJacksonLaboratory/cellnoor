@@ -64,8 +64,12 @@ mod test {
 
     use crate::{
         db::test_utils::ensure_fields_are_selectable,
-        handlers::chromium_datasets::{
-            create::insert_test_chromium_dataset, index_compact::select_chromium_datasets_compact,
+        handlers::{
+            chromium_datasets::{
+                create::insert_test_chromium_dataset,
+                index_compact::select_chromium_datasets_compact,
+            },
+            chromium_runs::create::TestChromiumRunKind,
         },
         state::dev_util::db_client_as_admin,
     };
@@ -75,7 +79,10 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, inserted) = insert_test_chromium_dataset(&tx, |_| ()).await.unwrap();
+        let (_, inserted) =
+            insert_test_chromium_dataset(&tx, TestChromiumRunKind::Standard, |_| ())
+                .await
+                .unwrap();
 
         let datasets = select_chromium_datasets_compact(
             &tx,

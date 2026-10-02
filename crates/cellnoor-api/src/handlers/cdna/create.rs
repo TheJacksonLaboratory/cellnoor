@@ -130,6 +130,7 @@ impl Insert for NewCdnaRecord {
 #[cfg(any(test, feature = "dev"))]
 pub async fn insert_test_cdna_and_chromium_run<F>(
     tx: &db::Transaction<'_>,
+    run_kind: crate::handlers::chromium_runs::create::TestChromiumRunKind,
     mut modify: F,
 ) -> Result<(NewCdna, CdnaDetailed), DbError>
 where
@@ -148,11 +149,11 @@ where
     use postgres_types::Json;
 
     use crate::{
-        handlers::chromium_runs::create::insert_test_standard_chromium_run,
+        handlers::chromium_runs::create::insert_test_chromium_run,
         state::dev_util::ToNonemptyString,
     };
 
-    let (_, run) = insert_test_standard_chromium_run(tx, |_| ()).await?;
+    let run = insert_test_chromium_run(tx, run_kind, |_| ()).await?;
 
     let gem_well_id = *run.gem_wells[0].record.id;
     let person_id = run.record.run_by;
@@ -193,29 +194,10 @@ where
 
 #[cfg(test)]
 pub mod test {
-    use cellnoor_types::{
-        cdna::{
-            CdnaDetailed, CdnaSimpleFields,
-            creation::{CdnaVariableFields, NewCdna},
-        },
-        nucleic_acid_measurement::{
-            Concentration, NewNucleicAcidMeasurement, NucleicAcidMeasurementData,
-            NucleicAcidMeasurementMethod,
-        },
-        positive::PositiveI32,
-        units::{Microliter, Nanogram},
-    };
-    use jiff::Timestamp;
-    use postgres_types::Json;
-    use uuid::Uuid;
 
     use super::insert_test_cdna_and_chromium_run;
     use crate::{
-        db::{self, DbError},
-        handlers::{
-            cdna::create::insert_cdna, chromium_runs::create::insert_test_standard_chromium_run,
-        },
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
+        handlers::chromium_runs::create::TestChromiumRunKind, state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]
@@ -223,7 +205,7 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        insert_test_cdna_and_chromium_run(&tx, |_| ())
+        insert_test_cdna_and_chromium_run(&tx, TestChromiumRunKind::Standard, |_| ())
             .await
             .unwrap();
     }

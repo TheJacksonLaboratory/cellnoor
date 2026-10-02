@@ -5,6 +5,8 @@ use cellnoor_types::{
 };
 use uuid::Uuid;
 
+#[cfg(any(test, feature = "dev"))]
+use crate::handlers::{chromium_runs::TestChromiumRunKind, index_sets::FLEX_DUAL_INDEX_SET_NAME};
 use crate::{
     auth::AuthUser,
     db::{self, DbError, FieldValues, Insert},
@@ -121,6 +123,7 @@ impl Insert for NewLibraryRecord {
 #[cfg(any(test, feature = "dev"))]
 pub async fn insert_test_library<F>(
     tx: &db::Transaction<'_>,
+    run_kind: TestChromiumRunKind,
     mut modify: F,
 ) -> Result<(NewLibrary, LibraryDetailed), DbError>
 where
@@ -140,14 +143,22 @@ where
 
     use crate::{
         handlers::{
-            cdna::create::insert_test_cdna_and_chromium_run, index_sets::DUAL_INDEX_SET_NAME,
+            cdna::create::insert_test_cdna_and_chromium_run,
+            index_sets::GENE_EXPRESSION_DUAL_INDEX_SET_NAME,
         },
         state::dev_util::ToNonemptyString,
     };
 
-    let (_, cdna) = insert_test_cdna_and_chromium_run(tx, |_| ()).await?;
+    let (_, cdna) = insert_test_cdna_and_chromium_run(tx, run_kind, |_| ()).await?;
 
     let person_id = cdna.preparers[0];
+
+    let index_set_name = match run_kind {
+        TestChromiumRunKind::Standard
+        | TestChromiumRunKind::OnChipMultiplexing
+        | TestChromiumRunKind::Mixed => GENE_EXPRESSION_DUAL_INDEX_SET_NAME,
+        TestChromiumRunKind::Flex => FLEX_DUAL_INDEX_SET_NAME,
+    };
 
     let mut new = NewLibrary {
         record: NewLibraryRecord {
@@ -156,7 +167,7 @@ where
             cdna_id: *cdna.record.id,
             cdna_prepared_at: cdna.record.prepared_at,
             single_index_set_name: None,
-            dual_index_set_name: Some(DUAL_INDEX_SET_NAME.to_owned()),
+            dual_index_set_name: Some(index_set_name.to_owned()),
             number_of_sample_index_pcr_cycles: PositiveI32::new(8).unwrap(),
             target_reads_per_cell: Some(PositiveI32::new(50_000).unwrap()),
             prepared_at: Timestamp::now(),
@@ -187,28 +198,10 @@ where
 
 #[cfg(test)]
 pub mod test {
-    use cellnoor_types::{
-        id::NoId,
-        library::{LibraryDetailed, NewLibrary, NewLibraryRecord},
-        nucleic_acid_measurement::{
-            Concentration, NewNucleicAcidMeasurement, NucleicAcidMeasurementData,
-            NucleicAcidMeasurementMethod,
-        },
-        positive::PositiveI32,
-        units::{Microliter, Nanogram},
-    };
-    use jiff::Timestamp;
-    use postgres_types::Json;
-    use uuid::Uuid;
 
     use super::insert_test_library;
     use crate::{
-        db::{self, DbError},
-        handlers::{
-            cdna::create::insert_test_cdna_and_chromium_run, index_sets::DUAL_INDEX_SET_NAME,
-            libraries::create::insert_library,
-        },
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
+        handlers::chromium_runs::create::TestChromiumRunKind, state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]
@@ -216,6 +209,8 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        insert_test_library(&tx, |_| ()).await.unwrap();
+        insert_test_library(&tx, TestChromiumRunKind::Standard, |_| ())
+            .await
+            .unwrap();
     }
 }

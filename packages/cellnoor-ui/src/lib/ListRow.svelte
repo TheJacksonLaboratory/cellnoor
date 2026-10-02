@@ -23,15 +23,7 @@
 	<div class="stack">
 		<div>
 			<a class="heading" {href}>{title}</a>
-			{#if subtitle}
-				<div class="subheading">
-					{#if subtitleHref}
-						<a class="link-arrow" href={subtitleHref}>{subtitle}</a>
-					{:else}
-						{subtitle}
-					{/if}
-				</div>
-			{/if}
+			<a class="subheading link-arrow" href={subtitleHref}>{subtitle}</a>
 		</div>
 		{@render children?.()}
 	</div>

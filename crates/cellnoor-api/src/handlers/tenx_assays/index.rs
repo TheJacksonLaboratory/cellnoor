@@ -28,8 +28,7 @@ mod test {
 
     use crate::{
         db::test_utils::ensure_fields_are_selectable,
-        handlers::tenx_assays::create::insert_test_chromium_assay,
-        state::dev_util::db_client_as_admin,
+        handlers::tenx_assays::create::insert_chromium_assays, state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]
@@ -37,7 +36,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        insert_test_chromium_assay(&tx).await.unwrap();
+        insert_chromium_assays(&tx).await.unwrap();
     }
 
     #[tokio::test(flavor = "multi_thread")]

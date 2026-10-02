@@ -59,11 +59,13 @@ async fn update_cdna_by_id(
 #[cfg(test)]
 mod test {
     use cellnoor_types::cdna::{CdnaSimpleFields, CdnaUpdate};
-    use uuid::Uuid;
 
     use crate::{
-        handlers::cdna::{create::insert_test_cdna_and_chromium_run, update::update_cdna_by_id},
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
+        handlers::{
+            cdna::{create::insert_test_cdna_and_chromium_run, update::update_cdna_by_id},
+            chromium_runs::create::TestChromiumRunKind,
+        },
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]
@@ -71,9 +73,10 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (insert_input, inserted) = insert_test_cdna_and_chromium_run(&tx, |_| ())
-            .await
-            .unwrap();
+        let (insert_input, inserted) =
+            insert_test_cdna_and_chromium_run(&tx, TestChromiumRunKind::Standard, |_| ())
+                .await
+                .unwrap();
 
         let id = *inserted.record.id;
 

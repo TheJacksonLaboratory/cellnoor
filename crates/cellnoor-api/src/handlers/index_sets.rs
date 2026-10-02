@@ -8,11 +8,11 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use cellnoor_types::Relation;
-#[cfg(any(test, feature = "dev"))]
-pub use dual::create::DUAL_INDEX_SET_NAME;
 pub use dual::create::create_dual_index_sets;
 #[cfg(any(test, feature = "dev"))]
-pub use dual::create::insert_test_dual_index_set;
+pub use dual::create::insert_test_dual_index_sets;
+#[cfg(any(test, feature = "dev"))]
+pub use dual::create::{FLEX_DUAL_INDEX_SET_NAME, GENE_EXPRESSION_DUAL_INDEX_SET_NAME};
 pub use single::create::create_single_index_sets;
 #[cfg(test)]
 pub use single::create::tests::insert_test_single_index_set;

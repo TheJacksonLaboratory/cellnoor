@@ -234,7 +234,7 @@ where
             })),
         }],
         preparers: NonemptyVec::new(vec![person_id]).unwrap(),
-        suspensions: PooledSuspensions::FlexBarcode {
+        suspensions: PooledSuspensions::FlexOligonucleotideBarcode {
             suspensions: NonemptyVec::new(vec![
                 TaggedSuspension {
                     suspension_id: suspension1_id,
@@ -261,31 +261,16 @@ pub mod test {
     use std::collections::HashSet;
 
     use cellnoor_types::{
-        id::NoId,
-        nonempty::NonemptyVec,
         positive::PositiveBoundedF32,
         suspension::measurement::CellViability,
-        suspension_pool::{
-            NewSuspensionPool, NewSuspensionPoolRecord, PooledSuspensions, SuspensionPoolDetailed,
-            TaggedSuspension,
-            measurement::{NewSuspensionPoolMeasurement, SuspensionPoolMeasurementData},
-        },
+        suspension_pool::{SuspensionPoolDetailed, measurement::SuspensionPoolMeasurementData},
     };
-    use jiff::Timestamp;
-    use postgres_types::Json;
     use pretty_assertions::assert_eq;
-    use uuid::Uuid;
 
     use super::insert_test_suspension_pool_and_suspensions;
     use crate::{
-        db::{self, DbError},
-        handlers::{
-            multiplexing_tags::create::insert_test_multiplexing_tag,
-            specimens::create::insert_test_specimen_and_project,
-            suspension_pools::create::insert_suspension_pool,
-            suspensions::create::insert_test_suspension_and_specimen,
-        },
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
+        handlers::specimens::create::insert_test_specimen_and_project,
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

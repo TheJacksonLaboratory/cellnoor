@@ -62,13 +62,12 @@ async fn update_suspension_by_id(
 mod test {
 
     use cellnoor_types::suspension::{NewSuspensionRecord, SuspensionContent, SuspensionUpdate};
-    use uuid::Uuid;
 
     use crate::{
         handlers::suspensions::{
             create::insert_test_suspension_and_specimen, update::update_suspension_by_id,
         },
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

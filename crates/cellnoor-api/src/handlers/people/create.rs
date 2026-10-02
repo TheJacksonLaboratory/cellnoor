@@ -187,9 +187,7 @@ pub async fn insert_test_person_and_institution<F>(
 where
     F: FnMut(&mut NewPerson),
 {
-    use crate::{
-        handlers::institutions::create::insert_test_institution, state::dev_util::ToNonemptyString,
-    };
+    use crate::handlers::institutions::create::insert_test_institution;
 
     let (_, institution) = insert_test_institution(tx, |_| ()).await?;
 
@@ -214,20 +212,14 @@ where
 
 #[cfg(test)]
 pub mod test {
-    use cellnoor_types::person::{Account, NewPerson, Person, PersonSimpleFields};
+    use cellnoor_types::person::Account;
     use pretty_assertions::{assert_eq, assert_str_eq};
     use uuid::Uuid;
 
     use super::insert_test_person_and_institution;
     use crate::{
-        db::{self, DbError},
-        handlers::{
-            institutions::create::insert_test_institution,
-            people::{
-                PersonError,
-                create::{insert_person, validate_email},
-            },
-        },
+        db::DbError,
+        handlers::people::{PersonError, create::validate_email},
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 

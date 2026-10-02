@@ -126,62 +126,70 @@ impl<'a> Insert for NewDualIndexSetRecord<'a> {
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub const DUAL_INDEX_SET_NAME: &str = "SI-TT-A1";
+pub const GENE_EXPRESSION_DUAL_INDEX_SET_NAME: &str = "SI-TT-A1";
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn insert_test_dual_index_set(tx: &db::Transaction<'_>) -> Result<String, IndexSetError> {
+pub const FLEX_DUAL_INDEX_SET_NAME: &str = "SI-TS-A1";
+
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_test_dual_index_sets(tx: &db::Transaction<'_>) -> Result<(), IndexSetError> {
     use crate::db::Sql;
 
-    let name = DUAL_INDEX_SET_NAME.to_owned();
-
     // Acquire a db lock to prevent a concurrency bug during testing
-    static LOCK_TABLE: &str = "select pg_advisory_xact_lock(hashtext($1))";
-
-    let table = "dual_index_set";
-    tx.execute(&Sql::new(LOCK_TABLE, vec![&table])).await?;
+    tx.lock_table("dual_index_set").await?;
 
     let sql = Sql::new("select count(*) from dual_index_set", Vec::new());
 
     let n: i64 = tx.query_one_into(&sql).await.unwrap();
 
     if n > 0 {
-        return Ok(name);
+        return Ok(());
     }
 
     insert_dual_index_sets(
         tx,
-        &HashMap::from_iter([(
-            name.clone(),
+        &[(
+            GENE_EXPRESSION_DUAL_INDEX_SET_NAME.to_owned(),
             NewDualIndexSet {
                 index_i7: "GTAACATGCG".to_owned(),
                 index2_workflow_a_i5: "AGTGTTACCT".to_owned(),
                 index2_workflow_b_i5: "AGGTAACACT".to_owned(),
             },
-        )]),
+        )]
+        .into_iter()
+        .collect(),
     )
     .await?;
 
-    Ok(name)
+    insert_dual_index_sets(
+        tx,
+        &[(
+            FLEX_DUAL_INDEX_SET_NAME.to_owned(),
+            NewDualIndexSet {
+                index_i7: "AATTTCGGGT".to_owned(),
+                index2_workflow_a_i5: "CTCTCTCCTC".to_owned(),
+                index2_workflow_b_i5: "GAGGAGAGAG".to_owned(),
+            },
+        )]
+        .into_iter()
+        .collect(),
+    )
+    .await?;
+
+    Ok(())
 }
 
 #[cfg(test)]
 pub mod tests {
-    use std::collections::HashMap;
 
-    use cellnoor_types::index_set::NewDualIndexSet;
-
-    use super::insert_test_dual_index_set;
-    use crate::{
-        db::{self, Sql},
-        handlers::index_sets::{IndexSetError, dual::create::insert_dual_index_sets},
-        state::dev_util::db_client_as_admin,
-    };
+    use super::insert_test_dual_index_sets;
+    use crate::state::dev_util::db_client_as_admin;
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        insert_test_dual_index_set(&tx).await.unwrap();
+        insert_test_dual_index_sets(&tx).await.unwrap();
     }
 }

@@ -161,8 +161,11 @@ mod tests {
     use cellnoor_types::{chromium_dataset::ChromiumDatasetUpdate, id::NoId};
 
     use crate::{
-        handlers::chromium_datasets::{
-            create::insert_test_chromium_dataset, update::update_chromium_dataset_by_id,
+        handlers::{
+            chromium_datasets::{
+                create::insert_test_chromium_dataset, update::update_chromium_dataset_by_id,
+            },
+            chromium_runs::create::TestChromiumRunKind,
         },
         state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
@@ -172,7 +175,9 @@ mod tests {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, ds) = insert_test_chromium_dataset(&tx, |_| ()).await.unwrap();
+        let (_, ds) = insert_test_chromium_dataset(&tx, TestChromiumRunKind::Standard, |_| ())
+            .await
+            .unwrap();
         let id = *ds.record.id;
 
         let update = ChromiumDatasetUpdate {

@@ -56,8 +56,6 @@ where
     use cellnoor_types::id::NoId;
     use uuid::Uuid;
 
-    use crate::state::dev_util::ToNonemptyString;
-
     let mut new = NewInstitution {
         id: NoId,
         name: crate::db::dummy_data::random_name_for("institution"),
@@ -72,18 +70,9 @@ where
 
 #[cfg(test)]
 pub mod test {
-    use cellnoor_types::{
-        id::NoId,
-        institution::{Institution, NewInstitution},
-    };
-    use uuid::Uuid;
 
     use super::insert_test_institution;
-    use crate::{
-        db::{self, DbError},
-        handlers::institutions::create::insert_institution,
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
-    };
+    use crate::state::dev_util::db_client_as_admin;
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {

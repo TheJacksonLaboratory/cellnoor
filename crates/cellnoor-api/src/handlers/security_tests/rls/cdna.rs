@@ -10,7 +10,7 @@ use crate::{
     db,
     handlers::{
         cdna::{create::insert_test_cdna_and_chromium_run, index_detailed::select_cdna_detailed},
-        chromium_runs::create::insert_test_standard_chromium_run,
+        chromium_runs::create::{TestChromiumRunKind, insert_test_chromium_run},
         security_tests::rls::specimen::insert_inaccessible_specimen,
         suspensions::create::insert_test_suspension_and_specimen,
     },
@@ -20,7 +20,9 @@ use crate::{
 async fn insert_accessible_cdna(tx: &db::Transaction<'_>) -> (NewCdna, CdnaDetailed) {
     // The underlying `insert_test_project` adds one person to the project, so
     // we don't need to do anything extra here
-    insert_test_cdna_and_chromium_run(tx, |_| ()).await.unwrap()
+    insert_test_cdna_and_chromium_run(tx, TestChromiumRunKind::Standard, |_| ())
+        .await
+        .unwrap()
 }
 
 fn make_standard_chromium_run_inaccessible(run: &mut NewChromiumRun, suspension_id: Uuid) {
@@ -47,7 +49,7 @@ async fn insert_inaccessible_cdna(tx: &db::Transaction<'_>) -> (NewCdna, CdnaDet
             .await
             .unwrap();
 
-    let (_, chromium_run) = insert_test_standard_chromium_run(tx, |run| {
+    let chromium_run = insert_test_chromium_run(tx, TestChromiumRunKind::Standard, |run| {
         make_standard_chromium_run_inaccessible(run, *suspension.record.id)
     })
     .await
@@ -55,9 +57,11 @@ async fn insert_inaccessible_cdna(tx: &db::Transaction<'_>) -> (NewCdna, CdnaDet
 
     let gem_well_id = *chromium_run.gem_wells[0].record.id;
 
-    insert_test_cdna_and_chromium_run(tx, |c| c.gem_well_id = gem_well_id)
-        .await
-        .unwrap()
+    insert_test_cdna_and_chromium_run(tx, TestChromiumRunKind::Standard, |c| {
+        c.gem_well_id = gem_well_id
+    })
+    .await
+    .unwrap()
 }
 
 async fn get_user_id_from_cdna(cdna: &CdnaDetailed) -> Uuid {

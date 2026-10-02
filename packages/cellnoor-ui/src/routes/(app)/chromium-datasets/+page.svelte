@@ -6,7 +6,7 @@
 	import TagInput from '#lib/filters/TagInput.svelte';
 	import DateRange from '#lib/filters/DateRange.svelte';
 	import ListRow from '#lib/ListRow.svelte';
-	import { DATE_FORMATTER, formatSpecies } from '#lib/format.ts';
+	import { DATE_FORMATTER, formatAssayWithMultiplexing, formatSpecies } from '#lib/format.ts';
 	import SelectionToolbar from '#lib/SelectionToolbar.svelte';
 	import { Selection } from '#lib/selection.svelte.ts';
 	import { datasetFilterNames as names } from './filters.ts';
@@ -25,7 +25,7 @@
 		thermalPreservationMethods
 	} = $derived(data);
 
-	const SPECIMEN_LIMIT = 16;
+	const SPECIMEN_LIMIT = 8;
 
 	const selection = new Selection();
 </script>
@@ -86,7 +86,7 @@
 						{/if}
 					</div>
 					<div class="muted">
-						{d.assay.name} · <i>{formatSpecies(species)}</i> · Delivered
+						{formatAssayWithMultiplexing(d.assay)} · <i>{formatSpecies(species)}</i> · Delivered
 						<time datetime={d.delivered_at}>{DATE_FORMATTER.format(new Date(d.delivered_at))}</time>
 					</div>
 				</ListRow>

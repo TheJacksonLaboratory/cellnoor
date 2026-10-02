@@ -7,7 +7,7 @@ use cellnoor_types::{
     },
 };
 #[cfg(any(test, feature = "dev"))]
-pub use chromium::insert_test_chromium_assay;
+pub use chromium::insert_chromium_assays;
 use uuid::Uuid;
 
 use crate::{

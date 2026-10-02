@@ -83,16 +83,14 @@ mod test {
     use crate::{
         handlers::{
             chromium_runs::{
-                create::{
-                    insert_test_standard_chromium_run, new_record,
-                    test::{insert_test_mixed_chromium_run, insert_test_ocm_chromium_run},
-                },
+                TestChromiumRunKind,
+                create::{insert_test_chromium_run, new_record},
                 show::select_chromium_run_by_id,
             },
             suspensions::create::insert_test_suspension_and_specimen,
-            tenx_assays::create::insert_test_chromium_assay,
+            tenx_assays::create::insert_chromium_assays,
         },
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]
@@ -100,7 +98,7 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, run) = insert_test_standard_chromium_run(&tx, |_| ())
+        let run = insert_test_chromium_run(&tx, TestChromiumRunKind::Standard, |_| ())
             .await
             .unwrap();
 
@@ -136,7 +134,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, run) = insert_test_ocm_chromium_run(&tx, |_| ()).await.unwrap();
+        let run = insert_test_chromium_run(&tx, TestChromiumRunKind::OnChipMultiplexing, |_| ())
+            .await
+            .unwrap();
         let detailed = select_chromium_run_by_id(&tx, *run.record.id)
             .await
             .unwrap();
@@ -163,7 +163,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, run) = insert_test_mixed_chromium_run(&tx, |_| ()).await.unwrap();
+        let run = insert_test_chromium_run(&tx, TestChromiumRunKind::Mixed, |_| ())
+            .await
+            .unwrap();
         let detailed = select_chromium_run_by_id(&tx, *run.record.id)
             .await
             .unwrap();
@@ -179,9 +181,13 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, run) = insert_test_ocm_chromium_run(&tx, point_second_loading_at_first_suspension)
-            .await
-            .unwrap();
+        let run = insert_test_chromium_run(
+            &tx,
+            TestChromiumRunKind::OnChipMultiplexing,
+            point_second_loading_at_first_suspension,
+        )
+        .await
+        .unwrap();
 
         let detailed = select_chromium_run_by_id(&tx, *run.record.id)
             .await
@@ -257,12 +263,11 @@ mod test {
         .await
         .unwrap();
 
-        let (_, assay) = insert_test_chromium_assay(&tx).await.unwrap();
-        let assay_id = assay.id;
+        let assay_id = insert_chromium_assays(&tx).await.unwrap().ocm;
         let person_id = s1.specimen.record.submitted_by;
 
         let new = NewChromiumRun {
-            record: new_record(&tx, assay_id, person_id).await,
+            record: new_record(assay_id, person_id).await,
             gem_wells: ChromiumRunGemWells::OnChipMultiplexing {
                 gem_wells: NonemptyBoundedVec::new(vec![NewOcmGemWell {
                     readable_id: crate::db::dummy_data::random_name_for("gem_well"),
@@ -286,9 +291,11 @@ mod test {
             },
         };
 
-        let (_, run) = insert_test_ocm_chromium_run(&tx, |run| *run = new.clone())
-            .await
-            .unwrap();
+        let run = insert_test_chromium_run(&tx, TestChromiumRunKind::OnChipMultiplexing, |run| {
+            *run = new.clone()
+        })
+        .await
+        .unwrap();
 
         let detailed = select_chromium_run_by_id(&tx, *run.record.id)
             .await

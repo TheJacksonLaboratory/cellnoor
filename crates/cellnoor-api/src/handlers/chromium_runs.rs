@@ -6,6 +6,8 @@ pub(super) mod index_detailed;
 pub(super) mod show;
 pub(super) mod update;
 
+#[cfg(feature = "dev")]
+pub use create::TestChromiumRunKind;
 pub use create::create_chromium_run;
 pub use index_compact::index_chromium_runs;
 pub use index_detailed::index_chromium_runs_detailed;

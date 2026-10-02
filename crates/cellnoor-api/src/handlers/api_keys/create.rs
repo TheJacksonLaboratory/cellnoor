@@ -106,12 +106,11 @@ fn generate_secret() -> String {
 #[cfg(test)]
 pub mod test {
     use cellnoor_types::api_key::{ApiKey, NewApiKey};
-    use uuid::Uuid;
 
     use crate::{
         db::{self, DbError},
         handlers::api_keys::create::insert_api_key,
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::db_client_as_admin,
     };
 
     pub async fn insert_test_api_key<F>(

@@ -6,7 +6,7 @@ import type {
 	Species,
 	SpecimenType,
 	ThermalPreservationMethod
-} from 'cellnoor-client/cellnoor-types.js';
+} from 'cellnoor-client/cellnoor-types.ts';
 
 const { values, dateRange } = filterBuilders<ChromiumDatasetPredicate>();
 

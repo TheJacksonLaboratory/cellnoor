@@ -88,6 +88,7 @@ mod test {
     use crate::{
         handlers::{
             chromium_datasets::create::insert_test_chromium_dataset,
+            chromium_runs::create::TestChromiumRunKind,
             file_auth::dataset_dir::{DatasetType, dataset_exists},
             people::create::insert_test_person_and_institution,
         },
@@ -99,7 +100,9 @@ mod test {
         let mut admin = db_client_as_admin().await;
         let tx = admin.begin().await.unwrap();
 
-        let (_, dataset) = insert_test_chromium_dataset(&tx, |_| ()).await.unwrap();
+        let (_, dataset) = insert_test_chromium_dataset(&tx, TestChromiumRunKind::Standard, |_| ())
+            .await
+            .unwrap();
         let (_, outsider) = insert_test_person_and_institution(&tx, |_| ())
             .await
             .unwrap();

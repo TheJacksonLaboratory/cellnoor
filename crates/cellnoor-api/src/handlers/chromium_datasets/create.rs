@@ -176,6 +176,7 @@ impl Insert for NewChromiumDatasetRecord {
 #[cfg(any(test, feature = "dev"))]
 pub async fn insert_test_chromium_dataset<F>(
     tx: &db::Transaction<'_>,
+    run_kind: crate::handlers::chromium_runs::create::TestChromiumRunKind,
     mut modify: F,
 ) -> Result<(NewChromiumDataset, ChromiumDatasetDetailed), CreateChromiumDatasetError>
 where
@@ -184,11 +185,9 @@ where
     use cellnoor_types::{id::NoId, nonempty::NonemptyVec};
     use jiff::Timestamp;
 
-    use crate::{
-        handlers::libraries::create::insert_test_library, state::dev_util::ToNonemptyString,
-    };
+    use crate::handlers::libraries::create::insert_test_library;
 
-    let (_, library) = insert_test_library(tx, |_| ()).await?;
+    let (_, library) = insert_test_library(tx, run_kind, |_| ()).await?;
 
     let mut new = NewChromiumDataset {
         record: NewChromiumDatasetRecord {
@@ -214,15 +213,15 @@ pub mod test {
     };
     use jiff::Timestamp;
     use pretty_assertions::assert_eq;
-    use uuid::Uuid;
 
     use super::insert_test_chromium_dataset;
     use crate::{
         handlers::{
             chromium_datasets::create::{CreateChromiumDatasetError, insert_chromium_dataset},
+            chromium_runs::create::TestChromiumRunKind,
             libraries::create::insert_test_library,
         },
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]
@@ -230,7 +229,9 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        insert_test_chromium_dataset(&tx, |_| ()).await.unwrap();
+        insert_test_chromium_dataset(&tx, TestChromiumRunKind::Standard, |_| ())
+            .await
+            .unwrap();
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -238,8 +239,12 @@ pub mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, library1) = insert_test_library(&tx, |_| ()).await.unwrap();
-        let (_, library2) = insert_test_library(&tx, |_| ()).await.unwrap();
+        let (_, library1) = insert_test_library(&tx, TestChromiumRunKind::Standard, |_| ())
+            .await
+            .unwrap();
+        let (_, library2) = insert_test_library(&tx, TestChromiumRunKind::Standard, |_| ())
+            .await
+            .unwrap();
 
         let new = NewChromiumDataset {
             record: NewChromiumDatasetRecord {
