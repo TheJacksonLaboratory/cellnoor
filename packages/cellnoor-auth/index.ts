@@ -21,10 +21,6 @@ Bun.serve({
         return new Response();
       },
     },
-    "/api/auth/*": async (request) => {
-      const response = await auth.handler(request);
-
-      return response;
-    },
+    "/api/auth/*": auth.handler,
   },
 });

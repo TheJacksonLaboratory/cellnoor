@@ -8,7 +8,6 @@ volumes:
   db-socket:
   auth-socket:
   api-socket:
-  ui-socket:
   caddy-data:
   caddy-config:
   static-files:
@@ -97,9 +96,7 @@ services:
         - ghcr.io/thejacksonlaboratory/cellnoor-api:latest
     environment:
       CELLNOOR_API__DB__HOST: *db_host
-      # This is hardcoded for simplicity, but it may behoove us to set an explicit dbname in the db service definition
-      # and use that here
-      CELLNOOR_API__DB__DBNAME: postgres
+      CELLNOOR_API__DB__DBNAME: *db_name
       CELLNOOR_API__STATIC_FILES_DIR: *static_files_dir
       CELLNOOR_API__LISTEN_ON: *api_socket
     secrets: [auth_secret, app_db_password]

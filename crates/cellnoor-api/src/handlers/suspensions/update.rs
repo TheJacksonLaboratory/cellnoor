@@ -42,18 +42,10 @@ async fn update_suspension_by_id(
 ) -> Result<SuspensionDetailed, DbError> {
     tx.update(id, record).await?;
 
-    let preparer_insertions = async {
-        if let Some(preparers) = preparers {
-            insert_suspension_preparers(tx, id, preparers).await
-        } else {
-            Ok(())
-        }
-    };
-
-    let measurement_insertions =
-        insert_suspension_measurements(tx, id, measurements.as_deref().unwrap_or_default());
-
-    tokio::try_join!(preparer_insertions, measurement_insertions)?;
+    tokio::try_join!(
+        insert_suspension_preparers(tx, id, preparers.as_deref().unwrap_or_default()),
+        insert_suspension_measurements(tx, id, measurements.as_deref().unwrap_or_default())
+    )?;
 
     select_suspension_by_id(tx, id).await
 }

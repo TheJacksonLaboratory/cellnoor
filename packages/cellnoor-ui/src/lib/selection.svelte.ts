@@ -5,11 +5,7 @@ export class Selection {
 	count = $derived(Object.values(this.checked).filter(Boolean).length);
 
 	constructor() {
-		afterNavigate(() => this.clear());
-	}
-
-	clear() {
-		this.checked = {};
+		afterNavigate(() => (this.checked = {}));
 	}
 
 	allChecked(ids: string[]) {

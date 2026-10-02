@@ -6,11 +6,11 @@ use aide::{
     openapi::{Operation, Response as OpenApiResponse, StatusCode as OpenApiStatusCode},
 };
 use axum::{
+    body::Bytes,
     extract::{Multipart, Path, State, multipart::Field},
     http::StatusCode,
     response::{IntoResponse, Response},
 };
-use bytes::Bytes;
 use camino::{Utf8Path, Utf8PathBuf};
 use cellnoor_types::{Relation, nonempty::NonemptyString};
 use csvranger::TenxCsvValue;

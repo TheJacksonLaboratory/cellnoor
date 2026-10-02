@@ -1,5 +1,5 @@
 use axum::{Json, extract::State};
-use cellnoor_types::Relation;
+use cellnoor_types::{Relation, index_set::NewSingleIndexSet};
 
 use crate::{
     auth::AuthUser,
@@ -16,7 +16,7 @@ use crate::{
 pub async fn create_single_index_sets(
     State(state): State<AppState>,
     user: AuthUser,
-    crate::extract::JsonExtractor(sets): crate::extract::JsonExtractor<Vec<(String, [String; 4])>>,
+    crate::extract::JsonExtractor(sets): crate::extract::JsonExtractor<Vec<NewSingleIndexSet>>,
 ) -> Result<Json<()>, IndexSetError> {
     state
         .in_transaction(user, async |tx| insert_single_index_sets(tx, &sets).await)
@@ -25,9 +25,12 @@ pub async fn create_single_index_sets(
 
 async fn insert_single_index_sets(
     tx: &db::Transaction<'_>,
-    sets: &[(String, [String; 4])],
+    sets: &[NewSingleIndexSet],
 ) -> Result<(), IndexSetError> {
-    let Some(first_index_set_name) = sets.iter().map(|(name, _)| IndexSetName::new(name)).next()
+    let Some(first_index_set_name) = sets
+        .iter()
+        .map(|NewSingleIndexSet(name, _)| IndexSetName::new(name))
+        .next()
     else {
         return Ok(());
     };
@@ -35,7 +38,7 @@ async fn insert_single_index_sets(
     let first_kit_name = first_index_set_name?.kit_name();
     let mut index_set_insertions = Vec::with_capacity(sets.len());
 
-    for (index_set_name, sequences) in sets {
+    for NewSingleIndexSet(index_set_name, sequences) in sets {
         let index_set_name = IndexSetName::new(index_set_name)?;
         let kit_name = index_set_name.kit_name();
 
@@ -114,6 +117,8 @@ impl<'a> Insert for NewSingleIndexSetRecord<'a> {
 #[cfg(test)]
 pub mod tests {
 
+    use cellnoor_types::index_set::NewSingleIndexSet;
+
     use crate::{
         db::{self, DbError},
         handlers::index_sets::{IndexSetError, single::create::insert_single_index_sets},
@@ -127,7 +132,7 @@ pub mod tests {
 
         match insert_single_index_sets(
             tx,
-            &[(
+            &[NewSingleIndexSet(
                 name.clone(),
                 ["GGTTTACT", "CTAAACGG", "TCGGCGTC", "AACCGTAA"].map(str::to_owned),
             )],

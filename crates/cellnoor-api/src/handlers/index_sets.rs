@@ -14,8 +14,6 @@ pub use dual::create::insert_test_dual_index_sets;
 #[cfg(any(test, feature = "dev"))]
 pub use dual::create::{FLEX_DUAL_INDEX_SET_NAME, GENE_EXPRESSION_DUAL_INDEX_SET_NAME};
 pub use single::create::create_single_index_sets;
-#[cfg(test)]
-pub use single::create::tests::insert_test_single_index_set;
 
 use crate::{
     db::{self, DbError, FieldValues, Insert},

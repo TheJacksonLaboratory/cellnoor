@@ -22,7 +22,7 @@
 	<ul class="cluster">
 		{#each values as value (value)}
 			{@const label = options.find((opt) => opt.value === value)?.label ?? value}
-			<li>
+			<li class="card">
 				{label}
 				<button type="button" aria-label="Remove {label}" onclick={() => remove(value)}>
 					<X size="1em" />
@@ -42,8 +42,6 @@
 		align-items: center;
 		gap: var(--space-xs);
 		padding-inline: var(--space-xs);
-		border: var(--border);
-		border-radius: var(--radius);
 	}
 
 	button {

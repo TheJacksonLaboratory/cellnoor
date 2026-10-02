@@ -19,7 +19,6 @@
 
 	let value = $derived(page.url.searchParams.getAll(name));
 	let searchValue = $state('');
-	let control: HTMLElement | null = $state(null);
 
 	const filteredOptions = $derived(
 		options.filter((opt) => opt.label.toLowerCase().includes(searchValue.toLowerCase()))
@@ -32,7 +31,7 @@
 	<label class="label" for={id}>{label}</label>
 	<SelectedValues bind:values={value} {options} />
 	<Combobox.Root {name} type="multiple" bind:value onValueChange={submitForm}>
-		<div class="control" bind:this={control}>
+		<div class="control">
 			<Combobox.Input
 				{id}
 				class="input"

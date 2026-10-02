@@ -40,18 +40,10 @@ async fn update_cdna_by_id(
 ) -> Result<CdnaDetailed, DbError> {
     tx.update(id, record).await?;
 
-    let preparer_insertions = async {
-        if let Some(preparers) = preparers {
-            insert_cdna_preparers(tx, id, preparers).await
-        } else {
-            Ok(())
-        }
-    };
-
-    let measurement_insertions =
-        insert_cdna_measurements(tx, id, measurements.as_deref().unwrap_or_default());
-
-    tokio::try_join!(preparer_insertions, measurement_insertions)?;
+    tokio::try_join!(
+        insert_cdna_preparers(tx, id, preparers.as_deref().unwrap_or_default()),
+        insert_cdna_measurements(tx, id, measurements.as_deref().unwrap_or_default())
+    )?;
 
     select_cdna_by_id(tx, id).await
 }

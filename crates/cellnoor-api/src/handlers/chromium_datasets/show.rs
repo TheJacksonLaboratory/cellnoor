@@ -3,9 +3,7 @@ use axum::{
     extract::{Path, State},
 };
 use cellnoor_types::{
-    chromium_dataset::{
-        ChromiumDatasetDetailed, ChromiumDatasetPredicateInner, ChromiumDatasetQuery,
-    },
+    chromium_dataset::{ChromiumDatasetDetailed, ChromiumDatasetPredicateInner},
     operator::UuidOperator,
 };
 use uuid::Uuid;
@@ -31,17 +29,11 @@ pub(super) async fn select_chromium_dataset_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
 ) -> Result<ChromiumDatasetDetailed, DbError> {
-    let query = ChromiumDatasetQuery::from_filter(
+    tx.select_one(
         ChromiumDatasetPredicateInner::Id(UuidOperator::Eq(id)).into(),
-    );
-
-    let mut results = select_chromium_datasets_detailed(tx, &query).await?;
-
-    if results.len() != 1 {
-        return Err(DbError::ResourceNotFound);
-    }
-
-    Ok(results.swap_remove(0))
+        select_chromium_datasets_detailed,
+    )
+    .await
 }
 
 #[cfg(test)]

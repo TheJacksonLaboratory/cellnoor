@@ -16,7 +16,6 @@ rand.workspace = true
 aide.workspace = true
 csvranger.workspace = true
 jsonwebtoken.workspace = true
-bytes.workspace = true
 serde.workspace = true
 deadpool-postgres.workspace = true
 cellnoor-types = { path = "../cellnoor-types", features = [
@@ -31,7 +30,6 @@ schemars.workspace = true
 secrecy.workspace = true
 postgres-types.workspace = true
 jiff.workspace = true
-dotenvy.workspace = true
 thiserror.workspace = true
 config.workspace = true
 tokio.workspace = true
@@ -41,10 +39,9 @@ regex.workspace = true
 futures.workspace = true
 serde_json.workspace = true
 zstd.workspace = true
-pretty_assertions = { workspace = true, optional = true }
 
 [features]
-dev = ["uuid/v4", "pretty_assertions"]
+dev = ["uuid/v4"]
 
 [dev-dependencies]
 uuid = { workspace = true, features = ["v4"] }

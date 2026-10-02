@@ -297,16 +297,6 @@ impl<'a> Transaction<'a> {
         self.inner.commit().await
     }
 
-    /// Begin a nested transaction, starting a PostgreSQL savepoint
-    pub async fn begin(&'a mut self) -> Result<Transaction<'a>, TokioPgError> {
-        let Self { user, inner, .. } = self;
-
-        Ok(Self {
-            user: *user,
-            inner: inner.transaction().await?,
-        })
-    }
-
     pub fn user(&self) -> AuthUser {
         self.user
     }

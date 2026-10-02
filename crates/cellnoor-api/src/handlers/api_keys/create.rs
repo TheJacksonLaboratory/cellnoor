@@ -89,18 +89,13 @@ fn generate_secret() -> String {
 
     let rng = rand::rng();
 
-    let mut secret = String::with_capacity(SECRET_LEN + PREFIX.len());
-    secret.push_str(PREFIX);
-
-    for c in rng
+    let prefix = PREFIX.chars();
+    let random = rng
         .sample_iter(Alphanumeric)
         .take(SECRET_LEN)
-        .map(char::from)
-    {
-        secret.push(c);
-    }
+        .map(char::from);
 
-    secret
+    prefix.chain(random).collect()
 }
 
 #[cfg(test)]

@@ -1,10 +1,7 @@
 use macro_attributes::base_model;
 
-use crate::{
-    index_set::{
-        dual_index_set_record::DualIndexSetRecord, single_index_set_record::SingleIndexSetRecord,
-    },
-    nonempty::NonemptyString,
+use crate::index_set::{
+    dual_index_set_record::DualIndexSetRecord, single_index_set_record::SingleIndexSetRecord,
 };
 
 mod dual_index_set_record {
@@ -51,6 +48,6 @@ mod single_index_set_record {
 }
 
 #[base_model]
-pub struct NewSingleIndexSet(String, [NonemptyString; 4]);
+pub struct NewSingleIndexSet(pub String, pub [String; 4]);
 
 pub type SingleIndexSet = SingleIndexSetRecord;

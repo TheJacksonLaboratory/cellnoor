@@ -10,19 +10,8 @@ updates:
           - "*"
 
   - package-ecosystem: bun
-    directory: ./packages/cellnoor-auth
     schedule:
       interval: daily
-    groups:
-      all-auth-dependencies:
-        patterns:
-          - "*"
-
-  - package-ecosystem: bun
-    directory: ./packages/cellnoor-ui
-    schedule:
-      interval: daily
-    groups:
-      all-ui-dependencies:
-        patterns:
-          - "*"
+    directories:
+      - ./packages/cellnoor-auth
+      - ./packages/cellnoor-ui

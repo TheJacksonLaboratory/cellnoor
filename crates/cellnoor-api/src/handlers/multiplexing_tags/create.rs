@@ -13,14 +13,9 @@ pub async fn create_multiplexing_tag(
     user: AuthUser,
     crate::extract::JsonExtractor(new): crate::extract::JsonExtractor<NewMultiplexingTag>,
 ) -> Result<Json<MultiplexingTag>, DbError> {
-    let mut client = state.db_client(user).await?;
-    let tx = client.begin().await?;
-
-    let response = insert_multiplexing_tag(&tx, &new).await?;
-
-    tx.commit().await?;
-
-    Ok(Json(response))
+    state
+        .in_transaction(user, async |tx| insert_multiplexing_tag(tx, &new).await)
+        .await
 }
 
 async fn insert_multiplexing_tag(
