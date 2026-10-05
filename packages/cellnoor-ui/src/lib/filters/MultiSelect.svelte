@@ -12,7 +12,7 @@
 	}: {
 		name: string;
 		label: string;
-		options: { value: string; label: string }[];
+		options: Map<string, string>;
 	} = $props();
 
 	const id = $props.id();
@@ -21,7 +21,9 @@
 	let searchValue = $state('');
 
 	const filteredOptions = $derived(
-		options.filter((opt) => opt.label.toLowerCase().includes(searchValue.toLowerCase()))
+		options
+			.entries()
+			.filter(([, optText]) => optText.toLowerCase().includes(searchValue.toLowerCase()))
 	);
 
 	const submitForm = getFormSubmissionFn();
@@ -34,8 +36,8 @@
 		<div class="control">
 			<Combobox.Input
 				{id}
+				autocomplete="off"
 				class="input"
-				placeholder="Select or type"
 				oninput={(e) => (searchValue = e.currentTarget.value)}
 			/>
 			<Combobox.Trigger class="button">
@@ -44,10 +46,10 @@
 		</div>
 		<Combobox.Portal>
 			<Combobox.Content class="card menu" style="inline-size: var(--bits-combobox-anchor-width)">
-				{#each filteredOptions as opt (opt.value)}
-					<Combobox.Item class="menu-item" {...opt}>
+				{#each filteredOptions as [optValue, optText] (optValue)}
+					<Combobox.Item class="menu-item" value={optValue} label={optText}>
 						{#snippet children({ selected })}
-							{opt.label}
+							{optText}
 							{#if selected}
 								<Check size="1em" />
 							{/if}

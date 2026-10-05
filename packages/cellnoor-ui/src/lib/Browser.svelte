@@ -16,7 +16,7 @@
 	<aside class="stack">
 		<header class="cluster">
 			<h2 class="heading">Filters</h2>
-			<a href={page.url.pathname}>Clear all</a>
+			<a class="button" href={page.url.pathname}>Clear all</a>
 		</header>
 		<form class="stack" bind:this={form} data-sveltekit-reset="false">
 			{@render filters()}
@@ -31,11 +31,11 @@
 <style>
 	.browser {
 		display: grid;
-		grid-template-columns: minmax(min-content, 26rem) 1fr;
+		grid-template-columns: minmax(min-content, 32rem) 1fr;
 		align-items: start;
 
 		> * {
-			padding: var(--space-lg);
+			padding: var(--space-md);
 		}
 	}
 

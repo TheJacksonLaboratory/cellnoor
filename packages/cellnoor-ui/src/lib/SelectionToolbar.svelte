@@ -1,14 +1,14 @@
-<script lang="ts">
-	import type { Selection } from './selection.svelte.ts';
+<script lang="ts" generics="T">
+	import type { SelectableData } from './selectable-data.svelte';
 
-	let { selection, ids }: { selection: Selection; ids: string[] } = $props();
+	let { selection }: { selection: SelectableData<T> } = $props();
 </script>
 
 <div class="cluster">
-	<button class="button" onclick={() => selection.toggleAll(ids)}>
-		{selection.allChecked(ids) ? 'Deselect all' : 'Select all'}
+	<button class="button" onclick={() => selection.toggleAll()}>
+		{selection.allSelected ? 'Deselect all' : 'Select all'}
 	</button>
-	{#if selection.count}
-		<span>{selection.count} selected</span>
+	{#if selection.nSelected}
+		<span>{selection.nSelected} selected</span>
 	{/if}
 </div>

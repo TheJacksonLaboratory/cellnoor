@@ -9,8 +9,7 @@ export function unwrap<T, E extends App.Error['error']>(result: {
 	response: Response;
 }): T {
 	if (result.data === undefined) {
-		error(result.response.status, {
-			message: `Request failed with status ${result.response.status}`,
+		error(result.response.status, 'Something went wrong', {
 			error: result.error
 		});
 	}

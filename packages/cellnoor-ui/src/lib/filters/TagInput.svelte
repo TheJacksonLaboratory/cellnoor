@@ -31,5 +31,5 @@
 	{#each values as v (v)}
 		<input type="hidden" {name} value={v} />
 	{/each}
-	<input {id} class="input" placeholder="Type and press Enter" bind:value={query} onkeydown={add} />
+	<input {id} class="input" bind:value={query} onkeydown={add} />
 </div>

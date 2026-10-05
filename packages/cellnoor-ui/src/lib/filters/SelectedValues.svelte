@@ -1,13 +1,14 @@
 <script lang="ts">
 	import X from '@lucide/svelte/icons/x';
 	import { getFormSubmissionFn } from './context';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	let {
 		values = $bindable(),
-		options = []
+		options = new SvelteMap()
 	}: {
 		values: string[];
-		options?: { value: string; label: string }[];
+		options?: Map<string, string>;
 	} = $props();
 
 	const submitForm = getFormSubmissionFn();
@@ -21,7 +22,7 @@
 {#if values.length}
 	<ul class="cluster">
 		{#each values as value (value)}
-			{@const label = options.find((opt) => opt.value === value)?.label ?? value}
+			{@const label = options.get(value) ?? value}
 			<li class="card">
 				{label}
 				<button type="button" aria-label="Remove {label}" onclick={() => remove(value)}>

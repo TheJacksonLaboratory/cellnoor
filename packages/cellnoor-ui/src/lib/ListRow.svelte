@@ -19,9 +19,11 @@
 </script>
 
 <li>
-	<input type="checkbox" aria-label="Select {title}" bind:checked />
+	{#if checked !== undefined}
+		<input type="checkbox" aria-label="Select {title}" bind:checked />
+	{/if}
 	<div class="stack">
-		<div>
+		<div class="divided-inline">
 			<a class="heading" {href}>{title}</a>
 			<a class="subheading link-arrow" href={subtitleHref}>{subtitle}</a>
 		</div>

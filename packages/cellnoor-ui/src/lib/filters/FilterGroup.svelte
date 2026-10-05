@@ -19,7 +19,6 @@
 	h3 {
 		padding: var(--space-sm) var(--space-md);
 		border-block-end: var(--border);
-		background: var(--color-surface);
 		text-transform: uppercase;
 	}
 

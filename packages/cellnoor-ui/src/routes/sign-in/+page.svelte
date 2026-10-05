@@ -10,4 +10,4 @@
 	}
 </script>
 
-<button onclick={signInWithMicrosoft}>Sign in with Microsoft</button>
+<button class="button" onclick={signInWithMicrosoft}>Sign in with Microsoft</button>

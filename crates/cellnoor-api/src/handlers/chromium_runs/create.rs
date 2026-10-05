@@ -250,9 +250,12 @@ where
         nonempty::NonemptyBoundedVec,
     };
 
-    use crate::handlers::{
-        suspensions::create::insert_test_suspension_and_specimen,
-        tenx_assays::create::insert_chromium_assays,
+    use crate::{
+        db::dummy_data::random_name_for,
+        handlers::{
+            suspensions::create::insert_test_suspension_and_specimen,
+            tenx_assays::create::insert_chromium_assays,
+        },
     };
 
     let (_, s1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
@@ -267,13 +270,13 @@ where
         gem_wells: ChromiumRunGemWells::Mixed {
             gem_wells: NonemptyBoundedVec::new(vec![
                 NewStandardOrOcmGemWell::Standard(NewStandardGemWell {
-                    readable_id: crate::db::dummy_data::random_name_for("gem_well"),
+                    readable_id: random_name_for("gem_well"),
                     loaded_entity: LoadedEntity::Suspension {
                         suspension_id: *s1.record.id,
                     },
                 }),
                 NewStandardOrOcmGemWell::OnChipMultiplexing(NewOcmGemWell {
-                    readable_id: crate::db::dummy_data::random_name_for("gem_well"),
+                    readable_id: random_name_for("gem_well"),
                     loading: NonemptyBoundedVec::new(vec![OcmLoadedEntity {
                         loaded_entity: LoadedEntity::Suspension {
                             suspension_id: *s2.record.id,
@@ -384,7 +387,6 @@ pub async fn insert_test_chromium_run(
 
 #[cfg(test)]
 pub mod test {
-
     use super::{
         insert_test_flex_chromium_run, insert_test_mixed_chromium_run,
         insert_test_ocm_chromium_run, insert_test_standard_chromium_run,
