@@ -25,7 +25,6 @@ export async function load({ url, parent }) {
 			}
 		})
 		.then(unwrap);
-	console.log(datasetList);
 
 	const { projects, tenxAssays } = await parent();
 
