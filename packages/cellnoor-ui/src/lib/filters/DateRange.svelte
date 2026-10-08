@@ -1,11 +1,12 @@
-<script lang="ts">
+<script lang="ts" generics="T">
 	import { page } from '$app/state';
 	import { getFormSubmissionFn } from './context';
-	import { dateRangeParams } from './spec.ts';
 
-	let { name, label }: { name: string; label: string } = $props();
-
-	const params = $derived(dateRangeParams(name));
+	let {
+		from,
+		to,
+		label
+	}: { fields: T; from: keyof T & string; to: keyof T & string; label: string } = $props();
 
 	const submitForm = getFormSubmissionFn();
 </script>
@@ -15,18 +16,18 @@
 	<input
 		type="date"
 		class="input"
-		name={params.from}
+		name={from}
 		aria-label="From"
-		value={page.url.searchParams.get(params.from)}
+		value={page.url.searchParams.get(from)}
 		onchange={submitForm}
 	/>
 	to
 	<input
 		type="date"
 		class="input"
-		name={params.to}
+		name={to}
 		aria-label="To"
-		value={page.url.searchParams.get(params.to)}
+		value={page.url.searchParams.get(to)}
 		onchange={submitForm}
 	/>
 </fieldset>

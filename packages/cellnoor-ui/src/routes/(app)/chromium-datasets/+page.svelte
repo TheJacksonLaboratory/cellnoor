@@ -7,7 +7,8 @@
 	import ListRow from '#lib/ListRow.svelte';
 	import { DATE_FORMATTER, formatAssayWithMultiplexing, formatSpecies } from '#lib/format.ts';
 	import SelectionToolbar from '#lib/SelectionToolbar.svelte';
-	import { datasetFilterNames as names } from './filters.ts';
+	import { datasetFilterFieldParsers as fields } from './field-parsers.ts';
+	import type { ChromiumDatasetDetailed } from 'cellnoor-client/cellnoor-types.ts';
 
 	let { data } = $props();
 
@@ -26,41 +27,63 @@
 	} = $derived(data);
 
 	const SPECIMEN_LIMIT = 8;
+
+	let firstSelectedDataset = $state<ChromiumDatasetDetailed>();
+
+	const setFirstSelectedDataset = (id: string) => {
+		if (firstSelectedDataset === undefined) {
+			firstSelectedDataset = datasets.get(id)?.item;
+		} else if (datasets.nSelected === 0) {
+			firstSelectedDataset = undefined;
+		}
+	};
+
+	// We assume that if two datasets "data" property have the same length, then they are compatible with one another
+	const isCompatibleWithFirstDataset = (id: string) =>
+		datasets.get(id)?.item.data.length === firstSelectedDataset?.data.length;
 </script>
 
 <Browser>
 	{#snippet filters()}
 		<FilterGroup label="Dataset">
-			<TagInput name={names.name} label="Name" />
-			<MultiSelect name={names['specimen.project_id']} label="Project" options={projectNames} />
-			<DateRange name={names.delivered} label="Date delivered" />
+			<TagInput {fields} name="name" label="Name" />
+			<MultiSelect {fields} name="specimen.project_id" label="Project" options={projectNames} />
+			<DateRange {fields} from="delivered_from" to="delivered_to" label="Date delivered" />
 		</FilterGroup>
 		<FilterGroup label="Assay">
-			<MultiSelect name={names['assay.name']} label="Name" options={tenxAssays} />
+			<MultiSelect {fields} name="assay.name" label="Name" options={tenxAssays} />
 			<MultiSelect
-				name={names['assay.multiplexing_type']}
+				{fields}
+				name="assay.multiplexing_type"
 				label="Multiplexing Type"
 				options={multiplexingTypes}
 			></MultiSelect>
-			<MultiSelect name={names['assay.library_type']} label="Library Type" options={libraryTypes}
+			<MultiSelect {fields} name="assay.library_type" label="Library Type" options={libraryTypes}
 			></MultiSelect>
 		</FilterGroup>
 		<FilterGroup label="Specimen">
-			<TagInput name={names['specimen.name']} label="Name" />
-			<MultiSelect name={names['specimen.type']} label="Type" options={specimenTypes} />
-			<MultiSelect name={names['specimen.species']} label="Species" options={species} />
+			<TagInput {fields} name="specimen.name" label="Name" />
+			<MultiSelect {fields} name="specimen.type" label="Type" options={specimenTypes} />
+			<MultiSelect {fields} name="specimen.species" label="Species" options={species} />
 			<MultiSelect
-				name={names['specimen.embedded_in']}
+				{fields}
+				name="specimen.embedded_in"
 				label="Embedded in"
 				options={embeddingMatrices}
 			/>
-			<MultiSelect name={names['specimen.fixative']} label="Fixative" options={fixatives} />
+			<MultiSelect {fields} name="specimen.fixative" label="Fixative" options={fixatives} />
 			<MultiSelect
-				name={names['specimen.thermal_preservation_method']}
+				{fields}
+				name="specimen.thermal_preservation_method"
 				label="Thermal preservation method"
 				options={thermalPreservationMethods}
 			/>
-			<DateRange name={names['specimen.received']} label="Date received" />
+			<DateRange
+				{fields}
+				from="specimen.received_from"
+				to="specimen.received_to"
+				label="Date received"
+			/>
 		</FilterGroup>
 	{/snippet}
 
@@ -81,6 +104,8 @@
 					subtitle={project?.name}
 					subtitleHref={project?.links.self}
 					bind:checked={ds.selected}
+					onCheck={() => setFirstSelectedDataset(id)}
+					disabled={isCompatibleWithFirstDataset(id)}
 				>
 					<div class="cluster">
 						{#each ds.item.specimens.slice(0, SPECIMEN_LIMIT) as s (s.id)}

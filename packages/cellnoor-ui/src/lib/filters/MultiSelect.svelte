@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="ts" generics="T">
 	import { Combobox } from 'bits-ui';
 	import { Check, ChevronDown } from '@lucide/svelte';
 	import { page } from '$app/state';
@@ -10,7 +10,8 @@
 		label,
 		options
 	}: {
-		name: string;
+		fields: T;
+		name: keyof T & string;
 		label: string;
 		options: Map<string, string>;
 	} = $props();

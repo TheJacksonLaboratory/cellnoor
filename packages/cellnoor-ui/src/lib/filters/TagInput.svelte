@@ -1,9 +1,9 @@
-<script lang="ts">
+<script lang="ts" generics="T">
 	import { page } from '$app/state';
 	import { getFormSubmissionFn } from './context';
 	import SelectedValues from './SelectedValues.svelte';
 
-	let { name, label }: { name: string; label: string } = $props();
+	let { name, label }: { fields: T; name: keyof T & string; label: string } = $props();
 
 	const id = $props.id();
 

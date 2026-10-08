@@ -30,6 +30,10 @@ export class SelectableData<T> {
 		return this.#allSelected;
 	}
 
+	get(id: string) {
+		return this.#items.get(id);
+	}
+
 	entries() {
 		return this.#items.entries();
 	}

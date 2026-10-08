@@ -7,6 +7,8 @@
 		subtitle,
 		subtitleHref,
 		checked = $bindable(),
+		onCheck,
+		disabled,
 		children
 	}: {
 		title: string;
@@ -14,13 +16,15 @@
 		subtitle?: string;
 		subtitleHref?: string;
 		checked?: boolean;
+		onCheck?: () => void;
+		disabled?: boolean;
 		children?: Snippet;
 	} = $props();
 </script>
 
 <li>
 	{#if checked !== undefined}
-		<input type="checkbox" aria-label="Select {title}" bind:checked />
+		<input type="checkbox" {disabled} aria-label="Select {title}" bind:checked onchange={onCheck} />
 	{/if}
 	<div class="stack">
 		<div class="divided-inline">

@@ -1,5 +1,4 @@
 import { cellnoorClient, unwrap } from '#lib/client.ts';
-import { toPredicates } from '#lib/filters/spec.ts';
 import {
 	blockEmbeddingMatrixValues,
 	libraryTypeValues,
@@ -7,15 +6,26 @@ import {
 	speciesValues,
 	specimenTypeValues
 } from 'cellnoor-client/cellnoor-types.js';
-import { datasetFilters } from './filters.ts';
+import type { ChromiumDatasetPredicate } from 'cellnoor-client/cellnoor-types.ts';
+import { toPredicates } from '#lib/filters/spec.ts';
+import { datasetFilterFieldParsers } from './field-parsers.ts';
 import { SelectableData } from '#lib/selectable-data.svelte.ts';
 
 export async function load({ url, parent }) {
 	const datasetList = await cellnoorClient
 		.POST('/chromium-datasets/search/detailed', {
-			body: { filter: { all_of: toPredicates(datasetFilters, url.searchParams) }, limit: 100 }
+			body: {
+				filter: {
+					all_of: toPredicates<ChromiumDatasetPredicate>(
+						datasetFilterFieldParsers,
+						url.searchParams
+					)
+				},
+				limit: 100
+			}
 		})
 		.then(unwrap);
+	console.log(datasetList);
 
 	const { projects, tenxAssays } = await parent();
 
