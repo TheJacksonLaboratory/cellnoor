@@ -2,6 +2,8 @@ import { cellnoorClient, unwrap } from '#lib/client.ts';
 import { toPredicates } from '#lib/filters/spec.ts';
 import {
 	blockEmbeddingMatrixValues,
+	libraryTypeValues,
+	multiplexingTagTypeValues,
 	speciesValues,
 	specimenTypeValues
 } from 'cellnoor-client/cellnoor-types.js';
@@ -39,6 +41,8 @@ export async function load({ url, parent }) {
 		projects,
 		projectNames,
 		tenxAssays,
+		multiplexingTypes: toDisplayMap(multiplexingTagTypeValues),
+		libraryTypes: toDisplayMap(libraryTypeValues),
 		specimenTypes: toDisplayMap(specimenTypeValues),
 		species: toDisplayMap(speciesValues, toSpeciesDisplayText),
 		fixatives: toDisplayMap([dsp, 'formaldehyde_derivative'], toFixativeDisplayText),

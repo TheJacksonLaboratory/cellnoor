@@ -19,6 +19,6 @@ export async function load({ url }) {
 
 	return {
 		projects: new Map(projectList.map((p) => [p.id, p])),
-		tenxAssays: toStringMap(tenxAssayList, (a) => [a.id, a.name])
+		tenxAssays: toStringMap(tenxAssayList, (a) => [a.name, a.name])
 	};
 }

@@ -3,6 +3,8 @@ import type {
 	BlockEmbeddingMatrix,
 	ChromiumDatasetPredicate,
 	Fixative,
+	LibraryType,
+	SampleMultiplexing,
 	Species,
 	SpecimenType,
 	ThermalPreservationMethod
@@ -14,6 +16,12 @@ export const datasetFilters = {
 	name: values((v) => ({ name: { trgm_any_unless_empty: v } })),
 	'specimen.project_id': values((v) => ({ specimen: { project_id: { in_unless_empty: v } } })),
 	'assay.name': values((v) => ({ tenx_assay: { name: { in_unless_empty: v } } })),
+	'assay.multiplexing_type': values((v) => ({
+		tenx_assay: { sample_multiplexing: { in_unless_empty: v as SampleMultiplexing[] } }
+	})),
+	'assay.library_type': values((v) => ({
+		tenx_assay: { library_types: { overlaps: v as LibraryType[] } }
+	})),
 	delivered: dateRange((exp) => ({ delivered_at: exp })),
 	'specimen.name': values((v) => ({ specimen: { name: { trgm_any_unless_empty: v } } })),
 	'specimen.type': values((v) => ({

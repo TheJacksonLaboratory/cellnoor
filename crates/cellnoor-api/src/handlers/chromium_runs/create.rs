@@ -3,6 +3,21 @@ use cellnoor_types::chromium_run::{
     ChromiumRunDetailed, ChromiumRunField,
     creation::{ChromiumRunGemWells, NewChromiumRun, NewChromiumRunRecord},
 };
+#[cfg(any(test, feature = "dev"))]
+use cellnoor_types::{
+    chromium_run::creation::{
+        LoadedEntity,
+        mixed::NewStandardOrOcmGemWell,
+        ocm::{NewOcmGemWell, OcmBarcodeId, OcmLoadedEntity},
+        standard::NewStandardGemWell,
+    },
+    nonempty::{NonemptyBoundedVec, NonemptyVec},
+    suspension::SuspensionDetailed,
+    suspension_pool::{
+        MultiplexingTagType::FlexOligonucleotideBarcode, PooledSuspensions, SuspensionPoolDetailed,
+        TaggedSuspension,
+    },
+};
 use uuid::Uuid;
 
 use crate::{
@@ -13,6 +28,17 @@ use crate::{
         show::select_chromium_run_by_id,
     },
     state::AppState,
+};
+#[cfg(any(test, feature = "dev"))]
+use crate::{
+    db::dummy_data::random_name_for,
+    handlers::{
+        multiplexing_tags::create::insert_test_multiplexing_tag,
+        specimens::create::insert_test_specimen_and_project,
+        suspension_pools::create::insert_test_suspension_pool_and_suspensions,
+        suspensions::create::insert_test_suspension_and_specimen,
+        tenx_assays::create::insert_chromium_assays,
+    },
 };
 
 mod gem_well;
@@ -93,7 +119,7 @@ impl Insert for NewChromiumRunRecord {
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn new_record(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRecord {
+pub(super) async fn new_record(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRecord {
     use cellnoor_types::id::NoId;
     use jiff::Timestamp;
 
@@ -109,6 +135,70 @@ pub async fn new_record(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRecord {
 }
 
 #[cfg(any(test, feature = "dev"))]
+async fn insert_suspensions_in_same_project(
+    tx: &db::Transaction<'_>,
+    n_suspensions: usize,
+) -> Result<Vec<SuspensionDetailed>, DbError> {
+    let (_, first_specimen) = insert_test_specimen_and_project(tx, |_| ()).await.unwrap();
+    let specimen_insertions = (1..n_suspensions).map(|_| {
+        insert_test_specimen_and_project(tx, |sp| sp.project_id = first_specimen.project.record.id)
+    });
+
+    let mut specimens: Vec<_> = futures::future::try_join_all(specimen_insertions)
+        .await
+        .unwrap()
+        .into_iter()
+        .map(|(_, sp)| sp)
+        .collect();
+
+    specimens.push(first_specimen);
+
+    let insertions = specimens.iter().map(|sp| {
+        insert_test_suspension_and_specimen(tx, |sus| {
+            sus.record.specimen_id = *sp.record.id;
+            sus.preparers = NonemptyVec::new(vec![sp.record.submitted_by]).unwrap()
+        })
+    });
+
+    Ok(futures::future::try_join_all(insertions)
+        .await
+        .unwrap()
+        .into_iter()
+        .map(|(_, sus)| sus)
+        .collect())
+}
+
+#[cfg(any(test, feature = "dev"))]
+async fn insert_single_project_suspension_pool(
+    tx: &db::Transaction<'_>,
+    n_suspensions_in_pool: usize,
+) -> Result<SuspensionPoolDetailed, DbError> {
+    let suspension_ids = insert_suspensions_in_same_project(tx, n_suspensions_in_pool)
+        .await
+        .unwrap();
+
+    let tags = (0..suspension_ids.len()).map(|_| insert_test_multiplexing_tag(tx));
+    let tags = futures::future::try_join_all(tags).await.unwrap();
+
+    let suspensions = suspension_ids
+        .into_iter()
+        .zip(tags)
+        .map(|(sus, tag)| TaggedSuspension {
+            suspension_id: *sus.record.id,
+            tag_id: tag.tag_id,
+        });
+
+    insert_test_suspension_pool_and_suspensions(tx, |pool| {
+        pool.pool = PooledSuspensions::ExogenouslyTagged {
+            suspensions: NonemptyVec::new(suspensions.clone().collect()).unwrap(),
+            multiplexing_tag_type: FlexOligonucleotideBarcode,
+        }
+    })
+    .await
+    .map(|(_, pool)| pool)
+}
+
+#[cfg(any(test, feature = "dev"))]
 async fn insert_test_standard_chromium_run<F>(
     tx: &db::Transaction<'_>,
     mut modify: F,
@@ -116,19 +206,9 @@ async fn insert_test_standard_chromium_run<F>(
 where
     F: FnMut(&mut NewChromiumRun),
 {
-    use cellnoor_types::{
-        chromium_run::creation::{LoadedEntity, standard::NewStandardGemWell},
-        nonempty::NonemptyBoundedVec,
-    };
-
-    use crate::handlers::{
-        suspension_pools::create::insert_test_suspension_pool_and_suspensions,
-        suspensions::create::insert_test_suspension_and_specimen,
-        tenx_assays::create::insert_chromium_assays,
-    };
-
-    let (_, suspension) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
-    let (_, pool) = insert_test_suspension_pool_and_suspensions(tx, |_| ()).await?;
+    let suspension = insert_suspensions_in_same_project(tx, 1).await.unwrap();
+    let suspension = &suspension[0];
+    let pool = insert_single_project_suspension_pool(tx, 2).await.unwrap();
 
     let person_id = suspension.preparers[0];
 
@@ -171,21 +251,8 @@ async fn insert_test_ocm_chromium_run<F>(
 where
     F: FnMut(&mut NewChromiumRun),
 {
-    use cellnoor_types::{
-        chromium_run::creation::{
-            LoadedEntity,
-            ocm::{NewOcmGemWell, OcmBarcodeId, OcmLoadedEntity},
-        },
-        nonempty::NonemptyBoundedVec,
-    };
-
-    use crate::handlers::{
-        suspensions::create::insert_test_suspension_and_specimen,
-        tenx_assays::create::insert_chromium_assays,
-    };
-
-    let (_, s1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
-    let (_, s2) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+    let suspensions = insert_suspensions_in_same_project(tx, 2).await.unwrap();
+    let [s1, s2] = suspensions.as_array().unwrap();
 
     let person_id = s1.preparers[0];
 
@@ -240,26 +307,8 @@ async fn insert_test_mixed_chromium_run<F>(
 where
     F: FnMut(&mut NewChromiumRun),
 {
-    use cellnoor_types::{
-        chromium_run::creation::{
-            LoadedEntity,
-            mixed::NewStandardOrOcmGemWell,
-            ocm::{NewOcmGemWell, OcmBarcodeId, OcmLoadedEntity},
-            standard::NewStandardGemWell,
-        },
-        nonempty::NonemptyBoundedVec,
-    };
-
-    use crate::{
-        db::dummy_data::random_name_for,
-        handlers::{
-            suspensions::create::insert_test_suspension_and_specimen,
-            tenx_assays::create::insert_chromium_assays,
-        },
-    };
-
-    let (_, s1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
-    let (_, s2) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+    let suspensions = insert_suspensions_in_same_project(tx, 2).await.unwrap();
+    let [s1, s2] = suspensions.as_array().unwrap();
 
     let person_id = s1.preparers[0];
 
@@ -304,36 +353,7 @@ async fn insert_test_flex_chromium_run<F>(
 where
     F: FnMut(&mut NewChromiumRun),
 {
-    use cellnoor_types::{
-        chromium_run::creation::{LoadedEntity, standard::NewStandardGemWell},
-        nonempty::{NonemptyBoundedVec, NonemptyVec},
-        suspension_pool::{PooledSuspensions, TaggedSuspension},
-    };
-
-    use crate::handlers::{
-        multiplexing_tags::create::insert_test_multiplexing_tag,
-        suspension_pools::create::insert_test_suspension_pool_and_suspensions,
-        suspensions::create::insert_test_suspension_and_specimen,
-        tenx_assays::create::insert_chromium_assays,
-    };
-
-    let mut suspensions = Vec::with_capacity(32);
-    for _ in 0..32 {
-        let (_, suspension) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
-        let tag = insert_test_multiplexing_tag(tx).await?;
-
-        suspensions.push(TaggedSuspension {
-            suspension_id: *suspension.record.id,
-            tag_id: tag.tag_id,
-        });
-    }
-
-    let (_, pool) = insert_test_suspension_pool_and_suspensions(tx, |pool| {
-        pool.suspensions = PooledSuspensions::FlexOligonucleotideBarcode {
-            suspensions: NonemptyVec::new(suspensions.clone()).unwrap(),
-        };
-    })
-    .await?;
+    let pool = insert_single_project_suspension_pool(tx, 32).await.unwrap();
 
     let person_id = pool.preparers[0];
 

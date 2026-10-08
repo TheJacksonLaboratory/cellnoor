@@ -20,10 +20,13 @@
 	let value = $derived(page.url.searchParams.getAll(name));
 	let searchValue = $state('');
 
+	// I have no clue why we have to check that searchValue is nonempty
 	const filteredOptions = $derived(
-		options
-			.entries()
-			.filter(([, optText]) => optText.toLowerCase().includes(searchValue.toLowerCase()))
+		searchValue
+			? options
+					.entries()
+					.filter(([, optText]) => optText.toLowerCase().includes(searchValue.toLowerCase()))
+			: options.entries()
 	);
 
 	const submitForm = getFormSubmissionFn();

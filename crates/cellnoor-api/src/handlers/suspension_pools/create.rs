@@ -35,24 +35,26 @@ async fn insert_suspension_pool(
         record,
         measurements,
         preparers,
-        suspensions,
+        pool,
     }: &NewSuspensionPool,
 ) -> Result<SuspensionPoolDetailed, DbError> {
-    let tag_type: MultiplexingTagType = suspensions.into();
-
-    let poolings: Vec<_> = match suspensions {
-        PooledSuspensions::FlexBarcode { suspensions }
-        | PooledSuspensions::FlexOligonucleotideBarcode { suspensions }
-        | PooledSuspensions::TotalSeqA { suspensions }
-        | PooledSuspensions::TotalSeqB { suspensions }
-        | PooledSuspensions::TotalSeqC { suspensions } => suspensions
+    let poolings: Vec<_> = match pool {
+        PooledSuspensions::ExogenouslyTagged {
+            suspensions,
+            multiplexing_tag_type,
+        } => suspensions
             .iter()
-            .map(|s| (s.suspension_id, Some(&s.tag_id), Some(tag_type)))
+            .map(|s| {
+                (
+                    s.suspension_id,
+                    Some(&s.tag_id),
+                    Some(*multiplexing_tag_type),
+                )
+            })
             .collect(),
-        PooledSuspensions::Genetic { suspensions } => suspensions
-            .iter()
-            .map(|&suspension_id| (suspension_id, None, None))
-            .collect(),
+        PooledSuspensions::GeneticallyTagged { suspensions } => {
+            suspensions.iter().map(|s| (*s, None, None)).collect()
+        }
     };
 
     let id = tx.insert_returning_id(record).await?;
@@ -234,7 +236,7 @@ where
             })),
         }],
         preparers: NonemptyVec::new(vec![person_id]).unwrap(),
-        suspensions: PooledSuspensions::FlexOligonucleotideBarcode {
+        pool: PooledSuspensions::ExogenouslyTagged {
             suspensions: NonemptyVec::new(vec![
                 TaggedSuspension {
                     suspension_id: suspension1_id,
@@ -246,6 +248,7 @@ where
                 },
             ])
             .unwrap(),
+            multiplexing_tag_type: MultiplexingTagType::FlexOligonucleotideBarcode,
         },
     };
 

@@ -6554,11 +6554,8 @@ export interface components {
         MultiplexingTagPredicate: {
             type: components["schemas"]["MultiplexingTagTypeOperator"];
         };
-        /**
-         * @description Auto-generated discriminant enum variants
-         * @enum {string}
-         */
-        MultiplexingTagType: "flex_barcode" | "flex_oligonucleotide_barcode" | "TotalSeq-A" | "TotalSeq-B" | "TotalSeq-C" | "genetic";
+        /** @enum {string} */
+        MultiplexingTagType: "flex_barcode" | "flex_oligonucleotide_barcode" | "TotalSeq-A" | "TotalSeq-B" | "TotalSeq-C";
         /** @description A simple comparison operator. */
         MultiplexingTagTypeOperator: {
             eq: components["schemas"]["MultiplexingTagType"];
@@ -6821,32 +6818,11 @@ export interface components {
             additional_data?: unknown;
             measurements: components["schemas"]["NewSuspensionPoolMeasurement"][];
             name: string;
+            pool: components["schemas"]["PooledSuspensions"];
             /** Format: date-time */
             pooled_at: string;
             preparers: string[];
             readable_id: string;
-        } | {
-            /** @constant */
-            multiplexing_tag_type: "flex_barcode";
-            suspensions: components["schemas"]["TaggedSuspension"][];
-        } | {
-            /** @constant */
-            multiplexing_tag_type: "flex_oligonucleotide_barcode";
-            suspensions: components["schemas"]["TaggedSuspension"][];
-        } | {
-            /** @constant */
-            multiplexing_tag_type: "TotalSeq-A";
-            suspensions: components["schemas"]["TaggedSuspension"][];
-        } | {
-            /** @constant */
-            multiplexing_tag_type: "TotalSeq-B";
-            suspensions: components["schemas"]["TaggedSuspension"][];
-        } | {
-            /** @constant */
-            multiplexing_tag_type: "TotalSeq-C";
-            suspensions: components["schemas"]["TaggedSuspension"][];
-        } | {
-            suspensions: string[];
         };
         NewSuspensionPoolMeasurement: {
             data: components["schemas"]["SuspensionMeasurementQuantity"];
@@ -7047,6 +7023,12 @@ export interface components {
             numerator_unit: components["schemas"]["Picogram"];
             /** Format: int32 */
             value: number;
+        };
+        PooledSuspensions: {
+            multiplexing_tag_type: components["schemas"]["MultiplexingTagType"];
+            suspensions: components["schemas"]["TaggedSuspension"][];
+        } | {
+            suspensions: string[];
         };
         ProjectCompact: {
             /** Format: uuid */
@@ -8046,6 +8028,7 @@ export type PersonPredicateQuery = components['schemas']['PersonPredicateQuery']
 export type PersonUpdate = components['schemas']['PersonUpdate'];
 export type Picogram = components['schemas']['Picogram'];
 export type PicogramConcentration = components['schemas']['PicogramConcentration'];
+export type PooledSuspensions = components['schemas']['PooledSuspensions'];
 export type ProjectCompact = components['schemas']['ProjectCompact'];
 export type ProjectDetailed = components['schemas']['ProjectDetailed'];
 export type ProjectField = components['schemas']['ProjectField'];
@@ -8139,7 +8122,7 @@ export const libraryTypeValues: ReadonlyArray<FlattenedDeepRequired<components>[
 export const microliterValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Microliter"]> = ["microliter"];
 export const micrometerValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Micrometer"]> = ["micrometer"];
 export const milliliterValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Milliliter"]> = ["milliliter"];
-export const multiplexingTagTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["MultiplexingTagType"]> = ["flex_barcode", "flex_oligonucleotide_barcode", "TotalSeq-A", "TotalSeq-B", "TotalSeq-C", "genetic"];
+export const multiplexingTagTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["MultiplexingTagType"]> = ["flex_barcode", "flex_oligonucleotide_barcode", "TotalSeq-A", "TotalSeq-B", "TotalSeq-C"];
 export const nanogramValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Nanogram"]> = ["nanogram"];
 export const ocmBarcodeIdValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["OcmBarcodeId"]> = ["ob1", "ob2", "ob3", "ob4"];
 export const personFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["PersonField"]> = ["id", "name", "email", "institution_id", "is_staff", "orcid"];

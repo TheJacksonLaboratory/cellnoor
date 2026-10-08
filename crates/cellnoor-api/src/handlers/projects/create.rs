@@ -60,11 +60,9 @@ where
 
     use crate::handlers::people::create::insert_test_person_and_institution;
 
-    // The fixture's person is valid, so only the database can refuse it,
-    // and no test here reads that error
     let (_, person) = insert_test_person_and_institution(tx, |_| ())
         .await
-        .expect("failed to insert the test person");
+        .unwrap();
     let person_id = person.record.id;
 
     let mut new = NewProject {

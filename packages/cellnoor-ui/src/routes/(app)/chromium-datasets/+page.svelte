@@ -16,6 +16,8 @@
 		projects,
 		projectNames,
 		tenxAssays,
+		multiplexingTypes,
+		libraryTypes,
 		specimenTypes,
 		species,
 		fixatives,
@@ -28,13 +30,22 @@
 
 <Browser>
 	{#snippet filters()}
-		<FilterGroup label="Dataset information">
+		<FilterGroup label="Dataset">
 			<TagInput name={names.name} label="Name" />
 			<MultiSelect name={names['specimen.project_id']} label="Project" options={projectNames} />
-			<MultiSelect name={names['assay.name']} label="Assay" options={tenxAssays} />
 			<DateRange name={names.delivered} label="Date delivered" />
 		</FilterGroup>
-		<FilterGroup label="Specimen information">
+		<FilterGroup label="Assay">
+			<MultiSelect name={names['assay.name']} label="Name" options={tenxAssays} />
+			<MultiSelect
+				name={names['assay.multiplexing_type']}
+				label="Multiplexing Type"
+				options={multiplexingTypes}
+			></MultiSelect>
+			<MultiSelect name={names['assay.library_type']} label="Library Type" options={libraryTypes}
+			></MultiSelect>
+		</FilterGroup>
+		<FilterGroup label="Specimen">
 			<TagInput name={names['specimen.name']} label="Name" />
 			<MultiSelect name={names['specimen.type']} label="Type" options={specimenTypes} />
 			<MultiSelect name={names['specimen.species']} label="Species" options={species} />
