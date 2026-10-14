@@ -15,11 +15,8 @@ pub struct LibraryMeasurement {
     pub library_prepared_at: Timestamp,
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
-    #[cfg(all(feature = "postgres-types", feature = "schemars"))]
-    #[cfg_attr(
-        all(feature = "postgres-types", feature = "schemars"),
-        schemars(with = "NucleicAcidMeasurementData")
-    )]
+    #[cfg(feature = "postgres-types")]
+    #[cfg_attr(feature = "schemars", schemars(with = "NucleicAcidMeasurementData"))]
     pub data: Json<NucleicAcidMeasurementData>,
     #[cfg(not(feature = "postgres-types"))]
     pub data: NucleicAcidMeasurementData,
@@ -29,11 +26,8 @@ pub struct LibraryMeasurement {
 pub struct NewLibraryMeasurement {
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
-    #[cfg(all(feature = "postgres-types", feature = "schemars"))]
-    #[cfg_attr(
-        all(feature = "postgres-types", feature = "schemars"),
-        schemars(with = "NucleicAcidMeasurementData")
-    )]
+    #[cfg(feature = "postgres-types")]
+    #[cfg_attr(feature = "schemars", schemars(with = "NucleicAcidMeasurementData"))]
     pub data: Json<NucleicAcidMeasurementData>,
     #[cfg(not(feature = "postgres-types"))]
     pub data: NucleicAcidMeasurementData,

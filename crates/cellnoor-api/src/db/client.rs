@@ -30,7 +30,7 @@ impl Pool {
         Ok(builder.build().map(Self)?)
     }
 
-    #[cfg(test)]
+    #[cfg(any(test, feature = "dev"))]
     pub fn from_url(db_url: &str) -> Self {
         let mut cfg = deadpool_postgres::Config::new();
 

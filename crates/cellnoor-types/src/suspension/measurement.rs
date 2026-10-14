@@ -14,11 +14,8 @@ use crate::{
 pub struct NewSuspensionMeasurement {
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
-    #[cfg(all(feature = "postgres-types", feature = "schemars"))]
-    #[cfg_attr(
-        all(feature = "postgres-types", feature = "schemars"),
-        schemars(with = "SuspensionMeasurementData")
-    )]
+    #[cfg(feature = "postgres-types")]
+    #[cfg_attr(feature = "schemars", schemars(with = "SuspensionMeasurementData"))]
     pub data: Json<SuspensionMeasurementData>,
     #[cfg(not(feature = "postgres-types"))]
     pub data: SuspensionMeasurementData,
@@ -33,11 +30,8 @@ pub struct SuspensionMeasurement {
     pub suspension_created_at: Option<Timestamp>,
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
-    #[cfg(all(feature = "postgres-types", feature = "schemars"))]
-    #[cfg_attr(
-        all(feature = "postgres-types", feature = "schemars"),
-        schemars(with = "SuspensionMeasurementData")
-    )]
+    #[cfg(feature = "postgres-types")]
+    #[cfg_attr(feature = "schemars", schemars(with = "SuspensionMeasurementData"))]
     pub data: Json<SuspensionMeasurementData>,
     #[cfg(not(feature = "postgres-types"))]
     pub data: SuspensionMeasurementData,

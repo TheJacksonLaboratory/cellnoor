@@ -32,15 +32,11 @@
 
 	const setFirstSelectedDataset = (id: string) => {
 		if (firstSelectedDataset === undefined) {
-			firstSelectedDataset = datasets.get(id)?.item;
+			firstSelectedDataset = datasets.get(id);
 		} else if (datasets.nSelected === 0) {
 			firstSelectedDataset = undefined;
 		}
 	};
-
-	// We assume that if two datasets "data" property have the same length, then they are compatible with one another
-	const isCompatibleWithFirstDataset = (id: string) =>
-		datasets.get(id)?.item.data.length === firstSelectedDataset?.data.length;
 </script>
 
 <Browser>
@@ -91,35 +87,40 @@
 		<header class="cluster">
 			<span>{datasets.size} {datasets.size === 1 ? 'dataset' : 'datasets'}</span>
 			<SelectionToolbar selection={datasets} />
+			{#if datasets.nSelected}
+				<button class="button"
+					>Download {datasets.nSelected} {datasets.nSelected === 1 ? 'dataset' : 'datasets'}</button
+				>
+			{/if}
 		</header>
 
 		<ul class="divided">
 			{#each datasets.entries() as [id, ds] (id)}
 				<!-- All specimens in a dataset share the same species and project -->
-				{@const { species, project_id } = ds.item.specimens[0]}
+				{@const { species, project_id } = ds.specimens[0]}
 				{@const project = projects.get(project_id)}
 				<ListRow
-					title={ds.item.name}
-					href={ds.item.links.self}
+					title={ds.name}
+					href={ds.links.self}
 					subtitle={project?.name}
 					subtitleHref={project?.links.self}
-					bind:checked={ds.selected}
-					onCheck={() => setFirstSelectedDataset(id)}
-					disabled={isCompatibleWithFirstDataset(id)}
+					bind:checked={datasets.isSelectedGetter(id), datasets.isSelectedSetter(id)}
+					onCheckChange={() => {
+						setFirstSelectedDataset(id);
+					}}
 				>
 					<div class="cluster">
-						{#each ds.item.specimens.slice(0, SPECIMEN_LIMIT) as s (s.id)}
+						{#each ds.specimens.slice(0, SPECIMEN_LIMIT) as s (s.id)}
 							<a class="link-arrow" href={s.links.self}>{s.name}</a>
 						{/each}
-						{#if ds.item.specimens.length > SPECIMEN_LIMIT}
-							<span class="muted">+{ds.item.specimens.length - SPECIMEN_LIMIT} more</span>
+						{#if ds.specimens.length > SPECIMEN_LIMIT}
+							<span class="muted">+{ds.specimens.length - SPECIMEN_LIMIT} more</span>
 						{/if}
 					</div>
 					<div class="muted">
-						{formatAssayWithMultiplexing(ds.item.assay)} · <i>{formatSpecies(species)}</i> ·
-						Delivered
-						<time datetime={ds.item.delivered_at}
-							>{DATE_FORMATTER.format(new Date(ds.item.delivered_at))}</time
+						{formatAssayWithMultiplexing(ds.assay)} · <i>{formatSpecies(species)}</i> · Delivered
+						<time datetime={ds.delivered_at}
+							>{DATE_FORMATTER.format(new Date(ds.delivered_at))}</time
 						>
 					</div>
 				</ListRow>
@@ -129,9 +130,3 @@
 		<p>No datasets match these filters.</p>
 	{/if}
 </Browser>
-
-<style>
-	header {
-		justify-content: space-between;
-	}
-</style>

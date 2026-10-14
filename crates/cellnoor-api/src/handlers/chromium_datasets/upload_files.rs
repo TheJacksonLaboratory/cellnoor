@@ -12,14 +12,16 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use camino::{Utf8Path, Utf8PathBuf};
-use cellnoor_types::{Relation, nonempty::NonemptyString};
+use cellnoor_types::{
+    Relation, chromium_dataset::ChromiumDatasetParsedFileData, nonempty::NonemptyString,
+};
 use csvranger::TenxCsvValue;
 use strum::VariantNames;
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, DbError, FieldValues, Insert, Sql},
+    db::{self, DbError, FieldValues, Insert, Pool, Sql},
     error::error_response,
     handlers::{IdParam, specific_error_inferred_early_responses},
     state::AppState,
@@ -131,11 +133,50 @@ pub async fn upload_files(
     Ok(())
 }
 
+async fn write_files_to_db_and_disk(
+    db_pool: Pool,
+    user: AuthUser,
+    dataset_id: Uuid,
+    mut files: Multipart,
+) -> Result<(), UploadFilesError> {
+    let dataset_with_project_names = {
+        let mut client = db_pool.get(user).await.map_err(DbError::from)?;
+        let tx = client.begin().await.map_err(DbError::from)?;
+
+        fetch_dataset_and_project_names(&tx, &dataset_id).await?
+    };
+
+    while let Some(field) = files
+        .next_field()
+        .await
+        .map_err(|e| UploadFilesError::Multipart {
+            message: e.to_string(),
+        })?
+    {
+        let ProcessedFile {
+            path,
+            raw_file,
+            parsed_file,
+        } = process_file(field).await?;
+
+        {
+            let mut client = db_pool.get(user).await.map_err(DbError::from)?;
+            let tx = client.begin().await.map_err(DbError::from)?;
+
+            write_file_to_db(&tx, dataset_id, &path, parsed_file.as_ref()).await?
+        }
+
+        tokio::task::spawn_blocking
+    }
+
+    todo!()
+}
+
 async fn write_file_to_db(
     tx: &db::Transaction<'_>,
     dataset_id: Uuid,
     path: &NonemptyString,
-    parsed_file: Option<&serde_json::Value>,
+    parsed_file: Option<&ChromiumDatasetParsedFileData>,
 ) -> Result<(), DbError> {
     // Ensure the raw file is inserted first because the parsed file depends on
     // the raw file's existence
@@ -162,14 +203,14 @@ pub(super) async fn fetch_dataset_and_project_names(
     })
 }
 
-fn write_fileset_to_disk(
+fn write_file_to_disk(
     static_file_dir: &Utf8Path,
     dataset_id: Uuid,
     DatasetWithProjectNames {
         dataset_name,
         project_names,
     }: &DatasetWithProjectNames,
-    raw_files: &[(NonemptyString, Bytes)],
+    (filename, raw_file): &(NonemptyString, Bytes),
 ) -> std::io::Result<()> {
     let chromium_dataset_dir = static_file_dir
         .join("chromium-datasets")
@@ -181,20 +222,18 @@ fn write_fileset_to_disk(
             .join(dataset_name.as_ref())
     });
 
-    for (filename, raw_file) in raw_files {
-        let actual_path = chromium_dataset_dir.join(filename.as_ref());
-        write_file_to_dataset_dir(&actual_path, raw_file)?;
-        let symlink_paths = project_dirs.clone().map(|d| d.join(filename.as_ref()));
-        symlink_to_project_dirs(&actual_path, symlink_paths)?;
+    let actual_path = chromium_dataset_dir.join(filename.as_ref());
+    write_file_to_dataset_dir(&actual_path, raw_file)?;
+    let symlink_paths = project_dirs.clone().map(|d| d.join(filename.as_ref()));
+    symlink_to_project_dirs(&actual_path, symlink_paths)?;
 
-        let compressed_file = compress_file(raw_file)?;
-        let compressed_path = actual_path.with_added_extension("zst");
-        write_file_to_dataset_dir(&compressed_path, &compressed_file)?;
-        let symlink_paths = project_dirs
-            .clone()
-            .map(|d| d.join(compressed_path.strip_prefix(&chromium_dataset_dir).unwrap()));
-        symlink_to_project_dirs(&compressed_path, symlink_paths)?;
-    }
+    let compressed_file = compress_file(raw_file)?;
+    let compressed_path = actual_path.with_added_extension("zst");
+    write_file_to_dataset_dir(&compressed_path, &compressed_file)?;
+    let symlink_paths = project_dirs
+        .clone()
+        .map(|d| d.join(compressed_path.strip_prefix(&chromium_dataset_dir).unwrap()));
+    symlink_to_project_dirs(&compressed_path, symlink_paths)?;
 
     Ok(())
 }
@@ -259,22 +298,21 @@ async fn process_file(form_field: Field<'_>) -> Result<ProcessedFile, UploadFile
 struct ProcessedFile {
     path: NonemptyString,
     raw_file: Bytes,
-    parsed_file: Option<serde_json::Value>,
+    parsed_file: Option<ChromiumDatasetParsedFileData>,
 }
 
 fn parse_file(
     content_type: AllowedContentType,
     data: &[u8],
-) -> Result<Option<serde_json::Value>, UploadFilesError> {
+) -> Result<Option<ChromiumDatasetParsedFileData>, UploadFilesError> {
     match content_type {
         AllowedContentType::Csv => parse_csv(data).map(Some),
-        AllowedContentType::Json => {
-            serde_json::from_slice(data)
-                .map(Some)
-                .map_err(|e| UploadFilesError::Parse {
-                    message: format!("failed to parse JSON: {e}"),
-                })
-        }
+        AllowedContentType::Json => serde_json::from_slice(data)
+            .map(|data| ChromiumDatasetParsedFileData::Json { data })
+            .map(Some)
+            .map_err(|e| UploadFilesError::Parse {
+                message: format!("failed to parse JSON: {e}"),
+            }),
         AllowedContentType::Html => Ok(None),
     }
 }
@@ -312,7 +350,7 @@ async fn insert_parsed_file(
     tx: &db::Transaction<'_>,
     dataset_id: Uuid,
     path: &NonemptyString,
-    parsed_file: Option<&serde_json::Value>,
+    parsed_file: Option<&ChromiumDatasetParsedFileData>,
 ) -> Result<(), DbError> {
     let Some(parsed_file) = parsed_file else {
         return Ok(());
@@ -321,7 +359,7 @@ async fn insert_parsed_file(
     let record = NewParsedFile {
         dataset_id,
         path,
-        data: parsed_file,
+        data: postgres_types::Json(parsed_file),
     };
 
     tx.insert(&record).await?;
@@ -332,7 +370,7 @@ async fn insert_parsed_file(
 struct NewParsedFile<'a> {
     dataset_id: Uuid,
     path: &'a NonemptyString,
-    data: &'a serde_json::Value,
+    data: postgres_types::Json<&'a ChromiumDatasetParsedFileData>,
 }
 
 impl Relation for NewParsedFile<'_> {
@@ -353,36 +391,27 @@ impl Insert for NewParsedFile<'_> {
     }
 }
 
-fn parse_csv(data: &[u8]) -> Result<serde_json::Value, UploadFilesError> {
+fn parse_csv(data: &[u8]) -> Result<ChromiumDatasetParsedFileData, UploadFilesError> {
     type ParsedData = Vec<HashMap<String, TenxCsvValue>>;
-
-    fn csv_value_to_serde(val: TenxCsvValue) -> serde_json::Value {
-        match val {
-            TenxCsvValue::F64(f) => {
-                serde_json::Value::Number(serde_json::Number::from_f64(f).unwrap())
-            }
-            TenxCsvValue::I64(i) => serde_json::Value::Number(i.into()),
-            TenxCsvValue::String(s) => serde_json::Value::String(s),
-        }
-    }
 
     let mut reader = csv::Reader::from_reader(data);
 
-    let parsed = reader
+    let mut parsed = reader
         .deserialize()
         .collect::<Result<ParsedData, _>>()
         .map_err(|e| UploadFilesError::Parse {
             message: format!("failed to parse CSV: {e}"),
         })?;
 
-    Ok(parsed
-        .into_iter()
-        .map(|obj| {
-            obj.into_iter()
-                .map(|(k, v)| (k, csv_value_to_serde(v)))
-                .collect::<serde_json::Value>()
-        })
-        .collect())
+    let parsed = if parsed.len() == 1 {
+        ChromiumDatasetParsedFileData::SingleRowCsv {
+            data: parsed.swap_remove(0),
+        }
+    } else {
+        ChromiumDatasetParsedFileData::MultiRowCsv { data: parsed }
+    };
+
+    Ok(parsed)
 }
 
 #[derive(

@@ -1,9 +1,13 @@
+use std::collections::HashMap;
+
 use axum::{Json, extract::State};
+use camino::{Utf8Component, Utf8Path};
 use cellnoor_types::{
     chromium_dataset::{
-        ChromiumDatasetDetailed, ChromiumDatasetDetailedLinks, ChromiumDatasetQuery,
-        SavedChromiumDatasetRecord,
+        ChromiumDatasetDetailed, ChromiumDatasetDetailedLinks, ChromiumDatasetParsedFileData,
+        ChromiumDatasetParsedFileRecord, ChromiumDatasetQuery, SavedChromiumDatasetRecord,
     },
+    file_tree::FileTreeNode,
     id::Id,
     library::SavedLibraryRecord,
     nonempty::NonemptyString,
@@ -54,7 +58,15 @@ fn map_detailed_row(row: Row) -> ChromiumDatasetDetailed {
     let record: SavedChromiumDatasetRecord = row.get("chromium_dataset");
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
     let libraries: Vec<SavedLibraryRecord> = row.get("libraries");
-    let raw_file_paths: Vec<NonemptyString> = row.get("raw_file_paths");
+    let mut raw_file_paths: Vec<_> = row.get("raw_file_paths");
+    let parsed_files = row.get("parsed_files");
+
+    let files = create_file_tree(
+        record.id,
+        record.name.to_string(),
+        &mut raw_file_paths,
+        parsed_files,
+    );
 
     ChromiumDatasetDetailed {
         links: chromium_dataset_detailed_links(record.id, &raw_file_paths),
@@ -65,8 +77,57 @@ fn map_detailed_row(row: Row) -> ChromiumDatasetDetailed {
             .into_iter()
             .map(tagged_specimen_from_record)
             .collect(),
-        data: row.get("data"),
+        files,
     }
+}
+
+fn create_file_tree(
+    dataset_id: Id,
+    name: String,
+    raw_file_paths: &mut [NonemptyString],
+    parsed_files: Vec<ChromiumDatasetParsedFileRecord>,
+) -> FileTreeNode<ChromiumDatasetParsedFileData> {
+    let mut parsed_file_map: HashMap<_, _> =
+        parsed_files.iter().map(|f| (&f.path, f.data.0)).collect();
+
+    let mut root = FileTreeNode::Directory {
+        name,
+        children: Vec::with_capacity(parsed_files.len()),
+    };
+    let FileTreeNode::Directory { name: _, children } = &mut root else {
+        unreachable!()
+    };
+
+    raw_file_paths.sort();
+    for path in raw_file_paths {
+        for component in Utf8Path::new(path).components() {
+            let Utf8Component::Normal(component) = component else {
+                continue;
+            };
+
+            let component = component.to_owned();
+
+            // A simple heuristic to check whether the component is a file
+            if component.contains('.') {
+                let parsed_contents = parsed_file_map.remove(path);
+
+                children.push(FileTreeNode::File {
+                    name: component,
+                    raw_file_link: file_path_to_link(dataset_id, path),
+                    parsed_contents,
+                });
+            } else {
+                children.push(create_file_tree(
+                    dataset_id,
+                    component,
+                    raw_file_paths,
+                    parsed_files,
+                ))
+            }
+        }
+    }
+
+    todo!()
 }
 
 fn chromium_dataset_detailed_links(
@@ -75,10 +136,18 @@ fn chromium_dataset_detailed_links(
 ) -> ChromiumDatasetDetailedLinks {
     ChromiumDatasetDetailedLinks {
         simple: chromium_dataset_links(id),
-        file_dir: format!("/files/chromium-datasets/{id}"),
+        file_dir: dataset_id_to_file_dir(id),
         raw_files: raw_file_paths
             .iter()
-            .map(|p| format!("/files/chromium-datasets/{id}/{p}"))
+            .map(|p| file_path_to_link(id, p))
             .collect(),
     }
+}
+
+fn dataset_id_to_file_dir(dataset_id: Id) -> String {
+    format!("/files/chromium-datasets/{dataset_id}")
+}
+
+fn file_path_to_link(dataset_id: Id, path: &NonemptyString) -> String {
+    format!("{}/{path}", dataset_id_to_file_dir(dataset_id))
 }

@@ -12,7 +12,7 @@ select
     array(
         select chromium_dataset_parsed_file from chromium_dataset_parsed_file
         where dataset_id = (chromium_dataset).id
-    ) as data
+    ) as parsed_files
 from chromium_dataset_to_specimen
 /* {where} */
 group by chromium_dataset, assay

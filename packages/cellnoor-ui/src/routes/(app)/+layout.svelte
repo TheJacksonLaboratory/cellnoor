@@ -6,7 +6,12 @@
 	let { children } = $props();
 
 	let datasetsMenu: HTMLElement;
-	afterNavigate(() => datasetsMenu.hidePopover());
+
+	afterNavigate(({ shallow, type }) => {
+		if (shallow && type === 'goto') return;
+
+		return datasetsMenu.hidePopover();
+	});
 </script>
 
 <nav>

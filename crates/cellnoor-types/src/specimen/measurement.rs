@@ -11,10 +11,7 @@ pub struct NewSpecimenMeasurement {
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
     #[cfg(all(feature = "postgres-types", feature = "schemars"))]
-    #[cfg_attr(
-        all(feature = "postgres-types", feature = "schemars"),
-        schemars(with = "SpecimenMeasurementData")
-    )]
+    #[cfg_attr(feature = "schemars", schemars(with = "SpecimenMeasurementData"))]
     pub data: Json<SpecimenMeasurementData>,
     #[cfg(not(feature = "postgres-types"))]
     pub data: SpecimenMeasurementData,
@@ -30,10 +27,7 @@ pub struct SpecimenMeasurement {
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
     #[cfg(all(feature = "postgres-types", feature = "schemars"))]
-    #[cfg_attr(
-        all(feature = "postgres-types", feature = "schemars"),
-        schemars(with = "SpecimenMeasurementData")
-    )]
+    #[cfg_attr(feature = "schemars", schemars(with = "SpecimenMeasurementData"))]
     pub data: Json<SpecimenMeasurementData>,
     #[cfg(not(feature = "postgres-types"))]
     pub data: SpecimenMeasurementData,

@@ -12,11 +12,8 @@ pub type SuspensionPoolMeasurementData = SuspensionMeasurementQuantity;
 pub struct NewSuspensionPoolMeasurement {
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
-    #[cfg(all(feature = "postgres-types", feature = "schemars"))]
-    #[cfg_attr(
-        all(feature = "postgres-types", feature = "schemars"),
-        schemars(with = "SuspensionPoolMeasurementData")
-    )]
+    #[cfg(feature = "postgres-types")]
+    #[cfg_attr(feature = "schemars", schemars(with = "SuspensionPoolMeasurementData"))]
     pub data: Json<SuspensionPoolMeasurementData>,
     #[cfg(not(feature = "postgres-types"))]
     pub data: SuspensionPoolMeasurementData,
@@ -34,11 +31,8 @@ pub struct SuspensionPoolMeasurement {
     pub pool_created_at: Timestamp,
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
-    #[cfg(all(feature = "postgres-types", feature = "schemars"))]
-    #[cfg_attr(
-        all(feature = "postgres-types", feature = "schemars"),
-        schemars(with = "SuspensionPoolMeasurementData")
-    )]
+    #[cfg(feature = "postgres-types")]
+    #[cfg_attr(feature = "schemars", schemars(with = "SuspensionPoolMeasurementData"))]
     pub data: Json<SuspensionPoolMeasurementData>,
     #[cfg(not(feature = "postgres-types"))]
     pub data: SuspensionPoolMeasurementData,

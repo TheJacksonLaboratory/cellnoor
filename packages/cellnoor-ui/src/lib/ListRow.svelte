@@ -7,8 +7,7 @@
 		subtitle,
 		subtitleHref,
 		checked = $bindable(),
-		onCheck,
-		disabled,
+		onCheckChange,
 		children
 	}: {
 		title: string;
@@ -16,20 +15,21 @@
 		subtitle?: string;
 		subtitleHref?: string;
 		checked?: boolean;
-		onCheck?: () => void;
-		disabled?: boolean;
+		onCheckChange?: () => void;
 		children?: Snippet;
 	} = $props();
 </script>
 
 <li>
 	{#if checked !== undefined}
-		<input type="checkbox" {disabled} aria-label="Select {title}" bind:checked onchange={onCheck} />
+		<input type="checkbox" aria-label="Select {title}" bind:checked onchange={onCheckChange} />
 	{/if}
 	<div class="stack">
-		<div class="divided-inline">
+		<div>
 			<a class="heading" {href}>{title}</a>
-			<a class="subheading link-arrow" href={subtitleHref}>{subtitle}</a>
+			{#if subtitle}
+				<a class="subheading link-arrow" href={subtitleHref}>{subtitle}</a>
+			{/if}
 		</div>
 		{@render children?.()}
 	</div>
@@ -47,5 +47,11 @@
 
 	.heading {
 		color: var(--color-primary);
+	}
+
+	.subheading {
+		margin-left: var(--space-sm);
+		padding-left: var(--space-sm);
+		border-left: var(--border);
 	}
 </style>

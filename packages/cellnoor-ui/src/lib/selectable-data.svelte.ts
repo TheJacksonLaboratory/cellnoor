@@ -31,11 +31,24 @@ export class SelectableData<T> {
 	}
 
 	get(id: string) {
-		return this.#items.get(id);
+		return this.#items.get(id)?.item;
 	}
 
 	entries() {
-		return this.#items.entries();
+		return this.#items.entries().map(([id, { item }]) => [id, item] as const);
+	}
+
+	isSelectedGetter(id: string) {
+		return () => this.#items.get(id)?.selected;
+	}
+
+	isSelectedSetter(id: string) {
+		const item = this.#items.get(id);
+		if (item) {
+			return () => this.#items.set(id, { item: item.item, selected: !item.selected });
+		}
+
+		return () => {};
 	}
 
 	toggleAll() {
@@ -44,5 +57,12 @@ export class SelectableData<T> {
 		for (const [id, { item }] of this.#items.entries()) {
 			this.#items.set(id, { item, selected: !currentState });
 		}
+	}
+
+	get selected() {
+		return this.#items
+			.values()
+			.filter(({ selected }) => selected)
+			.map(({ item }) => item);
 	}
 }

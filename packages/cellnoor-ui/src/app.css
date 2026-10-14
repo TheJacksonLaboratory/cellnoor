@@ -104,10 +104,6 @@
 		border-block-start: var(--border);
 	}
 
-	.divided-inline > * + * {
-		border-inline-start: var(--border);
-	}
-
 	.input,
 	.button {
 		padding: var(--space-xs) var(--space-sm);

@@ -10,6 +10,7 @@ pub mod api_key;
 pub mod cdna;
 pub mod chromium_dataset;
 pub mod chromium_run;
+pub mod file_tree;
 pub mod id;
 pub mod index_set;
 pub mod institution;

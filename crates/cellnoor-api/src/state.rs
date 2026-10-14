@@ -15,6 +15,7 @@ type JwtDecodingInfo = (jsonwebtoken::DecodingKey, jsonwebtoken::Validation);
 pub struct AppState {
     pub db_pool: db::Pool,
     pub static_files_dir: Utf8PathBuf,
+
     // `None` disables authentication, so every request runs as the admin user
     pub jwt_decoding_info: Option<&'static JwtDecodingInfo>,
 }
@@ -69,11 +70,13 @@ pub mod dev_util {
     use uuid::Uuid;
 
     #[cfg(test)]
-    use crate::{auth::AuthUser, db};
+    use crate::auth::AuthUser;
+    #[cfg(any(test, feature = "dev"))]
+    use crate::db;
 
-    #[cfg(test)]
+    #[cfg(any(test, feature = "dev"))]
     pub fn test_db_pool() -> db::Pool {
-        // IDE will say this won't compile, but it will when you run
+        // Your IDE will say this won't compile, but it will when you run
         // scripts/dev/test.sh
         db::Pool::from_url(env!("CELLNOOR_TEST_DB_URL"))
     }

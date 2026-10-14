@@ -3,8 +3,8 @@
 # Because `docker compose` can be slow, this script starts all the services of this application in a dev build
 set -euo pipefail
 
-sockets=$(mktemp -d)
-logs=$(mktemp -d)
+sockets=$(mktemp --directory)
+logs=$(mktemp --directory)
 
 quiet() {
 	local name=$1
@@ -19,7 +19,6 @@ cleanup() {
 	trap '' TERM
 	kill 0
 	wait
-	tail -n +1 "$logs"/{api,auth,ui-watch,caddy}.log 2>/dev/null || true
 	quiet cleanup scripts/dev/cleanup-docker.sh --yes
 	rm -rf "$sockets" "$logs"
 }
@@ -77,9 +76,9 @@ quiet api-build cargo build --manifest-path crates/Cargo.toml --package cellnoor
 quiet ui-build bun run --bun --cwd packages/cellnoor-ui check
 quiet auth-install bun install --cwd packages/cellnoor-auth
 
-./crates/target/debug/cellnoor-api >"$logs/api.log" 2>&1 &
+./crates/target/debug/cellnoor-api &
 bun --cwd packages/cellnoor-auth index.ts >"$logs/auth.log" 2>&1 &
-bun run --cwd packages/cellnoor-ui build --watch >"$logs/ui-watch.log" 2>&1 &
+bun run --cwd packages/cellnoor-ui build --watch &
 caddy run --config caddy/Caddyfile --watch >"$logs/caddy.log" 2>&1 &
 
 until [[ -S $CELLNOOR_API__LISTEN_ON && -S $CELLNOOR_AUTH__UNIX_DOMAIN_SOCKET ]]; do

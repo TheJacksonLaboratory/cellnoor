@@ -201,6 +201,7 @@ where
     modify(&mut new);
 
     let inserted = insert_chromium_dataset(tx, new.clone()).await?;
+
     Ok((new, inserted))
 }
 

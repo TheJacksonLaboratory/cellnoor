@@ -6070,7 +6070,6 @@ export interface components {
         };
         ChromiumDatasetDetailed: {
             assay: components["schemas"]["TenxAssay"];
-            data: components["schemas"]["ChromiumDatasetParsedFile"][];
             /** Format: date-time */
             delivered_at: string;
             /** Format: uuid */
@@ -6078,6 +6077,7 @@ export interface components {
             libraries: components["schemas"]["LibraryCompact"][];
             links: components["schemas"]["ChromiumDatasetDetailedLinks"];
             name: string;
+            parsed_files: components["schemas"]["ChromiumDatasetParsedFile"][];
             specimens: components["schemas"]["TaggedSpecimen"][];
         };
         ChromiumDatasetDetailedLinks: {
