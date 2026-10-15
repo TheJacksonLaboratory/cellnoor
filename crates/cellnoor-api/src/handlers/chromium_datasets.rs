@@ -6,6 +6,8 @@ pub use index_detailed::index_chromium_datasets_detailed;
 pub use show::show_chromium_dataset;
 pub use update::update_chromium_dataset;
 pub use upload_files::upload_files;
+#[cfg(feature = "dev")]
+pub use upload_files::write_test_dataset_files;
 
 pub(super) mod create;
 pub(super) mod index_compact;

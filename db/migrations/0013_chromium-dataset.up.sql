@@ -3,7 +3,8 @@ create table chromium_dataset (
     name case_insensitive_text not null,
     delivered_at timestamptz not null,
 
-    unique (id, delivered_at)
+    unique (id, delivered_at),
+    constraint name_is_path_component check (name not in ('.', '..') and position('/' in name) = 0)
 );
 
 -- We don't actually store the content of the files in the database, just the path, so we can do permissions checks.

@@ -29,18 +29,22 @@ postgres-types.workspace = true
 jiff.workspace = true
 thiserror.workspace = true
 config.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["fs", "io-util"] }
 strum.workspace = true
 sha3.workspace = true
 regex.workspace = true
 futures.workspace = true
 serde_json.workspace = true
 zstd.workspace = true
+tempfile = { optional = true, workspace = true }
+reqwest = { optional = true, workspace = true }
 
 [features]
-dev = ["uuid/v4"]
+dev = ["axum/__private", "uuid/v4", "tempfile", "reqwest"]
 
 [dev-dependencies]
+axum = {workspace = true, features = ["__private"] }
 uuid = { workspace = true, features = ["v4"] }
 pretty_assertions.workspace = true
 tempfile.workspace = true
+reqwest.workspace = true

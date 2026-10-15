@@ -1,7 +1,6 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use axum::{Json, extract::State};
-use camino::{Utf8Component, Utf8Path};
 use cellnoor_types::{
     chromium_dataset::{
         ChromiumDatasetDetailed, ChromiumDatasetDetailedLinks, ChromiumDatasetParsedFileData,
@@ -58,15 +57,11 @@ fn map_detailed_row(row: Row) -> ChromiumDatasetDetailed {
     let record: SavedChromiumDatasetRecord = row.get("chromium_dataset");
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
     let libraries: Vec<SavedLibraryRecord> = row.get("libraries");
-    let mut raw_file_paths: Vec<_> = row.get("raw_file_paths");
-    let parsed_files = row.get("parsed_files");
 
-    let files = create_file_tree(
-        record.id,
-        record.name.to_string(),
-        &mut raw_file_paths,
-        parsed_files,
-    );
+    let mut raw_file_paths: Vec<_> = row.get("raw_file_paths");
+    raw_file_paths.sort();
+
+    let files = create_file_tree(record.id, &raw_file_paths, row.get("parsed_files"));
 
     ChromiumDatasetDetailed {
         links: chromium_dataset_detailed_links(record.id, &raw_file_paths),
@@ -83,51 +78,53 @@ fn map_detailed_row(row: Row) -> ChromiumDatasetDetailed {
 
 fn create_file_tree(
     dataset_id: Id,
-    name: String,
-    raw_file_paths: &mut [NonemptyString],
+    raw_file_paths: &[NonemptyString],
     parsed_files: Vec<ChromiumDatasetParsedFileRecord>,
-) -> FileTreeNode<ChromiumDatasetParsedFileData> {
-    let mut parsed_file_map: HashMap<_, _> =
-        parsed_files.iter().map(|f| (&f.path, f.data.0)).collect();
+) -> Vec<FileTreeNode<ChromiumDatasetParsedFileData>> {
+    let mut parsed_files: HashMap<_, _> = parsed_files
+        .into_iter()
+        .map(|f| (f.path, f.data.0))
+        .collect();
 
-    let mut root = FileTreeNode::Directory {
-        name,
-        children: Vec::with_capacity(parsed_files.len()),
-    };
-    let FileTreeNode::Directory { name: _, children } = &mut root else {
-        unreachable!()
-    };
+    let mut root = Directory::default();
 
-    raw_file_paths.sort();
     for path in raw_file_paths {
-        for component in Utf8Path::new(path).components() {
-            let Utf8Component::Normal(component) = component else {
-                continue;
-            };
+        let mut directory_names = path.as_ref().split('/');
+        let file_name = directory_names.next_back().unwrap();
 
-            let component = component.to_owned();
-
-            // A simple heuristic to check whether the component is a file
-            if component.contains('.') {
-                let parsed_contents = parsed_file_map.remove(path);
-
-                children.push(FileTreeNode::File {
-                    name: component,
-                    raw_file_link: file_path_to_link(dataset_id, path),
-                    parsed_contents,
-                });
-            } else {
-                children.push(create_file_tree(
-                    dataset_id,
-                    component,
-                    raw_file_paths,
-                    parsed_files,
-                ))
-            }
+        let mut directory = &mut root;
+        // Walk down the file tree until we get to the innermost directory
+        for name in directory_names {
+            directory = directory.subdirectories.entry(name.to_owned()).or_default();
         }
+
+        directory.files.push(FileTreeNode::File {
+            name: file_name.to_owned(),
+            raw_file_link: file_path_to_link(dataset_id, path),
+            parsed_contents: parsed_files.remove(path),
+        });
     }
 
-    todo!()
+    root.into_nodes()
+}
+
+#[derive(Default)]
+struct Directory {
+    subdirectories: BTreeMap<String, Directory>,
+    files: Vec<FileTreeNode<ChromiumDatasetParsedFileData>>,
+}
+
+impl Directory {
+    fn into_nodes(self) -> Vec<FileTreeNode<ChromiumDatasetParsedFileData>> {
+        self.subdirectories
+            .into_iter()
+            .map(|(name, directory)| FileTreeNode::Directory {
+                name,
+                children: directory.into_nodes(),
+            })
+            .chain(self.files)
+            .collect()
+    }
 }
 
 fn chromium_dataset_detailed_links(
@@ -150,4 +147,93 @@ fn dataset_id_to_file_dir(dataset_id: Id) -> String {
 
 fn file_path_to_link(dataset_id: Id, path: &NonemptyString) -> String {
     format!("{}/{path}", dataset_id_to_file_dir(dataset_id))
+}
+
+#[cfg(test)]
+mod tests {
+    use cellnoor_types::{
+        chromium_dataset::{ChromiumDatasetParsedFileData, ChromiumDatasetParsedFileRecord},
+        file_tree::FileTreeNode,
+        id::Id,
+    };
+    use csvranger::TenxCsvValue;
+    use postgres_types::Json;
+    use pretty_assertions::assert_eq;
+    use uuid::Uuid;
+
+    use super::create_file_tree;
+    use crate::state::dev_util::ToNonemptyString;
+
+    #[test]
+    fn file_tree() {
+        let dataset_id = Id { id: Uuid::nil() };
+
+        // These paths are intentionally misordered so that we get check that
+        // the output is correctly sorted
+        let paths = [
+            "qc_report.html",
+            "per_sample_outs/sample2/metrics_summary.csv",
+            "per_sample_outs/sample1/metrics_summary.csv",
+        ]
+        .map(|p| p.to_nonempty_string());
+
+        let parsed_file_data = ChromiumDatasetParsedFileData::SingleRowCsv {
+            data: [("field".to_owned(), TenxCsvValue::I64(0))]
+                .into_iter()
+                .collect(),
+        };
+
+        let file = |full_path: &str, parsed_contents| FileTreeNode::File {
+            name: full_path.split('/').next_back().map(str::to_owned).unwrap(),
+            raw_file_link: format!("/files/chromium-datasets/{dataset_id}/{full_path}"),
+            parsed_contents,
+        };
+        let dir = |name: &str, children| FileTreeNode::Directory {
+            name: name.to_owned(),
+            children,
+        };
+
+        let expected = [
+            dir(
+                "per_sample_outs",
+                vec![
+                    dir(
+                        "sample1",
+                        vec![file(
+                            "per_sample_outs/sample1/metrics_summary.csv",
+                            Some(parsed_file_data.clone()),
+                        )],
+                    ),
+                    dir(
+                        "sample2",
+                        vec![file(
+                            "per_sample_outs/sample2/metrics_summary.csv",
+                            Some(parsed_file_data.clone()),
+                        )],
+                    ),
+                ],
+            ),
+            file("qc_report.html", None),
+        ];
+
+        assert_eq!(
+            create_file_tree(
+                dataset_id,
+                &paths,
+                vec![
+                    ChromiumDatasetParsedFileRecord {
+                        dataset_id: *dataset_id,
+                        path: "per_sample_outs/sample1/metrics_summary.csv".to_nonempty_string(),
+                        data: Json(parsed_file_data.clone())
+                    },
+                    ChromiumDatasetParsedFileRecord {
+                        dataset_id: *dataset_id,
+                        path: "per_sample_outs/sample2/metrics_summary.csv".to_nonempty_string(),
+                        data: Json(parsed_file_data)
+                    }
+                ]
+            ),
+            expected
+        );
+    }
 }

@@ -14,7 +14,7 @@ bytes = { version = "1.12.1" }
 tracing-subscriber = {version = "0.3.23", default-features = false, features = ["std", "fmt", "registry"]}
 tracing = {version = "0.1.44"}
 tower-http = {version = "0.7.0", features = ["trace", "normalize-path"]}
-camino = { version = "1.2.2" }
+camino = { version = "1.2.6" }
 rand = { version = "0.10.1" }
 csvranger = { version = "0.3.1", features = ["legacy", "serde", "schemars"] }
 csv = { version = "1.4.0" }
@@ -61,8 +61,9 @@ thiserror = "2.0.18"
 uuid = { version = "1.23.0", features = ["serde"] }
 tokio = {version = "1.52.1", features = ["macros", "rt-multi-thread"]}
 deadpool-postgres = { version = "0.14.1", features = ["serde"] }
-zstd = { version = "0.13.3" }
+zstd = { version = "0.14.2" }
 tempfile = { version = "3.27.0" }
+reqwest = { version = "0.13.5", features = ["multipart"] }
 
 [workspace.lints.clippy]
 missing_errors_doc = "allow"

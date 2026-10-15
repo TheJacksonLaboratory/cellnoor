@@ -47,7 +47,8 @@ fn id_router() -> ApiRouter<AppState> {
         // Unfortunately we don't get openAPI documentation for this route
         .route(
             "/files",
-            axum::routing::post(upload_files).layer(DefaultBodyLimit::disable()),
+            // Assume a maximum of 32 files each with size 16 MiB
+            axum::routing::post(upload_files).layer(DefaultBodyLimit::max(32 * 16 * 1024 * 1024)),
         )
 }
 

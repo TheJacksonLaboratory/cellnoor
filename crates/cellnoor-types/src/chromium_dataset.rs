@@ -109,5 +109,5 @@ pub struct ChromiumDatasetDetailed {
     pub links: ChromiumDatasetDetailedLinks,
     pub libraries: Vec<LibraryCompact>,
     pub specimens: Vec<TaggedSpecimen>,
-    pub files: FileTreeNode<ChromiumDatasetParsedFileData>,
+    pub files: Vec<FileTreeNode<ChromiumDatasetParsedFileData>>,
 }

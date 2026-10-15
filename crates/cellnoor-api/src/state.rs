@@ -15,8 +15,7 @@ type JwtDecodingInfo = (jsonwebtoken::DecodingKey, jsonwebtoken::Validation);
 pub struct AppState {
     pub db_pool: db::Pool,
     pub static_files_dir: Utf8PathBuf,
-
-    // `None` disables authentication, so every request runs as the admin user
+    // None disables authentication, so every request runs as the admin user
     pub jwt_decoding_info: Option<&'static JwtDecodingInfo>,
 }
 
@@ -78,7 +77,16 @@ pub mod dev_util {
     pub fn test_db_pool() -> db::Pool {
         // Your IDE will say this won't compile, but it will when you run
         // scripts/dev/test.sh
-        db::Pool::from_url(env!("CELLNOOR_TEST_DB_URL"))
+        #[cfg(all(test, not(feature = "dev")))]
+        return db::Pool::from_url(env!("CELLNOOR_TEST_DB_URL"));
+
+        #[cfg(all(feature = "dev", not(test)))]
+        return crate::state::AppState::initialize(&crate::settings::Settings::read().unwrap())
+            .unwrap()
+            .db_pool;
+
+        #[cfg(all(test, feature = "dev"))]
+        panic!("test and feature 'dev' are mutually exclusive")
     }
 
     #[cfg(test)]

@@ -6,10 +6,7 @@ import {
 	speciesValues,
 	specimenTypeValues
 } from 'cellnoor-client/cellnoor-types.js';
-import type {
-	ChromiumDatasetDetailed,
-	ChromiumDatasetPredicate
-} from 'cellnoor-client/cellnoor-types.ts';
+import type { ChromiumDatasetPredicate } from 'cellnoor-client/cellnoor-types.ts';
 import { toPredicates } from '#lib/filters/spec.ts';
 import { datasetFilterFieldParsers } from './field-parsers.ts';
 import { SelectableData } from '#lib/selectable-data.svelte.ts';
@@ -71,40 +68,4 @@ function toDisplayMap(strings: readonly string[], toText?: (s: string) => string
 
 function toDisplayText(s: string) {
 	return s.replaceAll('_', ' ');
-}
-
-function downloadDatasetMetrics(selectedDatasets: SelectableData<ChromiumDatasetDetailed>) {
-	const files: {
-		singleRecords: Record<string, unknown>[];
-		multiRecords: Record<string, unknown>[][];
-		objects: Record<string, unknown>[];
-	} = {
-		singleRecords: [],
-		multiRecords: [],
-		objects: []
-	};
-
-	for (const ds of selectedDatasets.selected) {
-		for (const { data } of ds.parsed_files) {
-			if (isSingleRecordArray(data)) {
-				files.singleRecords.push(data[0]);
-			}
-
-			if (isMultiRecordArray(data)) {
-				files.multiRecords.push(data);
-			}
-
-			if (typeof data === 'object') {
-				files.objects.push();
-			}
-		}
-	}
-}
-
-function isSingleRecordArray(data: unknown): data is [Record<string, unknown>] {
-	return Array.isArray(data) && data.length === 1 && typeof data[0] === 'object';
-}
-
-function isMultiRecordArray(data: unknown): data is Record<string, unknown>[] {
-	return Array.isArray(data) && data.length > 1 && typeof data[0] === 'object';
 }

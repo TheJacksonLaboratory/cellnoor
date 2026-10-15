@@ -6,7 +6,8 @@ create table project (
     ended_at timestamptz not null,
 
     unique (id, started_at, ended_at),
-    constraint starts_before_ends check (started_at <= ended_at)
+    constraint starts_before_ends check (started_at <= ended_at),
+    constraint name_is_path_component check (name not in ('.', '..') and position('/' in name) = 0)
 );
 
 create table project_access (
