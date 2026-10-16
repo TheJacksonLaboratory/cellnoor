@@ -13,7 +13,7 @@ use aide::{
 use axum::{
     body::Body,
     extract::FromRequest,
-    http::{HeaderValue, Request},
+    http::{HeaderMap, HeaderValue, Request},
 };
 use axum::{
     extract::{
@@ -129,7 +129,7 @@ pub async fn upload_files(
 // in tests without needing a full AppState
 async fn write_files_to_disk_and_db(
     db_pool: &Pool,
-    static_file_dir: &Utf8Path,
+    static_files_dir: &Utf8Path,
     user: AuthUser,
     dataset_id: Uuid,
     mut files: Multipart,
@@ -144,8 +144,8 @@ async fn write_files_to_disk_and_db(
         fetch_dataset_and_project_names(&tx, &dataset_id).await?
     };
 
-    let chromium_dataset_dir = chromium_dataset_dir_path(static_file_dir, dataset_id);
-    let project_dirs = project_dir_paths(static_file_dir, &project_names, &dataset_name);
+    let chromium_dataset_dir = chromium_dataset_dir_path(static_files_dir, dataset_id);
+    let project_dirs = project_dir_paths(static_files_dir, &project_names, &dataset_name);
 
     let mut written_files = Vec::new();
 
@@ -185,21 +185,21 @@ async fn write_files_to_disk_and_db(
     Ok(())
 }
 
-fn chromium_dataset_dir_path(static_file_dir: &Utf8Path, dataset_id: Uuid) -> Utf8PathBuf {
-    static_file_dir
+fn chromium_dataset_dir_path(static_files_dir: &Utf8Path, dataset_id: Uuid) -> Utf8PathBuf {
+    static_files_dir
         .join("chromium-datasets")
         .join(dataset_id.to_string())
 }
 
 fn project_dir_paths(
-    static_file_dir: &Utf8Path,
+    static_files_dir: &Utf8Path,
     project_names: &[NonemptyString],
     dataset_name: &NonemptyString,
 ) -> Vec<Utf8PathBuf> {
     project_names
         .iter()
         .map(|p| {
-            static_file_dir
+            static_files_dir
                 .join("projects")
                 .join(p.as_ref())
                 .join(dataset_name.as_ref())
@@ -328,7 +328,7 @@ async fn insert_raw_files(
         .iter()
         .map(|(p, _)| NewRawFile {
             dataset_id,
-            path: p.as_str(),
+            path: p,
         })
         .collect();
 
@@ -339,7 +339,7 @@ async fn insert_raw_files(
 
 struct NewRawFile<'a> {
     dataset_id: Uuid,
-    path: &'a str,
+    path: &'a UploadPath,
 }
 
 impl Relation for NewRawFile<'_> {
@@ -366,7 +366,7 @@ async fn insert_parsed_files(
         .filter_map(|(path, data)| {
             data.as_ref().map(|d| NewParsedFile {
                 dataset_id,
-                path: path.as_str(),
+                path,
                 data: postgres_types::Json(d),
             })
         })
@@ -379,7 +379,7 @@ async fn insert_parsed_files(
 
 struct NewParsedFile<'a> {
     dataset_id: Uuid,
-    path: &'a str,
+    path: &'a UploadPath,
     data: postgres_types::Json<&'a ChromiumDatasetParsedFileData>,
 }
 
@@ -450,8 +450,9 @@ impl AllowedContentType {
     }
 }
 
-#[derive(Debug)]
-struct UploadPath(Utf8PathBuf);
+#[derive(Debug, postgres_types::ToSql)]
+#[postgres(transparent)]
+struct UploadPath(NonemptyString);
 
 impl UploadPath {
     fn new(filename: Option<&str>) -> Result<Self, UploadFilesError> {
@@ -495,7 +496,9 @@ impl UploadPath {
         }
 
         match components.as_slice() {
-            [_] | [Utf8Component::Normal("per_sample_outs"), _, _] => Ok(Self(path.to_owned())),
+            [_] | [Utf8Component::Normal("per_sample_outs"), _, _] => {
+                Ok(Self(NonemptyString::new(path.as_str().to_owned()).unwrap()))
+            }
             _ => Err(UploadFilesError::Filename {
                 message: "files nested into a directory must be nested into a \
                           'per_sample_outs/sample_name/' directory"
@@ -505,20 +508,22 @@ impl UploadPath {
     }
 
     fn as_str(&self) -> &str {
-        self.0.as_str()
+        self.0.as_ref()
     }
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn write_test_dataset_files(dataset_id: Uuid) {
+pub async fn write_test_dataset_files(db_pool: &Pool, dataset_id: Uuid) {
     use tempfile::tempdir;
 
-    use crate::state::dev_util::test_db_pool;
-
     let tmp = tempdir().unwrap();
-    let static_file_dir = option_env!("CELLNOOR_API__STATIC_FILE_DIR")
+    let static_files_dir = option_env!("CELLNOOR_API__STATIC_FILES_DIR")
         .map(Utf8Path::new)
         .unwrap_or(Utf8Path::from_path(tmp.path()).unwrap());
+
+    let csv_header: HeaderMap = [(CONTENT_TYPE, HeaderValue::from_static("text/csv"))]
+        .into_iter()
+        .collect();
 
     let body = Form::new()
         .part(
@@ -530,22 +535,14 @@ pub async fn write_test_dataset_files(dataset_id: Uuid) {
                         .collect(),
                 )
                 .file_name("qc_report.html"),
-        )
+        ).part("summary", Part::bytes(b"field\nvalue").headers(csv_header.clone()).file_name("summary.csv"))
         .part("metrics1", Part::bytes(b"Category,Library Type,Grouped By,Group Name,Metric Name,Metric Value\nCells,Gene Expression,,,Cells,1000\nCells,Gene Expression,,,Confidently mapped antisense,0.0")
-        .headers(
-            [(CONTENT_TYPE, HeaderValue::from_static("text/csv"))]
-                .into_iter()
-                .collect(),
-        )
+        .headers(csv_header.clone())
         .file_name("per_sample_outs/sample1/metrics_summary.csv"))
         .part(
             "metrics2",
             Part::bytes(b"Category,Library Type,Grouped By,Group Name,Metric Name,Metric Value\nCells,Gene Expression,,,Cells,1000\nCells,Gene Expression,,,Confidently mapped antisense,0.0")
-            .headers(
-                [(CONTENT_TYPE, HeaderValue::from_static("text/csv"))]
-                    .into_iter()
-                    .collect(),
-            )
+            .headers(csv_header)
             .file_name("per_sample_outs/sample2/metrics_summary.csv"),
         );
 
@@ -560,8 +557,8 @@ pub async fn write_test_dataset_files(dataset_id: Uuid) {
         .map(Body::new);
 
     write_files_to_disk_and_db(
-        &test_db_pool(),
-        static_file_dir,
+        db_pool,
+        static_files_dir,
         AuthUser::dev_admin(),
         dataset_id,
         Multipart::from_request(request, &()).await.unwrap(),

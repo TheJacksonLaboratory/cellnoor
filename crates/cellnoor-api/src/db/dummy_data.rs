@@ -8,7 +8,10 @@ use crate::{
         chromium_datasets::{insert_test_chromium_dataset, write_test_dataset_files},
         chromium_runs::TestChromiumRunKind,
     },
-    state::{AppState, dev_util::ToNonemptyString},
+    state::{
+        AppState,
+        dev_util::{ToNonemptyString, test_db_pool},
+    },
 };
 
 pub fn random_name_for(table: &str) -> NonemptyString {
@@ -32,7 +35,8 @@ pub async fn populate_dummy_data(app_state: AppState) {
 
     tx.commit().await.unwrap();
 
+    let db_pool = test_db_pool();
     for ds in datasets {
-        write_test_dataset_files(ds).await;
+        write_test_dataset_files(&db_pool, ds).await;
     }
 }

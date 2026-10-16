@@ -34,7 +34,7 @@ auth_secret=$(openssl rand -base64 32)
 db_host="localhost"
 db_name="postgres"
 db_password="p"
-static_files_dir="$PWD/.static-files"
+static_files_dir=$(mktemp --directory)
 
 # db configuration
 export CELLNOOR_DB_ROOT_PASSWORD="$db_password"

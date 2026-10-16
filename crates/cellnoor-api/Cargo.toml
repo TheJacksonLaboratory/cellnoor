@@ -40,10 +40,9 @@ tempfile = { optional = true, workspace = true }
 reqwest = { optional = true, workspace = true }
 
 [features]
-dev = ["axum/__private", "uuid/v4", "tempfile", "reqwest"]
+dev = ["uuid/v4", "tempfile", "reqwest"]
 
 [dev-dependencies]
-axum = {workspace = true, features = ["__private"] }
 uuid = { workspace = true, features = ["v4"] }
 pretty_assertions.workspace = true
 tempfile.workspace = true
