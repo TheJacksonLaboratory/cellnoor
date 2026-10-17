@@ -71,22 +71,18 @@ pub mod dev_util {
     #[cfg(test)]
     use crate::auth::AuthUser;
     #[cfg(any(test, feature = "dev"))]
-    use crate::db;
+    use crate::{db, settings::Settings, state::AppState};
 
     #[cfg(any(test, feature = "dev"))]
     pub fn test_db_pool() -> db::Pool {
-        // Your IDE will say this won't compile, but it will when you run
-        // scripts/dev/test.sh
-        #[cfg(all(test, not(feature = "dev")))]
-        return db::Pool::from_url(env!("CELLNOOR_TEST_DB_URL"));
-
-        #[cfg(all(feature = "dev", not(test)))]
-        return crate::state::AppState::initialize(&crate::settings::Settings::read().unwrap())
-            .unwrap()
-            .db_pool;
-
-        #[cfg(all(test, feature = "dev"))]
-        panic!("test and feature 'dev' are mutually exclusive")
+        // Your IDE will complain about this unless you run scripts/dev/test/sh
+        if cfg!(test) {
+            db::Pool::from_url(env!("CELLNOOR_TEST_DB_URL"))
+        } else {
+            AppState::initialize(&Settings::read().unwrap())
+                .unwrap()
+                .db_pool
+        }
     }
 
     #[cfg(test)]
