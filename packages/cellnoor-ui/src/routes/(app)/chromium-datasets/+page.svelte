@@ -8,7 +8,11 @@
 	import { DATE_FORMATTER, formatAssayWithMultiplexing, formatSpecies } from '#lib/format.ts';
 	import SelectionToolbar from '#lib/SelectionToolbar.svelte';
 	import { datasetFilterFieldParsers as fields } from './field-parsers.ts';
-	import type { ChromiumDatasetDetailed } from 'cellnoor-client/cellnoor-types.ts';
+	import type {
+		ChromiumDatasetDetailed,
+		ChromiumDatasetParsedFileData
+	} from 'cellnoor-client/cellnoor-types.ts';
+	import { convertMetricsToFiles } from './convert-metrics.ts';
 
 	let { data } = $props();
 
@@ -35,6 +39,42 @@
 			firstSelectedDataset = datasets.get(id);
 		} else if (datasets.nSelected === 0) {
 			firstSelectedDataset = undefined;
+		}
+	};
+
+	const fileLinkButtons: Record<
+		ChromiumDatasetParsedFileData['format'],
+		HTMLAnchorElement | undefined
+	> = $state({ single_row_csv: undefined, multi_row_csv: undefined, json: undefined });
+
+	const downloadFiles = () => {
+		const { single_row_csv, multi_row_csv, json } = convertMetricsToFiles(datasets);
+
+		if (single_row_csv && fileLinkButtons.single_row_csv) {
+			const button = fileLinkButtons.single_row_csv;
+
+			button.download = 'datasets.csv';
+			button.href = URL.createObjectURL(single_row_csv);
+
+			button.click();
+		}
+
+		if (multi_row_csv && fileLinkButtons.multi_row_csv) {
+			const button = fileLinkButtons.multi_row_csv;
+
+			button.download = 'multiplexed-datasets.csv';
+			button.href = URL.createObjectURL(multi_row_csv);
+
+			button.click();
+		}
+
+		if (json && fileLinkButtons.json) {
+			const button = fileLinkButtons.json;
+
+			button.download = 'datasets.json';
+			button.href = URL.createObjectURL(json);
+
+			button.click();
 		}
 	};
 </script>
@@ -83,12 +123,16 @@
 		</FilterGroup>
 	{/snippet}
 
+	{#each Object.keys(fileLinkButtons) as fmt (fmt)}
+		<a hidden bind:this={fileLinkButtons[fmt as 'single_row_csv' | 'multi_row_csv' | 'json']}></a>
+	{/each}
+
 	{#if datasets.size}
 		<header class="cluster">
 			<span>{datasets.size} {datasets.size === 1 ? 'dataset' : 'datasets'}</span>
 			<SelectionToolbar selection={datasets} />
 			{#if datasets.nSelected}
-				<button class="button"
+				<button class="button" onclick={downloadFiles}
 					>Download {datasets.nSelected} {datasets.nSelected === 1 ? 'dataset' : 'datasets'}</button
 				>
 			{/if}

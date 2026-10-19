@@ -6072,7 +6072,7 @@ export interface components {
             assay: components["schemas"]["TenxAssay"];
             /** Format: date-time */
             delivered_at: string;
-            files: components["schemas"]["FileTreeNode"][];
+            files: components["schemas"]["ChromiumDatasetParsedFileDataTree"][];
             /** Format: uuid */
             id: string;
             libraries: components["schemas"]["LibraryCompact"][];
@@ -6108,6 +6108,18 @@ export interface components {
             };
             /** @constant */
             format: "json";
+        };
+        ChromiumDatasetParsedFileDataTree: {
+            name: string;
+            parsed_contents?: components["schemas"]["ChromiumDatasetParsedFileData"] | null;
+            raw_file_link: string;
+            /** @constant */
+            type: "file";
+        } | {
+            children: components["schemas"]["ChromiumDatasetParsedFileDataTree"][];
+            name: string;
+            /** @constant */
+            type: "directory";
         };
         ChromiumDatasetPredicate: {
             specimen: components["schemas"]["SpecimenPredicate"];
@@ -6275,18 +6287,6 @@ export interface components {
         };
         /** @enum {string} */
         DithiobisSuccinimidylpropionate: "dithiobis_succinimidylpropionate";
-        FileTreeNode: {
-            name: string;
-            parsed_contents?: components["schemas"]["ChromiumDatasetParsedFileData"] | null;
-            raw_file_link: string;
-            /** @constant */
-            type: "file";
-        } | {
-            children: components["schemas"]["FileTreeNode"][];
-            name: string;
-            /** @constant */
-            type: "directory";
-        };
         Fixative: components["schemas"]["DithiobisSuccinimidylpropionate"] | components["schemas"]["FormaldehydeDerivative"];
         /** @description A simple comparison operator. */
         FixativeOperator: {
@@ -7950,6 +7950,7 @@ export type ChromiumDatasetDetailed = components['schemas']['ChromiumDatasetDeta
 export type ChromiumDatasetDetailedLinks = components['schemas']['ChromiumDatasetDetailedLinks'];
 export type ChromiumDatasetField = components['schemas']['ChromiumDatasetField'];
 export type ChromiumDatasetParsedFileData = components['schemas']['ChromiumDatasetParsedFileData'];
+export type ChromiumDatasetParsedFileDataTree = components['schemas']['ChromiumDatasetParsedFileDataTree'];
 export type ChromiumDatasetPredicate = components['schemas']['ChromiumDatasetPredicate'];
 export type ChromiumDatasetPredicateFilter = components['schemas']['ChromiumDatasetPredicateFilter'];
 export type ChromiumDatasetPredicateQuery = components['schemas']['ChromiumDatasetPredicateQuery'];
@@ -7967,7 +7968,6 @@ export type CountingMethod = components['schemas']['CountingMethod'];
 export type CreateChromiumDatasetError = components['schemas']['CreateChromiumDatasetError'];
 export type DbError = components['schemas']['DbError'];
 export type DithiobisSuccinimidylpropionate = components['schemas']['DithiobisSuccinimidylpropionate'];
-export type FileTreeNode = components['schemas']['FileTreeNode'];
 export type Fixative = components['schemas']['Fixative'];
 export type FixativeOperator = components['schemas']['FixativeOperator'];
 export type FlashFreezing = components['schemas']['FlashFreezing'];

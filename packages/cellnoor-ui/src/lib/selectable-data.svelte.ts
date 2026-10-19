@@ -4,9 +4,9 @@ export class SelectableData<T> {
 	#items: SvelteMap<string, { item: T; selected: boolean }>;
 	#size: number;
 	#nSelected: number;
-	#allSelected: boolean;
+	#allItemsAreSelected: boolean;
 
-	// This takes a closure so we don't have to iterate
+	// This takes a closure rather than a list of IDs so that the caller doesn't have to iterate over the list just for this constructor to iterate over the list again
 	constructor(items: T[], getId: (i: T) => string) {
 		this.#items = new SvelteMap(items.map((item) => [getId(item), { item, selected: false }]));
 
@@ -15,7 +15,7 @@ export class SelectableData<T> {
 		// This looks convoluted, but it's better for performance
 		this.#nSelected = $derived(this.#items.values().reduce((n, { selected }) => n + +selected, 0));
 
-		this.#allSelected = $derived(this.nSelected ? this.nSelected === this.size : false);
+		this.#allItemsAreSelected = $derived(this.nSelected ? this.nSelected === this.size : false);
 	}
 
 	get size() {
@@ -27,7 +27,7 @@ export class SelectableData<T> {
 	}
 
 	get allSelected() {
-		return this.#allSelected;
+		return this.#allItemsAreSelected;
 	}
 
 	get(id: string) {
@@ -59,7 +59,7 @@ export class SelectableData<T> {
 		}
 	}
 
-	get selected() {
+	get selectedItems() {
 		return this.#items
 			.values()
 			.filter(({ selected }) => selected)

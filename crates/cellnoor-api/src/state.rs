@@ -71,18 +71,18 @@ pub mod dev_util {
     #[cfg(test)]
     use crate::auth::AuthUser;
     #[cfg(any(test, feature = "dev"))]
-    use crate::{db, settings::Settings, state::AppState};
+    use crate::db;
 
     #[cfg(any(test, feature = "dev"))]
     pub fn test_db_pool() -> db::Pool {
         // Your IDE will complain about this unless you run scripts/dev/test/sh
-        if cfg!(test) {
-            db::Pool::from_url(env!("CELLNOOR_TEST_DB_URL"))
-        } else {
-            AppState::initialize(&Settings::read().unwrap())
-                .unwrap()
-                .db_pool
-        }
+        #[cfg(test)]
+        return db::Pool::from_url(env!("CELLNOOR_TEST_DB_URL"));
+
+        #[cfg(not(test))]
+        super::AppState::initialize(&crate::settings::Settings::read().unwrap())
+            .unwrap()
+            .db_pool
     }
 
     #[cfg(test)]

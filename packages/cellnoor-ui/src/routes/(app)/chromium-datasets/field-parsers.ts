@@ -1,4 +1,4 @@
-import { onOrAfter, onOrBefore } from '#lib/filters/spec.ts';
+import { onOrAfter, onOrBefore, type Parser } from '#lib/filters/spec.ts';
 import type {
 	BlockEmbeddingMatrix,
 	ChromiumDatasetPredicate,
@@ -34,7 +34,4 @@ export const datasetFilterFieldParsers = {
 	}),
 	'specimen.received_from': (v) => onOrAfter(v).map((exp) => ({ specimen: { received_at: exp } })),
 	'specimen.received_to': (v) => onOrBefore(v).map((exp) => ({ specimen: { received_at: exp } }))
-} as const satisfies Record<
-	string,
-	(val: string[]) => ChromiumDatasetPredicate | ChromiumDatasetPredicate[]
->;
+} as const satisfies Record<string, Parser<ChromiumDatasetPredicate>>;
