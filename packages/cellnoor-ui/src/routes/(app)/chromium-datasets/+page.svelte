@@ -124,8 +124,11 @@
 	{/snippet}
 
 	{#each Object.keys(fileLinkButtons) as fmt (fmt)}
-		<a hidden bind:this={fileLinkButtons[fmt as 'single_row_csv' | 'multi_row_csv' | 'json']}
-			>Download</a
+		<a
+			id="Download dataset metrics"
+			hidden
+			bind:this={fileLinkButtons[fmt as 'single_row_csv' | 'multi_row_csv' | 'json']}
+			>Download dataset metrics</a
 		>
 	{/each}
 
@@ -135,7 +138,8 @@
 			<SelectionToolbar selection={datasets} />
 			{#if datasets.nSelected}
 				<button class="button" onclick={downloadFiles}
-					>Download {datasets.nSelected} {datasets.nSelected === 1 ? 'dataset' : 'datasets'}</button
+					>Download metrics for {datasets.nSelected}
+					{datasets.nSelected === 1 ? 'dataset' : 'datasets'}</button
 				>
 			{/if}
 		</header>
