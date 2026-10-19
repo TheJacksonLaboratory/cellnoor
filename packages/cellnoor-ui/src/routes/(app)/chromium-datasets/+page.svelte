@@ -124,7 +124,9 @@
 	{/snippet}
 
 	{#each Object.keys(fileLinkButtons) as fmt (fmt)}
-		<a hidden bind:this={fileLinkButtons[fmt as 'single_row_csv' | 'multi_row_csv' | 'json']}></a>
+		<a hidden bind:this={fileLinkButtons[fmt as 'single_row_csv' | 'multi_row_csv' | 'json']}
+			>Download</a
+		>
 	{/each}
 
 	{#if datasets.size}

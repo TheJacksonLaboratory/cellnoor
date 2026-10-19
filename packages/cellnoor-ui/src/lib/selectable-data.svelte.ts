@@ -39,16 +39,13 @@ export class SelectableData<T> {
 	}
 
 	isSelectedGetter(id: string) {
-		return () => this.#items.get(id)?.selected;
+		return () => this.#items.get(id)!.selected;
 	}
 
 	isSelectedSetter(id: string) {
-		const item = this.#items.get(id);
-		if (item) {
-			return () => this.#items.set(id, { item: item.item, selected: !item.selected });
-		}
+		const { item } = this.#items.get(id)!;
 
-		return () => {};
+		return (selected: boolean) => this.#items.set(id, { item, selected });
 	}
 
 	toggleAll() {
