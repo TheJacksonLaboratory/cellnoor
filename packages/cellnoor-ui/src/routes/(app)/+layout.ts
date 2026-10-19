@@ -12,13 +12,15 @@ export async function load({ url }) {
 		redirect(307, `/sign-in?redirect_to=${url.pathname}`);
 	}
 
-	const [projectList, tenxAssayList] = await Promise.all([
+	const [projectList, tenxAssayList, personList] = await Promise.all([
 		cellnoorClient.GET('/projects').then(unwrap),
-		cellnoorClient.GET('/10x-assays').then(unwrap)
+		cellnoorClient.GET('/10x-assays').then(unwrap),
+		cellnoorClient.GET('/people').then(unwrap)
 	]);
 
 	return {
 		projects: new Map(projectList.map((p) => [p.id, p])),
+		people: new Map(personList.map((p) => [p.id, p])),
 		tenxAssays: toStringMap(tenxAssayList, (a) => [a.name, a.name])
 	};
 }
