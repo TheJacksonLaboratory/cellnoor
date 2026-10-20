@@ -4,77 +4,42 @@
 	import MultiSelect from '#lib/filters/MultiSelect.svelte';
 	import TagInput from '#lib/filters/TagInput.svelte';
 	import DateRange from '#lib/filters/DateRange.svelte';
+	import * as options from '#lib/filters/options.ts';
 	import ListRow from '#lib/ListRow.svelte';
-	import { DATE_FORMATTER, formatAssayWithMultiplexing, formatSpecies } from '#lib/format.ts';
+	import Time from '#lib/Time.svelte';
+	import { formatAssayWithMultiplexing, formatSpecies } from '#lib/format.ts';
 	import SelectionToolbar from '#lib/SelectionToolbar.svelte';
 	import { datasetFilterFieldParsers as fields } from './field-parsers.ts';
-	import type {
-		ChromiumDatasetDetailed,
-		ChromiumDatasetParsedFileData
-	} from 'cellnoor-client/cellnoor-types.ts';
 	import { convertMetricsToFiles } from './convert-metrics.ts';
 
 	let { data } = $props();
 
-	const {
-		datasets,
-		projects,
-		projectNames,
-		tenxAssays,
-		multiplexingTypes,
-		libraryTypes,
-		specimenTypes,
-		species,
-		fixatives,
-		embeddingMatrices,
-		thermalPreservationMethods
-	} = $derived(data);
+	const { datasets, projects, projectNames, tenxAssays } = $derived(data);
 
 	const SPECIMEN_LIMIT = 8;
 
-	let firstSelectedDataset = $state<ChromiumDatasetDetailed>();
+	const datasetCount = (n: number) => `${n} ${n === 1 ? 'dataset' : 'datasets'}`;
 
-	const setFirstSelectedDataset = (id: string) => {
-		if (firstSelectedDataset === undefined) {
-			firstSelectedDataset = datasets.get(id);
-		} else if (datasets.nSelected === 0) {
-			firstSelectedDataset = undefined;
-		}
-	};
-
-	const fileLinkButtons: Record<
-		ChromiumDatasetParsedFileData['format'],
-		HTMLAnchorElement | undefined
-	> = $state({ single_row_csv: undefined, multi_row_csv: undefined, json: undefined });
+	function download(blob: Blob, filename: string) {
+		const a = document.createElement('a');
+		a.href = URL.createObjectURL(blob);
+		a.download = filename;
+		a.click();
+	}
 
 	const downloadFiles = () => {
-		const { single_row_csv, multi_row_csv, json } = convertMetricsToFiles(datasets);
+		const { single_row_csv, multi_row_csv, json } = convertMetricsToFiles(datasets.selectedItems);
 
-		if (single_row_csv && fileLinkButtons.single_row_csv) {
-			const button = fileLinkButtons.single_row_csv;
-
-			button.download = 'datasets.csv';
-			button.href = URL.createObjectURL(single_row_csv);
-
-			button.click();
+		if (single_row_csv) {
+			download(single_row_csv, 'datasets.csv');
 		}
 
-		if (multi_row_csv && fileLinkButtons.multi_row_csv) {
-			const button = fileLinkButtons.multi_row_csv;
-
-			button.download = 'multiplexed-datasets.csv';
-			button.href = URL.createObjectURL(multi_row_csv);
-
-			button.click();
+		if (multi_row_csv) {
+			download(multi_row_csv, 'multiplexed-datasets.csv');
 		}
 
-		if (json && fileLinkButtons.json) {
-			const button = fileLinkButtons.json;
-
-			button.download = 'datasets.json';
-			button.href = URL.createObjectURL(json);
-
-			button.click();
+		if (json) {
+			download(json, 'datasets.json');
 		}
 	};
 </script>
@@ -91,28 +56,32 @@
 			<MultiSelect
 				{fields}
 				name="assay.multiplexing_type"
-				label="Multiplexing Type"
-				options={multiplexingTypes}
-			></MultiSelect>
-			<MultiSelect {fields} name="assay.library_type" label="Library Type" options={libraryTypes}
-			></MultiSelect>
+				label="Multiplexing type"
+				options={options.multiplexingTypes}
+			/>
+			<MultiSelect
+				{fields}
+				name="assay.library_type"
+				label="Library type"
+				options={options.libraryTypes}
+			/>
 		</FilterGroup>
 		<FilterGroup label="Specimen">
 			<TagInput {fields} name="specimen.name" label="Name" />
-			<MultiSelect {fields} name="specimen.type" label="Type" options={specimenTypes} />
-			<MultiSelect {fields} name="specimen.species" label="Species" options={species} />
+			<MultiSelect {fields} name="specimen.type" label="Type" options={options.specimenTypes} />
+			<MultiSelect {fields} name="specimen.species" label="Species" options={options.species} />
 			<MultiSelect
 				{fields}
 				name="specimen.embedded_in"
 				label="Embedded in"
-				options={embeddingMatrices}
+				options={options.embeddingMatrices}
 			/>
-			<MultiSelect {fields} name="specimen.fixative" label="Fixative" options={fixatives} />
+			<MultiSelect {fields} name="specimen.fixative" label="Fixative" options={options.fixatives} />
 			<MultiSelect
 				{fields}
 				name="specimen.thermal_preservation_method"
 				label="Thermal preservation method"
-				options={thermalPreservationMethods}
+				options={options.thermalPreservationMethods}
 			/>
 			<DateRange
 				{fields}
@@ -123,23 +92,13 @@
 		</FilterGroup>
 	{/snippet}
 
-	{#each Object.keys(fileLinkButtons) as fmt (fmt)}
-		<a
-			id="Download dataset metrics"
-			hidden
-			bind:this={fileLinkButtons[fmt as 'single_row_csv' | 'multi_row_csv' | 'json']}
-			>Download dataset metrics</a
-		>
-	{/each}
-
 	{#if datasets.size}
 		<header class="cluster">
-			<span>{datasets.size} {datasets.size === 1 ? 'dataset' : 'datasets'}</span>
+			<span>{datasetCount(datasets.size)}</span>
 			<SelectionToolbar selection={datasets} />
 			{#if datasets.nSelected}
 				<button class="button" onclick={downloadFiles}
-					>Download metrics for {datasets.nSelected}
-					{datasets.nSelected === 1 ? 'dataset' : 'datasets'}</button
+					>Download metrics for {datasetCount(datasets.nSelected)}</button
 				>
 			{/if}
 		</header>
@@ -155,9 +114,6 @@
 					subtitle={project?.name}
 					subtitleHref={project?.links.self}
 					bind:checked={datasets.isSelectedGetter(id), datasets.isSelectedSetter(id)}
-					onCheckChange={() => {
-						setFirstSelectedDataset(id);
-					}}
 				>
 					<div class="cluster">
 						{#each ds.specimens.slice(0, SPECIMEN_LIMIT) as s (s.id)}
@@ -169,9 +125,7 @@
 					</div>
 					<div class="muted">
 						{formatAssayWithMultiplexing(ds.assay)} · <i>{formatSpecies(species)}</i> · Delivered
-						<time datetime={ds.delivered_at}
-							>{DATE_FORMATTER.format(new Date(ds.delivered_at))}</time
-						>
+						<Time datetime={ds.delivered_at} />
 					</div>
 				</ListRow>
 			{/each}

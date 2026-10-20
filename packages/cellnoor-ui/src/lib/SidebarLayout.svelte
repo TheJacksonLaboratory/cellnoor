@@ -4,8 +4,8 @@
 	let { sidebar, children }: { sidebar: Snippet; children: Snippet } = $props();
 </script>
 
-<div class="details">
-	<aside>
+<div class="sidebar-layout">
+	<aside class="stack">
 		{@render sidebar()}
 	</aside>
 
@@ -15,9 +15,9 @@
 </div>
 
 <style>
-	.details {
+	.sidebar-layout {
 		display: grid;
-		grid-template-columns: minmax(min-content, 20rem) minmax(0, 1fr);
+		grid-template-columns: minmax(min-content, 32rem) minmax(0, 1fr);
 		align-items: start;
 
 		> * {
@@ -31,9 +31,5 @@
 		max-block-size: 100dvh;
 		overflow-y: auto;
 		overscroll-behavior: contain;
-	}
-
-	section {
-		gap: var(--space-xl);
 	}
 </style>

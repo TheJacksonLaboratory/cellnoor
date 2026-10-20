@@ -1,4 +1,7 @@
-export type ParsedContents = { data: Record<string, unknown> | Record<string, unknown>[] };
+export type ParsedContents = {
+	format: string;
+	data: Record<string, unknown> | Record<string, unknown>[];
+};
 
 export type FileLeaf = {
 	type: 'file';
@@ -16,10 +19,13 @@ export type ValuedFileNode = (
 
 export function withValues(nodes: FileNode[], parent = ''): ValuedFileNode[] {
 	return nodes.map((node) => {
+		// FileExplorer's controlled selection relies on a file's value being its raw_file_link
+		if (node.type === 'file') {
+			return { ...node, value: node.raw_file_link };
+		}
+
 		const value = `${parent}/${node.name}`;
 
-		return node.type === 'file'
-			? { ...node, value }
-			: { ...node, value, children: withValues(node.children, value) };
+		return { ...node, value, children: withValues(node.children, value) };
 	});
 }

@@ -1,6 +1,6 @@
 <script lang="ts" generics="T">
 	import { page } from '$app/state';
-	import { getFormSubmissionFn } from './context';
+	import { getFormSubmissionFn } from './context.ts';
 	import SelectedValues from './SelectedValues.svelte';
 
 	let { name, label }: { fields: T; name: keyof T & string; label: string } = $props();

@@ -1,11 +1,10 @@
 <script lang="ts">
 	import X from '@lucide/svelte/icons/x';
-	import { getFormSubmissionFn } from './context';
-	import { SvelteMap } from 'svelte/reactivity';
+	import { getFormSubmissionFn } from './context.ts';
 
 	let {
 		values = $bindable(),
-		options = new SvelteMap()
+		options = new Map()
 	}: {
 		values: string[];
 		options?: Map<string, string>;
@@ -25,7 +24,12 @@
 			{@const label = options.get(value) ?? value}
 			<li class="card">
 				{label}
-				<button type="button" aria-label="Remove {label}" onclick={() => remove(value)}>
+				<button
+					type="button"
+					class="plain-button"
+					aria-label="Remove {label}"
+					onclick={() => remove(value)}
+				>
 					<X size="1em" />
 				</button>
 			</li>
@@ -47,10 +51,5 @@
 
 	button {
 		display: grid;
-		padding: 0;
-		border: none;
-		background: none;
-		color: inherit;
-		cursor: pointer;
 	}
 </style>

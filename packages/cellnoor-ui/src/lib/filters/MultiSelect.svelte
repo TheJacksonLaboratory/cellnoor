@@ -1,8 +1,9 @@
 <script lang="ts" generics="T">
 	import { Combobox } from 'bits-ui';
-	import { Check, ChevronDown } from '@lucide/svelte';
+	import Check from '@lucide/svelte/icons/check';
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import { page } from '$app/state';
-	import { getFormSubmissionFn } from './context';
+	import { getFormSubmissionFn } from './context.ts';
 	import SelectedValues from './SelectedValues.svelte';
 
 	let {
@@ -21,13 +22,8 @@
 	let value = $derived(page.url.searchParams.getAll(name));
 	let searchValue = $state('');
 
-	// I have no clue why we have to check that searchValue is nonempty
 	const filteredOptions = $derived(
-		searchValue
-			? options
-					.entries()
-					.filter(([, optText]) => optText.toLowerCase().includes(searchValue.toLowerCase()))
-			: options.entries()
+		[...options].filter(([, optText]) => optText.toLowerCase().includes(searchValue.toLowerCase()))
 	);
 
 	const submitForm = getFormSubmissionFn();

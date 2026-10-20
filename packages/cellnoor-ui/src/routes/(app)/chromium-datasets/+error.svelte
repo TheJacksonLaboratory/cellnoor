@@ -5,8 +5,6 @@
 <div>
 	{page.error?.message}
 	{#if page.error?.error}
-		<code>
-			{JSON.stringify(page.error.error, null, 2)}
-		</code>
+		<pre><code>{JSON.stringify(page.error.error, null, 2)}</code></pre>
 	{/if}
 </div>

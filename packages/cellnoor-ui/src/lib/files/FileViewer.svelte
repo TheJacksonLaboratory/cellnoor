@@ -1,19 +1,23 @@
 <script lang="ts">
+	import { JsonTreeView } from '@ark-ui/svelte/json-tree-view';
+	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import type { FileLeaf } from './file-tree.ts';
 
 	let { file }: { file: FileLeaf } = $props();
 
+	const format = $derived(file.parsed_contents?.format);
 	const data = $derived(file.parsed_contents?.data);
 
-	const columns = $derived(Array.isArray(data) ? [...new Set(data.flatMap(Object.keys))] : []);
+	const rows = $derived(Array.isArray(data) ? data : data ? [data] : []);
+	const columns = $derived([...new Set(rows.flatMap(Object.keys))]);
 
 	const formatCell = (value: unknown) =>
 		typeof value === 'object' ? JSON.stringify(value) : value;
 </script>
 
-<section class="stack">
+<section class="stack card card-body">
 	<header class="cluster">
-		<h2 class="subheading">{file.name}</h2>
+		<h2 class="heading">{file.name}</h2>
 		{#if data}
 			<a class="button" href={file.raw_file_link} download>Download</a>
 		{:else}
@@ -23,8 +27,16 @@
 
 	{#if !data}
 		<iframe src={file.raw_file_link} title={file.name}></iframe>
-	{:else if Array.isArray(data)}
-		<div class="scroll">
+	{:else if format === 'json'}
+		<JsonTreeView.Root class="json-tree" {data} defaultExpandedDepth={1}>
+			<JsonTreeView.Tree>
+				{#snippet arrow()}
+					<ChevronRight size={16} />
+				{/snippet}
+			</JsonTreeView.Tree>
+		</JsonTreeView.Root>
+	{:else}
+		<div class="scroll-x">
 			<table>
 				<thead>
 					<tr>
@@ -34,7 +46,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each data as row}
+					{#each rows as row}
 						<tr>
 							{#each columns as column (column)}
 								<td>{formatCell(row[column])}</td>
@@ -44,46 +56,45 @@
 				</tbody>
 			</table>
 		</div>
-	{:else}
-		<div class="scroll">
-			<table>
-				<tbody>
-					{#each Object.entries(data) as [key, value] (key)}
-						<tr>
-							<th scope="row">{key}</th>
-							<td>{formatCell(value)}</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</div>
 	{/if}
 </section>
 
 <style>
-	.scroll {
-		overflow-x: auto;
-	}
-
-	table {
-		border-collapse: collapse;
-	}
-
-	th,
-	td {
-		padding: var(--space-xs) var(--space-sm);
-		border: var(--border);
-		text-align: start;
-	}
-
-	th {
-		background: var(--color-hover);
-	}
-
 	iframe {
 		inline-size: 100%;
 		block-size: 80dvh;
-		border: var(--border);
-		border-radius: var(--radius);
+		border: none;
+	}
+
+	/* Ark renders these parts inside its own components, so scoped selectors can't reach them */
+	:global {
+		.json-tree {
+			font-family: ui-monospace, monospace;
+
+			[data-part='branch-control'],
+			[data-part='item'] {
+				display: flex;
+				align-items: center;
+				padding-inline-start: calc((var(--depth) - 1) * var(--space-md));
+				cursor: pointer;
+
+				&:hover {
+					background: var(--color-hover);
+				}
+			}
+
+			/* Lines leaf items up with branch text, past the 16px arrow */
+			[data-part='item'] {
+				padding-inline-start: calc((var(--depth) - 1) * var(--space-md) + 16px);
+			}
+
+			[data-part='branch-indicator'] {
+				display: flex;
+			}
+
+			[data-kind='colon'] {
+				margin-inline-end: var(--space-xs);
+			}
+		}
 	}
 </style>

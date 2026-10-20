@@ -212,6 +212,8 @@ impl OperationOutput for UploadFilesError {
 pub async fn write_test_dataset_files(db_pool: &Pool, dataset_id: Uuid) {
     use tempfile::tempdir;
 
+    const MULTI_METRICS: &[u8] = b"Category,Library Type,Grouped By,Group Name,Metric Name,Metric Value\nCells,Gene Expression,,,Cells,1000\nCells,Gene Expression,,,Confidently mapped antisense,0.0";
+
     let tmp = tempdir().unwrap();
     let static_files_dir = option_env!("CELLNOOR_API__STATIC_FILES_DIR")
         .map(Utf8Path::new)
@@ -230,16 +232,31 @@ pub async fn write_test_dataset_files(db_pool: &Pool, dataset_id: Uuid) {
                         .into_iter()
                         .collect(),
                 )
-                .file_name("qc_report.html")
+                .file_name("qc_report.html"),
         )
-        .part("summary", Part::bytes(b"field\nvalue").headers(csv_header.clone()).file_name("summary.csv")).part("metrics1", Part::bytes(b"Category,Library Type,Grouped By,Group Name,Metric Name,Metric Value\nCells,Gene Expression,,,Cells,1000\nCells,Gene Expression,,,Confidently mapped antisense,0.0")
-        .headers(csv_header.clone())
-        .file_name("per_sample_outs/sample1/metrics_summary.csv"))
+        .part(
+            "summary",
+            Part::bytes(b"string_field,number_field\nstring_value,0")
+                .headers(csv_header.clone())
+                .file_name("summary.csv"),
+        )
+        .part(
+            "metrics1",
+            Part::bytes(MULTI_METRICS)
+                .headers(csv_header.clone())
+                .file_name("per_sample_outs/sample1/metrics_summary.csv"),
+        )
         .part(
             "metrics2",
-            Part::bytes(b"Category,Library Type,Grouped By,Group Name,Metric Name,Metric Value\nCells,Gene Expression,,,Cells,1000\nCells,Gene Expression,,,Confidently mapped antisense,0.0")
-            .headers(csv_header)
-            .file_name("per_sample_outs/sample2/metrics_summary.csv"),
+            Part::bytes(MULTI_METRICS)
+                .headers(csv_header)
+                .file_name("per_sample_outs/sample2/metrics_summary.csv"),
+        )
+        .part(
+            "json_metrics",
+            Part::bytes(
+                br#"{"string_key": "string_value", "number": 0, "nested": {"is_this_cool": true}}"#,
+            ),
         );
 
     // Thanks claude

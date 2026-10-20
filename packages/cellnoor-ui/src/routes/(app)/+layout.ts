@@ -1,6 +1,5 @@
 import { authClient } from '#lib/auth.ts';
 import { cellnoorClient, unwrap } from '#lib/client.ts';
-import { toStringMap } from '#lib/to-map.js';
 import { redirect } from '@sveltejs/kit';
 
 export async function load({ url }) {
@@ -21,6 +20,6 @@ export async function load({ url }) {
 	return {
 		projects: new Map(projectList.map((p) => [p.id, p])),
 		people: new Map(personList.map((p) => [p.id, p])),
-		tenxAssays: toStringMap(tenxAssayList, (a) => [a.name, a.name])
+		tenxAssays: new Map(tenxAssayList.map((a) => [a.name, a.name]))
 	};
 }

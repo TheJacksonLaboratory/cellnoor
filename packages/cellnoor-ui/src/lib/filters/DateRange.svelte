@@ -1,6 +1,6 @@
 <script lang="ts" generics="T">
 	import { page } from '$app/state';
-	import { getFormSubmissionFn } from './context';
+	import { getFormSubmissionFn } from './context.ts';
 
 	let {
 		from,

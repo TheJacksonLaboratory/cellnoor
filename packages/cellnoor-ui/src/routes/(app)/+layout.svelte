@@ -10,7 +10,7 @@
 	afterNavigate(({ shallow, type }) => {
 		if (shallow && type === 'goto') return;
 
-		return datasetsMenu.hidePopover();
+		datasetsMenu.hidePopover();
 	});
 </script>
 
@@ -19,7 +19,9 @@
 	<a href="/specimens">Specimens</a>
 	<a href="/libraries">Libraries</a>
 
-	<button popovertarget="datasets-menu">Datasets <ChevronDown size="1em" /></button>
+	<button class="plain-button" popovertarget="datasets-menu">
+		Datasets <ChevronDown size="1em" />
+	</button>
 	<div id="datasets-menu" class="card menu" popover bind:this={datasetsMenu}>
 		<a class="menu-item" href="/chromium-datasets">Chromium</a>
 	</div>
@@ -46,7 +48,7 @@
 	}
 
 	.brand {
-		font-family: 'Comfortaa Variable', system-ui, sans-serif;
+		font-family: var(--font-display);
 		font-size: xx-large;
 		margin-inline-end: auto;
 	}
@@ -65,11 +67,6 @@
 		display: flex;
 		align-items: center;
 		gap: var(--space-xs);
-		padding: 0;
-		font: inherit;
-		background: none;
-		border: none;
-		cursor: pointer;
 	}
 
 	[popover] {

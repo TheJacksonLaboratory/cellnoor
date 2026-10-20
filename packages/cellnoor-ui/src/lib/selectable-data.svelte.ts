@@ -2,7 +2,6 @@ import { SvelteMap } from 'svelte/reactivity';
 
 export class SelectableData<T> {
 	#items: SvelteMap<string, { item: T; selected: boolean }>;
-	#size: number;
 	#nSelected: number;
 	#allItemsAreSelected: boolean;
 
@@ -10,16 +9,14 @@ export class SelectableData<T> {
 	constructor(items: T[], getId: (i: T) => string) {
 		this.#items = new SvelteMap(items.map((item) => [getId(item), { item, selected: false }]));
 
-		this.#size = $derived(this.#items.size);
-
 		// This looks convoluted, but it's better for performance
 		this.#nSelected = $derived(this.#items.values().reduce((n, { selected }) => n + +selected, 0));
 
-		this.#allItemsAreSelected = $derived(this.nSelected ? this.nSelected === this.size : false);
+		this.#allItemsAreSelected = $derived(this.nSelected > 0 && this.nSelected === this.size);
 	}
 
 	get size() {
-		return this.#size;
+		return this.#items.size;
 	}
 
 	get nSelected() {

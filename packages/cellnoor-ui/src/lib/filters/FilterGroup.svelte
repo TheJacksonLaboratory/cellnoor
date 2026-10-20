@@ -5,25 +5,14 @@
 </script>
 
 <section class="card">
-	<h3 class="subheading">{label}</h3>
-	<div class="stack">
+	<h3 class="subheading card-header">{label}</h3>
+	<div class="stack card-body">
 		{@render children()}
 	</div>
 </section>
 
 <style>
-	section {
-		overflow: clip;
-	}
-
-	h3 {
-		padding: var(--space-sm) var(--space-md);
-		border-block-end: var(--border);
-		text-transform: uppercase;
-	}
-
 	.stack {
 		gap: var(--space-lg);
-		padding: var(--space-md);
 	}
 </style>
