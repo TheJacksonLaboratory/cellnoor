@@ -1,7 +1,7 @@
 import type {
 	ChromiumDatasetDetailed,
 	ChromiumDatasetParsedFileData,
-	ChromiumDatasetParsedFileDataTree
+	ChromiumDatasetParsedFileDataFileTree
 } from 'cellnoor-client/cellnoor-types.ts';
 import Papa from 'papaparse';
 
@@ -45,7 +45,7 @@ function toCsv(rows: MetricsRow[]) {
 }
 
 function* filesInDirectory(
-	file: ChromiumDatasetParsedFileDataTree
+	file: ChromiumDatasetParsedFileDataFileTree
 ): Generator<ChromiumDatasetParsedFileData> {
 	if (file.type === 'file' && file.parsed_contents) {
 		yield file.parsed_contents;

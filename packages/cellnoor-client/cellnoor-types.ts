@@ -6072,7 +6072,7 @@ export interface components {
             assay: components["schemas"]["TenxAssay"];
             /** Format: date-time */
             delivered_at: string;
-            files: components["schemas"]["ChromiumDatasetParsedFileDataTree"][];
+            files: components["schemas"]["ChromiumDatasetParsedFileDataFileTree"][];
             /** Format: uuid */
             id: string;
             libraries: components["schemas"]["LibraryCompact"][];
@@ -6109,18 +6109,19 @@ export interface components {
             /** @constant */
             format: "json";
         };
-        ChromiumDatasetParsedFileDataTree: {
+        ChromiumDatasetParsedFileDataFileTree: {
             name: string;
+            path: string;
+        } & ({
             parsed_contents?: components["schemas"]["ChromiumDatasetParsedFileData"] | null;
             raw_file_link: string;
             /** @constant */
             type: "file";
         } | {
-            children: components["schemas"]["ChromiumDatasetParsedFileDataTree"][];
-            name: string;
+            children: components["schemas"]["ChromiumDatasetParsedFileDataFileTree"][];
             /** @constant */
             type: "directory";
-        };
+        });
         ChromiumDatasetPredicate: {
             specimen: components["schemas"]["SpecimenPredicate"];
         } | {
@@ -7950,7 +7951,7 @@ export type ChromiumDatasetDetailed = components['schemas']['ChromiumDatasetDeta
 export type ChromiumDatasetDetailedLinks = components['schemas']['ChromiumDatasetDetailedLinks'];
 export type ChromiumDatasetField = components['schemas']['ChromiumDatasetField'];
 export type ChromiumDatasetParsedFileData = components['schemas']['ChromiumDatasetParsedFileData'];
-export type ChromiumDatasetParsedFileDataTree = components['schemas']['ChromiumDatasetParsedFileDataTree'];
+export type ChromiumDatasetParsedFileDataFileTree = components['schemas']['ChromiumDatasetParsedFileDataFileTree'];
 export type ChromiumDatasetPredicate = components['schemas']['ChromiumDatasetPredicate'];
 export type ChromiumDatasetPredicateFilter = components['schemas']['ChromiumDatasetPredicateFilter'];
 export type ChromiumDatasetPredicateQuery = components['schemas']['ChromiumDatasetPredicateQuery'];

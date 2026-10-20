@@ -256,7 +256,13 @@ pub async fn write_test_dataset_files(db_pool: &Pool, dataset_id: Uuid) {
             "json_metrics",
             Part::bytes(
                 br#"{"string_key": "string_value", "number": 0, "nested": {"is_this_cool": true}}"#,
-            ),
+            )
+            .headers(
+                [(CONTENT_TYPE, HeaderValue::from_static("application/json"))]
+                    .into_iter()
+                    .collect(),
+            )
+            .file_name("per_sample_outs/sample1/summary.json"),
         );
 
     // Thanks claude

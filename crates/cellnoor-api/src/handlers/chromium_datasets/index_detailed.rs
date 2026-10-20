@@ -6,7 +6,7 @@ use cellnoor_types::{
         ChromiumDatasetDetailed, ChromiumDatasetDetailedLinks, ChromiumDatasetParsedFileData,
         ChromiumDatasetParsedFileRecord, ChromiumDatasetQuery, SavedChromiumDatasetRecord,
     },
-    file_tree::FileTreeNode,
+    file_tree::{FileTreeNode, FileTreeNodeKind},
     id::Id,
     library::SavedLibraryRecord,
     nonempty::NonemptyString,
@@ -89,19 +89,26 @@ fn create_file_tree(
     let mut root = Directory::default();
 
     for path in raw_file_paths {
-        let mut directory_names = path.as_ref().split('/');
-        let file_name = directory_names.next_back().unwrap();
+        let path_str: &str = path.as_ref();
+        let mut name_start = 0;
 
         let mut directory = &mut root;
         // Walk down the file tree until we get to the innermost directory
-        for name in directory_names {
-            directory = directory.subdirectories.entry(name.to_owned()).or_default();
+        for (slash_idx, _) in path_str.match_indices('/') {
+            directory = directory
+                .subdirectories
+                .entry(path_str[name_start..slash_idx].to_owned())
+                .or_insert_with(|| Directory::new(path_str[..slash_idx].to_owned()));
+            name_start = slash_idx + 1;
         }
 
-        directory.files.push(FileTreeNode::File {
-            name: file_name.to_owned(),
-            raw_file_link: file_path_to_link(dataset_id, path),
-            parsed_contents: parsed_files.remove(path),
+        directory.files.push(FileTreeNode {
+            path: path.to_string(),
+            name: path_str[name_start..].to_owned(),
+            kind: FileTreeNodeKind::File {
+                raw_file_link: file_path_to_link(dataset_id, path),
+                parsed_contents: parsed_files.remove(path),
+            },
         });
     }
 
@@ -110,19 +117,40 @@ fn create_file_tree(
 
 #[derive(Default)]
 struct Directory {
+    path: String,
+    // BTreeMap to maintain order
     subdirectories: BTreeMap<String, Directory>,
     files: Vec<FileTreeNode<ChromiumDatasetParsedFileData>>,
 }
 
 impl Directory {
+    fn new(path: String) -> Self {
+        Self {
+            path,
+            subdirectories: BTreeMap::new(),
+            files: Vec::with_capacity(4),
+        }
+    }
+
     fn into_nodes(self) -> Vec<FileTreeNode<ChromiumDatasetParsedFileData>> {
-        self.subdirectories
+        let Self {
+            path: _,
+            subdirectories,
+            mut files,
+        } = self;
+
+        files.sort_by(|a, b| a.name.cmp(&b.name));
+
+        subdirectories
             .into_iter()
-            .map(|(name, directory)| FileTreeNode::Directory {
+            .map(|(name, mut directory)| FileTreeNode {
+                path: std::mem::take(&mut directory.path),
                 name,
-                children: directory.into_nodes(),
+                kind: FileTreeNodeKind::Directory {
+                    children: directory.into_nodes(),
+                },
             })
-            .chain(self.files)
+            .chain(files)
             .collect()
     }
 }
@@ -153,7 +181,7 @@ fn file_path_to_link(dataset_id: Id, path: &NonemptyString) -> String {
 mod tests {
     use cellnoor_types::{
         chromium_dataset::{ChromiumDatasetParsedFileData, ChromiumDatasetParsedFileRecord},
-        file_tree::FileTreeNode,
+        file_tree::{FileTreeNode, FileTreeNodeKind},
         id::Id,
     };
     use csvranger::TenxCsvValue;
@@ -168,29 +196,28 @@ mod tests {
     fn file_tree() {
         let dataset_id = Id { id: Uuid::nil() };
 
-        // These paths are intentionally misordered so that we get check that
-        // the output is correctly sorted
-        let paths = [
-            "qc_report.html",
-            "per_sample_outs/sample2/metrics_summary.csv",
-            "per_sample_outs/sample1/metrics_summary.csv",
-        ]
-        .map(|p| p.to_nonempty_string());
-
         let parsed_file_data = ChromiumDatasetParsedFileData::SingleRowCsv {
             data: [("field".to_owned(), TenxCsvValue::I64(0))]
                 .into_iter()
                 .collect(),
         };
 
-        let file = |full_path: &str, parsed_contents| FileTreeNode::File {
+        let file = |full_path: &str, parsed_contents| FileTreeNode {
+            path: full_path.to_owned(),
             name: full_path.split('/').next_back().map(str::to_owned).unwrap(),
-            raw_file_link: format!("/files/chromium-datasets/{dataset_id}/{full_path}"),
-            parsed_contents,
+            kind: FileTreeNodeKind::File {
+                raw_file_link: format!("/files/chromium-datasets/{dataset_id}/{full_path}"),
+                parsed_contents,
+            },
         };
-        let dir = |name: &str, children| FileTreeNode::Directory {
-            name: name.to_owned(),
-            children,
+        let dir = |full_path: &str, children| FileTreeNode {
+            path: full_path.to_owned(),
+            name: full_path
+                .rsplit_once('/')
+                .map(|(_, p)| p)
+                .unwrap_or(full_path)
+                .to_owned(),
+            kind: FileTreeNodeKind::Directory { children },
         };
 
         let expected = [
@@ -198,23 +225,36 @@ mod tests {
                 "per_sample_outs",
                 vec![
                     dir(
-                        "sample1",
+                        "per_sample_outs/sample1",
                         vec![file(
                             "per_sample_outs/sample1/metrics_summary.csv",
                             Some(parsed_file_data.clone()),
                         )],
                     ),
                     dir(
-                        "sample2",
-                        vec![file(
-                            "per_sample_outs/sample2/metrics_summary.csv",
-                            Some(parsed_file_data.clone()),
-                        )],
+                        "per_sample_outs/sample2",
+                        vec![
+                            file(
+                                "per_sample_outs/sample2/metrics_summary.csv",
+                                Some(parsed_file_data.clone()),
+                            ),
+                            file("per_sample_outs/sample2/web_summary.html", None),
+                        ],
                     ),
                 ],
             ),
             file("qc_report.html", None),
         ];
+
+        // These paths are intentionally misordered so that we get check that
+        // the output is correctly sorted
+        let paths = [
+            "qc_report.html",
+            "per_sample_outs/sample2/web_summary.html",
+            "per_sample_outs/sample2/metrics_summary.csv",
+            "per_sample_outs/sample1/metrics_summary.csv",
+        ]
+        .map(|p| p.to_nonempty_string());
 
         assert_eq!(
             create_file_tree(

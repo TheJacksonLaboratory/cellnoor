@@ -4,17 +4,15 @@
 	import FileIcon from '@lucide/svelte/icons/file';
 	import Folder from '@lucide/svelte/icons/folder';
 	import X from '@lucide/svelte/icons/x';
-	import { withValues, type FileLeaf, type FileNode, type ValuedFileNode } from './file-tree.ts';
+	import { type FileLeaf, type FileNode } from './file-tree.ts';
 
 	let { files, selected = $bindable() }: { files: FileNode[]; selected?: FileLeaf } = $props();
 
-	const nodes = $derived(withValues(files));
-
 	const collection = $derived(
-		createTreeCollection<ValuedFileNode>({
-			nodeToValue: (node) => node.value,
+		createTreeCollection<FileNode>({
+			nodeToValue: (node) => node.path,
 			nodeToString: (node) => node.name,
-			rootNode: { type: 'directory', name: '', value: '/', children: nodes }
+			rootNode: { type: 'directory', path: '', name: '', children: files }
 		})
 	);
 </script>
@@ -31,13 +29,13 @@
 >
 	<TreeView.Label class="subheading card-header">Files</TreeView.Label>
 	<TreeView.Tree class="card-body">
-		{#each nodes as node, index (node.value)}
+		{#each files as node, index (node)}
 			{@render renderNode(node, [index])}
 		{/each}
 	</TreeView.Tree>
 </TreeView.Root>
 
-{#snippet renderNode(node: ValuedFileNode, indexPath: number[])}
+{#snippet renderNode(node: FileNode, indexPath: number[])}
 	<TreeView.NodeProvider {node} {indexPath}>
 		{#if node.type === 'directory'}
 			<TreeView.Branch>
@@ -49,7 +47,7 @@
 					<TreeView.BranchText>{node.name}</TreeView.BranchText>
 				</TreeView.BranchControl>
 				<TreeView.BranchContent>
-					{#each node.children as child, index (child.value)}
+					{#each node.children as child, index (child.path)}
 						{@render renderNode(child, [...indexPath, index])}
 					{/each}
 				</TreeView.BranchContent>
