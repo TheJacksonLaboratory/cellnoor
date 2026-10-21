@@ -2,6 +2,7 @@ use std::assert_matches;
 
 use cellnoor_types::{
     operator::UuidOperator,
+    permission::{Action, Resource},
     service::{Service, ServicePredicate, ServiceQuery, ServiceSimpleFields, ServiceUpdate},
 };
 use pretty_assertions::assert_eq;
@@ -10,11 +11,15 @@ use uuid::Uuid;
 use crate::{
     db::{self, DbError},
     handlers::{
+        institutions::create::insert_test_institution,
         people::create::insert_test_person_and_institution,
+        permissions::grant_permissions,
+        security_tests::permissions::{create_test_user, create_test_user_with, may},
         services::{
             access::add_people::insert_service_accesses, create::test::insert_test_service,
             index::select_services, update::update_service_by_id,
         },
+        set_is_staff,
     },
     state::dev_util::{ToNonemptyString, db_client_as_admin, db_client_as_user},
 };
@@ -127,4 +132,63 @@ async fn row_level_security_for_services() {
     let mut user2_client = db_client_as_user(user2_id).await;
     user_can_only_see_accessible_services(&mut user2_client, &[user2_svc_acct, user1_svc_acct])
         .await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn service_owner_cannot_make_service_staff() {
+    let owner_id = create_test_user().await;
+    let service = create_service_for(owner_id).await;
+
+    let mut client = db_client_as_user(owner_id).await;
+
+    // The owner may update the service's principal, so the failure below comes
+    // from the staff check
+    let tx = client.begin().await.unwrap();
+    set_is_staff(&tx, service.id, false).await.unwrap();
+    drop(tx);
+
+    let tx = client.begin().await.unwrap();
+
+    assert_eq!(
+        set_is_staff(&tx, service.id, true).await.unwrap_err(),
+        DbError::PermissionDenied {
+            message: "new row violates row-level security policy \"no_privilege_escalation\" for \
+                      resource \"principal\""
+                .to_owned()
+        }
+    );
+}
+
+// Owning a service lets a user grant it the permissions they hold, even though
+// they can't update people. That doesn't extend to services they don't own
+#[tokio::test(flavor = "multi_thread")]
+async fn service_owner_can_only_grant_permissions_to_owned_service() {
+    let permissions = may(Resource::Institution, &[Action::Create]);
+
+    let owner_id = create_test_user_with(false, permissions.clone()).await;
+    let owned_service = create_service_for(owner_id).await;
+    let unowned_service = create_service_for(create_test_user().await).await;
+
+    let mut client = db_client_as_user(owner_id).await;
+
+    // This needs its own transaction because the failure aborts it
+    let tx = client.begin().await.unwrap();
+    let error = grant_permissions(&tx, unowned_service.id, &permissions)
+        .await
+        .unwrap_err();
+
+    assert_matches!(error, DbError::PermissionDenied { .. });
+    drop(tx);
+
+    let tx = client.begin().await.unwrap();
+    grant_permissions(&tx, owned_service.id, &permissions)
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+
+    // The service can now use the permission
+    let mut client = db_client_as_user(owned_service.id).await;
+    let tx = client.begin().await.unwrap();
+
+    insert_test_institution(&tx, |_| ()).await.unwrap();
 }

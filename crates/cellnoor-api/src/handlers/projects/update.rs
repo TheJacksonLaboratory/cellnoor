@@ -28,7 +28,7 @@ pub async fn update_project(
         .await
 }
 
-async fn update_project_by_id(
+pub(in super::super) async fn update_project_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     updated_project: &NewProject,

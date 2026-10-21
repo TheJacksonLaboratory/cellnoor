@@ -29,7 +29,7 @@ pub async fn update_specimen(
         .await
 }
 
-pub async fn update_specimen_by_id(
+pub(in super::super) async fn update_specimen_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     record: NewSpecimen,

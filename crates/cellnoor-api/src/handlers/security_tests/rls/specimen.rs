@@ -1,3 +1,5 @@
+use std::assert_matches;
+
 use cellnoor_types::{
     operator::UuidOperator,
     permission::{Action, Permission, Resource},
@@ -12,6 +14,10 @@ use crate::{
     handlers::{
         permissions::grant_permissions,
         projects::{create::insert_test_project, index_detailed::select_projects_detailed},
+        security_tests::{
+            permissions::{create_test_user_with, may},
+            rls::project::create_project_as,
+        },
         specimens::{
             create::{insert_specimen, insert_test_specimen_and_project},
             index_detailed::select_specimens_detailed,
@@ -162,6 +168,70 @@ async fn user_cannot_write_specimen_into_inaccessible_project() {
         .unwrap_err();
     assert_eq!(
         error,
+        DbError::PermissionDenied {
+            message: "new row violates row-level security policy for resource \"specimen\""
+                .to_owned()
+        }
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn creator_can_see_specimens_of_project_without_access() {
+    let creator_id = create_test_user_with(false, may(Resource::Project, &[Action::Create])).await;
+
+    let project = create_project_as(creator_id, vec![]).await;
+
+    let mut client = db_client_as_admin().await;
+    let tx = client.begin().await.unwrap();
+
+    let (_, specimen) =
+        insert_test_specimen_and_project(&tx, |s| s.project_id = project.record.project.id)
+            .await
+            .unwrap();
+
+    tx.commit().await.unwrap();
+
+    let mut client = db_client_as_user(creator_id).await;
+    let tx = client.begin().await.unwrap();
+
+    test_user_can_only_see_accessible_specimen(&tx, specimen).await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn specimen_update_requires_membership_and_permission() {
+    let mut client = db_client_as_admin().await;
+    let tx = client.begin().await.unwrap();
+
+    let (mut update, specimen) = insert_accessible_specimen(&tx).await;
+    let member_id = get_user_id_from_specimen(&tx, &specimen).await;
+
+    tx.commit().await.unwrap();
+
+    let specimen_id = *specimen.record.id;
+    let outsider_id =
+        create_test_user_with(false, may(Resource::Specimen, &[Action::Update])).await;
+
+    update.name = crate::db::dummy_data::random_name_for("specimen");
+    update.measurements = vec![];
+
+    // An outsider can't update the specimen, even with the permission to
+    let mut client = db_client_as_user(outsider_id).await;
+    let tx = client.begin().await.unwrap();
+
+    let error = update_specimen_by_id(&tx, specimen_id, update.clone())
+        .await
+        .unwrap_err();
+
+    assert_matches!(error, DbError::ResourceNotFound);
+
+    // A member can't update the specimen without the permission
+    let mut client = db_client_as_user(member_id).await;
+    let tx = client.begin().await.unwrap();
+
+    assert_eq!(
+        update_specimen_by_id(&tx, specimen_id, update)
+            .await
+            .unwrap_err(),
         DbError::PermissionDenied {
             message: "new row violates row-level security policy for resource \"specimen\""
                 .to_owned()

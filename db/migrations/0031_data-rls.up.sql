@@ -103,7 +103,7 @@ do $$
             );
             execute format(
                 'create policy can_update on %I for update using (%s) with check ((%s) and current_user_can(%L, %L))',
-                r.table_name, visible_rows, 'update', r.resource
+                r.table_name, visible_rows, visible_rows, 'update', r.resource
             );
             execute format(
                 'create policy can_delete on %I for delete using ((%s) and current_user_can(%L, %L))',
@@ -131,3 +131,8 @@ create policy creator_is_current_user on project as restrictive for insert with 
 create policy access_is_granted_by_members on project_access as restrictive for all using (
     current_user_has_access_to_project(project_id) or current_user_created_project(project_id)
 );
+
+-- Without the following line of code, a member would need create on projects to give access to other members. This
+-- policy combines with `current_user_can(create, project)` permissively so that a member can grant access to other
+-- members without needing to be able to create projects.
+create policy members_can_grant_access on project_access for insert with check (true);

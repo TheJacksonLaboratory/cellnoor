@@ -18,7 +18,7 @@ pub async fn create_project(
         .await
 }
 
-async fn insert_project(
+pub(in super::super) async fn insert_project(
     tx: &db::Transaction<'_>,
     new: &NewProject,
 ) -> Result<ProjectDetailed, DbError> {
@@ -82,8 +82,13 @@ where
 #[cfg(test)]
 pub mod test {
 
+    use pretty_assertions::assert_eq;
+
     use super::insert_test_project;
-    use crate::state::dev_util::db_client_as_admin;
+    use crate::{
+        db::DbError,
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
+    };
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {
@@ -91,5 +96,30 @@ pub mod test {
         let tx = client.begin().await.unwrap();
 
         insert_test_project(&tx, |_| ()).await.unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn name_must_be_path_component() {
+        let mut client = db_client_as_admin().await;
+
+        for name in [".", "..", "parent/child"] {
+            let tx = client.begin().await.unwrap();
+
+            let error = insert_test_project(&tx, |p| p.name = name.to_nonempty_string())
+                .await
+                .unwrap_err();
+
+            assert_eq!(
+                error,
+                DbError::DataConstraint {
+                    resource: Some("project".to_owned()),
+                    field: None,
+                    message: "new row for relation \"project\" violates check constraint \
+                              \"name_is_path_component\""
+                        .to_owned(),
+                    detail: None,
+                }
+            );
+        }
     }
 }

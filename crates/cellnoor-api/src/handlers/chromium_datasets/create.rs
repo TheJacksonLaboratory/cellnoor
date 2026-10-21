@@ -217,12 +217,13 @@ pub mod test {
 
     use super::insert_test_chromium_dataset;
     use crate::{
+        db::DbError,
         handlers::{
             chromium_datasets::create::{CreateChromiumDatasetError, insert_chromium_dataset},
             chromium_runs::create::TestChromiumRunKind,
             libraries::create::insert_test_library,
         },
-        state::dev_util::db_client_as_admin,
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     #[tokio::test(flavor = "multi_thread")]
@@ -262,5 +263,32 @@ pub mod test {
             err,
             CreateChromiumDatasetError::LibrariesFromDifferentGemWells
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn name_must_be_path_component() {
+        let mut client = db_client_as_admin().await;
+
+        for name in [".", "..", "parent/child"] {
+            let tx = client.begin().await.unwrap();
+
+            let err = insert_test_chromium_dataset(&tx, TestChromiumRunKind::Standard, |d| {
+                d.record.name = name.to_nonempty_string()
+            })
+            .await
+            .unwrap_err();
+
+            assert_eq!(
+                err,
+                CreateChromiumDatasetError::Db(DbError::DataConstraint {
+                    resource: Some("chromium_dataset".to_owned()),
+                    field: None,
+                    message: "new row for relation \"chromium_dataset\" violates check constraint \
+                              \"name_is_path_component\""
+                        .to_owned(),
+                    detail: None,
+                })
+            );
+        }
     }
 }

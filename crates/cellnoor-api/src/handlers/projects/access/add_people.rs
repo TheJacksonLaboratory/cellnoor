@@ -25,7 +25,7 @@ pub async fn add_people_to_project(
         .await
 }
 
-pub(in super::super) async fn insert_project_accesses(
+pub(in super::super::super) async fn insert_project_accesses(
     tx: &db::Transaction<'_>,
     project_id: Uuid,
     members: &[Uuid],

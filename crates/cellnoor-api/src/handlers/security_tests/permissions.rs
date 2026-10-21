@@ -20,6 +20,7 @@ use crate::{
         permissions::{grant_permissions, revoke_permissions},
         projects::{create::insert_test_project, index_detailed::select_projects_detailed},
         services::index::select_services,
+        set_is_staff,
         specimens::index_detailed::select_specimens_detailed,
         suspension_pools::index_detailed::select_suspension_pools_detailed,
         suspensions::index_detailed::select_suspensions_detailed,
@@ -27,11 +28,11 @@ use crate::{
     state::dev_util::{db_client_as_admin, db_client_as_user},
 };
 
-async fn create_test_user() -> Uuid {
+pub async fn create_test_user() -> Uuid {
     create_test_user_with(false, Vec::new()).await
 }
 
-async fn create_test_user_with(is_staff: bool, permissions: Vec<Permission>) -> Uuid {
+pub async fn create_test_user_with(is_staff: bool, permissions: Vec<Permission>) -> Uuid {
     let mut client = db_client_as_admin().await;
     let tx = client.begin().await.unwrap();
 
@@ -47,7 +48,7 @@ async fn create_test_user_with(is_staff: bool, permissions: Vec<Permission>) -> 
     person.record.id
 }
 
-fn may(resource: Resource, actions: &[Action]) -> Vec<Permission> {
+pub fn may(resource: Resource, actions: &[Action]) -> Vec<Permission> {
     actions
         .iter()
         .map(|&action| Permission { resource, action })
@@ -225,4 +226,31 @@ async fn revoked_permission_disallows_writing() {
         insert_test_institution(&tx, |_| ()).await.unwrap_err(),
         DbError::PermissionDenied { .. }
     );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn user_cannot_make_anyone_staff() {
+    let user_id = create_test_user_with(false, may(Resource::Person, &[Action::Update])).await;
+    let target_id = create_test_user().await;
+
+    let mut client = db_client_as_user(user_id).await;
+
+    // A non-staff user can set is_staff = false
+    let tx = client.begin().await.unwrap();
+    set_is_staff(&tx, target_id, false).await.unwrap();
+    drop(tx);
+
+    // They cannot set is_staff = true for anyone
+    for principal_id in [target_id, user_id] {
+        let tx = client.begin().await.unwrap();
+
+        assert_eq!(
+            set_is_staff(&tx, principal_id, true).await.unwrap_err(),
+            DbError::PermissionDenied {
+                message: "new row violates row-level security policy \"no_privilege_escalation\" \
+                          for resource \"principal\""
+                    .to_owned()
+            }
+        );
+    }
 }

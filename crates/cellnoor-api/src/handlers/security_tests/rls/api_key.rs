@@ -9,12 +9,13 @@ use pretty_assertions::assert_eq;
 use uuid::Uuid;
 
 use crate::{
-    db::{self, DbError},
+    db::{self, DbError, Sql},
     handlers::{
         api_keys::{
             create::test::insert_test_api_key, index::select_api_keys, update::update_api_key_by_id,
         },
         people::create::insert_test_person_and_institution,
+        security_tests::permissions::create_test_user,
         services::{
             access::add_people::insert_service_accesses, create::test::insert_test_service,
         },
@@ -63,6 +64,14 @@ async fn user_cannot_update_unowned_api_key(client: &mut db::Client, api_key_id:
     )
     .await
     .unwrap_err();
+
+    assert_matches!(error, DbError::ResourceNotFound);
+}
+
+async fn user_cannot_delete_unowned_api_key(client: &mut db::Client, api_key_id: Uuid) {
+    let tx = client.begin().await.unwrap();
+
+    let error = tx.delete::<ApiKeyUpdate>(api_key_id).await.unwrap_err();
 
     assert_matches!(error, DbError::ResourceNotFound);
 }
@@ -131,4 +140,58 @@ async fn row_level_security_for_api_keys() {
     tx.commit().await.unwrap();
 
     user_can_see_accessible_api_key(&mut user2_client, service_api_key.record).await;
+}
+
+// Access to a service lets a user see its API keys, but only the service's
+// owner can change or delete them
+#[tokio::test(flavor = "multi_thread")]
+async fn only_service_owner_can_write_service_api_keys() {
+    let owner_id = create_test_user().await;
+    let member_id = create_test_user().await;
+
+    let (service, api_key) = create_service_api_key_for(owner_id).await;
+    let api_key_id = api_key.record.id;
+
+    let mut owner_client = db_client_as_user(owner_id).await;
+    let tx = owner_client.begin().await.unwrap();
+    insert_service_accesses(&tx, service.id, &[member_id])
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+
+    let mut member_client = db_client_as_user(member_id).await;
+    user_can_see_accessible_api_key(&mut member_client, api_key.record).await;
+    user_cannot_update_unowned_api_key(&mut member_client, api_key_id).await;
+    user_cannot_delete_unowned_api_key(&mut member_client, api_key_id).await;
+
+    let tx = owner_client.begin().await.unwrap();
+    update_api_key_by_id(
+        &tx,
+        api_key_id,
+        &ApiKeyUpdate {
+            description: Some("updated".to_nonempty_string()),
+            expires_at: None,
+        },
+    )
+    .await
+    .unwrap();
+    tx.delete::<ApiKeyUpdate>(api_key_id).await.unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn hashed_api_keys_cannot_be_read() {
+    let mut client = db_client_as_admin().await;
+    let tx = client.begin().await.unwrap();
+
+    let error = tx
+        .execute(&Sql::new("select hashed_key from api_key", vec![]))
+        .await
+        .unwrap_err();
+
+    assert_eq!(
+        error,
+        DbError::PermissionDenied {
+            message: "permission denied for resource api_key".to_owned()
+        }
+    );
 }
