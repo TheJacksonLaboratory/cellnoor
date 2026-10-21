@@ -3,19 +3,19 @@ export type ParsedContents = {
 	data: Record<string, unknown> | Record<string, unknown>[];
 };
 
-export type FileLeaf = {
+type FileNodeBase = { path: string; name: string };
+
+export type FileLeaf = FileNodeBase & {
 	type: 'file';
-	path: string;
-	name: string;
 	raw_file_link: string;
 	parsed_contents?: ParsedContents | null;
 };
 
 export type FileNode =
 	| FileLeaf
-	| {
+	| (FileNodeBase & {
 			type: 'directory';
 			path: string;
 			name: string;
 			children: FileNode[];
-	  };
+	  });

@@ -1,12 +1,9 @@
-<script lang="ts" generics="T">
+<script lang="ts" generics="T extends string">
 	import { page } from '$app/state';
 	import { getFormSubmissionFn } from './context.ts';
+	import type { StringEnum } from './string-enum.ts';
 
-	let {
-		from,
-		to,
-		label
-	}: { fields: T; from: keyof T & string; to: keyof T & string; label: string } = $props();
+	let { from, to, label }: { from: StringEnum<T>; to: StringEnum<T>; label: string } = $props();
 
 	const submitForm = getFormSubmissionFn();
 </script>

@@ -235,8 +235,14 @@ pub async fn write_test_dataset_files(db_pool: &Pool, dataset_id: Uuid) {
                 .file_name("qc_report.html"),
         )
         .part(
-            "summary",
+            "summary1",
             Part::bytes(b"string_field,number_field\nstring_value,0")
+                .headers(csv_header.clone())
+                .file_name("qc_library_metrics.csv"),
+        )
+        .part(
+            "summary2",
+            Part::bytes(b"string_field,other_number_field\nstring_value,10")
                 .headers(csv_header.clone())
                 .file_name("summary.csv"),
         )

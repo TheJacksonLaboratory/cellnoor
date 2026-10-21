@@ -9,7 +9,7 @@
 	import Time from '#lib/Time.svelte';
 	import { formatAssayWithMultiplexing, formatSpecies } from '#lib/format.ts';
 	import SelectionToolbar from '#lib/SelectionToolbar.svelte';
-	import { datasetFilterFieldParsers as fields } from './field-parsers.ts';
+	import { FormFieldName } from './field-parsers.ts';
 	import { convertMetricsToFiles } from './convert-metrics.ts';
 
 	let { data } = $props();
@@ -47,46 +47,49 @@
 <Browser>
 	{#snippet filters()}
 		<FilterGroup label="Dataset">
-			<TagInput {fields} name="name" label="Name" />
-			<MultiSelect {fields} name="specimen.project_id" label="Project" options={projectNames} />
-			<DateRange {fields} from="delivered_from" to="delivered_to" label="Date delivered" />
+			<TagInput name={FormFieldName.Name} label="Name" />
+			<MultiSelect name={FormFieldName.SpecimenProjectId} label="Project" options={projectNames} />
+			<DateRange
+				from={FormFieldName.DeliveredFrom}
+				to={FormFieldName.DeliveredTo}
+				label="Date delivered"
+			/>
 		</FilterGroup>
 		<FilterGroup label="Assay">
-			<MultiSelect {fields} name="assay.name" label="Name" options={tenxAssays} />
+			<MultiSelect name={FormFieldName.AssayName} label="Name" options={tenxAssays} />
 			<MultiSelect
-				{fields}
-				name="assay.multiplexing_type"
+				name={FormFieldName.AssayMultiplexingType}
 				label="Multiplexing type"
 				options={options.multiplexingTypes}
 			/>
 			<MultiSelect
-				{fields}
-				name="assay.library_type"
+				name={FormFieldName.AssayLibraryType}
 				label="Library type"
 				options={options.libraryTypes}
 			/>
 		</FilterGroup>
 		<FilterGroup label="Specimen">
-			<TagInput {fields} name="specimen.name" label="Name" />
-			<MultiSelect {fields} name="specimen.type" label="Type" options={options.specimenTypes} />
-			<MultiSelect {fields} name="specimen.species" label="Species" options={options.species} />
+			<TagInput name={FormFieldName.SpecimenName} label="Name" />
+			<MultiSelect name={FormFieldName.SpecimenType} label="Type" options={options.specimenTypes} />
+			<MultiSelect name={FormFieldName.SpecimenSpecies} label="Species" options={options.species} />
 			<MultiSelect
-				{fields}
-				name="specimen.embedded_in"
+				name={FormFieldName.SpecimenEmbeddedIn}
 				label="Embedded in"
 				options={options.embeddingMatrices}
 			/>
-			<MultiSelect {fields} name="specimen.fixative" label="Fixative" options={options.fixatives} />
 			<MultiSelect
-				{fields}
-				name="specimen.thermal_preservation_method"
+				name={FormFieldName.SpecimenFixative}
+				label="Fixative"
+				options={options.fixatives}
+			/>
+			<MultiSelect
+				name={FormFieldName.SpecimenThermalPreservationMethod}
 				label="Thermal preservation method"
 				options={options.thermalPreservationMethods}
 			/>
 			<DateRange
-				{fields}
-				from="specimen.received_from"
-				to="specimen.received_to"
+				from={FormFieldName.SpecimenReceivedFrom}
+				to={FormFieldName.SpecimenReceivedTo}
 				label="Date received"
 			/>
 		</FilterGroup>

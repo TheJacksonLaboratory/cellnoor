@@ -1,18 +1,18 @@
-<script lang="ts" generics="T">
+<script lang="ts" generics="T extends string">
 	import { Combobox } from 'bits-ui';
 	import Check from '@lucide/svelte/icons/check';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import { page } from '$app/state';
 	import { getFormSubmissionFn } from './context.ts';
 	import SelectedValues from './SelectedValues.svelte';
+	import type { StringEnum } from './string-enum.ts';
 
 	let {
 		name,
 		label,
 		options
 	}: {
-		fields: T;
-		name: keyof T & string;
+		name: StringEnum<T>;
 		label: string;
 		options: Map<string, string>;
 	} = $props();

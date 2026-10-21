@@ -10,9 +10,6 @@
 
 	const rows = $derived(Array.isArray(data) ? data : data ? [data] : []);
 	const columns = $derived([...new Set(rows.flatMap(Object.keys))]);
-
-	const formatCell = (value: unknown) =>
-		typeof value === 'object' ? JSON.stringify(value) : value;
 </script>
 
 <section class="stack card card-body">
@@ -28,7 +25,7 @@
 	{#if !data}
 		<iframe src={file.raw_file_link} title={file.name}></iframe>
 	{:else if format === 'json'}
-		<JsonTreeView.Root class="json-tree" {data} defaultExpandedDepth={1}>
+		<JsonTreeView.Root class="json-tree" {data}>
 			<JsonTreeView.Tree>
 				{#snippet arrow()}
 					<ChevronRight size={16} />
@@ -49,7 +46,7 @@
 					{#each rows as row (row)}
 						<tr>
 							{#each columns as column (column)}
-								<td>{formatCell(row[column])}</td>
+								<td>{row[column]}</td>
 							{/each}
 						</tr>
 					{/each}
@@ -90,10 +87,6 @@
 
 			[data-part='branch-indicator'] {
 				display: flex;
-			}
-
-			[data-kind='colon'] {
-				margin-inline-end: var(--space-xs);
 			}
 		}
 	}

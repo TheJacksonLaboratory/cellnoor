@@ -8,6 +8,8 @@
 
 	let { files, selected = $bindable() }: { files: FileNode[]; selected?: FileLeaf } = $props();
 
+	const iconSize = 16;
+
 	const collection = $derived(
 		createTreeCollection<FileNode>({
 			nodeToValue: (node) => node.path,
@@ -20,7 +22,7 @@
 <TreeView.Root
 	class="file-explorer card"
 	{collection}
-	selectedValue={selected ? [selected.raw_file_link] : []}
+	selectedValue={selected ? [selected.path] : []}
 	onSelectionChange={({ selectedNodes: [node] }) => {
 		if (node?.type === 'file') {
 			selected = node;
@@ -29,7 +31,7 @@
 >
 	<TreeView.Label class="subheading card-header">Files</TreeView.Label>
 	<TreeView.Tree class="card-body">
-		{#each files as node, index (node)}
+		{#each files as node, index (node.path)}
 			{@render renderNode(node, [index])}
 		{/each}
 	</TreeView.Tree>
@@ -41,9 +43,9 @@
 			<TreeView.Branch>
 				<TreeView.BranchControl>
 					<TreeView.BranchIndicator>
-						<ChevronRight size={16} />
+						<ChevronRight size={iconSize} />
 					</TreeView.BranchIndicator>
-					<Folder size={16} />
+					<Folder size={iconSize} />
 					<TreeView.BranchText>{node.name}</TreeView.BranchText>
 				</TreeView.BranchControl>
 				<TreeView.BranchContent>
@@ -54,20 +56,17 @@
 			</TreeView.Branch>
 		{:else}
 			<TreeView.Item>
-				<FileIcon size={16} />
+				<FileIcon size={iconSize} />
 				<TreeView.ItemText>{node.name}</TreeView.ItemText>
 				{#if selected?.raw_file_link === node.raw_file_link}
 					<!-- Stop propagation so the tree doesn't treat these events as selecting the item -->
 					<button
 						class="plain-button close"
-						aria-label="Close {node.name}"
-						onclick={(e) => {
-							e.stopPropagation();
-							selected = undefined;
-						}}
-						onkeydown={(e) => e.stopPropagation()}
+						aria-label="Close {node.path}"
+						onclick={() => (selected = undefined)}
+						onkeydown={() => (selected = undefined)}
 					>
-						<X size={16} />
+						<X size={iconSize} />
 					</button>
 				{/if}
 			</TreeView.Item>
@@ -104,6 +103,11 @@
 					background: var(--color-hover);
 					color: var(--color-primary);
 				}
+			}
+
+			/* Add 16px for the width of the chevron */
+			[data-scope='tree-view'][data-part='item'] {
+				padding-inline-start: calc(16px + var(--space-sm) + (var(--depth) - 1) * var(--space-md));
 			}
 
 			[data-scope='tree-view'][data-part='branch-indicator'] {

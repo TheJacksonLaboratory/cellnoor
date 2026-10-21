@@ -1,9 +1,10 @@
-<script lang="ts" generics="T">
+<script lang="ts" generics="T extends string">
 	import { page } from '$app/state';
 	import { getFormSubmissionFn } from './context.ts';
 	import SelectedValues from './SelectedValues.svelte';
+	import type { StringEnum } from './string-enum.ts';
 
-	let { name, label }: { fields: T; name: keyof T & string; label: string } = $props();
+	let { name, label }: { name: StringEnum<T>; label: string } = $props();
 
 	const id = $props.id();
 

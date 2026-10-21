@@ -10,7 +10,25 @@ import type {
 	ThermalPreservationMethod
 } from 'cellnoor-client/cellnoor-types.ts';
 
-export const datasetFilterFieldParsers = {
+export enum FormFieldName {
+	Name = 'name',
+	SpecimenProjectId = 'specimen.project_id',
+	AssayName = 'assay.name',
+	AssayMultiplexingType = 'assay.multiplexing_type',
+	AssayLibraryType = 'assay.library_type',
+	DeliveredFrom = 'delivered_from',
+	DeliveredTo = 'delivered_to',
+	SpecimenName = 'specimen.name',
+	SpecimenType = 'specimen.type',
+	SpecimenSpecies = 'specimen.species',
+	SpecimenEmbeddedIn = 'specimen.embedded_in',
+	SpecimenFixative = 'specimen.fixative',
+	SpecimenThermalPreservationMethod = 'specimen.thermal_preservation_method',
+	SpecimenReceivedFrom = 'specimen.received_from',
+	SpecimenReceivedTo = 'specimen.received_to'
+}
+
+export const datasetFilterFieldParsers: Record<FormFieldName, Parser<ChromiumDatasetPredicate>> = {
 	name: (v) => ({ name: { trgm_any_unless_empty: v } }),
 	'specimen.project_id': (v) => ({ specimen: { project_id: { in_unless_empty: v } } }),
 	'assay.name': (v) => ({ tenx_assay: { name: { in_unless_empty: v } } }),
@@ -34,4 +52,4 @@ export const datasetFilterFieldParsers = {
 	}),
 	'specimen.received_from': (v) => onOrAfter(v).map((exp) => ({ specimen: { received_at: exp } })),
 	'specimen.received_to': (v) => onOrBefore(v).map((exp) => ({ specimen: { received_at: exp } }))
-} as const satisfies Record<string, Parser<ChromiumDatasetPredicate>>;
+};
