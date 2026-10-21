@@ -27,25 +27,8 @@ from initial_data;
 
 drop table initial_data;
 
--- The admin sees every project and may do anything to every resource
+-- The admin sees every project. Their permissions on every resource are granted in
+-- db/migrations/0031_data-rls.up.sql, which is where the resources are defined
 update principal set is_staff = true
 where id = uuid_nil();
-
-insert into permission (principal_id, resource, action)
-select
-    uuid_nil(),
-    resource,
-    action
-from
-    unnest(array[
-        'institution',
-        'person',
-        'account',
-        'project',
-        'specimen',
-        'assay_constant_data',
-        'chromium_experimental_data',
-        'chromium_dataset'
-    ]) as resource
-cross join unnest(array['create', 'update', 'delete']) as action;
 -- noqa: enable=AL03

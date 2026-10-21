@@ -24,9 +24,9 @@
 	{/if}
 	<div class="stack">
 		<div>
-			<a class="heading" {href}>{title}</a>
+			<a class="heading" {href} rel="external">{title}</a>
 			{#if subtitle}
-				<a class="subheading link-arrow" href={subtitleHref}>{subtitle}</a>
+				<a class="subheading link-arrow" href={subtitleHref} rel="external">{subtitle}</a>
 			{/if}
 		</div>
 		{@render children?.()}

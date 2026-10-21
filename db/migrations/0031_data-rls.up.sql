@@ -21,8 +21,8 @@ create function current_user_created_project(
     select exists (select 1 from project where id = project_id_to_check and created_by = app_user_id())
 $$;
 
--- A permission is granted on a resource, which is a group of tables. Reads are open except for projects and
--- specimens, which are scoped to their members. Every other view comes back to specimen through a view with
+-- A permission is granted on a resource, which is a group of tables. Reads are open except for projects and specimens,
+-- which are scoped to their members or creators. Every other view comes back to specimen through a view with
 -- `security_invoker = true`, so scoping specimens scopes everything downstream of them
 create temp table resource_table (resource text not null, table_name text primary key);
 
@@ -88,8 +88,8 @@ do $$
         for r in select resource, table_name from resource_table
         loop
             visible_rows = case r.table_name
-                when 'project' then 'current_user_has_access_to_project(id)'
-                when 'specimen' then 'current_user_has_access_to_project(project_id)'
+                when 'project' then 'current_user_has_access_to_project(id) or created_by = app_user_id()'
+                when 'specimen' then 'current_user_has_access_to_project(project_id) or current_user_created_project(project_id)'
                 else 'true'
             end;
 
@@ -98,20 +98,31 @@ do $$
                 'create policy can_read on %I for select using (%s)', r.table_name, visible_rows
             );
             execute format(
-                'create policy can_create on %I for insert with check (current_user_can(%L, %L))',
-                r.table_name, 'create', r.resource
+                'create policy can_create on %I for insert with check ((%s) and current_user_can(%L, %L))',
+                r.table_name, visible_rows, 'create', r.resource
             );
             execute format(
-                'create policy can_update on %I for update using (%s) with check (current_user_can(%L, %L))',
+                'create policy can_update on %I for update using (%s) with check ((%s) and current_user_can(%L, %L))',
                 r.table_name, visible_rows, 'update', r.resource
             );
             execute format(
-                'create policy can_delete on %I for delete using (%s and current_user_can(%L, %L))',
+                'create policy can_delete on %I for delete using ((%s) and current_user_can(%L, %L))',
                 r.table_name, visible_rows, 'delete', r.resource
             );
         end loop;
     end;
 $$;
+
+-- The admin may do anything to every resource
+-- noqa: disable=AL03
+insert into permission (principal_id, resource, action)
+select
+    uuid_nil(),
+    resource,
+    action
+from (select distinct resource from resource_table) as resources
+cross join unnest(array['create', 'update', 'delete']) as action;
+-- noqa: enable=AL03
 
 drop table resource_table;
 

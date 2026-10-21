@@ -13,6 +13,8 @@ create index person_email_trgm_idx on person using gin (email gin_trgm_ops);
 create index person_orcid_trgm_idx on person using gin (orcid gin_trgm_ops);
 create index person_institution_id_idx on person (institution_id);
 
+create index account_person_id_idx on account (person_id);
+
 create index service_description_idx on service (description);
 create index service_description_trgm_idx on service using gin (description gin_trgm_ops);
 create index service_owned_by_idx on service (owned_by);

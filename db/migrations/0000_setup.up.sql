@@ -1,5 +1,5 @@
 -- This is used in row-level security to determine who the current user is. The app sets the `app.user_id` setting in
--- crates/cellnoor/src/db/client.rs
+-- crates/cellnoor-api/src/db/client.rs
 create function app_user_id() returns uuid language sql stable as $$
     select current_setting('app.user_id', true)::uuid
 $$;
@@ -23,7 +23,7 @@ select create_user_with_password_from_file('auth', '/run/secrets/auth_db_passwor
 
 -- We might like to put a check-constraint here ensuring the string is non-empty, but our application has to do that
 -- anyways for values in JSONB properties, so we do it there to avoid duplicating code
-create collation case_insensitive (provider = icu, deterministic = false, locale = 'en-u-ks-level1');
+create collation case_insensitive (provider = icu, deterministic = false, locale = 'en-u-ks-level2');
 create domain case_insensitive_text as text collate case_insensitive;
 
 create extension pg_trgm;

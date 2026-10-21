@@ -66,7 +66,7 @@ create table suspension_pooling (
     foreign key (suspension_id, suspension_created_at) references suspension (
         id, created_at
     ) on update cascade on delete cascade,
-    foreign key (tag_id, tag_type) references multiplexing_tag,
+    foreign key (tag_id, tag_type) references multiplexing_tag match full,
     unique (pool_id, tag_id, tag_type),
     unique nulls not distinct (pool_id, suspension_id, tag_id, tag_type),
 

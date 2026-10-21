@@ -1,5 +1,6 @@
 use cellnoor_types::{
     operator::UuidOperator,
+    permission::{Action, Permission, Resource},
     project::{NewProject, ProjectDetailed, ProjectPredicate},
     specimen::{SpecimenDetailed, SpecimenPredicate, SpecimenQuery, creation::NewSpecimen},
 };
@@ -7,11 +8,14 @@ use pretty_assertions::assert_eq;
 use uuid::Uuid;
 
 use crate::{
-    db,
+    db::{self, DbError},
     handlers::{
+        permissions::grant_permissions,
         projects::{create::insert_test_project, index_detailed::select_projects_detailed},
         specimens::{
-            create::insert_test_specimen_and_project, index_detailed::select_specimens_detailed,
+            create::{insert_specimen, insert_test_specimen_and_project},
+            index_detailed::select_specimens_detailed,
+            update::update_specimen_by_id,
         },
     },
     state::dev_util::{db_client_as_admin, db_client_as_user},
@@ -101,4 +105,66 @@ async fn row_level_security_for_specimens() {
 
     test_user_can_only_see_accessible_specimen(&tx, accessible_specimen).await;
     test_user_cannot_see_inaccessible_specimen(&tx, *inaccessible_specimen.record.id).await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn user_cannot_write_specimen_into_inaccessible_project() {
+    let mut client = db_client_as_admin().await;
+    let tx = client.begin().await.unwrap();
+
+    // The user is a member of the accessible specimen's project only, and may
+    // create and update specimens
+    let ((new_specimen, accessible_specimen), (_, inaccessible_project)) = tokio::join!(
+        insert_accessible_specimen(&tx),
+        insert_inaccessible_project(&tx)
+    );
+    let user_id = get_user_id_from_specimen(&tx, &accessible_specimen).await;
+    grant_permissions(
+        &tx,
+        user_id,
+        &[Action::Create, Action::Update].map(|action| Permission {
+            resource: Resource::Specimen,
+            action,
+        }),
+    )
+    .await
+    .unwrap();
+
+    tx.commit().await.unwrap();
+
+    let inaccessible_project_id = inaccessible_project.record.project.id;
+
+    // Log in as the new user
+    let mut client = db_client_as_user(user_id).await;
+
+    let tx = client.begin().await.unwrap();
+    let mut new = new_specimen.clone();
+    new.readable_id = crate::db::dummy_data::random_name_for("specimen");
+    new.project_id = inaccessible_project_id;
+
+    let error = insert_specimen(&tx, new).await.unwrap_err();
+    assert_eq!(
+        error,
+        DbError::PermissionDenied {
+            message: "new row violates row-level security policy for resource \"specimen\""
+                .to_owned()
+        }
+    );
+    drop(tx);
+
+    let tx = client.begin().await.unwrap();
+    let mut update = new_specimen;
+    update.project_id = inaccessible_project_id;
+    update.measurements = vec![];
+
+    let error = update_specimen_by_id(&tx, *accessible_specimen.record.id, update)
+        .await
+        .unwrap_err();
+    assert_eq!(
+        error,
+        DbError::PermissionDenied {
+            message: "new row violates row-level security policy for resource \"specimen\""
+                .to_owned()
+        }
+    );
 }

@@ -45,10 +45,12 @@ create table account (
     id uuid primary key default uuidv7(),
     person_id uuid references person on delete cascade not null,
     auth_provider text not null,
-    auth_provider_user_id text unique not null,
+    auth_provider_user_id text not null,
     scope text,
     created_at timestamptz not null default now(),
-    updated_at timestamptz not null default now()
+    updated_at timestamptz not null default now(),
+
+    unique (auth_provider, auth_provider_user_id)
 );
 
 -- It would be nice to use better-auth's built-in utility for "institution-owned API keys", but it doesn't really work

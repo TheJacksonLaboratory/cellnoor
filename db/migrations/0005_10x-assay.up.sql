@@ -8,14 +8,14 @@ create table tenx_assay (
     chromium_chip case_insensitive_text,
     cmdlines case_insensitive_text[],
 
-    unique (name, library_types, sample_multiplexing, chemistry_version, chromium_chip)
+    unique nulls not distinct (name, library_types, sample_multiplexing, chemistry_version, chromium_chip)
 );
 
 -- Both array columns are normalized the same way, on the same events
 create function sort_assay_arrays() returns trigger language plpgsql volatile as $$
     begin
-        new.library_types = array(select distinct unnest(new.library_types) order by 1);
-        new.cmdlines = array(select distinct unnest(new.cmdlines) order by 1);
+        new.library_types = nullif(array(select distinct unnest(new.library_types) order by 1), '{}');
+        new.cmdlines = nullif(array(select distinct unnest(new.cmdlines) order by 1), '{}');
         return new;
     end;
 $$;

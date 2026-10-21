@@ -17,7 +17,7 @@
 <style>
 	.sidebar-layout {
 		display: grid;
-		grid-template-columns: minmax(min-content, 32rem) minmax(0, 1fr);
+		grid-template-columns: minmax(min-content, 24rem) minmax(0, 1fr);
 		align-items: start;
 
 		> * {

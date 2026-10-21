@@ -19,9 +19,9 @@
 	<header class="cluster">
 		<h2 class="heading">{file.name}</h2>
 		{#if data}
-			<a class="button" href={file.raw_file_link} download>Download</a>
+			<a class="button" href={file.raw_file_link} rel="external" download>Download</a>
 		{:else}
-			<a class="button" href={file.raw_file_link} target="_blank">Open in new tab</a>
+			<a class="button" href={file.raw_file_link} rel="external" target="_blank">Open in new tab</a>
 		{/if}
 	</header>
 
@@ -46,7 +46,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each rows as row}
+					{#each rows as row (row)}
 						<tr>
 							{#each columns as column (column)}
 								<td>{formatCell(row[column])}</td>

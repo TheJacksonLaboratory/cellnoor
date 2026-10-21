@@ -23,7 +23,7 @@ pub async fn create_specimen(
         .await
 }
 
-async fn insert_specimen(
+pub async fn insert_specimen(
     tx: &db::Transaction<'_>,
     record: NewSpecimen,
 ) -> Result<SpecimenDetailed, DbError> {

@@ -84,8 +84,8 @@
 	/* Ark renders these parts inside its own components, so scoped selectors can't reach them */
 	:global {
 		.file-explorer {
-			[data-part='item'],
-			[data-part='branch-control'] {
+			[data-scope='tree-view'][data-part='item'],
+			[data-scope='tree-view'][data-part='branch-control'] {
 				display: flex;
 				align-items: center;
 				gap: var(--space-xs);
@@ -106,7 +106,7 @@
 				}
 			}
 
-			[data-part='branch-indicator'] {
+			[data-scope='tree-view'][data-part='branch-indicator'] {
 				display: flex;
 			}
 		}

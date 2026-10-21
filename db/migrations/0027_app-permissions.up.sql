@@ -2,6 +2,9 @@
 grant select, insert, update, delete on all tables in schema public to app;
 alter default privileges in schema public grant select, insert, update, delete on tables to app;
 
+-- app shouldn't be able to edit the migrations table
+revoke all on schema_migrations from app;
+
 -- The exception is api_key: a hashed key must never leave the database, so 'app' cannot read that column. Looking a
 -- key up by its hash goes through `api_key_by_hash` instead
 revoke all on api_key from app;

@@ -17,7 +17,7 @@
 	{#snippet sidebar()}
 		<header class="cluster">
 			<h2 class="heading">Filters</h2>
-			<a class="button" href={page.url.pathname}>Clear all</a>
+			<a class="button" href={page.url.pathname} rel="external">Clear all</a>
 		</header>
 		<form class="stack" bind:this={form} data-sveltekit-reset="false">
 			{@render filters()}

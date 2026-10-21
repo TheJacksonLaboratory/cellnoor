@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { authClient } from '#lib/auth.ts';
 	import { afterNavigate, goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 
 	let { children } = $props();
@@ -15,20 +16,21 @@
 </script>
 
 <nav>
-	<a class="brand" href="/">cellnoor</a>
-	<a href="/specimens">Specimens</a>
-	<a href="/libraries">Libraries</a>
+	<a class="brand" href={resolve('/(app)')}>cellnoor</a>
+	<a href={resolve('/(app)/specimens')}>Specimens</a>
+	<a href={resolve('/(app)/libraries')}>Libraries</a>
 
 	<button class="plain-button" popovertarget="datasets-menu">
 		Datasets <ChevronDown size="1em" />
 	</button>
 	<div id="datasets-menu" class="card menu" popover bind:this={datasetsMenu}>
-		<a class="menu-item" href="/chromium-datasets">Chromium</a>
+		<a class="menu-item" href={resolve('/(app)/chromium-datasets')}>Chromium</a>
 	</div>
 
 	<button
 		class="button"
-		onclick={() => authClient.signOut({ fetchOptions: { onSuccess: () => goto('/sign-in') } })}
+		onclick={() =>
+			authClient.signOut({ fetchOptions: { onSuccess: () => goto(resolve('/sign-in')) } })}
 		>Sign Out</button
 	>
 </nav>
