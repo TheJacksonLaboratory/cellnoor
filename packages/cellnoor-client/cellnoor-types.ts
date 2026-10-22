@@ -444,6 +444,61 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/people/permissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    offset?: number;
+                    order_by_desc?: boolean;
+                    order_by_field?: components["schemas"]["PersonField"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PersonWithPermissions"][];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/people/search": {
         parameters: {
             query?: never;
@@ -472,6 +527,78 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["Person"][];
+                    };
+                };
+                /** @description failed to parse request body as JSON of the correct type */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["JsonRejection"];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                /** @description expected request with 'Content-Type: application/json' */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["JsonRejection"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/people/search/permissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PersonPredicateQuery"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PersonWithPermissions"][];
                     };
                 };
                 /** @description failed to parse request body as JSON of the correct type */
@@ -823,6 +950,61 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/services/detailed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    offset?: number;
+                    order_by_desc?: boolean;
+                    order_by_field?: components["schemas"]["ServiceField"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ServiceDetailed"][];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/services/search": {
         parameters: {
             query?: never;
@@ -851,6 +1033,78 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["Service"][];
+                    };
+                };
+                /** @description failed to parse request body as JSON of the correct type */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["JsonRejection"];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                /** @description expected request with 'Content-Type: application/json' */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["JsonRejection"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/services/search/detailed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ServicePredicateQuery"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ServiceDetailed"][];
                     };
                 };
                 /** @description failed to parse request body as JSON of the correct type */
@@ -1073,7 +1327,65 @@ export interface paths {
                 };
             };
         };
-        delete?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": string[];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": null;
+                    };
+                };
+                /** @description failed to parse request body as JSON of the correct type */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["JsonRejection"];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                /** @description expected request with 'Content-Type: application/json' */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["JsonRejection"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -7033,7 +7345,7 @@ export interface components {
             order_by?: components["schemas"]["OrderByPersonFieldSet"];
         };
         PersonUpdate: {
-            email: string;
+            email?: string | null;
             /** Format: uuid */
             institution_id: string;
             is_staff: boolean;
@@ -7041,6 +7353,17 @@ export interface components {
             orcid?: string | null;
             permissions_to_grant: components["schemas"]["Permission"][];
             permissions_to_revoke: components["schemas"]["Permission"][];
+        };
+        PersonWithPermissions: {
+            email?: string | null;
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            institution_id: string;
+            is_staff: boolean;
+            name: string;
+            orcid?: string | null;
+            permissions: components["schemas"]["Permission"][];
         };
         /** @enum {string} */
         Picogram: "picogram";
@@ -7163,6 +7486,18 @@ export interface components {
             is_staff: boolean;
             /** Format: uuid */
             owned_by: string;
+        };
+        ServiceDetailed: {
+            /** Format: date-time */
+            created_at: string;
+            description?: string | null;
+            /** Format: uuid */
+            id: string;
+            is_staff: boolean;
+            members: string[];
+            /** Format: uuid */
+            owned_by: string;
+            permissions: components["schemas"]["Permission"][];
         };
         /**
          * @description Auto-generated discriminant enum variants
@@ -8064,6 +8399,7 @@ export type PersonPredicate = components['schemas']['PersonPredicate'];
 export type PersonPredicateFilter = components['schemas']['PersonPredicateFilter'];
 export type PersonPredicateQuery = components['schemas']['PersonPredicateQuery'];
 export type PersonUpdate = components['schemas']['PersonUpdate'];
+export type PersonWithPermissions = components['schemas']['PersonWithPermissions'];
 export type Picogram = components['schemas']['Picogram'];
 export type PicogramConcentration = components['schemas']['PicogramConcentration'];
 export type PooledSuspensions = components['schemas']['PooledSuspensions'];
@@ -8078,6 +8414,7 @@ export type SampleMultiplexing = components['schemas']['SampleMultiplexing'];
 export type SampleMultiplexingOperator = components['schemas']['SampleMultiplexingOperator'];
 export type SavedApiKeyRecord = components['schemas']['SavedApiKeyRecord'];
 export type Service = components['schemas']['Service'];
+export type ServiceDetailed = components['schemas']['ServiceDetailed'];
 export type ServiceField = components['schemas']['ServiceField'];
 export type ServicePredicate = components['schemas']['ServicePredicate'];
 export type ServicePredicateFilter = components['schemas']['ServicePredicateFilter'];

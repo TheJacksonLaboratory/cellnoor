@@ -1,20 +1,19 @@
 <script lang="ts">
 	import X from '@lucide/svelte/icons/x';
-	import { getFormSubmissionFn } from './context.ts';
 
 	let {
 		values = $bindable(),
-		options = new Map()
+		options = new Map(),
+		onchange
 	}: {
 		values: string[];
 		options?: Map<string, string>;
+		onchange: () => void;
 	} = $props();
-
-	const submitForm = getFormSubmissionFn();
 
 	function remove(removed: string) {
 		values = values.filter((v) => v !== removed);
-		submitForm();
+		onchange();
 	}
 </script>
 

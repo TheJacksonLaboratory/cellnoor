@@ -11,7 +11,7 @@
 		children
 	}: {
 		title: string;
-		href: ResolvedPathname;
+		href?: ResolvedPathname;
 		subtitle?: string;
 		subtitleHref?: ResolvedPathname;
 		checked?: boolean;
@@ -25,7 +25,11 @@
 	{/if}
 	<div class="stack">
 		<div>
-			<a class="heading" {href}>{title}</a>
+			{#if href}
+				<a class="heading" {href}>{title}</a>
+			{:else}
+				<span class="heading">{title}</span>
+			{/if}
 			{#if subtitle}
 				<a class="subheading link-arrow" href={subtitleHref}>{subtitle}</a>
 			{/if}

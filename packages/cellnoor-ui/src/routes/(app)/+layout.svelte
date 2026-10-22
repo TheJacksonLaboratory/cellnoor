@@ -2,16 +2,19 @@
 	import { authClient } from '#lib/auth.ts';
 	import { afterNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { toasts } from '#lib/toasts.svelte.ts';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 
-	let { children } = $props();
+	let { children, data } = $props();
 
 	let datasetsMenu: HTMLElement;
+	let settingsMenu: HTMLElement;
 
 	afterNavigate(({ shallow, type }) => {
 		if (shallow && type === 'goto') return;
 
 		datasetsMenu.hidePopover();
+		settingsMenu.hidePopover();
 	});
 </script>
 
@@ -28,6 +31,17 @@
 		<a class="menu-item" href={resolve('/(app)/chromium-datasets')}>Chromium</a>
 	</div>
 
+	<button class="plain-button" popovertarget="settings-menu">
+		Settings <ChevronDown size="1em" />
+	</button>
+	<div id="settings-menu" class="card menu" popover bind:this={settingsMenu}>
+		{#if data.canUpdatePeople}
+			<a class="menu-item" href={resolve('/(app)/settings/people')}>People</a>
+		{/if}
+		<a class="menu-item" href={resolve('/(app)/settings/services')}>Services</a>
+		<a class="menu-item" href={resolve('/(app)/settings/api-keys')}>API keys</a>
+	</div>
+
 	<button
 		class="button"
 		onclick={() =>
@@ -39,6 +53,12 @@
 <main>
 	{@render children()}
 </main>
+
+<div class="stack toasts" aria-live="polite">
+	{#each toasts as t (t)}
+		<p class={t.ok ? 'success' : 'error'}>{t.message}</p>
+	{/each}
+</div>
 
 <style>
 	nav {
@@ -75,5 +95,11 @@
 	[popover] {
 		position-area: block-end span-inline-end;
 		margin: var(--space-xs) 0 0;
+	}
+
+	.toasts {
+		position: fixed;
+		inset-block-end: var(--space-lg);
+		inset-inline-end: var(--space-lg);
 	}
 </style>

@@ -1,4 +1,4 @@
-use macro_attributes::{base_model, unit_enum};
+use macro_attributes::{select, unit_enum};
 
 #[unit_enum]
 pub enum Action {
@@ -19,8 +19,9 @@ pub enum Resource {
     ChromiumDataset,
 }
 
-#[base_model]
+#[select]
 #[derive(Copy, Eq)]
+#[cfg_attr(feature = "postgres-types", postgres(name = "granted_permission"))]
 pub struct Permission {
     pub resource: Resource,
     pub action: Action,

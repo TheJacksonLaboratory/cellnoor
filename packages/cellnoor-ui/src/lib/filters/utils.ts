@@ -12,10 +12,16 @@ export function onOrBefore(dates: string[]) {
 	return dates.filter(Boolean).map((date) => ({ lte: `${date}T23:59:59Z` }));
 }
 
-export function toOrderBy<F extends string>(params: URLSearchParams, defaultField: F) {
+export function toOrderBy<F extends string>(
+	params: URLSearchParams,
+	defaultField: F,
+	defaultDesc = true
+) {
+	const desc = params.get('desc');
+
 	return {
 		field: (params.get('sort') ?? defaultField) as F,
-		desc: params.get('desc') !== 'false'
+		desc: desc === null ? defaultDesc : desc !== 'false'
 	};
 }
 

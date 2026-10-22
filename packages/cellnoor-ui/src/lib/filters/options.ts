@@ -40,3 +40,8 @@ export const thermalPreservationMethods = toDisplayMap([
 	'controlled_rate_freezing',
 	'flash_freezing'
 ] satisfies ThermalPreservationMethod[]);
+
+export const staff = new Map([
+	['true', 'Staff'],
+	['false', 'Not staff']
+]);

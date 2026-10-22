@@ -43,7 +43,9 @@ async fn update_person_by_id(
         permissions_to_grant,
         permissions_to_revoke,
     } = update;
-    validate_email(email.as_ref())?;
+    if let Some(email) = email {
+        validate_email(email.as_ref())?;
+    }
 
     tx.update(id, update).await?;
     set_is_staff(tx, id, simple.is_staff).await?;
@@ -98,12 +100,33 @@ mod test {
         pre_update.simple.name = "updated".to_nonempty_string();
         let update_to_apply = PersonUpdate {
             simple: pre_update.simple,
-            email: "something@example.com".to_nonempty_string(),
+            email: Some("something@example.com".to_nonempty_string()),
             permissions_to_grant: Vec::new(),
             permissions_to_revoke: Vec::new(),
         };
 
         update_person_by_id(&tx, id, &update_to_apply)
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn update_without_email() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let (pre_update, person) = insert_test_person_and_institution(&tx, |_| ())
+            .await
+            .unwrap();
+
+        let update_to_apply = PersonUpdate {
+            simple: pre_update.simple,
+            email: None,
+            permissions_to_grant: Vec::new(),
+            permissions_to_revoke: Vec::new(),
+        };
+
+        update_person_by_id(&tx, person.record.id, &update_to_apply)
             .await
             .unwrap();
     }

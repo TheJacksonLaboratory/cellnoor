@@ -47,9 +47,8 @@ pub(crate) async fn grant_permissions(
     principal_id: Uuid,
     permissions: &[Permission],
 ) -> Result<(), DbError> {
-    // Row-level security decides whether the current user may hand each of
-    // these out (see db/migrations/0028_principal-rls.up.sql). Granting a
-    // permission that the principal already holds is not an error
+    // This is protected by row-level security. A user cannot give a permission
+    // they don't already have
     tx.insert_many_on_conflict_do_nothing(&permission_rows(principal_id, permissions))
         .await
 }
@@ -59,8 +58,9 @@ pub(crate) async fn revoke_permissions(
     principal_id: Uuid,
     permissions: &[Permission],
 ) -> Result<(), DbError> {
-    static REVOKE_PERMISSIONS: &str = "delete from permission where principal_id = $1 and action \
-                                       = any($2) and resource = any($3)";
+    static REVOKE_PERMISSIONS: &str = "delete from permission where principal_id = $1 and \
+                                       (action, resource) in (select * from unnest($2::text[], \
+                                       $3::text[]))";
 
     // A delete matches a set of rows rather than adding them, so the
     // permissions go down as two parallel arrays
@@ -74,4 +74,66 @@ pub(crate) async fn revoke_permissions(
     .await?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod test {
+    use cellnoor_types::{
+        operator::UuidOperator,
+        permission::{Action, Permission, Resource},
+        person::PersonPredicate,
+    };
+    use crate::{
+        handlers::{
+            people::{
+                create::insert_test_person_and_institution,
+                index_permissions::select_people_with_permissions,
+            },
+            permissions::revoke_permissions,
+        },
+        state::dev_util::db_client_as_admin,
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn revoke_only_removes_given_pairs() {
+        use Action::{Create, Update};
+        use Resource::{Institution, Person};
+
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let permission = |resource, action| Permission { resource, action };
+
+        let (_, person) = insert_test_person_and_institution(&tx, |p| {
+            p.permissions_to_grant = vec![
+                permission(Person, Create),
+                permission(Person, Update),
+                permission(Institution, Create),
+                permission(Institution, Update),
+            ];
+        })
+        .await
+        .unwrap();
+
+        revoke_permissions(
+            &tx,
+            person.record.id,
+            &[permission(Person, Update), permission(Institution, Create)],
+        )
+        .await
+        .unwrap();
+
+        let remaining = tx
+            .select_one(
+                PersonPredicate::Id(UuidOperator::Eq(person.record.id)),
+                select_people_with_permissions,
+            )
+            .await
+            .unwrap()
+            .permissions;
+
+        assert_eq!(remaining.len(), 2);
+        assert!(remaining.contains(&permission(Person, Create)));
+        assert!(remaining.contains(&permission(Institution, Update)));
+    }
 }

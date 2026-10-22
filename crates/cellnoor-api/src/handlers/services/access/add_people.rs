@@ -38,7 +38,7 @@ pub(in super::super::super) async fn insert_service_accesses(
         })
         .collect();
 
-    tx.insert_many(&accesses).await
+    tx.insert_many_on_conflict_do_nothing(&accesses).await
 }
 
 struct NewServiceAccess {
@@ -65,6 +65,8 @@ impl Insert for NewServiceAccess {
 
 #[cfg(test)]
 mod test {
+    use uuid::Uuid;
+
     use crate::{
         handlers::{
             people::create::insert_test_person_and_institution,
@@ -86,6 +88,20 @@ mod test {
             .unwrap();
 
         insert_service_accesses(&tx, service.id, &[person.record.id])
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn add_existing_member() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let (_, service) = insert_test_service(&tx, |s| s.users = vec![Uuid::nil()])
+            .await
+            .unwrap();
+
+        insert_service_accesses(&tx, service.id, &[Uuid::nil()])
             .await
             .unwrap();
     }

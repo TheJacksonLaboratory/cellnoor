@@ -11,15 +11,21 @@ export async function load({ url }) {
 		redirect(307, `/sign-in?redirect_to=${url.pathname}`);
 	}
 
-	const [projectList, tenxAssayList, personList] = await Promise.all([
+	const [projectList, tenxAssayList, personList, [currentUser]] = await Promise.all([
 		cellnoorClient.GET('/projects').then(unwrap),
 		cellnoorClient.GET('/10x-assays').then(unwrap),
-		cellnoorClient.GET('/people').then(unwrap)
+		cellnoorClient.GET('/people').then(unwrap),
+		cellnoorClient
+			.POST('/people/search/permissions', { body: { filter: { id: user.id } } })
+			.then(unwrap)
 	]);
 
 	return {
 		projects: new Map(projectList.map((p) => [p.id, p])),
 		people: new Map(personList.map((p) => [p.id, p])),
-		tenxAssays: new Map(tenxAssayList.map((a) => [a.name, a.name]))
+		tenxAssays: new Map(tenxAssayList.map((a) => [a.name, a.name])),
+		canUpdatePeople: currentUser.permissions.some(
+			({ resource, action }) => resource === 'person' && action === 'update'
+		)
 	};
 }

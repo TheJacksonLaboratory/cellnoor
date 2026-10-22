@@ -46,3 +46,13 @@ pub struct Service {
 impl Relation for Service {
     const NAME: &'static str = "service_public";
 }
+
+#[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "service_detailed"))]
+pub struct ServiceDetailed {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    #[cfg_attr(feature = "postgres-types", postgres(name = "service_public"))]
+    pub service: Service,
+    pub permissions: Vec<Permission>,
+    pub members: Vec<Uuid>,
+}

@@ -45,7 +45,7 @@ pub struct NewPerson {
 pub struct PersonUpdate {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub simple: PersonSimpleFields,
-    pub email: NonemptyString,
+    pub email: Option<NonemptyString>,
     pub permissions_to_grant: Vec<Permission>,
     pub permissions_to_revoke: Vec<Permission>,
 }
@@ -85,4 +85,13 @@ pub struct Person {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: SavedPersonRecord,
     pub links: PersonLinks,
+}
+
+#[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "person_with_permissions"))]
+pub struct PersonWithPermissions {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    #[cfg_attr(feature = "postgres-types", postgres(name = "person_public"))]
+    pub person: SavedPersonRecord,
+    pub permissions: Vec<Permission>,
 }

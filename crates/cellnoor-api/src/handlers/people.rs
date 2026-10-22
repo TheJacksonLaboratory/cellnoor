@@ -9,6 +9,7 @@ use axum::{
 };
 pub use create::create_person;
 pub use index::index_people;
+pub use index_permissions::index_people_with_permissions;
 pub use show::show_person;
 pub use update::update_person;
 
@@ -20,6 +21,7 @@ pub(super) mod create;
 #[cfg(test)]
 mod delete;
 pub(super) mod index;
+pub(super) mod index_permissions;
 pub(super) mod show;
 pub(super) mod update;
 

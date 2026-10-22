@@ -1,7 +1,7 @@
 <script lang="ts" generics="T extends string">
 	import { page } from '$app/state';
 	import { getFormSubmissionFn } from './context.ts';
-	import SelectedValues from './SelectedValues.svelte';
+	import SelectedValues from '../SelectedValues.svelte';
 	import type { StringEnum } from './string-enum.ts';
 
 	let { name, label }: { name: StringEnum<T>; label: string } = $props();
@@ -28,7 +28,7 @@
 
 <div class="field">
 	<label class="label" for={id}>{label}</label>
-	<SelectedValues bind:values />
+	<SelectedValues bind:values onchange={submitForm} />
 	{#each values as v (v)}
 		<input type="hidden" {name} value={v} />
 	{/each}

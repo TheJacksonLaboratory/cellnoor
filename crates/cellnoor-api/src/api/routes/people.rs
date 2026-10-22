@@ -6,14 +6,19 @@ use axum::{
     Json,
     extract::{Query, State},
 };
-use cellnoor_types::person::{Person, PersonQuery, PersonUpdate, SimplePersonQuery};
+use cellnoor_types::person::{
+    Person, PersonQuery, PersonUpdate, PersonWithPermissions, SimplePersonQuery,
+};
 
 use crate::{
     auth::AuthUser,
     db::DbError,
     handlers::{
         delete_resource,
-        people::{create_person, index_people, show_person, update_person},
+        people::{
+            create_person, index_people, index_people_with_permissions, show_person,
+            update_person,
+        },
     },
     state::AppState,
 };
@@ -21,7 +26,9 @@ use crate::{
 pub(super) fn router() -> ApiRouter<AppState> {
     ApiRouter::new()
         .api_route("/", post(create_person).get(index_people_simple))
+        .api_route("/permissions", get(index_people_with_permissions_simple))
         .api_route("/search", post(index_people))
+        .api_route("/search/permissions", post(index_people_with_permissions))
         .nest("/{id}", id_router())
 }
 
@@ -42,6 +49,19 @@ async fn index_people_simple(
     Query(q): Query<SimplePersonQuery>,
 ) -> Result<Json<Vec<Person>>, DbError> {
     index_people(
+        state,
+        user,
+        crate::extract::JsonExtractor(PersonQuery::from_simple_query(q)),
+    )
+    .await
+}
+
+async fn index_people_with_permissions_simple(
+    state: State<AppState>,
+    user: AuthUser,
+    Query(q): Query<SimplePersonQuery>,
+) -> Result<Json<Vec<PersonWithPermissions>>, DbError> {
+    index_people_with_permissions(
         state,
         user,
         crate::extract::JsonExtractor(PersonQuery::from_simple_query(q)),

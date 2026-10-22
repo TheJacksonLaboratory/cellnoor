@@ -21,6 +21,8 @@
 		--color-link: #0177b2;
 		--color-muted: #565656;
 		--color-hover: #f2f2f2;
+		--color-error-background: lightcoral;
+		--color-success-background: lightgreen;
 
 		--border: 1px solid var(--color-muted);
 		--radius: 0.25rem;
@@ -168,6 +170,34 @@
 
 	.card-body {
 		padding: var(--space-md);
+	}
+
+	.create-card {
+		border-color: var(--color-primary);
+
+		.card-header {
+			display: flex;
+			align-items: center;
+			gap: var(--space-xs);
+			border-color: var(--color-primary);
+			color: var(--color-primary);
+		}
+	}
+
+	.error,
+	.success {
+		margin: 0;
+		padding: var(--space-sm) var(--space-md);
+		border: 1px solid;
+		border-radius: var(--radius);
+	}
+
+	.error {
+		background-color: var(--color-error-background);
+	}
+
+	.success {
+		background-color: var(--color-success-background);
 	}
 
 	.menu {

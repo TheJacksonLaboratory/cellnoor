@@ -69,20 +69,6 @@ where
         .await
 }
 
-struct IsStaff(bool);
-
-impl Relation for IsStaff {
-    const NAME: &'static str = "principal";
-}
-
-impl Insert for IsStaff {
-    type Field = &'static str;
-
-    fn fields(&self) -> FieldValues<'_, Self::Field> {
-        vec![("is_staff", &self.0)]
-    }
-}
-
 /// Set whether a person or service is staff.
 ///
 /// `is_staff` lives on the `principal` table, whose row is created by a trigger
@@ -92,7 +78,15 @@ pub(crate) async fn set_is_staff(
     id: Uuid,
     is_staff: bool,
 ) -> Result<(), DbError> {
-    tx.update(id, &IsStaff(is_staff)).await
+    // Rewriting an unchanged `true` would still fail the `no_privilege_escalation`
+    // policy for a non-staff user, so only changes are written
+    static SET_IS_STAFF: &str =
+        "update principal set is_staff = $2 where id = $1 and is_staff <> $2";
+
+    tx.execute(&db::Sql::new(SET_IS_STAFF, vec![&id, &is_staff]))
+        .await?;
+
+    Ok(())
 }
 
 fn specific_error_inferred_early_responses<T: JsonSchema>(

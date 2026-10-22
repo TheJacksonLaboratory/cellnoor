@@ -16,10 +16,13 @@ use crate::{
         chromium_runs::index_detailed::select_chromium_runs_detailed,
         institutions::{create::insert_test_institution, index::select_institutions},
         libraries::index_detailed::select_libraries_detailed,
-        people::{create::insert_test_person_and_institution, index::select_people},
+        people::{
+            create::insert_test_person_and_institution, index::select_people,
+            index_permissions::select_people_with_permissions,
+        },
         permissions::{grant_permissions, revoke_permissions},
         projects::{create::insert_test_project, index_detailed::select_projects_detailed},
-        services::index::select_services,
+        services::{index::select_services, index_detailed::select_services_detailed},
         set_is_staff,
         specimens::index_detailed::select_specimens_detailed,
         suspension_pools::index_detailed::select_suspension_pools_detailed,
@@ -79,8 +82,10 @@ async fn user_can_access_every_view() {
         assert_is_ok(tx, select_institutions),
         assert_is_ok(tx, select_libraries_detailed),
         assert_is_ok(tx, select_people),
+        assert_is_ok(tx, select_people_with_permissions),
         assert_is_ok(tx, select_projects_detailed),
         assert_is_ok(tx, select_services),
+        assert_is_ok(tx, select_services_detailed),
         assert_is_ok(tx, select_specimens_detailed),
         assert_is_ok(tx, select_suspensions_detailed),
         assert_is_ok(tx, select_suspension_pools_detailed),
@@ -226,6 +231,17 @@ async fn revoked_permission_disallows_writing() {
         insert_test_institution(&tx, |_| ()).await.unwrap_err(),
         DbError::PermissionDenied { .. }
     );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn user_can_update_staff_without_changing_staff_status() {
+    let user_id = create_test_user_with(false, may(Resource::Person, &[Action::Update])).await;
+    let staff_id = create_test_user_with(true, Vec::new()).await;
+
+    let mut client = db_client_as_user(user_id).await;
+    let tx = client.begin().await.unwrap();
+
+    set_is_staff(&tx, staff_id, true).await.unwrap();
 }
 
 #[tokio::test(flavor = "multi_thread")]

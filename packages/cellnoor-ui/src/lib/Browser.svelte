@@ -6,11 +6,18 @@
 	import { page } from '$app/state';
 
 	let {
+		actions,
 		filters,
 		children,
 		limit,
 		count
-	}: { filters: Snippet; children: Snippet; limit: number | null; count: number } = $props();
+	}: {
+		actions?: Snippet;
+		filters: Snippet;
+		children: Snippet;
+		limit: number | null;
+		count: number;
+	} = $props();
 
 	function withLimit(limit: number) {
 		const params = new SvelteURLSearchParams(page.url.search);
@@ -27,6 +34,7 @@
 
 <SidebarLayout>
 	{#snippet sidebar()}
+		{@render actions?.()}
 		<header class="cluster">
 			<h2 class="heading">Filters</h2>
 			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
