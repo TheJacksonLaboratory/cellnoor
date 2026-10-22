@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import type { Person, SpecimenCompact } from 'cellnoor-client/cellnoor-types.ts';
 	import Time from './Time.svelte';
 	import { formatEmbeddingMatrix, formatEnum, formatFixative, formatSpecies } from './format.ts';
@@ -73,7 +74,10 @@
 		<tbody>
 			{#each specimens as s (s.id)}
 				<tr>
-					<td><a class="link-arrow" href={s.links.self} rel="external">{s.name}</a></td>
+					<td
+						><a class="link-arrow" href={resolve('/(app)/specimens/[id]', { id: s.id })}>{s.name}</a
+						></td
+					>
 					{#each varying as { label, toText } (label)}
 						<td>{toText(s)}</td>
 					{/each}

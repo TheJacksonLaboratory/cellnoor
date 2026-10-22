@@ -8,7 +8,7 @@
 
 	let { files, selected = $bindable() }: { files: FileNode[]; selected?: FileLeaf } = $props();
 
-	const iconSize = 16;
+	const iconSize = '1em';
 
 	const collection = $derived(
 		createTreeCollection<FileNode>({
@@ -107,7 +107,7 @@
 
 			/* Add 16px for the width of the chevron */
 			[data-scope='tree-view'][data-part='item'] {
-				padding-inline-start: calc(16px + var(--space-sm) + (var(--depth) - 1) * var(--space-md));
+				padding-inline-start: calc(1em + var(--space-sm) + (var(--depth) - 1) * var(--space-md));
 			}
 
 			[data-scope='tree-view'][data-part='branch-indicator'] {

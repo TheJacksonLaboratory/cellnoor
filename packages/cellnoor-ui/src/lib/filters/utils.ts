@@ -11,3 +11,15 @@ export function onOrAfter(dates: string[]) {
 export function onOrBefore(dates: string[]) {
 	return dates.filter(Boolean).map((date) => ({ lte: `${date}T23:59:59Z` }));
 }
+
+export function toOrderBy<F extends string>(params: URLSearchParams, defaultField: F) {
+	return {
+		field: (params.get('sort') ?? defaultField) as F,
+		desc: params.get('desc') !== 'false'
+	};
+}
+
+export function toLimit(params: URLSearchParams) {
+	const limit = params.get('limit') ?? '50';
+	return limit === 'all' ? null : Number(limit);
+}

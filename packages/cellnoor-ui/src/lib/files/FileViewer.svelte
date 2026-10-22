@@ -82,7 +82,7 @@
 
 			/* Lines leaf items up with branch text, past the 16px arrow */
 			[data-part='item'] {
-				padding-inline-start: calc((var(--depth) - 1) * var(--space-md) + 16px);
+				padding-inline-start: calc((var(--depth) - 1) * var(--space-md) + 1em);
 			}
 
 			[data-part='branch-indicator'] {

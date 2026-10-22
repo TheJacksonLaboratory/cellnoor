@@ -17,6 +17,7 @@
 
 <nav>
 	<a class="brand" href={resolve('/(app)')}>cellnoor</a>
+	<a href={resolve('/(app)/projects')}>Projects</a>
 	<a href={resolve('/(app)/specimens')}>Specimens</a>
 	<a href={resolve('/(app)/libraries')}>Libraries</a>
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import SidebarLayout from '#lib/SidebarLayout.svelte';
 	import FileExplorer from '#lib/files/FileExplorer.svelte';
 	import FileViewer from '#lib/files/FileViewer.svelte';
@@ -51,7 +52,7 @@
 				<tbody>
 					<tr>
 						{#if project}
-							<td><a class="link-arrow" href={project.links.self}>{project.name}</a></td>
+							<td><a class="link-arrow" href={resolve('/(app)/projects/[id]', { id: project.id })}>{project.name}</a></td>
 						{/if}
 						<td><Time datetime={dataset.delivered_at} /></td>
 						<td>{dataset.assay.name}</td>

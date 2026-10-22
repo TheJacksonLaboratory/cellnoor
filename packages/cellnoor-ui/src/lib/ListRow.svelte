@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import type { ResolvedPathname } from '$app/types';
 
 	let {
 		title,
@@ -10,9 +11,9 @@
 		children
 	}: {
 		title: string;
-		href: string;
+		href: ResolvedPathname;
 		subtitle?: string;
-		subtitleHref?: string;
+		subtitleHref?: ResolvedPathname;
 		checked?: boolean;
 		children?: Snippet;
 	} = $props();
@@ -24,9 +25,9 @@
 	{/if}
 	<div class="stack">
 		<div>
-			<a class="heading" {href} rel="external">{title}</a>
+			<a class="heading" {href}>{title}</a>
 			{#if subtitle}
-				<a class="subheading link-arrow" href={subtitleHref} rel="external">{subtitle}</a>
+				<a class="subheading link-arrow" href={subtitleHref}>{subtitle}</a>
 			{/if}
 		</div>
 		{@render children?.()}

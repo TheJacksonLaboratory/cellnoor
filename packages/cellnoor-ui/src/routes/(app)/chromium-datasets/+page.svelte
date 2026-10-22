@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import Browser from '#lib/Browser.svelte';
 	import FilterGroup from '#lib/filters/FilterGroup.svelte';
 	import MultiSelect from '#lib/filters/MultiSelect.svelte';
@@ -9,12 +10,20 @@
 	import Time from '#lib/Time.svelte';
 	import { formatAssayWithMultiplexing, formatSpecies } from '#lib/format.ts';
 	import SelectionToolbar from '#lib/SelectionToolbar.svelte';
+	import Sort from '#lib/filters/Sort.svelte';
+	import PageSize from '#lib/filters/PageSize.svelte';
+	import type { ChromiumDatasetField } from 'cellnoor-client/cellnoor-types.ts';
 	import { FormFieldName } from './field-parsers.ts';
 	import { convertMetricsToFiles } from './convert-metrics.ts';
 
 	let { data } = $props();
 
-	const { datasets, projects, projectNames, tenxAssays } = $derived(data);
+	const { datasets, projects, projectNames, tenxAssays, orderBy, limit } = $derived(data);
+
+	const sortFields = new Map<ChromiumDatasetField, string>([
+		['delivered_at', 'Date delivered'],
+		['name', 'Name']
+	]);
 
 	const SPECIMEN_LIMIT = 8;
 
@@ -22,6 +31,7 @@
 
 	function download(blob: Blob, filename: string) {
 		const a = document.createElement('a');
+		a.hidden = true;
 		a.href = URL.createObjectURL(blob);
 		a.download = filename;
 		a.click();
@@ -44,8 +54,12 @@
 	};
 </script>
 
-<Browser>
+<Browser {limit} count={datasets.size}>
 	{#snippet filters()}
+		<FilterGroup label="Results">
+			<Sort fields={sortFields} {orderBy} />
+			<PageSize {limit} />
+		</FilterGroup>
 		<FilterGroup label="Dataset">
 			<TagInput name={FormFieldName.Name} label="Name" />
 			<MultiSelect name={FormFieldName.SpecimenProjectId} label="Project" options={projectNames} />
@@ -113,14 +127,16 @@
 				{@const project = projects.get(project_id)}
 				<ListRow
 					title={ds.name}
-					href={ds.links.self}
+					href={resolve('/(app)/chromium-datasets/[id]', { id })}
 					subtitle={project?.name}
-					subtitleHref={project?.links.self}
+					subtitleHref={project && resolve('/(app)/projects/[id]', { id: project_id })}
 					bind:checked={datasets.isSelectedGetter(id), datasets.isSelectedSetter(id)}
 				>
 					<div class="cluster">
 						{#each ds.specimens.slice(0, SPECIMEN_LIMIT) as s (s.id)}
-							<a class="link-arrow" href={s.links.self}>{s.name}</a>
+							<a class="link-arrow" href={resolve('/(app)/specimens/[id]', { id: s.id })}
+								>{s.name}</a
+							>
 						{/each}
 						{#if ds.specimens.length > SPECIMEN_LIMIT}
 							<span class="muted">+{ds.specimens.length - SPECIMEN_LIMIT} more</span>
