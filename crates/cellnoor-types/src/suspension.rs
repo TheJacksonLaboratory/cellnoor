@@ -9,6 +9,7 @@ use crate::{
     Relation,
     id::{Id, NoId},
     nonempty::NonemptyVec,
+    project::SavedProjectRecord,
     simple_links::SimpleLinks,
     specimen::{SavedSpecimenRecord, SpecimenCompact},
     suspension::{
@@ -80,6 +81,9 @@ pub struct SuspensionUpdate {
 pub struct SavedSuspensionRecordDetailed {
     pub suspension: SavedSuspensionRecord,
     pub specimen: SavedSpecimenRecord,
+    // This is part of the type because the db propagates it for querying purposes, but we don't
+    // actually need it in SuspensionDetailed
+    pub project: SavedProjectRecord,
     pub measurements: Vec<SuspensionMeasurement>,
     pub preparers: Vec<Uuid>,
 }

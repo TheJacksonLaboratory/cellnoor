@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, DbError, FieldValues, Insert},
+    db::{self, DbError},
     state::AppState,
 };
 
@@ -78,8 +78,9 @@ pub(crate) async fn set_is_staff(
     id: Uuid,
     is_staff: bool,
 ) -> Result<(), DbError> {
-    // Rewriting an unchanged `true` would still fail the `no_privilege_escalation`
-    // policy for a non-staff user, so only changes are written
+    // Rewriting an unchanged `true` would still fail the
+    // `no_privilege_escalation` policy for a non-staff user, so only
+    // changes are written
     static SET_IS_STAFF: &str =
         "update principal set is_staff = $2 where id = $1 and is_staff <> $2";
 

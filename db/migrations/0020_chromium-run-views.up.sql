@@ -5,6 +5,7 @@ create view gem_well_to_specimen with (security_invoker = true) as (
         chromium_run,
         tenx_assay,
         suspension.specimen,
+        suspension.project,
         gem_well,
         chip_loading.ocm_barcode_id,
         null as multiplexing_tag
@@ -21,6 +22,7 @@ create view gem_well_to_specimen with (security_invoker = true) as (
         chromium_run,
         tenx_assay,
         suspension_pool.specimen,
+        suspension_pool.project,
         gem_well,
         chip_loading.ocm_barcode_id,
         suspension_pool.multiplexing_tag

@@ -43,6 +43,7 @@ fn suspension_from_detailed_record(
     SavedSuspensionRecordDetailed {
         suspension,
         specimen,
+        project: _,
         measurements,
         preparers,
     }: SavedSuspensionRecordDetailed,

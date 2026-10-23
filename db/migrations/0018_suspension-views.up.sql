@@ -8,14 +8,16 @@
 create view suspension_to_specimen with (security_invoker = true) as (
     select
         suspension,
-        specimen
-    from suspension join specimen on suspension.specimen_id = specimen.id
+        specimen_to_project.specimen,
+        specimen_to_project.project
+    from suspension join specimen_to_project on suspension.specimen_id = (specimen_to_project.specimen).id
 );
 
 create view suspension_detailed with (security_invoker = true) as (
     select
         suspension,
         specimen,
+        project,
         array(
             select mes from suspension_measurement as mes
             where mes.suspension_id = (suspension).id
