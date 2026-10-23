@@ -35,7 +35,8 @@
 		<button
 			type="button"
 			class="button"
-			aria-label={desc ? 'Descending' : 'Ascending'}
+			aria-label="Sort descending"
+			aria-pressed={desc}
 			onclick={toggleDirection}
 		>
 			{#if desc}

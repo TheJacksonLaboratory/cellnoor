@@ -1,6 +1,11 @@
 <script lang="ts">
-	import { actionValues, resourceValues } from 'cellnoor-client/cellnoor-types.js';
-	import type { Action, Permission, Resource } from 'cellnoor-client/cellnoor-types.ts';
+	import {
+		actionValues,
+		resourceValues,
+		type Action,
+		type Permission,
+		type Resource
+	} from 'cellnoor-client/cellnoor-types.ts';
 	import { mutate, type Mutation } from './client.ts';
 	import { formatEnum } from './format.ts';
 
@@ -24,30 +29,32 @@
 	}
 </script>
 
-<table>
-	<thead>
-		<tr>
-			<td></td>
-			{#each actionValues as action (action)}
-				<th scope="col">{formatEnum(action)}</th>
-			{/each}
-		</tr>
-	</thead>
-	<tbody>
-		{#each resourceValues as resource (resource)}
+<div class="scroll-x">
+	<table>
+		<thead>
 			<tr>
-				<th scope="row">{formatEnum(resource)}</th>
+				<td></td>
 				{#each actionValues as action (action)}
-					<td>
-						<input
-							type="checkbox"
-							aria-label="{formatEnum(action)} {formatEnum(resource)}"
-							checked={has(resource, action)}
-							onchange={(e) => toggle(e.currentTarget, { resource, action })}
-						/>
-					</td>
+					<th scope="col">{formatEnum(action)}</th>
 				{/each}
 			</tr>
-		{/each}
-	</tbody>
-</table>
+		</thead>
+		<tbody>
+			{#each resourceValues as resource (resource)}
+				<tr>
+					<th scope="row">{formatEnum(resource)}</th>
+					{#each actionValues as action (action)}
+						<td>
+							<input
+								type="checkbox"
+								aria-label="{formatEnum(action)} {formatEnum(resource)}"
+								checked={has(resource, action)}
+								onchange={(e) => toggle(e.currentTarget, { resource, action })}
+							/>
+						</td>
+					{/each}
+				</tr>
+			{/each}
+		</tbody>
+	</table>
+</div>

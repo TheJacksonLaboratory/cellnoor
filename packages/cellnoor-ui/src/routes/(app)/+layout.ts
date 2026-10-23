@@ -1,6 +1,7 @@
 import { authClient } from '#lib/auth.ts';
 import { cellnoorClient, unwrap } from '#lib/client.ts';
 import { redirect } from '@sveltejs/kit';
+import { resolve } from '$app/paths';
 
 export async function load({ url }) {
 	const session = await authClient.getSession();
@@ -8,7 +9,8 @@ export async function load({ url }) {
 	const user = session.data?.user;
 
 	if (!user) {
-		redirect(307, `/sign-in?redirect_to=${url.pathname}`);
+		const query = new URLSearchParams({ redirect_to: url.pathname + url.search });
+		redirect(307, `${resolve('/sign-in')}?${query}`);
 	}
 
 	const [projectList, tenxAssayList, personList, [currentUser]] = await Promise.all([

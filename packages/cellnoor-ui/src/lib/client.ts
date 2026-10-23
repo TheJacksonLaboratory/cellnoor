@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { refreshAll } from '$app/navigation';
+import { invalidate } from '$app/navigation';
 import { createCellnoorClient } from 'cellnoor-client';
 import { DATE_FORMATTER, formatEnum } from './format.ts';
 import { toast } from './toasts.svelte.ts';
@@ -57,15 +57,22 @@ export function errorMessage(error: DbError | AuthError | PersonError | JsonReje
 	}
 }
 
-export async function mutate(request: Mutation, success = 'Saved') {
-	const { error } = await request;
+export const MUTABLE_DATA = 'cellnoor:mutable-data';
 
-	if (error) {
-		toast(errorMessage(error), false);
+export async function mutate(request: Mutation, success = 'Saved') {
+	const result = await request.catch(() => null);
+
+	if (!result) {
+		toast('Could not reach the server', false);
 		return false;
 	}
 
-	await refreshAll();
+	if (result.error) {
+		toast(errorMessage(result.error), false);
+		return false;
+	}
+
+	await invalidate(MUTABLE_DATA);
 	toast(success, true);
 	return true;
 }

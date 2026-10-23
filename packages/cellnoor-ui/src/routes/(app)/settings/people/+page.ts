@@ -1,9 +1,11 @@
-import { cellnoorClient, unwrap } from '#lib/client.ts';
+import { cellnoorClient, MUTABLE_DATA, unwrap } from '#lib/client.ts';
 import { toLimit, toOrderBy, toPredicates } from '#lib/filters/utils.ts';
 import type { PersonField, PersonPredicate } from 'cellnoor-client/cellnoor-types.ts';
 import { personFilterFieldParsers } from './field-parsers.ts';
 
-export async function load({ url }) {
+export async function load({ url, depends }) {
+	depends(MUTABLE_DATA);
+
 	const orderBy = toOrderBy<PersonField>(url.searchParams, 'name', false);
 	const limit = toLimit(url.searchParams);
 

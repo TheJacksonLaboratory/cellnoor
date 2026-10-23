@@ -3,7 +3,6 @@
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import FileIcon from '@lucide/svelte/icons/file';
 	import Folder from '@lucide/svelte/icons/folder';
-	import X from '@lucide/svelte/icons/x';
 	import { type FileLeaf, type FileNode } from './file-tree.ts';
 
 	let { files, selected = $bindable() }: { files: FileNode[]; selected?: FileLeaf } = $props();
@@ -58,28 +57,12 @@
 			<TreeView.Item>
 				<FileIcon size={iconSize} />
 				<TreeView.ItemText>{node.name}</TreeView.ItemText>
-				{#if selected?.raw_file_link === node.raw_file_link}
-					<!-- Stop propagation so the tree doesn't treat these events as selecting the item -->
-					<button
-						class="plain-button close"
-						aria-label="Close {node.path}"
-						onclick={() => (selected = undefined)}
-						onkeydown={() => (selected = undefined)}
-					>
-						<X size={iconSize} />
-					</button>
-				{/if}
 			</TreeView.Item>
 		{/if}
 	</TreeView.NodeProvider>
 {/snippet}
 
 <style>
-	.close {
-		display: flex;
-		margin-inline-start: auto;
-	}
-
 	/* Ark renders these parts inside its own components, so scoped selectors can't reach them */
 	:global {
 		.file-explorer {
@@ -105,7 +88,7 @@
 				}
 			}
 
-			/* Add 16px for the width of the chevron */
+			/* Add the width of the chevron */
 			[data-scope='tree-view'][data-part='item'] {
 				padding-inline-start: calc(1em + var(--space-sm) + (var(--depth) - 1) * var(--space-md));
 			}

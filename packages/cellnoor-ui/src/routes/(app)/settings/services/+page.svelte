@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Browser from '#lib/Browser.svelte';
+	import FilteredList from '#lib/FilteredList.svelte';
 	import Plus from '@lucide/svelte/icons/plus';
 	import { cellnoorClient, mutate } from '#lib/client.ts';
 	import DateRange from '#lib/filters/DateRange.svelte';
 	import FilterGroup from '#lib/filters/FilterGroup.svelte';
-	import MultiSelect from '#lib/filters/MultiSelect.svelte';
+	import MultiSelectFilter from '#lib/filters/MultiSelectFilter.svelte';
 	import { staff } from '#lib/filters/options.ts';
 	import PageSize from '#lib/filters/PageSize.svelte';
 	import Sort from '#lib/filters/Sort.svelte';
@@ -70,7 +70,7 @@
 	}
 </script>
 
-<Browser {limit} count={serviceList.length}>
+<FilteredList {limit} count={serviceList.length}>
 	{#snippet actions()}
 		<form class="card create-card" onsubmit={createService}>
 			<h2 class="subheading card-header"><Plus size="1em" /> New service</h2>
@@ -93,8 +93,8 @@
 		</FilterGroup>
 		<FilterGroup label="Service">
 			<TagInput name={FormFieldName.Description} label="Description" />
-			<MultiSelect name={FormFieldName.IsStaff} label="Staff" options={staff} />
-			<MultiSelect name={FormFieldName.OwnedBy} label="Owner" options={personNames} />
+			<MultiSelectFilter name={FormFieldName.IsStaff} label="Staff" options={staff} />
+			<MultiSelectFilter name={FormFieldName.OwnedBy} label="Owner" options={personNames} />
 			<DateRange
 				from={FormFieldName.CreatedFrom}
 				to={FormFieldName.CreatedTo}
@@ -144,8 +144,11 @@
 					<div>
 						<button
 							class="button"
-							onclick={() =>
-								mutate(cellnoorClient.DELETE('/services/{id}', { params: { path: { id } } }), 'Deleted')}
+							onclick={() => {
+								if (confirm(`Delete service "${service.description ?? id}"?`)) {
+									mutate(cellnoorClient.DELETE('/services/{id}', { params: { path: { id } } }), 'Deleted');
+								}
+							}}
 						>
 							Delete service
 						</button>
@@ -156,4 +159,4 @@
 	{:else}
 		<p>No services match these filters.</p>
 	{/if}
-</Browser>
+</FilteredList>

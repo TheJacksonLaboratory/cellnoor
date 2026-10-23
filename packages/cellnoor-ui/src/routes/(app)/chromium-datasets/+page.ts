@@ -5,13 +5,13 @@ import type {
 } from 'cellnoor-client/cellnoor-types.ts';
 import { toLimit, toOrderBy, toPredicates } from '#lib/filters/utils.ts';
 import { datasetFilterFieldParsers } from './field-parsers.ts';
-import { SelectableData } from '#lib/selectable-data.svelte.ts';
+import { SvelteSet } from 'svelte/reactivity';
 
 export async function load({ url, parent }) {
 	const orderBy = toOrderBy<ChromiumDatasetField>(url.searchParams, 'delivered_at');
 	const limit = toLimit(url.searchParams);
 
-	const datasetList = await cellnoorClient
+	const datasets = await cellnoorClient
 		.POST('/chromium-datasets/search/detailed', {
 			body: {
 				filter: {
@@ -30,7 +30,5 @@ export async function load({ url, parent }) {
 
 	const projectNames = new Map(projects.entries().map(([id, p]) => [id, p.name]));
 
-	const datasets = new SelectableData(datasetList, (ds) => ds.id);
-
-	return { datasets, projectNames, orderBy, limit };
+	return { datasets, selected: new SvelteSet<string>(), projectNames, orderBy, limit };
 }

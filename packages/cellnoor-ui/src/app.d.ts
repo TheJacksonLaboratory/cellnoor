@@ -6,7 +6,7 @@ import type {
 	JsonRejection,
 	PersonError,
 	UpdateChromiumDatasetError
-} from 'cellnoor-client/cellnoor-types.js';
+} from 'cellnoor-client/cellnoor-types.ts';
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces

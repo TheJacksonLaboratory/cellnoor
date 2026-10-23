@@ -1,21 +1,5 @@
-export type ParsedContents = {
-	format: string;
-	data: Record<string, unknown> | Record<string, unknown>[];
-};
+import type { ChromiumDatasetParsedFileDataFileTree } from 'cellnoor-client/cellnoor-types.ts';
 
-type FileNodeBase = { path: string; name: string };
+export type FileNode = ChromiumDatasetParsedFileDataFileTree;
 
-export type FileLeaf = FileNodeBase & {
-	type: 'file';
-	raw_file_link: string;
-	parsed_contents?: ParsedContents | null;
-};
-
-export type FileNode =
-	| FileLeaf
-	| (FileNodeBase & {
-			type: 'directory';
-			path: string;
-			name: string;
-			children: FileNode[];
-	  });
+export type FileLeaf = Extract<FileNode, { type: 'file' }>;

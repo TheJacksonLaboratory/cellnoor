@@ -3,9 +3,10 @@ import {
 	libraryTypeValues,
 	sampleMultiplexingValues,
 	speciesValues,
-	specimenTypeValues
-} from 'cellnoor-client/cellnoor-types.js';
-import type { Fixative, ThermalPreservationMethod } from 'cellnoor-client/cellnoor-types.ts';
+	specimenTypeValues,
+	type Fixative,
+	type ThermalPreservationMethod
+} from 'cellnoor-client/cellnoor-types.ts';
 import {
 	formatEmbeddingMatrix,
 	formatEnum,

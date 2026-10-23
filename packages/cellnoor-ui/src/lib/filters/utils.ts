@@ -4,12 +4,20 @@ export function toPredicates<P>(parsers: Record<string, Parser<P>>, params: URLS
 	return Object.entries(parsers).flatMap(([name, parse]) => parse(params.getAll(name)));
 }
 
+function startOfDay(date: string) {
+	return new Date(`${date}T00:00`).toISOString();
+}
+
+export function endOfDay(date: string) {
+	return new Date(`${date}T23:59:59.999`).toISOString();
+}
+
 export function onOrAfter(dates: string[]) {
-	return dates.filter(Boolean).map((date) => ({ gte: `${date}T00Z` }));
+	return dates.filter(Boolean).map((date) => ({ gte: startOfDay(date) }));
 }
 
 export function onOrBefore(dates: string[]) {
-	return dates.filter(Boolean).map((date) => ({ lte: `${date}T23:59:59Z` }));
+	return dates.filter(Boolean).map((date) => ({ lte: endOfDay(date) }));
 }
 
 export function toOrderBy<F extends string>(

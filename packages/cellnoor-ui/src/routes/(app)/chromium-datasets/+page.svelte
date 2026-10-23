@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import Browser from '#lib/Browser.svelte';
+	import FilteredList from '#lib/FilteredList.svelte';
 	import FilterGroup from '#lib/filters/FilterGroup.svelte';
-	import MultiSelect from '#lib/filters/MultiSelect.svelte';
+	import MultiSelectFilter from '#lib/filters/MultiSelectFilter.svelte';
 	import TagInput from '#lib/filters/TagInput.svelte';
 	import DateRange from '#lib/filters/DateRange.svelte';
 	import * as options from '#lib/filters/options.ts';
@@ -18,7 +18,9 @@
 
 	let { data } = $props();
 
-	const { datasets, projects, projectNames, tenxAssays, orderBy, limit } = $derived(data);
+	const { datasets, selected, projects, projectNames, tenxAssays, orderBy, limit } = $derived(data);
+
+	const selectedDatasets = $derived(datasets.filter((ds) => selected.has(ds.id)));
 
 	const sortFields = new Map<ChromiumDatasetField, string>([
 		['delivered_at', 'Date delivered'],
@@ -31,14 +33,14 @@
 
 	function download(blob: Blob, filename: string) {
 		const a = document.createElement('a');
-		a.hidden = true;
 		a.href = URL.createObjectURL(blob);
 		a.download = filename;
 		a.click();
+		URL.revokeObjectURL(a.href);
 	}
 
 	const downloadFiles = () => {
-		const { single_row_csv, multi_row_csv, json } = convertMetricsToFiles(datasets.selectedItems);
+		const { single_row_csv, multi_row_csv, json } = convertMetricsToFiles(selectedDatasets);
 
 		if (single_row_csv) {
 			download(single_row_csv, 'datasets.csv');
@@ -54,7 +56,7 @@
 	};
 </script>
 
-<Browser {limit} count={datasets.size}>
+<FilteredList {limit} count={datasets.length}>
 	{#snippet filters()}
 		<FilterGroup label="Results">
 			<Sort fields={sortFields} {orderBy} />
@@ -62,7 +64,7 @@
 		</FilterGroup>
 		<FilterGroup label="Dataset">
 			<TagInput name={FormFieldName.Name} label="Name" />
-			<MultiSelect name={FormFieldName.SpecimenProjectId} label="Project" options={projectNames} />
+			<MultiSelectFilter name={FormFieldName.SpecimenProjectId} label="Project" options={projectNames} />
 			<DateRange
 				from={FormFieldName.DeliveredFrom}
 				to={FormFieldName.DeliveredTo}
@@ -70,13 +72,13 @@
 			/>
 		</FilterGroup>
 		<FilterGroup label="Assay">
-			<MultiSelect name={FormFieldName.AssayName} label="Name" options={tenxAssays} />
-			<MultiSelect
+			<MultiSelectFilter name={FormFieldName.AssayName} label="Name" options={tenxAssays} />
+			<MultiSelectFilter
 				name={FormFieldName.AssayMultiplexingType}
 				label="Multiplexing type"
 				options={options.multiplexingTypes}
 			/>
-			<MultiSelect
+			<MultiSelectFilter
 				name={FormFieldName.AssayLibraryType}
 				label="Library type"
 				options={options.libraryTypes}
@@ -84,19 +86,19 @@
 		</FilterGroup>
 		<FilterGroup label="Specimen">
 			<TagInput name={FormFieldName.SpecimenName} label="Name" />
-			<MultiSelect name={FormFieldName.SpecimenType} label="Type" options={options.specimenTypes} />
-			<MultiSelect name={FormFieldName.SpecimenSpecies} label="Species" options={options.species} />
-			<MultiSelect
+			<MultiSelectFilter name={FormFieldName.SpecimenType} label="Type" options={options.specimenTypes} />
+			<MultiSelectFilter name={FormFieldName.SpecimenSpecies} label="Species" options={options.species} />
+			<MultiSelectFilter
 				name={FormFieldName.SpecimenEmbeddedIn}
 				label="Embedded in"
 				options={options.embeddingMatrices}
 			/>
-			<MultiSelect
+			<MultiSelectFilter
 				name={FormFieldName.SpecimenFixative}
 				label="Fixative"
 				options={options.fixatives}
 			/>
-			<MultiSelect
+			<MultiSelectFilter
 				name={FormFieldName.SpecimenThermalPreservationMethod}
 				label="Thermal preservation method"
 				options={options.thermalPreservationMethods}
@@ -109,19 +111,20 @@
 		</FilterGroup>
 	{/snippet}
 
-	{#if datasets.size}
+	{#if datasets.length}
 		<header class="cluster">
-			<span>{datasetCount(datasets.size)}</span>
-			<SelectionToolbar selection={datasets} />
-			{#if datasets.nSelected}
+			<span>{datasetCount(datasets.length)}</span>
+			<SelectionToolbar {selected} ids={datasets.map((ds) => ds.id)} />
+			{#if selectedDatasets.length}
 				<button class="button" onclick={downloadFiles}
-					>Download metrics for {datasetCount(datasets.nSelected)}</button
+					>Download metrics for {datasetCount(selectedDatasets.length)}</button
 				>
 			{/if}
 		</header>
 
 		<ul class="divided">
-			{#each datasets.entries() as [id, ds] (id)}
+			{#each datasets as ds (ds.id)}
+				{@const { id } = ds}
 				<!-- All specimens in a dataset share the same species and project -->
 				{@const { species, project_id } = ds.specimens[0]}
 				{@const project = projects.get(project_id)}
@@ -130,7 +133,7 @@
 					href={resolve('/(app)/chromium-datasets/[id]', { id })}
 					subtitle={project?.name}
 					subtitleHref={project && resolve('/(app)/projects/[id]', { id: project_id })}
-					bind:checked={datasets.isSelectedGetter(id), datasets.isSelectedSetter(id)}
+					bind:checked={() => selected.has(id), (checked) => (checked ? selected.add(id) : selected.delete(id))}
 				>
 					<div class="cluster">
 						{#each ds.specimens.slice(0, SPECIMEN_LIMIT) as s (s.id)}
@@ -152,4 +155,4 @@
 	{:else}
 		<p>No datasets match these filters.</p>
 	{/if}
-</Browser>
+</FilteredList>

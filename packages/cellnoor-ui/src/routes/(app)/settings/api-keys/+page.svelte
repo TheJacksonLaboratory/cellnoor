@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { refreshAll } from '$app/navigation';
-	import { cellnoorClient, errorMessage, mutate } from '#lib/client.ts';
+	import { invalidate } from '$app/navigation';
+	import { cellnoorClient, errorMessage, MUTABLE_DATA, mutate } from '#lib/client.ts';
+	import { endOfDay } from '#lib/filters/utils.ts';
 	import ListRow from '#lib/ListRow.svelte';
 	import Plus from '@lucide/svelte/icons/plus';
 	import MutationInput from '#lib/MutationInput.svelte';
@@ -14,8 +15,6 @@
 	const { apiKeys, serviceNames, people } = $derived(data);
 
 	let secret = $state<string>();
-
-	const endOfDay = (date: string) => `${date}T23:59:59Z`;
 
 	async function createApiKey(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
@@ -39,7 +38,7 @@
 
 		secret = apiKey.secret;
 		form.reset();
-		await refreshAll();
+		await invalidate(MUTABLE_DATA);
 		toast('Created', true);
 	}
 
@@ -114,11 +113,14 @@
 					<div>
 						<button
 							class="button"
-							onclick={() =>
-								mutate(
-									cellnoorClient.DELETE('/api-keys/{id}', { params: { path: { id: key.id } } }),
-									'Deleted'
-								)}
+							onclick={() => {
+								if (confirm(`Delete API key "${key.description ?? key.id}"?`)) {
+									mutate(
+										cellnoorClient.DELETE('/api-keys/{id}', { params: { path: { id: key.id } } }),
+										'Deleted'
+									);
+								}
+							}}
 						>
 							Delete API key
 						</button>

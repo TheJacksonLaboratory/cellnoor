@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Browser from '#lib/Browser.svelte';
+	import FilteredList from '#lib/FilteredList.svelte';
 	import { cellnoorClient } from '#lib/client.ts';
 	import FilterGroup from '#lib/filters/FilterGroup.svelte';
-	import MultiSelect from '#lib/filters/MultiSelect.svelte';
+	import MultiSelectFilter from '#lib/filters/MultiSelectFilter.svelte';
 	import { staff } from '#lib/filters/options.ts';
 	import PageSize from '#lib/filters/PageSize.svelte';
 	import Sort from '#lib/filters/Sort.svelte';
@@ -37,7 +37,7 @@
 	}
 </script>
 
-<Browser {limit} count={personList.length}>
+<FilteredList {limit} count={personList.length}>
 	{#snippet filters()}
 		<FilterGroup label="Results">
 			<Sort fields={sortFields} {orderBy} />
@@ -46,8 +46,8 @@
 		<FilterGroup label="Person">
 			<TagInput name={FormFieldName.Name} label="Name" />
 			<TagInput name={FormFieldName.Email} label="Email" />
-			<MultiSelect name={FormFieldName.IsStaff} label="Staff" options={staff} />
-			<MultiSelect
+			<MultiSelectFilter name={FormFieldName.IsStaff} label="Staff" options={staff} />
+			<MultiSelectFilter
 				name={FormFieldName.InstitutionId}
 				label="Institution"
 				options={institutionNames}
@@ -79,4 +79,4 @@
 	{:else}
 		<p>No people match these filters.</p>
 	{/if}
-</Browser>
+</FilteredList>

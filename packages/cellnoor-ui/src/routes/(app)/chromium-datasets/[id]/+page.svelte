@@ -69,7 +69,7 @@
 	</header>
 
 	{#if selected}
-		<FileViewer file={selected} />
+		<FileViewer file={selected} onclose={() => (selected = undefined)} />
 	{/if}
 
 	<section class="stack card card-body">

@@ -3,7 +3,7 @@
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import type { FileLeaf } from './file-tree.ts';
 
-	let { file }: { file: FileLeaf } = $props();
+	let { file, onclose }: { file: FileLeaf; onclose: () => void } = $props();
 
 	const format = $derived(file.parsed_contents?.format);
 	const data = $derived(file.parsed_contents?.data);
@@ -20,15 +20,16 @@
 		{:else}
 			<a class="button" href={file.raw_file_link} rel="external" target="_blank">Open in new tab</a>
 		{/if}
+		<button class="button" onclick={onclose}>Close</button>
 	</header>
 
 	{#if !data}
-		<iframe src={file.raw_file_link} title={file.name}></iframe>
+		<iframe src={file.raw_file_link} title={file.name} sandbox="allow-scripts"></iframe>
 	{:else if format === 'json'}
 		<JsonTreeView.Root class="json-tree" {data}>
 			<JsonTreeView.Tree>
 				{#snippet arrow()}
-					<ChevronRight size={16} />
+					<ChevronRight size="1em" />
 				{/snippet}
 			</JsonTreeView.Tree>
 		</JsonTreeView.Root>
@@ -80,7 +81,7 @@
 				}
 			}
 
-			/* Lines leaf items up with branch text, past the 16px arrow */
+			/* Lines leaf items up with branch text, past the arrow */
 			[data-part='item'] {
 				padding-inline-start: calc((var(--depth) - 1) * var(--space-md) + 1em);
 			}

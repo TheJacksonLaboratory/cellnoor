@@ -102,4 +102,20 @@
 		inset-block-end: var(--space-lg);
 		inset-inline-end: var(--space-lg);
 	}
+
+	.error,
+	.success {
+		margin: 0;
+		padding: var(--space-sm) var(--space-md);
+		border: 1px solid;
+		border-radius: var(--radius);
+	}
+
+	.error {
+		background-color: var(--color-error-background);
+	}
+
+	.success {
+		background-color: var(--color-success-background);
+	}
 </style>

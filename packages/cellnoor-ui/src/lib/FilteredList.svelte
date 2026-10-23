@@ -2,7 +2,6 @@
 	import { tick, type Snippet } from 'svelte';
 	import { setFormSubmissionFn } from './filters/context.ts';
 	import SidebarLayout from './SidebarLayout.svelte';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { page } from '$app/state';
 
 	let {
@@ -20,7 +19,8 @@
 	} = $props();
 
 	function withLimit(limit: number) {
-		const params = new SvelteURLSearchParams(page.url.search);
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- local to this call; nothing reads it reactively
+		const params = new URLSearchParams(page.url.search);
 		params.set('limit', String(limit));
 		return `?${params}`;
 	}

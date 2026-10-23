@@ -64,6 +64,13 @@
 		white-space: nowrap;
 	}
 
+	th {
+		font-size: small;
+		text-transform: uppercase;
+		color: var(--color-muted);
+		font-family: var(--font-display);
+	}
+
 	:is(th, td) + :is(th, td) {
 		padding-inline-start: var(--space-2xl);
 	}
@@ -85,8 +92,7 @@
 		font-size: large;
 	}
 
-	.subheading,
-	th {
+	.subheading {
 		font-size: small;
 		text-transform: uppercase;
 		color: var(--color-muted);
@@ -182,22 +188,6 @@
 			border-color: var(--color-primary);
 			color: var(--color-primary);
 		}
-	}
-
-	.error,
-	.success {
-		margin: 0;
-		padding: var(--space-sm) var(--space-md);
-		border: 1px solid;
-		border-radius: var(--radius);
-	}
-
-	.error {
-		background-color: var(--color-error-background);
-	}
-
-	.success {
-		background-color: var(--color-success-background);
 	}
 
 	.menu {
