@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::{
     auth::AuthUser,
     db::{self, DbError, Sql},
-    handlers::{IdParam, preparers::RemovePreparersError, libraries::show::select_library_by_id},
+    handlers::{IdParam, libraries::show::select_library_by_id, preparers::RemovePreparersError},
     state::AppState,
 };
 
@@ -33,14 +33,21 @@ pub(in super::super::super) async fn delete_library_preparers(
         "delete from library_preparer where library_id = $1 and prepared_by = any($2)";
 
     let n = tx
-        .execute(&Sql::new(DELETE_LIBRARY_PREPARERS, vec![&library_id, &preparers]))
+        .execute(&Sql::new(
+            DELETE_LIBRARY_PREPARERS,
+            vec![&library_id, &preparers],
+        ))
         .await?;
 
     if n == 0 {
         return Err(DbError::ResourceNotFound.into());
     }
 
-    if select_library_by_id(tx, library_id).await?.preparers.is_empty() {
+    if select_library_by_id(tx, library_id)
+        .await?
+        .preparers
+        .is_empty()
+    {
         return Err(RemovePreparersError::NoPreparersLeft);
     }
 
@@ -52,13 +59,13 @@ mod test {
     use crate::{
         handlers::{
             chromium_runs::create::TestChromiumRunKind,
-            people::create::insert_test_person_and_institution,
-            preparers::RemovePreparersError,
             libraries::{
-                create::{insert_test_library, insert_library_preparers},
+                create::{insert_library_preparers, insert_test_library},
                 preparers::remove::delete_library_preparers,
                 show::select_library_by_id,
             },
+            people::create::insert_test_person_and_institution,
+            preparers::RemovePreparersError,
         },
         state::dev_util::db_client_as_admin,
     };
@@ -68,7 +75,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, library) = insert_test_library(&tx, TestChromiumRunKind::Standard, |_| ()).await.unwrap();
+        let (_, library) = insert_test_library(&tx, TestChromiumRunKind::Standard, |_| ())
+            .await
+            .unwrap();
         let (_, person) = insert_test_person_and_institution(&tx, |_| ())
             .await
             .unwrap();
@@ -91,7 +100,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, library) = insert_test_library(&tx, TestChromiumRunKind::Standard, |_| ()).await.unwrap();
+        let (_, library) = insert_test_library(&tx, TestChromiumRunKind::Standard, |_| ())
+            .await
+            .unwrap();
 
         let error = delete_library_preparers(&tx, *library.record.id, &library.preparers)
             .await

@@ -28,12 +28,12 @@ pub async fn add_cdna_preparers(
 mod test {
     use crate::{
         handlers::{
-            chromium_runs::create::TestChromiumRunKind,
-            people::create::insert_test_person_and_institution,
             cdna::{
-                create::{insert_test_cdna_and_chromium_run, insert_cdna_preparers},
+                create::{insert_cdna_preparers, insert_test_cdna_and_chromium_run},
                 show::select_cdna_by_id,
             },
+            chromium_runs::create::TestChromiumRunKind,
+            people::create::insert_test_person_and_institution,
         },
         state::dev_util::db_client_as_admin,
     };
@@ -43,7 +43,10 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, cdna) = insert_test_cdna_and_chromium_run(&tx, TestChromiumRunKind::Standard, |_| ()).await.unwrap();
+        let (_, cdna) =
+            insert_test_cdna_and_chromium_run(&tx, TestChromiumRunKind::Standard, |_| ())
+                .await
+                .unwrap();
         let (_, person) = insert_test_person_and_institution(&tx, |_| ())
             .await
             .unwrap();

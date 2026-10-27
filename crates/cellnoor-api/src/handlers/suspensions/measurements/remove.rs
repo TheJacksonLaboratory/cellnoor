@@ -33,7 +33,10 @@ pub(in super::super::super) async fn delete_suspension_measurements(
         "delete from suspension_measurement where suspension_id = $1 and id = any($2)";
 
     let n = tx
-        .execute(&Sql::new(DELETE_SUSPENSION_MEASUREMENTS, vec![&suspension_id, &measurements]))
+        .execute(&Sql::new(
+            DELETE_SUSPENSION_MEASUREMENTS,
+            vec![&suspension_id, &measurements],
+        ))
         .await?;
 
     if n == 0 {
@@ -47,11 +50,9 @@ pub(in super::super::super) async fn delete_suspension_measurements(
 mod test {
     use crate::{
         db::DbError,
-        handlers::{
-            suspensions::{
-                create::insert_test_suspension_and_specimen, measurements::remove::delete_suspension_measurements,
-                show::select_suspension_by_id,
-            },
+        handlers::suspensions::{
+            create::insert_test_suspension_and_specimen,
+            measurements::remove::delete_suspension_measurements, show::select_suspension_by_id,
         },
         state::dev_util::db_client_as_admin,
     };
@@ -61,13 +62,18 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, suspension) = insert_test_suspension_and_specimen(&tx, |_| ()).await.unwrap();
-        let (_, other_suspension) = insert_test_suspension_and_specimen(&tx, |_| ()).await.unwrap();
+        let (_, suspension) = insert_test_suspension_and_specimen(&tx, |_| ())
+            .await
+            .unwrap();
+        let (_, other_suspension) = insert_test_suspension_and_specimen(&tx, |_| ())
+            .await
+            .unwrap();
 
         let ids: Vec<_> = suspension.measurements.iter().map(|m| m.id).collect();
         let other_ids: Vec<_> = other_suspension.measurements.iter().map(|m| m.id).collect();
 
-        // The other suspension's measurements don't belong to `suspension`, so nothing is deleted
+        // The other suspension's measurements don't belong to `suspension`, so
+        // nothing is deleted
         assert_eq!(
             delete_suspension_measurements(&tx, *suspension.record.id, &other_ids)
                 .await
@@ -79,7 +85,9 @@ mod test {
             .await
             .unwrap();
 
-        let selected = select_suspension_by_id(&tx, *suspension.record.id).await.unwrap();
+        let selected = select_suspension_by_id(&tx, *suspension.record.id)
+            .await
+            .unwrap();
         let other_selected = select_suspension_by_id(&tx, *other_suspension.record.id)
             .await
             .unwrap();

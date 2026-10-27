@@ -1,4 +1,6 @@
-use cellnoor_types::{permission::Resource, suspension_pool::measurement::NewSuspensionPoolMeasurement};
+use cellnoor_types::{
+    permission::Resource, suspension_pool::measurement::NewSuspensionPoolMeasurement,
+};
 use jiff::Timestamp;
 
 use crate::{
@@ -7,9 +9,12 @@ use crate::{
             assert_only_staff_with_permission_can_change_children, create_test_user,
         },
         suspension_pools::{
-            create::{insert_suspension_pool_preparers, insert_test_suspension_pool_and_suspensions},
+            create::{
+                insert_suspension_pool_preparers, insert_test_suspension_pool_and_suspensions,
+            },
             measurements::{
-                create::insert_suspension_pool_measurements, remove::delete_suspension_pool_measurements,
+                create::insert_suspension_pool_measurements,
+                remove::delete_suspension_pool_measurements,
             },
             preparers::remove::delete_suspension_pool_preparers,
         },
@@ -22,9 +27,10 @@ async fn only_staff_with_permission_can_change_suspension_pool_preparers_and_mea
     let mut client = db_client_as_admin().await;
     let tx = client.begin().await.unwrap();
 
-    let (new_suspension_pool, suspension_pool) = insert_test_suspension_pool_and_suspensions(&tx, |_| ())
-        .await
-        .unwrap();
+    let (new_suspension_pool, suspension_pool) =
+        insert_test_suspension_pool_and_suspensions(&tx, |_| ())
+            .await
+            .unwrap();
 
     tx.commit().await.unwrap();
 
@@ -49,7 +55,8 @@ async fn only_staff_with_permission_can_change_suspension_pool_preparers_and_mea
         Resource::ChromiumExperimentalData,
         member_id,
         async |tx| {
-            insert_suspension_pool_measurements(tx, id, std::slice::from_ref(&new_measurement)).await
+            insert_suspension_pool_measurements(tx, id, std::slice::from_ref(&new_measurement))
+                .await
         },
         async |tx| delete_suspension_pool_measurements(tx, id, &measurement_ids).await,
     )

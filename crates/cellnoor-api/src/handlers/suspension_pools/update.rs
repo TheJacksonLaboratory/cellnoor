@@ -8,14 +8,7 @@ use uuid::Uuid;
 use crate::{
     auth::AuthUser,
     db::{self, DbError},
-    handlers::{
-        IdParam,
-        suspension_pools::{
-            create::insert_suspension_pool_preparers,
-            measurements::create::insert_suspension_pool_measurements,
-            show::select_suspension_pool_by_id,
-        },
-    },
+    handlers::{IdParam, suspension_pools::show::select_suspension_pool_by_id},
     state::AppState,
 };
 

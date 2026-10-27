@@ -15,7 +15,8 @@ use crate::{
     db::DbError,
     handlers::{
         cdna::{
-            create_cdna, create_cdna_measurement, remove_cdna_measurements, add_cdna_preparers, remove_cdna_preparers, index_cdna, index_cdna_detailed, show_cdna,
+            add_cdna_preparers, create_cdna, create_cdna_measurement, index_cdna,
+            index_cdna_detailed, remove_cdna_measurements, remove_cdna_preparers, show_cdna,
             update_cdna,
         },
         delete_resource,

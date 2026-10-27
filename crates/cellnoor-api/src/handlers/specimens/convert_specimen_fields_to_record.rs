@@ -3,10 +3,9 @@ use cellnoor_types::{
     specimen::{
         Fixative, NewSpecimenRecord, ThermalPreservationMethod,
         creation::{
-            SpecimenSimpleFields, SpecimenUpdate, SpecimenVariableFields, block::BlockFields,
+            SpecimenSimpleFields, SpecimenVariableFields, block::BlockFields,
             suspension::SuspensionSpecimenFields, tissue::TissueFields,
         },
-        measurement::NewSpecimenMeasurement,
     },
 };
 

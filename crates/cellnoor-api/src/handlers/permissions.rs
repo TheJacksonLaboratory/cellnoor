@@ -124,6 +124,7 @@ mod test {
         permission::{Action, Permission, Resource},
         person::PersonPredicate,
     };
+
     use crate::{
         handlers::{
             people::{

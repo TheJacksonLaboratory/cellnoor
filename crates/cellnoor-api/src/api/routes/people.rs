@@ -15,11 +15,10 @@ use crate::{
     db::DbError,
     handlers::{
         delete_resource,
-        permissions::{grant_permissions_to_principal, revoke_permissions_from_principal},
         people::{
-            create_person, index_people, index_people_with_permissions, show_person,
-            update_person,
+            create_person, index_people, index_people_with_permissions, show_person, update_person,
         },
+        permissions::{grant_permissions_to_principal, revoke_permissions_from_principal},
     },
     state::AppState,
 };

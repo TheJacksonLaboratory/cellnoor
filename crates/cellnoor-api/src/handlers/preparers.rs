@@ -8,7 +8,9 @@ use axum::{
     response::{IntoResponse, Response},
 };
 
-use crate::{db::DbError, error::error_response, handlers::specific_error_inferred_early_responses};
+use crate::{
+    db::DbError, error::error_response, handlers::specific_error_inferred_early_responses,
+};
 
 #[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema, PartialEq, Eq)]
 #[serde(tag = "type", rename_all = "snake_case")]

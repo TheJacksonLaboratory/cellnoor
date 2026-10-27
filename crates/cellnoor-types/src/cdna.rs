@@ -10,7 +10,6 @@ use crate::{
     cdna::{measurement::CdnaMeasurement, record::CdnaRecord},
     id::{Id, NoId},
     nonempty::NonemptyString,
-    nucleic_acid_measurement::NewNucleicAcidMeasurement,
     simple_links::SimpleLinks,
     suspension_pool::TaggedSpecimen,
 };

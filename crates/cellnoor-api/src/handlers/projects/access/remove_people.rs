@@ -33,7 +33,10 @@ pub(in super::super::super) async fn delete_project_accesses(
         "delete from project_access where project_id = $1 and principal_id = any($2)";
 
     let n = tx
-        .execute(&Sql::new(DELETE_PROJECT_ACCESSES, vec![&project_id, &people]))
+        .execute(&Sql::new(
+            DELETE_PROJECT_ACCESSES,
+            vec![&project_id, &people],
+        ))
         .await?;
 
     if n == 0 {
@@ -46,11 +49,9 @@ pub(in super::super::super) async fn delete_project_accesses(
 #[cfg(test)]
 mod test {
     use crate::{
-        handlers::{
-            projects::{
+        handlers::projects::{
             access::remove_people::delete_project_accesses, create::insert_test_project,
             show::select_project_by_id,
-            },
         },
         state::dev_util::db_client_as_admin,
     };

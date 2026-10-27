@@ -17,8 +17,9 @@ use crate::{
     handlers::{
         delete_resource,
         suspensions::{
-            create_suspension, create_suspension_measurement, remove_suspension_measurements, add_suspension_preparers, remove_suspension_preparers, index_suspensions,
-            index_suspensions_detailed, show_suspension, update_suspension,
+            add_suspension_preparers, create_suspension, create_suspension_measurement,
+            index_suspensions, index_suspensions_detailed, remove_suspension_measurements,
+            remove_suspension_preparers, show_suspension, update_suspension,
         },
     },
     state::AppState,

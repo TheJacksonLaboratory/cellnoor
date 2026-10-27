@@ -8,12 +8,7 @@ use uuid::Uuid;
 use crate::{
     auth::AuthUser,
     db::{self, DbError},
-    handlers::{
-        IdParam,
-        permissions::{grant_permissions, revoke_permissions},
-        services::index::select_service_by_id,
-        set_is_staff,
-    },
+    handlers::{IdParam, services::index::select_service_by_id, set_is_staff},
     state::AppState,
 };
 

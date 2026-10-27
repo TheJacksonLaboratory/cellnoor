@@ -16,8 +16,8 @@ use crate::{
     handlers::{
         delete_resource,
         specimens::{
-            create_specimen, create_specimen_measurement, remove_specimen_measurements, index_specimens,
-            index_specimens_detailed, show_specimen, update_specimen,
+            create_specimen, create_specimen_measurement, index_specimens,
+            index_specimens_detailed, remove_specimen_measurements, show_specimen, update_specimen,
         },
     },
     state::AppState,

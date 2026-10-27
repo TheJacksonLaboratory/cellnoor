@@ -30,7 +30,9 @@ mod test {
         handlers::{
             people::create::insert_test_person_and_institution,
             suspension_pools::{
-                create::{insert_test_suspension_pool_and_suspensions, insert_suspension_pool_preparers},
+                create::{
+                    insert_suspension_pool_preparers, insert_test_suspension_pool_and_suspensions,
+                },
                 show::select_suspension_pool_by_id,
             },
         },
@@ -42,7 +44,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, suspension_pool) = insert_test_suspension_pool_and_suspensions(&tx, |_| ()).await.unwrap();
+        let (_, suspension_pool) = insert_test_suspension_pool_and_suspensions(&tx, |_| ())
+            .await
+            .unwrap();
         let (_, person) = insert_test_person_and_institution(&tx, |_| ())
             .await
             .unwrap();
@@ -50,7 +54,9 @@ mod test {
 
         // Includes an existing preparer, which must not cause a conflict
         let preparers = [suspension_pool.preparers[0], person.record.id];
-        insert_suspension_pool_preparers(&tx, id, &preparers).await.unwrap();
+        insert_suspension_pool_preparers(&tx, id, &preparers)
+            .await
+            .unwrap();
 
         let selected = select_suspension_pool_by_id(&tx, id).await.unwrap();
 

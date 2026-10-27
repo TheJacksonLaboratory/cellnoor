@@ -33,7 +33,10 @@ pub(in super::super::super) async fn delete_library_measurements(
         "delete from library_measurement where library_id = $1 and id = any($2)";
 
     let n = tx
-        .execute(&Sql::new(DELETE_LIBRARY_MEASUREMENTS, vec![&library_id, &measurements]))
+        .execute(&Sql::new(
+            DELETE_LIBRARY_MEASUREMENTS,
+            vec![&library_id, &measurements],
+        ))
         .await?;
 
     if n == 0 {
@@ -62,13 +65,18 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, library) = insert_test_library(&tx, TestChromiumRunKind::Standard, |_| ()).await.unwrap();
-        let (_, other_library) = insert_test_library(&tx, TestChromiumRunKind::Standard, |_| ()).await.unwrap();
+        let (_, library) = insert_test_library(&tx, TestChromiumRunKind::Standard, |_| ())
+            .await
+            .unwrap();
+        let (_, other_library) = insert_test_library(&tx, TestChromiumRunKind::Standard, |_| ())
+            .await
+            .unwrap();
 
         let ids: Vec<_> = library.measurements.iter().map(|m| m.id).collect();
         let other_ids: Vec<_> = other_library.measurements.iter().map(|m| m.id).collect();
 
-        // The other library's measurements don't belong to `library`, so nothing is deleted
+        // The other library's measurements don't belong to `library`, so
+        // nothing is deleted
         assert_eq!(
             delete_library_measurements(&tx, *library.record.id, &other_ids)
                 .await

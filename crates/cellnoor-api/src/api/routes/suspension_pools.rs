@@ -17,8 +17,10 @@ use crate::{
     handlers::{
         delete_resource,
         suspension_pools::{
-            create_suspension_pool, create_suspension_pool_measurement, remove_suspension_pool_measurements, add_suspension_pool_preparers, remove_suspension_pool_preparers, index_suspension_pools,
-            index_suspension_pools_detailed, show_suspension_pool, update_suspension_pool,
+            add_suspension_pool_preparers, create_suspension_pool,
+            create_suspension_pool_measurement, index_suspension_pools,
+            index_suspension_pools_detailed, remove_suspension_pool_measurements,
+            remove_suspension_pool_preparers, show_suspension_pool, update_suspension_pool,
         },
     },
     state::AppState,

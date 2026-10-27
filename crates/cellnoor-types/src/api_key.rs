@@ -11,7 +11,8 @@ mod query;
 #[derive(Default)]
 pub struct NewApiKey {
     pub description: Option<NonemptyString>,
-    // The person or service the key acts as. It defaults to whoever creates the key
+    // The person or service the key acts as. It defaults to whoever creates the
+    // key
     pub owner_id: Option<Uuid>,
     pub expires_at: Option<Timestamp>,
 }

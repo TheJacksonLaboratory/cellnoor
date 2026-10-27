@@ -16,8 +16,8 @@ use crate::{
     handlers::{
         delete_resource,
         projects::{
-            add_people_to_project, remove_people_from_project, create_project, index_projects, index_projects_detailed,
-            show_project, update_project,
+            add_people_to_project, create_project, index_projects, index_projects_detailed,
+            remove_people_from_project, show_project, update_project,
         },
     },
     state::AppState,

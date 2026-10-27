@@ -33,7 +33,10 @@ pub(in super::super::super) async fn delete_specimen_measurements(
         "delete from specimen_measurement where specimen_id = $1 and id = any($2)";
 
     let n = tx
-        .execute(&Sql::new(DELETE_SPECIMEN_MEASUREMENTS, vec![&specimen_id, &measurements]))
+        .execute(&Sql::new(
+            DELETE_SPECIMEN_MEASUREMENTS,
+            vec![&specimen_id, &measurements],
+        ))
         .await?;
 
     if n == 0 {
@@ -47,11 +50,9 @@ pub(in super::super::super) async fn delete_specimen_measurements(
 mod test {
     use crate::{
         db::DbError,
-        handlers::{
-            specimens::{
-                create::insert_test_specimen_and_project, measurements::remove::delete_specimen_measurements,
-                show::select_specimen_by_id,
-            },
+        handlers::specimens::{
+            create::insert_test_specimen_and_project,
+            measurements::remove::delete_specimen_measurements, show::select_specimen_by_id,
         },
         state::dev_util::db_client_as_admin,
     };
@@ -67,7 +68,8 @@ mod test {
         let ids: Vec<_> = specimen.measurements.iter().map(|m| m.id).collect();
         let other_ids: Vec<_> = other_specimen.measurements.iter().map(|m| m.id).collect();
 
-        // The other specimen's measurements don't belong to `specimen`, so nothing is deleted
+        // The other specimen's measurements don't belong to `specimen`, so
+        // nothing is deleted
         assert_eq!(
             delete_specimen_measurements(&tx, *specimen.record.id, &other_ids)
                 .await
@@ -79,7 +81,9 @@ mod test {
             .await
             .unwrap();
 
-        let selected = select_specimen_by_id(&tx, *specimen.record.id).await.unwrap();
+        let selected = select_specimen_by_id(&tx, *specimen.record.id)
+            .await
+            .unwrap();
         let other_selected = select_specimen_by_id(&tx, *other_specimen.record.id)
             .await
             .unwrap();

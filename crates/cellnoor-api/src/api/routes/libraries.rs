@@ -16,7 +16,8 @@ use crate::{
     handlers::{
         delete_resource,
         libraries::{
-            create_library, create_library_measurement, remove_library_measurements, add_library_preparers, remove_library_preparers, index_libraries, index_libraries_detailed,
+            add_library_preparers, create_library, create_library_measurement, index_libraries,
+            index_libraries_detailed, remove_library_measurements, remove_library_preparers,
             show_library, update_library,
         },
     },

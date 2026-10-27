@@ -20,7 +20,9 @@ use crate::{
         },
         chromium_runs::create::{TestChromiumRunKind, insert_test_chromium_run},
         security_tests::{
-            permissions::{assert_only_staff_with_permission_can_change_children, create_test_user},
+            permissions::{
+                assert_only_staff_with_permission_can_change_children, create_test_user,
+            },
             rls::specimen::insert_inaccessible_specimen,
         },
         suspensions::create::insert_test_suspension_and_specimen,
@@ -152,9 +154,7 @@ async fn only_staff_with_permission_can_change_cdna_preparers_and_measurements()
     assert_only_staff_with_permission_can_change_children(
         Resource::ChromiumExperimentalData,
         member_id,
-        async |tx| {
-            insert_cdna_measurements(tx, id, std::slice::from_ref(&new_measurement)).await
-        },
+        async |tx| insert_cdna_measurements(tx, id, std::slice::from_ref(&new_measurement)).await,
         async |tx| delete_cdna_measurements(tx, id, &measurement_ids).await,
     )
     .await;

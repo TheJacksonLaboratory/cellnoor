@@ -16,9 +16,7 @@ use crate::{
         permissions::{grant_permissions, revoke_permissions},
         security_tests::permissions::{create_test_user, create_test_user_with, may},
         services::{
-            access::{
-                add_people::insert_service_accesses, remove_people::delete_service_accesses,
-            },
+            access::{add_people::insert_service_accesses, remove_people::delete_service_accesses},
             create::test::insert_test_service,
             index::select_services,
             index_detailed::select_services_detailed,
@@ -153,7 +151,8 @@ async fn service_owner_cannot_make_service_staff() {
     assert_eq!(
         set_is_staff(&tx, service.id, true).await.unwrap_err(),
         DbError::PermissionDenied {
-            message: "new row violates row-level security policy for resource \"principal\"".to_owned()
+            message: "new row violates row-level security policy for resource \"principal\""
+                .to_owned()
         }
     );
 }

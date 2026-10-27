@@ -7,7 +7,9 @@ use uuid::Uuid;
 use crate::{
     auth::AuthUser,
     db::{self, DbError, Sql},
-    handlers::{IdParam, preparers::RemovePreparersError, suspensions::show::select_suspension_by_id},
+    handlers::{
+        IdParam, preparers::RemovePreparersError, suspensions::show::select_suspension_by_id,
+    },
     state::AppState,
 };
 
@@ -33,14 +35,21 @@ pub(in super::super::super) async fn delete_suspension_preparers(
         "delete from suspension_preparer where suspension_id = $1 and prepared_by = any($2)";
 
     let n = tx
-        .execute(&Sql::new(DELETE_SUSPENSION_PREPARERS, vec![&suspension_id, &preparers]))
+        .execute(&Sql::new(
+            DELETE_SUSPENSION_PREPARERS,
+            vec![&suspension_id, &preparers],
+        ))
         .await?;
 
     if n == 0 {
         return Err(DbError::ResourceNotFound.into());
     }
 
-    if select_suspension_by_id(tx, suspension_id).await?.preparers.is_empty() {
+    if select_suspension_by_id(tx, suspension_id)
+        .await?
+        .preparers
+        .is_empty()
+    {
         return Err(RemovePreparersError::NoPreparersLeft);
     }
 
@@ -54,7 +63,7 @@ mod test {
             people::create::insert_test_person_and_institution,
             preparers::RemovePreparersError,
             suspensions::{
-                create::{insert_test_suspension_and_specimen, insert_suspension_preparers},
+                create::{insert_suspension_preparers, insert_test_suspension_and_specimen},
                 preparers::remove::delete_suspension_preparers,
                 show::select_suspension_by_id,
             },
@@ -67,7 +76,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, suspension) = insert_test_suspension_and_specimen(&tx, |_| ()).await.unwrap();
+        let (_, suspension) = insert_test_suspension_and_specimen(&tx, |_| ())
+            .await
+            .unwrap();
         let (_, person) = insert_test_person_and_institution(&tx, |_| ())
             .await
             .unwrap();
@@ -90,7 +101,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, suspension) = insert_test_suspension_and_specimen(&tx, |_| ()).await.unwrap();
+        let (_, suspension) = insert_test_suspension_and_specimen(&tx, |_| ())
+            .await
+            .unwrap();
 
         let error = delete_suspension_preparers(&tx, *suspension.record.id, &suspension.preparers)
             .await

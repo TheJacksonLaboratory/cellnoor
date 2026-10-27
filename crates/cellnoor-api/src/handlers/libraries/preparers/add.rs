@@ -29,11 +29,11 @@ mod test {
     use crate::{
         handlers::{
             chromium_runs::create::TestChromiumRunKind,
-            people::create::insert_test_person_and_institution,
             libraries::{
-                create::{insert_test_library, insert_library_preparers},
+                create::{insert_library_preparers, insert_test_library},
                 show::select_library_by_id,
             },
+            people::create::insert_test_person_and_institution,
         },
         state::dev_util::db_client_as_admin,
     };
@@ -43,7 +43,9 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, library) = insert_test_library(&tx, TestChromiumRunKind::Standard, |_| ()).await.unwrap();
+        let (_, library) = insert_test_library(&tx, TestChromiumRunKind::Standard, |_| ())
+            .await
+            .unwrap();
         let (_, person) = insert_test_person_and_institution(&tx, |_| ())
             .await
             .unwrap();

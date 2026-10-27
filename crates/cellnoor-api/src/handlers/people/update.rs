@@ -15,7 +15,6 @@ use crate::{
             create::{person_field_value_pairs, validate_email},
             show::select_person_by_id,
         },
-        permissions::{grant_permissions, revoke_permissions},
         set_is_staff,
     },
     state::AppState,

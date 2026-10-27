@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::{
     auth::AuthUser,
     db::{self, DbError, Sql},
-    handlers::{IdParam, preparers::RemovePreparersError, cdna::show::select_cdna_by_id},
+    handlers::{IdParam, cdna::show::select_cdna_by_id, preparers::RemovePreparersError},
     state::AppState,
 };
 
@@ -51,14 +51,14 @@ pub(in super::super::super) async fn delete_cdna_preparers(
 mod test {
     use crate::{
         handlers::{
-            chromium_runs::create::TestChromiumRunKind,
-            people::create::insert_test_person_and_institution,
-            preparers::RemovePreparersError,
             cdna::{
-                create::{insert_test_cdna_and_chromium_run, insert_cdna_preparers},
+                create::{insert_cdna_preparers, insert_test_cdna_and_chromium_run},
                 preparers::remove::delete_cdna_preparers,
                 show::select_cdna_by_id,
             },
+            chromium_runs::create::TestChromiumRunKind,
+            people::create::insert_test_person_and_institution,
+            preparers::RemovePreparersError,
         },
         state::dev_util::db_client_as_admin,
     };
@@ -68,7 +68,10 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, cdna) = insert_test_cdna_and_chromium_run(&tx, TestChromiumRunKind::Standard, |_| ()).await.unwrap();
+        let (_, cdna) =
+            insert_test_cdna_and_chromium_run(&tx, TestChromiumRunKind::Standard, |_| ())
+                .await
+                .unwrap();
         let (_, person) = insert_test_person_and_institution(&tx, |_| ())
             .await
             .unwrap();
@@ -91,7 +94,10 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, cdna) = insert_test_cdna_and_chromium_run(&tx, TestChromiumRunKind::Standard, |_| ()).await.unwrap();
+        let (_, cdna) =
+            insert_test_cdna_and_chromium_run(&tx, TestChromiumRunKind::Standard, |_| ())
+                .await
+                .unwrap();
 
         let error = delete_cdna_preparers(&tx, *cdna.record.id, &cdna.preparers)
             .await

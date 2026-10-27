@@ -14,7 +14,9 @@ use crate::{
     db,
     handlers::{
         security_tests::{
-            permissions::{assert_only_staff_with_permission_can_change_children, create_test_user},
+            permissions::{
+                assert_only_staff_with_permission_can_change_children, create_test_user,
+            },
             rls::specimen::insert_inaccessible_specimen,
         },
         suspensions::{
