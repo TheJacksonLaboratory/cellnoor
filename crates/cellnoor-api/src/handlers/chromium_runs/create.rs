@@ -141,7 +141,9 @@ async fn insert_suspensions_in_same_project(
 ) -> Result<Vec<SuspensionDetailed>, DbError> {
     let (_, first_specimen) = insert_test_specimen_and_project(tx, |_| ()).await.unwrap();
     let specimen_insertions = (1..n_suspensions).map(|_| {
-        insert_test_specimen_and_project(tx, |sp| sp.project_id = first_specimen.project.record.id)
+        insert_test_specimen_and_project(tx, |sp| {
+            sp.simple.project_id = first_specimen.project.record.id
+        })
     });
 
     let mut specimens: Vec<_> = futures::future::try_join_all(specimen_insertions)

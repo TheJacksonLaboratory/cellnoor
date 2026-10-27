@@ -1,5 +1,5 @@
 use axum::{Json, extract::State};
-use cellnoor_types::project::{NewProject, ProjectDetailed, ProjectField};
+use cellnoor_types::project::{NewProject, ProjectDetailed, ProjectField, ProjectSimpleFields};
 
 use crate::{
     auth::AuthUser,
@@ -23,14 +23,14 @@ pub(in super::super) async fn insert_project(
     new: &NewProject,
 ) -> Result<ProjectDetailed, DbError> {
     // `created_by` is omitted: the database fills it from `app_user_id()`
-    let id = tx.insert_returning_id(new).await?;
+    let id = tx.insert_returning_id(&new.simple).await?;
 
     insert_project_accesses(tx, id, &new.members).await?;
 
     select_project_by_id(tx, id).await
 }
 
-impl Insert for NewProject {
+impl Insert for ProjectSimpleFields {
     type Field = ProjectField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
@@ -40,7 +40,6 @@ impl Insert for NewProject {
             name,
             started_at,
             ended_at,
-            members: _,
         } = self;
 
         vec![(Name, name), (StartedAt, started_at), (EndedAt, ended_at)]
@@ -66,9 +65,11 @@ where
     let person_id = person.record.id;
 
     let mut new = NewProject {
-        name: crate::db::dummy_data::random_name_for("project"),
-        started_at: Timestamp::now(),
-        ended_at: Timestamp::MAX,
+        simple: ProjectSimpleFields {
+            name: crate::db::dummy_data::random_name_for("project"),
+            started_at: Timestamp::now(),
+            ended_at: Timestamp::MAX,
+        },
         members: vec![person_id],
     };
 
@@ -105,7 +106,7 @@ pub mod test {
         for name in [".", "..", "parent/child"] {
             let tx = client.begin().await.unwrap();
 
-            let error = insert_test_project(&tx, |p| p.name = name.to_nonempty_string())
+            let error = insert_test_project(&tx, |p| p.simple.name = name.to_nonempty_string())
                 .await
                 .unwrap_err();
 

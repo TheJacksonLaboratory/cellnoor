@@ -53,13 +53,7 @@ mod record {
     }
 }
 
-#[base_model]
-pub struct CdnaUpdate {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: CdnaSimpleFields,
-    pub measurements: Option<Vec<NewNucleicAcidMeasurement>>,
-    pub preparers: Option<Vec<Uuid>>,
-}
+pub type CdnaUpdate = CdnaSimpleFields;
 
 impl<T> Relation for CdnaRecord<T> {
     const NAME: &'static str = "cdna";

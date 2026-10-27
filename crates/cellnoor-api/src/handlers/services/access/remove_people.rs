@@ -24,7 +24,7 @@ pub async fn remove_people_from_service(
         .await
 }
 
-async fn delete_service_accesses(
+pub(in super::super::super) async fn delete_service_accesses(
     tx: &db::Transaction<'_>,
     service_id: Uuid,
     people: &[Uuid],
@@ -32,8 +32,16 @@ async fn delete_service_accesses(
     static DELETE_SERVICE_ACCESSES: &str =
         "delete from service_access where service_id = $1 and person_id = any($2)";
 
-    tx.execute(&Sql::new(DELETE_SERVICE_ACCESSES, vec![&service_id, &people]))
+    let n_rows = tx
+        .execute(&Sql::new(
+            DELETE_SERVICE_ACCESSES,
+            vec![&service_id, &people],
+        ))
         .await?;
+
+    if n_rows == 0 {
+        return Err(DbError::ResourceNotFound);
+    }
 
     Ok(())
 }

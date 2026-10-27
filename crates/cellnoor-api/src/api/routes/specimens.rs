@@ -16,7 +16,7 @@ use crate::{
     handlers::{
         delete_resource,
         specimens::{
-            create_specimen, create_specimen_measurement, index_specimens,
+            create_specimen, create_specimen_measurement, remove_specimen_measurements, index_specimens,
             index_specimens_detailed, show_specimen, update_specimen,
         },
     },
@@ -40,7 +40,10 @@ fn id_router() -> ApiRouter<AppState> {
                 .put(update_specimen)
                 .delete(delete_resource::<SavedSpecimenRecord>),
         )
-        .api_route("/measurements", post(create_specimen_measurement))
+        .api_route(
+            "/measurements",
+            post(create_specimen_measurement).delete(remove_specimen_measurements),
+        )
 }
 
 async fn index_specimens_simple(

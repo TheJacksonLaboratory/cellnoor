@@ -35,16 +35,8 @@ pub(in super::super) async fn update_service_by_id(
     id: Uuid,
     update: &ServiceUpdate,
 ) -> Result<Service, DbError> {
-    let ServiceUpdate {
-        record,
-        permissions_to_grant,
-        permissions_to_revoke,
-    } = update;
-
-    tx.update(id, record).await?;
-    set_is_staff(tx, id, record.is_staff).await?;
-    grant_permissions(tx, id, permissions_to_grant).await?;
-    revoke_permissions(tx, id, permissions_to_revoke).await?;
+    tx.update(id, update).await?;
+    set_is_staff(tx, id, update.is_staff).await?;
 
     select_service_by_id(tx, id).await
 }
@@ -66,12 +58,8 @@ mod test {
         let (_, inserted) = insert_test_service(&tx, |_| ()).await.unwrap();
 
         let update = ServiceUpdate {
-            record: ServiceSimpleFields {
-                description: Some("updated".to_nonempty_string()),
-                is_staff: false,
-            },
-            permissions_to_grant: Vec::new(),
-            permissions_to_revoke: Vec::new(),
+            description: Some("updated".to_nonempty_string()),
+            is_staff: false,
         };
 
         update_service_by_id(&tx, inserted.id, &update)

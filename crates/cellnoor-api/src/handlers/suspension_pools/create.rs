@@ -70,7 +70,7 @@ async fn insert_suspension_pool(
     select_suspension_pool_by_id(tx, id).await
 }
 
-pub(super) async fn insert_suspension_pool_preparers(
+pub(in super::super) async fn insert_suspension_pool_preparers(
     tx: &db::Transaction<'_>,
     pool_id: Uuid,
     preparer_ids: &[Uuid],
@@ -83,7 +83,7 @@ pub(super) async fn insert_suspension_pool_preparers(
         })
         .collect();
 
-    tx.insert_many(&preparers).await
+    tx.insert_many_on_conflict_do_nothing(&preparers).await
 }
 
 async fn insert_suspension_poolings(

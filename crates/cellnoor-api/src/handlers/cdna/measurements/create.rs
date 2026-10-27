@@ -25,7 +25,7 @@ pub async fn create_cdna_measurement(
         .await
 }
 
-pub(in super::super) async fn insert_cdna_measurements(
+pub(in super::super::super) async fn insert_cdna_measurements(
     tx: &db::Transaction<'_>,
     cdna_id: Uuid,
     records: &[NewNucleicAcidMeasurement],

@@ -13,11 +13,16 @@ use crate::{
     handlers::{
         institutions::create::insert_test_institution,
         people::create::insert_test_person_and_institution,
-        permissions::grant_permissions,
+        permissions::{grant_permissions, revoke_permissions},
         security_tests::permissions::{create_test_user, create_test_user_with, may},
         services::{
-            access::add_people::insert_service_accesses, create::test::insert_test_service,
-            index::select_services, update::update_service_by_id,
+            access::{
+                add_people::insert_service_accesses, remove_people::delete_service_accesses,
+            },
+            create::test::insert_test_service,
+            index::select_services,
+            index_detailed::select_services_detailed,
+            update::update_service_by_id,
         },
         set_is_staff,
     },
@@ -44,12 +49,8 @@ async fn user_cannot_update_unowned_service(client: &mut db::Client, service_id:
         &tx,
         service_id,
         &ServiceUpdate {
-            record: ServiceSimpleFields {
-                description: Some("foo".to_nonempty_string()),
-                is_staff: false,
-            },
-            permissions_to_grant: Vec::new(),
-            permissions_to_revoke: Vec::new(),
+            description: Some("foo".to_nonempty_string()),
+            is_staff: false,
         },
     )
     .await
@@ -186,9 +187,93 @@ async fn service_owner_can_only_grant_permissions_to_owned_service() {
         .unwrap();
     tx.commit().await.unwrap();
 
-    // The service can now use the permission
-    let mut client = db_client_as_user(owned_service.id).await;
+    // Using the permission would need the service to be staff, so check that it
+    // holds it
+    let tx = client.begin().await.unwrap();
+    let service = tx
+        .select_one(
+            ServicePredicate::Id(UuidOperator::Eq(owned_service.id)),
+            select_services_detailed,
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(service.permissions, permissions);
+}
+
+// `update` on people doesn't let a user change the permissions of a service
+// they don't own
+#[tokio::test(flavor = "multi_thread")]
+async fn person_updater_cannot_change_permissions_of_unowned_service() {
+    let create_institution = may(Resource::Institution, &[Action::Create]);
+    let update_institution = may(Resource::Institution, &[Action::Update]);
+
+    let owner_id = create_test_user_with(false, create_institution.clone()).await;
+    let service = create_service_for(owner_id).await;
+
+    let mut client = db_client_as_user(owner_id).await;
+    let tx = client.begin().await.unwrap();
+    grant_permissions(&tx, service.id, &create_institution)
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+
+    // They are staff and hold every permission involved, so only ownership can
+    // refuse them
+    let updater_id = create_test_user_with(
+        true,
+        [
+            may(Resource::Person, &[Action::Update]),
+            create_institution.clone(),
+            update_institution.clone(),
+        ]
+        .concat(),
+    )
+    .await;
+
+    let mut client = db_client_as_user(updater_id).await;
+
+    // This needs its own transaction because the failure aborts it
+    let tx = client.begin().await.unwrap();
+    assert_matches!(
+        grant_permissions(&tx, service.id, &update_institution)
+            .await
+            .unwrap_err(),
+        DbError::PermissionDenied { .. }
+    );
+    drop(tx);
+
+    let tx = client.begin().await.unwrap();
+    assert_eq!(
+        revoke_permissions(&tx, service.id, &create_institution)
+            .await
+            .unwrap_err(),
+        DbError::ResourceNotFound
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn service_cannot_change_itself() {
+    let service = create_service_for(create_test_user().await).await;
+
+    let mut client = db_client_as_user(service.id).await;
+
+    user_cannot_update_unowned_service(&mut client, service.id).await;
+    user_cannot_grant_access_to_unowned_service(&mut client, service.id).await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn service_owner_can_update_staff_service_without_changing_staff_status() {
+    let owner_id = create_test_user().await;
+    let service = create_service_for(owner_id).await;
+
+    let mut admin = db_client_as_admin().await;
+    let tx = admin.begin().await.unwrap();
+    set_is_staff(&tx, service.id, true).await.unwrap();
+    tx.commit().await.unwrap();
+
+    let mut client = db_client_as_user(owner_id).await;
     let tx = client.begin().await.unwrap();
 
-    insert_test_institution(&tx, |_| ()).await.unwrap();
+    set_is_staff(&tx, service.id, true).await.unwrap();
 }

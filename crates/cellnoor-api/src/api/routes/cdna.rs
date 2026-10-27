@@ -15,7 +15,7 @@ use crate::{
     db::DbError,
     handlers::{
         cdna::{
-            create_cdna, create_cdna_measurement, index_cdna, index_cdna_detailed, show_cdna,
+            create_cdna, create_cdna_measurement, remove_cdna_measurements, add_cdna_preparers, remove_cdna_preparers, index_cdna, index_cdna_detailed, show_cdna,
             update_cdna,
         },
         delete_resource,
@@ -40,7 +40,14 @@ fn id_router() -> ApiRouter<AppState> {
                 .put(update_cdna)
                 .delete(delete_resource::<SavedCdnaRecord>),
         )
-        .api_route("/measurements", post(create_cdna_measurement))
+        .api_route(
+            "/measurements",
+            post(create_cdna_measurement).delete(remove_cdna_measurements),
+        )
+        .api_route(
+            "/preparers",
+            post(add_cdna_preparers).delete(remove_cdna_preparers),
+        )
 }
 
 async fn index_cdna_simple(

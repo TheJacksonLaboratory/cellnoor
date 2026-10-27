@@ -32,25 +32,18 @@ pub async fn update_person(
         .await
 }
 
-async fn update_person_by_id(
+pub(in super::super) async fn update_person_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
     update: &PersonUpdate,
 ) -> Result<Person, PersonError> {
-    let PersonUpdate {
-        simple,
-        email,
-        permissions_to_grant,
-        permissions_to_revoke,
-    } = update;
+    let PersonUpdate { simple, email } = update;
     if let Some(email) = email {
         validate_email(email.as_ref())?;
     }
 
     tx.update(id, update).await?;
     set_is_staff(tx, id, simple.is_staff).await?;
-    grant_permissions(tx, id, permissions_to_grant).await?;
-    revoke_permissions(tx, id, permissions_to_revoke).await?;
 
     Ok(select_person_by_id(tx, id).await?)
 }
@@ -59,12 +52,7 @@ impl Insert for PersonUpdate {
     type Field = PersonField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        let Self {
-            simple,
-            email,
-            permissions_to_grant: _,
-            permissions_to_revoke: _,
-        } = self;
+        let Self { simple, email } = self;
 
         person_field_value_pairs(simple, email)
     }
@@ -101,8 +89,6 @@ mod test {
         let update_to_apply = PersonUpdate {
             simple: pre_update.simple,
             email: Some("something@example.com".to_nonempty_string()),
-            permissions_to_grant: Vec::new(),
-            permissions_to_revoke: Vec::new(),
         };
 
         update_person_by_id(&tx, id, &update_to_apply)
@@ -122,8 +108,6 @@ mod test {
         let update_to_apply = PersonUpdate {
             simple: pre_update.simple,
             email: None,
-            permissions_to_grant: Vec::new(),
-            permissions_to_revoke: Vec::new(),
         };
 
         update_person_by_id(&tx, person.record.id, &update_to_apply)

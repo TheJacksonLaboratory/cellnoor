@@ -25,7 +25,7 @@ pub async fn create_specimen_measurement(
         .await
 }
 
-pub(in super::super) async fn insert_specimen_measurements(
+pub(in super::super::super) async fn insert_specimen_measurements(
     tx: &db::Transaction<'_>,
     specimen_id: Uuid,
     records: &[NewSpecimenMeasurement],

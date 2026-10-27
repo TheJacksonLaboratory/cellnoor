@@ -7,7 +7,7 @@ pub(super) mod index_detailed;
 pub(super) mod show;
 pub(super) mod update;
 
-pub use access::add_people::add_people_to_project;
+pub use access::{add_people::add_people_to_project, remove_people::remove_people_from_project};
 pub use create::create_project;
 pub use index_compact::index_projects;
 pub use index_detailed::index_projects_detailed;

@@ -25,6 +25,7 @@ pub mod libraries;
 pub mod multiplexing_tags;
 pub mod people;
 pub(crate) mod permissions;
+pub(crate) mod preparers;
 pub mod projects;
 #[cfg(test)]
 mod security_tests;

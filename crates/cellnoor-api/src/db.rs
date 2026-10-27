@@ -22,10 +22,7 @@ type Columns<'a> = Vec<(&'static str, &'a (dyn ToSql + Sync))>;
 /// [`Columns`] as the statement builders read it.
 type ColumnSlice<'a> = [(&'static str, &'a (dyn ToSql + Sync))];
 
-/// A row that can be written to the relation it belongs to.
-///
-/// `Field` is the relation's field enum where a query filters on it, and
-/// `&'static str` for the join tables that nothing filters on.
+/// A type that
 pub trait Insert: cellnoor_types::Relation {
     type Field: Into<&'static str>;
 

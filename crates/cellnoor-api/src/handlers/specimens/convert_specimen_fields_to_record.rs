@@ -3,15 +3,15 @@ use cellnoor_types::{
     specimen::{
         Fixative, NewSpecimenRecord, ThermalPreservationMethod,
         creation::{
-            NewSpecimen, SpecimenVariableFields, block::BlockFields,
+            SpecimenSimpleFields, SpecimenUpdate, SpecimenVariableFields, block::BlockFields,
             suspension::SuspensionSpecimenFields, tissue::TissueFields,
         },
         measurement::NewSpecimenMeasurement,
     },
 };
 
-pub fn split_new_specimen_for_insertion(
-    NewSpecimen {
+pub fn convert_specimen_fields_to_record(
+    SpecimenSimpleFields {
         readable_id,
         name,
         submitted_by,
@@ -23,10 +23,9 @@ pub fn split_new_specimen_for_insertion(
         returned_by,
         tissue,
         additional_data,
-        measurements,
         variable_fields,
-    }: NewSpecimen,
-) -> (NewSpecimenRecord, Vec<NewSpecimenMeasurement>) {
+    }: SpecimenSimpleFields,
+) -> NewSpecimenRecord {
     let type_ = variable_fields.into();
 
     let embedded_in = match variable_fields {
@@ -78,29 +77,27 @@ pub fn split_new_specimen_for_insertion(
         }) => (None, Some(thermal_preservation_method)),
     };
 
-    (
-        NewSpecimenRecord {
-            id: NoId,
-            readable_id,
-            name,
-            submitted_by,
-            project_id,
-            // These are denormalized copies of the project's start and end, populated by a database
-            // trigger on insert. The values here are never written or read
-            project_started_at: Default::default(),
-            project_ended_at: Default::default(),
-            received_at,
-            species,
-            host_species,
-            returned_at,
-            returned_by,
-            tissue,
-            additional_data,
-            embedded_in,
-            fixative,
-            thermal_preservation_method,
-            type_,
-        },
-        measurements,
-    )
+    NewSpecimenRecord {
+        id: NoId,
+        readable_id,
+        name,
+        submitted_by,
+        project_id,
+        // These are denormalized copies of the project's start and end,
+        // populated by a database trigger on insert. The values here are never
+        // written or read
+        project_started_at: Default::default(),
+        project_ended_at: Default::default(),
+        received_at,
+        species,
+        host_species,
+        returned_at,
+        returned_by,
+        tissue,
+        additional_data,
+        embedded_in,
+        fixative,
+        thermal_preservation_method,
+        type_,
+    }
 }

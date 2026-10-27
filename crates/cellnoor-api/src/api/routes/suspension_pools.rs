@@ -17,7 +17,7 @@ use crate::{
     handlers::{
         delete_resource,
         suspension_pools::{
-            create_suspension_pool, create_suspension_pool_measurement, index_suspension_pools,
+            create_suspension_pool, create_suspension_pool_measurement, remove_suspension_pool_measurements, add_suspension_pool_preparers, remove_suspension_pool_preparers, index_suspension_pools,
             index_suspension_pools_detailed, show_suspension_pool, update_suspension_pool,
         },
     },
@@ -44,7 +44,14 @@ fn id_router() -> ApiRouter<AppState> {
                 .put(update_suspension_pool)
                 .delete(delete_resource::<SavedSuspensionPoolRecord>),
         )
-        .api_route("/measurements", post(create_suspension_pool_measurement))
+        .api_route(
+            "/measurements",
+            post(create_suspension_pool_measurement).delete(remove_suspension_pool_measurements),
+        )
+        .api_route(
+            "/preparers",
+            post(add_suspension_pool_preparers).delete(remove_suspension_pool_preparers),
+        )
 }
 
 async fn index_suspension_pools_simple(

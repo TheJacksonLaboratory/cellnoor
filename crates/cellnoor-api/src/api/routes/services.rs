@@ -15,6 +15,7 @@ use crate::{
     db::DbError,
     handlers::{
         delete_resource,
+        permissions::{grant_permissions_to_principal, revoke_permissions_from_principal},
         services::{
             add_people_to_service, create_service, index_services, index_services_detailed,
             remove_people_from_service, update_service,
@@ -43,6 +44,10 @@ fn id_router() -> ApiRouter<AppState> {
         .api_route(
             "/people",
             post(add_people_to_service).delete(remove_people_from_service),
+        )
+        .api_route(
+            "/permissions",
+            post(grant_permissions_to_principal).delete(revoke_permissions_from_principal),
         )
 }
 

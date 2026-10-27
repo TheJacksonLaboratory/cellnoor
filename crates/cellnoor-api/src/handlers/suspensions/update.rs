@@ -34,18 +34,9 @@ pub async fn update_suspension(
 async fn update_suspension_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-    SuspensionUpdate {
-        record,
-        measurements,
-        preparers,
-    }: &SuspensionUpdate,
+    update: &SuspensionUpdate,
 ) -> Result<SuspensionDetailed, DbError> {
-    tx.update(id, record).await?;
-
-    tokio::try_join!(
-        insert_suspension_preparers(tx, id, preparers.as_deref().unwrap_or_default()),
-        insert_suspension_measurements(tx, id, measurements.as_deref().unwrap_or_default())
-    )?;
+    tx.update(id, update).await?;
 
     select_suspension_by_id(tx, id).await
 }
@@ -73,13 +64,9 @@ mod test {
         let id = *inserted.record.id;
 
         let pre_update = SuspensionUpdate {
-            record: NewSuspensionRecord {
-                readable_id: crate::db::dummy_data::random_name_for("suspension"),
-                content: SuspensionContent::Nuclei,
-                ..insert_input.record
-            },
-            measurements: None,
-            preparers: None,
+            readable_id: crate::db::dummy_data::random_name_for("suspension"),
+            content: SuspensionContent::Nuclei,
+            ..insert_input.record
         };
 
         update_suspension_by_id(&tx, id, &pre_update).await.unwrap();

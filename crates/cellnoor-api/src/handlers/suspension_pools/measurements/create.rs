@@ -27,7 +27,7 @@ pub async fn create_suspension_pool_measurement(
         .await
 }
 
-pub(in super::super) async fn insert_suspension_pool_measurements(
+pub(in super::super::super) async fn insert_suspension_pool_measurements(
     tx: &db::Transaction<'_>,
     pool_id: Uuid,
     records: &[NewSuspensionPoolMeasurement],

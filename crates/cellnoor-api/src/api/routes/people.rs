@@ -15,6 +15,7 @@ use crate::{
     db::DbError,
     handlers::{
         delete_resource,
+        permissions::{grant_permissions_to_principal, revoke_permissions_from_principal},
         people::{
             create_person, index_people, index_people_with_permissions, show_person,
             update_person,
@@ -35,12 +36,17 @@ pub(super) fn router() -> ApiRouter<AppState> {
 fn id_router() -> ApiRouter<AppState> {
     // Deleting a person fires a trigger that drops the principal, which
     // cascades to their accounts and keys
-    ApiRouter::new().api_route(
-        "/",
-        get(show_person)
-            .put(update_person)
-            .delete(delete_resource::<PersonUpdate>),
-    )
+    ApiRouter::new()
+        .api_route(
+            "/",
+            get(show_person)
+                .put(update_person)
+                .delete(delete_resource::<PersonUpdate>),
+        )
+        .api_route(
+            "/permissions",
+            post(grant_permissions_to_principal).delete(revoke_permissions_from_principal),
+        )
 }
 
 async fn index_people_simple(

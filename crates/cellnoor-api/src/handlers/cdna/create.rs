@@ -30,17 +30,15 @@ async fn insert_cdna(tx: &db::Transaction<'_>, new: NewCdna) -> Result<CdnaDetai
 
     let id = tx.insert_returning_id(&record).await?;
 
-    let measurement_insertions = insert_cdna_measurements(tx, id, &measurements);
-
     tokio::try_join!(
         insert_cdna_preparers(tx, id, preparers.as_ref()),
-        measurement_insertions
+        insert_cdna_measurements(tx, id, &measurements)
     )?;
 
     select_cdna_by_id(tx, id).await
 }
 
-pub(super) async fn insert_cdna_preparers(
+pub(in super::super) async fn insert_cdna_preparers(
     tx: &db::Transaction<'_>,
     cdna_id: Uuid,
     preparer_ids: &[Uuid],
@@ -53,7 +51,7 @@ pub(super) async fn insert_cdna_preparers(
         })
         .collect();
 
-    tx.insert_many(&preparers).await
+    tx.insert_many_on_conflict_do_nothing(&preparers).await
 }
 
 struct NewCdnaPreparer {

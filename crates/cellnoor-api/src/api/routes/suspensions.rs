@@ -17,7 +17,7 @@ use crate::{
     handlers::{
         delete_resource,
         suspensions::{
-            create_suspension, create_suspension_measurement, index_suspensions,
+            create_suspension, create_suspension_measurement, remove_suspension_measurements, add_suspension_preparers, remove_suspension_preparers, index_suspensions,
             index_suspensions_detailed, show_suspension, update_suspension,
         },
     },
@@ -41,7 +41,14 @@ fn id_router() -> ApiRouter<AppState> {
                 .put(update_suspension)
                 .delete(delete_resource::<SavedSuspensionRecord>),
         )
-        .api_route("/measurements", post(create_suspension_measurement))
+        .api_route(
+            "/measurements",
+            post(create_suspension_measurement).delete(remove_suspension_measurements),
+        )
+        .api_route(
+            "/preparers",
+            post(add_suspension_preparers).delete(remove_suspension_preparers),
+        )
 }
 
 async fn index_suspensions_simple(

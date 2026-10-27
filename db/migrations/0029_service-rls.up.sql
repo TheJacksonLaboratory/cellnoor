@@ -9,7 +9,7 @@ alter table service enable row level security;
 create policy owners_and_members_can_see_services on service for select using (
     id = app_user_id() or owned_by = app_user_id() or current_user_has_access_to_service(id)
 );
-create policy owners_can_write_services on service for all using (id = app_user_id() or owned_by = app_user_id());
+create policy owners_can_write_services on service for all using (owned_by = app_user_id());
 
 alter table service_access enable row level security;
 

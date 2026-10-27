@@ -46,7 +46,7 @@ async fn insert_library(
     select_library_by_id(tx, id).await
 }
 
-pub(super) async fn insert_library_preparers(
+pub(in super::super) async fn insert_library_preparers(
     tx: &db::Transaction<'_>,
     library_id: Uuid,
     preparer_ids: &[Uuid],
@@ -59,7 +59,7 @@ pub(super) async fn insert_library_preparers(
         })
         .collect();
 
-    tx.insert_many(&preparers).await
+    tx.insert_many_on_conflict_do_nothing(&preparers).await
 }
 
 struct NewLibraryPreparer {

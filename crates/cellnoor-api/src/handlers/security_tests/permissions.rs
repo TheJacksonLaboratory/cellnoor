@@ -1,7 +1,9 @@
 use std::{assert_matches, fmt::Debug};
 
 use cellnoor_types::{
+    operator::UuidOperator,
     permission::{Action, Permission, Resource},
+    person::{PersonPredicate, PersonUpdate},
     project::ProjectQuery,
     query::{ComplexQuery, OrderField},
 };
@@ -9,23 +11,33 @@ use pretty_assertions::assert_eq;
 use uuid::Uuid;
 
 use crate::{
-    db::{self, DbError},
+    db::{self, DbError, Sql},
     handlers::{
         cdna::index_detailed::select_cdna_detailed,
-        chromium_datasets::index_detailed::select_chromium_datasets_detailed,
-        chromium_runs::index_detailed::select_chromium_runs_detailed,
+        chromium_datasets::{
+            create::insert_test_chromium_dataset, index_detailed::select_chromium_datasets_detailed,
+        },
+        chromium_runs::{
+            create::TestChromiumRunKind, index_detailed::select_chromium_runs_detailed,
+        },
         institutions::{create::insert_test_institution, index::select_institutions},
-        libraries::index_detailed::select_libraries_detailed,
+        libraries::{create::insert_test_library, index_detailed::select_libraries_detailed},
         people::{
-            create::insert_test_person_and_institution, index::select_people,
-            index_permissions::select_people_with_permissions,
+            PersonError, create::insert_test_person_and_institution, index::select_people,
+            index_permissions::select_people_with_permissions, update::update_person_by_id,
         },
         permissions::{grant_permissions, revoke_permissions},
         projects::{create::insert_test_project, index_detailed::select_projects_detailed},
+        security_tests::rls::specimen::get_user_id_from_specimen,
         services::{index::select_services, index_detailed::select_services_detailed},
         set_is_staff,
-        specimens::index_detailed::select_specimens_detailed,
-        suspension_pools::index_detailed::select_suspension_pools_detailed,
+        specimens::{
+            create::insert_test_specimen_and_project, index_detailed::select_specimens_detailed,
+        },
+        suspension_pools::{
+            create::insert_test_suspension_pool_and_suspensions,
+            index_detailed::select_suspension_pools_detailed,
+        },
         suspensions::index_detailed::select_suspensions_detailed,
     },
     state::dev_util::{db_client_as_admin, db_client_as_user},
@@ -56,6 +68,69 @@ pub fn may(resource: Resource, actions: &[Action]) -> Vec<Permission> {
         .iter()
         .map(|&action| Permission { resource, action })
         .collect()
+}
+
+// Adding a child row (a measurement, a preparer) needs `create` on its
+// resource, and removing one needs `delete`. Only staff may do either. `add`
+// and `remove` each change one of the parent's children, and `member_id` can
+// see the parent
+pub async fn assert_only_staff_with_permission_can_change_children<A, R, E>(
+    resource: Resource,
+    member_id: Uuid,
+    add: A,
+    remove: R,
+) where
+    A: AsyncFn(&db::Transaction) -> Result<(), DbError>,
+    R: AsyncFn(&db::Transaction) -> Result<(), E>,
+    E: From<DbError> + PartialEq + Debug,
+{
+    let mut admin = db_client_as_admin().await;
+    let tx = admin.begin().await.unwrap();
+
+    grant_permissions(
+        &tx,
+        member_id,
+        &may(resource, &[Action::Create, Action::Update, Action::Delete]),
+    )
+    .await
+    .unwrap();
+
+    tx.commit().await.unwrap();
+
+    let staff_with_update = create_test_user_with(true, may(resource, &[Action::Update])).await;
+    let staff_with_create = create_test_user_with(true, may(resource, &[Action::Create])).await;
+    let staff_with_delete = create_test_user_with(true, may(resource, &[Action::Delete])).await;
+
+    // The member holds every permission but isn't staff, and the other user is
+    // staff but can neither create nor delete
+    for user_id in [member_id, staff_with_update] {
+        let mut client = db_client_as_user(user_id).await;
+
+        // Each attempt needs its own transaction because a failure aborts it
+        let tx = client.begin().await.unwrap();
+        assert_matches!(
+            add(&tx).await.unwrap_err(),
+            DbError::PermissionDenied { .. }
+        );
+        drop(tx);
+
+        let tx = client.begin().await.unwrap();
+        assert_eq!(
+            remove(&tx).await.unwrap_err(),
+            DbError::ResourceNotFound.into()
+        );
+    }
+
+    // Committed so that `remove` sees the added child, which matters for
+    // preparers because at least one has to remain
+    let mut client = db_client_as_user(staff_with_create).await;
+    let tx = client.begin().await.unwrap();
+    add(&tx).await.unwrap();
+    tx.commit().await.unwrap();
+
+    let mut client = db_client_as_user(staff_with_delete).await;
+    let tx = client.begin().await.unwrap();
+    remove(&tx).await.unwrap();
 }
 
 async fn assert_is_ok<F, Pred, Order, Ret>(tx: &db::Transaction<'_>, select_fn: F)
@@ -92,6 +167,51 @@ async fn user_can_access_every_view() {
     );
 }
 
+async fn count_rows(tx: &db::Transaction<'_>, table: &str) -> i64 {
+    tx.query_one(&Sql::new(
+        &format!("select count(*) from {table}"),
+        Vec::new(),
+    ))
+    .await
+    .unwrap()
+    .get(0)
+}
+
+// These tables are scoped to project members themselves. Everything downstream
+// of a specimen is scoped by the views that read it, which the `rls` tests
+// check. Committee approvals have no rows here, so they aren't checked
+#[tokio::test(flavor = "multi_thread")]
+async fn project_tables_are_visible_only_to_project_members() {
+    let mut admin = db_client_as_admin().await;
+    let tx = admin.begin().await.unwrap();
+
+    let (_, specimen) = insert_test_specimen_and_project(&tx, |_| ()).await.unwrap();
+    let member_id = get_user_id_from_specimen(&tx, &specimen).await;
+
+    tx.commit().await.unwrap();
+
+    let tables = [
+        "project",
+        "project_access",
+        "specimen",
+        "specimen_measurement",
+    ];
+
+    let mut client = db_client_as_user(create_test_user().await).await;
+    let tx = client.begin().await.unwrap();
+
+    for table in tables {
+        assert_eq!(count_rows(&tx, table).await, 0, "{table}");
+    }
+
+    let mut client = db_client_as_user(member_id).await;
+    let tx = client.begin().await.unwrap();
+
+    for table in tables {
+        assert_ne!(count_rows(&tx, table).await, 0, "{table}");
+    }
+}
+
 #[tokio::test(flavor = "multi_thread")]
 async fn user_without_permission_cannot_write() {
     let user_id = create_test_user().await;
@@ -105,13 +225,26 @@ async fn user_without_permission_cannot_write() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn user_with_permission_can_write() {
-    let user_id = create_test_user_with(false, may(Resource::Institution, &[Action::Create])).await;
+async fn staff_with_permission_can_write() {
+    let user_id = create_test_user_with(true, may(Resource::Institution, &[Action::Create])).await;
 
     let mut client = db_client_as_user(user_id).await;
     let tx = client.begin().await.unwrap();
 
     insert_test_institution(&tx, |_| ()).await.unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn nonstaff_cannot_write_even_with_permission() {
+    let user_id = create_test_user_with(false, may(Resource::Institution, &[Action::Create])).await;
+
+    let mut client = db_client_as_user(user_id).await;
+    let tx = client.begin().await.unwrap();
+
+    assert_matches!(
+        insert_test_institution(&tx, |_| ()).await.unwrap_err(),
+        DbError::PermissionDenied { .. }
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -141,7 +274,7 @@ async fn staff_can_see_projects_they_are_not_a_member_of() {
 #[tokio::test(flavor = "multi_thread")]
 async fn user_can_only_grant_permissions_they_hold() {
     let manager_id = create_test_user_with(
-        false,
+        true,
         [
             may(Resource::Person, &[Action::Create, Action::Update]),
             may(Resource::Institution, &[Action::Create]),
@@ -149,7 +282,7 @@ async fn user_can_only_grant_permissions_they_hold() {
         .concat(),
     )
     .await;
-    let target_id = create_test_user().await;
+    let target_id = create_test_user_with(true, Vec::new()).await;
 
     let mut client = db_client_as_user(manager_id).await;
 
@@ -182,8 +315,8 @@ async fn user_can_only_grant_permissions_they_hold() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn user_who_cannot_update_people_cannot_grant_anything() {
-    let user_id = create_test_user_with(false, may(Resource::Institution, &[Action::Create])).await;
-    let target_id = create_test_user().await;
+    let user_id = create_test_user_with(true, may(Resource::Institution, &[Action::Create])).await;
+    let target_id = create_test_user_with(true, Vec::new()).await;
 
     let mut client = db_client_as_user(user_id).await;
     let tx = client.begin().await.unwrap();
@@ -213,7 +346,7 @@ async fn user_who_cannot_update_people_cannot_grant_anything() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn revoked_permission_disallows_writing() {
-    let user_id = create_test_user_with(false, may(Resource::Institution, &[Action::Create])).await;
+    let user_id = create_test_user_with(true, may(Resource::Institution, &[Action::Create])).await;
 
     let mut admin = db_client_as_admin().await;
     let tx = admin.begin().await.unwrap();
@@ -234,39 +367,83 @@ async fn revoked_permission_disallows_writing() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn user_can_update_staff_without_changing_staff_status() {
-    let user_id = create_test_user_with(false, may(Resource::Person, &[Action::Update])).await;
-    let staff_id = create_test_user_with(true, Vec::new()).await;
+async fn user_cannot_revoke_permissions_they_do_not_hold() {
+    let manager_id = create_test_user_with(
+        true,
+        [
+            may(Resource::Person, &[Action::Update]),
+            may(Resource::Specimen, &[Action::Create]),
+        ]
+        .concat(),
+    )
+    .await;
+    let target_permissions = [
+        may(Resource::Institution, &[Action::Create]),
+        may(Resource::Specimen, &[Action::Create]),
+    ]
+    .concat();
+    let target_id = create_test_user_with(false, target_permissions.clone()).await;
 
-    let mut client = db_client_as_user(user_id).await;
+    let mut client = db_client_as_user(manager_id).await;
     let tx = client.begin().await.unwrap();
 
-    set_is_staff(&tx, staff_id, true).await.unwrap();
+    // The manager holds only one of these, so the whole revoke fails
+    let error = revoke_permissions(&tx, target_id, &target_permissions)
+        .await
+        .unwrap_err();
+
+    assert_eq!(error, DbError::ResourceNotFound);
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn user_cannot_make_anyone_staff() {
+async fn nonstaff_cannot_update_people() {
     let user_id = create_test_user_with(false, may(Resource::Person, &[Action::Update])).await;
-    let target_id = create_test_user().await;
+
+    let mut admin = db_client_as_admin().await;
+    let tx = admin.begin().await.unwrap();
+
+    let (new_target, target) = insert_test_person_and_institution(&tx, |_| ())
+        .await
+        .unwrap();
+
+    tx.commit().await.unwrap();
 
     let mut client = db_client_as_user(user_id).await;
-
-    // A non-staff user can set is_staff = false
     let tx = client.begin().await.unwrap();
-    set_is_staff(&tx, target_id, false).await.unwrap();
-    drop(tx);
 
-    // They cannot set is_staff = true for anyone
-    for principal_id in [target_id, user_id] {
-        let tx = client.begin().await.unwrap();
+    let update = PersonUpdate {
+        simple: new_target.simple,
+        email: None,
+    };
 
-        assert_eq!(
-            set_is_staff(&tx, principal_id, true).await.unwrap_err(),
-            DbError::PermissionDenied {
-                message: "new row violates row-level security policy \"no_privilege_escalation\" \
-                          for resource \"principal\""
-                    .to_owned()
-            }
-        );
-    }
+    assert_matches!(
+        update_person_by_id(&tx, target.record.id, &update)
+            .await
+            .unwrap_err(),
+        PersonError::Db(DbError::ResourceNotFound)
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn nonstaff_cannot_grant_permissions_to_people() {
+    let permission = may(Resource::Institution, &[Action::Create]);
+
+    // They hold every permission involved, so only not being staff can refuse
+    // them
+    let manager_id = create_test_user_with(
+        false,
+        [may(Resource::Person, &[Action::Update]), permission.clone()].concat(),
+    )
+    .await;
+    let target_id = create_test_user().await;
+
+    let mut client = db_client_as_user(manager_id).await;
+    let tx = client.begin().await.unwrap();
+
+    assert_matches!(
+        grant_permissions(&tx, target_id, &permission)
+            .await
+            .unwrap_err(),
+        DbError::PermissionDenied { .. }
+    );
 }

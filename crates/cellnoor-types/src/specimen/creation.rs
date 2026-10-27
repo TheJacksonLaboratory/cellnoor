@@ -22,7 +22,7 @@ pub mod suspension;
 pub mod tissue;
 
 #[base_model]
-pub struct NewSpecimen {
+pub struct SpecimenSimpleFields {
     pub readable_id: NonemptyString,
     pub name: NonemptyString,
     pub submitted_by: Uuid,
@@ -34,10 +34,18 @@ pub struct NewSpecimen {
     pub returned_by: Option<Uuid>,
     pub tissue: NonemptyString,
     pub additional_data: Option<serde_json::Value>,
-    pub measurements: Vec<NewSpecimenMeasurement>,
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub variable_fields: SpecimenVariableFields,
 }
+
+#[base_model]
+pub struct NewSpecimen {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub simple: SpecimenSimpleFields,
+    pub measurements: Vec<NewSpecimenMeasurement>,
+}
+
+pub type SpecimenUpdate = SpecimenSimpleFields;
 
 #[base_model]
 #[derive(Copy, strum::EnumDiscriminants)]

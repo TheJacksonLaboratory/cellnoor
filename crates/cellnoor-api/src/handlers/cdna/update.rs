@@ -8,13 +8,7 @@ use uuid::Uuid;
 use crate::{
     auth::AuthUser,
     db::{self, DbError},
-    handlers::{
-        IdParam,
-        cdna::{
-            create::insert_cdna_preparers, measurements::create::insert_cdna_measurements,
-            show::select_cdna_by_id,
-        },
-    },
+    handlers::{IdParam, cdna::show::select_cdna_by_id},
     state::AppState,
 };
 
@@ -32,18 +26,9 @@ pub async fn update_cdna(
 async fn update_cdna_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-    CdnaUpdate {
-        record,
-        measurements,
-        preparers,
-    }: &CdnaUpdate,
+    update: &CdnaUpdate,
 ) -> Result<CdnaDetailed, DbError> {
-    tx.update(id, record).await?;
-
-    tokio::try_join!(
-        insert_cdna_preparers(tx, id, preparers.as_deref().unwrap_or_default()),
-        insert_cdna_measurements(tx, id, measurements.as_deref().unwrap_or_default())
-    )?;
+    tx.update(id, update).await?;
 
     select_cdna_by_id(tx, id).await
 }
@@ -73,12 +58,8 @@ mod test {
         let id = *inserted.record.id;
 
         let update = CdnaUpdate {
-            record: CdnaSimpleFields {
-                readable_id: crate::db::dummy_data::random_name_for("cdna"),
-                ..insert_input.simple
-            },
-            measurements: None,
-            preparers: None,
+            readable_id: crate::db::dummy_data::random_name_for("cdna"),
+            ..insert_input.simple
         };
 
         update_cdna_by_id(&tx, id, &update).await.unwrap();

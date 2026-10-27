@@ -25,7 +25,7 @@ pub async fn create_library_measurement(
         .await
 }
 
-pub(in super::super) async fn insert_library_measurements(
+pub(in super::super::super) async fn insert_library_measurements(
     tx: &db::Transaction<'_>,
     library_id: Uuid,
     records: &[NewNucleicAcidMeasurement],

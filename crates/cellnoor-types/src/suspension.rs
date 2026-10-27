@@ -67,13 +67,7 @@ pub struct NewSuspension {
     pub preparers: NonemptyVec<Uuid>,
 }
 
-#[base_model]
-pub struct SuspensionUpdate {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: NewSuspensionRecord,
-    pub measurements: Option<Vec<NewSuspensionMeasurement>>,
-    pub preparers: Option<Vec<Uuid>>,
-}
+pub type SuspensionUpdate = NewSuspensionRecord;
 
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "suspension_detailed"))]

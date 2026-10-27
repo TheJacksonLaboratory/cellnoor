@@ -2,16 +2,13 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::project::{NewProject, ProjectDetailed};
+use cellnoor_types::project::{ProjectDetailed, ProjectUpdate};
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
     db::{self, DbError},
-    handlers::{
-        IdParam,
-        projects::{access::add_people::insert_project_accesses, show::select_project_by_id},
-    },
+    handlers::{IdParam, projects::show::select_project_by_id},
     state::AppState,
 };
 
@@ -19,7 +16,7 @@ pub async fn update_project(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    crate::extract::JsonExtractor(project): crate::extract::JsonExtractor<NewProject>,
+    crate::extract::JsonExtractor(project): crate::extract::JsonExtractor<ProjectUpdate>,
 ) -> Result<Json<ProjectDetailed>, DbError> {
     state
         .in_transaction(user, async |tx| {
@@ -31,11 +28,9 @@ pub async fn update_project(
 pub(in super::super) async fn update_project_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-    updated_project: &NewProject,
+    updated_project: &ProjectUpdate,
 ) -> Result<ProjectDetailed, DbError> {
     tx.update(id, updated_project).await?;
-
-    insert_project_accesses(tx, id, &updated_project.members).await?;
 
     select_project_by_id(tx, id).await
 }
@@ -53,9 +48,8 @@ mod tests {
         let tx = client.begin().await.unwrap();
 
         let (pre_update, inserted) = insert_test_project(&tx, |_| ()).await.unwrap();
-        let mut update = pre_update;
+        let mut update = pre_update.simple;
         update.name = "updated".to_nonempty_string();
-        update.members = vec![];
 
         update_project_by_id(&tx, inserted.record.project.id, &update)
             .await

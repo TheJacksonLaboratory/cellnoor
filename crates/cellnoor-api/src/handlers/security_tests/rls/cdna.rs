@@ -2,16 +2,27 @@ use cellnoor_types::{
     cdna::{CdnaDetailed, CdnaPredicate, CdnaPredicateInner, CdnaQuery, creation::NewCdna},
     chromium_run::creation::{ChromiumRunGemWells, LoadedEntity, NewChromiumRun},
     nonempty::NonemptyBoundedVec,
+    nucleic_acid_measurement::NewNucleicAcidMeasurement,
     operator::UuidOperator,
+    permission::Resource,
 };
+use jiff::Timestamp;
 use uuid::Uuid;
 
 use crate::{
     db,
     handlers::{
-        cdna::{create::insert_test_cdna_and_chromium_run, index_detailed::select_cdna_detailed},
+        cdna::{
+            create::{insert_cdna_preparers, insert_test_cdna_and_chromium_run},
+            index_detailed::select_cdna_detailed,
+            measurements::{create::insert_cdna_measurements, remove::delete_cdna_measurements},
+            preparers::remove::delete_cdna_preparers,
+        },
         chromium_runs::create::{TestChromiumRunKind, insert_test_chromium_run},
-        security_tests::rls::specimen::insert_inaccessible_specimen,
+        security_tests::{
+            permissions::{assert_only_staff_with_permission_can_change_children, create_test_user},
+            rls::specimen::insert_inaccessible_specimen,
+        },
         suspensions::create::insert_test_suspension_and_specimen,
     },
     state::dev_util::{db_client_as_admin, db_client_as_user},
@@ -110,4 +121,41 @@ async fn row_level_security_for_cdna() {
 
     test_user_can_only_see_accessible_cdna(&tx, accessible_cdna).await;
     test_user_cannot_see_inaccessible_cdna(&tx, *inaccessible_cdna.record.id).await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn only_staff_with_permission_can_change_cdna_preparers_and_measurements() {
+    let mut client = db_client_as_admin().await;
+    let tx = client.begin().await.unwrap();
+
+    let (new_cdna, cdna) = insert_accessible_cdna(&tx).await;
+
+    tx.commit().await.unwrap();
+
+    let id = *cdna.record.id;
+    let member_id = get_user_id_from_cdna(&cdna).await;
+    let new_preparer_id = create_test_user().await;
+    let new_measurement = NewNucleicAcidMeasurement {
+        measured_at: Timestamp::now(),
+        ..new_cdna.measurements[0].clone()
+    };
+    let measurement_ids: Vec<_> = cdna.measurements.iter().map(|m| m.id).collect();
+
+    assert_only_staff_with_permission_can_change_children(
+        Resource::ChromiumExperimentalData,
+        member_id,
+        async |tx| insert_cdna_preparers(tx, id, &[new_preparer_id]).await,
+        async |tx| delete_cdna_preparers(tx, id, &cdna.preparers).await,
+    )
+    .await;
+
+    assert_only_staff_with_permission_can_change_children(
+        Resource::ChromiumExperimentalData,
+        member_id,
+        async |tx| {
+            insert_cdna_measurements(tx, id, std::slice::from_ref(&new_measurement)).await
+        },
+        async |tx| delete_cdna_measurements(tx, id, &measurement_ids).await,
+    )
+    .await;
 }

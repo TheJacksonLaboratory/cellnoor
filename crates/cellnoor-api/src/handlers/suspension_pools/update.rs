@@ -35,18 +35,9 @@ pub async fn update_suspension_pool(
 async fn update_suspension_pool_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-    SuspensionPoolUpdate {
-        record,
-        measurements,
-        preparers,
-    }: &SuspensionPoolUpdate,
+    update: &SuspensionPoolUpdate,
 ) -> Result<SuspensionPoolDetailed, DbError> {
-    tx.update(id, record).await?;
-
-    tokio::try_join!(
-        insert_suspension_pool_preparers(tx, id, preparers.as_deref().unwrap_or_default()),
-        insert_suspension_pool_measurements(tx, id, measurements.as_deref().unwrap_or_default())
-    )?;
+    tx.update(id, update).await?;
 
     select_suspension_pool_by_id(tx, id).await
 }
@@ -74,13 +65,9 @@ mod test {
         let id = *inserted.record.id;
 
         let pre_update = SuspensionPoolUpdate {
-            record: NewSuspensionPoolRecord {
-                readable_id: crate::db::dummy_data::random_name_for("suspension_pool"),
-                name: "updated".to_nonempty_string(),
-                ..insert_input.record
-            },
-            measurements: None,
-            preparers: None,
+            readable_id: crate::db::dummy_data::random_name_for("suspension_pool"),
+            name: "updated".to_nonempty_string(),
+            ..insert_input.record
         };
 
         update_suspension_pool_by_id(&tx, id, &pre_update)

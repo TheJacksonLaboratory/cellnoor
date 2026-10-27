@@ -8,16 +8,24 @@ use crate::{Relation, nonempty::NonemptyString, simple_links::SimpleLinks};
 mod query;
 
 #[base_model]
-pub struct NewProject {
+pub struct ProjectSimpleFields {
     pub name: NonemptyString,
     pub started_at: Timestamp,
     pub ended_at: Timestamp,
+}
+
+impl Relation for ProjectSimpleFields {
+    const NAME: &'static str = "project";
+}
+
+#[base_model]
+pub struct NewProject {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub simple: ProjectSimpleFields,
     pub members: Vec<Uuid>,
 }
 
-impl Relation for NewProject {
-    const NAME: &'static str = "project";
-}
+pub type ProjectUpdate = ProjectSimpleFields;
 
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "project"))]

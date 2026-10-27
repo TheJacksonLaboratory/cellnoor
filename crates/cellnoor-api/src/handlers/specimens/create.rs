@@ -7,8 +7,8 @@ use crate::{
     auth::AuthUser,
     db::{self, DbError, FieldValues, Insert},
     handlers::specimens::{
+        convert_specimen_fields_to_record::convert_specimen_fields_to_record,
         measurements::create::insert_specimen_measurements, show::select_specimen_by_id,
-        split_new_specimen_for_insertion::split_new_specimen_for_insertion,
     },
     state::AppState,
 };
@@ -25,11 +25,14 @@ pub async fn create_specimen(
 
 pub(in super::super) async fn insert_specimen(
     tx: &db::Transaction<'_>,
-    record: NewSpecimen,
+    NewSpecimen {
+        simple,
+        measurements,
+    }: NewSpecimen,
 ) -> Result<SpecimenDetailed, DbError> {
-    let (record, measurements) = split_new_specimen_for_insertion(record);
-
-    let id = tx.insert_returning_id(&record).await?;
+    let id = tx
+        .insert_returning_id(&convert_specimen_fields_to_record(simple))
+        .await?;
 
     insert_specimen_measurements(tx, id, &measurements).await?;
 
@@ -97,7 +100,9 @@ where
         project::SavedProjectRecordDetailed,
         specimen::{
             Species,
-            creation::{FlashFreezing, SpecimenVariableFields, block::BlockFields},
+            creation::{
+                FlashFreezing, SpecimenSimpleFields, SpecimenVariableFields, block::BlockFields,
+            },
             measurement::{
                 NewSpecimenMeasurement, SpecimenMeasurementData, SpecimenMeasurementQuantity,
             },
@@ -113,17 +118,23 @@ where
     let (_, inserted_project) = insert_test_project(tx, |_| ()).await?;
     let SavedProjectRecordDetailed { project, members } = inserted_project.record;
     let mut new = NewSpecimen {
-        readable_id: crate::db::dummy_data::random_name_for("specimen"),
-        name: crate::db::dummy_data::random_name_for("specimen"),
-        submitted_by: members[0],
-        received_at: Timestamp::now(),
-        project_id: project.id,
-        species: Species::MusMusculus,
-        host_species: None,
-        returned_by: None,
-        returned_at: None,
-        tissue: "tissue".to_nonempty_string(),
-        additional_data: None,
+        simple: SpecimenSimpleFields {
+            readable_id: crate::db::dummy_data::random_name_for("specimen"),
+            name: crate::db::dummy_data::random_name_for("specimen"),
+            submitted_by: members[0],
+            received_at: Timestamp::now(),
+            project_id: project.id,
+            species: Species::MusMusculus,
+            host_species: None,
+            returned_by: None,
+            returned_at: None,
+            tissue: "tissue".to_nonempty_string(),
+            additional_data: None,
+            variable_fields: SpecimenVariableFields::Block(BlockFields::CarboxymethylCellulose {
+                fixative: None,
+                thermal_preservation_method: FlashFreezing::FlashFreezing,
+            }),
+        },
         measurements: vec![NewSpecimenMeasurement {
             measured_by: members[0],
             measured_at: Timestamp::now(),
@@ -134,10 +145,6 @@ where
                 },
             }),
         }],
-        variable_fields: SpecimenVariableFields::Block(BlockFields::CarboxymethylCellulose {
-            fixative: None,
-            thermal_preservation_method: FlashFreezing::FlashFreezing,
-        }),
     };
 
     modify(&mut new);
@@ -168,7 +175,7 @@ pub mod test {
         let tx = client.begin().await.unwrap();
 
         let error = insert_test_specimen_and_project(&tx, |sp| {
-            sp.received_at = Timestamp::from_second(0).unwrap()
+            sp.simple.received_at = Timestamp::from_second(0).unwrap()
         })
         .await
         .unwrap_err();

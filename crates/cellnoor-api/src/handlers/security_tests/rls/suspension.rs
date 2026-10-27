@@ -1,20 +1,29 @@
 use cellnoor_types::{
     operator::UuidOperator,
+    permission::Resource,
     suspension::{
         NewSuspension, SuspensionDetailed, SuspensionPredicate, SuspensionPredicateInner,
-        SuspensionQuery,
+        SuspensionQuery, measurement::NewSuspensionMeasurement,
     },
 };
+use jiff::Timestamp;
 use pretty_assertions::assert_eq;
 use uuid::Uuid;
 
 use crate::{
     db,
     handlers::{
-        security_tests::rls::specimen::insert_inaccessible_specimen,
+        security_tests::{
+            permissions::{assert_only_staff_with_permission_can_change_children, create_test_user},
+            rls::specimen::insert_inaccessible_specimen,
+        },
         suspensions::{
-            create::insert_test_suspension_and_specimen,
+            create::{insert_suspension_preparers, insert_test_suspension_and_specimen},
             index_detailed::select_suspensions_detailed,
+            measurements::{
+                create::insert_suspension_measurements, remove::delete_suspension_measurements,
+            },
+            preparers::remove::delete_suspension_preparers,
         },
     },
     state::dev_util::{db_client_as_admin, db_client_as_user},
@@ -93,4 +102,41 @@ async fn row_level_security_for_suspensions() {
 
     test_user_can_only_see_accessible_suspension(&tx, accessible_suspension).await;
     test_user_cannot_see_inaccessible_suspension(&tx, *inaccessible_suspension.record.id).await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn only_staff_with_permission_can_change_suspension_preparers_and_measurements() {
+    let mut client = db_client_as_admin().await;
+    let tx = client.begin().await.unwrap();
+
+    let (new_suspension, suspension) = insert_accessible_suspension(&tx).await;
+
+    tx.commit().await.unwrap();
+
+    let id = *suspension.record.id;
+    let member_id = get_user_id_from_suspension(&suspension).await;
+    let new_preparer_id = create_test_user().await;
+    let new_measurement = NewSuspensionMeasurement {
+        measured_at: Timestamp::now(),
+        ..new_suspension.measurements[0].clone()
+    };
+    let measurement_ids: Vec<_> = suspension.measurements.iter().map(|m| m.id).collect();
+
+    assert_only_staff_with_permission_can_change_children(
+        Resource::ChromiumExperimentalData,
+        member_id,
+        async |tx| insert_suspension_preparers(tx, id, &[new_preparer_id]).await,
+        async |tx| delete_suspension_preparers(tx, id, &suspension.preparers).await,
+    )
+    .await;
+
+    assert_only_staff_with_permission_can_change_children(
+        Resource::ChromiumExperimentalData,
+        member_id,
+        async |tx| {
+            insert_suspension_measurements(tx, id, std::slice::from_ref(&new_measurement)).await
+        },
+        async |tx| delete_suspension_measurements(tx, id, &measurement_ids).await,
+    )
+    .await;
 }

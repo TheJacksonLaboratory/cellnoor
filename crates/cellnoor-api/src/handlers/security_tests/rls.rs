@@ -1,6 +1,8 @@
 mod api_key;
 mod cdna;
+mod library;
 mod project;
 mod service;
-mod specimen;
+pub(super) mod specimen;
 mod suspension;
+mod suspension_pool;

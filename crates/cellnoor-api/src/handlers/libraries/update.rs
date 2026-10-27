@@ -32,18 +32,9 @@ pub async fn update_library(
 async fn update_library_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-    LibraryUpdate {
-        record,
-        measurements,
-        preparers,
-    }: &LibraryUpdate,
+    update: &LibraryUpdate,
 ) -> Result<LibraryDetailed, DbError> {
-    tx.update(id, record).await?;
-
-    tokio::try_join!(
-        insert_library_preparers(tx, id, preparers.as_deref().unwrap_or_default()),
-        insert_library_measurements(tx, id, measurements.as_deref().unwrap_or_default())
-    )?;
+    tx.update(id, update).await?;
 
     select_library_by_id(tx, id).await
 }
@@ -75,13 +66,9 @@ mod test {
         let id = *inserted.record.id;
 
         let pre_update = LibraryUpdate {
-            record: NewLibraryRecord {
-                readable_id: crate::db::dummy_data::random_name_for("library"),
-                number_of_sample_index_pcr_cycles: PositiveI32::new(12).unwrap(),
-                ..insert_input.record
-            },
-            measurements: None,
-            preparers: None,
+            readable_id: crate::db::dummy_data::random_name_for("library"),
+            number_of_sample_index_pcr_cycles: PositiveI32::new(12).unwrap(),
+            ..insert_input.record
         };
 
         update_library_by_id(&tx, id, &pre_update).await.unwrap();

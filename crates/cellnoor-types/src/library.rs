@@ -58,13 +58,7 @@ pub struct NewLibrary {
     pub preparers: NonemptyVec<Uuid>,
 }
 
-#[base_model]
-pub struct LibraryUpdate {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: NewLibraryRecord,
-    pub measurements: Option<Vec<NewNucleicAcidMeasurement>>,
-    pub preparers: Option<Vec<Uuid>>,
-}
+pub type LibraryUpdate = NewLibraryRecord;
 
 #[base_model]
 pub struct LibraryCompact {

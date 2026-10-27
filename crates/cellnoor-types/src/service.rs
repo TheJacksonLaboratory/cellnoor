@@ -21,13 +21,7 @@ pub struct NewService {
     pub permissions_to_grant: Vec<Permission>,
 }
 
-#[base_model]
-pub struct ServiceUpdate {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: ServiceSimpleFields,
-    pub permissions_to_grant: Vec<Permission>,
-    pub permissions_to_revoke: Vec<Permission>,
-}
+pub type ServiceUpdate = ServiceSimpleFields;
 
 impl Relation for ServiceSimpleFields {
     const NAME: &'static str = "service";

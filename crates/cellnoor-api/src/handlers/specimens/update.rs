@@ -2,7 +2,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::specimen::{SpecimenDetailed, creation::NewSpecimen};
+use cellnoor_types::specimen::{SpecimenDetailed, creation::SpecimenUpdate};
 use uuid::Uuid;
 
 use crate::{
@@ -11,8 +11,8 @@ use crate::{
     handlers::{
         IdParam,
         specimens::{
-            measurements::create::insert_specimen_measurements, show::select_specimen_by_id,
-            split_new_specimen_for_insertion::split_new_specimen_for_insertion,
+            convert_specimen_fields_to_record::convert_specimen_fields_to_record,
+            show::select_specimen_by_id,
         },
     },
     state::AppState,
@@ -22,23 +22,20 @@ pub async fn update_specimen(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
-    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<NewSpecimen>,
+    crate::extract::JsonExtractor(update): crate::extract::JsonExtractor<SpecimenUpdate>,
 ) -> Result<Json<SpecimenDetailed>, DbError> {
     state
-        .in_transaction(user, async |tx| update_specimen_by_id(tx, id, record).await)
+        .in_transaction(user, async |tx| update_specimen_by_id(tx, id, update).await)
         .await
 }
 
 pub(in super::super) async fn update_specimen_by_id(
     tx: &db::Transaction<'_>,
     id: Uuid,
-    record: NewSpecimen,
+    update: SpecimenUpdate,
 ) -> Result<SpecimenDetailed, DbError> {
-    let (record, measurements) = split_new_specimen_for_insertion(record);
-
-    tx.update(id, &record).await?;
-
-    insert_specimen_measurements(tx, id, &measurements).await?;
+    tx.update(id, &convert_specimen_fields_to_record(update))
+        .await?;
 
     select_specimen_by_id(tx, id).await
 }
@@ -58,11 +55,11 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (mut update, inserted) = insert_test_specimen_and_project(&tx, |_| ()).await.unwrap();
+        let (insert_input, inserted) = insert_test_specimen_and_project(&tx, |_| ()).await.unwrap();
         let id = *inserted.record.id;
 
+        let mut update = insert_input.simple;
         update.readable_id = crate::db::dummy_data::random_name_for("specimen");
-        update.measurements = vec![];
 
         update_specimen_by_id(&tx, id, update).await.unwrap();
     }

@@ -91,13 +91,7 @@ pub enum PooledSuspensions {
     },
 }
 
-#[base_model]
-pub struct SuspensionPoolUpdate {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: NewSuspensionPoolRecord,
-    pub measurements: Option<Vec<measurement::NewSuspensionPoolMeasurement>>,
-    pub preparers: Option<Vec<Uuid>>,
-}
+pub type SuspensionPoolUpdate = NewSuspensionPoolRecord;
 
 pub type SavedSuspensionPoolRecord = SuspensionPoolRecord<Id>;
 

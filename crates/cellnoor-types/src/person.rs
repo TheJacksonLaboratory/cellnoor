@@ -46,8 +46,6 @@ pub struct PersonUpdate {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub simple: PersonSimpleFields,
     pub email: Option<NonemptyString>,
-    pub permissions_to_grant: Vec<Permission>,
-    pub permissions_to_revoke: Vec<Permission>,
 }
 
 impl Relation for NewPerson {

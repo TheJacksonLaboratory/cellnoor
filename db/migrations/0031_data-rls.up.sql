@@ -1,29 +1,16 @@
--- Staff see every project and everything descending from one. Everyone else sees only the projects they were given
--- access to.
---
--- Both of these are `security definer`, which is what stops them recursing. The policy on `project_access` calls
--- them, and an invoker-side read of `project_access` (or of `project`, whose own policy reads `project_access`) would
--- re-enter that policy and keep going until PostgreSQL runs out of stack. Running as the owner takes the read out
--- from under row-level security, and each function only ever answers a yes-or-no question about the current user
-create function current_user_has_access_to_project(
+-- `security definer` so that it reads `project` and `project_access` without their policies, which call this function
+-- and would otherwise recurse into each other
+create function current_user_is_project_member(
     project_id_to_check uuid
 ) returns boolean language sql stable security definer as $$
-    select current_user_is_staff() or exists (
-        select 1 from project_access where project_id = project_id_to_check and principal_id = app_user_id()
-    )
+    select
+        exists (select 1 from project where id = project_id_to_check and created_by = app_user_id())
+        or exists (
+            select 1 from project_access where project_id = project_id_to_check and principal_id = app_user_id()
+        )
 $$;
 
--- A project's creator holds no access row at the moment the project is made, so this is how they are allowed to hand
--- the first one out
-create function current_user_created_project(
-    project_id_to_check uuid
-) returns boolean language sql stable security definer as $$
-    select exists (select 1 from project where id = project_id_to_check and created_by = app_user_id())
-$$;
-
--- A permission is granted on a resource, which is a group of tables. Reads are open except for projects and specimens,
--- which are scoped to their members or creators. Every other view comes back to specimen through a view with
--- `security_invoker = true`, so scoping specimens scopes everything downstream of them
+-- A permission is granted on a resource, which is a group of tables
 create temp table resource_table (resource text not null, table_name text primary key);
 
 insert into resource_table (resource, table_name) values
@@ -66,8 +53,6 @@ insert into resource_table (resource, table_name) values
 do $$
     declare
         r record;
-        -- Which rows of this table the user can see, which is also which rows they can update or delete
-        visible_rows text;
         unmapped text;
     begin
         -- A new table with no resource would silently have no policies, so refuse to migrate until it has one.
@@ -87,27 +72,19 @@ do $$
 
         for r in select resource, table_name from resource_table
         loop
-            visible_rows = case r.table_name
-                when 'project' then 'current_user_has_access_to_project(id) or created_by = app_user_id()'
-                when 'specimen' then 'current_user_has_access_to_project(project_id) or current_user_created_project(project_id)'
-                else 'true'
-            end;
-
             execute format('alter table %I enable row level security', r.table_name);
+            execute format('create policy anyone_can_read on %I for select using (true)', r.table_name);
             execute format(
-                'create policy can_read on %I for select using (%s)', r.table_name, visible_rows
+                'create policy staff_can_create on %I for insert with check (current_user_is_staff() and current_user_can(%L, %L))',
+                r.table_name, 'create', r.resource
             );
             execute format(
-                'create policy can_create on %I for insert with check ((%s) and current_user_can(%L, %L))',
-                r.table_name, visible_rows, 'create', r.resource
+                'create policy staff_can_update on %I for update using (current_user_is_staff() and current_user_can(%L, %L))',
+                r.table_name, 'update', r.resource
             );
             execute format(
-                'create policy can_update on %I for update using (%s) with check ((%s) and current_user_can(%L, %L))',
-                r.table_name, visible_rows, visible_rows, 'update', r.resource
-            );
-            execute format(
-                'create policy can_delete on %I for delete using ((%s) and current_user_can(%L, %L))',
-                r.table_name, visible_rows, 'delete', r.resource
+                'create policy staff_can_delete on %I for delete using (current_user_is_staff() and current_user_can(%L, %L))',
+                r.table_name, 'delete', r.resource
             );
         end loop;
     end;
@@ -126,13 +103,46 @@ cross join unnest(array['create', 'update', 'delete']) as action;
 
 drop table resource_table;
 
-create policy creator_is_current_user on project as restrictive for insert with check (created_by = app_user_id());
+-- Non-staff only see the projects they are members of, and the specimens in them. Every other entity is only ever read
+-- through a view that joins it to its specimens (db/migrations/0018_suspension-views.up.sql onwards), so scoping
+-- specimens scopes everything downstream of them
 
-create policy access_is_granted_by_members on project_access as restrictive for all using (
-    current_user_has_access_to_project(project_id) or current_user_created_project(project_id)
+-- `insert ... returning` checks the new project against this policy, and `current_user_is_project_member` can't see a
+-- row inserted by the statement calling it, so the creator is checked here too
+create policy members_only on project as restrictive for select using (
+    created_by = app_user_id() or current_user_is_staff() or current_user_is_project_member(id)
+);
+create policy members_only on project_access as restrictive for select using (
+    current_user_is_staff() or current_user_is_project_member(project_id)
+);
+create policy members_only on specimen as restrictive for select using (
+    current_user_is_staff() or current_user_is_project_member(project_id)
+);
+create policy members_only on specimen_measurement as restrictive for select using (
+    exists (select 1 from specimen where id = specimen_id)
+);
+create policy members_only on committee_approval as restrictive for select using (
+    exists (select 1 from specimen where id = specimen_id)
 );
 
--- Without the following line of code, a member would need create on projects to give access to other members. This
--- policy combines with `current_user_can(create, project)` permissively so that a member can grant access to other
--- members without needing to be able to create projects.
-create policy members_can_grant_access on project_access for insert with check (true);
+-- What non-staff may write
+
+create policy anyone_can_create on project for insert with check (current_user_can('create', 'project'));
+create policy creator_is_current_user on project as restrictive for insert with check (created_by = app_user_id());
+
+create policy members_can_add_members on project_access for insert with check (
+    current_user_is_project_member(project_id)
+);
+create policy creator_can_remove_members on project_access for delete using (
+    exists (select 1 from project where id = project_id and created_by = app_user_id())
+);
+
+create policy members_can_create on specimen for insert with check (
+    current_user_can('create', 'specimen') and current_user_is_project_member(project_id)
+);
+create policy members_can_create on specimen_measurement for insert with check (
+    current_user_can('create', 'specimen') and exists (select 1 from specimen where id = specimen_id)
+);
+create policy members_can_create on committee_approval for insert with check (
+    current_user_can('create', 'specimen') and exists (select 1 from specimen where id = specimen_id)
+);

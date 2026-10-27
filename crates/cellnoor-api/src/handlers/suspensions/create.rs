@@ -44,7 +44,7 @@ async fn insert_suspension(
     select_suspension_by_id(tx, id).await
 }
 
-pub(super) async fn insert_suspension_preparers(
+pub(in super::super) async fn insert_suspension_preparers(
     tx: &db::Transaction<'_>,
     suspension_id: Uuid,
     preparer_ids: &[Uuid],
@@ -57,7 +57,7 @@ pub(super) async fn insert_suspension_preparers(
         })
         .collect();
 
-    tx.insert_many(&preparers).await
+    tx.insert_many_on_conflict_do_nothing(&preparers).await
 }
 
 struct NewSuspensionPreparer {

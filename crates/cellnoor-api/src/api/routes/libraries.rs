@@ -16,7 +16,7 @@ use crate::{
     handlers::{
         delete_resource,
         libraries::{
-            create_library, create_library_measurement, index_libraries, index_libraries_detailed,
+            create_library, create_library_measurement, remove_library_measurements, add_library_preparers, remove_library_preparers, index_libraries, index_libraries_detailed,
             show_library, update_library,
         },
     },
@@ -40,7 +40,14 @@ fn id_router() -> ApiRouter<AppState> {
                 .put(update_library)
                 .delete(delete_resource::<SavedLibraryRecord>),
         )
-        .api_route("/measurements", post(create_library_measurement))
+        .api_route(
+            "/measurements",
+            post(create_library_measurement).delete(remove_library_measurements),
+        )
+        .api_route(
+            "/preparers",
+            post(add_library_preparers).delete(remove_library_preparers),
+        )
 }
 
 async fn index_libraries_simple(

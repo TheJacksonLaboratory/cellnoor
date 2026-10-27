@@ -4,8 +4,12 @@ use cellnoor_types::{
     operator::UuidOperator,
     permission::{Action, Permission, Resource},
     project::{NewProject, ProjectDetailed, ProjectPredicate},
-    specimen::{SpecimenDetailed, SpecimenPredicate, SpecimenQuery, creation::NewSpecimen},
+    specimen::{
+        SpecimenDetailed, SpecimenPredicate, SpecimenQuery, creation::NewSpecimen,
+        measurement::NewSpecimenMeasurement,
+    },
 };
+use jiff::Timestamp;
 use pretty_assertions::assert_eq;
 use uuid::Uuid;
 
@@ -21,6 +25,9 @@ use crate::{
         specimens::{
             create::{insert_specimen, insert_test_specimen_and_project},
             index_detailed::select_specimens_detailed,
+            measurements::{
+                create::insert_specimen_measurements, remove::delete_specimen_measurements,
+            },
             update::update_specimen_by_id,
         },
     },
@@ -44,7 +51,7 @@ pub async fn insert_inaccessible_specimen(
 ) -> (NewSpecimen, SpecimenDetailed) {
     let (_, project) = insert_inaccessible_project(tx).await;
 
-    insert_test_specimen_and_project(tx, |s| s.project_id = project.record.project.id)
+    insert_test_specimen_and_project(tx, |s| s.simple.project_id = project.record.project.id)
         .await
         .unwrap()
 }
@@ -114,41 +121,37 @@ async fn row_level_security_for_specimens() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn user_cannot_write_specimen_into_inaccessible_project() {
+async fn member_can_create_specimen_only_in_accessible_project() {
     let mut client = db_client_as_admin().await;
     let tx = client.begin().await.unwrap();
 
     // The user is a member of the accessible specimen's project only, and may
-    // create and update specimens
+    // create specimens
     let ((new_specimen, accessible_specimen), (_, inaccessible_project)) = tokio::join!(
         insert_accessible_specimen(&tx),
         insert_inaccessible_project(&tx)
     );
     let user_id = get_user_id_from_specimen(&tx, &accessible_specimen).await;
-    grant_permissions(
-        &tx,
-        user_id,
-        &[Action::Create, Action::Update].map(|action| Permission {
-            resource: Resource::Specimen,
-            action,
-        }),
-    )
-    .await
-    .unwrap();
+    grant_permissions(&tx, user_id, &may(Resource::Specimen, &[Action::Create]))
+        .await
+        .unwrap();
 
     tx.commit().await.unwrap();
 
-    let inaccessible_project_id = inaccessible_project.record.project.id;
+    let mut new = new_specimen;
 
-    // Log in as the new user
     let mut client = db_client_as_user(user_id).await;
 
+    // This needs its own transaction because the failure aborts it
     let tx = client.begin().await.unwrap();
-    let mut new = new_specimen.clone();
-    new.readable_id = crate::db::dummy_data::random_name_for("specimen");
-    new.project_id = inaccessible_project_id;
+    let mut into_inaccessible_project = new.clone();
+    into_inaccessible_project.simple.readable_id =
+        crate::db::dummy_data::random_name_for("specimen");
+    into_inaccessible_project.simple.project_id = inaccessible_project.record.project.id;
 
-    let error = insert_specimen(&tx, new).await.unwrap_err();
+    let error = insert_specimen(&tx, into_inaccessible_project)
+        .await
+        .unwrap_err();
     assert_eq!(
         error,
         DbError::PermissionDenied {
@@ -159,20 +162,9 @@ async fn user_cannot_write_specimen_into_inaccessible_project() {
     drop(tx);
 
     let tx = client.begin().await.unwrap();
-    let mut update = new_specimen;
-    update.project_id = inaccessible_project_id;
-    update.measurements = vec![];
+    new.simple.readable_id = crate::db::dummy_data::random_name_for("specimen");
 
-    let error = update_specimen_by_id(&tx, *accessible_specimen.record.id, update)
-        .await
-        .unwrap_err();
-    assert_eq!(
-        error,
-        DbError::PermissionDenied {
-            message: "new row violates row-level security policy for resource \"specimen\""
-                .to_owned()
-        }
-    );
+    insert_specimen(&tx, new).await.unwrap();
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -185,7 +177,7 @@ async fn creator_can_see_specimens_of_project_without_access() {
     let tx = client.begin().await.unwrap();
 
     let (_, specimen) =
-        insert_test_specimen_and_project(&tx, |s| s.project_id = project.record.project.id)
+        insert_test_specimen_and_project(&tx, |s| s.simple.project_id = project.record.project.id)
             .await
             .unwrap();
 
@@ -198,43 +190,119 @@ async fn creator_can_see_specimens_of_project_without_access() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn specimen_update_requires_membership_and_permission() {
+async fn only_staff_with_permission_can_update_specimen() {
     let mut client = db_client_as_admin().await;
     let tx = client.begin().await.unwrap();
 
-    let (mut update, specimen) = insert_accessible_specimen(&tx).await;
+    let (new_specimen, specimen) = insert_accessible_specimen(&tx).await;
     let member_id = get_user_id_from_specimen(&tx, &specimen).await;
+
+    grant_permissions(&tx, member_id, &may(Resource::Specimen, &[Action::Update]))
+        .await
+        .unwrap();
 
     tx.commit().await.unwrap();
 
     let specimen_id = *specimen.record.id;
-    let outsider_id =
-        create_test_user_with(false, may(Resource::Specimen, &[Action::Update])).await;
+    let staff_without_permission = create_test_user_with(true, Vec::new()).await;
+    let staff_with_permission =
+        create_test_user_with(true, may(Resource::Specimen, &[Action::Update])).await;
 
+    let mut update = new_specimen.simple;
     update.name = crate::db::dummy_data::random_name_for("specimen");
-    update.measurements = vec![];
 
-    // An outsider can't update the specimen, even with the permission to
-    let mut client = db_client_as_user(outsider_id).await;
+    // The member holds the permission but isn't staff, and the other user is
+    // staff without the permission
+    for user_id in [member_id, staff_without_permission] {
+        let mut client = db_client_as_user(user_id).await;
+        let tx = client.begin().await.unwrap();
+
+        assert_eq!(
+            update_specimen_by_id(&tx, specimen_id, update.clone())
+                .await
+                .unwrap_err(),
+            DbError::ResourceNotFound
+        );
+    }
+
+    let mut client = db_client_as_user(staff_with_permission).await;
     let tx = client.begin().await.unwrap();
 
-    let error = update_specimen_by_id(&tx, specimen_id, update.clone())
+    update_specimen_by_id(&tx, specimen_id, update)
         .await
-        .unwrap_err();
+        .unwrap();
+}
 
-    assert_matches!(error, DbError::ResourceNotFound);
-
-    // A member can't update the specimen without the permission
-    let mut client = db_client_as_user(member_id).await;
+// Unlike other measurements, members may add specimen measurements, but only to
+// their own projects' specimens. Removing them is still left to staff
+#[tokio::test(flavor = "multi_thread")]
+async fn member_can_add_specimen_measurements_only_in_accessible_project() {
+    let mut client = db_client_as_admin().await;
     let tx = client.begin().await.unwrap();
 
-    assert_eq!(
-        update_specimen_by_id(&tx, specimen_id, update)
+    let ((new_specimen, specimen), (_, inaccessible_specimen)) = tokio::join!(
+        insert_accessible_specimen(&tx),
+        insert_inaccessible_specimen(&tx)
+    );
+    let member_id = get_user_id_from_specimen(&tx, &specimen).await;
+
+    grant_permissions(
+        &tx,
+        member_id,
+        &may(Resource::Specimen, &[Action::Create, Action::Delete]),
+    )
+    .await
+    .unwrap();
+
+    tx.commit().await.unwrap();
+
+    let id = *specimen.record.id;
+    let inaccessible_id = *inaccessible_specimen.record.id;
+    let new_measurement = NewSpecimenMeasurement {
+        measured_at: Timestamp::now(),
+        ..new_specimen.measurements[0].clone()
+    };
+    let new_measurements = std::slice::from_ref(&new_measurement);
+    let measurement_ids: Vec<_> = specimen.measurements.iter().map(|m| m.id).collect();
+
+    let mut client = db_client_as_user(member_id).await;
+
+    // Each failure needs its own transaction because it aborts it
+    let tx = client.begin().await.unwrap();
+    assert_matches!(
+        insert_specimen_measurements(&tx, inaccessible_id, new_measurements)
             .await
             .unwrap_err(),
-        DbError::PermissionDenied {
-            message: "new row violates row-level security policy for resource \"specimen\""
-                .to_owned()
-        }
+        DbError::PermissionDenied { .. }
     );
+    drop(tx);
+
+    let tx = client.begin().await.unwrap();
+    insert_specimen_measurements(&tx, id, new_measurements)
+        .await
+        .unwrap();
+    assert_eq!(
+        delete_specimen_measurements(&tx, id, &measurement_ids)
+            .await
+            .unwrap_err(),
+        DbError::ResourceNotFound
+    );
+    drop(tx);
+
+    // Staff need neither membership nor anything beyond `create` and `delete`
+    let staff_id = create_test_user_with(
+        true,
+        may(Resource::Specimen, &[Action::Create, Action::Delete]),
+    )
+    .await;
+
+    let mut client = db_client_as_user(staff_id).await;
+    let tx = client.begin().await.unwrap();
+
+    insert_specimen_measurements(&tx, inaccessible_id, new_measurements)
+        .await
+        .unwrap();
+    delete_specimen_measurements(&tx, id, &measurement_ids)
+        .await
+        .unwrap();
 }

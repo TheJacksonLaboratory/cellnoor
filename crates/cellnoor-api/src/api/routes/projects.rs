@@ -16,7 +16,7 @@ use crate::{
     handlers::{
         delete_resource,
         projects::{
-            add_people_to_project, create_project, index_projects, index_projects_detailed,
+            add_people_to_project, remove_people_from_project, create_project, index_projects, index_projects_detailed,
             show_project, update_project,
         },
     },
@@ -40,7 +40,10 @@ fn id_router() -> ApiRouter<AppState> {
                 .put(update_project)
                 .delete(delete_resource::<SavedProjectRecord>),
         )
-        .api_route("/people", post(add_people_to_project))
+        .api_route(
+            "/people",
+            post(add_people_to_project).delete(remove_people_from_project),
+        )
 }
 
 async fn index_projects_simple(

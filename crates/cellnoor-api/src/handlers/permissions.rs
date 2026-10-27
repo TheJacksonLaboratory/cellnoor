@@ -1,10 +1,45 @@
+use axum::{
+    Json,
+    extract::{Path, State},
+};
 use cellnoor_types::{
     Relation,
     permission::{Action, Permission, Resource},
 };
 use uuid::Uuid;
 
-use crate::db::{self, DbError, FieldValues, Insert, Sql};
+use crate::{
+    auth::AuthUser,
+    db::{self, DbError, FieldValues, Insert, Sql},
+    handlers::IdParam,
+    state::AppState,
+};
+
+pub async fn grant_permissions_to_principal(
+    State(state): State<AppState>,
+    user: AuthUser,
+    Path(IdParam { id }): Path<IdParam>,
+    crate::extract::JsonExtractor(permissions): crate::extract::JsonExtractor<Vec<Permission>>,
+) -> Result<Json<()>, DbError> {
+    state
+        .in_transaction(user, async |tx| {
+            grant_permissions(tx, id, &permissions).await
+        })
+        .await
+}
+
+pub async fn revoke_permissions_from_principal(
+    State(state): State<AppState>,
+    user: AuthUser,
+    Path(IdParam { id }): Path<IdParam>,
+    crate::extract::JsonExtractor(permissions): crate::extract::JsonExtractor<Vec<Permission>>,
+) -> Result<Json<()>, DbError> {
+    state
+        .in_transaction(user, async |tx| {
+            revoke_permissions(tx, id, &permissions).await
+        })
+        .await
+}
 
 struct PermissionRow {
     principal_id: Uuid,
@@ -67,11 +102,17 @@ pub(crate) async fn revoke_permissions(
     let (actions, resources): (Vec<Action>, Vec<Resource>) =
         permissions.iter().map(|p| (p.action, p.resource)).unzip();
 
-    tx.execute(&Sql::new(
-        REVOKE_PERMISSIONS,
-        vec![&principal_id, &actions, &resources],
-    ))
-    .await?;
+    let n = tx
+        .execute(&Sql::new(
+            REVOKE_PERMISSIONS,
+            vec![&principal_id, &actions, &resources],
+        ))
+        .await?;
+
+    // Row-level security silently skips the rows the user may not delete
+    if n < permissions.len() as u64 {
+        return Err(DbError::ResourceNotFound);
+    }
 
     Ok(())
 }
