@@ -40,9 +40,9 @@ static_files_dir=$(mktemp --directory)
 export CELLNOOR_DB_ROOT_PASSWORD="$db_password"
 
 # cellnoor-auth configuration
-export CELLNOOR_AUTH__DB_HOST="$db_host"
-export CELLNOOR_AUTH__DB_PASSWORD="$db_password"
-export CELLNOOR_AUTH__DB_NAME="$db_name"
+export CELLNOOR_AUTH__DB__HOST="$db_host"
+export CELLNOOR_AUTH__DB__PASSWORD="$db_password"
+export CELLNOOR_AUTH__DB__NAME="$db_name"
 export CELLNOOR_AUTH__AUTH_SECRET="$auth_secret"
 export CELLNOOR_AUTH__UNIX_DOMAIN_SOCKET="$sockets/auth.sock"
 export CELLNOOR_AUTH__PUBLIC_BASE_URL="https://$host"

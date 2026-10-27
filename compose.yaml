@@ -17,7 +17,7 @@ secrets:
   app_db_password:
     environment: CELLNOOR_API__DB__PASSWORD
   auth_db_password:
-    environment: CELLNOOR_AUTH__DB_PASSWORD
+    environment: CELLNOOR_AUTH__DB__PASSWORD
   auth_secret:
     environment: CELLNOOR_AUTH__AUTH_SECRET
   microsoft_entra_tenant_id:
@@ -68,8 +68,8 @@ services:
       tags:
         - ghcr.io/thejacksonlaboratory/cellnoor-auth:latest
     environment:
-      CELLNOOR_AUTH__DB_NAME: &db_name postgres
-      CELLNOOR_AUTH__DB_HOST: &db_host /run/postgresql
+      CELLNOOR_AUTH__DB__NAME: &db_name postgres
+      CELLNOOR_AUTH__DB__HOST: &db_host /run/postgresql
       CELLNOOR_AUTH__UNIX_DOMAIN_SOCKET: &auth_socket /run/cellnoor-auth/cellnoor-auth.sock
     secrets:
       [
