@@ -7522,7 +7522,7 @@ export interface components {
         ChromiumDatasetDetailed: {
             additional_data?: unknown;
             assay: components["schemas"]["TenxAssay"];
-            chromium_runs: components["schemas"]["ChromiumRunCompact"][];
+            chromium_run: components["schemas"]["ChromiumRunCompact"];
             /** Format: date-time */
             delivered_at: string;
             files: components["schemas"]["ChromiumDatasetParsedFileDataFileTree"][];

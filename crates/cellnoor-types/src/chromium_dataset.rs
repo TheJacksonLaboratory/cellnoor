@@ -108,9 +108,9 @@ pub struct ChromiumDatasetDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: SavedChromiumDatasetRecord,
     pub assay: TenxAssay,
+    pub chromium_run: ChromiumRunCompact,
     pub links: ChromiumDatasetDetailedLinks,
     pub libraries: Vec<LibraryCompact>,
     pub specimens: Vec<TaggedSpecimen>,
-    pub chromium_runs: Vec<ChromiumRunCompact>,
     pub files: Vec<FileTreeNode<ChromiumDatasetParsedFileData>>,
 }

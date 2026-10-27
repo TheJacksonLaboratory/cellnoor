@@ -20,13 +20,9 @@
 			formatSampleMultiplexing(data.dataset.assay.sample_multiplexing)
 	);
 
-	const iLabRequestIds: string[] = $derived(
-		data.dataset.chromium_runs
-			.map((cr) => cr.additional_data)
-			.filter((ad) => typeof ad === 'object' && ad !== null)
-			// @ts-expect-error additional_data is not a strongly-typed object, and reading ilab_request_ids just returns `undefined`, which is fine
-			.flatMap((ad) => ad.ilab_request_ids)
-			.filter((id) => id)
+	const iLabRequestIds: string[] | null = $derived(
+		// @ts-expect-error I honestly don't know why typescript hates this
+		data.dataset.chromium_run.additional_data?.ilab_request_ids
 	);
 
 	let selected = $state<FileLeaf>();

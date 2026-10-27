@@ -1,10 +1,10 @@
 select
     chromium_dataset,
     tenx_assay as assay,
+    chromium_run,
     array_agg(distinct(
         specimen, multiplexing_tag, ocm_barcode_id
     )::tagged_specimen) as specimens,
-    array_agg(distinct(chromium_run)) as chromium_runs,
     array_agg(distinct library) as libraries,
     array(
         select path from chromium_dataset_raw_file
@@ -16,4 +16,4 @@ select
     ) as parsed_files
 from chromium_dataset_to_specimen
 /* {where} */
-group by chromium_dataset, assay
+group by chromium_dataset, assay, chromium_run
