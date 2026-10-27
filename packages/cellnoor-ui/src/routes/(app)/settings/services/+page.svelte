@@ -18,7 +18,7 @@
 	import type {
 		ServiceDetailed,
 		ServiceField,
-		ServiceUpdate
+		ServiceSimpleFields
 	} from 'cellnoor-client/cellnoor-types.ts';
 	import { FormFieldName } from './field-parsers.ts';
 
@@ -55,17 +55,11 @@
 
 	function updateService(
 		{ id, description, is_staff }: ServiceDetailed,
-		changes: Partial<ServiceUpdate>
+		changes: Partial<ServiceSimpleFields>
 	) {
 		return cellnoorClient.PUT('/services/{id}', {
 			params: { path: { id } },
-			body: {
-				description,
-				is_staff,
-				permissions_to_grant: [],
-				permissions_to_revoke: [],
-				...changes
-			}
+			body: { description, is_staff, ...changes }
 		});
 	}
 </script>
@@ -123,8 +117,10 @@
 					/>
 					<PermissionGrid
 						permissions={service.permissions}
-						save={(grant, revoke) =>
-							updateService(service, { permissions_to_grant: grant, permissions_to_revoke: revoke })}
+						grant={(body) =>
+							cellnoorClient.POST('/services/{id}/permissions', { params: { path: { id } }, body })}
+						revoke={(body) =>
+							cellnoorClient.DELETE('/services/{id}/permissions', { params: { path: { id } }, body })}
 					/>
 					<Members
 						label="Members"

@@ -1,9 +1,8 @@
 use std::{assert_matches, fmt::Debug};
 
 use cellnoor_types::{
-    operator::UuidOperator,
     permission::{Action, Permission, Resource},
-    person::{PersonPredicate, PersonUpdate},
+    person::PersonUpdate,
     project::ProjectQuery,
     query::{ComplexQuery, OrderField},
 };
@@ -14,14 +13,10 @@ use crate::{
     db::{self, DbError, Sql},
     handlers::{
         cdna::index_detailed::select_cdna_detailed,
-        chromium_datasets::{
-            create::insert_test_chromium_dataset, index_detailed::select_chromium_datasets_detailed,
-        },
-        chromium_runs::{
-            create::TestChromiumRunKind, index_detailed::select_chromium_runs_detailed,
-        },
+        chromium_datasets::index_detailed::select_chromium_datasets_detailed,
+        chromium_runs::index_detailed::select_chromium_runs_detailed,
         institutions::{create::insert_test_institution, index::select_institutions},
-        libraries::{create::insert_test_library, index_detailed::select_libraries_detailed},
+        libraries::index_detailed::select_libraries_detailed,
         people::{
             PersonError, create::insert_test_person_and_institution, index::select_people,
             index_permissions::select_people_with_permissions, update::update_person_by_id,
@@ -30,14 +25,10 @@ use crate::{
         projects::{create::insert_test_project, index_detailed::select_projects_detailed},
         security_tests::rls::specimen::get_user_id_from_specimen,
         services::{index::select_services, index_detailed::select_services_detailed},
-        set_is_staff,
         specimens::{
             create::insert_test_specimen_and_project, index_detailed::select_specimens_detailed,
         },
-        suspension_pools::{
-            create::insert_test_suspension_pool_and_suspensions,
-            index_detailed::select_suspension_pools_detailed,
-        },
+        suspension_pools::index_detailed::select_suspension_pools_detailed,
         suspensions::index_detailed::select_suspensions_detailed,
     },
     state::dev_util::{db_client_as_admin, db_client_as_user},

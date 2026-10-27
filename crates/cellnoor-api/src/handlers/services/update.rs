@@ -38,7 +38,7 @@ pub(in super::super) async fn update_service_by_id(
 
 #[cfg(test)]
 mod test {
-    use cellnoor_types::service::{ServiceSimpleFields, ServiceUpdate};
+    use cellnoor_types::service::ServiceUpdate;
 
     use crate::{
         handlers::services::{create::test::insert_test_service, update::update_service_by_id},

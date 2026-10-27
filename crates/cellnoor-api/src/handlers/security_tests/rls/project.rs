@@ -1,4 +1,3 @@
-use std::assert_matches;
 
 use cellnoor_types::{
     operator::UuidOperator,

@@ -6,7 +6,7 @@ use aide::{
 #[cfg(any(test, feature = "dev"))]
 use axum::{
     body::Body,
-    extract::FromRequest,
+    extract::{DefaultBodyLimit, FromRequest},
     http::{HeaderMap, HeaderValue, Request},
 };
 use axum::{
@@ -292,9 +292,11 @@ pub async fn write_test_dataset_files(db_pool: &Pool, dataset_id: Uuid) {
         .multipart(body)
         .build()
         .unwrap();
-    let request = Request::<reqwest::Body>::try_from(request)
+    let mut request = Request::<reqwest::Body>::try_from(request)
         .unwrap()
         .map(Body::new);
+
+    DefaultBodyLimit::disable().apply(&mut request);
 
     write_files_to_disk_and_db(
         db_pool,

@@ -2,7 +2,7 @@ use std::assert_matches;
 
 use cellnoor_types::{
     operator::UuidOperator,
-    permission::{Action, Permission, Resource},
+    permission::{Action, Resource},
     project::{NewProject, ProjectDetailed, ProjectPredicate},
     specimen::{
         SpecimenDetailed, SpecimenPredicate, SpecimenQuery, creation::NewSpecimen,

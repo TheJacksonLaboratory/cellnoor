@@ -26,13 +26,10 @@
 		['email', 'Email']
 	]);
 
-	function updatePerson(
-		{ id, permissions: _, ...person }: PersonWithPermissions,
-		changes: Partial<PersonUpdate>
-	) {
+	function updatePerson({ id, ...person }: PersonWithPermissions, changes: Partial<PersonUpdate>) {
 		return cellnoorClient.PUT('/people/{id}', {
 			params: { path: { id } },
-			body: { ...person, permissions_to_grant: [], permissions_to_revoke: [], ...changes }
+			body: { ...person, ...changes }
 		});
 	}
 </script>
@@ -70,8 +67,16 @@
 					/>
 					<PermissionGrid
 						permissions={person.permissions}
-						save={(grant, revoke) =>
-							updatePerson(person, { permissions_to_grant: grant, permissions_to_revoke: revoke })}
+						grant={(body) =>
+							cellnoorClient.POST('/people/{id}/permissions', {
+								params: { path: { id: person.id } },
+								body
+							})}
+						revoke={(body) =>
+							cellnoorClient.DELETE('/people/{id}/permissions', {
+								params: { path: { id: person.id } },
+								body
+							})}
 					/>
 				</ListRow>
 			{/each}

@@ -11,10 +11,12 @@
 
 	let {
 		permissions,
-		save
+		grant,
+		revoke
 	}: {
 		permissions: Permission[];
-		save: (grant: Permission[], revoke: Permission[]) => Mutation;
+		grant: (permissions: Permission[]) => Mutation;
+		revoke: (permissions: Permission[]) => Mutation;
 	} = $props();
 
 	const has = (resource: Resource, action: Action) =>
@@ -23,7 +25,7 @@
 	async function toggle(input: HTMLInputElement, permission: Permission) {
 		const granted = input.checked;
 
-		if (!(await mutate(granted ? save([permission], []) : save([], [permission])))) {
+		if (!(await mutate((granted ? grant : revoke)([permission])))) {
 			input.checked = !granted;
 		}
 	}

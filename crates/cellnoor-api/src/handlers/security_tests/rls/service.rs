@@ -3,7 +3,7 @@ use std::assert_matches;
 use cellnoor_types::{
     operator::UuidOperator,
     permission::{Action, Resource},
-    service::{Service, ServicePredicate, ServiceQuery, ServiceSimpleFields, ServiceUpdate},
+    service::{Service, ServicePredicate, ServiceQuery, ServiceUpdate},
 };
 use pretty_assertions::assert_eq;
 use uuid::Uuid;
@@ -11,12 +11,11 @@ use uuid::Uuid;
 use crate::{
     db::{self, DbError},
     handlers::{
-        institutions::create::insert_test_institution,
         people::create::insert_test_person_and_institution,
         permissions::{grant_permissions, revoke_permissions},
         security_tests::permissions::{create_test_user, create_test_user_with, may},
         services::{
-            access::{add_people::insert_service_accesses, remove_people::delete_service_accesses},
+            access::add_people::insert_service_accesses,
             create::test::insert_test_service,
             index::select_services,
             index_detailed::select_services_detailed,

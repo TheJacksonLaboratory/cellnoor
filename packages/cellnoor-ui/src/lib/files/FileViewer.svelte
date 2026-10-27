@@ -9,7 +9,8 @@
 	const data = $derived(file.parsed_contents?.data);
 
 	const rows = $derived(Array.isArray(data) ? data : data ? [data] : []);
-	const columns = $derived([...new Set(rows.flatMap(Object.keys))]);
+	// Sort the columns to make comparing different files of the same type easier
+	const columns = $derived([...new Set(rows.flatMap(Object.keys))].toSorted());
 </script>
 
 <section class="stack card card-body">
@@ -24,7 +25,7 @@
 	</header>
 
 	{#if !data}
-		<iframe src={file.raw_file_link} title={file.name} sandbox="allow-scripts"></iframe>
+		<iframe src={file.raw_file_link} title={file.name}></iframe>
 	{:else if format === 'json'}
 		<JsonTreeView.Root class="json-tree" {data}>
 			<JsonTreeView.Tree>

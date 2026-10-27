@@ -38,7 +38,7 @@ async fn update_suspension_by_id(
 #[cfg(test)]
 mod test {
 
-    use cellnoor_types::suspension::{NewSuspensionRecord, SuspensionContent, SuspensionUpdate};
+    use cellnoor_types::suspension::{SuspensionContent, SuspensionUpdate};
 
     use crate::{
         handlers::suspensions::{

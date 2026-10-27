@@ -36,7 +36,7 @@ async fn update_library_by_id(
 #[cfg(test)]
 mod test {
     use cellnoor_types::{
-        library::{LibraryUpdate, NewLibraryRecord},
+        library::LibraryUpdate,
         positive::PositiveI32,
     };
 
