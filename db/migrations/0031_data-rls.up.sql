@@ -1,13 +1,11 @@
 -- `security definer` so that it reads `project` and `project_access` without their policies, which call this function
 -- and would otherwise recurse into each other
-create function current_user_is_project_member(
-    project_id_to_check uuid
-) returns boolean language sql stable security definer as $$
-    select
-        exists (select 1 from project where id = project_id_to_check and created_by = app_user_id())
-        or exists (
-            select 1 from project_access where project_id = project_id_to_check and principal_id = app_user_id()
-        )
+create function current_user_project_ids() returns uuid[] language sql stable security definer as $$
+    select array(
+        select id from project where created_by = app_user_id()
+        union
+        select project_id from project_access where principal_id = app_user_id()
+    )
 $$;
 
 -- A permission is granted on a resource, which is a group of tables. A child table holds rows that hang off an entity,
@@ -66,18 +64,21 @@ do $$
                     alter table %1$I enable row level security;
                     create policy can_read on %1$I for select using (true);
                     create policy can_create on %1$I for insert with check (
-                        current_user_is_staff() and (current_user_can('create', %2$L) %3$s)
+                        (select current_user_is_staff()) and ((select current_user_can('create', %2$L)) %3$s)
                     );
                     create policy can_update on %1$I for update using (
-                        current_user_is_staff() and current_user_can('update', %2$L)
+                        (select current_user_is_staff()) and (select current_user_can('update', %2$L))
                     );
                     create policy can_delete on %1$I for delete using (
-                        current_user_is_staff() and (current_user_can('delete', %2$L) %3$s)
+                        (select current_user_is_staff()) and ((select current_user_can('delete', %2$L)) %3$s)
                     );
                 $policies$,
                 r.table_name,
                 r.resource,
-                case when r.is_child then format('or current_user_can(%L, %L)', 'update', r.resource) else '' end
+                case
+                    when r.is_child then format('or (select current_user_can(%L, %L))', 'update', r.resource)
+                    else ''
+                end
             );
         end loop;
     end;
@@ -101,36 +102,43 @@ drop table resource_table;
 -- specimens scopes everything downstream of them
 alter table project enable row level security;
 
--- `insert ... returning` checks the new project against this policy, and `current_user_is_project_member` can't see a
--- row inserted by the statement calling it, so the creator is checked here too
+-- `insert ... returning` checks the new project against this policy, and `current_user_project_ids` can't see a row
+-- inserted by the statement calling it, so the creator is checked here too
 create policy can_read on project for select using (
-    current_user_is_staff() or created_by = app_user_id() or current_user_is_project_member(id)
+    (select current_user_is_staff()) or created_by = app_user_id()
+    or id = any((select current_user_project_ids())::uuid[])
 );
 create policy can_create on project for insert with check (
-    current_user_can('create', 'project') and created_by = app_user_id()
+    (select current_user_can('create', 'project')) and created_by = app_user_id()
 );
 create policy can_update on project for update using (
-    current_user_is_staff() and current_user_can('update', 'project')
+    (select current_user_is_staff()) and (select current_user_can('update', 'project'))
 );
 create policy can_delete on project for delete using (
-    current_user_is_staff() and current_user_can('delete', 'project')
+    (select current_user_is_staff()) and (select current_user_can('delete', 'project'))
 );
 
 alter table project_access enable row level security;
 
 -- Any member may add people to a project, but only its creator may remove them
 create policy can_read on project_access for select using (
-    current_user_is_staff() or current_user_is_project_member(project_id)
+    (select current_user_is_staff()) or project_id = any((select current_user_project_ids())::uuid[])
 );
 create policy can_create on project_access for insert with check (
-    (current_user_is_staff() and (current_user_can('create', 'project') or current_user_can('update', 'project')))
-    or current_user_is_project_member(project_id)
+    (
+        (select current_user_is_staff())
+        and ((select current_user_can('create', 'project')) or (select current_user_can('update', 'project')))
+    )
+    or project_id = any((select current_user_project_ids())::uuid[])
 );
 create policy can_update on project_access for update using (
-    current_user_is_staff() and current_user_can('update', 'project')
+    (select current_user_is_staff()) and (select current_user_can('update', 'project'))
 );
 create policy can_delete on project_access for delete using (
-    (current_user_is_staff() and (current_user_can('delete', 'project') or current_user_can('update', 'project')))
+    (
+        (select current_user_is_staff())
+        and ((select current_user_can('delete', 'project')) or (select current_user_can('update', 'project')))
+    )
     or exists (
         select 1 from project
         where id = project_id and created_by = app_user_id()
@@ -140,64 +148,78 @@ create policy can_delete on project_access for delete using (
 alter table specimen enable row level security;
 
 create policy can_read on specimen for select using (
-    current_user_is_staff() or current_user_is_project_member(project_id)
+    (select current_user_is_staff()) or project_id = any((select current_user_project_ids())::uuid[])
 );
 create policy can_create on specimen for insert with check (
-    current_user_can('create', 'specimen') and (current_user_is_staff() or current_user_is_project_member(project_id))
+    (select current_user_can('create', 'specimen'))
+    and ((select current_user_is_staff()) or project_id = any((select current_user_project_ids())::uuid[]))
 );
 create policy can_update on specimen for update using (
-    current_user_is_staff() and current_user_can('update', 'specimen')
+    (select current_user_is_staff()) and (select current_user_can('update', 'specimen'))
 );
 create policy can_delete on specimen for delete using (
-    current_user_is_staff() and current_user_can('delete', 'specimen')
+    (select current_user_is_staff()) and (select current_user_can('delete', 'specimen'))
 );
 
 -- `exists (select 1 from specimen ...)` is subject to the policy on `specimen`, so it only finds specimens the user can
--- see
+-- see. Staff can see every specimen, so their reads skip it
 
 alter table specimen_measurement enable row level security;
 
 create policy can_read on specimen_measurement for select using (
-    exists (
+    (select current_user_is_staff())
+    or exists (
         select 1 from specimen
         where id = specimen_id
     )
 );
 create policy can_create on specimen_measurement for insert with check (
-    (current_user_is_staff() and (current_user_can('create', 'specimen') or current_user_can('update', 'specimen')))
-    or ((current_user_can('create', 'specimen') or current_user_can('update', 'specimen')) and exists (
-        select 1 from specimen
-        where id = specimen_id
-    ))
+    (
+        (select current_user_is_staff())
+        and ((select current_user_can('create', 'specimen')) or (select current_user_can('update', 'specimen')))
+    )
+    or (
+        ((select current_user_can('create', 'specimen')) or (select current_user_can('update', 'specimen')))
+        and exists (
+            select 1 from specimen
+            where id = specimen_id
+        )
+    )
 );
 create policy can_update on specimen_measurement for update using (
-    current_user_is_staff() and current_user_can('update', 'specimen')
+    (select current_user_is_staff()) and (select current_user_can('update', 'specimen'))
 );
 create policy can_delete on specimen_measurement for delete using (
-    current_user_is_staff() and (current_user_can('delete', 'specimen') or current_user_can('update', 'specimen'))
+    (select current_user_is_staff())
+    and ((select current_user_can('delete', 'specimen')) or (select current_user_can('update', 'specimen')))
 );
 
 alter table committee_approval enable row level security;
 
 create policy can_read on committee_approval for select using (
-    exists (
+    (select current_user_is_staff())
+    or exists (
         select 1 from specimen
         where id = specimen_id
     )
 );
 create policy can_create on committee_approval for insert with check (
-    (current_user_is_staff() and (current_user_can('create', 'specimen') or current_user_can('update', 'specimen')))
-    or ((current_user_can(
-        'create', 'specimen') or current_user_can(
-        'update', 'specimen'
-    )) and exists (
-        select 1 from specimen
-        where id = specimen_id
-    ))
+    (
+        (select current_user_is_staff())
+        and ((select current_user_can('create', 'specimen')) or (select current_user_can('update', 'specimen')))
+    )
+    or (
+        ((select current_user_can('create', 'specimen')) or (select current_user_can('update', 'specimen')))
+        and exists (
+            select 1 from specimen
+            where id = specimen_id
+        )
+    )
 );
 create policy can_update on committee_approval for update using (
-    current_user_is_staff() and current_user_can('update', 'specimen')
+    (select current_user_is_staff()) and (select current_user_can('update', 'specimen'))
 );
 create policy can_delete on committee_approval for delete using (
-    current_user_is_staff() and (current_user_can('delete', 'specimen') or current_user_can('update', 'specimen'))
+    (select current_user_is_staff())
+    and ((select current_user_can('delete', 'specimen')) or (select current_user_can('update', 'specimen')))
 );
