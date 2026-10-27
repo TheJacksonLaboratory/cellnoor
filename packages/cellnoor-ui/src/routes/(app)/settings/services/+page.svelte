@@ -120,7 +120,10 @@
 						grant={(body) =>
 							cellnoorClient.POST('/services/{id}/permissions', { params: { path: { id } }, body })}
 						revoke={(body) =>
-							cellnoorClient.DELETE('/services/{id}/permissions', { params: { path: { id } }, body })}
+							cellnoorClient.DELETE('/services/{id}/permissions', {
+								params: { path: { id } },
+								body
+							})}
 					/>
 					<Members
 						label="Members"
@@ -142,7 +145,10 @@
 							class="button"
 							onclick={() => {
 								if (confirm(`Delete service "${service.description ?? id}"?`)) {
-									mutate(cellnoorClient.DELETE('/services/{id}', { params: { path: { id } } }), 'Deleted');
+									mutate(
+										cellnoorClient.DELETE('/services/{id}', { params: { path: { id } } }),
+										'Deleted'
+									);
 								}
 							}}
 						>

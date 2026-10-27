@@ -64,7 +64,11 @@
 		</FilterGroup>
 		<FilterGroup label="Dataset">
 			<TagInput name={FormFieldName.Name} label="Name" />
-			<MultiSelectFilter name={FormFieldName.SpecimenProjectId} label="Project" options={projectNames} />
+			<MultiSelectFilter
+				name={FormFieldName.SpecimenProjectId}
+				label="Project"
+				options={projectNames}
+			/>
 			<DateRange
 				from={FormFieldName.DeliveredFrom}
 				to={FormFieldName.DeliveredTo}
@@ -86,8 +90,16 @@
 		</FilterGroup>
 		<FilterGroup label="Specimen">
 			<TagInput name={FormFieldName.SpecimenName} label="Name" />
-			<MultiSelectFilter name={FormFieldName.SpecimenType} label="Type" options={options.specimenTypes} />
-			<MultiSelectFilter name={FormFieldName.SpecimenSpecies} label="Species" options={options.species} />
+			<MultiSelectFilter
+				name={FormFieldName.SpecimenType}
+				label="Type"
+				options={options.specimenTypes}
+			/>
+			<MultiSelectFilter
+				name={FormFieldName.SpecimenSpecies}
+				label="Species"
+				options={options.species}
+			/>
 			<MultiSelectFilter
 				name={FormFieldName.SpecimenEmbeddedIn}
 				label="Embedded in"
@@ -133,7 +145,9 @@
 					href={resolve('/(app)/chromium-datasets/[id]', { id })}
 					subtitle={project?.name}
 					subtitleHref={project && resolve('/(app)/projects/[id]', { id: project_id })}
-					bind:checked={() => selected.has(id), (checked) => (checked ? selected.add(id) : selected.delete(id))}
+					bind:checked={
+						() => selected.has(id), (checked) => (checked ? selected.add(id) : selected.delete(id))
+					}
 				>
 					<div class="cluster">
 						{#each ds.specimens.slice(0, SPECIMEN_LIMIT) as s (s.id)}
