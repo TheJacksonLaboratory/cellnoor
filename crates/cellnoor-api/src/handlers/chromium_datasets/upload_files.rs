@@ -212,7 +212,10 @@ impl OperationOutput for UploadFilesError {
 pub async fn write_test_dataset_files(db_pool: &Pool, dataset_id: Uuid) {
     use tempfile::tempdir;
 
-    const MULTI_METRICS: &[u8] = b"Category,Library Type,Grouped By,Group Name,Metric Name,Metric Value\nCells,Gene Expression,,,Cells,1000\nCells,Gene Expression,,,Confidently mapped antisense,0.0";
+    const MULTI_METRICS: &[u8] = include_bytes!(
+        "upload_files/test-data/\
+         4plex_rat_liver_kidney_lgintest_testis_CF_RatLiver_A-A03_metrics_summary.csv"
+    );
 
     let tmp = tempdir().unwrap();
     let static_files_dir = option_env!("CELLNOOR_API__STATIC_FILES_DIR")
@@ -225,14 +228,26 @@ pub async fn write_test_dataset_files(db_pool: &Pool, dataset_id: Uuid) {
 
     let body = Form::new()
         .part(
-            "qc_report.html",
-            Part::bytes(b"QC report")
-                .headers(
-                    [(CONTENT_TYPE, HeaderValue::from_static("text/html"))]
-                        .into_iter()
-                        .collect(),
-                )
-                .file_name("qc_report.html"),
+            "web_summary",
+            Part::bytes(include_bytes!(
+                "upload_files/test-data/\
+                 4plex_rat_liver_kidney_lgintest_testis_CF_RatLiver_A-A03_web_summary.html"
+            ))
+            .headers(
+                [(CONTENT_TYPE, HeaderValue::from_static("text/html"))]
+                    .into_iter()
+                    .collect(),
+            )
+            .file_name("per_sample_outs/sample1/web_summary.html"),
+        )
+        .part(
+            "qc_sample_metrics",
+            Part::bytes(include_bytes!(
+                "upload_files/test-data/\
+                 SOD1_G93A_mouse_spinal_cord_P112_specimen_1_Multiplex_qc_sample_metrics.csv"
+            ))
+            .headers(csv_header.clone())
+            .file_name("per_sample_outs/sample1/qc_sample_metrics.csv"),
         )
         .part(
             "summary1",

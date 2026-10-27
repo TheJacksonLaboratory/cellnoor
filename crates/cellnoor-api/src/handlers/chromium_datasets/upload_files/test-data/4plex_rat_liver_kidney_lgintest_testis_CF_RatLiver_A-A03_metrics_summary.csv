@@ -1,0 +1,58 @@
+Category,Library Type,Grouped By,Group Name,Metric Name,Metric Value
+Cells,Gene Expression,,,Cells,7942
+Cells,Gene Expression,,,Confidently mapped reads in cells,0.94507669855631
+Cells,Gene Expression,,,Estimated UMIs from genomic DNA,0.00016084944628292323
+Cells,Gene Expression,,,Estimated UMIs from genomic DNA per unspliced probe,2
+Cells,Gene Expression,,,Median UMI counts per cell,16523
+Cells,Gene Expression,,,Median genes per cell,4236
+Cells,Gene Expression,,,Number of reads in cells,999569204
+Cells,Gene Expression,,,Reads confidently mapped to filtered probe set,0.897319703739092
+Cells,Gene Expression,,,Reads confidently mapped to probe set,0.9842016691422598
+Cells,Gene Expression,,,Reads half-mapped to probe set,0.0006023224781142818
+Cells,Gene Expression,,,Reads mapped to probe set,0.9860324558378452
+Cells,Gene Expression,,,Reads split-mapped to probe set,0.0012284642174710298
+Cells,Gene Expression,,,Total genes detected,18855
+Library,Gene Expression,,,Estimated UMIs from genomic DNA,0.0007495161432825269
+Library,Gene Expression,,,Estimated UMIs from genomic DNA per unspliced probe,12
+Library,Gene Expression,Fastq ID,4plex_rat_liver_kidney_lgintest_testis_CF_gex,Number of reads analyzed,1309008391
+Library,Gene Expression,Fastq ID,4plex_rat_liver_kidney_lgintest_testis_CF_gex,Number of short reads skipped,0
+Library,Gene Expression,Fastq ID,4plex_rat_liver_kidney_lgintest_testis_CF_gex,Q30 GEM barcodes,0.9604296493273412
+Library,Gene Expression,Fastq ID,4plex_rat_liver_kidney_lgintest_testis_CF_gex,Q30 RNA read,0.9648768643417622
+Library,Gene Expression,Fastq ID,4plex_rat_liver_kidney_lgintest_testis_CF_gex,Q30 UMI,0.9673190503813803
+Library,Gene Expression,Fastq ID,4plex_rat_liver_kidney_lgintest_testis_CF_gex,Q30 barcodes,0.9584281174280863
+Library,Gene Expression,Fastq ID,4plex_rat_liver_kidney_lgintest_testis_CF_gex,Q30 probe barcodes,0.9552256358867954
+Library,Gene Expression,Fastq ID,4plex_rat_liver_kidney_lgintest_testis_CF_gex (2),Number of reads analyzed,454129621
+Library,Gene Expression,Fastq ID,4plex_rat_liver_kidney_lgintest_testis_CF_gex (2),Number of short reads skipped,0
+Library,Gene Expression,Fastq ID,4plex_rat_liver_kidney_lgintest_testis_CF_gex (2),Q30 GEM barcodes,0.9613084379261336
+Library,Gene Expression,Fastq ID,4plex_rat_liver_kidney_lgintest_testis_CF_gex (2),Q30 RNA read,0.9426460787382848
+Library,Gene Expression,Fastq ID,4plex_rat_liver_kidney_lgintest_testis_CF_gex (2),Q30 UMI,0.9596609597170221
+Library,Gene Expression,Fastq ID,4plex_rat_liver_kidney_lgintest_testis_CF_gex (2),Q30 barcodes,0.9558938330879049
+Library,Gene Expression,Fastq ID,4plex_rat_liver_kidney_lgintest_testis_CF_gex (2),Q30 probe barcodes,0.947230552389267
+Library,Gene Expression,Physical library ID,GEX_1,Cells,33511
+Library,Gene Expression,Physical library ID,GEX_1,Confidently mapped reads in cells,0.9443985495303058
+Library,Gene Expression,Physical library ID,GEX_1,Fraction of initial cell barcodes passing high occupancy GEM filtering,1
+Library,Gene Expression,Physical library ID,GEX_1,Mean reads per cell,52614
+Library,Gene Expression,Physical library ID,GEX_1,Number of reads,1763138012
+Library,Gene Expression,Physical library ID,GEX_1,Number of reads in the library,1763138012
+Library,Gene Expression,Physical library ID,GEX_1,Reads confidently mapped to filtered probe set,0.896522734602582
+Library,Gene Expression,Physical library ID,GEX_1,Reads confidently mapped to probe set,0.9705522059835212
+Library,Gene Expression,Physical library ID,GEX_1,Reads half-mapped to probe set,0.003087122484430901
+Library,Gene Expression,Physical library ID,GEX_1,Reads mapped to probe set,0.9754680832098128
+Library,Gene Expression,Physical library ID,GEX_1,Reads split-mapped to probe set,0.0018287547418607865
+Library,Gene Expression,Physical library ID,GEX_1,Sequencing saturation,0.4463713777714085
+Library,Gene Expression,Physical library ID,GEX_1,Valid GEM barcodes,0.9777536479089874
+Library,Gene Expression,Physical library ID,GEX_1,Valid UMI Sequences,0.9701806525398649
+Library,Gene Expression,Physical library ID,GEX_1,Valid barcodes,0.9577254693094326
+Library,Gene Expression,Physical library ID,GEX_1,Valid probe barcodes,0.9691831169028192
+Library,Gene Expression,Probe barcode ID,A-A03,Cells per probe barcode,7942
+Library,Gene Expression,Probe barcode ID,A-A03,Sample ID,RatLiver_A-A03
+Library,Gene Expression,Probe barcode ID,A-A03,UMIs per probe barcode,548879652
+Library,Gene Expression,Probe barcode ID,A-B03,Cells per probe barcode,5980
+Library,Gene Expression,Probe barcode ID,A-B03,Sample ID,RatKidney_A-B03
+Library,Gene Expression,Probe barcode ID,A-B03,UMIs per probe barcode,38976853
+Library,Gene Expression,Probe barcode ID,A-C03,Cells per probe barcode,9271
+Library,Gene Expression,Probe barcode ID,A-C03,Sample ID,RatLgIntest_A-C03
+Library,Gene Expression,Probe barcode ID,A-C03,UMIs per probe barcode,86196196
+Library,Gene Expression,Probe barcode ID,A-D03,Cells per probe barcode,10318
+Library,Gene Expression,Probe barcode ID,A-D03,Sample ID,RatTestis_A-D03
+Library,Gene Expression,Probe barcode ID,A-D03,UMIs per probe barcode,214066613

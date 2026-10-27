@@ -1,0 +1,2 @@
+Sample ID,Sample barcodes,Sample description,GEX: Cells,GEX: Confidently mapped reads in cells,GEX: Median UMI counts per cell,GEX: Median genes per cell,GEX: Total genes detected
+SOD1_G93A_mouse_spinal_cord_P112_specimen_1,,SOD1-G93A mouse spinal cord from P112 mouse,16410,0.6847850295990157,2244,1305,27219
