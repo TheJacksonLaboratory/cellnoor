@@ -2,6 +2,7 @@ create table chromium_dataset (
     id uuid primary key default uuidv7(),
     name case_insensitive_text not null,
     delivered_at timestamptz not null,
+    additional_data jsonb,
 
     unique (id, delivered_at),
     constraint name_is_path_component check (name not in ('.', '..') and position('/' in name) = 0)

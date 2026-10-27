@@ -130,7 +130,11 @@ pub(super) async fn new_record(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRe
         run_at: Timestamp::now(),
         run_by,
         succeeded: true,
-        additional_data: None,
+        // We add some iLab request IDs to test the UI's display of them. Note
+        // that one of them is None so we can test whether the UI shows it
+        additional_data: Some(
+            serde_json::json!({"ilab_request_ids": ["ilab1", "ilab2", None::<&'static str>]}),
+        ),
     }
 }
 

@@ -13,6 +13,7 @@ use uuid::Uuid;
 use crate::{
     Relation,
     chromium_dataset::record::ChromiumDatasetRecord,
+    chromium_run::ChromiumRunCompact,
     file_tree::FileTreeNode,
     id::{Id, NoId},
     library::LibraryCompact,
@@ -37,6 +38,7 @@ mod record {
         pub id: T,
         pub name: NonemptyString,
         pub delivered_at: Timestamp,
+        pub additional_data: Option<serde_json::Value>,
     }
 }
 
@@ -109,5 +111,6 @@ pub struct ChromiumDatasetDetailed {
     pub links: ChromiumDatasetDetailedLinks,
     pub libraries: Vec<LibraryCompact>,
     pub specimens: Vec<TaggedSpecimen>,
+    pub chromium_runs: Vec<ChromiumRunCompact>,
     pub files: Vec<FileTreeNode<ChromiumDatasetParsedFileData>>,
 }

@@ -4,6 +4,7 @@ select
     array_agg(distinct(
         specimen, multiplexing_tag, ocm_barcode_id
     )::tagged_specimen) as specimens,
+    array_agg(distinct(chromium_run)) as chromium_runs,
     array_agg(distinct library) as libraries,
     array(
         select path from chromium_dataset_raw_file

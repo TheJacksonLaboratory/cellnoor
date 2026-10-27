@@ -6,6 +6,7 @@ use cellnoor_types::{
         ChromiumDatasetDetailed, ChromiumDatasetDetailedLinks, ChromiumDatasetParsedFileData,
         ChromiumDatasetParsedFileRecord, ChromiumDatasetQuery, SavedChromiumDatasetRecord,
     },
+    chromium_run::SavedChromiumRunRecord,
     file_tree::{FileTreeNode, FileTreeNodeKind},
     id::Id,
     library::SavedLibraryRecord,
@@ -19,6 +20,7 @@ use crate::{
     db::{self, DbError, FilterableSqlBuilder},
     handlers::{
         chromium_datasets::index_compact::chromium_dataset_links,
+        chromium_runs::index_compact::chromium_run_from_record,
         libraries::index_compact::library_from_record,
         suspension_pools::index_compact::tagged_specimen_from_record,
     },
@@ -57,6 +59,7 @@ fn map_detailed_row(row: Row) -> ChromiumDatasetDetailed {
     let record: SavedChromiumDatasetRecord = row.get("chromium_dataset");
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
     let libraries: Vec<SavedLibraryRecord> = row.get("libraries");
+    let chromium_runs: Vec<SavedChromiumRunRecord> = row.get("chromium_runs");
 
     let mut raw_file_paths: Vec<_> = row.get("raw_file_paths");
     raw_file_paths.sort();
@@ -71,6 +74,10 @@ fn map_detailed_row(row: Row) -> ChromiumDatasetDetailed {
         specimens: specimens
             .into_iter()
             .map(tagged_specimen_from_record)
+            .collect(),
+        chromium_runs: chromium_runs
+            .into_iter()
+            .map(chromium_run_from_record)
             .collect(),
         files,
     }

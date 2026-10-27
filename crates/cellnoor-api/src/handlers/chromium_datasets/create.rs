@@ -167,6 +167,7 @@ impl Insert for NewChromiumDatasetRecord {
             id: _,
             name,
             delivered_at,
+            additional_data: _,
         } = self;
 
         vec![(Name, name), (DeliveredAt, delivered_at)]
@@ -194,6 +195,7 @@ where
             id: NoId,
             name: crate::db::dummy_data::random_name_for("chromium_dataset"),
             delivered_at: Timestamp::now(),
+            additional_data: None,
         },
         library_ids: NonemptyVec::new(vec![*library.record.id]).unwrap(),
     };
@@ -253,6 +255,7 @@ pub mod test {
                 id: NoId,
                 name: crate::db::dummy_data::random_name_for("chromium_dataset"),
                 delivered_at: Timestamp::now(),
+                additional_data: None,
             },
             library_ids: NonemptyVec::new(vec![*library1.record.id, *library2.record.id]).unwrap(),
         };

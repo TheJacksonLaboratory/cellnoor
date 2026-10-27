@@ -4,6 +4,7 @@ create view chromium_dataset_to_specimen with (security_invoker = true) as (
         library.library,
         library.specimen,
         library.tenx_assay,
+        library.chromium_run,
         library.multiplexing_tag,
         library.ocm_barcode_id
     from chromium_dataset

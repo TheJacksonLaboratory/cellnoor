@@ -7509,6 +7509,7 @@ export interface components {
             value: number;
         };
         ChromiumDatasetCompact: {
+            additional_data?: unknown;
             /** Format: date-time */
             delivered_at: string;
             /** Format: uuid */
@@ -7519,7 +7520,9 @@ export interface components {
             name: string;
         };
         ChromiumDatasetDetailed: {
+            additional_data?: unknown;
             assay: components["schemas"]["TenxAssay"];
+            chromium_runs: components["schemas"]["ChromiumRunCompact"][];
             /** Format: date-time */
             delivered_at: string;
             files: components["schemas"]["ChromiumDatasetParsedFileDataFileTree"][];
@@ -7607,6 +7610,7 @@ export interface components {
             order_by?: components["schemas"]["OrderByChromiumDatasetFieldSet"];
         };
         ChromiumDatasetRecord: {
+            additional_data?: unknown;
             /** Format: date-time */
             delivered_at: string;
             name: string;
@@ -8116,6 +8120,7 @@ export interface components {
             sample_multiplexing: components["schemas"]["SampleMultiplexing"];
         };
         NewChromiumDataset: {
+            additional_data?: unknown;
             /** Format: date-time */
             delivered_at: string;
             library_ids: string[];

@@ -10,15 +10,23 @@
 
 	let { data } = $props();
 
-	const { dataset, projects, people } = $derived(data);
-
 	// All specimens in a dataset share the same project
-	const project = $derived(projects.get(dataset.specimens[0].project_id));
+	const project = $derived(data.projects.get(data.dataset.specimens[0].project_id));
 
-	const libraryTypes = $derived(dataset.assay.library_types?.map(formatEnum).join(', '));
+	const libraryTypes = $derived(data.dataset.assay.library_types?.map(formatEnum).join(', '));
 
 	const multiplexing = $derived(
-		dataset.assay.sample_multiplexing && formatSampleMultiplexing(dataset.assay.sample_multiplexing)
+		data.dataset.assay.sample_multiplexing &&
+			formatSampleMultiplexing(data.dataset.assay.sample_multiplexing)
+	);
+
+	const iLabRequestIds: string[] = $derived(
+		data.dataset.chromium_runs
+			.map((cr) => cr.additional_data)
+			.filter((ad) => typeof ad === 'object' && ad !== null)
+			// @ts-expect-error additional_data is not a strongly-typed object, and reading ilab_request_ids just returns `undefined`, which is fine
+			.flatMap((ad) => ad.ilab_request_ids)
+			.filter((id) => id)
 	);
 
 	let selected = $state<FileLeaf>();
@@ -26,9 +34,11 @@
 
 <SidebarLayout>
 	{#snippet sidebar()}
+		{@const { dataset } = data}
 		<FileExplorer files={dataset.files} bind:selected />
 	{/snippet}
 
+	{@const { dataset } = data}
 	<header class="stack card card-body">
 		<h1 class="title">{dataset.name}</h1>
 
@@ -47,12 +57,19 @@
 						{#if multiplexing}
 							<th scope="col">Multiplexing</th>
 						{/if}
+						{#if iLabRequestIds}
+							<th scope="col">iLab Request IDs</th>
+						{/if}
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
 						{#if project}
-							<td><a class="link-arrow" href={resolve('/(app)/projects/[id]', { id: project.id })}>{project.name}</a></td>
+							<td
+								><a class="link-arrow" href={resolve('/(app)/projects/[id]', { id: project.id })}
+									>{project.name}</a
+								></td
+							>
 						{/if}
 						<td><Time datetime={dataset.delivered_at} /></td>
 						<td>{dataset.assay.name}</td>
@@ -61,6 +78,9 @@
 						{/if}
 						{#if multiplexing}
 							<td>{multiplexing}</td>
+						{/if}
+						{#if iLabRequestIds}
+							<td>{iLabRequestIds.join(' | ')}</td>
 						{/if}
 					</tr>
 				</tbody>
@@ -74,6 +94,6 @@
 
 	<section class="stack card card-body">
 		<h2 class="heading">Specimens</h2>
-		<SpecimenList specimens={dataset.specimens} {people} />
+		<SpecimenList specimens={dataset.specimens} people={data.people} />
 	</section>
 </SidebarLayout>

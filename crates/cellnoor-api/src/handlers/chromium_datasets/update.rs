@@ -184,6 +184,7 @@ mod tests {
             id: NoId,
             name: "newname".to_nonempty_string(),
             delivered_at: ds.record.delivered_at,
+            additional_data: None,
         };
 
         update_chromium_dataset_by_id(&tx, &Utf8PathBuf::new(), id, &update)
