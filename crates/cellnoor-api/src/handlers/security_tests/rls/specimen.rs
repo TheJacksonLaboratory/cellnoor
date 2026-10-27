@@ -289,20 +289,18 @@ async fn member_can_add_specimen_measurements_only_in_accessible_project() {
     );
     drop(tx);
 
-    // Staff need neither membership nor anything beyond `create` and `delete`
-    let staff_id = create_test_user_with(
-        true,
-        may(Resource::Specimen, &[Action::Create, Action::Delete]),
-    )
-    .await;
+    // Staff need no membership, and either `create` and `delete`, or `update`
+    for actions in [&[Action::Create, Action::Delete][..], &[Action::Update]] {
+        let staff_id = create_test_user_with(true, may(Resource::Specimen, actions)).await;
 
-    let mut client = db_client_as_user(staff_id).await;
-    let tx = client.begin().await.unwrap();
+        let mut client = db_client_as_user(staff_id).await;
+        let tx = client.begin().await.unwrap();
 
-    insert_specimen_measurements(&tx, inaccessible_id, new_measurements)
-        .await
-        .unwrap();
-    delete_specimen_measurements(&tx, id, &measurement_ids)
-        .await
-        .unwrap();
+        insert_specimen_measurements(&tx, inaccessible_id, new_measurements)
+            .await
+            .unwrap();
+        delete_specimen_measurements(&tx, id, &measurement_ids)
+            .await
+            .unwrap();
+    }
 }

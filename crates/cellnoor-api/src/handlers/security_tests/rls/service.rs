@@ -153,9 +153,7 @@ async fn service_owner_cannot_make_service_staff() {
     assert_eq!(
         set_is_staff(&tx, service.id, true).await.unwrap_err(),
         DbError::PermissionDenied {
-            message: "new row violates row-level security policy \"no_privilege_escalation\" for \
-                      resource \"principal\""
-                .to_owned()
+            message: "new row violates row-level security policy for resource \"principal\"".to_owned()
         }
     );
 }

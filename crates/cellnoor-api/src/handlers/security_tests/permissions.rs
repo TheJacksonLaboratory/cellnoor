@@ -70,10 +70,10 @@ pub fn may(resource: Resource, actions: &[Action]) -> Vec<Permission> {
         .collect()
 }
 
-// Adding a child row (a measurement, a preparer) needs `create` on its
-// resource, and removing one needs `delete`. Only staff may do either. `add`
-// and `remove` each change one of the parent's children, and `member_id` can
-// see the parent
+// Adding a child row (a measurement, a preparer) needs `create` or `update` on
+// its resource, and removing one needs `delete` or `update`. Only staff may do
+// either. `add` and `remove` each change one of the parent's children, and
+// `member_id` can see the parent
 pub async fn assert_only_staff_with_permission_can_change_children<A, R, E>(
     resource: Resource,
     member_id: Uuid,
@@ -97,13 +97,14 @@ pub async fn assert_only_staff_with_permission_can_change_children<A, R, E>(
 
     tx.commit().await.unwrap();
 
-    let staff_with_update = create_test_user_with(true, may(resource, &[Action::Update])).await;
+    let staff_without_permission = create_test_user_with(true, Vec::new()).await;
     let staff_with_create = create_test_user_with(true, may(resource, &[Action::Create])).await;
+    let staff_with_update = create_test_user_with(true, may(resource, &[Action::Update])).await;
     let staff_with_delete = create_test_user_with(true, may(resource, &[Action::Delete])).await;
 
     // The member holds every permission but isn't staff, and the other user is
-    // staff but can neither create nor delete
-    for user_id in [member_id, staff_with_update] {
+    // staff without any permission
+    for user_id in [member_id, staff_without_permission] {
         let mut client = db_client_as_user(user_id).await;
 
         // Each attempt needs its own transaction because a failure aborts it
@@ -121,16 +122,24 @@ pub async fn assert_only_staff_with_permission_can_change_children<A, R, E>(
         );
     }
 
+    let mut client = db_client_as_user(staff_with_create).await;
+    let tx = client.begin().await.unwrap();
+    add(&tx).await.unwrap();
+    drop(tx);
+
     // Committed so that `remove` sees the added child, which matters for
     // preparers because at least one has to remain
-    let mut client = db_client_as_user(staff_with_create).await;
+    let mut client = db_client_as_user(staff_with_update).await;
     let tx = client.begin().await.unwrap();
     add(&tx).await.unwrap();
     tx.commit().await.unwrap();
 
-    let mut client = db_client_as_user(staff_with_delete).await;
-    let tx = client.begin().await.unwrap();
-    remove(&tx).await.unwrap();
+    // Each removal is rolled back, so both remove the same rows
+    for user_id in [staff_with_delete, staff_with_update] {
+        let mut client = db_client_as_user(user_id).await;
+        let tx = client.begin().await.unwrap();
+        remove(&tx).await.unwrap();
+    }
 }
 
 async fn assert_is_ok<F, Pred, Order, Ret>(tx: &db::Transaction<'_>, select_fn: F)

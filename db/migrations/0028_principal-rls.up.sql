@@ -20,27 +20,40 @@ $$;
 alter table principal enable row level security;
 
 create policy can_read on principal for select using (true);
+-- Nobody can make anyone staff unless they are staff themselves
 create policy can_update on principal for update using (
     (current_user_is_staff() and current_user_can('update', 'person')) or current_user_is_service_owner(id)
-);
--- Regardless of the above, nobody can make anyone staff unless they are staff themselves
-create policy no_privilege_escalation on principal as restrictive for all using (true) with check (
-    not is_staff or current_user_is_staff()
-);
+) with check (not is_staff or current_user_is_staff());
 
 alter table permission enable row level security;
 
 create policy can_read on permission for select using (true);
-
-create policy can_write on permission for all using (
-    -- You can only hand out a permission you own
+-- You can only grant or revoke a permission you hold, and only for a person (as staff who may update people) or for a
+-- service you own
+create policy can_create on permission for insert with check (
     current_user_can(action, resource)
     and (
-        -- You must either be staff with the "update person" privilege or be the owner of a service
         (
             current_user_is_staff()
             and current_user_can('update', 'person')
-            and exists (select 1 from person where id = principal_id)
+            and exists (
+                select 1 from person
+                where id = principal_id
+            )
+        )
+        or current_user_is_service_owner(principal_id)
+    )
+);
+create policy can_delete on permission for delete using (
+    current_user_can(action, resource)
+    and (
+        (
+            current_user_is_staff()
+            and current_user_can('update', 'person')
+            and exists (
+                select 1 from person
+                where id = principal_id
+            )
         )
         or current_user_is_service_owner(principal_id)
     )
