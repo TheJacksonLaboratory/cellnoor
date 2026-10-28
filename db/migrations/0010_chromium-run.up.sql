@@ -37,7 +37,7 @@ create table chip_loading (
     id uuid primary key default uuidv7(),
     gem_well_id uuid not null,
     run_at timestamptz not null,
-    -- BotAccounth parents' timestamps are not null, so each pair below is null together or not at all. `match full` enforces
+    -- Both parents' timestamps are not null, so each pair below is null together or not at all. `match full` enforces
     -- that, which means each composite foreign key validates its own id column
     suspension_id uuid,
     suspension_created_at timestamptz,

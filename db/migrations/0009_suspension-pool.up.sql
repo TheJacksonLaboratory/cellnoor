@@ -53,7 +53,7 @@ create table multiplexing_tag (
 create table suspension_pooling (
     id uuid primary key default uuidv7(),
     pool_id uuid not null,
-    -- We denormalize bot_accounth parents' timestamps so a pool cannot be pooled before its constituent suspensions were made
+    -- We denormalize both parents timestamps so a pool cannot be pooled before its constituent suspensions were made
     pool_pooled_at timestamptz not null,
     suspension_id uuid not null,
     suspension_created_at timestamptz not null,

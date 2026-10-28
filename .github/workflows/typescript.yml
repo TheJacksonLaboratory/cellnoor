@@ -15,6 +15,10 @@ jobs:
       - name: Install bun
         uses: oven-sh/setup-bun@v2
 
+      - name: Install cellnoor-client
+        working-directory: packages/cellnoor-client
+        run: bun install
+
       - name: Install dependencies
         working-directory: packages/cellnoor-ui
         run: bun install

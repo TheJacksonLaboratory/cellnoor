@@ -16,5 +16,7 @@ create policy can_delete on bot_account for delete using (owned_by = app_user_id
 alter table bot_account_access enable row level security;
 
 create policy can_read on bot_account_access for select using (true);
-create policy can_create on bot_account_access for insert with check (current_user_is_bot_account_owner(bot_account_id));
+create policy can_create on bot_account_access for insert with check (
+    current_user_is_bot_account_owner(bot_account_id)
+);
 create policy can_delete on bot_account_access for delete using (current_user_is_bot_account_owner(bot_account_id));

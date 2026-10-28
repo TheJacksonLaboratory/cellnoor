@@ -1,7 +1,7 @@
 alter table api_key enable row level security;
 
--- You can modify your own API key, and the owner of a bot_account can modify that bot_account's API keys. People with access to
--- a bot_account can see its API keys
+-- You can modify your own API key, and the owner of a bot_account can modify that bot_account's API keys. People with
+-- access to a bot_account can see its API keys
 create policy can_read on api_key for select using (
     owner_id = app_user_id()
     or current_user_is_bot_account_owner(owner_id)
