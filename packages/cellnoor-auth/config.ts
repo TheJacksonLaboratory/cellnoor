@@ -58,7 +58,7 @@ export async function readConfig(): Promise<Config> {
   }
 
   appConfig = {
-    publicBaseUrl: readRequiredEnvVar("public_base_url"),
+    publicBaseUrl: `https://${readRequiredEnvVar("public_base_url")}`,
     unixDomainSocket: readEnvVar("unix_domain_socket"),
     // These 3 database-related things have double underscores to match how cellnoor-api reads environment variables
     dbPassword: await readSecret("db__password"),
