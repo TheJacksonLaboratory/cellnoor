@@ -7,6 +7,6 @@
     "openapi-fetch": "^0.17.0"
   },
   "peerDependencies": {
-    "typescript": "^7"
+    "typescript": "^7.0.2"
   }
 }

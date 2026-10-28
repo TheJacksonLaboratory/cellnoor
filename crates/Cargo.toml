@@ -30,14 +30,14 @@ axum-extra = { version = "0.12.6", default-features = false, features = [
 ] }
 bytes = { version = "1.12.1" }
 camino = { version = "1.2.6" }
-config = { version = "0.15.22", default-features = false }
+config = { version = "0.15.27", default-features = false }
 csv = { version = "1.4.0" }
 csvranger = { version = "0.3.1", features = ["legacy", "schemars", "serde"] }
-deadpool-postgres = { version = "0.14.1", features = ["serde"] }
-futures = { version = "0.3.32" }
-jiff = { version = "0.2.24", features = ["serde"] }
-jsonwebtoken = { version = "11.0.0", features = ["rust_crypto"] }
-postgres-types = { version = "0.2.13", features = [
+deadpool-postgres = { version = "0.14.2", features = ["serde"] }
+futures = { version = "0.3.34" }
+jiff = { version = "0.2.38", features = ["serde"] }
+jsonwebtoken = { version = "11.1.0", features = ["rust_crypto"] }
+postgres-types = { version = "0.2.14", features = [
     "array-impls",
     "derive",
     "with-jiff-0_2",
@@ -45,24 +45,24 @@ postgres-types = { version = "0.2.13", features = [
     "with-uuid-1",
 ] }
 pretty_assertions = { version = "1.4.1" }
-proc-macro2 = { version = "1.0.106" }
-quote = { version = "1.0.45" }
-rand = { version = "0.10.1" }
-regex = { version = "1.12.3" }
+proc-macro2 = { version = "1.0.107" }
+quote = { version = "1.0.47" }
+rand = { version = "0.10.3" }
+regex = { version = "1.13.1" }
 reqwest = { version = "0.13.5", features = ["multipart"] }
-schemars = { version = "1.2.1", features = ["jiff02", "uuid1"] }
+schemars = { version = "1.2.3", features = ["jiff02", "uuid1"] }
 secrecy = { version = "0.10.3", features = ["serde"] }
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = { version = "1.0.149" }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = { version = "1.0.154" }
 sha3 = { version = "0.12.0" }
 strum = { version = "0.28.0", features = ["derive"] }
-syn = { version = "3.0.3", default-features = false, features = [
+syn = { version = "3.0.9", default-features = false, features = [
     "full",
     "parsing",
 ] }
 tempfile = { version = "3.27.0" }
-thiserror = "2.0.18"
-tokio = { version = "1.52.1", features = ["macros", "rt-multi-thread"] }
+thiserror = "2.0.21"
+tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread"] }
 tower-http = { version = "0.7.1", features = ["normalize-path", "trace"] }
 tracing = { version = "0.1.44" }
 tracing-subscriber = { version = "0.3.23", default-features = false, features = [
@@ -70,8 +70,8 @@ tracing-subscriber = { version = "0.3.23", default-features = false, features = 
     "registry",
     "std",
 ] }
-uuid = { version = "1.23.0", features = ["serde"] }
-zstd = { version = "0.14.2" }
+uuid = { version = "1.29.0", features = ["serde"] }
+zstd = { version = "0.14.3" }
 
 [workspace.lints.clippy]
 missing_errors_doc = "allow"
