@@ -1,4 +1,3 @@
-
 use cellnoor_types::{
     operator::UuidOperator,
     permission::{Action, Resource},
@@ -45,7 +44,7 @@ pub async fn create_project_as(creator_id: Uuid, members: Vec<Uuid>) -> ProjectD
             simple: ProjectSimpleFields {
                 name: crate::db::dummy_data::random_name_for("project"),
                 started_at: Timestamp::now(),
-                ended_at: Timestamp::MAX,
+                ended_at: None,
             },
             members,
         },

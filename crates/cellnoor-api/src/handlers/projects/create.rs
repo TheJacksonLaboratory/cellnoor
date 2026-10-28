@@ -68,7 +68,7 @@ where
         simple: ProjectSimpleFields {
             name: crate::db::dummy_data::random_name_for("project"),
             started_at: Timestamp::now(),
-            ended_at: Timestamp::MAX,
+            ended_at: None,
         },
         members: vec![person_id],
     };

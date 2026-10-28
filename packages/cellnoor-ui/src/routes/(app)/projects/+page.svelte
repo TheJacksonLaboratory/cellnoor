@@ -45,7 +45,11 @@
 				<ListRow title={project.name} href={resolve('/(app)/projects/[id]', { id })}>
 					<div class="muted">
 						Created by {personNames.get(project.created_by)} ·
-						<Time datetime={project.started_at} /> - <Time datetime={project.ended_at} />
+						<Time datetime={project.started_at} />
+
+						{#if project.ended_at}
+							- <Time datetime={project.ended_at} />
+						{/if}
 					</div>
 					<Members
 						label="Members"

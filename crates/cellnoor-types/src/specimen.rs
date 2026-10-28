@@ -57,7 +57,7 @@ mod record {
         #[cfg_attr(feature = "serde", serde(skip))]
         pub project_started_at: Timestamp,
         #[cfg_attr(feature = "serde", serde(skip))]
-        pub project_ended_at: Timestamp,
+        pub project_ended_at: Option<Timestamp>,
         pub received_at: Timestamp,
         pub species: Species,
         pub host_species: Option<Species>,

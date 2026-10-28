@@ -11,7 +11,7 @@ mod query;
 pub struct ProjectSimpleFields {
     pub name: NonemptyString,
     pub started_at: Timestamp,
-    pub ended_at: Timestamp,
+    pub ended_at: Option<Timestamp>,
 }
 
 impl Relation for ProjectSimpleFields {
@@ -34,7 +34,7 @@ pub struct SavedProjectRecord {
     pub name: NonemptyString,
     pub created_by: Uuid,
     pub started_at: Timestamp,
-    pub ended_at: Timestamp,
+    pub ended_at: Option<Timestamp>,
 }
 
 impl Relation for SavedProjectRecord {

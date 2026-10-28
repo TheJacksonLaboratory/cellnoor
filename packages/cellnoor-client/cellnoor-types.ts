@@ -8266,7 +8266,7 @@ export interface components {
         };
         NewProject: {
             /** Format: date-time */
-            ended_at: string;
+            ended_at?: string | null;
             members: string[];
             name: string;
             /** Format: date-time */
@@ -8585,7 +8585,7 @@ export interface components {
             /** Format: uuid */
             created_by: string;
             /** Format: date-time */
-            ended_at: string;
+            ended_at?: string | null;
             /** Format: uuid */
             id: string;
             links: {
@@ -8599,7 +8599,7 @@ export interface components {
             /** Format: uuid */
             created_by: string;
             /** Format: date-time */
-            ended_at: string;
+            ended_at?: string | null;
             /** Format: uuid */
             id: string;
             links: {
@@ -8649,7 +8649,7 @@ export interface components {
         };
         ProjectSimpleFields: {
             /** Format: date-time */
-            ended_at: string;
+            ended_at?: string | null;
             name: string;
             /** Format: date-time */
             started_at: string;

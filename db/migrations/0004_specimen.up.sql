@@ -6,7 +6,7 @@ create table specimen (
     project_id uuid not null,
     -- We denormalize the project start and end so we can constrain received_at
     project_started_at timestamptz not null,
-    project_ended_at timestamptz not null,
+    project_ended_at timestamptz,
     received_at timestamptz not null,
     species case_insensitive_text not null,
     host_species case_insensitive_text,

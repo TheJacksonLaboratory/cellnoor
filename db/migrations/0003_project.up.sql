@@ -3,7 +3,7 @@ create table project (
     name case_insensitive_text unique not null,
     created_by uuid references principal not null default app_user_id(),
     started_at timestamptz not null,
-    ended_at timestamptz not null,
+    ended_at timestamptz,
 
     unique (id, started_at, ended_at),
     constraint starts_before_ends check (started_at <= ended_at),
