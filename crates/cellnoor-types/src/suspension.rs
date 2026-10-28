@@ -1,13 +1,14 @@
 use macro_attributes::{base_model, select, unit_enum};
-use nonempty::NonemptyVec;
 pub use query::{
-    SimpleSuspensionQuery, SuspensionField, SuspensionPredicate, SuspensionPredicateInner,
-    SuspensionQuery,
+    SimpleSuspensionQuery, SuspensionContentOperator, SuspensionField, SuspensionPredicate,
+    SuspensionPredicateInner, SuspensionQuery,
 };
 use uuid::Uuid;
 
 use crate::{
+    Relation,
     id::{Id, NoId},
+    nonempty::NonemptyVec,
     simple_links::SimpleLinks,
     specimen::{SavedSpecimenRecord, SpecimenCompact},
     suspension::{
@@ -22,11 +23,10 @@ mod query;
 mod record {
     use jiff::Timestamp;
     use macro_attributes::select;
-    use nonempty::NonemptyString;
     use serde_json::Value;
     use uuid::Uuid;
 
-    use crate::suspension::SuspensionContent;
+    use crate::{nonempty::NonemptyString, suspension::SuspensionContent};
 
     #[select]
     #[cfg_attr(feature = "postgres-types", postgres(name = "suspension"))]
@@ -35,12 +35,18 @@ mod record {
         pub id: T,
         pub readable_id: NonemptyString,
         pub specimen_id: Uuid,
+        #[cfg_attr(feature = "serde", serde(skip))]
+        pub specimen_received_at: Timestamp,
         pub content: SuspensionContent,
-        pub created_at: Option<Timestamp>,
+        pub created_at: Timestamp,
         pub lysis_duration_minutes: Option<f32>,
         pub target_cell_recovery: Option<i64>,
         pub additional_data: Option<Value>,
     }
+}
+
+impl<T> Relation for SuspensionRecord<T> {
+    const NAME: &'static str = "suspension";
 }
 
 pub type NewSuspensionRecord = SuspensionRecord<NoId>;
@@ -61,13 +67,7 @@ pub struct NewSuspension {
     pub preparers: NonemptyVec<Uuid>,
 }
 
-#[base_model]
-pub struct SuspensionUpdate {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: NewSuspensionRecord,
-    pub measurements: Option<Vec<NewSuspensionMeasurement>>,
-    pub preparers: Option<Vec<Uuid>>,
-}
+pub type SuspensionUpdate = NewSuspensionRecord;
 
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "suspension_detailed"))]

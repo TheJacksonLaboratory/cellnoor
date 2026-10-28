@@ -1,6 +1,7 @@
 name: Check TypeScript Code
 on:
-  push:
+  pull_request:
+    branches: ["main"]
     paths:
       - packages/**
 
@@ -9,23 +10,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2
+
+      - name: Install cellnoor-client
+        working-directory: packages/cellnoor-client
+        run: bun install
 
       - name: Install dependencies
         working-directory: packages/cellnoor-ui
         run: bun install
 
-      - name: Check svelte code
+      - name: Check TypeScript code
         working-directory: packages/cellnoor-ui
         run: bun run --bun check
-
-      # - name: Lint and format
-      #   working-directory: packages/cellnoor-ui
-      #   run: bun run --bun lint
-
-      # - name: Test
-      #   working-directory: packages/cellnoor-ui
-      #   run: bun test

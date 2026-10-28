@@ -1,33 +1,44 @@
 use jiff::Timestamp;
 use macro_attributes::{base_model, select};
-use nonempty::NonemptyString;
 pub use query::{ProjectField, ProjectPredicate, ProjectQuery, SimpleProjectQuery};
 use uuid::Uuid;
 
-use crate::{
-    api_key::{PersonId, ServiceId},
-    simple_links::SimpleLinks,
-};
+use crate::{Relation, nonempty::NonemptyString, simple_links::SimpleLinks};
 
 mod query;
 
 #[base_model]
-pub struct NewProject {
+pub struct ProjectSimpleFields {
     pub name: NonemptyString,
     pub started_at: Timestamp,
-    pub ended_at: Timestamp,
+    pub ended_at: Option<Timestamp>,
+}
+
+impl Relation for ProjectSimpleFields {
+    const NAME: &'static str = "project";
+}
+
+#[base_model]
+pub struct NewProject {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub simple: ProjectSimpleFields,
     pub members: Vec<Uuid>,
 }
+
+pub type ProjectUpdate = ProjectSimpleFields;
 
 #[select]
 #[cfg_attr(feature = "postgres-types", postgres(name = "project"))]
 pub struct SavedProjectRecord {
     pub id: Uuid,
     pub name: NonemptyString,
-    pub created_by_person: Option<PersonId>,
-    pub created_by_service: Option<ServiceId>,
+    pub created_by: Uuid,
     pub started_at: Timestamp,
-    pub ended_at: Timestamp,
+    pub ended_at: Option<Timestamp>,
+}
+
+impl Relation for SavedProjectRecord {
+    const NAME: &'static str = "project";
 }
 
 // We don't particularly need a "detailed" view of a project, but this is a good

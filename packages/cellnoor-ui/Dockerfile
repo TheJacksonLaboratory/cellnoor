@@ -1,36 +1,20 @@
+# syntax=docker/dockerfile:1
+
 FROM oven/bun:1 AS build
-WORKDIR /usr/src/app
 
-COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile --dev
+WORKDIR /usr/src/cellnoor-client
+COPY --from=cellnoor-client --exclude=node_modules . .
+RUN bun install --frozen-lockfile
+
+WORKDIR /usr/src/app
 COPY . .
-RUN bun run --bun build
+RUN bun install --frozen-lockfile && bun run build
 
-FROM oven/bun:1 AS final
-WORKDIR /usr/src/app
+FROM debian:trixie AS final
 
-ARG UID
-ARG SOCKET_PATH
+ARG UI_DIR
+ENV UI_DIR=${UI_DIR}
 
-# curl is used by the compose healthcheck
-RUN apt update && apt install curl adduser --yes
+COPY --from=build /usr/src/app/build /cellnoor-ui
 
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    --uid "${UID}" \
-    appuser
-
-RUN mkdir -p "$(dirname ${SOCKET_PATH})" && chown appuser "$(dirname ${SOCKET_PATH})"
-
-COPY --from=build /usr/src/app/package.json ./
-COPY --from=build /usr/src/app/node_modules node_modules
-COPY --from=build /usr/src/app/build build
-
-# Run the app. Make sure to delete the socket before every restart cus it's a hassle to do it from within JS
-USER appuser
-
-CMD ["/bin/sh", "-c", "rm -f /run/cellnoor-ui/cellnoor-ui.sock && bun run build/index.js"]
+CMD ["/bin/sh", "-c", "find \"$UI_DIR\" -mindepth 1 -delete && cp -r /cellnoor-ui/. \"$UI_DIR\""]

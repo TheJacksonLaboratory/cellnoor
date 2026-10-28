@@ -1,12 +1,13 @@
 <script lang="ts">
-  import "../app.css";
-  import Navbar from "./Navbar.svelte";
+	import '../app.css';
+	import '@fontsource-variable/comfortaa';
+	import favicon from '#lib/assets/favicon.png';
 
-  let { children } = $props();
+	let { children } = $props();
 </script>
 
-<svelte:head></svelte:head>
+<svelte:head>
+	<link rel="icon" href={favicon} />
+</svelte:head>
 
-<Navbar />
-
-{@render children?.()}
+{@render children()}

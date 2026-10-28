@@ -1,13 +1,14 @@
 use macro_attributes::base_model;
-use nonempty::NonemptyVec;
 pub use query::{
     LibraryField, LibraryPredicate, LibraryPredicateInner, LibraryQuery, SimpleLibraryQuery,
 };
 use uuid::Uuid;
 
 use crate::{
+    Relation,
     id::{Id, NoId},
     library::{measurement::LibraryMeasurement, record::LibraryRecord},
+    nonempty::NonemptyVec,
     nucleic_acid_measurement::NewNucleicAcidMeasurement,
     simple_links::SimpleLinks,
     suspension_pool::TaggedSpecimen,
@@ -19,9 +20,9 @@ mod query;
 mod record {
     use jiff::Timestamp;
     use macro_attributes::select;
-    use nonempty::NonemptyString;
-    use positive::PositiveI32;
     use uuid::Uuid;
+
+    use crate::{nonempty::NonemptyString, positive::PositiveI32};
 
     #[select]
     #[cfg_attr(feature = "postgres-types", postgres(name = "library"))]
@@ -30,6 +31,8 @@ mod record {
         pub id: T,
         pub readable_id: NonemptyString,
         pub cdna_id: Uuid,
+        #[cfg_attr(feature = "serde", serde(skip))]
+        pub cdna_prepared_at: Timestamp,
         pub single_index_set_name: Option<String>,
         pub dual_index_set_name: Option<String>,
         pub number_of_sample_index_pcr_cycles: PositiveI32,
@@ -37,6 +40,10 @@ mod record {
         pub prepared_at: Timestamp,
         pub additional_data: Option<serde_json::Value>,
     }
+}
+
+impl<T> Relation for LibraryRecord<T> {
+    const NAME: &'static str = "library";
 }
 
 pub type NewLibraryRecord = LibraryRecord<NoId>;
@@ -51,13 +58,7 @@ pub struct NewLibrary {
     pub preparers: NonemptyVec<Uuid>,
 }
 
-#[base_model]
-pub struct LibraryUpdate {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: NewLibraryRecord,
-    pub measurements: Option<Vec<NewNucleicAcidMeasurement>>,
-    pub preparers: Option<Vec<Uuid>>,
-}
+pub type LibraryUpdate = NewLibraryRecord;
 
 #[base_model]
 pub struct LibraryCompact {

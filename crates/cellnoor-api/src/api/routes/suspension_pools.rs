@@ -1,0 +1,83 @@
+use aide::axum::{
+    ApiRouter,
+    routing::{get, post},
+};
+use axum::{
+    Json,
+    extract::{Query, State},
+};
+use cellnoor_types::suspension_pool::{
+    SavedSuspensionPoolRecord, SimpleSuspensionPoolQuery, SuspensionPoolCompact,
+    SuspensionPoolDetailed, SuspensionPoolQuery,
+};
+
+use crate::{
+    auth::AuthUser,
+    db::DbError,
+    handlers::{
+        delete_resource,
+        suspension_pools::{
+            add_suspension_pool_preparers, create_suspension_pool,
+            create_suspension_pool_measurement, index_suspension_pools,
+            index_suspension_pools_detailed, remove_suspension_pool_measurements,
+            remove_suspension_pool_preparers, show_suspension_pool, update_suspension_pool,
+        },
+    },
+    state::AppState,
+};
+
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route(
+            "/",
+            post(create_suspension_pool).get(index_suspension_pools_simple),
+        )
+        .api_route("/detailed", get(index_suspension_pools_detailed_simple))
+        .api_route("/search", post(index_suspension_pools))
+        .api_route("/search/detailed", post(index_suspension_pools_detailed))
+        .nest("/{id}", id_router())
+}
+
+fn id_router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route(
+            "/",
+            get(show_suspension_pool)
+                .put(update_suspension_pool)
+                .delete(delete_resource::<SavedSuspensionPoolRecord>),
+        )
+        .api_route(
+            "/measurements",
+            post(create_suspension_pool_measurement).delete(remove_suspension_pool_measurements),
+        )
+        .api_route(
+            "/preparers",
+            post(add_suspension_pool_preparers).delete(remove_suspension_pool_preparers),
+        )
+}
+
+async fn index_suspension_pools_simple(
+    state: State<AppState>,
+    user: AuthUser,
+    Query(q): Query<SimpleSuspensionPoolQuery>,
+) -> Result<Json<Vec<SuspensionPoolCompact>>, DbError> {
+    index_suspension_pools(
+        state,
+        user,
+        crate::extract::JsonExtractor(SuspensionPoolQuery::from_simple_query(q)),
+    )
+    .await
+}
+
+async fn index_suspension_pools_detailed_simple(
+    state: State<AppState>,
+    user: AuthUser,
+    Query(q): Query<SimpleSuspensionPoolQuery>,
+) -> Result<Json<Vec<SuspensionPoolDetailed>>, DbError> {
+    index_suspension_pools_detailed(
+        state,
+        user,
+        crate::extract::JsonExtractor(SuspensionPoolQuery::from_simple_query(q)),
+    )
+    .await
+}

@@ -1,11 +1,31 @@
+#[cfg(feature = "postgres-types")]
+use std::str::FromStr;
+
+#[cfg(feature = "postgres-types")]
+use bytes::BytesMut;
+pub use creation::SpecimenType;
 use macro_attributes::{base_model, select, unit_enum};
-pub use query::{SimpleSpecimenQuery, SpecimenField, SpecimenPredicate, SpecimenQuery};
+#[cfg(feature = "postgres-types")]
+use postgres_types::{FromSql, ToSql, to_sql_checked};
+pub use query::{
+    BlockEmbeddingMatrixOperator, FixativeOperator, SimpleSpecimenQuery, SpeciesOperator,
+    SpecimenField, SpecimenPredicate, SpecimenQuery, SpecimenTypeOperator,
+    ThermalPreservationMethodOperator,
+};
 
 use crate::{
+    Relation,
     id::{Id, NoId},
     project::{ProjectCompact, SavedProjectRecord},
     simple_links::SimpleLinks,
-    specimen::{measurement::SpecimenMeasurement, record::SpecimenRecord},
+    specimen::{
+        creation::{
+            ControlledRateFreezing, DithiobisSuccinimidylpropionate, FlashFreezing,
+            FormaldehydeDerivative,
+        },
+        measurement::SpecimenMeasurement,
+        record::SpecimenRecord,
+    },
 };
 
 pub mod creation;
@@ -15,12 +35,14 @@ mod query;
 mod record {
     use jiff::Timestamp;
     use macro_attributes::select;
-    use nonempty::NonemptyString;
     use uuid::Uuid;
 
-    use crate::specimen::{
-        Fixative, Species, SpecimenType, ThermalPreservationMethod,
-        creation::block::BlockEmbeddingMatrix,
+    use crate::{
+        nonempty::NonemptyString,
+        specimen::{
+            Fixative, Species, SpecimenType, ThermalPreservationMethod,
+            creation::block::BlockEmbeddingMatrix,
+        },
     };
 
     #[select]
@@ -32,6 +54,10 @@ mod record {
         pub name: NonemptyString,
         pub submitted_by: Uuid,
         pub project_id: Uuid,
+        #[cfg_attr(feature = "serde", serde(skip))]
+        pub project_started_at: Timestamp,
+        #[cfg_attr(feature = "serde", serde(skip))]
+        pub project_ended_at: Option<Timestamp>,
         pub received_at: Timestamp,
         pub species: Species,
         pub host_species: Option<Species>,
@@ -60,25 +86,8 @@ pub enum Species {
     SminthopsisCrassicaudata,
 }
 
-#[unit_enum]
-pub enum SpecimenType {
-    Block,
-    CellPellet,
-    RnaExtract,
-    Suspension,
-    Tissue,
-}
-
-#[unit_enum]
-pub enum Fixative {
-    DithiobisSuccinimidylpropionate,
-    FormaldehydeDerivative,
-}
-
-#[unit_enum]
-pub enum ThermalPreservationMethod {
-    ControlledRateFreezing,
-    FlashFreezing,
+impl<T> Relation for SpecimenRecord<T> {
+    const NAME: &'static str = "specimen";
 }
 
 pub type NewSpecimenRecord = SpecimenRecord<NoId>;
@@ -111,4 +120,125 @@ pub struct SpecimenDetailed {
     pub links: SimpleLinks,
     pub project: ProjectCompact,
     pub measurements: Vec<SpecimenMeasurement>,
+}
+
+#[base_model]
+#[derive(Copy)]
+#[cfg_attr(feature = "serde", serde(untagged))]
+pub enum ThermalPreservationMethod {
+    Crf(ControlledRateFreezing),
+    Ff(FlashFreezing),
+}
+
+#[cfg(feature = "postgres-types")]
+impl<'a> FromSql<'a> for ThermalPreservationMethod {
+    fn from_sql(
+        ty: &postgres_types::Type,
+        raw: &'a [u8],
+    ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
+        let s = <crate::nonempty::NonemptyString as FromSql>::from_sql(ty, raw)?;
+        let s = s.as_ref();
+
+        let controlled_rate_freezing = ControlledRateFreezing::from_str(s).map(Self::Crf);
+        let flash_freezing = FlashFreezing::from_str(s).map(Self::Ff);
+
+        controlled_rate_freezing
+            .or(flash_freezing)
+            .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Sync + Send>)
+    }
+
+    fn accepts(ty: &postgres_types::Type) -> bool {
+        use postgres_types::FromSql;
+
+        <crate::nonempty::NonemptyString as FromSql>::accepts(ty)
+    }
+}
+
+#[cfg(feature = "postgres-types")]
+impl ToSql for ThermalPreservationMethod {
+    to_sql_checked!();
+
+    fn to_sql(
+        &self,
+        ty: &postgres_types::Type,
+        out: &mut BytesMut,
+    ) -> Result<postgres_types::IsNull, Box<dyn std::error::Error + Sync + Send>>
+    where
+        Self: Sized,
+    {
+        let value = match self {
+            Self::Crf(c) => c.as_ref(),
+            Self::Ff(f) => f.as_ref(),
+        };
+
+        <&str as ToSql>::to_sql(&value, ty, out)
+    }
+
+    fn accepts(ty: &postgres_types::Type) -> bool
+    where
+        Self: Sized,
+    {
+        <crate::nonempty::NonemptyString as ToSql>::accepts(ty) || <&str as ToSql>::accepts(ty)
+    }
+}
+
+#[base_model]
+#[derive(Copy)]
+#[cfg_attr(feature = "serde", serde(untagged))]
+pub enum Fixative {
+    DithiobisSuccinimidylpropionate(DithiobisSuccinimidylpropionate),
+    FormaldehydeDerivative(FormaldehydeDerivative),
+}
+
+#[cfg(feature = "postgres-types")]
+impl<'a> FromSql<'a> for Fixative {
+    fn from_sql(
+        ty: &postgres_types::Type,
+        raw: &'a [u8],
+    ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
+        let s = <crate::nonempty::NonemptyString as FromSql>::from_sql(ty, raw)?;
+        let s = s.as_ref();
+
+        let dsp =
+            DithiobisSuccinimidylpropionate::from_str(s).map(Self::DithiobisSuccinimidylpropionate);
+        let formaldehyde_derivative =
+            FormaldehydeDerivative::from_str(s).map(Self::FormaldehydeDerivative);
+
+        dsp.or(formaldehyde_derivative)
+            .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Sync + Send>)
+    }
+
+    fn accepts(ty: &postgres_types::Type) -> bool {
+        use postgres_types::FromSql;
+
+        <crate::nonempty::NonemptyString as FromSql>::accepts(ty)
+    }
+}
+
+#[cfg(feature = "postgres-types")]
+impl ToSql for Fixative {
+    to_sql_checked!();
+
+    fn to_sql(
+        &self,
+        ty: &postgres_types::Type,
+        out: &mut BytesMut,
+    ) -> Result<postgres_types::IsNull, Box<dyn std::error::Error + Sync + Send>>
+    where
+        Self: Sized,
+    {
+        let value = match self {
+            Self::DithiobisSuccinimidylpropionate(c) => c.as_ref(),
+            Self::FormaldehydeDerivative(f) => f.as_ref(),
+        };
+
+        <&str as ToSql>::to_sql(&value, ty, out)
+    }
+
+    fn accepts(ty: &postgres_types::Type) -> bool
+    where
+        Self: Sized,
+    {
+        <crate::nonempty::NonemptyString as ToSql>::accepts(ty) || <&str as ToSql>::accepts(ty)
+    }
 }

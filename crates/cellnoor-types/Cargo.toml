@@ -1,26 +1,25 @@
 [package]
-name = "cellnoor-types"
-version = "0.1.0"
 edition.workspace = true
+name = "cellnoor-types"
 
 [dependencies]
-nonempty = {path = "../nonempty"}
+bytes = { workspace = true, optional = true }
+csvranger.workspace = true
 jiff.workspace = true
+macro-attributes = { path = "macro-attributes" }
+postgres-types = { workspace = true, optional = true }
+pretty_assertions.workspace = true
 schemars = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
-uuid.workspace = true
-postgres-types = { workspace = true, optional = true }
-macro-attributes = {path = "macro-attributes"}
-strum.workspace = true
 serde_json.workspace = true
-positive = {path = "../positive"}
-bytes = { workspace = true, optional = true }
-pretty_assertions.workspace = true
+strum.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
 
 [lints]
 workspace = true
 
 [features]
-serde = ["dep:serde", "nonempty/serde", "positive/serde"]
-schemars = ["serde", "dep:schemars", "nonempty/schemars", "positive/schemars"]
-postgres-types = ["dep:postgres-types", "nonempty/postgres-types", "dep:bytes", "positive/postgres-types"]
+postgres-types = ["dep:bytes", "dep:postgres-types"]
+schemars = ["dep:schemars", "serde"]
+serde = ["dep:serde"]

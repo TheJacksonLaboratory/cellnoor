@@ -1,0 +1,216 @@
+use axum::{Json, extract::State};
+use cellnoor_types::{
+    Relation,
+    library::{LibraryDetailed, LibraryField, NewLibrary, NewLibraryRecord},
+};
+use uuid::Uuid;
+
+#[cfg(any(test, feature = "dev"))]
+use crate::handlers::{chromium_runs::TestChromiumRunKind, index_sets::FLEX_DUAL_INDEX_SET_NAME};
+use crate::{
+    auth::AuthUser,
+    db::{self, DbError, FieldValues, Insert},
+    handlers::libraries::{
+        measurements::create::insert_library_measurements, show::select_library_by_id,
+    },
+    state::AppState,
+};
+
+pub async fn create_library(
+    State(state): State<AppState>,
+    user: AuthUser,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<NewLibrary>,
+) -> Result<Json<LibraryDetailed>, DbError> {
+    state
+        .in_transaction(user, async |tx| insert_library(tx, record).await)
+        .await
+}
+
+async fn insert_library(
+    tx: &db::Transaction<'_>,
+    NewLibrary {
+        record,
+        measurements,
+        preparers,
+    }: NewLibrary,
+) -> Result<LibraryDetailed, DbError> {
+    let id = tx.insert_returning_id(&record).await?;
+
+    let measurement_insertions = insert_library_measurements(tx, id, &measurements);
+
+    tokio::try_join!(
+        insert_library_preparers(tx, id, preparers.as_ref()),
+        measurement_insertions
+    )?;
+
+    select_library_by_id(tx, id).await
+}
+
+pub(in super::super) async fn insert_library_preparers(
+    tx: &db::Transaction<'_>,
+    library_id: Uuid,
+    preparer_ids: &[Uuid],
+) -> Result<(), DbError> {
+    let preparers: Vec<_> = preparer_ids
+        .iter()
+        .map(|&prepared_by| NewLibraryPreparer {
+            library_id,
+            prepared_by,
+        })
+        .collect();
+
+    tx.insert_many_on_conflict_do_nothing(&preparers).await
+}
+
+struct NewLibraryPreparer {
+    library_id: Uuid,
+    prepared_by: Uuid,
+}
+
+impl Relation for NewLibraryPreparer {
+    const NAME: &'static str = "library_preparer";
+}
+
+impl Insert for NewLibraryPreparer {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
+        let Self {
+            library_id,
+            prepared_by,
+        } = self;
+
+        vec![("library_id", library_id), ("prepared_by", prepared_by)]
+    }
+}
+
+impl Insert for NewLibraryRecord {
+    type Field = LibraryField;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
+        use LibraryField::*;
+
+        let Self {
+            id: _,
+            readable_id,
+            cdna_id,
+            // Populated by a database trigger
+            cdna_prepared_at: _,
+            single_index_set_name,
+            dual_index_set_name,
+            number_of_sample_index_pcr_cycles,
+            target_reads_per_cell,
+            prepared_at,
+            additional_data,
+        } = self;
+
+        vec![
+            (ReadableId, readable_id),
+            (CdnaId, cdna_id),
+            (SingleIndexSetName, single_index_set_name),
+            (DualIndexSetName, dual_index_set_name),
+            (
+                NumberOfSampleIndexPcrCycles,
+                number_of_sample_index_pcr_cycles,
+            ),
+            (TargetReadsPerCell, target_reads_per_cell),
+            (PreparedAt, prepared_at),
+            (AdditionalData, additional_data),
+        ]
+    }
+}
+
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_test_library<F>(
+    tx: &db::Transaction<'_>,
+    run_kind: TestChromiumRunKind,
+    mut modify: F,
+) -> Result<(NewLibrary, LibraryDetailed), DbError>
+where
+    F: FnMut(&mut NewLibrary),
+{
+    use cellnoor_types::{
+        id::NoId,
+        nucleic_acid_measurement::{
+            Concentration, NewNucleicAcidMeasurement, NucleicAcidMeasurementData,
+            NucleicAcidMeasurementMethod,
+        },
+        positive::PositiveI32,
+        units::{Microliter, Nanogram},
+    };
+    use jiff::Timestamp;
+    use postgres_types::Json;
+
+    use crate::{
+        handlers::{
+            cdna::create::insert_test_cdna_and_chromium_run,
+            index_sets::GENE_EXPRESSION_DUAL_INDEX_SET_NAME,
+        },
+        state::dev_util::ToNonemptyString,
+    };
+
+    let (_, cdna) = insert_test_cdna_and_chromium_run(tx, run_kind, |_| ()).await?;
+
+    let person_id = cdna.preparers[0];
+
+    let index_set_name = match run_kind {
+        TestChromiumRunKind::Standard
+        | TestChromiumRunKind::OnChipMultiplexing
+        | TestChromiumRunKind::Mixed => GENE_EXPRESSION_DUAL_INDEX_SET_NAME,
+        TestChromiumRunKind::Flex => FLEX_DUAL_INDEX_SET_NAME,
+    };
+
+    let mut new = NewLibrary {
+        record: NewLibraryRecord {
+            id: NoId,
+            readable_id: crate::db::dummy_data::random_name_for("library"),
+            cdna_id: *cdna.record.id,
+            cdna_prepared_at: cdna.record.prepared_at,
+            single_index_set_name: None,
+            dual_index_set_name: Some(index_set_name.to_owned()),
+            number_of_sample_index_pcr_cycles: PositiveI32::new(8).unwrap(),
+            target_reads_per_cell: Some(PositiveI32::new(50_000).unwrap()),
+            prepared_at: Timestamp::now(),
+            additional_data: None,
+        },
+        measurements: vec![NewNucleicAcidMeasurement {
+            measured_by: person_id,
+            measured_at: Timestamp::now(),
+            data: Json(NucleicAcidMeasurementData {
+                instrument_name: "Qubit".to_nonempty_string(),
+                method: NucleicAcidMeasurementMethod::Fluorometric {
+                    concentration: Concentration {
+                        value: PositiveI32::new(20).unwrap(),
+                        numerator_unit: Nanogram::Nanogram,
+                        denominator_unit: Microliter::Microliter,
+                    },
+                },
+            }),
+        }],
+        preparers: cellnoor_types::nonempty::NonemptyVec::new(vec![person_id]).unwrap(),
+    };
+
+    modify(&mut new);
+
+    let inserted = insert_library(tx, new.clone()).await?;
+    Ok((new, inserted))
+}
+
+#[cfg(test)]
+pub mod test {
+
+    use super::insert_test_library;
+    use crate::{
+        handlers::chromium_runs::create::TestChromiumRunKind, state::dev_util::db_client_as_admin,
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn insert() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        insert_test_library(&tx, TestChromiumRunKind::Standard, |_| ())
+            .await
+            .unwrap();
+    }
+}

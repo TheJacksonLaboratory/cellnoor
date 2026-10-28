@@ -1,5 +1,4 @@
 use macro_attributes::base_model;
-use nonempty::NonemptyString;
 
 use crate::index_set::{
     dual_index_set_record::DualIndexSetRecord, single_index_set_record::SingleIndexSetRecord,
@@ -7,7 +6,8 @@ use crate::index_set::{
 
 mod dual_index_set_record {
     use macro_attributes::select;
-    use nonempty::NonemptyString;
+
+    use crate::nonempty::NonemptyString;
 
     #[select]
     #[cfg_attr(feature = "postgres-types", postgres(name = "dual_index_set"))]
@@ -35,7 +35,8 @@ pub struct NewDualIndexSet {
 
 mod single_index_set_record {
     use macro_attributes::select;
-    use nonempty::NonemptyString;
+
+    use crate::nonempty::NonemptyString;
 
     #[select]
     pub struct SingleIndexSetRecord {
@@ -47,6 +48,6 @@ mod single_index_set_record {
 }
 
 #[base_model]
-pub struct NewSingleIndexSet(String, [NonemptyString; 4]);
+pub struct NewSingleIndexSet(pub String, pub [String; 4]);
 
 pub type SingleIndexSet = SingleIndexSetRecord;

@@ -11,8 +11,7 @@ target
 
 # Environment files useful for development
 .env*
-!.env.sample
-!.env.compose.sample
+!.env.dev.sample
 
 # Initial data also useful for development
 initial_data*
@@ -44,3 +43,6 @@ node_modules
 
 # MacOS GUI folder
 .DS_Store
+
+# Static files dir for development runs
+.static-files

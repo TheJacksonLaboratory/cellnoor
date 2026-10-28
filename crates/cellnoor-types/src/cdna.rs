@@ -1,16 +1,15 @@
 use jiff::Timestamp;
-use macro_attributes::{base_model, select};
-use nonempty::NonemptyString;
-use positive::PositiveI32;
-pub use query::{CdnaField, CdnaPredicate, CdnaPredicateInner, CdnaQuery, SimpleCdnaQuery};
+use macro_attributes::base_model;
+pub use query::{
+    CdnaField, CdnaPredicate, CdnaPredicateInner, CdnaQuery, LibraryTypeOperator, SimpleCdnaQuery,
+};
 use uuid::Uuid;
 
 use crate::{
-    cdna::{
-        creation::{CdnaSimpleFields, LibraryType},
-        measurement::CdnaMeasurement,
-    },
-    nucleic_acid_measurement::NewNucleicAcidMeasurement,
+    Relation,
+    cdna::{measurement::CdnaMeasurement, record::CdnaRecord},
+    id::{Id, NoId},
+    nonempty::NonemptyString,
     simple_links::SimpleLinks,
     suspension_pool::TaggedSpecimen,
 };
@@ -20,24 +19,48 @@ pub mod measurement;
 mod query;
 
 #[base_model]
-pub struct CdnaUpdate {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub record: CdnaSimpleFields,
-    pub measurements: Option<Vec<NewNucleicAcidMeasurement>>,
-    pub preparers: Option<Vec<Uuid>>,
-}
-
-#[select]
-#[cfg_attr(feature = "postgres-types", postgres(name = "cdna"))]
-pub struct SavedCdnaRecord {
-    pub id: Uuid,
+pub struct CdnaSimpleFields {
     pub readable_id: NonemptyString,
-    pub library_type: LibraryType,
     pub prepared_at: Timestamp,
-    pub gem_well_id: Option<Uuid>,
-    pub n_amplification_cycles: Option<PositiveI32>,
     pub additional_data: Option<serde_json::Value>,
 }
+
+impl Relation for CdnaSimpleFields {
+    const NAME: &'static str = "cdna";
+}
+
+mod record {
+    use jiff::Timestamp;
+    use macro_attributes::select;
+    use uuid::Uuid;
+
+    use crate::{cdna::creation::LibraryType, nonempty::NonemptyString, positive::PositiveI32};
+
+    #[select]
+    #[cfg_attr(feature = "postgres-types", postgres(name = "cdna"))]
+    pub struct CdnaRecord<T> {
+        #[cfg_attr(feature = "serde", serde(flatten))]
+        pub id: T,
+        pub readable_id: NonemptyString,
+        pub library_type: LibraryType,
+        pub prepared_at: Timestamp,
+        pub gem_well_id: Option<Uuid>,
+        #[cfg_attr(feature = "serde", serde(skip))]
+        pub gem_well_run_at: Option<Timestamp>,
+        pub n_amplification_cycles: Option<PositiveI32>,
+        pub additional_data: Option<serde_json::Value>,
+    }
+}
+
+pub type CdnaUpdate = CdnaSimpleFields;
+
+impl<T> Relation for CdnaRecord<T> {
+    const NAME: &'static str = "cdna";
+}
+
+pub type NewCdnaRecord = CdnaRecord<NoId>;
+
+pub type SavedCdnaRecord = CdnaRecord<Id>;
 
 #[base_model]
 pub struct CdnaCompact {

@@ -1,88 +1,18 @@
-#![allow(clippy::iter_without_into_iter)]
-use std::slice::Iter;
-
-use macro_attributes::{base_model, select, unit_enum};
-use nonempty::NonemptyString;
+use macro_attributes::{base_model, select};
 pub use query::{PersonField, PersonPredicate, PersonQuery, SimplePersonQuery};
 use uuid::Uuid;
 
-use crate::simple_links::SimpleLinks;
+use crate::{
+    Relation, nonempty::NonemptyString, permission::Permission, simple_links::SimpleLinks,
+};
 
 mod query;
-
-#[unit_enum]
-pub enum Action {
-    // For most insertions, we add a returning clause, which requires the select privilege
-    #[strum(serialize = "select, insert")]
-    Create,
-    Update,
-    Delete,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Hash, strum::Display)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
-#[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
-#[strum(serialize_all = "snake_case")]
-pub enum ResourcePermission {
-    Institution(Vec<Action>),
-    Person(Vec<Action>),
-    Account(Vec<Action>),
-    Project(Vec<Action>),
-    Specimen(Vec<Action>),
-    AssayConstantData(Vec<Action>),
-    ChromiumExperimentalData(Vec<Action>),
-    ChromiumDataset(Vec<Action>),
-}
-
-#[base_model]
-#[derive(Default)]
-pub struct PermissionsToGrant(Vec<ResourcePermission>);
-
-impl PermissionsToGrant {
-    pub fn iter(&self) -> Iter<'_, ResourcePermission> {
-        self.0.iter()
-    }
-
-    #[must_use]
-    pub fn contains(&self, x: &ResourcePermission) -> bool {
-        self.0.contains(x)
-    }
-}
-
-impl From<Vec<ResourcePermission>> for PermissionsToGrant {
-    fn from(value: Vec<ResourcePermission>) -> Self {
-        Self(value)
-    }
-}
-
-#[base_model]
-#[derive(Default)]
-pub struct PermissionsToRevoke(Vec<ResourcePermission>);
-
-impl PermissionsToRevoke {
-    pub fn iter(&self) -> Iter<'_, ResourcePermission> {
-        self.0.iter()
-    }
-
-    #[must_use]
-    pub fn contains(&self, x: &ResourcePermission) -> bool {
-        self.0.contains(x)
-    }
-}
-
-impl From<Vec<ResourcePermission>> for PermissionsToRevoke {
-    fn from(value: Vec<ResourcePermission>) -> Self {
-        Self(value)
-    }
-}
 
 #[base_model]
 pub struct PersonSimpleFields {
     pub name: NonemptyString,
     pub institution_id: Uuid,
     pub is_staff: bool,
-    pub can_manage_users: bool,
     pub orcid: Option<NonemptyString>,
 }
 
@@ -108,16 +38,22 @@ pub struct NewPerson {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub simple: PersonSimpleFields,
     pub account: Account,
-    pub permissions_to_grant: PermissionsToGrant,
+    pub permissions_to_grant: Vec<Permission>,
 }
 
 #[base_model]
 pub struct PersonUpdate {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub simple: PersonSimpleFields,
-    pub email: NonemptyString,
-    pub permissions_to_grant: Option<PermissionsToGrant>,
-    pub permissions_to_revoke: Option<PermissionsToRevoke>,
+    pub email: Option<NonemptyString>,
+}
+
+impl Relation for NewPerson {
+    const NAME: &'static str = "person";
+}
+
+impl Relation for PersonUpdate {
+    const NAME: &'static str = "person";
 }
 
 #[base_model]
@@ -135,8 +71,11 @@ pub struct SavedPersonRecord {
     pub email: Option<NonemptyString>,
     pub institution_id: Uuid,
     pub is_staff: bool,
-    pub can_manage_users: bool,
     pub orcid: Option<NonemptyString>,
+}
+
+impl Relation for SavedPersonRecord {
+    const NAME: &'static str = "person_public";
 }
 
 #[base_model]
@@ -144,4 +83,13 @@ pub struct Person {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: SavedPersonRecord,
     pub links: PersonLinks,
+}
+
+#[select]
+#[cfg_attr(feature = "postgres-types", postgres(name = "person_with_permissions"))]
+pub struct PersonWithPermissions {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    #[cfg_attr(feature = "postgres-types", postgres(name = "person_public"))]
+    pub person: SavedPersonRecord,
+    pub permissions: Vec<Permission>,
 }

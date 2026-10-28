@@ -1,64 +1,86 @@
-#![allow(clippy::doc_markdown)]
-
+use macro_attributes::base_model;
 #[cfg(feature = "postgres-types")]
 use postgres_types::ToSql;
 use uuid::Uuid;
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[base_model]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
-#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(rename = "{P}Filter"))]
 pub enum Filter<P> {
-    /// Combines these predicates with logical and
+    /// Combines these predicates with logical `and`
     AllOf(Vec<Filter<P>>),
-    /// Combines these predicates with logical or
+    /// Combines these predicates with logical `or`
     AnyOf(Vec<Filter<P>>),
-    /// Negates this predicate with logical not
+    /// Negates this predicate with logical `not`
     Not(Box<Filter<P>>),
     #[cfg_attr(feature = "serde", serde(untagged))]
     /// Apply just one boolean predicate
-    Leaf(P),
+    Predicate(P),
 }
 
 impl<P> From<P> for Filter<P> {
     fn from(predicate: P) -> Self {
-        Self::Leaf(predicate)
+        Self::Predicate(predicate)
     }
 }
 
-/// A comparison operator for any scalar value.
+/// A comparison that renders as a SQL operator and a bind value.
+#[cfg(feature = "postgres-types")]
+pub trait SqlOperator {
+    fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync));
+}
+
+#[cfg(feature = "postgres-types")]
+#[derive(Clone, Copy, Debug)]
+pub struct Predicate<'a> {
+    pub relation: &'static str,
+    pub column: &'a str,
+    pub operator: &'static str,
+    pub value: &'a (dyn ToSql + Sync),
+}
+
+/// A type that renders as one boolean comparison.
+///
+/// Implemented by the `predicate_enum` and `predicate_enum_wrapper` macros.
+#[cfg(feature = "postgres-types")]
+pub trait AsPredicate {
+    fn as_predicate(&self) -> Predicate<'_>;
+}
+
+/// A simple comparison operator.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(rename = "{T}Operator"))]
 pub enum Operator<T> {
-    /// equals (=)
+    /// equals (`=`)
     Eq(T),
-    /// less than (<)
+    /// less than (`<`)
     Lt(T),
-    /// less than or equal to (<=)
+    /// less than or equal to (`<=`)
     Lte(T),
-    /// greater than (>)
+    /// greater than (`>`)
     Gt(T),
-    /// greater than or equal to (>=)
+    /// greater than or equal to (`>=`)
     Gte(T),
-    /// is contained in (= any($1))
+    /// is contained in (`= any($1)`)
     In(Vec<T>),
-    /// equals (=), but (de)serializes as '{"field": "value"}' instead of
-    /// '{"field": {"eq": "value"}}'
+    /// is contained in (`= any($1)`) only if the array is nonempty
+    InUnlessEmpty(Vec<T>),
+    /// equals (`=`), but (de)serializes as `{"field": "value"}` instead of
+    /// `{"field": {"eq": "value"}}`
     #[cfg(feature = "serde")]
     #[serde(untagged)]
     ImplicitEq(T),
 }
 
 #[cfg(feature = "postgres-types")]
-impl<T> Operator<T>
+impl<T> SqlOperator for Operator<T>
 where
     T: ToSql + Sync,
 {
-    pub fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
+    fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Eq(v) => ("=", v),
             Self::Lt(v) => ("<", v),
@@ -66,6 +88,7 @@ where
             Self::Gt(v) => (">", v),
             Self::Gte(v) => (">=", v),
             Self::In(v) => ("= any", v),
+            Self::InUnlessEmpty(v) => (if v.is_empty() { "= all" } else { "= any" }, v),
             #[cfg(feature = "serde")]
             Self::ImplicitEq(v) => ("=", v),
         }
@@ -92,37 +115,44 @@ pub type SimpleJsonOperator = Operator<serde_json::Value>;
 
 /// A comparison operator for string values.
 ///
-/// This is a superset of Operator<T> and adds string-specific methods present
-/// in PostgreSQL:
-/// 1. like (https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE)
-/// 2. trigram similar (https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS)
+/// This is a superset of the basic operators and adds the following
+/// string-specific methods present in PostgreSQL:
+/// 1. `like` (<https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE>)
+/// 2. trigram similarity (`%`) (<https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS>)
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub enum StringOperator {
-    /// PostgreSQL like
+    /// PostgreSQL `like`
     Like(String),
-    /// PostgreSQL like any
+    /// PostgreSQL `like any`
     LikeAny(Vec<String>),
-    /// PostgreSQL trigram similar to (%)
+    /// PostgreSQL `like any` only if the array is nonempty, otherwise `like
+    /// all`
+    LikeAnyUnlessEmpty(Vec<String>),
+    /// PostgreSQL trigram similar to (`%`)
     Trgm(String),
-    /// PostgreSQL trigram similar to any (% any)
+    /// PostgreSQL trigram similar to any (`% any`)
     TrgmAny(Vec<String>),
+    /// PostgreSQL `trgm any` only if the array is nonempty, otherwise `trgm
+    /// all`
+    TrgmAnyUnlessEmpty(Vec<String>),
     /// All other operators
     #[cfg_attr(feature = "serde", serde(untagged))]
     Simple(SimpleStringOperator),
 }
 
 #[cfg(feature = "postgres-types")]
-impl StringOperator {
-    #[must_use]
-    pub fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
+impl SqlOperator for StringOperator {
+    fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Like(s) => ("like", s),
             Self::LikeAny(s) => ("like any", s),
+            Self::LikeAnyUnlessEmpty(s) => (if s.is_empty() { "like all" } else { "like any" }, s),
             Self::Trgm(s) => ("%", s),
             Self::TrgmAny(s) => ("% any", s),
+            Self::TrgmAnyUnlessEmpty(s) => (if s.is_empty() { "% all" } else { "% any" }, s),
             Self::Simple(op) => op.as_sql_operator_and_value(),
         }
     }
@@ -134,17 +164,24 @@ impl From<SimpleStringOperator> for StringOperator {
     }
 }
 
+/// A comparison operator for array values.
+///
+/// This is a superset of the basic operators and adds the following
+/// array-specific methods present in PostgreSQL (<https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY)>:
+/// 1. contains (`@>`)
+/// 2. is contained in (`<@`)
+/// 3. overlaps with (`&&`)
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(rename = "{T}ArrayOperator"))]
 pub enum ArrayOperator<T> {
-    /// PostgreSQL contains (@>)
+    /// PostgreSQL contains (`@>`)
     Contains(Vec<T>),
-    /// PostgreSQL is contained in (<@)
+    /// PostgreSQL is contained in (`<@`)
     IsContainedIn(Vec<T>),
-    /// PostgreSQL overlaps (&&)
+    /// PostgreSQL overlaps (`&&`)
     Overlaps(Vec<T>),
     /// All other operators
     #[cfg_attr(feature = "serde", serde(untagged))]
@@ -152,11 +189,11 @@ pub enum ArrayOperator<T> {
 }
 
 #[cfg(feature = "postgres-types")]
-impl<T> ArrayOperator<T>
+impl<T> SqlOperator for ArrayOperator<T>
 where
     T: ToSql + Sync,
 {
-    pub fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
+    fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Contains(v) => ("@>", v),
             Self::IsContainedIn(v) => ("<@", v),
@@ -172,20 +209,29 @@ impl<T> From<SimpleArrayOperator<T>> for ArrayOperator<T> {
     }
 }
 
+/// A comparison operator for JSON values.
+///
+/// This is a superset of the basic operators and adds the following
+/// JSON-specific methods present in PostgreSQL (<https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY)>:
+/// 1. contains (`@>`)
+/// 2. is contained in (`<@`)
+/// 3. has key (`?`)
+/// 4. has any of keys (`?|`)
+/// 5. has all of keys (`?&`)
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub enum JsonOperator {
-    /// PostgreSQL contains (@>)
+    /// PostgreSQL contains (`@>`)
     Contains(serde_json::Value),
-    /// PostgreSQL is contained in (<@)
+    /// PostgreSQL is contained in (`<@`)
     IsContainedIn(serde_json::Value),
-    /// PostgreSQL has key (?)
+    /// PostgreSQL has key (`?`)
     HasKey(String),
-    /// PostgreSQL has any of keys (?|)
+    /// PostgreSQL has any of keys (`?|`)
     HasAnyOfKeys(Vec<String>),
-    /// PostgreSQL has all of keys (?&)
+    /// PostgreSQL has all of keys (`?&`)
     HasAllOfKeys(Vec<String>),
     /// All other operators
     #[cfg_attr(feature = "serde", serde(untagged))]
@@ -193,9 +239,8 @@ pub enum JsonOperator {
 }
 
 #[cfg(feature = "postgres-types")]
-impl JsonOperator {
-    #[must_use]
-    pub fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
+impl SqlOperator for JsonOperator {
+    fn as_sql_operator_and_value(&self) -> (&'static str, &(dyn ToSql + Sync)) {
         match self {
             Self::Contains(v) => ("@>", v),
             Self::IsContainedIn(v) => ("<@", v),

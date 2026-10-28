@@ -1,0 +1,79 @@
+use aide::axum::{
+    ApiRouter,
+    routing::{get, post},
+};
+use axum::{
+    Json,
+    extract::{DefaultBodyLimit, Query, State},
+};
+use cellnoor_types::chromium_dataset::{
+    ChromiumDatasetCompact, ChromiumDatasetDetailed, ChromiumDatasetQuery,
+    SavedChromiumDatasetRecord, SimpleChromiumDatasetQuery,
+};
+
+use crate::{
+    auth::AuthUser,
+    db::DbError,
+    handlers::{
+        chromium_datasets::{
+            create_chromium_dataset, index_chromium_datasets, index_chromium_datasets_detailed,
+            show_chromium_dataset, update_chromium_dataset, upload_files,
+        },
+        delete_resource,
+    },
+    state::AppState,
+};
+
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route(
+            "/",
+            post(create_chromium_dataset).get(index_chromium_datasets_simple),
+        )
+        .api_route("/detailed", get(index_chromium_datasets_detailed_simple))
+        .api_route("/search", post(index_chromium_datasets))
+        .api_route("/search/detailed", post(index_chromium_datasets_detailed))
+        .nest("/{id}", id_router())
+}
+
+fn id_router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route(
+            "/",
+            get(show_chromium_dataset)
+                .put(update_chromium_dataset)
+                .delete(delete_resource::<SavedChromiumDatasetRecord>),
+        )
+        // Unfortunately we don't get openAPI documentation for this route
+        .route(
+            "/files",
+            // Assume a maximum of 32 files each with size 16 MiB
+            axum::routing::post(upload_files).layer(DefaultBodyLimit::max(32 * 16 * 1024 * 1024)),
+        )
+}
+
+async fn index_chromium_datasets_simple(
+    state: State<AppState>,
+    user: AuthUser,
+    Query(q): Query<SimpleChromiumDatasetQuery>,
+) -> Result<Json<Vec<ChromiumDatasetCompact>>, DbError> {
+    index_chromium_datasets(
+        state,
+        user,
+        crate::extract::JsonExtractor(ChromiumDatasetQuery::from_simple_query(q)),
+    )
+    .await
+}
+
+async fn index_chromium_datasets_detailed_simple(
+    state: State<AppState>,
+    user: AuthUser,
+    Query(q): Query<SimpleChromiumDatasetQuery>,
+) -> Result<Json<Vec<ChromiumDatasetDetailed>>, DbError> {
+    index_chromium_datasets_detailed(
+        state,
+        user,
+        crate::extract::JsonExtractor(ChromiumDatasetQuery::from_simple_query(q)),
+    )
+    .await
+}

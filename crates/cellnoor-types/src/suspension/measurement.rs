@@ -1,11 +1,11 @@
 use jiff::Timestamp;
 use macro_attributes::{base_model, select, unit_enum};
-use positive::{PositiveBoundedF32, PositiveF32};
 #[cfg(all(feature = "postgres-types", feature = "schemars"))]
 use postgres_types::Json;
 use uuid::Uuid;
 
 use crate::{
+    positive::{PositiveBoundedF32, PositiveF32},
     suspension::SuspensionContent,
     units::{Microliter, Micrometer, Milliliter},
 };
@@ -14,11 +14,8 @@ use crate::{
 pub struct NewSuspensionMeasurement {
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
-    #[cfg(all(feature = "postgres-types", feature = "schemars"))]
-    #[cfg_attr(
-        all(feature = "postgres-types", feature = "schemars"),
-        schemars(with = "SuspensionMeasurementData")
-    )]
+    #[cfg(feature = "postgres-types")]
+    #[cfg_attr(feature = "schemars", schemars(with = "SuspensionMeasurementData"))]
     pub data: Json<SuspensionMeasurementData>,
     #[cfg(not(feature = "postgres-types"))]
     pub data: SuspensionMeasurementData,
@@ -29,46 +26,38 @@ pub struct NewSuspensionMeasurement {
 pub struct SuspensionMeasurement {
     pub id: Uuid,
     pub suspension_id: Uuid,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub suspension_created_at: Option<Timestamp>,
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
-    #[cfg(all(feature = "postgres-types", feature = "schemars"))]
-    #[cfg_attr(
-        all(feature = "postgres-types", feature = "schemars"),
-        schemars(with = "SuspensionMeasurementData")
-    )]
+    #[cfg(feature = "postgres-types")]
+    #[cfg_attr(feature = "schemars", schemars(with = "SuspensionMeasurementData"))]
     pub data: Json<SuspensionMeasurementData>,
     #[cfg(not(feature = "postgres-types"))]
     pub data: SuspensionMeasurementData,
 }
 
 #[base_model]
-#[cfg_attr(feature = "serde", serde(tag = "quantity"))]
-pub enum SuspensionMeasurementData {
-    Concentration {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: Concentration,
-        post_hybridization: bool,
-    },
-    Viability {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: Viability,
-        post_hybridization: bool,
-    },
-    Volume {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: Volume,
-        post_hybridization: bool,
-    },
-    MeanDiameter {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: MeanDiameter,
-        post_hybridization: bool,
-    },
+#[derive(Copy)]
+pub struct SuspensionMeasurementData {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub quantity: SuspensionMeasurementQuantity,
+    pub post_hybridization: bool,
 }
 
 #[base_model]
-#[cfg_attr(feature = "schemars", schemars(rename = "SuspensionConcentration"))]
-pub struct Concentration {
+#[derive(Copy)]
+#[cfg_attr(feature = "serde", serde(tag = "quantity", rename_all = "snake_case"))]
+pub enum SuspensionMeasurementQuantity {
+    Concentration(SuspensionConcentration),
+    Viability(CellViability),
+    Volume(SuspensionVolume),
+    MeanDiameter(MeanDiameter),
+}
+
+#[base_model]
+#[derive(Copy)]
+pub struct SuspensionConcentration {
     pub counting_method: Option<CountingMethod>,
     pub value: u32,
     pub numerator_unit: SuspensionContent,
@@ -76,18 +65,20 @@ pub struct Concentration {
 }
 
 #[base_model]
-pub struct Viability {
+#[derive(Copy)]
+pub struct CellViability {
     pub value: PositiveBoundedF32<1>,
 }
 
 #[base_model]
-#[cfg_attr(feature = "schemars", schemars(rename = "SuspensionVolume"))]
-pub struct Volume {
+#[derive(Copy)]
+pub struct SuspensionVolume {
     pub value: PositiveF32,
     pub unit: Microliter,
 }
 
 #[base_model]
+#[derive(Copy)]
 pub struct MeanDiameter {
     pub value: PositiveF32,
     pub object: SuspensionContent,

@@ -4,22 +4,17 @@ services:
       - "5432:5432"
   cellnoor-auth:
     environment:
-      PUBLIC_AUTH_URL: &public_auth_url https://auth.cellnoor.localhost
-      NODE_ENV: &node_env development
-  cellnoor:
+      NODE_ENV: development
+      CELLNOOR_AUTH__PUBLIC_BASE_URL: ${CELLNOOR_AUTH__PUBLIC_BASE_URL}
+  cellnoor-api:
     build:
       args:
         BUILD_PROFILE: dev
+        FEATURES: dev
     environment:
-      PUBLIC_FILES_URL: &public_files_url https://files.cellnoor.localhost
-      PUBLIC_AUTH_URL: *public_auth_url
-  cellnoor-ui:
-    environment:
-      PUBLIC_AUTH_URL: *public_auth_url
-      NODE_ENV: *node_env
+      CELLNOOR_API__DUMMY_DATA: ${CELLNOOR_API__DUMMY_DATA}
+    healthcheck:
+      start_period: 5m
   caddy:
     environment:
-      PUBLIC_AUTH_URL: *public_auth_url
-      PUBLIC_API_URL: https://api.cellnoor.localhost
-      PUBLIC_UI_URL: https://app.cellnoor.localhost
-      PUBLIC_FILES_URL: *public_files_url
+      CELLNOOR_CADDY__PUBLIC_BASE_URL: ${CELLNOOR_CADDY__PUBLIC_BASE_URL}

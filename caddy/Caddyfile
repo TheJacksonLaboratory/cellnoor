@@ -1,31 +1,38 @@
-{$PUBLIC_AUTH_URL} {
-    encode
-    {$TLS_SETTINGS}
-    reverse_proxy unix/{$AUTH_SOCKET}
+api.{$CELLNOOR_CADDY__PUBLIC_BASE_URL} {
+	encode
+	{$CELLNOOR_CADDY__TLS_SETTINGS}
+	reverse_proxy unix+h2c/{$CELLNOOR_CADDY__API_SOCKET}
 }
 
-{$PUBLIC_API_URL} {
-    encode
-    {$TLS_SETTINGS}
-    reverse_proxy unix+h2c/{$API_SOCKET}
-}
+{$CELLNOOR_CADDY__PUBLIC_BASE_URL} {
+	encode
+	{$CELLNOOR_CADDY__TLS_SETTINGS}
 
-{$PUBLIC_UI_URL} {
-    encode
-    {$TLS_SETTINGS}
-    reverse_proxy /* unix/{$UI_SOCKET}
-}
+	handle /api/auth/* {
+		reverse_proxy unix/{$CELLNOOR_CADDY__AUTH_SOCKET}
+	}
 
-{$PUBLIC_FILES_URL} {
-    root {$STATIC_FILES_DIR}
-    encode
-    {$TLS_SETTINGS}
+	handle_path /api/* {
+		reverse_proxy unix+h2c/{$CELLNOOR_CADDY__API_SOCKET}
+	}
 
-    forward_auth unix+h2c/{$API_SOCKET} {
-        uri /file-auth{path}
-    }
+	handle_path /files/* {
+		root {$CELLNOOR_CADDY__STATIC_FILES_DIR}
 
-    file_server browse {
-        precompressed
-    }
+		forward_auth unix+h2c/{$CELLNOOR_CADDY__API_SOCKET} {
+			uri /file-auth{path}
+		}
+
+		header Content-Security-Policy "sandbox allow-scripts"
+
+		file_server browse {
+			precompressed
+		}
+	}
+
+	handle {
+		root {$CELLNOOR_CADDY__UI_DIR}
+		try_files {path} /200.html
+		file_server
+	}
 }

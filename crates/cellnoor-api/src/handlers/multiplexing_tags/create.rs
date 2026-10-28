@@ -1,0 +1,61 @@
+use axum::{Json, extract::State};
+use cellnoor_types::multiplexing_tag::{MultiplexingTag, NewMultiplexingTag};
+use postgres_types::ToSql;
+
+use crate::{
+    auth::AuthUser,
+    db::{self, DbError, Sql},
+    state::AppState,
+};
+
+pub async fn create_multiplexing_tag(
+    State(state): State<AppState>,
+    user: AuthUser,
+    crate::extract::JsonExtractor(new): crate::extract::JsonExtractor<NewMultiplexingTag>,
+) -> Result<Json<MultiplexingTag>, DbError> {
+    state
+        .in_transaction(user, async |tx| insert_multiplexing_tag(tx, &new).await)
+        .await
+}
+
+async fn insert_multiplexing_tag(
+    tx: &db::Transaction<'_>,
+    NewMultiplexingTag { tag_id, type_ }: &NewMultiplexingTag,
+) -> Result<MultiplexingTag, DbError> {
+    static INSERT_MULTIPLEXING_TAG: &str =
+        "insert into multiplexing_tag (tag_id, type) values ($1, $2) returning multiplexing_tag";
+
+    let params: Vec<&(dyn ToSql + Sync)> = vec![tag_id, type_];
+
+    tx.query_one_into(&Sql::new(INSERT_MULTIPLEXING_TAG, params))
+        .await
+}
+
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_test_multiplexing_tag(
+    tx: &db::Transaction<'_>,
+) -> Result<MultiplexingTag, DbError> {
+    use cellnoor_types::suspension_pool::MultiplexingTagType;
+
+    let new = NewMultiplexingTag {
+        tag_id: crate::db::dummy_data::random_name_for("multiplexing_tag"),
+        type_: MultiplexingTagType::FlexOligonucleotideBarcode,
+    };
+
+    insert_multiplexing_tag(tx, &new).await
+}
+
+#[cfg(test)]
+pub mod tests {
+
+    use super::insert_test_multiplexing_tag;
+    use crate::state::dev_util::db_client_as_admin;
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn insert() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        insert_test_multiplexing_tag(&tx).await.unwrap();
+    }
+}

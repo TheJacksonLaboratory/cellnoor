@@ -1,13 +1,18 @@
+//! Attribute macros that stamp out the derive groups and SQL impls used
+//! throughout `cellnoor-types`.
+//!
+//! These expand to code that refers to `crate::…`, so they only work inside
+//! `cellnoor-types`.
+
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
-use syn::{Ident, ItemEnum, parse_macro_input};
+use syn::{Fields, Ident, ItemEnum, Type, parse_macro_input};
 
 fn base_derives() -> proc_macro2::TokenStream {
     quote! {
         #[derive(Clone, Debug, PartialEq)]
         #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
         #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
-
     }
 }
 
@@ -48,24 +53,93 @@ fn enum_derives() -> proc_macro2::TokenStream {
     }
 }
 
+/// The variants of a predicate enum, each of which holds exactly one value,
+/// paired with the type of that value.
+fn single_field_variants(item: &ItemEnum) -> Vec<(Ident, Type)> {
+    item.variants
+        .iter()
+        .map(|variant| match &variant.fields {
+            Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
+                (variant.ident.clone(), fields.unnamed[0].ty.clone())
+            }
+            _ => panic!(
+                "every variant of a predicate enum holds exactly one value, but `{}` does not",
+                variant.ident
+            ),
+        })
+        .collect()
+}
+
+fn variant_idents(variants: &[(Ident, Type)]) -> Vec<Ident> {
+    variants
+        .iter()
+        .map(|(variant, _)| variant.clone())
+        .collect()
+}
+
+/// Turn each variant's operator into the SQL operator and bind value to compare
+/// its column against.
+///
+/// A leaf predicate names its relation through `field_enum`, the enum of its
+/// own columns. A wrapper has no columns of its own, so it delegates.
+fn as_predicate_impl(
+    type_name: &Ident,
+    variants: &[Ident],
+    field_enum: Option<&Ident>,
+) -> proc_macro2::TokenStream {
+    let body = match field_enum {
+        // `strum(transparent)` makes `as_ref` delegate to the wrapped
+        // predicate, so the inner predicate names its own column
+        None => quote! {
+            match self {
+                #(Self::#variants(predicate) => predicate.as_predicate(),)*
+            }
+        },
+        Some(field_enum) => quote! {
+            use crate::query::{Field, filter::SqlOperator};
+
+            let (operator, value) = match self {
+                #(Self::#variants(operator) => operator.as_sql_operator_and_value(),)*
+            };
+
+            crate::query::filter::Predicate {
+                relation: <#field_enum as Field>::RELATION,
+                column: self.as_ref(),
+                operator,
+                value,
+            }
+        },
+    };
+
+    quote! {
+        #[cfg(feature = "postgres-types")]
+        impl crate::query::filter::AsPredicate for #type_name {
+            fn as_predicate(&self) -> crate::query::filter::Predicate<'_> {
+                #body
+            }
+        }
+    }
+}
+
+/// The attribute's argument names the enum of this predicate's columns, as in
+/// `#[predicate_enum(InstitutionField)]`. That enum is generated here, and it
+/// names the relation every column belongs to.
 #[proc_macro_attribute]
-pub fn predicate_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
+pub fn predicate_enum(attr: TokenStream, input: TokenStream) -> TokenStream {
+    let field_enum = parse_macro_input!(attr as Ident);
     let enum_derives = enum_derives();
 
-    let cloned = input.clone();
-    let ItemEnum { ident, .. } = parse_macro_input!(cloned as ItemEnum);
-    let input: proc_macro2::TokenStream = input.into();
+    let item = parse_macro_input!(input as ItemEnum);
+    let variants = variant_idents(&single_field_variants(&item));
+    let as_predicate = as_predicate_impl(&item.ident, &variants, Some(&field_enum));
 
     quote! {
         #enum_derives
         #[derive(::strum::EnumDiscriminants)]
-        #input
+        #[strum_discriminants(name(#field_enum), sort_field_enum)]
+        #item
 
-        impl #ident {
-            pub fn field_name(&self) -> &str {
-                self.as_ref()
-            }
-        }
+        #as_predicate
     }
     .into()
 }
@@ -74,32 +148,48 @@ pub fn predicate_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
 pub fn predicate_enum_wrapper(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let enum_derives = enum_derives();
 
-    let cloned = input.clone();
-    let ItemEnum { ident, .. } = parse_macro_input!(cloned as ItemEnum);
-    let input: proc_macro2::TokenStream = input.into();
+    let item = parse_macro_input!(input as ItemEnum);
+    let wrapper = item.ident.clone();
+    let variants = single_field_variants(&item);
+    let as_predicate = as_predicate_impl(&wrapper, &variant_idents(&variants), None);
+
+    // Every wrapped predicate converts into the wrapper, and into a filter over
+    // the wrapper, so a caller can name an inner predicate and nothing else
+    let conversions = variants.iter().map(|(variant, wrapped)| {
+        quote! {
+            impl From<#wrapped> for #wrapper {
+                fn from(predicate: #wrapped) -> Self {
+                    Self::#variant(predicate)
+                }
+            }
+
+            impl From<#wrapped> for crate::query::filter::Filter<#wrapper> {
+                fn from(predicate: #wrapped) -> Self {
+                    Self::Predicate(predicate.into())
+                }
+            }
+        }
+    });
 
     quote! {
         #enum_derives
-        #input
+        #item
 
-        impl #ident {
-            pub fn field_name(&self) -> &str {
-                self.as_ref()
-            }
-        }
+        #as_predicate
+        #(#conversions)*
     }
     .into()
 }
 
 #[proc_macro_attribute]
 pub fn sort_field_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    // We can't use enum_derives because strum::EnumDiscriminants already derives
-    // most of those traits for us
+    // We can't use enum_derives because strum::EnumDiscriminants already
+    // derives most of those traits for us
 
     let input: proc_macro2::TokenStream = input.into();
 
     quote! {
-        #[derive(Hash, ::strum::Display, ::strum::AsRefStr, ::strum::VariantArray, ::strum::EnumString)]
+        #[derive(Hash, ::strum::AsRefStr, ::strum::IntoStaticStr, ::strum::VariantArray)]
         #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
         #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
         #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
@@ -125,14 +215,13 @@ fn enum_sql_impls(module_name: Ident, type_name: Ident) -> proc_macro2::TokenStr
                     ty: &postgres_types::Type,
                     raw: &'a [u8],
                 ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
-                    Ok(<::nonempty::NonemptyString as FromSql>::from_sql(ty, raw)
-                        .map(|s| Self::from_str(s.as_ref()))
-                        .unwrap()
-                        .unwrap())
+                    let value = <crate::nonempty::NonemptyString as FromSql>::from_sql(ty, raw)?;
+
+                    Ok(Self::from_str(value.as_ref())?)
                 }
 
                 fn accepts(ty: &postgres_types::Type) -> bool {
-                    <::nonempty::NonemptyString as FromSql>::accepts(ty)
+                    <crate::nonempty::NonemptyString as FromSql>::accepts(ty)
                 }
             }
 
@@ -155,7 +244,7 @@ fn enum_sql_impls(module_name: Ident, type_name: Ident) -> proc_macro2::TokenStr
                 where
                     Self: Sized,
                 {
-                    <::nonempty::NonemptyString as ToSql>::accepts(ty)|| <&str as ToSql>::accepts(ty)
+                    <crate::nonempty::NonemptyString as ToSql>::accepts(ty) || <&str as ToSql>::accepts(ty)
                 }
             }
         }

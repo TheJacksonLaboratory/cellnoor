@@ -1,10 +1,11 @@
 use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
+    Relation,
     operator::{JsonOperator, StringOperator, TimestampOperator, UuidOperator},
-    query::{ComplexQuery, DefaultDesc, SimpleQuery, filter::Operator},
+    query::{ComplexQuery, Field, OrderField, SimpleQuery, filter::Operator},
     specimen::{
-        Fixative, Species, SpecimenType, ThermalPreservationMethod,
+        Fixative, SavedSpecimenRecord, Species, SpecimenType, ThermalPreservationMethod,
         creation::block::BlockEmbeddingMatrix,
     },
 };
@@ -15,9 +16,7 @@ pub type BlockEmbeddingMatrixOperator = Operator<BlockEmbeddingMatrix>;
 pub type FixativeOperator = Operator<Fixative>;
 pub type ThermalPreservationMethodOperator = Operator<ThermalPreservationMethod>;
 
-#[predicate_enum]
-#[strum(prefix = "(specimen).")]
-#[strum_discriminants(name(SpecimenField), sort_field_enum, strum(prefix = "(specimen)."))]
+#[predicate_enum(SpecimenField)]
 pub enum SpecimenPredicate {
     Id(UuidOperator),
     ReadableId(StringOperator),
@@ -37,13 +36,15 @@ pub enum SpecimenPredicate {
     AdditionalData(JsonOperator),
 }
 
-impl Default for SpecimenField {
-    fn default() -> Self {
+impl Field for SpecimenField {
+    const RELATION: &'static str = <SavedSpecimenRecord as Relation>::NAME;
+}
+
+impl OrderField for SpecimenField {
+    fn default_field() -> Self {
         Self::ReceivedAt
     }
 }
-
-impl DefaultDesc for SpecimenField {}
 
 pub type SpecimenQuery = ComplexQuery<SpecimenPredicate, SpecimenField>;
 

@@ -1,41 +1,33 @@
 use macro_attributes::{predicate_enum, predicate_enum_wrapper, sort_field_enum};
 
 use crate::{
+    Relation,
+    multiplexing_tag::MultiplexingTag,
     operator::{JsonOperator, StringOperator, TimestampOperator, UuidOperator},
-    query::{
-        ComplexQuery, DefaultDesc, SimpleQuery,
-        filter::{Filter, Operator},
-    },
+    query::{ComplexQuery, Field, OrderField, SimpleQuery, filter::Operator},
     specimen::SpecimenPredicate,
-    suspension_pool::MultiplexingTagType,
+    suspension_pool::{MultiplexingTagType, SavedSuspensionPoolRecord},
 };
 
 pub type MultiplexingTagTypeOperator = Operator<MultiplexingTagType>;
 
-#[predicate_enum]
-#[strum(prefix = "(multiplexing_tag).")]
-#[strum_discriminants(
-    name(MultiplexingTagField),
-    sort_field_enum,
-    strum(prefix = "(multiplexing_tag).")
-)]
+#[predicate_enum(MultiplexingTagField)]
 pub enum MultiplexingTagPredicate {
     Type(MultiplexingTagTypeOperator),
 }
 
-#[predicate_enum]
-#[strum(prefix = "(suspension_pool).")]
-#[strum_discriminants(
-    name(SuspensionPoolField),
-    sort_field_enum,
-    strum(prefix = "(suspension_pool).")
-)]
+#[predicate_enum(SuspensionPoolField)]
+#[cfg_attr(feature = "schemars", schemars(inline))]
 pub enum SuspensionPoolPredicateInner {
     Id(UuidOperator),
     ReadableId(StringOperator),
     Name(StringOperator),
     PooledAt(TimestampOperator),
     AdditionalData(JsonOperator),
+}
+
+impl Field for MultiplexingTagField {
+    const RELATION: &'static str = <MultiplexingTag as Relation>::NAME;
 }
 
 #[predicate_enum_wrapper]
@@ -49,37 +41,15 @@ pub enum SuspensionPoolPredicate {
     SuspensionPool(SuspensionPoolPredicateInner),
 }
 
-impl From<SpecimenPredicate> for SuspensionPoolPredicate {
-    fn from(value: SpecimenPredicate) -> Self {
-        Self::Specimen(value)
-    }
+impl Field for SuspensionPoolField {
+    const RELATION: &'static str = <SavedSuspensionPoolRecord as Relation>::NAME;
 }
 
-impl From<MultiplexingTagPredicate> for SuspensionPoolPredicate {
-    fn from(value: MultiplexingTagPredicate) -> Self {
-        Self::MultiplexingTag(value)
-    }
-}
-
-impl From<SuspensionPoolPredicateInner> for SuspensionPoolPredicate {
-    fn from(value: SuspensionPoolPredicateInner) -> Self {
-        Self::SuspensionPool(value)
-    }
-}
-
-impl From<SuspensionPoolPredicateInner> for Filter<SuspensionPoolPredicate> {
-    fn from(value: SuspensionPoolPredicateInner) -> Self {
-        Self::Leaf(value.into())
-    }
-}
-
-impl Default for SuspensionPoolField {
-    fn default() -> Self {
+impl OrderField for SuspensionPoolField {
+    fn default_field() -> Self {
         Self::PooledAt
     }
 }
-
-impl DefaultDesc for SuspensionPoolField {}
 
 pub type SuspensionPoolQuery = ComplexQuery<SuspensionPoolPredicate, SuspensionPoolField>;
 

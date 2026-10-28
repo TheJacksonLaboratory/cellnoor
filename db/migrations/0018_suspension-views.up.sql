@@ -12,7 +12,7 @@ create view suspension_to_specimen with (security_invoker = true) as (
     from suspension join specimen on suspension.specimen_id = specimen.id
 );
 
-create view suspension_detailed as (
+create view suspension_detailed with (security_invoker = true) as (
     select
         suspension,
         specimen,

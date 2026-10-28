@@ -4,17 +4,16 @@ use macro_attributes::{base_model, select};
 use postgres_types::Json;
 use uuid::Uuid;
 
-use crate::suspension::measurement::{Concentration, MeanDiameter, Viability, Volume};
+use crate::suspension::measurement::SuspensionMeasurementQuantity;
+
+pub type SuspensionPoolMeasurementData = SuspensionMeasurementQuantity;
 
 #[base_model]
 pub struct NewSuspensionPoolMeasurement {
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
-    #[cfg(all(feature = "postgres-types", feature = "schemars"))]
-    #[cfg_attr(
-        all(feature = "postgres-types", feature = "schemars"),
-        schemars(with = "SuspensionPoolMeasurementData")
-    )]
+    #[cfg(feature = "postgres-types")]
+    #[cfg_attr(feature = "schemars", schemars(with = "SuspensionPoolMeasurementData"))]
     pub data: Json<SuspensionPoolMeasurementData>,
     #[cfg(not(feature = "postgres-types"))]
     pub data: SuspensionPoolMeasurementData,
@@ -28,23 +27,13 @@ pub struct NewSuspensionPoolMeasurement {
 pub struct SuspensionPoolMeasurement {
     pub id: Uuid,
     pub pool_id: Uuid,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub pool_created_at: Timestamp,
     pub measured_by: Uuid,
     pub measured_at: Timestamp,
-    #[cfg(all(feature = "postgres-types", feature = "schemars"))]
-    #[cfg_attr(
-        all(feature = "postgres-types", feature = "schemars"),
-        schemars(with = "SuspensionPoolMeasurementData")
-    )]
+    #[cfg(feature = "postgres-types")]
+    #[cfg_attr(feature = "schemars", schemars(with = "SuspensionPoolMeasurementData"))]
     pub data: Json<SuspensionPoolMeasurementData>,
     #[cfg(not(feature = "postgres-types"))]
     pub data: SuspensionPoolMeasurementData,
-}
-
-#[base_model]
-#[cfg_attr(feature = "serde", serde(tag = "quantity"))]
-pub enum SuspensionPoolMeasurementData {
-    Concentration(Concentration),
-    Viability(Viability),
-    Volume(Volume),
-    MeanDiameter(MeanDiameter),
 }

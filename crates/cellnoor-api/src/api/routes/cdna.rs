@@ -1,0 +1,78 @@
+use aide::axum::{
+    ApiRouter,
+    routing::{get, post},
+};
+use axum::{
+    Json,
+    extract::{Query, State},
+};
+use cellnoor_types::cdna::{
+    CdnaCompact, CdnaDetailed, CdnaQuery, SavedCdnaRecord, SimpleCdnaQuery,
+};
+
+use crate::{
+    auth::AuthUser,
+    db::DbError,
+    handlers::{
+        cdna::{
+            add_cdna_preparers, create_cdna, create_cdna_measurement, index_cdna,
+            index_cdna_detailed, remove_cdna_measurements, remove_cdna_preparers, show_cdna,
+            update_cdna,
+        },
+        delete_resource,
+    },
+    state::AppState,
+};
+
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route("/", post(create_cdna).get(index_cdna_simple))
+        .api_route("/chromium/detailed", get(index_cdna_detailed_simple))
+        .api_route("/search", post(index_cdna))
+        .api_route("/chromium/search/detailed", post(index_cdna_detailed))
+        .nest("/{id}", id_router())
+}
+
+fn id_router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route(
+            "/",
+            get(show_cdna)
+                .put(update_cdna)
+                .delete(delete_resource::<SavedCdnaRecord>),
+        )
+        .api_route(
+            "/measurements",
+            post(create_cdna_measurement).delete(remove_cdna_measurements),
+        )
+        .api_route(
+            "/preparers",
+            post(add_cdna_preparers).delete(remove_cdna_preparers),
+        )
+}
+
+async fn index_cdna_simple(
+    state: State<AppState>,
+    user: AuthUser,
+    Query(q): Query<SimpleCdnaQuery>,
+) -> Result<Json<Vec<CdnaCompact>>, DbError> {
+    index_cdna(
+        state,
+        user,
+        crate::extract::JsonExtractor(CdnaQuery::from_simple_query(q)),
+    )
+    .await
+}
+
+async fn index_cdna_detailed_simple(
+    state: State<AppState>,
+    user: AuthUser,
+    Query(q): Query<SimpleCdnaQuery>,
+) -> Result<Json<Vec<CdnaDetailed>>, DbError> {
+    index_cdna_detailed(
+        state,
+        user,
+        crate::extract::JsonExtractor(CdnaQuery::from_simple_query(q)),
+    )
+    .await
+}

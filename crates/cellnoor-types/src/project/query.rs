@@ -1,29 +1,30 @@
 use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
+    Relation,
     operator::{StringOperator, TimestampOperator, UuidOperator},
-    query::{ComplexQuery, DefaultDesc, SimpleQuery},
+    project::SavedProjectRecord,
+    query::{ComplexQuery, Field, OrderField, SimpleQuery},
 };
 
-#[predicate_enum]
-#[strum(prefix = "(project).")]
-#[strum_discriminants(name(ProjectField), sort_field_enum, strum(prefix = "(project)."))]
+#[predicate_enum(ProjectField)]
 pub enum ProjectPredicate {
     Id(UuidOperator),
     Name(StringOperator),
-    CreatedByPerson(UuidOperator),
-    CreatedByService(UuidOperator),
+    CreatedBy(UuidOperator),
     StartedAt(TimestampOperator),
     EndedAt(TimestampOperator),
 }
 
-impl Default for ProjectField {
-    fn default() -> Self {
+impl Field for ProjectField {
+    const RELATION: &'static str = <SavedProjectRecord as Relation>::NAME;
+}
+
+impl OrderField for ProjectField {
+    fn default_field() -> Self {
         Self::StartedAt
     }
 }
-
-impl DefaultDesc for ProjectField {}
 
 pub type ProjectQuery = ComplexQuery<ProjectPredicate, ProjectField>;
 

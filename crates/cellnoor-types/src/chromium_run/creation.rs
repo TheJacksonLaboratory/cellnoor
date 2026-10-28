@@ -1,5 +1,4 @@
 use macro_attributes::base_model;
-use nonempty::NonemptyBoundedVec;
 use uuid::Uuid;
 
 use crate::{
@@ -10,6 +9,7 @@ use crate::{
         record::ChromiumRunRecord,
     },
     id::NoId,
+    nonempty::NonemptyBoundedVec,
 };
 
 pub mod mixed;
@@ -22,6 +22,7 @@ pub const MAX_GEM_WELLS_PER_OCM_RUN: usize = 2;
 pub const MAX_GEM_WELLS_PER_NON_OCM_RUN: usize = 8;
 
 #[base_model]
+#[derive(Copy)]
 #[cfg_attr(feature = "serde", serde(untagged, deny_unknown_fields))]
 pub enum LoadedEntity {
     Suspension { suspension_id: Uuid },
@@ -29,21 +30,23 @@ pub enum LoadedEntity {
 }
 
 #[base_model]
+pub struct NewChromiumRun {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub record: NewChromiumRunRecord,
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub gem_wells: ChromiumRunGemWells,
+}
+
+#[base_model]
 #[cfg_attr(feature = "serde", serde(tag = "plexy", rename_all = "snake_case"))]
-pub enum NewChromiumRun {
+pub enum ChromiumRunGemWells {
     Mixed {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: NewChromiumRunRecord,
         gem_wells: NonemptyBoundedVec<NewStandardOrOcmGemWell, MAX_GEM_WELLS_PER_OCM_RUN>,
     },
     OnChipMultiplexing {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: NewChromiumRunRecord,
         gem_wells: NonemptyBoundedVec<NewOcmGemWell, MAX_GEM_WELLS_PER_OCM_RUN>,
     },
     Standard {
-        #[cfg_attr(feature = "serde", serde(flatten))]
-        common: NewChromiumRunRecord,
         gem_wells: NonemptyBoundedVec<NewStandardGemWell, MAX_GEM_WELLS_PER_NON_OCM_RUN>,
     },
 }

@@ -1,0 +1,161 @@
+use cellnoor_types::{
+    cdna::{CdnaDetailed, CdnaPredicate, CdnaPredicateInner, CdnaQuery, creation::NewCdna},
+    chromium_run::creation::{ChromiumRunGemWells, LoadedEntity, NewChromiumRun},
+    nonempty::NonemptyBoundedVec,
+    nucleic_acid_measurement::NewNucleicAcidMeasurement,
+    operator::UuidOperator,
+    permission::Resource,
+};
+use jiff::Timestamp;
+use uuid::Uuid;
+
+use crate::{
+    db,
+    handlers::{
+        cdna::{
+            create::{insert_cdna_preparers, insert_test_cdna_and_chromium_run},
+            index_detailed::select_cdna_detailed,
+            measurements::{create::insert_cdna_measurements, remove::delete_cdna_measurements},
+            preparers::remove::delete_cdna_preparers,
+        },
+        chromium_runs::create::{TestChromiumRunKind, insert_test_chromium_run},
+        security_tests::{
+            permissions::{
+                assert_only_staff_with_permission_can_change_children, create_test_user,
+            },
+            rls::specimen::insert_inaccessible_specimen,
+        },
+        suspensions::create::insert_test_suspension_and_specimen,
+    },
+    state::dev_util::{db_client_as_admin, db_client_as_user},
+};
+
+async fn insert_accessible_cdna(tx: &db::Transaction<'_>) -> (NewCdna, CdnaDetailed) {
+    // The underlying `insert_test_project` adds one person to the project, so
+    // we don't need to do anything extra here
+    insert_test_cdna_and_chromium_run(tx, TestChromiumRunKind::Standard, |_| ())
+        .await
+        .unwrap()
+}
+
+fn make_standard_chromium_run_inaccessible(run: &mut NewChromiumRun, suspension_id: Uuid) {
+    let ChromiumRunGemWells::Standard { gem_wells } = &mut run.gem_wells else {
+        panic!("expected standard Chromium run");
+    };
+
+    let LoadedEntity::Suspension {
+        suspension_id: loaded_suspension,
+    } = &mut gem_wells.as_mut()[0].loaded_entity
+    else {
+        panic!("expected suspension to be loaded into GEM well");
+    };
+
+    *loaded_suspension = suspension_id;
+    *gem_wells = NonemptyBoundedVec::new(vec![gem_wells[0].clone()]).unwrap();
+}
+
+async fn insert_inaccessible_cdna(tx: &db::Transaction<'_>) -> (NewCdna, CdnaDetailed) {
+    let (_, specimen) = insert_inaccessible_specimen(tx).await;
+
+    let (_, suspension) =
+        insert_test_suspension_and_specimen(tx, |s| s.record.specimen_id = *specimen.record.id)
+            .await
+            .unwrap();
+
+    let chromium_run = insert_test_chromium_run(tx, TestChromiumRunKind::Standard, |run| {
+        make_standard_chromium_run_inaccessible(run, *suspension.record.id)
+    })
+    .await
+    .unwrap();
+
+    let gem_well_id = *chromium_run.gem_wells[0].record.id;
+
+    insert_test_cdna_and_chromium_run(tx, TestChromiumRunKind::Standard, |c| {
+        c.gem_well_id = gem_well_id
+    })
+    .await
+    .unwrap()
+}
+
+async fn get_user_id_from_cdna(cdna: &CdnaDetailed) -> Uuid {
+    cdna.preparers[0]
+}
+
+async fn test_user_can_only_see_accessible_cdna(
+    tx: &db::Transaction<'_>,
+    accessible_cdna: CdnaDetailed,
+) {
+    let cdnas = select_cdna_detailed(tx, &CdnaQuery::default())
+        .await
+        .unwrap();
+
+    assert_eq!(cdnas, [accessible_cdna]);
+}
+
+async fn test_user_cannot_see_inaccessible_cdna(
+    tx: &db::Transaction<'_>,
+    inaccessible_cdna_id: Uuid,
+) {
+    let pred: CdnaPredicate = CdnaPredicateInner::Id(UuidOperator::Eq(inaccessible_cdna_id)).into();
+
+    let res = select_cdna_detailed(tx, &pred.into()).await.unwrap();
+
+    assert_eq!(res, []);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn row_level_security_for_cdna() {
+    let mut client = db_client_as_admin().await;
+    let tx = client.begin().await.unwrap();
+
+    // Insert a cDNA the user can access and one the user cannot
+    let ((_, accessible_cdna), (_, inaccessible_cdna)) =
+        tokio::join!(insert_accessible_cdna(&tx), insert_inaccessible_cdna(&tx));
+    let user_id = get_user_id_from_cdna(&accessible_cdna).await;
+
+    // Commit this transaction so the change persists for the next part of the
+    // test
+    tx.commit().await.unwrap();
+
+    // Log in as the new user
+    let mut client = db_client_as_user(user_id).await;
+    let tx = client.begin().await.unwrap();
+
+    test_user_can_only_see_accessible_cdna(&tx, accessible_cdna).await;
+    test_user_cannot_see_inaccessible_cdna(&tx, *inaccessible_cdna.record.id).await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn only_staff_with_permission_can_change_cdna_preparers_and_measurements() {
+    let mut client = db_client_as_admin().await;
+    let tx = client.begin().await.unwrap();
+
+    let (new_cdna, cdna) = insert_accessible_cdna(&tx).await;
+
+    tx.commit().await.unwrap();
+
+    let id = *cdna.record.id;
+    let member_id = get_user_id_from_cdna(&cdna).await;
+    let new_preparer_id = create_test_user().await;
+    let new_measurement = NewNucleicAcidMeasurement {
+        measured_at: Timestamp::now(),
+        ..new_cdna.measurements[0].clone()
+    };
+    let measurement_ids: Vec<_> = cdna.measurements.iter().map(|m| m.id).collect();
+
+    assert_only_staff_with_permission_can_change_children(
+        Resource::ChromiumExperimentalData,
+        member_id,
+        async |tx| insert_cdna_preparers(tx, id, &[new_preparer_id]).await,
+        async |tx| delete_cdna_preparers(tx, id, &cdna.preparers).await,
+    )
+    .await;
+
+    assert_only_staff_with_permission_can_change_children(
+        Resource::ChromiumExperimentalData,
+        member_id,
+        async |tx| insert_cdna_measurements(tx, id, std::slice::from_ref(&new_measurement)).await,
+        async |tx| delete_cdna_measurements(tx, id, &measurement_ids).await,
+    )
+    .await;
+}

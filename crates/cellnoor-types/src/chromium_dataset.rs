@@ -1,5 +1,9 @@
+use std::collections::HashMap;
+
+use csvranger::TenxCsvValue;
 use macro_attributes::{base_model, select};
-use nonempty::{NonemptyString, NonemptyVec};
+#[cfg(all(feature = "postgres-types", feature = "schemars"))]
+use postgres_types::Json;
 pub use query::{
     ChromiumDatasetField, ChromiumDatasetPredicate, ChromiumDatasetPredicateInner,
     ChromiumDatasetQuery, SimpleChromiumDatasetQuery,
@@ -7,9 +11,13 @@ pub use query::{
 use uuid::Uuid;
 
 use crate::{
+    Relation,
     chromium_dataset::record::ChromiumDatasetRecord,
+    chromium_run::ChromiumRunCompact,
+    file_tree::FileTreeNode,
     id::{Id, NoId},
     library::LibraryCompact,
+    nonempty::{NonemptyString, NonemptyVec},
     simple_links::SimpleLinks,
     suspension_pool::TaggedSpecimen,
     tenx_assay::TenxAssay,
@@ -20,7 +28,8 @@ mod query;
 mod record {
     use jiff::Timestamp;
     use macro_attributes::select;
-    use nonempty::NonemptyString;
+
+    use crate::nonempty::NonemptyString;
 
     #[select]
     #[cfg_attr(feature = "postgres-types", postgres(name = "chromium_dataset"))]
@@ -29,7 +38,12 @@ mod record {
         pub id: T,
         pub name: NonemptyString,
         pub delivered_at: Timestamp,
+        pub additional_data: Option<serde_json::Value>,
     }
+}
+
+impl<T> Relation for ChromiumDatasetRecord<T> {
+    const NAME: &'static str = "chromium_dataset";
 }
 
 pub type NewChromiumDatasetRecord = ChromiumDatasetRecord<NoId>;
@@ -60,15 +74,33 @@ pub struct ChromiumDatasetDetailedLinks {
     pub raw_files: Vec<String>,
 }
 
+#[base_model]
+#[cfg_attr(feature = "serde", serde(tag = "format", rename_all = "snake_case"))]
+pub enum ChromiumDatasetParsedFileData {
+    SingleRowCsv {
+        data: HashMap<String, TenxCsvValue>,
+    },
+    MultiRowCsv {
+        data: Vec<HashMap<String, TenxCsvValue>>,
+    },
+    Json {
+        data: HashMap<String, serde_json::Value>,
+    },
+}
+
 #[select]
 #[cfg_attr(
     feature = "postgres-types",
     postgres(name = "chromium_dataset_parsed_file")
 )]
-pub struct ChromiumDatasetParsedFile {
+pub struct ChromiumDatasetParsedFileRecord {
     pub dataset_id: Uuid,
     pub path: NonemptyString,
-    pub data: serde_json::Value,
+    #[cfg(feature = "postgres-types")]
+    #[cfg_attr(feature = "schemars", schemars(with = "ChromiumDatasetParsedFileData"))]
+    pub data: Json<ChromiumDatasetParsedFileData>,
+    #[cfg(not(feature = "postgres-types"))]
+    pub data: ChromiumDatasetParsedFileData,
 }
 
 #[base_model]
@@ -76,8 +108,9 @@ pub struct ChromiumDatasetDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: SavedChromiumDatasetRecord,
     pub assay: TenxAssay,
+    pub chromium_run: ChromiumRunCompact,
     pub links: ChromiumDatasetDetailedLinks,
     pub libraries: Vec<LibraryCompact>,
     pub specimens: Vec<TaggedSpecimen>,
-    pub data: Vec<ChromiumDatasetParsedFile>,
+    pub files: Vec<FileTreeNode<ChromiumDatasetParsedFileData>>,
 }

@@ -1,20 +1,17 @@
 use macro_attributes::{predicate_enum, predicate_enum_wrapper, sort_field_enum};
 
 use crate::{
+    Relation,
+    chromium_dataset::SavedChromiumDatasetRecord,
     library::LibraryPredicate,
     operator::{StringOperator, TimestampOperator, UuidOperator},
-    query::{ComplexQuery, DefaultDesc, SimpleQuery, filter::Filter},
+    query::{ComplexQuery, Field, OrderField, SimpleQuery},
     specimen::SpecimenPredicate,
     tenx_assay::TenxAssayPredicate,
 };
 
-#[predicate_enum]
-#[strum(prefix = "(chromium_dataset).")]
-#[strum_discriminants(
-    name(ChromiumDatasetField),
-    sort_field_enum,
-    strum(prefix = "(chromium_dataset).")
-)]
+#[predicate_enum(ChromiumDatasetField)]
+#[cfg_attr(feature = "schemars", schemars(inline))]
 pub enum ChromiumDatasetPredicateInner {
     Id(UuidOperator),
     Name(StringOperator),
@@ -34,43 +31,15 @@ pub enum ChromiumDatasetPredicate {
     ChromiumDataset(ChromiumDatasetPredicateInner),
 }
 
-impl From<SpecimenPredicate> for ChromiumDatasetPredicate {
-    fn from(value: SpecimenPredicate) -> Self {
-        Self::Specimen(value)
-    }
+impl Field for ChromiumDatasetField {
+    const RELATION: &'static str = <SavedChromiumDatasetRecord as Relation>::NAME;
 }
 
-impl From<TenxAssayPredicate> for ChromiumDatasetPredicate {
-    fn from(value: TenxAssayPredicate) -> Self {
-        Self::TenxAssay(value)
-    }
-}
-
-impl From<LibraryPredicate> for ChromiumDatasetPredicate {
-    fn from(value: LibraryPredicate) -> Self {
-        Self::Library(value)
-    }
-}
-
-impl From<ChromiumDatasetPredicateInner> for ChromiumDatasetPredicate {
-    fn from(value: ChromiumDatasetPredicateInner) -> Self {
-        Self::ChromiumDataset(value)
-    }
-}
-
-impl From<ChromiumDatasetPredicateInner> for Filter<ChromiumDatasetPredicate> {
-    fn from(value: ChromiumDatasetPredicateInner) -> Self {
-        Self::Leaf(value.into())
-    }
-}
-
-impl Default for ChromiumDatasetField {
-    fn default() -> Self {
+impl OrderField for ChromiumDatasetField {
+    fn default_field() -> Self {
         Self::DeliveredAt
     }
 }
-
-impl DefaultDesc for ChromiumDatasetField {}
 
 pub type ChromiumDatasetQuery = ComplexQuery<ChromiumDatasetPredicate, ChromiumDatasetField>;
 

@@ -5,9 +5,6 @@ node_modules
 out
 dist
 *.tgz
-index
-*.bun-build
-*.map
 
 # code coverage
 coverage

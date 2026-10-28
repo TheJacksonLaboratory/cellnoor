@@ -1,0 +1,113 @@
+use axum::Json;
+use camino::Utf8PathBuf;
+use deadpool_postgres::PoolError;
+use secrecy::ExposeSecret;
+
+use crate::{
+    auth::AuthUser,
+    db::{self, DbError},
+    settings::Settings,
+};
+
+type JwtDecodingInfo = (jsonwebtoken::DecodingKey, jsonwebtoken::Validation);
+
+#[derive(Clone)]
+pub struct AppState {
+    pub db_pool: db::Pool,
+    pub static_files_dir: Utf8PathBuf,
+    // None disables authentication, so every request runs as the admin user
+    pub jwt_decoding_info: Option<&'static JwtDecodingInfo>,
+}
+
+impl AppState {
+    pub fn initialize(settings: &Settings) -> anyhow::Result<Self> {
+        let jwt_decoding_info = settings.auth.then(|| {
+            &*Box::leak(Box::new((
+                jsonwebtoken::DecodingKey::from_secret(
+                    settings.auth_secret.expose_secret().as_bytes(),
+                ),
+                jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::HS256),
+            )))
+        });
+
+        Ok(Self {
+            db_pool: db::Pool::new(settings.db.clone(), settings.max_db_pool_size)?,
+            static_files_dir: Utf8PathBuf::from(&settings.static_files_dir),
+            jwt_decoding_info,
+        })
+    }
+
+    pub async fn db_client(&self, user: AuthUser) -> Result<db::Client, PoolError> {
+        self.db_pool.get(user).await
+    }
+
+    /// Run `work` in one transaction on behalf of `user`, committing it only if
+    /// `work` succeeds.
+    pub async fn in_transaction<T, E>(
+        &self,
+        user: AuthUser,
+        work: impl AsyncFnOnce(&db::Transaction<'_>) -> Result<T, E>,
+    ) -> Result<Json<T>, E>
+    where
+        E: From<DbError>,
+    {
+        let mut client = self.db_client(user).await.map_err(DbError::from)?;
+        let tx = client.begin().await.map_err(DbError::from)?;
+
+        let response = work(&tx).await?;
+
+        tx.commit().await.map_err(DbError::from)?;
+
+        Ok(Json(response))
+    }
+}
+
+#[cfg(any(test, feature = "dev"))]
+pub mod dev_util {
+    use cellnoor_types::nonempty::NonemptyString;
+    #[cfg(test)]
+    use uuid::Uuid;
+
+    #[cfg(test)]
+    use crate::auth::AuthUser;
+    #[cfg(any(test, feature = "dev"))]
+    use crate::db;
+
+    #[cfg(any(test, feature = "dev"))]
+    pub fn test_db_pool() -> db::Pool {
+        // Your IDE will complain about this unless you run scripts/dev/test/sh
+        #[cfg(test)]
+        return db::Pool::from_url(env!("CELLNOOR_TEST_DB_URL"));
+
+        #[cfg(not(test))]
+        super::AppState::initialize(&crate::settings::Settings::read().unwrap())
+            .unwrap()
+            .db_pool
+    }
+
+    #[cfg(test)]
+    pub async fn db_client_as_admin() -> db::Client {
+        test_db_pool().get(AuthUser::dev_admin()).await.unwrap()
+    }
+
+    #[cfg(test)]
+    pub async fn db_client_as_user(user: Uuid) -> db::Client {
+        test_db_pool()
+            .get(AuthUser::new_as_user(user))
+            .await
+            .unwrap()
+    }
+
+    pub trait ToNonemptyString {
+        fn to_nonempty_string(&self) -> NonemptyString;
+    }
+
+    impl<T> ToNonemptyString for T
+    where
+        T: AsRef<str>,
+    {
+        fn to_nonempty_string(&self) -> NonemptyString {
+            NonemptyString::new(self.as_ref().to_owned()).unwrap()
+        }
+    }
+}

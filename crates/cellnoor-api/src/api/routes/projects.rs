@@ -1,0 +1,73 @@
+use aide::axum::{
+    ApiRouter,
+    routing::{get, post},
+};
+use axum::{
+    Json,
+    extract::{Query, State},
+};
+use cellnoor_types::project::{
+    ProjectCompact, ProjectDetailed, ProjectQuery, SavedProjectRecord, SimpleProjectQuery,
+};
+
+use crate::{
+    auth::AuthUser,
+    db::DbError,
+    handlers::{
+        delete_resource,
+        projects::{
+            add_people_to_project, create_project, index_projects, index_projects_detailed,
+            remove_people_from_project, show_project, update_project,
+        },
+    },
+    state::AppState,
+};
+
+pub(super) fn router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route("/", post(create_project).get(index_projects_simple))
+        .api_route("/detailed", get(index_projects_detailed_simple))
+        .api_route("/search", post(index_projects))
+        .api_route("/search/detailed", post(index_projects_detailed))
+        .nest("/{id}", id_router())
+}
+
+fn id_router() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route(
+            "/",
+            get(show_project)
+                .put(update_project)
+                .delete(delete_resource::<SavedProjectRecord>),
+        )
+        .api_route(
+            "/people",
+            post(add_people_to_project).delete(remove_people_from_project),
+        )
+}
+
+async fn index_projects_simple(
+    state: State<AppState>,
+    user: AuthUser,
+    Query(q): Query<SimpleProjectQuery>,
+) -> Result<Json<Vec<ProjectCompact>>, DbError> {
+    index_projects(
+        state,
+        user,
+        crate::extract::JsonExtractor(ProjectQuery::from_simple_query(q)),
+    )
+    .await
+}
+
+async fn index_projects_detailed_simple(
+    state: State<AppState>,
+    user: AuthUser,
+    Query(q): Query<SimpleProjectQuery>,
+) -> Result<Json<Vec<ProjectDetailed>>, DbError> {
+    index_projects_detailed(
+        state,
+        user,
+        crate::extract::JsonExtractor(ProjectQuery::from_simple_query(q)),
+    )
+    .await
+}

@@ -1,0 +1,68 @@
+use axum::{
+    Json,
+    extract::{Path, State},
+};
+use cellnoor_types::institution::{Institution, NewInstitution};
+use uuid::Uuid;
+
+use crate::{
+    auth::AuthUser,
+    db::{self, DbError},
+    handlers::{IdParam, institutions::show::select_institution_by_id},
+    state::AppState,
+};
+
+pub async fn update_institution(
+    State(state): State<AppState>,
+    user: AuthUser,
+    Path(IdParam { id }): Path<IdParam>,
+    crate::extract::JsonExtractor(institution): crate::extract::JsonExtractor<NewInstitution>,
+) -> Result<Json<Institution>, DbError> {
+    state
+        .in_transaction(user, async |tx| {
+            update_institution_by_id(tx, id, &institution).await
+        })
+        .await
+}
+
+async fn update_institution_by_id(
+    tx: &db::Transaction<'_>,
+    id: Uuid,
+    updated_record: &NewInstitution,
+) -> Result<Institution, DbError> {
+    tx.update(id, updated_record).await?;
+
+    select_institution_by_id(tx, id).await
+}
+
+#[cfg(test)]
+mod test {
+
+    use cellnoor_types::institution::{Institution, SavedInstitutionRecord};
+
+    use crate::{
+        handlers::institutions::{
+            create::insert_test_institution, update::update_institution_by_id,
+        },
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn update() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let (
+            mut pre_update,
+            Institution {
+                record: SavedInstitutionRecord { id, .. },
+                links: _,
+            },
+        ) = insert_test_institution(&tx, |_| ()).await.unwrap();
+        pre_update.name = "updated".to_nonempty_string();
+
+        update_institution_by_id(&tx, *id, &pre_update)
+            .await
+            .unwrap();
+    }
+}

@@ -1,0 +1,335 @@
+use axum::{Json, extract::State};
+use cellnoor_types::{
+    Relation,
+    nonempty::NonemptyString,
+    suspension_pool::{
+        MultiplexingTagType, NewSuspensionPool, NewSuspensionPoolRecord, PooledSuspensions,
+        SuspensionPoolDetailed, SuspensionPoolField,
+    },
+};
+use uuid::Uuid;
+
+use crate::{
+    auth::AuthUser,
+    db::{self, DbError, FieldValues, Insert},
+    handlers::suspension_pools::{
+        measurements::create::insert_suspension_pool_measurements,
+        show::select_suspension_pool_by_id,
+    },
+    state::AppState,
+};
+
+pub async fn create_suspension_pool(
+    State(state): State<AppState>,
+    user: AuthUser,
+    crate::extract::JsonExtractor(record): crate::extract::JsonExtractor<NewSuspensionPool>,
+) -> Result<Json<SuspensionPoolDetailed>, DbError> {
+    state
+        .in_transaction(user, async |tx| insert_suspension_pool(tx, &record).await)
+        .await
+}
+
+async fn insert_suspension_pool(
+    tx: &db::Transaction<'_>,
+    NewSuspensionPool {
+        record,
+        measurements,
+        preparers,
+        pool,
+    }: &NewSuspensionPool,
+) -> Result<SuspensionPoolDetailed, DbError> {
+    let poolings: Vec<_> = match pool {
+        PooledSuspensions::ExogenouslyTagged {
+            suspensions,
+            multiplexing_tag_type,
+        } => suspensions
+            .iter()
+            .map(|s| {
+                (
+                    s.suspension_id,
+                    Some(&s.tag_id),
+                    Some(*multiplexing_tag_type),
+                )
+            })
+            .collect(),
+        PooledSuspensions::GeneticallyTagged { suspensions } => {
+            suspensions.iter().map(|s| (*s, None, None)).collect()
+        }
+    };
+
+    let id = tx.insert_returning_id(record).await?;
+
+    let measurement_insertions = insert_suspension_pool_measurements(tx, id, measurements);
+
+    tokio::try_join!(
+        insert_suspension_pool_preparers(tx, id, preparers.as_ref()),
+        insert_suspension_poolings(tx, id, &poolings),
+        measurement_insertions,
+    )?;
+
+    select_suspension_pool_by_id(tx, id).await
+}
+
+pub(in super::super) async fn insert_suspension_pool_preparers(
+    tx: &db::Transaction<'_>,
+    pool_id: Uuid,
+    preparer_ids: &[Uuid],
+) -> Result<(), DbError> {
+    let preparers: Vec<_> = preparer_ids
+        .iter()
+        .map(|&prepared_by| NewSuspensionPoolPreparer {
+            pool_id,
+            prepared_by,
+        })
+        .collect();
+
+    tx.insert_many_on_conflict_do_nothing(&preparers).await
+}
+
+async fn insert_suspension_poolings(
+    tx: &db::Transaction<'_>,
+    pool_id: Uuid,
+    suspensions: &[(Uuid, Option<&NonemptyString>, Option<MultiplexingTagType>)],
+) -> Result<(), DbError> {
+    let poolings: Vec<_> = suspensions
+        .iter()
+        .map(|(suspension_id, tag_id, tag_type)| NewSuspensionPooling {
+            pool_id,
+            suspension_id: *suspension_id,
+            tag_id: *tag_id,
+            tag_type: *tag_type,
+        })
+        .collect();
+
+    tx.insert_many(&poolings).await
+}
+
+struct NewSuspensionPoolPreparer {
+    pool_id: Uuid,
+    prepared_by: Uuid,
+}
+
+impl Relation for NewSuspensionPoolPreparer {
+    const NAME: &'static str = "suspension_pool_preparer";
+}
+
+impl Insert for NewSuspensionPoolPreparer {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
+        let Self {
+            pool_id,
+            prepared_by,
+        } = self;
+
+        vec![("pool_id", pool_id), ("prepared_by", prepared_by)]
+    }
+}
+
+struct NewSuspensionPooling<'a> {
+    pool_id: Uuid,
+    suspension_id: Uuid,
+    tag_id: Option<&'a NonemptyString>,
+    tag_type: Option<MultiplexingTagType>,
+}
+
+impl Relation for NewSuspensionPooling<'_> {
+    const NAME: &'static str = "suspension_pooling";
+}
+
+impl Insert for NewSuspensionPooling<'_> {
+    type Field = &'static str;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
+        let Self {
+            pool_id,
+            suspension_id,
+            tag_id,
+            tag_type,
+        } = self;
+
+        vec![
+            ("pool_id", pool_id),
+            ("suspension_id", suspension_id),
+            ("tag_id", tag_id),
+            ("tag_type", tag_type),
+        ]
+    }
+}
+
+impl Insert for NewSuspensionPoolRecord {
+    type Field = SuspensionPoolField;
+
+    fn fields(&self) -> FieldValues<'_, Self::Field> {
+        use SuspensionPoolField::*;
+
+        let Self {
+            id: _,
+            readable_id,
+            name,
+            pooled_at,
+            additional_data,
+        } = self;
+
+        vec![
+            (ReadableId, readable_id),
+            (Name, name),
+            (PooledAt, pooled_at),
+            (AdditionalData, additional_data),
+        ]
+    }
+}
+
+#[cfg(any(test, feature = "dev"))]
+pub async fn insert_test_suspension_pool_and_suspensions<F>(
+    tx: &db::Transaction<'_>,
+    mut modify: F,
+) -> Result<(NewSuspensionPool, SuspensionPoolDetailed), DbError>
+where
+    F: FnMut(&mut NewSuspensionPool),
+{
+    use cellnoor_types::{
+        id::NoId,
+        nonempty::NonemptyVec,
+        positive::PositiveBoundedF32,
+        suspension::measurement::CellViability,
+        suspension_pool::{
+            TaggedSuspension,
+            measurement::{NewSuspensionPoolMeasurement, SuspensionPoolMeasurementData},
+        },
+    };
+    use jiff::Timestamp;
+    use postgres_types::Json;
+
+    use crate::{
+        handlers::{
+            multiplexing_tags::create::insert_test_multiplexing_tag,
+            suspensions::create::insert_test_suspension_and_specimen,
+        },
+        state::dev_util::ToNonemptyString,
+    };
+
+    let (_, suspension1) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+    let (_, suspension2) = insert_test_suspension_and_specimen(tx, |_| ()).await?;
+
+    let multiplexing_tag1_id = insert_test_multiplexing_tag(tx).await?;
+    let multiplexing_tag2_id = insert_test_multiplexing_tag(tx).await?;
+
+    let suspension1_id = *suspension1.record.id;
+    let suspension2_id = *suspension2.record.id;
+
+    let person_id = suspension1.specimen.record.submitted_by;
+
+    let mut new = NewSuspensionPool {
+        record: NewSuspensionPoolRecord {
+            id: NoId,
+            readable_id: crate::db::dummy_data::random_name_for("suspension_pool"),
+            name: "pool".to_nonempty_string(),
+            pooled_at: Timestamp::now(),
+            additional_data: None,
+        },
+        measurements: vec![NewSuspensionPoolMeasurement {
+            measured_by: person_id,
+            measured_at: Timestamp::now(),
+            data: Json(SuspensionPoolMeasurementData::Viability(CellViability {
+                value: PositiveBoundedF32::new(0.5).unwrap(),
+            })),
+        }],
+        preparers: NonemptyVec::new(vec![person_id]).unwrap(),
+        pool: PooledSuspensions::ExogenouslyTagged {
+            suspensions: NonemptyVec::new(vec![
+                TaggedSuspension {
+                    suspension_id: suspension1_id,
+                    tag_id: multiplexing_tag1_id.tag_id,
+                },
+                TaggedSuspension {
+                    suspension_id: suspension2_id,
+                    tag_id: multiplexing_tag2_id.tag_id,
+                },
+            ])
+            .unwrap(),
+            multiplexing_tag_type: MultiplexingTagType::FlexOligonucleotideBarcode,
+        },
+    };
+
+    modify(&mut new);
+
+    let inserted = insert_suspension_pool(tx, &new).await?;
+    Ok((new, inserted))
+}
+
+#[cfg(test)]
+pub mod test {
+
+    use std::collections::HashSet;
+
+    use cellnoor_types::{
+        positive::PositiveBoundedF32,
+        suspension::measurement::CellViability,
+        suspension_pool::{SuspensionPoolDetailed, measurement::SuspensionPoolMeasurementData},
+    };
+    use pretty_assertions::assert_eq;
+
+    use super::insert_test_suspension_pool_and_suspensions;
+    use crate::{
+        handlers::specimens::create::insert_test_specimen_and_project,
+        state::dev_util::db_client_as_admin,
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn insert() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        // Insert a couple unrelated test specimens to make sure the suspension
+        // pool query doesn't pick them up
+
+        let mut unrelated_specimen_ids = HashSet::new();
+
+        for _ in 0..4 {
+            let id = insert_test_specimen_and_project(&tx, |_| ())
+                .await
+                .unwrap()
+                .1
+                .record
+                .id;
+            unrelated_specimen_ids.insert(*id);
+        }
+
+        let (_, inserted) = insert_test_suspension_pool_and_suspensions(&tx, |_| ())
+            .await
+            .unwrap();
+
+        let SuspensionPoolDetailed {
+            record,
+            links: _,
+            specimens,
+            measurements,
+            preparers,
+        } = inserted;
+
+        assert_eq!(specimens.len(), 2);
+
+        let multiplexing_tags = specimens
+            .iter()
+            .map(|s| s.multiplexing_tag.clone())
+            .collect::<Vec<_>>();
+        assert_ne!(multiplexing_tags[0], multiplexing_tags[1]);
+
+        assert!(
+            unrelated_specimen_ids
+                .is_disjoint(&specimens.iter().map(|s| *s.specimen.record.id).collect())
+        );
+
+        assert_eq!(measurements.len(), 1);
+        assert_eq!(measurements[0].pool_id, *record.id);
+        assert_eq!(
+            measurements[0].data.0,
+            SuspensionPoolMeasurementData::Viability(CellViability {
+                value: PositiveBoundedF32::new(0.5).unwrap()
+            })
+        );
+
+        assert_eq!(preparers.len(), 1);
+    }
+}

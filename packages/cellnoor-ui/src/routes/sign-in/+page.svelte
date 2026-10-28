@@ -1,0 +1,12 @@
+<script lang="ts">
+	import { page } from '$app/state';
+	import { authClient } from '#lib/auth.ts';
+
+	const signInWithMicrosoft = () =>
+		authClient.signIn.social({
+			provider: 'microsoft',
+			callbackURL: page.url.searchParams.get('redirect_to') ?? '/'
+		});
+</script>
+
+<button class="button" onclick={signInWithMicrosoft}>Sign in with Microsoft</button>

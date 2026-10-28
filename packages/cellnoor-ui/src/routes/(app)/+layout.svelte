@@ -1,0 +1,121 @@
+<script lang="ts">
+	import { authClient } from '#lib/auth.ts';
+	import { afterNavigate, goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { toasts } from '#lib/toasts.svelte.ts';
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
+
+	let { children, data } = $props();
+
+	let datasetsMenu: HTMLElement;
+	let settingsMenu: HTMLElement;
+
+	afterNavigate(({ shallow, type }) => {
+		if (shallow && type === 'goto') return;
+
+		datasetsMenu.hidePopover();
+		settingsMenu.hidePopover();
+	});
+</script>
+
+<nav>
+	<a class="brand" href={resolve('/(app)')}>cellnoor</a>
+	<a href={resolve('/(app)/projects')}>Projects</a>
+	<a href={resolve('/(app)/specimens')}>Specimens</a>
+	<a href={resolve('/(app)/libraries')}>Libraries</a>
+
+	<button class="plain-button" popovertarget="datasets-menu">
+		Datasets <ChevronDown size="1em" />
+	</button>
+	<div id="datasets-menu" class="card menu" popover bind:this={datasetsMenu}>
+		<a class="menu-item" href={resolve('/(app)/chromium-datasets')}>Chromium</a>
+	</div>
+
+	<button class="plain-button" popovertarget="settings-menu">
+		Settings <ChevronDown size="1em" />
+	</button>
+	<div id="settings-menu" class="card menu" popover bind:this={settingsMenu}>
+		{#if data.canUpdatePeople}
+			<a class="menu-item" href={resolve('/(app)/settings/people')}>People</a>
+		{/if}
+		<a class="menu-item" href={resolve('/(app)/settings/bot-accounts')}>Bot Accounts</a>
+		<a class="menu-item" href={resolve('/(app)/settings/api-keys')}>API keys</a>
+	</div>
+
+	<button
+		class="button"
+		onclick={() =>
+			authClient.signOut({ fetchOptions: { onSuccess: () => goto(resolve('/sign-in')) } })}
+		>Sign Out</button
+	>
+</nav>
+
+<main>
+	{@render children()}
+</main>
+
+<div class="stack toasts" aria-live="polite">
+	{#each toasts as t (t)}
+		<p class={t.ok ? 'success' : 'error'}>{t.message}</p>
+	{/each}
+</div>
+
+<style>
+	nav {
+		display: flex;
+		align-items: center;
+		gap: var(--space-lg);
+		padding: var(--space-sm) var(--space-lg);
+		border-block-end: 1px solid var(--color-primary);
+		font-size: large;
+	}
+
+	.brand {
+		font-family: var(--font-display);
+		font-size: xx-large;
+		margin-inline-end: auto;
+	}
+
+	nav > a,
+	[popovertarget] {
+		color: inherit;
+
+		&:hover {
+			color: var(--color-primary);
+			text-decoration: none;
+		}
+	}
+
+	[popovertarget] {
+		display: flex;
+		align-items: center;
+		gap: var(--space-xs);
+	}
+
+	[popover] {
+		position-area: block-end span-inline-end;
+		margin: var(--space-xs) 0 0;
+	}
+
+	.toasts {
+		position: fixed;
+		inset-block-end: var(--space-lg);
+		inset-inline-end: var(--space-lg);
+	}
+
+	.error,
+	.success {
+		margin: 0;
+		padding: var(--space-sm) var(--space-md);
+		border: 1px solid;
+		border-radius: var(--radius);
+	}
+
+	.error {
+		background-color: var(--color-error-background);
+	}
+
+	.success {
+		background-color: var(--color-success-background);
+	}
+</style>

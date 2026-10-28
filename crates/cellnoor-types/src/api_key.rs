@@ -1,10 +1,9 @@
-use std::fmt::Display;
-
 use jiff::Timestamp;
 use macro_attributes::{base_model, select};
-use nonempty::NonemptyString;
 pub use query::{ApiKeyField, ApiKeyPredicate, ApiKeyQuery, SimpleApiKeyQuery};
 use uuid::Uuid;
+
+use crate::{Relation, nonempty::NonemptyString};
 
 mod query;
 
@@ -12,7 +11,9 @@ mod query;
 #[derive(Default)]
 pub struct NewApiKey {
     pub description: Option<NonemptyString>,
-    pub service_id: Option<ServiceId>,
+    // The person or bot_account the key acts as. It defaults to whoever creates
+    // the key
+    pub owner_id: Option<Uuid>,
     pub expires_at: Option<Timestamp>,
 }
 
@@ -22,48 +23,8 @@ pub struct ApiKeyUpdate {
     pub expires_at: Option<Timestamp>,
 }
 
-#[select]
-#[derive(Copy, Eq)]
-#[cfg_attr(feature = "postgres-types", derive(postgres_types::ToSql))]
-#[cfg_attr(feature = "postgres-types", postgres(transparent))]
-pub struct PersonId(Uuid);
-
-impl PersonId {
-    #[must_use]
-    pub fn new(id: Uuid) -> Self {
-        Self(id)
-    }
-}
-
-impl Display for PersonId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-#[select]
-#[derive(Copy, Eq)]
-#[cfg_attr(feature = "postgres-types", derive(postgres_types::ToSql))]
-#[cfg_attr(feature = "postgres-types", postgres(transparent))]
-pub struct ServiceId(Uuid);
-
-impl ServiceId {
-    #[must_use]
-    pub fn new(id: Uuid) -> Self {
-        Self(id)
-    }
-}
-
-impl Display for ServiceId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-impl From<ServiceId> for Uuid {
-    fn from(value: ServiceId) -> Self {
-        value.0
-    }
+impl Relation for ApiKeyUpdate {
+    const NAME: &'static str = "api_key";
 }
 
 #[select]
@@ -71,10 +32,14 @@ impl From<ServiceId> for Uuid {
 pub struct SavedApiKeyRecord {
     pub id: Uuid,
     pub description: Option<NonemptyString>,
-    pub person_id: Option<PersonId>,
-    pub service_id: Option<ServiceId>,
+    pub owner_id: Uuid,
+    pub owner_is_staff: bool,
     pub created_at: Timestamp,
     pub expires_at: Option<Timestamp>,
+}
+
+impl Relation for SavedApiKeyRecord {
+    const NAME: &'static str = "api_key_public";
 }
 
 #[derive(Clone, PartialEq)]

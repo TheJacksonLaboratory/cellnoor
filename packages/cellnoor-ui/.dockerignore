@@ -1,10 +1,7 @@
 # Build artifacts
-.svelte-kit
 node_modules
-cellnoor-auth
-index
-*.map
-*.bun-build
+.svelte-kit
+build
 
 # Docker
 Dockerfile
@@ -12,6 +9,3 @@ Dockerfile
 
 # Environment files
 .env*
-
-# Miscellaneous
-README*
