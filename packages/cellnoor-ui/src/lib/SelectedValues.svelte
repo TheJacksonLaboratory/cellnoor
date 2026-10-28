@@ -39,13 +39,15 @@
 <style>
 	ul {
 		gap: var(--space-xs);
+		margin-block: var(--space-xs);
+		contain: inline-size;
 	}
 
 	li {
 		display: flex;
 		align-items: center;
 		gap: var(--space-xs);
-		padding-inline: var(--space-xs);
+		padding: var(--space-xs);
 	}
 
 	button {
