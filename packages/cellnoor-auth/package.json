@@ -8,10 +8,10 @@
     "@types/pg": "^8.23.1"
   },
   "peerDependencies": {
-    "typescript": "^7"
+    "typescript": "^7.0.2"
   },
   "dependencies": {
-    "better-auth": "^1.7.5",
-    "pg": "^8.23.0"
+    "better-auth": "^1.7.14",
+    "pg": "^8.23.1"
   }
 }
