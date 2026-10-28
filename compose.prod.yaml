@@ -5,7 +5,7 @@ services:
     pull_policy: always
     environment:
       NODE_ENV: production
-      CELLNOOR_AUTH__PUBLIC_BASE_URL: ${CELLNOOR_AUTH__PUBLIC_BASE_URL}
+      CELLNOOR_AUTH__PUBLIC_BASE_URL: ${CELLNOOR_PUBLIC_BASE_URL}
   cellnoor-api:
     build: !reset null
     image: ghcr.io/thejacksonlaboratory/cellnoor-api:latest
