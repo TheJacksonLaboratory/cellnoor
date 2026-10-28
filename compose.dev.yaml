@@ -5,7 +5,7 @@ services:
   cellnoor-auth:
     environment:
       NODE_ENV: development
-      CELLNOOR_AUTH__PUBLIC_BASE_URL: ${CELLNOOR_AUTH__PUBLIC_BASE_URL}
+      CELLNOOR_AUTH__PUBLIC_BASE_URL: ${CELLNOOR_PUBLIC_BASE_URL}
   cellnoor-api:
     build:
       args:
@@ -17,4 +17,4 @@ services:
       start_period: 5m
   caddy:
     environment:
-      CELLNOOR_CADDY__PUBLIC_BASE_URL: ${CELLNOOR_CADDY__PUBLIC_BASE_URL}
+      CELLNOOR_CADDY__PUBLIC_BASE_URL: ${CELLNOOR_PUBLIC_BASE_URL}
