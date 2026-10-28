@@ -7,6 +7,7 @@ pub use simple_links::SimpleLinks;
 
 pub mod account;
 pub mod api_key;
+pub mod bot_account;
 pub mod cdna;
 pub mod chromium_dataset;
 pub mod chromium_run;
@@ -24,7 +25,6 @@ pub mod positive;
 pub mod project;
 pub mod query;
 pub mod relation;
-pub mod service;
 pub(crate) mod simple_links;
 pub mod specimen;
 pub mod suspension;

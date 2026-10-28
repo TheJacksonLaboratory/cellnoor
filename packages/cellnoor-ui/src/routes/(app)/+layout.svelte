@@ -38,7 +38,7 @@
 		{#if data.canUpdatePeople}
 			<a class="menu-item" href={resolve('/(app)/settings/people')}>People</a>
 		{/if}
-		<a class="menu-item" href={resolve('/(app)/settings/services')}>Services</a>
+		<a class="menu-item" href={resolve('/(app)/settings/bot-accounts')}>Bot Accounts</a>
 		<a class="menu-item" href={resolve('/(app)/settings/api-keys')}>API keys</a>
 	</div>
 

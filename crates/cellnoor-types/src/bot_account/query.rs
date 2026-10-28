@@ -2,13 +2,13 @@ use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
     Relation,
+    bot_account::BotAccount,
     operator::{BoolOperator, StringOperator, TimestampOperator, UuidOperator},
     query::{ComplexQuery, Field, OrderField, SimpleQuery},
-    service::Service,
 };
 
-#[predicate_enum(ServiceField)]
-pub enum ServicePredicate {
+#[predicate_enum(BotAccountField)]
+pub enum BotAccountPredicate {
     Id(UuidOperator),
     Description(StringOperator),
     OwnedBy(UuidOperator),
@@ -16,16 +16,16 @@ pub enum ServicePredicate {
     CreatedAt(TimestampOperator),
 }
 
-impl Field for ServiceField {
-    const RELATION: &'static str = <Service as Relation>::NAME;
+impl Field for BotAccountField {
+    const RELATION: &'static str = <BotAccount as Relation>::NAME;
 }
 
-impl OrderField for ServiceField {
+impl OrderField for BotAccountField {
     fn default_field() -> Self {
         Self::CreatedAt
     }
 }
 
-pub type ServiceQuery = ComplexQuery<ServicePredicate, ServiceField>;
+pub type BotAccountQuery = ComplexQuery<BotAccountPredicate, BotAccountField>;
 
-pub type SimpleServiceQuery = SimpleQuery<ServiceField>;
+pub type SimpleBotAccountQuery = SimpleQuery<BotAccountField>;

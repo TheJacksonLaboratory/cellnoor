@@ -1,5 +1,5 @@
 import { onOrAfter, onOrBefore, type Parser } from '#lib/filters/utils.ts';
-import type { ServicePredicate } from 'cellnoor-client/cellnoor-types.ts';
+import type { BotAccountPredicate } from 'cellnoor-client/cellnoor-types.ts';
 
 export enum FormFieldName {
 	Description = 'description',
@@ -9,7 +9,7 @@ export enum FormFieldName {
 	CreatedTo = 'created_to'
 }
 
-export const serviceFilterFieldParsers: Record<FormFieldName, Parser<ServicePredicate>> = {
+export const bot_accountFilterFieldParsers: Record<FormFieldName, Parser<BotAccountPredicate>> = {
 	description: (v) => ({ description: { trgm_any_unless_empty: v } }),
 	is_staff: (v) => ({ is_staff: { in_unless_empty: v.map((s) => s === 'true') } }),
 	owned_by: (v) => ({ owned_by: { in_unless_empty: v } }),

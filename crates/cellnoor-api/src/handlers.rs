@@ -15,6 +15,7 @@ use crate::{
 
 pub mod accounts;
 pub mod api_keys;
+pub mod bot_accounts;
 pub mod cdna;
 pub mod chromium_datasets;
 pub mod chromium_runs;
@@ -29,7 +30,6 @@ pub(crate) mod preparers;
 pub mod projects;
 #[cfg(test)]
 mod security_tests;
-pub mod services;
 pub mod specimens;
 pub mod suspension_pools;
 pub mod suspensions;
@@ -70,10 +70,11 @@ where
         .await
 }
 
-/// Set whether a person or service is staff.
+/// Set whether a person or bot_account is staff.
 ///
 /// `is_staff` lives on the `principal` table, whose row is created by a trigger
-/// when the person or service is inserted, so it's always a separate statement.
+/// when the person or bot_account is inserted, so it's always a separate
+/// statement.
 pub(crate) async fn set_is_staff(
     tx: &db::Transaction<'_>,
     id: Uuid,

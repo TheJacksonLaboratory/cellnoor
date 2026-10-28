@@ -213,7 +213,7 @@ mod test {
     }
 
     fn point_second_loading_at_first_suspension(new: &mut NewChromiumRun) {
-        // We do this for both the GEM wells in the Chromium run
+        // We do this for bot_accounth the GEM wells in the Chromium run
         fn get_suspension_id(
             chromium_run: &mut NewChromiumRun,
             gem_well_idx: usize,

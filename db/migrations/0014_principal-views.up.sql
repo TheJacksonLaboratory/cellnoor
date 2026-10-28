@@ -21,14 +21,14 @@ create view person_account with (security_invoker = true) as (
     from account join person on account.person_id = person.id
 );
 
-create view service_public with (security_invoker = true) as (
+create view bot_account_public with (security_invoker = true) as (
     select
-        service.id,
-        service.description,
-        service.owned_by,
+        bot_account.id,
+        bot_account.description,
+        bot_account.owned_by,
         principal.is_staff,
-        service.created_at
-    from service join principal on service.id = principal.id
+        bot_account.created_at
+    from bot_account join principal on bot_account.id = principal.id
 );
 
 -- A permission without the principal it belongs to, so that it can be aggregated per principal
@@ -47,16 +47,16 @@ create view person_with_permissions with (security_invoker = true) as (
     from person_public
 );
 
-create view service_detailed with (security_invoker = true) as (
+create view bot_account_detailed with (security_invoker = true) as (
     select
-        service_public,
+        bot_account_public,
         array(
             select (perm.resource, perm.action)::granted_permission from permission as perm
-            where perm.principal_id = service_public.id
+            where perm.principal_id = bot_account_public.id
         ) as permissions,
         array(
-            select access.person_id from service_access as access
-            where access.service_id = service_public.id
+            select access.person_id from bot_account_access as access
+            where access.bot_account_id = bot_account_public.id
         ) as members
-    from service_public
+    from bot_account_public
 );

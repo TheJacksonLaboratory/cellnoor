@@ -12,6 +12,7 @@ use uuid::Uuid;
 use crate::{
     db::{self, DbError, Sql},
     handlers::{
+        bot_accounts::{index::select_bot_accounts, index_detailed::select_bot_accounts_detailed},
         cdna::index_detailed::select_cdna_detailed,
         chromium_datasets::index_detailed::select_chromium_datasets_detailed,
         chromium_runs::index_detailed::select_chromium_runs_detailed,
@@ -24,7 +25,6 @@ use crate::{
         permissions::{grant_permissions, revoke_permissions},
         projects::{create::insert_test_project, index_detailed::select_projects_detailed},
         security_tests::rls::specimen::get_user_id_from_specimen,
-        services::{index::select_services, index_detailed::select_services_detailed},
         specimens::{
             create::insert_test_specimen_and_project, index_detailed::select_specimens_detailed,
         },
@@ -125,7 +125,7 @@ pub async fn assert_only_staff_with_permission_can_change_children<A, R, E>(
     add(&tx).await.unwrap();
     tx.commit().await.unwrap();
 
-    // Each removal is rolled back, so both remove the same rows
+    // Each removal is rolled back, so bot_accounth remove the same rows
     for user_id in [staff_with_delete, staff_with_update] {
         let mut client = db_client_as_user(user_id).await;
         let tx = client.begin().await.unwrap();
@@ -159,8 +159,8 @@ async fn user_can_access_every_view() {
         assert_is_ok(tx, select_people),
         assert_is_ok(tx, select_people_with_permissions),
         assert_is_ok(tx, select_projects_detailed),
-        assert_is_ok(tx, select_services),
-        assert_is_ok(tx, select_services_detailed),
+        assert_is_ok(tx, select_bot_accounts),
+        assert_is_ok(tx, select_bot_accounts_detailed),
         assert_is_ok(tx, select_specimens_detailed),
         assert_is_ok(tx, select_suspensions_detailed),
         assert_is_ok(tx, select_suspension_pools_detailed),

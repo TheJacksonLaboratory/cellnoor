@@ -9,6 +9,7 @@ use crate::state::AppState;
 
 mod accounts;
 mod api_keys;
+mod bot_accounts;
 mod cdna;
 mod chromium_datasets;
 mod chromium_runs;
@@ -19,7 +20,6 @@ mod libraries;
 mod multiplexing_tags;
 mod people;
 mod projects;
-mod services;
 mod specimens;
 mod suspension_pools;
 mod suspensions;
@@ -38,7 +38,7 @@ pub fn router() -> (OpenApi, Router<AppState>) {
         .nest("/institutions", institutions::router())
         .nest("/people", people::router())
         .nest("/accounts", accounts::router())
-        .nest("/services", services::router())
+        .nest("/bot-accounts", bot_accounts::router())
         .nest("/api-keys", api_keys::router())
         .nest("/projects", projects::router())
         .nest("/index-sets", index_sets::router())

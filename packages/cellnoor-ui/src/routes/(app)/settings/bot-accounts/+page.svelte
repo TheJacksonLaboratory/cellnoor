@@ -16,28 +16,28 @@
 	import PermissionGrid from '#lib/PermissionGrid.svelte';
 	import Time from '#lib/Time.svelte';
 	import type {
-		ServiceDetailed,
-		ServiceField,
-		ServiceSimpleFields
+		BotAccountDetailed,
+		BotAccountField,
+		BotAccountSimpleFields
 	} from 'cellnoor-client/cellnoor-types.ts';
 	import { FormFieldName } from './field-parsers.ts';
 
 	let { data } = $props();
 
-	const { serviceList, personNames, orderBy, limit } = $derived(data);
+	const { bot_accountList, personNames, orderBy, limit } = $derived(data);
 
-	const sortFields = new Map<ServiceField, string>([
+	const sortFields = new Map<BotAccountField, string>([
 		['created_at', 'Date created'],
 		['description', 'Description']
 	]);
 
-	async function createService(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
+	async function createBotAccount(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
 		const form = e.currentTarget;
 		const description = new FormData(form).get('description') as string;
 
 		const created = await mutate(
-			cellnoorClient.POST('/services', {
+			cellnoorClient.POST('/bot-accounts', {
 				body: {
 					description: description || null,
 					is_staff: false,
@@ -53,28 +53,28 @@
 		}
 	}
 
-	function updateService(
-		{ id, description, is_staff }: ServiceDetailed,
-		changes: Partial<ServiceSimpleFields>
+	function updateBotAccount(
+		{ id, description, is_staff }: BotAccountDetailed,
+		changes: Partial<BotAccountSimpleFields>
 	) {
-		return cellnoorClient.PUT('/services/{id}', {
+		return cellnoorClient.PUT('/bot-accounts/{id}', {
 			params: { path: { id } },
 			body: { description, is_staff, ...changes }
 		});
 	}
 </script>
 
-<FilteredList {limit} count={serviceList.length}>
+<FilteredList {limit} count={bot_accountList.length}>
 	{#snippet actions()}
-		<form class="card create-card" onsubmit={createService}>
-			<h2 class="subheading card-header"><Plus size="1em" /> New service</h2>
+		<form class="card create-card" onsubmit={createBotAccount}>
+			<h2 class="subheading card-header"><Plus size="1em" />New Bot Account</h2>
 			<div class="stack card-body">
 				<label class="field">
 					<span class="label">Description</span>
 					<input class="input" name="description" />
 				</label>
 				<div>
-					<button class="button">Create service</button>
+					<button class="button">Create bot_account</button>
 				</div>
 			</div>
 		</form>
@@ -85,7 +85,7 @@
 			<Sort fields={sortFields} {orderBy} />
 			<PageSize {limit} />
 		</FilterGroup>
-		<FilterGroup label="Service">
+		<FilterGroup label="BotAccount">
 			<TagInput name={FormFieldName.Description} label="Description" />
 			<MultiSelectFilter name={FormFieldName.IsStaff} label="Staff" options={staff} />
 			<MultiSelectFilter name={FormFieldName.OwnedBy} label="Owner" options={personNames} />
@@ -97,45 +97,48 @@
 		</FilterGroup>
 	{/snippet}
 
-	{#if serviceList.length}
+	{#if bot_accountList.length}
 		<ul class="divided">
-			{#each serviceList as service (service.id)}
-				{@const { id } = service}
-				<ListRow title={service.description ?? id}>
+			{#each bot_accountList as bot_account (bot_account.id)}
+				{@const { id } = bot_account}
+				<ListRow title={bot_account.description ?? id}>
 					<div class="muted">
-						Owned by {personNames.get(service.owned_by)} · Created
-						<Time datetime={service.created_at} />
+						Owned by {personNames.get(bot_account.owned_by)} · Created
+						<Time datetime={bot_account.created_at} />
 					</div>
 					<MutationInput
 						label="Description"
-						save={(description) => updateService(service, { description })}
+						save={(description) => updateBotAccount(bot_account, { description })}
 					/>
 					<MutationCheckbox
 						label="Staff"
-						checked={service.is_staff}
-						save={(is_staff) => updateService(service, { is_staff })}
+						checked={bot_account.is_staff}
+						save={(is_staff) => updateBotAccount(bot_account, { is_staff })}
 					/>
 					<PermissionGrid
-						permissions={service.permissions}
+						permissions={bot_account.permissions}
 						grant={(body) =>
-							cellnoorClient.POST('/services/{id}/permissions', { params: { path: { id } }, body })}
+							cellnoorClient.POST('/bot-accounts/{id}/permissions', {
+								params: { path: { id } },
+								body
+							})}
 						revoke={(body) =>
-							cellnoorClient.DELETE('/services/{id}/permissions', {
+							cellnoorClient.DELETE('/bot-accounts/{id}/permissions', {
 								params: { path: { id } },
 								body
 							})}
 					/>
 					<Members
 						label="Members"
-						members={service.members}
+						members={bot_account.members}
 						options={personNames}
 						add={(people) =>
-							cellnoorClient.POST('/services/{id}/people', {
+							cellnoorClient.POST('/bot-accounts/{id}/people', {
 								params: { path: { id } },
 								body: people
 							})}
 						remove={(people) =>
-							cellnoorClient.DELETE('/services/{id}/people', {
+							cellnoorClient.DELETE('/bot-accounts/{id}/people', {
 								params: { path: { id } },
 								body: people
 							})}
@@ -144,21 +147,21 @@
 						<button
 							class="button"
 							onclick={() => {
-								if (confirm(`Delete service "${service.description ?? id}"?`)) {
+								if (confirm(`Delete bot_account "${bot_account.description ?? id}"?`)) {
 									mutate(
-										cellnoorClient.DELETE('/services/{id}', { params: { path: { id } } }),
+										cellnoorClient.DELETE('/bot-accounts/{id}', { params: { path: { id } } }),
 										'Deleted'
 									);
 								}
 							}}
 						>
-							Delete service
+							Delete bot_account
 						</button>
 					</div>
 				</ListRow>
 			{/each}
 		</ul>
 	{:else}
-		<p>No services match these filters.</p>
+		<p>No bot accounts match these filters.</p>
 	{/if}
 </FilteredList>

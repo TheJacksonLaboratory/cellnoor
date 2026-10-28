@@ -12,28 +12,28 @@ use crate::{
     state::AppState,
 };
 
-pub async fn add_people_to_service(
+pub async fn add_people_to_bot_account(
     State(state): State<AppState>,
     user: AuthUser,
-    Path(IdParam { id: service_id }): Path<IdParam>,
+    Path(IdParam { id: bot_account_id }): Path<IdParam>,
     crate::extract::JsonExtractor(people): crate::extract::JsonExtractor<Vec<Uuid>>,
 ) -> Result<Json<()>, DbError> {
     state
         .in_transaction(user, async |tx| {
-            insert_service_accesses(tx, service_id, &people).await
+            insert_bot_account_accesses(tx, bot_account_id, &people).await
         })
         .await
 }
 
-pub(in super::super::super) async fn insert_service_accesses(
+pub(in super::super::super) async fn insert_bot_account_accesses(
     tx: &db::Transaction<'_>,
-    service_id: Uuid,
+    bot_account_id: Uuid,
     people: &[Uuid],
 ) -> Result<(), DbError> {
     let accesses: Vec<_> = people
         .iter()
-        .map(|&person_id| NewServiceAccess {
-            service_id,
+        .map(|&person_id| NewBotAccountAccess {
+            bot_account_id,
             person_id,
         })
         .collect();
@@ -41,25 +41,25 @@ pub(in super::super::super) async fn insert_service_accesses(
     tx.insert_many_on_conflict_do_nothing(&accesses).await
 }
 
-struct NewServiceAccess {
-    service_id: Uuid,
+struct NewBotAccountAccess {
+    bot_account_id: Uuid,
     person_id: Uuid,
 }
 
-impl Relation for NewServiceAccess {
-    const NAME: &'static str = "service_access";
+impl Relation for NewBotAccountAccess {
+    const NAME: &'static str = "bot_account_access";
 }
 
-impl Insert for NewServiceAccess {
+impl Insert for NewBotAccountAccess {
     type Field = &'static str;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
-            service_id,
+            bot_account_id,
             person_id,
         } = self;
 
-        vec![("service_id", service_id), ("person_id", person_id)]
+        vec![("bot_account_id", bot_account_id), ("person_id", person_id)]
     }
 }
 
@@ -69,10 +69,11 @@ mod test {
 
     use crate::{
         handlers::{
-            people::create::insert_test_person_and_institution,
-            services::{
-                access::add_people::insert_service_accesses, create::test::insert_test_service,
+            bot_accounts::{
+                access::add_people::insert_bot_account_accesses,
+                create::test::insert_test_bot_account,
             },
+            people::create::insert_test_person_and_institution,
         },
         state::dev_util::db_client_as_admin,
     };
@@ -82,12 +83,12 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, service) = insert_test_service(&tx, |_| ()).await.unwrap();
+        let (_, bot_account) = insert_test_bot_account(&tx, |_| ()).await.unwrap();
         let (_, person) = insert_test_person_and_institution(&tx, |_| ())
             .await
             .unwrap();
 
-        insert_service_accesses(&tx, service.id, &[person.record.id])
+        insert_bot_account_accesses(&tx, bot_account.id, &[person.record.id])
             .await
             .unwrap();
     }
@@ -97,11 +98,11 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, service) = insert_test_service(&tx, |s| s.users = vec![Uuid::nil()])
+        let (_, bot_account) = insert_test_bot_account(&tx, |s| s.users = vec![Uuid::nil()])
             .await
             .unwrap();
 
-        insert_service_accesses(&tx, service.id, &[Uuid::nil()])
+        insert_bot_account_accesses(&tx, bot_account.id, &[Uuid::nil()])
             .await
             .unwrap();
     }

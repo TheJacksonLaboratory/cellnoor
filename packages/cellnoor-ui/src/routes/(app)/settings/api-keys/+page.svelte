@@ -12,13 +12,13 @@
 
 	let { data } = $props();
 
-	const { apiKeys, serviceNames, people } = $derived(data);
+	const { apiKeys, botAccountNames, people } = $derived(data);
 
 	let secret = $state<string>();
 
 	const ownedBy = (ownerId: string) => {
-		const serviceName = serviceNames.get(ownerId) ?? people.get(ownerId)?.name;
-		return serviceName ? `Belongs to ${serviceName}` : '';
+		const botAccountName = botAccountNames.get(ownerId) ?? people.get(ownerId)?.name;
+		return botAccountName ? `Belongs to ${botAccountName}` : '';
 	};
 
 	async function createApiKey(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
@@ -68,10 +68,10 @@
 					<input class="input" name="description" />
 				</label>
 				<label class="field">
-					<span class="label">For service</span>
+					<span class="label">For bot_account</span>
 					<select class="input" name="owner_id">
 						<option selected></option>
-						{#each serviceNames as [id, name] (id)}
+						{#each botAccountNames as [id, name] (id)}
 							<option value={id}>{name}</option>
 						{/each}
 					</select>

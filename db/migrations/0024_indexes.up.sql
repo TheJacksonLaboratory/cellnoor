@@ -15,12 +15,12 @@ create index person_institution_id_idx on person (institution_id);
 
 create index account_person_id_idx on account (person_id);
 
-create index service_description_idx on service (description);
-create index service_description_trgm_idx on service using gin (description gin_trgm_ops);
-create index service_owned_by_idx on service (owned_by);
-create index service_created_at_idx on service (created_at);
+create index bot_account_description_idx on bot_account (description);
+create index bot_account_description_trgm_idx on bot_account using gin (description gin_trgm_ops);
+create index bot_account_owned_by_idx on bot_account (owned_by);
+create index bot_account_created_at_idx on bot_account (created_at);
 
-create index service_access_person_id_idx on service_access (person_id);
+create index bot_account_access_person_id_idx on bot_account_access (person_id);
 
 create index api_key_description_idx on api_key (description);
 create index api_key_description_trgm_idx on api_key using gin (description gin_trgm_ops);

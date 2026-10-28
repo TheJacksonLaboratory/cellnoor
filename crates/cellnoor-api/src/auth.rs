@@ -20,7 +20,7 @@ mod api_key;
 mod error;
 mod jwt;
 
-/// The principal (a person or a service) on whose behalf a request runs.
+/// The principal (a person or a bot_account) on whose behalf a request runs.
 ///
 /// Outside of tests, the only way to construct an `AuthUser` is through its
 /// `axum::extract::FromRequestParts` implementation.
@@ -102,8 +102,8 @@ impl FromRequestParts<AppState> for AuthUser {
 fn read_chunked_jwt(cookies: &CookieJar) -> String {
     // The JWT is split across cookies whose names share a prefix (set in
     // /packages/cellnoor-auth/src/auth.ts), and sorting by name puts the chunks
-    // back in order. We don't expect both the secure and the insecure prefix to
-    // be set at once
+    // back in order. We don't expect bot_accounth the secure and the insecure
+    // prefix to be set at once
     let mut chunks: Vec<_> = cookies
         .iter()
         .filter(|cookie| {

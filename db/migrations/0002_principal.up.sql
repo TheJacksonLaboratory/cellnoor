@@ -1,4 +1,4 @@
--- A principal is anything that acts on the database: a person or a service. `app_user_id()` is always a principal's
+-- A principal is anything that acts on the database: a person or a bot_account. `app_user_id()` is always a principal's
 -- id, and everything that records who did or owns something references a principal
 create table principal (
     id uuid primary key,
@@ -55,7 +55,7 @@ create table account (
 
 -- It would be nice to use better-auth's built-in utility for "institution-owned API keys", but it doesn't really work
 -- with Postgres's row-level security
-create table service (
+create table bot_account (
     id uuid primary key default uuidv7() references principal on delete cascade,
     description case_insensitive_text,
     owned_by uuid references person not null default app_user_id(),
@@ -77,16 +77,16 @@ create function drop_principal() returns trigger language plpgsql security defin
 $$;
 
 create trigger create_principal before insert on person for each row execute function create_principal();
-create trigger create_principal before insert on service for each row execute function create_principal();
+create trigger create_principal before insert on bot_account for each row execute function create_principal();
 
 create trigger drop_principal after delete on person for each row execute function drop_principal();
-create trigger drop_principal after delete on service for each row execute function drop_principal();
+create trigger drop_principal after delete on bot_account for each row execute function drop_principal();
 
-create table service_access (
-    service_id uuid references service on delete cascade not null,
+create table bot_account_access (
+    bot_account_id uuid references bot_account on delete cascade not null,
     person_id uuid references person on delete cascade not null,
 
-    primary key (service_id, person_id)
+    primary key (bot_account_id, person_id)
 );
 
 -- We don't use better-auth's API keys because they're a bit clunky for our usecase

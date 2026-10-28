@@ -11,31 +11,31 @@ use crate::{
     state::AppState,
 };
 
-pub async fn remove_people_from_service(
+pub async fn remove_people_from_bot_account(
     State(state): State<AppState>,
     user: AuthUser,
-    Path(IdParam { id: service_id }): Path<IdParam>,
+    Path(IdParam { id: bot_account_id }): Path<IdParam>,
     crate::extract::JsonExtractor(people): crate::extract::JsonExtractor<Vec<Uuid>>,
 ) -> Result<Json<()>, DbError> {
     state
         .in_transaction(user, async |tx| {
-            delete_service_accesses(tx, service_id, &people).await
+            delete_bot_account_accesses(tx, bot_account_id, &people).await
         })
         .await
 }
 
-pub(in super::super::super) async fn delete_service_accesses(
+pub(in super::super::super) async fn delete_bot_account_accesses(
     tx: &db::Transaction<'_>,
-    service_id: Uuid,
+    bot_account_id: Uuid,
     people: &[Uuid],
 ) -> Result<(), DbError> {
     static DELETE_SERVICE_ACCESSES: &str =
-        "delete from service_access where service_id = $1 and person_id = any($2)";
+        "delete from bot_account_access where bot_account_id = $1 and person_id = any($2)";
 
     let n_rows = tx
         .execute(&Sql::new(
             DELETE_SERVICE_ACCESSES,
-            vec![&service_id, &people],
+            vec![&bot_account_id, &people],
         ))
         .await?;
 
@@ -48,13 +48,13 @@ pub(in super::super::super) async fn delete_service_accesses(
 
 #[cfg(test)]
 mod test {
-    use cellnoor_types::{operator::UuidOperator, service::ServicePredicate};
+    use cellnoor_types::{bot_account::BotAccountPredicate, operator::UuidOperator};
     use uuid::Uuid;
 
     use crate::{
-        handlers::services::{
-            access::remove_people::delete_service_accesses, create::test::insert_test_service,
-            index_detailed::select_services_detailed,
+        handlers::bot_accounts::{
+            access::remove_people::delete_bot_account_accesses,
+            create::test::insert_test_bot_account, index_detailed::select_bot_accounts_detailed,
         },
         state::dev_util::db_client_as_admin,
     };
@@ -64,18 +64,18 @@ mod test {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let (_, service) = insert_test_service(&tx, |s| s.users = vec![Uuid::nil()])
+        let (_, bot_account) = insert_test_bot_account(&tx, |s| s.users = vec![Uuid::nil()])
             .await
             .unwrap();
 
-        delete_service_accesses(&tx, service.id, &[Uuid::nil()])
+        delete_bot_account_accesses(&tx, bot_account.id, &[Uuid::nil()])
             .await
             .unwrap();
 
         let selected = tx
             .select_one(
-                ServicePredicate::Id(UuidOperator::Eq(service.id)),
-                select_services_detailed,
+                BotAccountPredicate::Id(UuidOperator::Eq(bot_account.id)),
+                select_bot_accounts_detailed,
             )
             .await
             .unwrap();

@@ -3,12 +3,12 @@ import { cellnoorClient, MUTABLE_DATA, unwrap } from '#lib/client.ts';
 export async function load({ depends }) {
 	depends(MUTABLE_DATA);
 
-	const [apiKeys, services] = await Promise.all([
+	const [apiKeys, botAccounts] = await Promise.all([
 		cellnoorClient.GET('/api-keys').then(unwrap),
-		cellnoorClient.GET('/services').then(unwrap)
+		cellnoorClient.GET('/bot-accounts').then(unwrap)
 	]);
 
-	const serviceNames = new Map(services.map((s) => [s.id, s.description ?? s.id]));
+	const botAccountNames = new Map(botAccounts.map((s) => [s.id, s.description ?? s.id]));
 
-	return { apiKeys, serviceNames };
+	return { apiKeys, botAccountNames };
 }
