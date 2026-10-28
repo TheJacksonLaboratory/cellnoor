@@ -42,11 +42,11 @@ jobs:
           cache-on-failure: true
 
       - name: Install nightly toolchain
-        run: rustup component add --toolchain nightly-2026-09-13 rustfmt # This is updated weekly-ish
+        run: rustup component add --toolchain nightly-2026-10-27 rustfmt # This is updated weekly-ish
 
       - name: Format
         working-directory: crates
-        run: cargo +nightly-2026-09-13 fmt -- --check
+        run: cargo +nightly-2026-10-27 fmt -- --check
 
   test:
     runs-on: ubuntu-latest
