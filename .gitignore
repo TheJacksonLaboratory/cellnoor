@@ -12,6 +12,7 @@ target
 # Environment files useful for development
 .env*
 !.env.dev.sample
+!.env.prod.sample
 
 # Initial data also useful for development
 initial_data*
