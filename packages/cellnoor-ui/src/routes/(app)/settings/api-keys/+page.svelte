@@ -16,6 +16,11 @@
 
 	let secret = $state<string>();
 
+	const ownedBy = (ownerId: string) => {
+		const serviceName = serviceNames.get(ownerId) ?? people.get(ownerId)?.name;
+		return serviceName ? `Belongs to ${serviceName}` : '';
+	};
+
 	async function createApiKey(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
 
@@ -93,7 +98,7 @@
 			{#each apiKeys as key (key.id)}
 				<ListRow title={key.description ?? key.id}>
 					<div class="muted">
-						{serviceNames.get(key.owner_id) ?? people.get(key.owner_id)?.name} · Created
+						{ownedBy(key.id)} · Created
 						<Time datetime={key.created_at} /> ·
 						{#if key.expires_at}
 							Expires <Time datetime={key.expires_at} />

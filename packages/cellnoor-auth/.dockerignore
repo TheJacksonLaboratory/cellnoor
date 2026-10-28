@@ -11,6 +11,3 @@ Dockerfile
 
 # Environment files
 .env*
-
-# Miscellaneous
-README*

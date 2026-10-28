@@ -1,49 +1,48 @@
 [package]
-name = "cellnoor-api"
-version = "0.1.0"
 edition = "2024"
+name = "cellnoor-api"
 
 [dependencies]
-csv.workspace = true
-tracing.workspace = true
-tracing-subscriber.workspace = true
-tower-http.workspace = true
-camino.workspace = true
-rand.workspace = true
 aide.workspace = true
-csvranger.workspace = true
-jsonwebtoken.workspace = true
-serde.workspace = true
-deadpool-postgres.workspace = true
-cellnoor-types = { path = "../cellnoor-types", features = [
-    "schemars",
-    "postgres-types",
-] }
+anyhow.workspace = true
 axum.workspace = true
 axum-extra.workspace = true
-anyhow.workspace = true
-uuid.workspace = true
+camino.workspace = true
+cellnoor-types = { path = "../cellnoor-types", features = [
+    "postgres-types",
+    "schemars",
+] }
+config.workspace = true
+csv.workspace = true
+csvranger.workspace = true
+deadpool-postgres.workspace = true
+futures.workspace = true
+jiff.workspace = true
+jsonwebtoken.workspace = true
+postgres-types.workspace = true
+rand.workspace = true
+regex.workspace = true
+reqwest = { optional = true, workspace = true }
 schemars.workspace = true
 secrecy.workspace = true
-postgres-types.workspace = true
-jiff.workspace = true
-thiserror.workspace = true
-config.workspace = true
-tokio = { workspace = true, features = ["fs", "io-util"] }
-strum.workspace = true
-sha3.workspace = true
-regex.workspace = true
-futures.workspace = true
+serde.workspace = true
 serde_json.workspace = true
-zstd.workspace = true
+sha3.workspace = true
+strum.workspace = true
 tempfile = { optional = true, workspace = true }
-reqwest = { optional = true, workspace = true }
+thiserror.workspace = true
+tokio = { workspace = true, features = ["fs", "io-util"] }
+tower-http.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+uuid.workspace = true
+zstd.workspace = true
 
 [features]
-dev = ["uuid/v4", "tempfile", "reqwest"]
+dev = ["reqwest", "tempfile", "uuid/v4"]
 
 [dev-dependencies]
-uuid = { workspace = true, features = ["v4"] }
 pretty_assertions.workspace = true
-tempfile.workspace = true
 reqwest.workspace = true
+tempfile.workspace = true
+uuid = { workspace = true, features = ["v4"] }

@@ -39,7 +39,7 @@
 		"@lucide/svelte": "^1.61.0",
 		"better-auth": "^1.7.12",
 		"bits-ui": "^2.20.0",
-		"cellnoor-client": "link:cellnoor-client",
+		"cellnoor-client": "link:../cellnoor-client",
 		"papaparse": "^5.7.0"
 	}
 }

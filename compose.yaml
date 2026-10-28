@@ -11,6 +11,7 @@ volumes:
   caddy-data:
   caddy-config:
   static-files:
+  ui:
 secrets:
   root_db_password:
     environment: CELLNOOR_DB_ROOT_PASSWORD
@@ -73,7 +74,7 @@ services:
       CELLNOOR_AUTH__UNIX_DOMAIN_SOCKET: &auth_socket /run/cellnoor-auth/cellnoor-auth.sock
     secrets:
       [
-        auth_db_password,
+        { source: auth_db_password, target: db__password },
         auth_secret,
         microsoft_entra_tenant_id,
         microsoft_entra_client_id,
@@ -105,7 +106,7 @@ services:
       - &api_socket_volume api-socket:/run/cellnoor-api
       - &static_files_volume static-files:/static-files
     healthcheck:
-      test: curl --fail --http2-prior-knowledge --unix-socket /run/cellnoor/cellnoor.sock http://localhost/health || exit 1
+      test: curl --fail --http2-prior-knowledge --unix-socket /run/cellnoor-api/cellnoor-api.sock http://localhost/health || exit 1
       interval: 5m
       start_period: 10s
       start_interval: 0.5s
@@ -114,17 +115,21 @@ services:
   cellnoor-ui:
     build:
       context: packages/cellnoor-ui
+      additional_contexts:
+        cellnoor-client: packages/cellnoor-client
       target: final
       args:
-        UID: *uid
+        UI_DIR: &ui_dir /ui
       tags:
         - ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
+    volumes: [&ui_volume ui:/ui]
   caddy:
     image: caddy:2-alpine
     environment:
       CELLNOOR_CADDY__AUTH_SOCKET: *auth_socket
       CELLNOOR_CADDY__API_SOCKET: *api_socket
       CELLNOOR_CADDY__STATIC_FILES_DIR: *static_files_dir
+      CELLNOOR_CADDY__UI_DIR: *ui_dir
     restart: always
     cap_add:
       - NET_ADMIN
@@ -140,8 +145,11 @@ services:
         *auth_socket_volume,
         *api_socket_volume,
         *static_files_volume,
+        *ui_volume,
       ]
     pull_policy: always
     depends_on:
       cellnoor-api:
         condition: service_healthy
+      cellnoor-ui:
+        condition: service_completed_successfully

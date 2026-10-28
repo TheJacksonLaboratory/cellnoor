@@ -67,6 +67,11 @@ mkdir -p "$static_files_dir"
 
 quiet colima colima start
 
+if [[ ${1:-} == --compose ]]; then
+	scripts/dev/compose.sh up --build
+	exit
+fi
+
 # Set up the db
 quiet db scripts/dev/compose.sh up db --wait
 quiet migrate scripts/dev/compose.sh run --rm migrate

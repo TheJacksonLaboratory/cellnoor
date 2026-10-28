@@ -18,7 +18,7 @@ pub async fn serve(settings: &Settings) -> anyhow::Result<()> {
 
     #[cfg(feature = "dev")]
     if settings.dummy_data {
-        populate_dummy_data(app_state.clone()).await;
+        populate_dummy_data(&app_state).await;
     }
 
     let api = api(app_state);

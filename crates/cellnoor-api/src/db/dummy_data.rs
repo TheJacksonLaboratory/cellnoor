@@ -18,7 +18,7 @@ pub fn random_name_for(table: &str) -> NonemptyString {
     format!("{table}-{}", &Uuid::new_v4().to_string()[0..8]).to_nonempty_string()
 }
 
-pub async fn populate_dummy_data(app_state: AppState) {
+pub async fn populate_dummy_data(app_state: &AppState) {
     let mut client = app_state.db_client(AuthUser::dev_admin()).await.unwrap();
     let tx = client.begin().await.unwrap();
 
@@ -37,6 +37,6 @@ pub async fn populate_dummy_data(app_state: AppState) {
 
     let db_pool = test_db_pool();
     for ds in datasets {
-        write_test_dataset_files(&db_pool, ds).await;
+        write_test_dataset_files(&db_pool, ds, &app_state.static_files_dir).await;
     }
 }

@@ -5,6 +5,7 @@ ARG BUILD_PROFILE=release
 
 FROM rust:${RUST_VERSION}-trixie AS build
 ARG BUILD_PROFILE
+ARG FEATURES
 WORKDIR /app
 
 # Build the app, bind-mounting all the workspace crates and cache-mounting useful directories
@@ -15,19 +16,12 @@ RUN --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=cache,target=/app/target/ \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
-    cargo build --profile ${BUILD_PROFILE} --package cellnoor-api && \
-    if [ ${BUILD_PROFILE} = "dev" ]; then \
-    cp ./target/debug/cellnoor-api /bin/cellnoor-api; \
-    else \
-    cp ./target/${BUILD_PROFILE}/cellnoor-api /bin/cellnoor-api; \
-    fi
+    cargo install --locked --no-track --path cellnoor-api --bin cellnoor-api --profile ${BUILD_PROFILE} --features "${FEATURES}" --root /
 
 FROM debian:trixie AS final
 
 RUN apt update && \
-    apt install adduser ca-certificates curl zstd --yes
-
-RUN mkdir app
+    apt install ca-certificates curl zstd --yes
 
 COPY --from=build /bin/cellnoor-api /bin/
 
@@ -35,15 +29,7 @@ ARG UID=10001
 ARG SOCKET
 ARG STATIC_FILES_DIR
 
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    --uid "${UID}" \
-    appuser
-RUN mkdir -p "$(dirname ${SOCKET})" ${STATIC_FILES_DIR} && chown appuser "$(dirname ${SOCKET})" ${STATIC_FILES_DIR}
-USER appuser
+RUN mkdir -p "$(dirname ${SOCKET})" ${STATIC_FILES_DIR} && chown ${UID} "$(dirname ${SOCKET})" ${STATIC_FILES_DIR}
+USER ${UID}
 
 CMD ["/bin/cellnoor-api"]

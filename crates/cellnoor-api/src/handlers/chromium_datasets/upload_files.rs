@@ -209,18 +209,15 @@ impl OperationOutput for UploadFilesError {
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn write_test_dataset_files(db_pool: &Pool, dataset_id: Uuid) {
-    use tempfile::tempdir;
-
+pub async fn write_test_dataset_files(
+    db_pool: &Pool,
+    dataset_id: Uuid,
+    static_files_dir: &Utf8Path,
+) {
     const MULTI_METRICS: &[u8] = include_bytes!(
         "upload_files/test-data/\
          4plex_rat_liver_kidney_lgintest_testis_CF_RatLiver_A-A03_metrics_summary.csv"
     );
-
-    let tmp = tempdir().unwrap();
-    let static_files_dir = option_env!("CELLNOOR_API__STATIC_FILES_DIR")
-        .map(Utf8Path::new)
-        .unwrap_or(Utf8Path::from_path(tmp.path()).unwrap());
 
     let csv_header: HeaderMap = [(CONTENT_TYPE, HeaderValue::from_static("text/csv"))]
         .into_iter()
@@ -311,6 +308,9 @@ pub async fn write_test_dataset_files(db_pool: &Pool, dataset_id: Uuid) {
 
 #[cfg(test)]
 mod tests {
+    use camino::Utf8Path;
+    use tempfile::{TempDir, tempdir};
+
     use crate::{
         handlers::{
             chromium_datasets::{insert_test_chromium_dataset, write_test_dataset_files},
@@ -330,6 +330,15 @@ mod tests {
         tx.commit().await.unwrap();
 
         let db_pool = test_db_pool();
-        write_test_dataset_files(&db_pool, *ds.record.id).await;
+        write_test_dataset_files(
+            &db_pool,
+            *ds.record.id,
+            tempdir()
+                .as_ref()
+                .map(TempDir::path)
+                .map(|p| Utf8Path::from_path(p).unwrap())
+                .unwrap(),
+        )
+        .await;
     }
 }

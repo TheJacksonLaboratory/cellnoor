@@ -72,7 +72,7 @@ pub fn router() -> (OpenApi, Router<AppState>) {
     (api_docs, router)
 }
 
-const OPEN_API_DOCS: &[u8] = include_bytes!("../../../../openapi.json");
+const OPEN_API_DOCS: &[u8] = include_bytes!("../../openapi.json");
 
 async fn show_api_docs() -> Json<serde_json::Value> {
     axum::Json(serde_json::from_slice(OPEN_API_DOCS).unwrap())
@@ -80,11 +80,11 @@ async fn show_api_docs() -> Json<serde_json::Value> {
 
 #[cfg(test)]
 mod tests {
-    use crate::api::{router, routes::OPEN_API_DOCS};
+    use crate::api::{router, routes::show_api_docs};
 
-    #[test]
-    fn committed_api_docs_match_generated() {
-        let committed: serde_json::Value = serde_json::from_slice(OPEN_API_DOCS).unwrap();
+    #[tokio::test(flavor = "multi_thread")]
+    async fn committed_api_docs_match_generated() {
+        let axum::Json(committed) = show_api_docs().await;
 
         let (generated, _) = router();
         let generated = serde_json::to_value(generated).unwrap();

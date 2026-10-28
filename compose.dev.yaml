@@ -4,14 +4,17 @@ services:
       - "5432:5432"
   cellnoor-auth:
     environment:
-      NODE_ENV: &node_env development
+      NODE_ENV: development
+      CELLNOOR_AUTH__PUBLIC_BASE_URL: ${CELLNOOR_AUTH__PUBLIC_BASE_URL}
   cellnoor-api:
     build:
       args:
         BUILD_PROFILE: dev
-  cellnoor-ui:
+        FEATURES: dev
     environment:
-      NODE_ENV: *node_env
+      CELLNOOR_API__DUMMY_DATA: ${CELLNOOR_API__DUMMY_DATA}
+    healthcheck:
+      start_period: 5m
   caddy:
     environment:
-      CELLNOOR_CADDY__PUBLIC_BASE_URL: cellnoor.localhost
+      CELLNOOR_CADDY__PUBLIC_BASE_URL: ${CELLNOOR_CADDY__PUBLIC_BASE_URL}

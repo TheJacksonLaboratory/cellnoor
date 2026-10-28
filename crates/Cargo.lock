@@ -278,7 +278,7 @@ dependencies = [
 
 [[package]]
 name = "cellnoor-api"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "aide",
  "anyhow",
@@ -316,7 +316,7 @@ dependencies = [
 
 [[package]]
 name = "cellnoor-types"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "bytes",
  "csvranger",

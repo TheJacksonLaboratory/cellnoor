@@ -1,0 +1,11 @@
+# Build artifacts
+node_modules
+.svelte-kit
+build
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Environment files
+.env*
