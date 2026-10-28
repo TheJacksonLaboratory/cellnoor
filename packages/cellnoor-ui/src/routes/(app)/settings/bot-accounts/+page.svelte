@@ -74,7 +74,7 @@
 					<input class="input" name="description" />
 				</label>
 				<div>
-					<button class="button">Create bot_account</button>
+					<button class="button">Create bot account</button>
 				</div>
 			</div>
 		</form>
@@ -147,7 +147,7 @@
 						<button
 							class="button"
 							onclick={() => {
-								if (confirm(`Delete bot_account "${bot_account.description ?? id}"?`)) {
+								if (confirm(`Delete bot account "${bot_account.description ?? id}"?`)) {
 									mutate(
 										cellnoorClient.DELETE('/bot-accounts/{id}', { params: { path: { id } } }),
 										'Deleted'
