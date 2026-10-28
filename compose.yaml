@@ -48,7 +48,7 @@ services:
       [
         &db_data_volume db-data:/var/lib/postgresql,
         &db_socket_volume db-socket:/run/postgresql,
-        ./initial-data.json:/initial-data.json,
+        "${CELLNOOR_INITIAL_DATA_PATH:?set CELLNOOR_INITIAL_DATA_PATH}:/initial-data.json"
       ]
   migrate:
     image: migrate/migrate
