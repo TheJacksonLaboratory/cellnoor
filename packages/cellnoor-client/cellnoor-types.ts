@@ -8118,7 +8118,7 @@ export interface components {
         NanogramConcentration: {
             denominator_unit: components["schemas"]["Microliter"];
             numerator_unit: components["schemas"]["Nanogram"];
-            /** Format: int32 */
+            /** Format: float */
             value: number;
         };
         NewApiKey: {
@@ -8572,7 +8572,7 @@ export interface components {
         PicogramConcentration: {
             denominator_unit: components["schemas"]["Microliter"];
             numerator_unit: components["schemas"]["Picogram"];
-            /** Format: int32 */
+            /** Format: float */
             value: number;
         };
         PooledSuspensions: {

@@ -20,7 +20,12 @@ pub enum DbError {
         referencing_resource: String,
         referencing_field: String,
     },
-    #[error("invalid data in field {} for {} - {} ({})", field.clone().unwrap_or_default(), resource.clone().unwrap_or_default(), message, detail.clone().unwrap_or_default())]
+    #[error("duplicate data in field {} for {}", field.as_deref().unwrap_or_default(), resource.as_deref().unwrap_or_default())]
+    DuplicateResource {
+        resource: Option<String>,
+        field: Option<String>,
+    },
+    #[error("invalid data in field {} for {} - {message} ({})", field.as_deref().unwrap_or_default(), resource.as_deref().unwrap_or_default(), detail.as_deref().unwrap_or_default())]
     DataConstraint {
         resource: Option<String>,
         field: Option<String>,
@@ -42,6 +47,7 @@ impl DbError {
     pub(crate) fn status(&self) -> StatusCode {
         match self {
             Self::ResourceNotFound => StatusCode::NOT_FOUND,
+            Self::DuplicateResource { .. } => StatusCode::CONFLICT,
             Self::DataConstraint { .. } | Self::InvalidReference { .. } => {
                 StatusCode::UNPROCESSABLE_ENTITY
             }
@@ -97,7 +103,11 @@ impl From<TokioPgError> for DbError {
                     referencing_resource: referencing_resource.to_owned(),
                 }
             }
-            SqlState::CHECK_VIOLATION | SqlState::UNIQUE_VIOLATION => Self::DataConstraint {
+            SqlState::UNIQUE_VIOLATION => Self::DuplicateResource {
+                resource: db_error.table().map(str::to_owned),
+                field: db_error.column().map(str::to_owned),
+            },
+            SqlState::CHECK_VIOLATION => Self::DataConstraint {
                 resource: db_error.table().map(str::to_owned),
                 field: db_error.column().map(str::to_owned),
                 message: db_error.message().to_owned(),
