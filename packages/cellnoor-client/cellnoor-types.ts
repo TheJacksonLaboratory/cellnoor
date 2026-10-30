@@ -7789,6 +7789,11 @@ export interface components {
             /** @constant */
             type: "invalid_reference";
         } | {
+            field?: string | null;
+            resource?: string | null;
+            /** @constant */
+            type: "duplicate_resource";
+        } | {
             detail?: string | null;
             field?: string | null;
             message: string;
