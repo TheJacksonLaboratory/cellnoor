@@ -6,14 +6,14 @@ use uuid::Uuid;
 
 use crate::{
     nonempty::NonemptyString,
-    positive::PositiveI32,
+    positive::{PositiveF32, PositiveI32},
     units::{Microliter, Nanogram, Picogram},
 };
 
 #[base_model]
 #[cfg_attr(feature = "schemars", schemars(rename = "{N}Concentration"))]
 pub struct Concentration<N> {
-    pub value: PositiveI32,
+    pub value: PositiveF32,
     pub numerator_unit: N,
     pub denominator_unit: Microliter,
 }

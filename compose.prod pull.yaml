@@ -1,0 +1,13 @@
+services:
+  cellnoor-auth:
+    build: !reset null
+    image: ghcr.io/thejacksonlaboratory/cellnoor-auth:latest
+    pull_policy: always
+  cellnoor-api:
+    build: !reset null
+    image: ghcr.io/thejacksonlaboratory/cellnoor-api:latest
+    pull_policy: always
+  cellnoor-ui:
+    build: !reset null
+    image: ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
+    pull_policy: always

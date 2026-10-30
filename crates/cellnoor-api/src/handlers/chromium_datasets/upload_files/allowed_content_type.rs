@@ -9,11 +9,14 @@ use crate::handlers::chromium_datasets::upload_files::UploadFilesError;
     Debug, Clone, Copy, strum::EnumString, strum::AsRefStr, PartialEq, strum::VariantNames,
 )]
 pub(super) enum AllowedContentType {
-    #[strum(serialize = "text/csv")]
+    #[strum(serialize = "text/csv", serialize = "text/csv;charset=utf-8")]
     Csv,
-    #[strum(serialize = "text/html")]
+    #[strum(serialize = "text/html", serialize = "text/html;charset=utf-8")]
     Html,
-    #[strum(serialize = "application/json")]
+    #[strum(
+        serialize = "application/json",
+        serialize = "application/json;charset=utf-8"
+    )]
     Json,
 }
 

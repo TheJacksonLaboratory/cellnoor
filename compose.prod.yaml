@@ -1,21 +1,11 @@
 services:
   cellnoor-auth:
-    build: !reset null
-    image: ghcr.io/thejacksonlaboratory/cellnoor-auth:latest
-    pull_policy: always
     environment:
       NODE_ENV: production
       CELLNOOR_AUTH__PUBLIC_BASE_URL: ${CELLNOOR_PUBLIC_BASE_URL}
   cellnoor-api:
-    build: !reset null
-    image: ghcr.io/thejacksonlaboratory/cellnoor-api:latest
-    pull_policy: always
     environment:
       CELLNOOR_API__MAX_DB_POOL_SIZE: "4"
-  cellnoor-ui:
-    build: !reset null
-    image: ghcr.io/thejacksonlaboratory/cellnoor-ui:latest
-    pull_policy: always
   caddy:
     environment:
       CELLNOOR_CADDY__PUBLIC_BASE_URL: ${CELLNOOR_PUBLIC_BASE_URL}

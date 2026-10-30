@@ -1,4 +1,6 @@
 use axum::{Json, extract::State};
+#[cfg(any(test, feature = "dev"))]
+use cellnoor_types::positive::PositiveF32;
 use cellnoor_types::{
     Relation,
     library::{LibraryDetailed, LibraryField, NewLibrary, NewLibraryRecord},
@@ -180,7 +182,7 @@ where
                 instrument_name: "Qubit".to_nonempty_string(),
                 method: NucleicAcidMeasurementMethod::Fluorometric {
                     concentration: Concentration {
-                        value: PositiveI32::new(20).unwrap(),
+                        value: PositiveF32::new(20.0).unwrap(),
                         numerator_unit: Nanogram::Nanogram,
                         denominator_unit: Microliter::Microliter,
                     },

@@ -140,7 +140,7 @@ where
             Concentration, NewNucleicAcidMeasurement, NucleicAcidMeasurementData,
             NucleicAcidMeasurementMethod,
         },
-        positive::PositiveI32,
+        positive::{PositiveF32, PositiveI32},
         units::{Microliter, Nanogram},
     };
     use jiff::Timestamp;
@@ -171,7 +171,7 @@ where
                 instrument_name: "Qubit".to_nonempty_string(),
                 method: NucleicAcidMeasurementMethod::Fluorometric {
                     concentration: Concentration {
-                        value: PositiveI32::new(50).unwrap(),
+                        value: PositiveF32::new(50.0).unwrap(),
                         numerator_unit: Nanogram::Nanogram,
                         denominator_unit: Microliter::Microliter,
                     },
