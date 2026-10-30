@@ -150,7 +150,7 @@
 					}
 				>
 					<div class="cluster">
-						{#each ds.specimens.slice(0, SPECIMEN_LIMIT) as s (s.id)}
+						{#each ds.specimens.slice(0, SPECIMEN_LIMIT) as s ((s.id, s.ocm_barcode_id, s.multiplexing_tag))}
 							<a class="link-arrow" href={resolve('/(app)/specimens/[id]', { id: s.id })}
 								>{s.name}</a
 							>

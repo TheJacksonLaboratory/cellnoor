@@ -155,7 +155,7 @@
 								}
 							}}
 						>
-							Delete bot_account
+							Delete bot account
 						</button>
 					</div>
 				</ListRow>

@@ -55,6 +55,8 @@ export function errorMessage(error: DbError | AuthError | PersonError | JsonReje
 		case 'other':
 			return 'Something went wrong';
 	}
+
+	return 'Something went wrong';
 }
 
 export const MUTABLE_DATA = 'cellnoor:mutable-data';
