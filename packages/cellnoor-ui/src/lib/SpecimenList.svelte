@@ -1,11 +1,20 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { Person, SpecimenCompact } from 'cellnoor-client/cellnoor-types.ts';
+	import type {
+		ChromiumDatasetDetailed,
+		Person,
+		SpecimenCompact
+	} from 'cellnoor-client/cellnoor-types.ts';
 	import Time from './Time.svelte';
 	import { formatEmbeddingMatrix, formatEnum, formatFixative, formatSpecies } from './format.ts';
 
-	let { specimens, people }: { specimens: SpecimenCompact[]; people: Map<string, Person> } =
-		$props();
+	let {
+		specimens,
+		people
+	}: {
+		specimens: ChromiumDatasetDetailed['specimens'];
+		people: Map<string, Person>;
+	} = $props();
 
 	type Field = {
 		label: string;
@@ -72,7 +81,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each specimens as s (s.id)}
+			{#each specimens as s (`${s.id}${s.ocm_barcode_id}${s.multiplexing_tag?.tag_id}`)}
 				<tr>
 					<td
 						><a class="link-arrow" href={resolve('/(app)/specimens/[id]', { id: s.id })}>{s.name}</a
