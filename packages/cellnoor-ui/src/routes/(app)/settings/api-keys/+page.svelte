@@ -68,7 +68,7 @@
 					<input class="input" name="description" />
 				</label>
 				<label class="field">
-					<span class="label">For bot_account</span>
+					<span class="label">For bot account</span>
 					<select class="input" name="owner_id">
 						<option selected></option>
 						{#each botAccountNames as [id, name] (id)}
@@ -98,7 +98,7 @@
 			{#each apiKeys as key (key.id)}
 				<ListRow title={key.description ?? key.id}>
 					<div class="muted">
-						{ownedBy(key.id)} · Created
+						{ownedBy(key.owner_id)} · Created
 						<Time datetime={key.created_at} /> ·
 						{#if key.expires_at}
 							Expires <Time datetime={key.expires_at} />
