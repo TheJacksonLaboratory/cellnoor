@@ -40,14 +40,15 @@
 	}
 
 	const downloadFiles = () => {
-		const { single_row_csv, multi_row_csv, json } = convertMetricsToFiles(selectedDatasets);
+		const { standardMetrics, cellrangerMultiMetrics, json } =
+			convertMetricsToFiles(selectedDatasets);
 
-		if (single_row_csv) {
-			download(single_row_csv, 'datasets.csv');
+		if (standardMetrics) {
+			download(standardMetrics, 'datasets.csv');
 		}
 
-		if (multi_row_csv) {
-			download(multi_row_csv, 'multiplexed-datasets.csv');
+		if (cellrangerMultiMetrics) {
+			download(cellrangerMultiMetrics, 'multiplexed-datasets.csv');
 		}
 
 		if (json) {
