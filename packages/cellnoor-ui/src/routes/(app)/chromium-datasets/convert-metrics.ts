@@ -8,24 +8,36 @@ import Papa from 'papaparse';
 type MetricsRow = { dataset_name: string } & Record<string, unknown>;
 
 export function convertMetricsToFiles(datasets: Iterable<ChromiumDatasetDetailed>) {
-	const metrics: Record<ChromiumDatasetParsedFileData['format'], MetricsRow[]> = {
-		single_row_csv: [],
-		multi_row_csv: [],
+	const metrics: {
+		standardMetrics: MetricsRow[];
+		cellrangerMultiMetrics: MetricsRow[];
+		json: MetricsRow[];
+	} = {
+		standardMetrics: [],
+		cellrangerMultiMetrics: [],
 		json: []
 	};
 
 	for (const ds of datasets) {
 		for (const file of ds.files) {
-			for (const { format, data } of filesInDirectory(file)) {
+			for (const { isCellrangerMulti, format, data } of filesInDirectory(file)) {
 				const rows = Array.isArray(data) ? data : [data];
-				metrics[format].push(...rows.map((row) => ({ dataset_name: ds.name, ...row })));
+				const transformed = rows.map((row) => ({ dataset_name: ds.name, ...row }));
+
+				if (isCellrangerMulti) {
+					metrics.cellrangerMultiMetrics.push(...transformed);
+				} else if (format === 'json') {
+					metrics.json.push(...transformed);
+				} else {
+					metrics.standardMetrics.push(...transformed);
+				}
 			}
 		}
 	}
 
 	return {
-		single_row_csv: toCsv(metrics.single_row_csv),
-		multi_row_csv: toCsv(metrics.multi_row_csv),
+		standardMetrics: toCsv(metrics.standardMetrics),
+		cellrangerMultiMetrics: toCsv(metrics.cellrangerMultiMetrics),
 		json:
 			metrics.json.length !== 0
 				? new Blob([JSON.stringify(metrics.json)], { type: 'application/json' })
@@ -46,12 +58,28 @@ function toCsv(rows: MetricsRow[]) {
 
 function* filesInDirectory(
 	file: ChromiumDatasetParsedFileDataFileTree
-): Generator<ChromiumDatasetParsedFileData> {
+): Generator<{ isCellrangerMulti: boolean } & ChromiumDatasetParsedFileData> {
 	if (file.type === 'file' && file.parsed_contents) {
-		yield file.parsed_contents;
+		if (file.parsed_contents.format === 'multi_row_csv') {
+			yield {
+				isCellrangerMulti: isCellrangerMultiCsv(file.parsed_contents.data),
+				...file.parsed_contents
+			};
+		}
+
+		yield { isCellrangerMulti: false, ...file.parsed_contents };
 	} else if (file.type === 'directory') {
 		for (const f of file.children) {
 			yield* filesInDirectory(f);
 		}
 	}
+}
+
+function isCellrangerMultiCsv(data: Record<string, unknown>[]) {
+	// We know that "Category" is always a column in the metrics summaries of multiplexed datasets, so just check for its existence. Even if the
+	if (data[0].Category) {
+		return true;
+	}
+
+	return false;
 }
