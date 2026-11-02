@@ -65,9 +65,9 @@ function* filesInDirectory(
 				isCellrangerMulti: isCellrangerMultiCsv(file.parsed_contents.data),
 				...file.parsed_contents
 			};
+		} else {
+			yield { isCellrangerMulti: false, ...file.parsed_contents };
 		}
-
-		yield { isCellrangerMulti: false, ...file.parsed_contents };
 	} else if (file.type === 'directory') {
 		for (const f of file.children) {
 			yield* filesInDirectory(f);
@@ -77,7 +77,7 @@ function* filesInDirectory(
 
 function isCellrangerMultiCsv(data: Record<string, unknown>[]) {
 	// We know that "Category" is always a column in the metrics summaries of multiplexed datasets, so just check for its existence. Even if the
-	if (data[0].Category) {
+	if (data[0]['Metric Name']) {
 		return true;
 	}
 
