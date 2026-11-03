@@ -74,6 +74,7 @@ mod record {
 }
 
 #[unit_enum]
+#[derive(strum::VariantArray)]
 pub enum Species {
     AmbystomaMexicanum,
     CanisFamiliaris,

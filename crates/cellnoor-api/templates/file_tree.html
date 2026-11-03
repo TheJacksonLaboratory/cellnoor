@@ -1,0 +1,16 @@
+{% import "components.html" as c %}
+<ul>
+	{% for node in nodes %}
+	<li>
+		{% match node.kind %}
+		{% when FileTreeNodeKind::Directory { children } %}
+		<details{% if self.contains_selected(&node.path) %} open{% endif %}>
+			<summary>{{ c::icon("chevron_right") }}{{ c::icon("folder") }}<span>{{ node.name }}</span></summary>
+			{{ self.subtree(children)|safe }}
+		</details>
+		{% when FileTreeNodeKind::File { .. } %}
+		<a href="?file={{ node.path|urlencode }}"{% if self.is_selected(&node.path) %} aria-current="page"{% endif %}>{{ c::icon("draft") }}<span>{{ node.name }}</span></a>
+		{% endmatch %}
+	</li>
+	{% endfor %}
+</ul>

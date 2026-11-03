@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block body %}
+<main class="page stack">
+	<p>{{ message }}</p>
+	{% if let Some(details) = details %}
+	<pre><code>{{ details }}</code></pre>
+	{% endif %}
+	<div><button class="button" type="button" data-back>Go back</button></div>
+</main>
+{% endblock %}

@@ -2,6 +2,7 @@ select
     chromium_dataset,
     tenx_assay as assay,
     chromium_run,
+    array_agg(distinct project) as projects,
     array_agg(distinct(
         specimen, multiplexing_tag, ocm_barcode_id
     )::tagged_specimen) as specimens,

@@ -1,0 +1,12 @@
+{% extends "app.html" %}
+
+{% block main %}
+<div class="sidebar-layout">
+	<aside class="stack">
+		{% block sidebar %}{% endblock %}
+	</aside>
+	<section class="stack">
+		{% block content %}{% endblock %}
+	</section>
+</div>
+{% endblock %}

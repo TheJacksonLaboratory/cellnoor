@@ -1,6 +1,7 @@
 use macro_attributes::{select, unit_enum};
 
 #[unit_enum]
+#[derive(strum::VariantArray)]
 pub enum Action {
     Create,
     Update,
@@ -8,6 +9,7 @@ pub enum Action {
 }
 
 #[unit_enum]
+#[derive(strum::VariantArray)]
 pub enum Resource {
     Institution,
     Person,

@@ -57,6 +57,7 @@ mod test {
         },
         library::LibraryField,
         operator::UuidOperator,
+        project::ProjectField,
         specimen::SpecimenField,
         tenx_assay::TenxAssayField,
     };
@@ -106,6 +107,7 @@ mod test {
 
         tokio::join!(
             ensure_fields_are_selectable::<SpecimenField>(&tx, view),
+            ensure_fields_are_selectable::<ProjectField>(&tx, view),
             ensure_fields_are_selectable::<TenxAssayField>(&tx, view),
             ensure_fields_are_selectable::<LibraryField>(&tx, view),
             ensure_fields_are_selectable::<ChromiumDatasetField>(&tx, view),

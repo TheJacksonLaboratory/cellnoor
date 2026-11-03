@@ -8,8 +8,11 @@
 create view suspension_to_specimen with (security_invoker = true) as (
     select
         suspension,
-        specimen
-    from suspension join specimen on suspension.specimen_id = specimen.id
+        specimen,
+        project
+    from suspension
+    join specimen on suspension.specimen_id = specimen.id
+    join project on specimen.project_id = project.id
 );
 
 create view suspension_detailed with (security_invoker = true) as (

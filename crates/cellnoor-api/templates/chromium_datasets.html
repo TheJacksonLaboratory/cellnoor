@@ -1,0 +1,63 @@
+{% extends "filtered_list.html" %}
+{% import "components.html" as c %}
+
+{% block filters %}
+{% call c::filter_group("Results") %}
+{{ c::sort(self::SORT_FIELDS, order_by) }}
+{{ c::page_size(paging) }}
+{% endcall %}
+{% call c::filter_group("Dataset") %}
+{{ c::tag_input(DatasetFilter::Name, "Name", list) }}
+{{ c::multiselect(list.picker(DatasetFilter::Project, &projects), "Project") }}
+{{ c::date_range(DatasetFilter::DeliveredFrom, DatasetFilter::DeliveredTo, "Date delivered", list) }}
+{% endcall %}
+{% call c::filter_group("Assay") %}
+{{ c::multiselect(list.picker(DatasetFilter::AssayName, &assays), "Name") }}
+{{ c::multiselect(list.picker(DatasetFilter::AssayMultiplexingType, &multiplexing_types), "Multiplexing type") }}
+{{ c::multiselect(list.picker(DatasetFilter::AssayLibraryType, &library_types), "Library type") }}
+{% endcall %}
+{% call c::filter_group("Specimen") %}
+{{ c::tag_input(DatasetFilter::SpecimenName, "Name", list) }}
+{{ c::multiselect(list.picker(DatasetFilter::SpecimenType, &specimen_types), "Type") }}
+{{ c::multiselect(list.picker(DatasetFilter::SpecimenSpecies, &species), "Species") }}
+{{ c::multiselect(list.picker(DatasetFilter::SpecimenEmbeddedIn, &embedding_matrices), "Embedded in") }}
+{{ c::multiselect(list.picker(DatasetFilter::SpecimenFixative, &fixatives), "Fixative") }}
+{{ c::multiselect(list.picker(DatasetFilter::SpecimenThermalPreservationMethod, &thermal_preservation_methods), "Thermal preservation method") }}
+{{ c::date_range(DatasetFilter::SpecimenReceivedFrom, DatasetFilter::SpecimenReceivedTo, "Date received", list) }}
+{% endcall %}
+{% endblock %}
+
+{% block list %}
+{% if datasets.is_empty() %}
+<p>No datasets match these filters.</p>
+{% else %}
+<header class="cluster">
+	<span>{{ datasets.len() }} dataset{{ datasets.len()|pluralize }}</span>
+</header>
+<ul class="divided">
+	{% for dataset in datasets %}
+	<li class="list-row stack">
+		<div>
+			<a class="heading" href="{{ crate::ui::BASE }}/chromium-datasets/{{ dataset.record.id }}">{{ dataset.record.name }}</a>
+			{% for project in dataset.projects %}
+			<a class="subheading link-arrow" href="{{ crate::ui::BASE }}/projects/{{ project.record.id }}">{{ project.record.name }}</a>
+			{% endfor %}
+		</div>
+		<div class="cluster">
+			{% for tagged in dataset.specimens.iter().take(self::SPECIMEN_LIMIT) %}
+			<a class="link-arrow" href="{{ crate::ui::BASE }}/specimens/{{ tagged.specimen.record.id }}">{{ tagged.specimen.record.name }}</a>
+			{% endfor %}
+			{% if dataset.specimens.len() > self::SPECIMEN_LIMIT %}
+			<span class="muted">+{{ dataset.specimens.len() - self::SPECIMEN_LIMIT }} more</span>
+			{% endif %}
+		</div>
+		<div class="muted">
+			{{ crate::ui::format::assay_label(&dataset.assay) }}
+			{% if let Some(first) = dataset.specimens.first() %}· <i>{{ first.specimen.record.species.label() }}</i>{% endif %}
+			· Delivered {{ c::time(dataset.record.delivered_at) }}
+		</div>
+	</li>
+	{% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

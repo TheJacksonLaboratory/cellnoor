@@ -3,6 +3,7 @@ create view chromium_dataset_to_specimen with (security_invoker = true) as (
         chromium_dataset,
         library.library,
         library.specimen,
+        library.project,
         library.tenx_assay,
         library.chromium_run,
         library.multiplexing_tag,

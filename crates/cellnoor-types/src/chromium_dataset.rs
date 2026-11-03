@@ -18,6 +18,7 @@ use crate::{
     id::{Id, NoId},
     library::LibraryCompact,
     nonempty::{NonemptyString, NonemptyVec},
+    project::ProjectCompact,
     simple_links::SimpleLinks,
     suspension_pool::TaggedSpecimen,
     tenx_assay::TenxAssay,
@@ -111,6 +112,7 @@ pub struct ChromiumDatasetDetailed {
     pub chromium_run: ChromiumRunCompact,
     pub links: ChromiumDatasetDetailedLinks,
     pub libraries: Vec<LibraryCompact>,
+    pub projects: Vec<ProjectCompact>,
     pub specimens: Vec<TaggedSpecimen>,
     pub files: Vec<FileTreeNode<ChromiumDatasetParsedFileData>>,
 }

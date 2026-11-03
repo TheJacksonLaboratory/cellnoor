@@ -1,0 +1,61 @@
+{% extends "sidebar.html" %}
+{% import "components.html" as c %}
+
+{% block sidebar %}
+<form class="card create-card" method="post" action="{{ crate::ui::BASE }}/settings/api-keys">
+	<h2 class="subheading card-header">{{ c::icon("add") }} New API key</h2>
+	<div class="stack card-body">
+		<label class="field">
+			<span class="label">Description</span>
+			<input class="input" name="description" />
+		</label>
+		<label class="field">
+			<span class="label">For bot account</span>
+			<select class="input" name="owner_id">
+				<option value="" selected></option>
+				{% for bot_account in bot_accounts %}
+				<option value="{{ bot_account.value }}">{{ bot_account.label }}</option>
+				{% endfor %}
+			</select>
+		</label>
+		<label class="field">
+			<span class="label">Expires on</span>
+			<input class="input" type="date" name="expires_on" />
+		</label>
+		<div><button class="button">Create API key</button></div>
+	</div>
+</form>
+{% endblock %}
+
+{% block content %}
+{% if let Some(secret) = secret %}
+<div class="card card-body secret">
+	Your API key is <code>{{ secret }}</code>. It will disappear once you leave or refresh this page.
+</div>
+{% endif %}
+
+{% if api_keys.is_empty() %}
+<p>No API keys.</p>
+{% else %}
+<ul class="divided">
+	{% for key in api_keys %}
+	<li class="list-row stack">
+		<div><span class="heading">{{ self.title(key) }}</span></div>
+		<div class="muted">
+			{% let owner = owners.label_of(key.owner_id) %}
+			{% if !owner.is_empty() %}Belongs to {{ owner }} · {% endif %}
+			Created {{ c::time(key.created_at) }} ·
+			{% if let Some(expires_at) = key.expires_at %}Expires {{ c::time(expires_at) }}{% else %}Never expires{% endif %}
+		</div>
+		{% call c::mutation_input(self.action(key, "description"), "Description", "description", "text") %}
+		<input type="hidden" name="expires_at" value="{% if let Some(expires_at) = key.expires_at %}{{ expires_at }}{% endif %}" />
+		{% endcall %}
+		{% call c::mutation_input(self.action(key, "expires-at"), "Expires on", "expires_on", "date") %}
+		<input type="hidden" name="description" value="{% if let Some(description) = key.description %}{{ description }}{% endif %}" />
+		{% endcall %}
+		{{ c::delete_button(self.action(key, "delete"), "API key", self.title(key)) }}
+	</li>
+	{% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

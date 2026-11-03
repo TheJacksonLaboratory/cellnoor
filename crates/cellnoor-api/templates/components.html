@@ -1,0 +1,183 @@
+{% macro icon(name) -%}
+<span class="material-symbols-outlined" aria-hidden="true">{{ name }}</span>
+{%- endmacro %}
+
+{% macro time(timestamp) -%}
+<time datetime="{{ timestamp }}">{{ timestamp.strftime("%d %B %Y") }}</time>
+{%- endmacro %}
+
+{% macro filter_group(label) %}
+<section class="card filter-group">
+	<h3 class="subheading card-header">{{ label }}</h3>
+	<div class="stack card-body">
+		{{ caller() }}
+	</div>
+</section>
+{% endmacro %}
+
+{% macro sort(fields, order_by) %}
+<div class="field">
+	<label class="label" for="sort">Sort by</label>
+	<div class="control">
+		<select id="sort" class="input" name="{{ crate::ui::params::ListParam::Sort }}" data-autosubmit>
+			{% for (field, label) in fields %}
+			<option value="{{ field.as_ref() }}"{% if *field == order_by.field %} selected{% endif %}>{{ label }}</option>
+			{% endfor %}
+		</select>
+		<input type="hidden" name="{{ crate::ui::params::ListParam::Desc }}" value="{{ order_by.desc }}" />
+		<button class="button" name="{{ crate::ui::params::ListParam::Desc }}" value="{{ !order_by.desc }}" aria-label="Sort descending" aria-pressed="{{ order_by.desc }}">
+			{% if order_by.desc %}{{ icon("arrow_downward") }}{% else %}{{ icon("arrow_upward") }}{% endif %}
+		</button>
+	</div>
+</div>
+{% endmacro %}
+
+{% macro page_size(paging) %}
+<div class="field">
+	<label class="label" for="limit">Show</label>
+	<select id="limit" class="input" name="{{ crate::ui::params::ListParam::Limit }}" data-autosubmit>
+		{% for size in crate::ui::params::PAGE_SIZES %}
+		<option value="{{ size }}"{% if paging.limit == Some(*size) %} selected{% endif %}>{{ size }}</option>
+		{% endfor %}
+		{% if let Some(limit) = paging.custom() %}
+		<option value="{{ limit }}" selected>{{ limit }}</option>
+		{% endif %}
+		<option value="all"{% if paging.limit.is_none() %} selected{% endif %}>All</option>
+	</select>
+</div>
+{% endmacro %}
+
+{% macro chips(remove_name, chips) %}
+{% if !chips.is_empty() %}
+<ul class="cluster chips">
+	{% for chip in chips %}
+	<li class="card">
+		{{ chip.label }}
+		<button class="plain-button" name="{{ remove_name }}" value="{{ chip.value }}" aria-label="Remove {{ chip.label }}">{{ icon("close") }}</button>
+	</li>
+	{% endfor %}
+</ul>
+{% endif %}
+{% endmacro %}
+
+{% macro tag_input(field, label, list) %}
+<div class="field">
+	<label class="label" for="{{ field }}">{{ label }}</label>
+	{{ chips(crate::ui::params::Param::Remove(*field), &list.tags(*field)) }}
+	{% for value in list.selected(*field) %}
+	<input type="hidden" name="{{ field }}" value="{{ value }}" />
+	{% endfor %}
+	<input id="{{ field }}" class="input" name="{{ field }}" autocomplete="off" />
+</div>
+{% endmacro %}
+
+{% macro multiselect(picker, label) %}
+<div class="field">
+	<span class="label">{{ label }}</span>
+	{{ chips(picker.remove_name, &picker.chips) }}
+	{% if let Some(value_name) = picker.value_name %}
+	{% for chip in picker.chips %}
+	<input type="hidden" name="{{ value_name }}" value="{{ chip.value }}" />
+	{% endfor %}
+	{% endif %}
+	<details class="combobox"{% if picker.open %} open{% endif %}>
+		<summary class="input" aria-label="Show options">{{ icon("expand_more") }}</summary>
+		<div class="card menu">
+			{% if let Some(search_name) = picker.search_name %}
+			<input class="input" type="search" name="{{ search_name }}" value="{{ picker.search }}" placeholder="Search" aria-label="Search {{ label }}" autocomplete="off"{% if picker.open %} data-autofocus{% endif %} />
+			{% endif %}
+			{% for item in picker.items %}
+			{% if item.selected %}
+			<button class="menu-item" name="{{ picker.remove_name }}" value="{{ item.option.value }}" data-label="{{ item.option.label }}"{% if !item.matches %} hidden{% endif %}>{{ item.option.label }} {{ icon("check") }}</button>
+			{% else %}
+			<button class="menu-item" name="{{ picker.add_name }}" value="{{ item.option.value }}" data-label="{{ item.option.label }}"{% if !item.matches %} hidden{% endif %}>{{ item.option.label }}</button>
+			{% endif %}
+			{% endfor %}
+			<div class="empty"{% if picker.has_matches() %} hidden{% endif %}>No matching options</div>
+		</div>
+	</details>
+</div>
+{% endmacro %}
+
+{% macro members(action, picker) %}
+<form method="post" action="{{ action }}">
+	{{ multiselect(&picker, "Members") }}
+</form>
+{% endmacro %}
+
+{% macro date_range(from, to, label, list) %}
+<fieldset class="date-range">
+	<legend class="label">{{ label }}</legend>
+	<input type="date" class="input" name="{{ from }}" aria-label="From" value="{{ list.value(*from) }}" data-autosubmit />
+	to
+	<input type="date" class="input" name="{{ to }}" aria-label="To" value="{{ list.value(*to) }}" data-autosubmit />
+</fieldset>
+{% endmacro %}
+
+{% macro mutation_input(action, label, name, input_type) %}
+<form class="field" method="post" action="{{ action }}">
+	<label class="label" for="{{ action }}">{{ label }}</label>
+	<div class="cluster">
+		<input id="{{ action }}" class="input" type="{{ input_type }}" name="{{ name }}" required />
+		{{ caller() }}
+		<button class="button">Save</button>
+	</div>
+</form>
+{% endmacro %}
+
+{% macro staff_checkbox(action, checked) %}
+<form method="post" action="{{ action }}" autocomplete="off">
+	<label>
+		<input type="checkbox" name="is_staff" value="true"{% if checked %} checked{% endif %} data-autosubmit />
+		Staff
+	</label>
+	{% if caller is defined %}{{ caller() }}{% endif %}
+	<noscript><button class="button">Save</button></noscript>
+</form>
+{% endmacro %}
+
+{% macro permission_grid(grid) %}
+<form method="post" action="{{ crate::ui::BASE }}/principals/{{ grid.principal_id }}/permissions" autocomplete="off">
+	{% for value in grid.granted %}
+	<input type="hidden" name="granted" value="{{ value }}" />
+	{% endfor %}
+	<div class="scroll-x">
+		<table>
+			<thead>
+				<tr>
+					<td></td>
+					{% for action in grid.actions %}
+					<th scope="col">{{ action }}</th>
+					{% endfor %}
+				</tr>
+			</thead>
+			<tbody>
+				{% for (resource, cells) in grid.rows %}
+				<tr>
+					<th scope="row">{{ resource }}</th>
+					{% for cell in cells %}
+					<td><input type="checkbox" name="permission" value="{{ cell.value }}" aria-label="{{ cell.label }}"{% if cell.checked %} checked{% endif %} data-autosubmit /></td>
+					{% endfor %}
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	<noscript><button class="button">Save permissions</button></noscript>
+</form>
+{% endmacro %}
+
+{% macro delete_button(action, noun, name) %}
+<div>
+	<button class="button" type="button" popovertarget="{{ action }}">Delete {{ noun }}</button>
+	<div id="{{ action }}" class="card card-body" popover>
+		<div class="stack">
+			<p>Delete {{ noun }} "{{ name }}"?</p>
+			<form class="cluster" method="post" action="{{ action }}">
+				<button class="button">Delete</button>
+				<button class="button" type="button" popovertarget="{{ action }}" popovertargetaction="hide">Cancel</button>
+			</form>
+		</div>
+	</div>
+</div>
+{% endmacro %}

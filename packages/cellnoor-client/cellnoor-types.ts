@@ -7594,6 +7594,7 @@ export interface components {
             libraries: components["schemas"]["LibraryCompact"][];
             links: components["schemas"]["ChromiumDatasetDetailedLinks"];
             name: string;
+            projects: components["schemas"]["ProjectCompact"][];
             specimens: components["schemas"]["TaggedSpecimen"][];
         };
         ChromiumDatasetDetailedLinks: {
@@ -7640,6 +7641,8 @@ export interface components {
         });
         ChromiumDatasetPredicate: {
             specimen: components["schemas"]["SpecimenPredicate"];
+        } | {
+            project: components["schemas"]["ProjectPredicate"];
         } | {
             tenx_assay: components["schemas"]["TenxAssayPredicate"];
         } | {

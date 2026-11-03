@@ -9,6 +9,7 @@ create view suspension_pool_to_specimen with (security_invoker = true) as (
     select
         suspension_pool,
         suspension.specimen,
+        suspension.project,
         multiplexing_tag
     from suspension_pool
     join suspension_pooling as pooling on suspension_pool.id = pooling.pool_id

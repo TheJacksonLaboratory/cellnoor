@@ -5,6 +5,8 @@ name = "cellnoor-api"
 [dependencies]
 aide.workspace = true
 anyhow.workspace = true
+askama.workspace = true
+askama_web.workspace = true
 axum.workspace = true
 axum-extra.workspace = true
 camino.workspace = true

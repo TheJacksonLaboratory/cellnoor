@@ -1,0 +1,53 @@
+{% extends "filtered_list.html" %}
+{% import "components.html" as c %}
+
+{% block actions %}
+<form class="card create-card" method="post" action="{{ crate::ui::BASE }}/settings/bot-accounts">
+	<h2 class="subheading card-header">{{ c::icon("add") }} New Bot Account</h2>
+	<div class="stack card-body">
+		<label class="field">
+			<span class="label">Description</span>
+			<input class="input" name="description" />
+		</label>
+		<div><button class="button">Create bot account</button></div>
+	</div>
+</form>
+{% endblock %}
+
+{% block filters %}
+{% call c::filter_group("Results") %}
+{{ c::sort(self::SORT_FIELDS, order_by) }}
+{{ c::page_size(paging) }}
+{% endcall %}
+{% call c::filter_group("Bot account") %}
+{{ c::tag_input(BotAccountFilter::Description, "Description", list) }}
+{{ c::multiselect(list.picker(BotAccountFilter::IsStaff, &staff), "Staff") }}
+{{ c::multiselect(list.picker(BotAccountFilter::OwnedBy, &people), "Owner") }}
+{{ c::date_range(BotAccountFilter::CreatedFrom, BotAccountFilter::CreatedTo, "Date created", list) }}
+{% endcall %}
+{% endblock %}
+
+{% block list %}
+{% if bot_accounts.is_empty() %}
+<p>No bot accounts match these filters.</p>
+{% else %}
+<ul class="divided">
+	{% for detailed in bot_accounts %}
+	{% let account = &detailed.bot_account %}
+	<li class="list-row stack">
+		<div><span class="heading">{{ self.title(detailed) }}</span></div>
+		<div class="muted">Owned by {{ people.label_of(account.owned_by) }} · Created {{ c::time(account.created_at) }}</div>
+		{% call c::mutation_input(self.action(detailed, "description"), "Description", "description", "text") %}
+		<input type="hidden" name="is_staff" value="{{ account.is_staff }}" />
+		{% endcall %}
+		{% call c::staff_checkbox(self.action(detailed, "staff"), account.is_staff) %}
+		<input type="hidden" name="description" value="{% if let Some(description) = account.description %}{{ description }}{% endif %}" />
+		{% endcall %}
+		{{ c::permission_grid(self.permissions(detailed)) }}
+		{{ c::members(self.action(detailed, "members"), self.members(detailed)) }}
+		{{ c::delete_button(self.action(detailed, "delete"), "bot account", self.title(detailed)) }}
+	</li>
+	{% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

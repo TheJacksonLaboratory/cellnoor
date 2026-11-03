@@ -1,0 +1,35 @@
+{% extends "filtered_list.html" %}
+{% import "components.html" as c %}
+
+{% block filters %}
+{% call c::filter_group("Results") %}
+{{ c::sort(self::SORT_FIELDS, order_by) }}
+{{ c::page_size(paging) }}
+{% endcall %}
+{% call c::filter_group("Person") %}
+{{ c::tag_input(PersonFilter::Name, "Name", list) }}
+{{ c::tag_input(PersonFilter::Email, "Email", list) }}
+{{ c::multiselect(list.picker(PersonFilter::IsStaff, &staff), "Staff") }}
+{{ c::multiselect(list.picker(PersonFilter::InstitutionId, &institutions), "Institution") }}
+{% endcall %}
+{% endblock %}
+
+{% block list %}
+{% if people.is_empty() %}
+<p>No people match these filters.</p>
+{% else %}
+<ul class="divided">
+	{% for person in people %}
+	<li class="list-row stack">
+		<div><span class="heading">{{ person.person.name }}</span></div>
+		<div class="muted">
+			{% if let Some(email) = person.person.email %}{{ email }} · {% endif %}
+			{{ institutions.label_of(person.person.institution_id) }}
+		</div>
+		{{ c::staff_checkbox(self.staff_action(person), person.person.is_staff) }}
+		{{ c::permission_grid(self.permissions(person)) }}
+	</li>
+	{% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

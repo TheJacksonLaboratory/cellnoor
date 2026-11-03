@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% import "components.html" as c %}
+
+{% block body %}
+<nav>
+	<a class="brand" href="{{ crate::ui::BASE }}">cellnoor</a>
+	<a href="{{ crate::ui::BASE }}/projects">Projects</a>
+	<a href="{{ crate::ui::BASE }}/specimens">Specimens</a>
+	<a href="{{ crate::ui::BASE }}/libraries">Libraries</a>
+
+	<button class="plain-button" popovertarget="datasets-menu">Datasets {{ c::icon("expand_more") }}</button>
+	<div id="datasets-menu" class="card menu" popover>
+		<a class="menu-item" href="{{ crate::ui::BASE }}/chromium-datasets">Chromium</a>
+	</div>
+
+	<button class="plain-button" popovertarget="settings-menu">Settings {{ c::icon("expand_more") }}</button>
+	<div id="settings-menu" class="card menu" popover>
+		{% if layout.can_update_people %}
+		<a class="menu-item" href="{{ crate::ui::BASE }}/settings/people">People</a>
+		{% endif %}
+		<a class="menu-item" href="{{ crate::ui::BASE }}/settings/bot-accounts">Bot Accounts</a>
+		<a class="menu-item" href="{{ crate::ui::BASE }}/settings/api-keys">API keys</a>
+	</div>
+
+	<form method="post" action="/api/auth/ui/sign-out?callback={{ crate::ui::BASE|urlencode }}">
+		<button class="button">Sign Out</button>
+	</form>
+</nav>
+
+<main>
+	{% block main %}{% endblock %}
+</main>
+{% endblock %}

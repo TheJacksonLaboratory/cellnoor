@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block body %}
+<main class="page">
+	<a class="button" href="/api/auth/ui/sign-in?callback={{ callback|urlencode }}">Sign in with Microsoft</a>
+</main>
+{% endblock %}

@@ -15,6 +15,8 @@ aide = { version = "0.16.0-alpha.4", features = [
     "skip_serializing_defaults",
 ] }
 anyhow = "1.0.104"
+askama = "0.16.1"
+askama_web = { version = "0.16.0", features = ["axum-0.8", "tracing-0.1"] }
 axum = { version = "0.8.9", default-features = false, features = [
     # Unfortunately http1 is required for the UI backend to communicate over unix socket with the API :) JavaScript is so advanced!
     "http1",
@@ -27,6 +29,8 @@ axum = { version = "0.8.9", default-features = false, features = [
 ] }
 axum-extra = { version = "0.12.6", default-features = false, features = [
     "cookie",
+    "form",
+    "query",
 ] }
 bytes = { version = "1.12.1" }
 camino = { version = "1.2.6" }

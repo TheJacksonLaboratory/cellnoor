@@ -1,0 +1,139 @@
+{% extends "sidebar.html" %}
+{% import "components.html" as c %}
+
+{% block sidebar %}
+<section class="card file-explorer">
+	<h2 class="subheading card-header">Files</h2>
+	<div class="card-body">{{ self.files()|safe }}</div>
+</section>
+{% endblock %}
+
+{% block content %}
+<header class="stack card card-body">
+	<h1 class="title">{{ dataset.record.name }}</h1>
+	<div class="scroll-x">
+		<table>
+			<thead>
+				<tr>
+					<th scope="col">Project</th>
+					<th scope="col">Delivered</th>
+					<th scope="col">Chromium run</th>
+					<th scope="col">Assay</th>
+					<th scope="col">Library types</th>
+					<th scope="col">Multiplexing</th>
+					{% if self.ilab_request_ids().is_some() %}
+					<th scope="col">iLab Request IDs</th>
+					{% endif %}
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>
+						{% for project in dataset.projects %}
+						<a class="link-arrow" href="{{ crate::ui::BASE }}/projects/{{ project.record.id }}">{{ project.record.name }}</a>
+						{% endfor %}
+					</td>
+					<td>{{ c::time(dataset.record.delivered_at) }}</td>
+					<td>{{ c::time(dataset.chromium_run.record.run_at) }}</td>
+					<td><a class="link-arrow" href="{{ dataset.assay.protocol_url }}" rel="external">{{ dataset.assay.name }} ({{ dataset.assay.chemistry_version }})</a></td>
+					<td>{{ self.library_types() }}</td>
+					<td>{{ self.multiplexing() }}</td>
+					{% if let Some(ids) = self.ilab_request_ids() %}
+					<td>{{ ids }}</td>
+					{% endif %}
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</header>
+
+{% if let Some(file) = self.selected_file() %}
+<section class="stack card card-body">
+	<header class="cluster">
+		<h2 class="heading">{{ file.name }}</h2>
+		{% match file.contents %}
+		{% when Contents::Raw %}
+		<a class="button" href="{{ file.raw_file_link }}" rel="external" target="_blank">Open in new tab</a>
+		{% else %}
+		<a class="button" href="{{ file.raw_file_link }}" rel="external" download>Download</a>
+		{% endmatch %}
+		<a class="button" href="?">Close</a>
+	</header>
+	{% match file.contents %}
+	{% when Contents::Raw %}
+	<iframe class="file-frame" src="{{ file.raw_file_link }}" title="{{ file.name }}"></iframe>
+	{% when Contents::Json(json) %}
+	<pre class="json">{{ json }}</pre>
+	{% when Contents::Table { columns, rows } %}
+	<div class="scroll-x">
+		<table>
+			<thead>
+				<tr>
+					{% for column in columns %}
+					<th scope="col">{{ column }}</th>
+					{% endfor %}
+				</tr>
+			</thead>
+			<tbody>
+				{% for row in rows %}
+				<tr>
+					{% for cell in row %}
+					<td>{{ cell }}</td>
+					{% endfor %}
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	{% endmatch %}
+</section>
+{% endif %}
+
+<section class="stack card card-body">
+	<h2 class="heading">Specimens</h2>
+	{% if !specimens.shared.is_empty() %}
+	<div class="scroll-x">
+		<table>
+			<thead>
+				<tr>
+					{% for (label, _) in specimens.shared %}
+					<th scope="col">{{ label }}</th>
+					{% endfor %}
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					{% for (_, text) in specimens.shared %}
+					<td>{{ text }}</td>
+					{% endfor %}
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	{% endif %}
+	<div class="scroll-x">
+		<table>
+			<thead>
+				<tr>
+					<th scope="col">ID</th>
+					{% for label in specimens.columns %}
+					<th scope="col">{{ label }}</th>
+					{% endfor %}
+					<th scope="col">Received</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for row in specimens.rows %}
+				<tr>
+					<td><a class="link-arrow" href="{{ crate::ui::BASE }}/specimens/{{ row.id }}">{{ row.readable_id }}</a></td>
+					{% for cell in row.cells %}
+					<td>{{ cell }}</td>
+					{% endfor %}
+					<td>{{ c::time(row.received_at) }}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</section>
+{% endblock %}

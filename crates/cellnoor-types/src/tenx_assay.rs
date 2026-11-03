@@ -8,6 +8,7 @@ pub mod creation;
 mod query;
 
 #[unit_enum]
+#[derive(strum::VariantArray)]
 pub enum SampleMultiplexing {
     Cellplex,
     FlexBarcode,

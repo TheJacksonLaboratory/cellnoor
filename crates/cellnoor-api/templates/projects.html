@@ -1,0 +1,35 @@
+{% extends "filtered_list.html" %}
+{% import "components.html" as c %}
+
+{% block filters %}
+{% call c::filter_group("Results") %}
+{{ c::sort(self::SORT_FIELDS, order_by) }}
+{{ c::page_size(paging) }}
+{% endcall %}
+{% call c::filter_group("Project") %}
+{{ c::tag_input(ProjectFilter::Name, "Name", list) }}
+{{ c::multiselect(list.picker(ProjectFilter::CreatedBy, &people), "Created by") }}
+{{ c::date_range(ProjectFilter::ActiveFrom, ProjectFilter::ActiveTo, "Active", list) }}
+{% endcall %}
+{% endblock %}
+
+{% block list %}
+{% if projects.is_empty() %}
+<p>No projects match these filters.</p>
+{% else %}
+<ul class="divided">
+	{% for project in projects %}
+	{% let record = &project.record.project %}
+	<li class="list-row stack">
+		<div><a class="heading" href="{{ crate::ui::BASE }}/projects/{{ record.id }}">{{ record.name }}</a></div>
+		<div class="muted">
+			Created by {{ people.label_of(record.created_by) }} ·
+			{{ c::time(record.started_at) }}
+			{% if let Some(ended_at) = record.ended_at %}- {{ c::time(ended_at) }}{% endif %}
+		</div>
+		{{ c::members(self.members_action(project), self.members(project)) }}
+	</li>
+	{% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

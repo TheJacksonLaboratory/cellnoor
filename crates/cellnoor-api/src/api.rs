@@ -80,6 +80,7 @@ fn api(app_state: AppState) -> Router {
                 // don't want to make the `routes::router` function require an `AppState` as an
                 // argument, we just add that route here
                 .nest("/file-auth", routes::file_auth::router(app_state.clone()))
+                .nest("/ui", crate::ui::router())
                 .with_state(app_state),
         )
         .layer(TraceLayer::new_for_http())

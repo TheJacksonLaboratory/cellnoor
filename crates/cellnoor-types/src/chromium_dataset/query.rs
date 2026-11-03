@@ -5,6 +5,7 @@ use crate::{
     chromium_dataset::SavedChromiumDatasetRecord,
     library::LibraryPredicate,
     operator::{StringOperator, TimestampOperator, UuidOperator},
+    project::ProjectPredicate,
     query::{ComplexQuery, Field, OrderField, SimpleQuery},
     specimen::SpecimenPredicate,
     tenx_assay::TenxAssayPredicate,
@@ -22,6 +23,8 @@ pub enum ChromiumDatasetPredicateInner {
 pub enum ChromiumDatasetPredicate {
     #[strum(transparent)]
     Specimen(SpecimenPredicate),
+    #[strum(transparent)]
+    Project(ProjectPredicate),
     #[strum(transparent)]
     TenxAssay(TenxAssayPredicate),
     #[strum(transparent)]

@@ -10,6 +10,7 @@ use cellnoor_types::{
     id::Id,
     library::SavedLibraryRecord,
     nonempty::NonemptyString,
+    project::SavedProjectRecord,
     suspension_pool::SavedTaggedSpecimenRecord,
 };
 use deadpool_postgres::tokio_postgres::Row;
@@ -21,6 +22,7 @@ use crate::{
         chromium_datasets::index_compact::chromium_dataset_links,
         chromium_runs::index_compact::chromium_run_from_record,
         libraries::index_compact::library_from_record,
+        projects::index_compact::project_from_record,
         suspension_pools::index_compact::tagged_specimen_from_record,
     },
     state::AppState,
@@ -56,6 +58,7 @@ pub(in super::super) async fn select_chromium_datasets_detailed(
 
 fn map_detailed_row(row: Row) -> ChromiumDatasetDetailed {
     let record: SavedChromiumDatasetRecord = row.get("chromium_dataset");
+    let projects: Vec<SavedProjectRecord> = row.get("projects");
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
     let libraries: Vec<SavedLibraryRecord> = row.get("libraries");
     let chromium_run = row.get("chromium_run");
@@ -70,6 +73,7 @@ fn map_detailed_row(row: Row) -> ChromiumDatasetDetailed {
         record,
         assay: row.get("assay"),
         libraries: libraries.into_iter().map(library_from_record).collect(),
+        projects: projects.into_iter().map(project_from_record).collect(),
         specimens: specimens
             .into_iter()
             .map(tagged_specimen_from_record)

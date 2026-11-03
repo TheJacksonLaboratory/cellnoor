@@ -1,0 +1,24 @@
+{% extends "sidebar.html" %}
+
+{% block sidebar %}
+{% block actions %}{% endblock %}
+<header class="cluster filters-header">
+	<h2 class="heading">Filters</h2>
+	<div class="cluster">
+		<a class="button" href="?">Clear all</a>
+		<button class="button" form="filters">Apply</button>
+	</div>
+</header>
+<form id="filters" class="stack filters" autocomplete="off">
+	{% block filters %}{% endblock %}
+</form>
+{% endblock %}
+
+{% block content %}
+{% block list %}{% endblock %}
+{% if let Some(next) = paging.next %}
+<footer class="cluster">
+	<button class="button" form="filters" name="{{ crate::ui::params::ListParam::Limit }}" value="{{ next }}">Load more</button>
+</footer>
+{% endif %}
+{% endblock %}
