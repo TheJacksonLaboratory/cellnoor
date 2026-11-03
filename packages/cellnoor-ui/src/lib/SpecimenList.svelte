@@ -22,6 +22,7 @@
 	};
 
 	const fields: Field[] = [
+		{ label: 'Name', toText: (s) => s.name },
 		{ label: 'Species', toText: (s) => formatSpecies(s.species) },
 		{ label: 'Submitted by', toText: (s) => people.get(s.submitted_by)?.name },
 		{ label: 'Type', toText: (s) => formatEnum(s.type_) },
@@ -73,7 +74,7 @@
 	<table>
 		<thead>
 			<tr>
-				<th scope="col">Name</th>
+				<th scope="col">ID</th>
 				{#each varying as { label } (label)}
 					<th scope="col">{label}</th>
 				{/each}
@@ -84,7 +85,8 @@
 			{#each specimens as s (`${s.id}${s.ocm_barcode_id}${s.multiplexing_tag?.tag_id}`)}
 				<tr>
 					<td
-						><a class="link-arrow" href={resolve('/(app)/specimens/[id]', { id: s.id })}>{s.name}</a
+						><a class="link-arrow" href={resolve('/(app)/specimens/[id]', { id: s.id })}
+							>{s.readable_id}</a
 						></td
 					>
 					{#each varying as { label, toText } (label)}
