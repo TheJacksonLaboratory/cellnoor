@@ -11,14 +11,13 @@
 	let { data } = $props();
 
 	// All specimens in a dataset share the same project
-	const project = $derived(data.projects.get(data.dataset.specimens[0].project_id));
+	const project = $derived(data.projects.get(data.dataset.specimens[0].project_id)!);
 
-	const libraryTypes = $derived(data.dataset.assay.library_types?.map(formatEnum).join(', '));
+	// Chromium datasets always have library types
+	const libraryTypes = $derived(data.dataset.assay.library_types!.map(formatEnum).join(', '));
 
-	const multiplexing = $derived(
-		data.dataset.assay.sample_multiplexing &&
-			formatSampleMultiplexing(data.dataset.assay.sample_multiplexing)
-	);
+	// Chromium datasets always have some kind of multiplexing
+	const multiplexing = $derived(formatSampleMultiplexing(data.dataset.assay.sample_multiplexing!));
 
 	const iLabRequestIds: string[] | null = $derived(
 		// @ts-expect-error I honestly don't know why typescript hates this
@@ -42,17 +41,12 @@
 			<table>
 				<thead>
 					<tr>
-						{#if project}
-							<th scope="col">Project</th>
-						{/if}
+						<th scope="col">Project</th>
 						<th scope="col">Delivered</th>
+						<th scope="col">Chromium run</th>
 						<th scope="col">Assay</th>
-						{#if libraryTypes}
-							<th scope="col">Library types</th>
-						{/if}
-						{#if multiplexing}
-							<th scope="col">Multiplexing</th>
-						{/if}
+						<th scope="col">Library types</th>
+						<th scope="col">Multiplexing</th>
 						{#if iLabRequestIds}
 							<th scope="col">iLab Request IDs</th>
 						{/if}
@@ -60,21 +54,20 @@
 				</thead>
 				<tbody>
 					<tr>
-						{#if project}
-							<td
-								><a class="link-arrow" href={resolve('/(app)/projects/[id]', { id: project.id })}
-									>{project.name}</a
-								></td
-							>
-						{/if}
+						<td
+							><a class="link-arrow" href={resolve('/(app)/projects/[id]', { id: project.id })}
+								>{project.name}</a
+							></td
+						>
 						<td><Time datetime={dataset.delivered_at} /></td>
-						<td>{dataset.assay.name}</td>
-						{#if libraryTypes}
-							<td>{libraryTypes}</td>
-						{/if}
-						{#if multiplexing}
-							<td>{multiplexing}</td>
-						{/if}
+						<td><Time datetime={dataset.chromium_run.run_at}></Time></td>
+						<td
+							><a href={dataset.assay.protocol_url} rel="external" class="link-arrow"
+								>{`${dataset.assay.name} (${dataset.assay.chemistry_version})`}</a
+							></td
+						>
+						<td>{libraryTypes}</td>
+						<td>{multiplexing}</td>
 						{#if iLabRequestIds}
 							<td>{iLabRequestIds.join(' | ')}</td>
 						{/if}

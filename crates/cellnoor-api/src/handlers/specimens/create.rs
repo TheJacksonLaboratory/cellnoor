@@ -119,7 +119,7 @@ where
     let SavedProjectRecordDetailed { project, members } = inserted_project.record;
     let mut new = NewSpecimen {
         simple: SpecimenSimpleFields {
-            readable_id: crate::db::dummy_data::random_name_for("specimen"),
+            readable_id: crate::db::dummy_data::random_name_for("26SP"),
             name: crate::db::dummy_data::random_name_for("specimen"),
             submitted_by: members[0],
             received_at: Timestamp::now(),
