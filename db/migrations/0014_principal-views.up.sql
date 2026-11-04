@@ -13,7 +13,8 @@ create view person_public with (security_invoker = true) as (
 
 create view person_account with (security_invoker = true) as (
     select
-        person.id,
+        account.id,
+        person.id as person_id,
         person.name,
         person.email,
         account.auth_provider,

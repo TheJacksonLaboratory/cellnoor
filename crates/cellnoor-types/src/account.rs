@@ -21,6 +21,7 @@ pub enum NewAccount {
 #[cfg_attr(feature = "postgres-types", postgres(name = "person_account"))]
 pub struct PersonAccount {
     pub id: Uuid,
+    pub person_id: Uuid,
     pub name: NonemptyString,
     pub email: Option<NonemptyString>,
     pub auth_provider: String,

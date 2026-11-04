@@ -8568,6 +8568,8 @@ export interface components {
             /** Format: uuid */
             id: string;
             name: string;
+            /** Format: uuid */
+            person_id: string;
         };
         PersonError: {
             email: string;
