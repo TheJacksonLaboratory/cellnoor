@@ -7316,14 +7316,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        Account: {
-            /** @constant */
-            auth_provider: "microsoft";
-            /** Format: uuid */
-            microsoft_entra_oid: string;
-        } | {
-            email: string;
-        };
         /** @enum {string} */
         Action: "create" | "update" | "delete";
         /** @description A simple comparison operator. */
@@ -7415,6 +7407,12 @@ export interface components {
         } | {
             in_unless_empty: components["schemas"]["LibraryType"][][];
         } | components["schemas"]["LibraryType"][];
+        AuthAccount: {
+            /** @constant */
+            auth_provider: "microsoft";
+            /** Format: uuid */
+            microsoft_entra_oid: string;
+        };
         AuthError: {
             /** Format: date-time */
             expired_at: string;
@@ -8325,7 +8323,8 @@ export interface components {
             readable_id: string;
         };
         NewPerson: {
-            account: components["schemas"]["Account"];
+            auth_account?: components["schemas"]["AuthAccount"] | null;
+            email: string;
             /** Format: uuid */
             institution_id: string;
             is_staff: boolean;
@@ -9507,7 +9506,6 @@ export interface components {
     headers: never;
     pathItems: never;
 }
-export type Account = components['schemas']['Account'];
 export type Action = components['schemas']['Action'];
 export type AnyValueOperator = components['schemas']['AnyValueOperator'];
 export type ApiKey = components['schemas']['ApiKey'];
@@ -9517,6 +9515,7 @@ export type ApiKeyPredicateFilter = components['schemas']['ApiKeyPredicateFilter
 export type ApiKeyPredicateQuery = components['schemas']['ApiKeyPredicateQuery'];
 export type ApiKeyUpdate = components['schemas']['ApiKeyUpdate'];
 export type ArrayOfLibraryTypeOperator = components['schemas']['Array_of_LibraryTypeOperator'];
+export type AuthAccount = components['schemas']['AuthAccount'];
 export type AuthError = components['schemas']['AuthError'];
 export type BlockEmbeddingMatrix = components['schemas']['BlockEmbeddingMatrix'];
 export type BlockEmbeddingMatrixOperator = components['schemas']['BlockEmbeddingMatrixOperator'];

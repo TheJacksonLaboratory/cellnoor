@@ -76,7 +76,7 @@ impl Insert for NewAccountRecord<'_> {
 mod tests {
     use cellnoor_types::{
         account::NewAccount,
-        person::{Account, Person, SavedPersonRecord},
+        person::{Person, SavedPersonRecord},
     };
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
@@ -93,7 +93,6 @@ mod tests {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let email = format!("{}@example.com", Uuid::new_v4());
         let (
             _,
             Person {
@@ -105,13 +104,9 @@ mod tests {
                     },
                 links: _,
             },
-        ) = insert_test_person_and_institution(&tx, |p| {
-            p.account = Account::None {
-                email: email.to_nonempty_string(),
-            }
-        })
-        .await
-        .unwrap();
+        ) = insert_test_person_and_institution(&tx, |_| ())
+            .await
+            .unwrap();
 
         let microsoft_entra_oid = Uuid::new_v4();
         let account = insert_account(
@@ -128,14 +123,12 @@ mod tests {
             (
                 account.person_id,
                 account.name,
-                account.email,
                 account.auth_provider,
                 account.auth_provider_user_id
             ),
             (
                 person_id,
                 name.to_nonempty_string(),
-                Some(email.to_nonempty_string()),
                 "microsoft".to_owned(),
                 microsoft_entra_oid.to_string()
             )
