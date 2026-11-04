@@ -6,6 +6,7 @@ services:
     environment:
       NODE_ENV: development
       CELLNOOR_AUTH__PUBLIC_BASE_URL: ${CELLNOOR_PUBLIC_BASE_URL}
+      CELLNOOR_AUTH__MICROSOFT_ENTRA_COMMON_TENANT: "true"
   cellnoor-api:
     build:
       args:

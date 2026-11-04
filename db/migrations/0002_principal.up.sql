@@ -28,7 +28,8 @@ create table person (
     id uuid primary key default uuidv7(),
     name case_insensitive_text not null,
     email case_insensitive_text unique,
-    email_verified boolean not null default false,
+    -- better-auth fails to link a person to their account if email_verified = false
+    email_verified boolean not null default true,
     institution_id uuid references institution not null,
     is_staff boolean not null default false,
     created_at timestamptz not null default now(),
