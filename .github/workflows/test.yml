@@ -1,0 +1,30 @@
+name: Check Rust Code
+on:
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -Dwarnings
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v7
+
+      - name: Cache cargo files
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-all-crates: true
+          cache-workspace-crates: true
+          cache-on-failure: true
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Copy initial data
+        run: cp initial-data.sample.json initial-data.json
+
+      - name: Test
+        run: ./scripts/dev/test.sh
