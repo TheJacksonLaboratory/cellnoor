@@ -964,7 +964,63 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["NewAccount"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PersonAccount"];
+                    };
+                };
+                /** @description failed to parse request body as JSON of the correct type */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["JsonRejection"];
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthError"];
+                    };
+                };
+                /** @description expected request with 'Content-Type: application/json' */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["JsonRejection"];
+                    };
+                };
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DbError"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -8126,6 +8182,14 @@ export interface components {
             /** Format: float */
             value: number;
         };
+        NewAccount: {
+            /** @constant */
+            auth_provider: "microsoft";
+            /** Format: uuid */
+            microsoft_entra_oid: string;
+            /** Format: uuid */
+            person_id: string;
+        };
         NewApiKey: {
             description?: string | null;
             /** Format: date-time */
@@ -9529,6 +9593,7 @@ export type MultiplexingTagType = components['schemas']['MultiplexingTagType'];
 export type MultiplexingTagTypeOperator = components['schemas']['MultiplexingTagTypeOperator'];
 export type Nanogram = components['schemas']['Nanogram'];
 export type NanogramConcentration = components['schemas']['NanogramConcentration'];
+export type NewAccount = components['schemas']['NewAccount'];
 export type NewApiKey = components['schemas']['NewApiKey'];
 export type NewBotAccount = components['schemas']['NewBotAccount'];
 export type NewCdna = components['schemas']['NewCdna'];
