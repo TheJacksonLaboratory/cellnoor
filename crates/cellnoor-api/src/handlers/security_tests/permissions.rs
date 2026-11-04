@@ -1,6 +1,7 @@
 use std::{assert_matches, fmt::Debug};
 
 use cellnoor_types::{
+    account::NewAccount,
     permission::{Action, Permission, Resource},
     person::PersonUpdate,
     project::ProjectQuery,
@@ -12,6 +13,7 @@ use uuid::Uuid;
 use crate::{
     db::{self, DbError, Sql},
     handlers::{
+        accounts::create::insert_account,
         bot_accounts::{index::select_bot_accounts, index_detailed::select_bot_accounts_detailed},
         cdna::index_detailed::select_cdna_detailed,
         chromium_datasets::index_detailed::select_chromium_datasets_detailed,
@@ -245,6 +247,34 @@ async fn nonstaff_cannot_write_even_with_permission() {
         insert_test_institution(&tx, |_| ()).await.unwrap_err(),
         DbError::PermissionDenied { .. }
     );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn only_staff_with_permission_can_insert_accounts() {
+    let new_account = NewAccount::Microsoft {
+        person_id: create_test_user().await,
+        microsoft_entra_oid: Uuid::new_v4(),
+    };
+
+    let may_create_accounts = may(Resource::Account, &[Action::Create]);
+    let nonstaff_with_permission = create_test_user_with(false, may_create_accounts.clone()).await;
+    let staff_without_permission = create_test_user_with(true, Vec::new()).await;
+
+    for user_id in [nonstaff_with_permission, staff_without_permission] {
+        let mut client = db_client_as_user(user_id).await;
+        let tx = client.begin().await.unwrap();
+
+        assert_matches!(
+            insert_account(&tx, &new_account).await.unwrap_err(),
+            DbError::PermissionDenied { .. }
+        );
+    }
+
+    let staff_with_permission = create_test_user_with(true, may_create_accounts).await;
+    let mut client = db_client_as_user(staff_with_permission).await;
+    let tx = client.begin().await.unwrap();
+
+    insert_account(&tx, &new_account).await.unwrap();
 }
 
 #[tokio::test(flavor = "multi_thread")]

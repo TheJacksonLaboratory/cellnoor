@@ -16,8 +16,22 @@ function readRequiredEnvVar(name: string) {
   return val;
 }
 
+function readBooleanEnvVar(name: string) {
+  const val = readEnvVar(name);
+
+  if (val === undefined || val === "false") {
+    return false;
+  }
+
+  if (val === "true") {
+    return true;
+  }
+
+  throw `environment variable ${name} must be "true" or "false", but it is "${val}"`;
+}
+
 async function readSecret(name: string): Promise<string> {
-  if (Bun.env.READ_SECRET_FILE) {
+  if (Bun.env.CELLNOOR_AUTH__READ_SECRET_FILE) {
     return await Bun.file(`/run/secrets/${name}`).text();
   }
 
@@ -33,7 +47,7 @@ interface Config {
   dbName?: string;
   maxDbPoolSize?: number;
   authSecret: string;
-  microsoftEntraTenantId: string;
+  microsoftEntraCommonTenant: boolean;
   microsoftEntraClientId: string;
   microsoftEntraClientSecret: string;
 }
@@ -66,8 +80,10 @@ export async function readConfig(): Promise<Config> {
     dbPort,
     dbName: readRequiredEnvVar("db__name"),
     maxDbPoolSize,
-    microsoftEntraTenantId: await readSecret("microsoft_entra_tenant_id"),
     authSecret: await readSecret("auth_secret"),
+    microsoftEntraCommonTenant: readBooleanEnvVar(
+      "microsoft_entra_common_tenant",
+    ),
     microsoftEntraClientId: await readSecret("microsoft_entra_client_id"),
     microsoftEntraClientSecret: await readSecret(
       "microsoft_entra_client_secret",

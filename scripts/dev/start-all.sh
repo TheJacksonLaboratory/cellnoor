@@ -46,6 +46,7 @@ export CELLNOOR_AUTH__DB__NAME="$db_name"
 export CELLNOOR_AUTH__AUTH_SECRET="$auth_secret"
 export CELLNOOR_AUTH__UNIX_DOMAIN_SOCKET="$sockets/auth.sock"
 export CELLNOOR_AUTH__PUBLIC_BASE_URL="$host"
+export CELLNOOR_AUTH__MICROSOFT_ENTRA_COMMON_TENANT="true"
 
 # cellnoor-api configuration
 export CELLNOOR_API__DB__HOST="$db_host"
