@@ -1,27 +1,22 @@
-use cellnoor_types::{
-    id::NoId,
-    specimen::{
-        Fixative, NewSpecimenRecord, ThermalPreservationMethod,
-        creation::{
-            SpecimenSimpleFields, SpecimenVariableFields, block::BlockFields,
-            suspension::SuspensionSpecimenFields, tissue::TissueFields,
-        },
+use cellnoor_types::specimen::{
+    Fixative, ThermalPreservationMethod,
+    creation::{
+        SpecimenSimpleFields, SpecimenVariableFields, block::BlockFields,
+        suspension::SuspensionSpecimenFields, tissue::TissueFields,
     },
 };
+
+use crate::handlers::specimens::create::NewSpecimenRecord;
 
 pub fn convert_specimen_fields_to_record(
     SpecimenSimpleFields {
         readable_id,
         name,
-        submitted_by,
-        project_id,
-        received_at,
-        species,
-        host_species,
+        received_or_created_at,
         returned_at,
         returned_by,
-        tissue,
         additional_data,
+        origin,
         variable_fields,
     }: SpecimenSimpleFields,
 ) -> NewSpecimenRecord {
@@ -77,22 +72,12 @@ pub fn convert_specimen_fields_to_record(
     };
 
     NewSpecimenRecord {
-        id: NoId,
         readable_id,
         name,
-        submitted_by,
-        project_id,
-        // These are denormalized copies of the project's start and end,
-        // populated by a database trigger on insert. The values here are never
-        // written or read
-        project_started_at: Default::default(),
-        project_ended_at: Default::default(),
-        received_at,
-        species,
-        host_species,
+        origin,
+        received_or_created_at,
         returned_at,
         returned_by,
-        tissue,
         additional_data,
         embedded_in,
         fixative,

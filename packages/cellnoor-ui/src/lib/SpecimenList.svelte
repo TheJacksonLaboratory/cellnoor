@@ -24,7 +24,7 @@
 	const fields: Field[] = [
 		{ label: 'Name', toText: (s) => s.name },
 		{ label: 'Species', toText: (s) => formatSpecies(s.species) },
-		{ label: 'Submitted by', toText: (s) => people.get(s.submitted_by)?.name },
+		{ label: 'Submitted by', toText: (s) => people.get(s.submitted_by ?? '')?.name },
 		{ label: 'Type', toText: (s) => formatEnum(s.type_) },
 		{ label: 'Tissue', toText: (s) => s.tissue },
 		{
@@ -78,7 +78,7 @@
 				{#each varying as { label } (label)}
 					<th scope="col">{label}</th>
 				{/each}
-				<th scope="col">Received</th>
+				<th scope="col">Received or created</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -92,7 +92,7 @@
 					{#each varying as { label, toText } (label)}
 						<td>{toText(s)}</td>
 					{/each}
-					<td><Time datetime={s.received_at} /></td>
+					<td><Time datetime={s.received_or_created_at} /></td>
 				</tr>
 			{/each}
 		</tbody>

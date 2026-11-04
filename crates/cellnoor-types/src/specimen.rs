@@ -15,7 +15,7 @@ pub use query::{
 
 use crate::{
     Relation,
-    id::{Id, NoId},
+    id::Id,
     project::{ProjectCompact, SavedProjectRecord},
     simple_links::SimpleLinks,
     specimen::{
@@ -52,13 +52,16 @@ mod record {
         pub id: T,
         pub readable_id: NonemptyString,
         pub name: NonemptyString,
-        pub submitted_by: Uuid,
+        pub submitted_by: Option<Uuid>,
         pub project_id: Uuid,
         #[cfg_attr(feature = "serde", serde(skip))]
         pub project_started_at: Timestamp,
         #[cfg_attr(feature = "serde", serde(skip))]
         pub project_ended_at: Option<Timestamp>,
-        pub received_at: Timestamp,
+        pub received_or_created_at: Timestamp,
+        pub parent_specimen_id: Option<Uuid>,
+        #[cfg_attr(feature = "serde", serde(skip))]
+        pub parent_specimen_received_or_created_at: Option<Timestamp>,
         pub species: Species,
         pub host_species: Option<Species>,
         pub returned_at: Option<Timestamp>,
@@ -90,8 +93,6 @@ impl<T> Relation for SpecimenRecord<T> {
     const NAME: &'static str = "specimen";
 }
 
-pub type NewSpecimenRecord = SpecimenRecord<NoId>;
-
 pub type SavedSpecimenRecord = SpecimenRecord<Id>;
 
 #[select]
@@ -101,6 +102,7 @@ pub struct SavedSpecimenRecordDetailed {
     pub specimen: SavedSpecimenRecord,
     pub project: SavedProjectRecord,
     pub measurements: Vec<SpecimenMeasurement>,
+    pub ancestors: Vec<SavedSpecimenRecord>,
 }
 
 #[base_model]
@@ -120,6 +122,7 @@ pub struct SpecimenDetailed {
     pub links: SimpleLinks,
     pub project: ProjectCompact,
     pub measurements: Vec<SpecimenMeasurement>,
+    pub ancestors: Vec<SpecimenCompact>,
 }
 
 #[base_model]

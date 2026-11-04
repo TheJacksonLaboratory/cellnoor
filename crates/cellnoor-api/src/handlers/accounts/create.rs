@@ -25,8 +25,7 @@ pub(in super::super) async fn insert_account(
     tx: &db::Transaction<'_>,
     new: &NewAccount,
 ) -> Result<PersonAccount, DbError> {
-    static SELECT_ACCOUNT: &str = "select person_account from person_account where id = $1 and \
-                                   auth_provider = $2 and auth_provider_user_id = $3";
+    static SELECT_ACCOUNT: &str = "select person_account from person_account where id = $1";
 
     let record = match new {
         NewAccount::Microsoft {
@@ -39,19 +38,10 @@ pub(in super::super) async fn insert_account(
         },
     };
 
-    tx.insert(&record).await?;
+    let id = tx.insert_returning_id(&record).await?;
 
-    let NewAccountRecord {
-        person_id,
-        auth_provider,
-        auth_provider_user_id,
-    } = &record;
-
-    tx.query_one_into(&Sql::new(
-        SELECT_ACCOUNT,
-        vec![person_id, auth_provider, auth_provider_user_id],
-    ))
-    .await
+    tx.query_one_into(&Sql::new(SELECT_ACCOUNT, vec![&id]))
+        .await
 }
 
 pub(in super::super) struct NewAccountRecord<'a> {
@@ -85,8 +75,8 @@ impl Insert for NewAccountRecord<'_> {
 #[cfg(test)]
 mod tests {
     use cellnoor_types::{
-        account::{NewAccount, PersonAccount},
-        person::{Account, Person, SavedPersonRecord},
+        account::NewAccount,
+        person::{Person, SavedPersonRecord},
     };
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
@@ -103,26 +93,26 @@ mod tests {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
-        let email = format!("{}@example.com", Uuid::new_v4());
         let (
             _,
             Person {
-                record: SavedPersonRecord { id, name, .. },
+                record:
+                    SavedPersonRecord {
+                        id: person_id,
+                        name,
+                        ..
+                    },
                 links: _,
             },
-        ) = insert_test_person_and_institution(&tx, |p| {
-            p.account = Account::None {
-                email: email.to_nonempty_string(),
-            }
-        })
-        .await
-        .unwrap();
+        ) = insert_test_person_and_institution(&tx, |_| ())
+            .await
+            .unwrap();
 
         let microsoft_entra_oid = Uuid::new_v4();
         let account = insert_account(
             &tx,
             &NewAccount::Microsoft {
-                person_id: id,
+                person_id,
                 microsoft_entra_oid,
             },
         )
@@ -130,14 +120,18 @@ mod tests {
         .unwrap();
 
         assert_eq!(
-            account,
-            PersonAccount {
-                id,
-                name,
-                email: Some(email.to_nonempty_string()),
-                auth_provider: "microsoft".to_owned(),
-                auth_provider_user_id: microsoft_entra_oid.to_string(),
-            }
+            (
+                account.person_id,
+                account.name,
+                account.auth_provider,
+                account.auth_provider_user_id
+            ),
+            (
+                person_id,
+                name.to_nonempty_string(),
+                "microsoft".to_owned(),
+                microsoft_entra_oid.to_string()
+            )
         );
     }
 }

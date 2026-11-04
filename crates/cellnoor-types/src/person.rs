@@ -17,27 +17,22 @@ pub struct PersonSimpleFields {
 }
 
 #[base_model]
-#[derive(strum::AsRefStr)]
+#[derive(Copy, strum::AsRefStr)]
 #[strum(serialize_all = "snake_case")]
 #[cfg_attr(
     feature = "serde",
     serde(deny_unknown_fields, tag = "auth_provider", rename_all = "snake_case")
 )]
-pub enum Account {
-    Microsoft {
-        microsoft_entra_oid: Uuid,
-    },
-    #[cfg_attr(feature = "serde", serde(untagged))]
-    None {
-        email: NonemptyString,
-    },
+pub enum AuthAccount {
+    Microsoft { microsoft_entra_oid: Uuid },
 }
 
 #[base_model]
 pub struct NewPerson {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub simple: PersonSimpleFields,
-    pub account: Account,
+    pub email: NonemptyString,
+    pub auth_account: Option<AuthAccount>,
     pub permissions_to_grant: Vec<Permission>,
 }
 

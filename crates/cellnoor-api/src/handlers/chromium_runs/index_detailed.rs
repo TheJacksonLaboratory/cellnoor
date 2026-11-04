@@ -264,7 +264,7 @@ mod test {
         .unwrap();
 
         let assay_id = insert_chromium_assays(&tx).await.unwrap().ocm;
-        let person_id = s1.specimen.record.submitted_by;
+        let person_id = s1.specimen.record.submitted_by.unwrap();
 
         let new = NewChromiumRun {
             record: new_record(assay_id, person_id).await,

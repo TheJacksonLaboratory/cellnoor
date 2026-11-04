@@ -2,7 +2,7 @@ create table suspension (
     id uuid primary key default uuidv7(),
     readable_id case_insensitive_text unique not null,
     specimen_id uuid not null,
-    specimen_received_at timestamptz not null,
+    specimen_received_or_created_at timestamptz not null,
     content case_insensitive_text not null,
     created_at timestamptz not null,
     lysis_duration_minutes real,
@@ -10,15 +10,17 @@ create table suspension (
     additional_data jsonb,
 
     unique (id, created_at),
-    foreign key (specimen_id, specimen_received_at) references specimen (id, received_at) on update cascade,
+    foreign key (specimen_id, specimen_received_or_created_at) references specimen (
+        id, received_or_created_at
+    ) on update cascade,
 
     constraint only_nuclei_suspension_was_lysed check (content = 'nuclei' or lysis_duration_minutes is null),
-    constraint created_after_specimen_received check (created_at >= specimen_received_at)
+    constraint created_after_specimen_received check (created_at >= specimen_received_or_created_at)
 );
 
 create function populate_suspension_specimen_timestamps() returns trigger language plpgsql as $$
     begin
-        select received_at into new.specimen_received_at from specimen where id = new.specimen_id;
+        select received_or_created_at into new.specimen_received_or_created_at from specimen where id = new.specimen_id;
 
         return new;
     end;

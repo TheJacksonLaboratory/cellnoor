@@ -1,10 +1,7 @@
 use std::sync::LazyLock;
 
 use axum::{Json, extract::State};
-use cellnoor_types::{
-    nonempty::NonemptyString,
-    person::{Account, NewPerson, Person, PersonField, PersonSimpleFields},
-};
+use cellnoor_types::person::{AuthAccount, NewPerson, Person, PersonField, PersonSimpleFields};
 use postgres_types::ToSql;
 use regex::Regex;
 use uuid::Uuid;
@@ -34,24 +31,22 @@ pub async fn create_person(
 async fn insert_person(tx: &db::Transaction<'_>, new: &NewPerson) -> Result<Person, PersonError> {
     let NewPerson {
         simple,
-        account,
+        email,
+        auth_account,
         permissions_to_grant,
     } = new;
 
-    match account {
-        Account::None { email } => validate_email(email.as_ref())?,
-        Account::Microsoft {
-            microsoft_entra_oid: _,
-        } => (),
-    };
+    validate_email(email.as_ref())?;
 
     let id = tx.insert_returning_id(new).await?;
     set_is_staff(tx, id, simple.is_staff).await?;
     grant_permissions(tx, id, permissions_to_grant).await?;
 
-    // These don't depend on one another
-    let (person, ()) =
-        tokio::try_join!(select_person_by_id(tx, id), insert_account(tx, id, account))?;
+    let person = match auth_account.as_ref() {
+        None => select_person_by_id(tx, id).await?,
+        // These don't depend on one another
+        Some(acc) => tokio::try_join!(select_person_by_id(tx, id), insert_account(tx, id, acc))?.0,
+    };
 
     Ok(person)
 }
@@ -59,10 +54,10 @@ async fn insert_person(tx: &db::Transaction<'_>, new: &NewPerson) -> Result<Pers
 async fn insert_account(
     tx: &db::Transaction<'_>,
     user_id: Uuid,
-    account: &Account,
+    account: &AuthAccount,
 ) -> Result<(), DbError> {
     match account {
-        Account::Microsoft {
+        AuthAccount::Microsoft {
             microsoft_entra_oid,
         } => {
             tx.insert(&NewAccountRecord {
@@ -72,7 +67,6 @@ async fn insert_account(
             })
             .await?
         }
-        Account::None { email: _ } => (),
     };
 
     Ok(())
@@ -107,16 +101,10 @@ impl Insert for NewPerson {
     fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
             simple,
-            account,
+            email,
+            auth_account: _,
             permissions_to_grant: _,
         } = self;
-
-        let email: &(dyn ToSql + Sync) = match account {
-            Account::Microsoft {
-                microsoft_entra_oid: _,
-            } => &None::<NonemptyString>,
-            Account::None { email } => email,
-        };
 
         person_field_value_pairs(simple, email)
     }
@@ -145,20 +133,25 @@ pub async fn insert_test_person_and_institution<F>(
 where
     F: FnMut(&mut NewPerson),
 {
-    use crate::handlers::institutions::create::insert_test_institution;
+    use crate::{
+        handlers::institutions::create::insert_test_institution, state::dev_util::ToNonemptyString,
+    };
 
     let (_, institution) = insert_test_institution(tx, |_| ()).await?;
 
+    let name = crate::db::dummy_data::random_name_for("person");
+    let email = format!("{name}@example.com").to_nonempty_string();
     let mut new = NewPerson {
         simple: PersonSimpleFields {
-            name: crate::db::dummy_data::random_name_for("person"),
+            name,
             institution_id: *institution.record.id,
             is_staff: false,
             orcid: None,
         },
-        account: Account::Microsoft {
+        email,
+        auth_account: Some(AuthAccount::Microsoft {
             microsoft_entra_oid: Uuid::new_v4(),
-        },
+        }),
         permissions_to_grant: Vec::new(),
     };
 
@@ -170,15 +163,14 @@ where
 
 #[cfg(test)]
 pub mod test {
-    use cellnoor_types::person::Account;
-    use pretty_assertions::{assert_eq, assert_str_eq};
+    use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
     use super::insert_test_person_and_institution;
     use crate::{
         db::DbError,
         handlers::people::{PersonError, create::validate_email},
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]
@@ -189,22 +181,6 @@ pub mod test {
         insert_test_person_and_institution(&tx, |_| ())
             .await
             .unwrap();
-    }
-
-    #[tokio::test(flavor = "multi_thread")]
-    async fn insert_with_email() {
-        let mut client = db_client_as_admin().await;
-        let tx = client.begin().await.unwrap();
-
-        let (_, inserted) = insert_test_person_and_institution(&tx, |p| {
-            p.account = Account::None {
-                email: "email@example.com".to_nonempty_string(),
-            }
-        })
-        .await
-        .unwrap();
-
-        assert_str_eq!(inserted.record.email.unwrap().as_ref(), "email@example.com");
     }
 
     // This test just ensures that the correct error is returned when there's an

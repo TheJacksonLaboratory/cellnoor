@@ -218,7 +218,7 @@ where
     let suspension1_id = *suspension1.record.id;
     let suspension2_id = *suspension2.record.id;
 
-    let person_id = suspension1.specimen.record.submitted_by;
+    let person_id = suspension1.specimen.record.submitted_by.unwrap();
 
     let mut new = NewSuspensionPool {
         record: NewSuspensionPoolRecord {

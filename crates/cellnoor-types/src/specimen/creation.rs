@@ -25,17 +25,29 @@ pub mod tissue;
 pub struct SpecimenSimpleFields {
     pub readable_id: NonemptyString,
     pub name: NonemptyString,
-    pub submitted_by: Uuid,
-    pub project_id: Uuid,
-    pub received_at: Timestamp,
-    pub species: Species,
-    pub host_species: Option<Species>,
+    pub received_or_created_at: Timestamp,
     pub returned_at: Option<Timestamp>,
     pub returned_by: Option<Uuid>,
-    pub tissue: NonemptyString,
     pub additional_data: Option<serde_json::Value>,
     #[cfg_attr(feature = "serde", serde(flatten))]
+    pub origin: SpecimenOrigin,
+    #[cfg_attr(feature = "serde", serde(flatten))]
     pub variable_fields: SpecimenVariableFields,
+}
+
+#[base_model]
+#[cfg_attr(feature = "serde", serde(rename_all = "snake_case", tag = "origin"))]
+pub enum SpecimenOrigin {
+    Primary {
+        submitted_by: Uuid,
+        project_id: Uuid,
+        species: Species,
+        host_species: Option<Species>,
+        tissue: NonemptyString,
+    },
+    Derived {
+        parent_specimen_id: Uuid,
+    },
 }
 
 #[base_model]

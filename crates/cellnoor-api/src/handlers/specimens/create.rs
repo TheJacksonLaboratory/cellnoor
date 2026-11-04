@@ -1,7 +1,15 @@
 use axum::{Json, extract::State};
-use cellnoor_types::specimen::{
-    NewSpecimenRecord, SpecimenDetailed, SpecimenField, creation::NewSpecimen,
+use cellnoor_types::{
+    Relation,
+    nonempty::NonemptyString,
+    specimen::{
+        Fixative, SavedSpecimenRecord, SpecimenDetailed, SpecimenField, SpecimenType,
+        ThermalPreservationMethod,
+        creation::{NewSpecimen, SpecimenOrigin, block::BlockEmbeddingMatrix},
+    },
 };
+use jiff::Timestamp;
+use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
@@ -39,6 +47,24 @@ pub(in super::super) async fn insert_specimen(
     select_specimen_by_id(tx, id).await
 }
 
+pub(super) struct NewSpecimenRecord {
+    pub readable_id: NonemptyString,
+    pub name: NonemptyString,
+    pub origin: SpecimenOrigin,
+    pub received_or_created_at: Timestamp,
+    pub returned_at: Option<Timestamp>,
+    pub returned_by: Option<Uuid>,
+    pub type_: SpecimenType,
+    pub embedded_in: Option<BlockEmbeddingMatrix>,
+    pub fixative: Option<Fixative>,
+    pub thermal_preservation_method: Option<ThermalPreservationMethod>,
+    pub additional_data: Option<serde_json::Value>,
+}
+
+impl Relation for NewSpecimenRecord {
+    const NAME: &'static str = <SavedSpecimenRecord as Relation>::NAME;
+}
+
 impl Insert for NewSpecimenRecord {
     type Field = SpecimenField;
 
@@ -46,20 +72,12 @@ impl Insert for NewSpecimenRecord {
         use SpecimenField::*;
 
         let Self {
-            id: _,
             readable_id,
             name,
-            submitted_by,
-            received_at,
-            project_id,
-            // Populated by a database trigger
-            project_started_at: _,
-            project_ended_at: _,
-            species,
-            host_species,
+            origin,
+            received_or_created_at,
             returned_by,
             returned_at,
-            tissue,
             additional_data,
             type_,
             embedded_in,
@@ -67,23 +85,45 @@ impl Insert for NewSpecimenRecord {
             thermal_preservation_method,
         } = self;
 
-        vec![
+        let mut fields: FieldValues<'_, Self::Field> = vec![
             (ReadableId, readable_id),
             (Name, name),
-            (SubmittedBy, submitted_by),
-            (ReceivedAt, received_at),
-            (ProjectId, project_id),
-            (Species, species),
-            (HostSpecies, host_species),
+            (ReceivedOrCreatedAt, received_or_created_at),
             (ReturnedBy, returned_by),
             (ReturnedAt, returned_at),
-            (Tissue, tissue),
             (AdditionalData, additional_data),
             (Type, type_),
             (EmbeddedIn, embedded_in),
             (Fixative, fixative),
             (ThermalPreservationMethod, thermal_preservation_method),
-        ]
+        ];
+
+        // Each variant writes null to the other variant's column so that an
+        // update can turn a primary specimen into a derived one and vice versa
+        match origin {
+            SpecimenOrigin::Primary {
+                submitted_by,
+                project_id,
+                species,
+                host_species,
+                tissue,
+            } => {
+                fields.push((SubmittedBy, submitted_by));
+                fields.push((ParentSpecimenId, &None::<Uuid>));
+                fields.push((ProjectId, project_id));
+                fields.push((Species, species));
+                fields.push((HostSpecies, host_species));
+                fields.push((Tissue, tissue));
+            }
+            // The project, species, host species, and tissue are copied from
+            // the parent by a database trigger
+            SpecimenOrigin::Derived { parent_specimen_id } => {
+                fields.push((ParentSpecimenId, parent_specimen_id));
+                fields.push((SubmittedBy, &None::<Uuid>));
+            }
+        }
+
+        fields
     }
 }
 
@@ -121,15 +161,17 @@ where
         simple: SpecimenSimpleFields {
             readable_id: crate::db::dummy_data::random_name_for("26SP"),
             name: crate::db::dummy_data::random_name_for("specimen"),
-            submitted_by: members[0],
-            received_at: Timestamp::now(),
-            project_id: project.id,
-            species: Species::MusMusculus,
-            host_species: None,
+            received_or_created_at: Timestamp::now(),
             returned_by: None,
             returned_at: None,
-            tissue: "tissue".to_nonempty_string(),
             additional_data: None,
+            origin: SpecimenOrigin::Primary {
+                submitted_by: members[0],
+                project_id: project.id,
+                species: Species::MusMusculus,
+                host_species: None,
+                tissue: "tissue".to_nonempty_string(),
+            },
             variable_fields: SpecimenVariableFields::Block(BlockFields::CarboxymethylCellulose {
                 fixative: None,
                 thermal_preservation_method: FlashFreezing::FlashFreezing,
@@ -156,6 +198,7 @@ where
 #[cfg(test)]
 pub mod test {
 
+    use cellnoor_types::specimen::{Species, creation::SpecimenOrigin};
     use jiff::Timestamp;
 
     use super::insert_test_specimen_and_project;
@@ -175,7 +218,7 @@ pub mod test {
         let tx = client.begin().await.unwrap();
 
         let error = insert_test_specimen_and_project(&tx, |sp| {
-            sp.simple.received_at = Timestamp::from_second(0).unwrap()
+            sp.simple.received_or_created_at = Timestamp::from_second(0).unwrap()
         })
         .await
         .unwrap_err();
@@ -188,6 +231,44 @@ pub mod test {
                 message: _,
                 detail: None,
             }
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn derived_specimen_inherits_from_parent() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let (_, parent) = insert_test_specimen_and_project(&tx, |sp| {
+            if let SpecimenOrigin::Primary { host_species, .. } = &mut sp.simple.origin {
+                *host_species = Some(Species::HomoSapiens);
+            }
+        })
+        .await
+        .unwrap();
+        let (_, child) = insert_test_specimen_and_project(&tx, |sp| {
+            sp.simple.origin = SpecimenOrigin::Derived {
+                parent_specimen_id: *parent.record.id,
+            };
+        })
+        .await
+        .unwrap();
+
+        let (parent, child) = (parent.record, child.record);
+        assert_eq!(child.submitted_by, None);
+        assert_eq!(
+            (
+                child.project_id,
+                child.species,
+                child.host_species,
+                child.tissue
+            ),
+            (
+                parent.project_id,
+                parent.species,
+                parent.host_species,
+                parent.tissue
+            )
         );
     }
 }
