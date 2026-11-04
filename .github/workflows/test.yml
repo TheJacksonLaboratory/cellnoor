@@ -1,4 +1,4 @@
-name: Check Rust Code
+name: Test
 on:
   pull_request:
     branches: ["main"]
@@ -16,6 +16,7 @@ jobs:
       - name: Cache cargo files
         uses: Swatinem/rust-cache@v2
         with:
+          workspaces: crates
           cache-all-crates: true
           cache-workspace-crates: true
           cache-on-failure: true
@@ -25,6 +26,10 @@ jobs:
 
       - name: Copy initial data
         run: cp initial-data.sample.json initial-data.json
+
+      - name: Install dependencies
+        working-directory: packages/cellnoor-auth
+        run: bun install
 
       - name: Test
         run: ./scripts/dev/test.sh
