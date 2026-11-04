@@ -112,8 +112,8 @@ export const auth = betterAuth({
         // To guard against this, we remove the email from AS1 before better-auth completes the sign-in, so that AS2
         // gets a new row in the person table rather than getting AS1's row. This wouldn't be a problem if we didn't
         // default person.email_verified = true, but we have to do that because better-auth only links a sign-in to an
-        // existing person if email_verified = true, and the main path to creating someone is not through sign-in, but
-        // through creation by an automated script (https://github.com/demhadais/update-cellnoor).
+        // existing person if email_verified = true, and we want people created by automated script
+        // (https://github.com/demhadais/update-cellnoor) to be able to sign in as themselves.
         await dbClient.query(
           `update person set email = null
           where email = $1 and exists (
