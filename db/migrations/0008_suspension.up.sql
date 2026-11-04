@@ -10,7 +10,9 @@ create table suspension (
     additional_data jsonb,
 
     unique (id, created_at),
-    foreign key (specimen_id, specimen_received_or_created_at) references specimen (id, received_or_created_at) on update cascade,
+    foreign key (specimen_id, specimen_received_or_created_at) references specimen (
+        id, received_or_created_at
+    ) on update cascade,
 
     constraint only_nuclei_suspension_was_lysed check (content = 'nuclei' or lysis_duration_minutes is null),
     constraint created_after_specimen_received check (created_at >= specimen_received_or_created_at)

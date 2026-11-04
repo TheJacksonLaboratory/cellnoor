@@ -4,7 +4,6 @@ use std::str::FromStr;
 #[cfg(feature = "postgres-types")]
 use bytes::BytesMut;
 pub use creation::SpecimenType;
-use jiff::Timestamp;
 use macro_attributes::{base_model, select, unit_enum};
 #[cfg(feature = "postgres-types")]
 use postgres_types::{FromSql, ToSql, to_sql_checked};
@@ -13,18 +12,16 @@ pub use query::{
     SpecimenField, SpecimenPredicate, SpecimenQuery, SpecimenTypeOperator,
     ThermalPreservationMethodOperator,
 };
-use uuid::Uuid;
 
 use crate::{
     Relation,
     id::Id,
-    nonempty::NonemptyString,
     project::{ProjectCompact, SavedProjectRecord},
     simple_links::SimpleLinks,
     specimen::{
         creation::{
             ControlledRateFreezing, DithiobisSuccinimidylpropionate, FlashFreezing,
-            FormaldehydeDerivative, SpecimenOrigin, block::BlockEmbeddingMatrix,
+            FormaldehydeDerivative,
         },
         measurement::SpecimenMeasurement,
         record::SpecimenRecord,

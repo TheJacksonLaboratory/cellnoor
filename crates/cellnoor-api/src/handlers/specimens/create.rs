@@ -257,8 +257,18 @@ pub mod test {
         let (parent, child) = (parent.record, child.record);
         assert_eq!(child.submitted_by, None);
         assert_eq!(
-            (child.project_id, child.species, child.host_species, child.tissue),
-            (parent.project_id, parent.species, parent.host_species, parent.tissue)
+            (
+                child.project_id,
+                child.species,
+                child.host_species,
+                child.tissue
+            ),
+            (
+                parent.project_id,
+                parent.species,
+                parent.host_species,
+                parent.tissue
+            )
         );
     }
 }

@@ -24,8 +24,8 @@ export enum FormFieldName {
 	SpecimenEmbeddedIn = 'specimen.embedded_in',
 	SpecimenFixative = 'specimen.fixative',
 	SpecimenThermalPreservationMethod = 'specimen.thermal_preservation_method',
-	SpecimenReceivedFrom = 'specimen.received_from',
-	SpecimenReceivedTo = 'specimen.received_to'
+	SpecimenReceivedFrom = 'specimen.received_or_created_from',
+	SpecimenReceivedTo = 'specimen.received_or_created_to'
 }
 
 export const datasetFilterFieldParsers: Record<FormFieldName, Parser<ChromiumDatasetPredicate>> = {
@@ -50,6 +50,8 @@ export const datasetFilterFieldParsers: Record<FormFieldName, Parser<ChromiumDat
 	'specimen.thermal_preservation_method': (v) => ({
 		specimen: { thermal_preservation_method: { in_unless_empty: v as ThermalPreservationMethod[] } }
 	}),
-	'specimen.received_from': (v) => onOrAfter(v).map((exp) => ({ specimen: { received_at: exp } })),
-	'specimen.received_to': (v) => onOrBefore(v).map((exp) => ({ specimen: { received_at: exp } }))
+	'specimen.received_or_created_from': (v) =>
+		onOrAfter(v).map((exp) => ({ specimen: { received_or_created_at: exp } })),
+	'specimen.received_or_created_to': (v) =>
+		onOrBefore(v).map((exp) => ({ specimen: { received_or_created_at: exp } }))
 };

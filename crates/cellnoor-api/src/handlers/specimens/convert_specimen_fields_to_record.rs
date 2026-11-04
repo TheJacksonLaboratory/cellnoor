@@ -1,10 +1,8 @@
-use cellnoor_types::{
-    specimen::{
-        Fixative, ThermalPreservationMethod,
-        creation::{
-            SpecimenSimpleFields, SpecimenVariableFields, block::BlockFields,
-            suspension::SuspensionSpecimenFields, tissue::TissueFields,
-        },
+use cellnoor_types::specimen::{
+    Fixative, ThermalPreservationMethod,
+    creation::{
+        SpecimenSimpleFields, SpecimenVariableFields, block::BlockFields,
+        suspension::SuspensionSpecimenFields, tissue::TissueFields,
     },
 };
 

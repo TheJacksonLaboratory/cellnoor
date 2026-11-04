@@ -27,8 +27,12 @@ create table specimen (
     foreign key (project_id, project_started_at, project_ended_at) references project (
         id, started_at, ended_at
     ) on update cascade,
-    foreign key (parent_specimen_id, parent_specimen_received_or_created_at) references specimen (id, received_or_created_at) match full on update cascade,
-    foreign key (parent_specimen_id, project_id, species, tissue) references specimen (id, project_id, species, tissue) on update cascade,
+    foreign key (parent_specimen_id, parent_specimen_received_or_created_at) references specimen (
+        id, received_or_created_at
+    ) match full on update cascade,
+    foreign key (parent_specimen_id, project_id, species, tissue) references specimen (
+        id, project_id, species, tissue
+    ) on update cascade,
     -- A child with a null `host_species` is not checked against its parent, because `match simple` skips any row with a
     -- null column
     foreign key (parent_specimen_id, host_species) references specimen (id, host_species) on update cascade,
