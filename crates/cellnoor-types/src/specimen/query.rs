@@ -23,7 +23,8 @@ pub enum SpecimenPredicate {
     Name(StringOperator),
     SubmittedBy(UuidOperator),
     ProjectId(UuidOperator),
-    ReceivedAt(TimestampOperator),
+    ReceivedOrCreatedAt(TimestampOperator),
+    ParentSpecimenId(UuidOperator),
     Species(SpeciesOperator),
     HostSpecies(SpeciesOperator),
     ReturnedAt(TimestampOperator),
@@ -42,7 +43,7 @@ impl Field for SpecimenField {
 
 impl OrderField for SpecimenField {
     fn default_field() -> Self {
-        Self::ReceivedAt
+        Self::ReceivedOrCreatedAt
     }
 }
 

@@ -7,7 +7,10 @@ use cellnoor_types::{
 use crate::{
     auth::AuthUser,
     db::{self, DbError, FilterableSqlBuilder},
-    handlers::projects::index_compact::project_from_record,
+    handlers::{
+        projects::index_compact::project_from_record,
+        specimens::index_compact::specimen_from_record,
+    },
     state::AppState,
 };
 
@@ -42,6 +45,7 @@ fn specimen_from_detailed_record(
         specimen,
         project,
         measurements,
+        ancestors,
     }: SavedSpecimenRecordDetailed,
 ) -> SpecimenDetailed {
     SpecimenDetailed {
@@ -49,5 +53,44 @@ fn specimen_from_detailed_record(
         record: specimen,
         project: project_from_record(project),
         measurements,
+        ancestors: ancestors.into_iter().map(specimen_from_record).collect(),
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use cellnoor_types::specimen::creation::SpecimenOrigin;
+    use pretty_assertions::assert_eq;
+
+    use crate::{
+        handlers::specimens::create::insert_test_specimen_and_project,
+        state::dev_util::db_client_as_admin,
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn ancestors_are_ordered_parent_first() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let (_, root) = insert_test_specimen_and_project(&tx, |_| ()).await.unwrap();
+        let (_, child) = insert_test_specimen_and_project(&tx, |sp| {
+            sp.simple.origin = SpecimenOrigin::Derived {
+                parent_specimen_id: *root.record.id,
+            };
+        })
+        .await
+        .unwrap();
+        let (_, grandchild) = insert_test_specimen_and_project(&tx, |sp| {
+            sp.simple.origin = SpecimenOrigin::Derived {
+                parent_specimen_id: *child.record.id,
+            };
+        })
+        .await
+        .unwrap();
+
+        assert!(root.ancestors.is_empty());
+
+        let ancestors: Vec<_> = grandchild.ancestors.into_iter().map(|a| a.record).collect();
+        assert_eq!(ancestors, [child.record, root.record]);
     }
 }

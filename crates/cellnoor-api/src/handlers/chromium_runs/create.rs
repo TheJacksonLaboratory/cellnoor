@@ -12,6 +12,7 @@ use cellnoor_types::{
         standard::NewStandardGemWell,
     },
     nonempty::{NonemptyBoundedVec, NonemptyVec},
+    specimen::creation::SpecimenOrigin,
     suspension::SuspensionDetailed,
     suspension_pool::{
         MultiplexingTagType::FlexOligonucleotideBarcode, PooledSuspensions, SuspensionPoolDetailed,
@@ -146,7 +147,10 @@ async fn insert_suspensions_in_same_project(
     let (_, first_specimen) = insert_test_specimen_and_project(tx, |_| ()).await.unwrap();
     let specimen_insertions = (1..n_suspensions).map(|_| {
         insert_test_specimen_and_project(tx, |sp| {
-            sp.simple.project_id = first_specimen.project.record.id
+            let SpecimenOrigin::Primary { project_id, .. } = &mut sp.simple.origin else {
+                unreachable!()
+            };
+            *project_id = first_specimen.project.record.id;
         })
     });
 
@@ -162,7 +166,7 @@ async fn insert_suspensions_in_same_project(
     let insertions = specimens.iter().map(|sp| {
         insert_test_suspension_and_specimen(tx, |sus| {
             sus.record.specimen_id = *sp.record.id;
-            sus.preparers = NonemptyVec::new(vec![sp.record.submitted_by]).unwrap()
+            sus.preparers = NonemptyVec::new(vec![sp.record.submitted_by.unwrap()]).unwrap()
         })
     });
 

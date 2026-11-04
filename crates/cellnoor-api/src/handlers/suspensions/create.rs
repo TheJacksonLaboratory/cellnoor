@@ -96,7 +96,7 @@ impl Insert for NewSuspensionRecord {
             readable_id,
             specimen_id,
             // Populated by a database trigger
-            specimen_received_at: _,
+            specimen_received_or_created_at: _,
             content,
             created_at,
             lysis_duration_minutes,
@@ -143,14 +143,14 @@ where
     let (_, specimen) = insert_test_specimen_and_project(tx, |_| ()).await?;
     let specimen_record = &specimen.record;
     let specimen_id = *specimen_record.id;
-    let person_id = specimen_record.submitted_by;
+    let person_id = specimen_record.submitted_by.unwrap();
 
     let mut new = NewSuspension {
         record: NewSuspensionRecord {
             id: NoId,
             readable_id: crate::db::dummy_data::random_name_for("suspension"),
             specimen_id,
-            specimen_received_at: specimen.record.received_at,
+            specimen_received_or_created_at: specimen.record.received_or_created_at,
             content: SuspensionContent::Cells,
             created_at: Timestamp::now(),
             lysis_duration_minutes: None,

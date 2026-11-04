@@ -111,7 +111,7 @@ mod test {
         tx.commit().await.unwrap();
 
         let dataset_id = *dataset.record.id;
-        let member_id = dataset.specimens[0].specimen.record.submitted_by;
+        let member_id = dataset.specimens[0].specimen.record.submitted_by.unwrap();
 
         let mut client = db_client_as_user(member_id).await;
         let tx = client.begin().await.unwrap();

@@ -5,7 +5,8 @@ use cellnoor_types::{
     permission::{Action, Resource},
     project::{NewProject, ProjectDetailed, ProjectPredicate},
     specimen::{
-        SpecimenDetailed, SpecimenPredicate, SpecimenQuery, creation::NewSpecimen,
+        SpecimenDetailed, SpecimenPredicate, SpecimenQuery,
+        creation::{NewSpecimen, SpecimenOrigin},
         measurement::NewSpecimenMeasurement,
     },
 };
@@ -51,9 +52,14 @@ pub async fn insert_inaccessible_specimen(
 ) -> (NewSpecimen, SpecimenDetailed) {
     let (_, project) = insert_inaccessible_project(tx).await;
 
-    insert_test_specimen_and_project(tx, |s| s.simple.project_id = project.record.project.id)
-        .await
-        .unwrap()
+    insert_test_specimen_and_project(tx, |s| {
+        let SpecimenOrigin::Primary { project_id, .. } = &mut s.simple.origin else {
+            unreachable!()
+        };
+        *project_id = project.record.project.id;
+    })
+    .await
+    .unwrap()
 }
 
 pub async fn get_user_id_from_specimen(
@@ -147,7 +153,11 @@ async fn member_can_create_specimen_only_in_accessible_project() {
     let mut into_inaccessible_project = new.clone();
     into_inaccessible_project.simple.readable_id =
         crate::db::dummy_data::random_name_for("specimen");
-    into_inaccessible_project.simple.project_id = inaccessible_project.record.project.id;
+    let SpecimenOrigin::Primary { project_id, .. } = &mut into_inaccessible_project.simple.origin
+    else {
+        unreachable!()
+    };
+    *project_id = inaccessible_project.record.project.id;
 
     let error = insert_specimen(&tx, into_inaccessible_project)
         .await
@@ -176,10 +186,14 @@ async fn creator_can_see_specimens_of_project_without_access() {
     let mut client = db_client_as_admin().await;
     let tx = client.begin().await.unwrap();
 
-    let (_, specimen) =
-        insert_test_specimen_and_project(&tx, |s| s.simple.project_id = project.record.project.id)
-            .await
-            .unwrap();
+    let (_, specimen) = insert_test_specimen_and_project(&tx, |s| {
+        let SpecimenOrigin::Primary { project_id, .. } = &mut s.simple.origin else {
+            unreachable!()
+        };
+        *project_id = project.record.project.id;
+    })
+    .await
+    .unwrap();
 
     tx.commit().await.unwrap();
 
