@@ -2,7 +2,6 @@ use std::sync::LazyLock;
 
 use axum::{Json, extract::State};
 use cellnoor_types::{
-    Relation,
     nonempty::NonemptyString,
     person::{Account, NewPerson, Person, PersonField, PersonSimpleFields},
 };
@@ -14,6 +13,7 @@ use crate::{
     auth::AuthUser,
     db::{self, DbError, FieldValues, Insert},
     handlers::{
+        accounts::create::NewAccountRecord,
         people::{PersonError, show::select_person_by_id},
         permissions::grant_permissions,
         set_is_staff,
@@ -65,11 +65,11 @@ async fn insert_account(
         Account::Microsoft {
             microsoft_entra_oid,
         } => {
-            tx.insert(&NewAccountRecord::new(
-                user_id,
-                account.as_ref(),
-                microsoft_entra_oid,
-            ))
+            tx.insert(&NewAccountRecord {
+                person_id: user_id,
+                auth_provider: account.as_ref(),
+                auth_provider_user_id: microsoft_entra_oid.to_string(),
+            })
             .await?
         }
         Account::None { email: _ } => (),
@@ -119,48 +119,6 @@ impl Insert for NewPerson {
         };
 
         person_field_value_pairs(simple, email)
-    }
-}
-
-struct NewAccountRecord<'a> {
-    person_id: Uuid,
-    auth_provider: &'a str,
-    auth_provider_user_id: String,
-}
-
-impl<'a> NewAccountRecord<'a> {
-    fn new(
-        person_id: Uuid,
-        auth_provider: &'a str,
-        auth_provider_user_id: impl std::fmt::Display,
-    ) -> Self {
-        Self {
-            person_id,
-            auth_provider,
-            auth_provider_user_id: auth_provider_user_id.to_string(),
-        }
-    }
-}
-
-impl Relation for NewAccountRecord<'_> {
-    const NAME: &'static str = "account";
-}
-
-impl Insert for NewAccountRecord<'_> {
-    type Field = &'static str;
-
-    fn fields(&self) -> FieldValues<'_, Self::Field> {
-        let Self {
-            person_id,
-            auth_provider,
-            auth_provider_user_id,
-        } = self;
-
-        vec![
-            ("person_id", person_id),
-            ("auth_provider", auth_provider),
-            ("auth_provider_user_id", auth_provider_user_id),
-        ]
     }
 }
 

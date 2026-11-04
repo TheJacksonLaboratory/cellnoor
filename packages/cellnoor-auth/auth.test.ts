@@ -169,7 +169,7 @@ let otherInstitutionId: string;
 // Mirrors what crates/cellnoor-api/src/handlers/people/create.rs writes
 async function insertPerson({
   email = null,
-  emailVerified = false,
+  emailVerified,
   isStaff = false,
   oid,
 }: {
@@ -181,9 +181,16 @@ async function insertPerson({
   const {
     rows: [{ id }],
   } = await db.query(
-    "insert into person (name, email, email_verified, institution_id) values ($1, $2, $3, $4) returning id",
-    ["Test Person", email, emailVerified, institutionId],
+    "insert into person (name, email, institution_id) values ($1, $2, $3) returning id",
+    ["Test Person", email, institutionId],
   );
+
+  if (emailVerified !== undefined) {
+    await db.query("update person set email_verified = $1 where id = $2", [
+      emailVerified,
+      id,
+    ]);
+  }
 
   if (isStaff) {
     await db.query("update principal set is_staff = true where id = $1", [id]);
@@ -269,6 +276,22 @@ describe("signing in with Microsoft", () => {
     expect(await personIdsWithEmail(identity.email)).toEqual([personId]);
   });
 
+  test("gives the next holder of a reassigned email a new person", async () => {
+    const original = newIdentity();
+    const personId = await insertPerson({ email: original.email });
+    expect((await signIn(original)).error).toBeNull();
+
+    const nextHolderOfEmail = { ...newIdentity(), email: original.email };
+    const { error } = await signIn(nextHolderOfEmail);
+
+    expect(error).toBeNull();
+    const newPersonIds = await accountOwners(nextHolderOfEmail.oid);
+    expect(newPersonIds).toHaveLength(1);
+    expect(newPersonIds).not.toContain(personId);
+    expect(await personIdsWithEmail(original.email)).toEqual(newPersonIds);
+    expect(await accountOwners(original.oid)).toEqual([personId]);
+  });
+
   test("signs in a person with a pre-provisioned account and sets their email", async () => {
     const identity = newIdentity();
     const personId = await insertPerson({ oid: identity.oid });
@@ -278,6 +301,18 @@ describe("signing in with Microsoft", () => {
     expect(error).toBeNull();
     expect(await accountOwners(identity.oid)).toEqual([personId]);
     expect(await personIdsWithEmail(identity.email)).toEqual([personId]);
+  });
+
+  test("replaces the email of a person whose account matches", async () => {
+    const identity = newIdentity();
+    const oldEmail = `old-${identity.email}`;
+    const personId = await insertPerson({ email: oldEmail, oid: identity.oid });
+
+    const { error } = await signIn(identity);
+
+    expect(error).toBeNull();
+    expect(await personIdsWithEmail(identity.email)).toEqual([personId]);
+    expect(await personIdsWithEmail(oldEmail)).toEqual([]);
   });
 
   test("creates an unknown person in the institution that owns their tenant", async () => {

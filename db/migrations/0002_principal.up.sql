@@ -28,7 +28,11 @@ create table person (
     id uuid primary key default uuidv7(),
     name case_insensitive_text not null,
     email case_insensitive_text unique,
-    -- better-auth fails to link a person to their account if email_verified = false
+    -- better-auth only links a person to their account upon sign-in if:
+    -- 1. the email returned by the auth provider is the same as an email in this table
+    -- 2. email_verified == true
+    -- Thus, it's necessary to set email_verified = true so that people who were created with only an email can sign in
+    -- and have the correct permissions and projects
     email_verified boolean not null default true,
     institution_id uuid references institution not null,
     is_staff boolean not null default false,
