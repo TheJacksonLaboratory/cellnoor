@@ -11,6 +11,7 @@ mod query;
 #[base_model]
 pub struct PersonSimpleFields {
     pub name: NonemptyString,
+    pub email: Option<NonemptyString>,
     pub institution_id: Uuid,
     pub is_staff: bool,
     pub orcid: Option<NonemptyString>,
@@ -31,17 +32,11 @@ pub enum AuthAccount {
 pub struct NewPerson {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub simple: PersonSimpleFields,
-    pub email: NonemptyString,
     pub auth_account: Option<AuthAccount>,
     pub permissions_to_grant: Vec<Permission>,
 }
 
-#[base_model]
-pub struct PersonUpdate {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub simple: PersonSimpleFields,
-    pub email: Option<NonemptyString>,
-}
+pub type PersonUpdate = PersonSimpleFields;
 
 impl Relation for NewPerson {
     const NAME: &'static str = "person";

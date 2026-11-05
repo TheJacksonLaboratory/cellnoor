@@ -2,7 +2,6 @@ use std::sync::LazyLock;
 
 use axum::{Json, extract::State};
 use cellnoor_types::person::{AuthAccount, NewPerson, Person, PersonField, PersonSimpleFields};
-use postgres_types::ToSql;
 use regex::Regex;
 use uuid::Uuid;
 
@@ -31,16 +30,20 @@ pub async fn create_person(
 async fn insert_person(tx: &db::Transaction<'_>, new: &NewPerson) -> Result<Person, PersonError> {
     let NewPerson {
         simple,
-        email,
         auth_account,
         permissions_to_grant,
     } = new;
 
-    validate_email(email.as_ref())?;
+    if let Some(email) = &simple.email {
+        validate_email(email.as_ref())?;
+    }
 
-    let id = tx.insert_returning_id(new).await?;
-    set_is_staff(tx, id, simple.is_staff).await?;
-    grant_permissions(tx, id, permissions_to_grant).await?;
+    let id = tx.insert_returning_id(&new.simple).await?;
+
+    tokio::try_join!(
+        set_is_staff(tx, id, simple.is_staff),
+        grant_permissions(tx, id, permissions_to_grant)
+    )?;
 
     let person = match auth_account.as_ref() {
         None => select_person_by_id(tx, id).await?,
@@ -72,41 +75,24 @@ async fn insert_account(
     Ok(())
 }
 
-// `is_staff` is a column of `principal`, not `person`, so it's set separately
-// (see `set_is_staff`)
-pub(super) fn person_field_value_pairs<'a>(
-    simple: &'a PersonSimpleFields,
-    email: &'a (dyn ToSql + Sync),
-) -> FieldValues<'a, PersonField> {
-    use PersonField::*;
-
-    let PersonSimpleFields {
-        name,
-        institution_id,
-        is_staff: _,
-        orcid,
-    } = simple;
-
-    vec![
-        (Name, name),
-        (InstitutionId, institution_id),
-        (Orcid, orcid),
-        (Email, email),
-    ]
-}
-
-impl Insert for NewPerson {
+impl Insert for PersonSimpleFields {
     type Field = PersonField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
         let Self {
-            simple,
+            name,
             email,
-            auth_account: _,
-            permissions_to_grant: _,
+            institution_id,
+            is_staff: _,
+            orcid,
         } = self;
 
-        person_field_value_pairs(simple, email)
+        vec![
+            (PersonField::Name, name),
+            (PersonField::Email, email),
+            (PersonField::InstitutionId, institution_id),
+            (PersonField::Orcid, orcid),
+        ]
     }
 }
 
@@ -144,11 +130,11 @@ where
     let mut new = NewPerson {
         simple: PersonSimpleFields {
             name,
+            email: Some(email),
             institution_id: *institution.record.id,
             is_staff: false,
             orcid: None,
         },
-        email,
         auth_account: Some(AuthAccount::Microsoft {
             microsoft_entra_oid: Uuid::new_v4(),
         }),

@@ -2,19 +2,15 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use cellnoor_types::person::{Person, PersonField, PersonUpdate};
+use cellnoor_types::person::{Person, PersonUpdate};
 use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, FieldValues, Insert},
+    db,
     handlers::{
         IdParam,
-        people::{
-            PersonError,
-            create::{person_field_value_pairs, validate_email},
-            show::select_person_by_id,
-        },
+        people::{PersonError, create::validate_email, show::select_person_by_id},
         set_is_staff,
     },
     state::AppState,
@@ -36,31 +32,19 @@ pub(in super::super) async fn update_person_by_id(
     id: Uuid,
     update: &PersonUpdate,
 ) -> Result<Person, PersonError> {
-    let PersonUpdate { simple, email } = update;
-    if let Some(email) = email {
+    if let Some(email) = &update.email {
         validate_email(email.as_ref())?;
     }
 
-    tx.update(id, update).await?;
-    set_is_staff(tx, id, simple.is_staff).await?;
+    tokio::try_join!(tx.update(id, update), set_is_staff(tx, id, update.is_staff))?;
 
     Ok(select_person_by_id(tx, id).await?)
-}
-
-impl Insert for PersonUpdate {
-    type Field = PersonField;
-
-    fn fields(&self) -> FieldValues<'_, Self::Field> {
-        let Self { simple, email } = self;
-
-        person_field_value_pairs(simple, email)
-    }
 }
 
 #[cfg(test)]
 mod test {
 
-    use cellnoor_types::person::{Person, PersonUpdate, SavedPersonRecord};
+    use cellnoor_types::person::{Person, SavedPersonRecord};
 
     use crate::{
         handlers::people::{
@@ -75,7 +59,7 @@ mod test {
         let tx = client.begin().await.unwrap();
 
         let (
-            mut pre_update,
+            pre_update,
             Person {
                 record: SavedPersonRecord { id, .. },
                 links: _,
@@ -84,11 +68,10 @@ mod test {
             .await
             .unwrap();
 
-        pre_update.simple.name = "updated".to_nonempty_string();
-        let update_to_apply = PersonUpdate {
-            simple: pre_update.simple,
-            email: Some("something@example.com".to_nonempty_string()),
-        };
+        let mut update_to_apply = pre_update.simple;
+
+        update_to_apply.name = "updated".to_nonempty_string();
+        update_to_apply.email = Some("something@example.com".to_nonempty_string());
 
         update_person_by_id(&tx, id, &update_to_apply)
             .await
@@ -96,7 +79,7 @@ mod test {
     }
 
     #[tokio::test(flavor = "multi_thread")]
-    async fn update_without_email() {
+    async fn update_remove_email() {
         let mut client = db_client_as_admin().await;
         let tx = client.begin().await.unwrap();
 
@@ -104,10 +87,8 @@ mod test {
             .await
             .unwrap();
 
-        let update_to_apply = PersonUpdate {
-            simple: pre_update.simple,
-            email: None,
-        };
+        let mut update_to_apply = pre_update.simple;
+        update_to_apply.email = None;
 
         update_person_by_id(&tx, person.record.id, &update_to_apply)
             .await
