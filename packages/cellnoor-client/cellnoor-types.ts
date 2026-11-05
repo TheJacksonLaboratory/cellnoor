@@ -698,7 +698,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["PersonUpdate"];
+                    "application/json": components["schemas"]["PersonSimpleFields"];
                 };
             };
             responses: {
@@ -8324,7 +8324,7 @@ export interface components {
         };
         NewPerson: {
             auth_account?: components["schemas"]["AuthAccount"] | null;
-            email: string;
+            email?: string | null;
             /** Format: uuid */
             institution_id: string;
             is_staff: boolean;
@@ -8626,7 +8626,7 @@ export interface components {
             offset?: number;
             order_by?: components["schemas"]["OrderByPersonFieldSet"];
         };
-        PersonUpdate: {
+        PersonSimpleFields: {
             email?: string | null;
             /** Format: uuid */
             institution_id: string;
@@ -9679,7 +9679,7 @@ export type PersonLinks = components['schemas']['PersonLinks'];
 export type PersonPredicate = components['schemas']['PersonPredicate'];
 export type PersonPredicateFilter = components['schemas']['PersonPredicateFilter'];
 export type PersonPredicateQuery = components['schemas']['PersonPredicateQuery'];
-export type PersonUpdate = components['schemas']['PersonUpdate'];
+export type PersonSimpleFields = components['schemas']['PersonSimpleFields'];
 export type PersonWithPermissions = components['schemas']['PersonWithPermissions'];
 export type Picogram = components['schemas']['Picogram'];
 export type PicogramConcentration = components['schemas']['PicogramConcentration'];

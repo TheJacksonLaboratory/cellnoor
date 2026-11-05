@@ -442,8 +442,8 @@ async fn nonstaff_cannot_update_people() {
     let tx = client.begin().await.unwrap();
 
     let update = PersonUpdate {
-        simple: new_target.simple,
         email: None,
+        ..new_target.simple
     };
 
     assert_matches!(
