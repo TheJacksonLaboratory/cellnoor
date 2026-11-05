@@ -12,7 +12,7 @@
 	import PermissionGrid from '#lib/PermissionGrid.svelte';
 	import type {
 		PersonField,
-		PersonUpdate,
+		PersonSimpleFields,
 		PersonWithPermissions
 	} from 'cellnoor-client/cellnoor-types.ts';
 	import { FormFieldName } from './field-parsers.ts';
@@ -26,7 +26,10 @@
 		['email', 'Email']
 	]);
 
-	function updatePerson({ id, ...person }: PersonWithPermissions, changes: Partial<PersonUpdate>) {
+	function updatePerson(
+		{ id, ...person }: PersonWithPermissions,
+		changes: Partial<PersonSimpleFields>
+	) {
 		return cellnoorClient.PUT('/people/{id}', {
 			params: { path: { id } },
 			body: { ...person, ...changes }
