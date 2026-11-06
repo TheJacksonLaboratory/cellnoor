@@ -4,14 +4,16 @@ use axum::{Json, extract::State};
 use cellnoor_types::{
     chromium_dataset::{
         ChromiumDatasetDetailed, ChromiumDatasetDetailedLinks, ChromiumDatasetParsedFileData,
-        ChromiumDatasetParsedFileRecord, ChromiumDatasetQuery, SavedChromiumDatasetRecord,
+        ChromiumDatasetParsedFileRecord, ChromiumDatasetQuery, ChromiumDatasetSpecimen,
+        SavedChromiumDatasetRecord,
     },
     file_tree::{FileTreeNode, FileTreeNodeKind},
     id::Id,
     library::SavedLibraryRecord,
     nonempty::NonemptyString,
-    suspension_pool::SavedTaggedSpecimenRecord,
+    suspension_pool::{SavedTaggedSpecimenRecord, TaggedSpecimen},
 };
+use csvranger::TenxCsvValue;
 use deadpool_postgres::tokio_postgres::Row;
 
 use crate::{
@@ -63,7 +65,9 @@ fn map_detailed_row(row: Row) -> ChromiumDatasetDetailed {
     let mut raw_file_paths: Vec<_> = row.get("raw_file_paths");
     raw_file_paths.sort();
 
-    let files = create_file_tree(record.id, &raw_file_paths, row.get("parsed_files"));
+    let parsed_files: Vec<_> = row.get("parsed_files");
+    let mut metrics_by_specimen = extract_key_metrics_from_parsed_files(&parsed_files);
+    let dataset_id = record.id;
 
     ChromiumDatasetDetailed {
         links: chromium_dataset_detailed_links(record.id, &raw_file_paths),
@@ -73,10 +77,147 @@ fn map_detailed_row(row: Row) -> ChromiumDatasetDetailed {
         specimens: specimens
             .into_iter()
             .map(tagged_specimen_from_record)
+            .map(|sp| chromium_dataset_specimen_from_tagged_specimen(sp, &mut metrics_by_specimen))
             .collect(),
         chromium_run: chromium_run_from_record(chromium_run),
-        files,
+        files: create_file_tree(dataset_id, &raw_file_paths, parsed_files),
     }
+}
+
+static PSEUDO_BARCODE: &str = "specimen";
+
+fn chromium_dataset_specimen_from_tagged_specimen(
+    specimen: TaggedSpecimen,
+    metrics_by_specimen: &mut HashMap<&str, HashMap<&'static str, TenxCsvValue>>,
+) -> ChromiumDatasetSpecimen {
+    let Some(tag) = specimen
+        .multiplexing_tag
+        .as_ref()
+        .map(|m| &m.tag_id)
+        .map(NonemptyString::as_ref)
+        .or(specimen.ocm_barcode_id.as_ref().map(|b| b.as_ref()))
+    else {
+        return ChromiumDatasetSpecimen {
+            specimen,
+            key_metrics: metrics_by_specimen
+                .remove(PSEUDO_BARCODE)
+                .unwrap_or_default(),
+        };
+    };
+
+    let key_metrics = metrics_by_specimen.remove(tag).unwrap_or_default();
+
+    ChromiumDatasetSpecimen {
+        specimen,
+        key_metrics,
+    }
+}
+
+fn extract_key_metrics_from_parsed_files<'a>(
+    parsed_files: &'a [ChromiumDatasetParsedFileRecord],
+) -> HashMap<&'a str, HashMap<&'static str, TenxCsvValue>> {
+    // We're not typically going to have more than 32 specimens at a time
+    let mut specimen_metrics = HashMap::with_capacity(32);
+
+    for p in parsed_files {
+        match &p.data.0 {
+            ChromiumDatasetParsedFileData::SingleRowCsv { data } => {
+                insert_key_metrics_from_multi_row_csv(&mut specimen_metrics, [data]);
+            }
+            ChromiumDatasetParsedFileData::MultiRowCsv { data } => {
+                insert_key_metrics_from_multi_row_csv(&mut specimen_metrics, data);
+            }
+            // Just skip this for now
+            ChromiumDatasetParsedFileData::Json { .. } => {
+                continue;
+            }
+        }
+    }
+
+    specimen_metrics
+}
+
+static METRICS_RENAMING: phf::Map<&'static str, &'static str> = phf::phf_map! {
+    "Cells per OCM barcode" => "Estimated number of cells",
+    "GEX: Median genes per cell" => "Median genes per cell",
+    // Rename to "Median UMI counts per cell"
+    "GEX: Median UMI counts per cell" => "Median UMIs per cell",
+    // Rename to "Fraction of reads confidently mapped to transcriptome"
+    "GEX: Confidently mapped to transcriptome" => "Transcriptome mapping rate",
+    // Rename to "Fraction of reads confidently mapped to exonic regions"
+    "GEX: Confidently mapped to exonic regions" => "Confidently mapped to exonic regions",
+    // Rename to "Fraction of reads confidently mapped to intronic regions"
+    "GEX: Confidently mapped to intronic regions" => "Confidently mapped to intronic regions",
+    // Rename to "Fraction of reads confidently mapped to intergenic regions"
+    "GEX: Confidently mapped to intergenic regions" => "Confidently mapped to intergenic regions",
+    // Rename to "Fraction of reads confidently mapped in cells"
+    "GEX: Confidently mapped reads in cells" => "??",
+    // Rename to "Number of reads in cells"
+    "GEX: Number of reads in cells" => "Total GEX Reads"
+};
+
+fn insert_key_metrics_from_multi_row_csv<'a>(
+    renamed_specimen_metrics: &mut HashMap<&'a str, HashMap<&'static str, TenxCsvValue>>,
+    parsed_file: impl IntoIterator<Item = &'a HashMap<String, TenxCsvValue>>,
+) {
+    for csv_row in parsed_file {
+        // Depending on the type of file we're parsing, the barcode will be
+        // under one of these two keys
+        let barcode = csv_row
+            .get("Sample barcodes")
+            .or_else(|| csv_row.get("Group Name"))
+            .and_then(|bc| match bc {
+                TenxCsvValue::String(bc) if !bc.is_empty() => Some(bc.as_str()),
+                _ => None,
+            })
+            .unwrap_or("specimen");
+
+        let specimen_metrics = renamed_specimen_metrics
+            .entry(barcode)
+            .or_insert_with(|| HashMap::with_capacity(32));
+
+        specimen_metrics.extend(extract_renamed_metrics_from_qc_sample_metrics_row(csv_row));
+        if let Some((metric_name, metric_value)) =
+            extract_renamed_metric_from_multi_metrics_row(csv_row)
+        {
+            specimen_metrics.insert(metric_name, metric_value);
+        }
+    }
+}
+
+fn extract_renamed_metrics_from_qc_sample_metrics_row(
+    csv_row: &HashMap<String, TenxCsvValue>,
+) -> Vec<(&'static str, TenxCsvValue)> {
+    let mut extracted_metrics = Vec::with_capacity(32);
+
+    // Without this key, we can't even assign the row to a specimen
+    if csv_row.get("Sample barcodes").is_none() {
+        return extracted_metrics;
+    };
+
+    for (metric_name, renamed_metric) in METRICS_RENAMING.into_iter() {
+        let Some(metric_value) = csv_row.get(*metric_name) else {
+            continue;
+        };
+
+        extracted_metrics.push((*renamed_metric, metric_value.to_owned()));
+    }
+
+    extracted_metrics
+}
+
+fn extract_renamed_metric_from_multi_metrics_row(
+    csv_row: &HashMap<String, TenxCsvValue>,
+) -> Option<(&'static str, TenxCsvValue)> {
+    let TenxCsvValue::String(metric_name) = csv_row.get("Metric Name")? else {
+        return None;
+    };
+
+    let metric_name = METRICS_RENAMING.get(metric_name)?;
+
+    let metric_value = csv_row.get("Metric Value")?;
+
+    Some((*metric_name, metric_value.to_owned()))
 }
 
 fn create_file_tree(
