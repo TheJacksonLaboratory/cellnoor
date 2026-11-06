@@ -113,9 +113,9 @@ fn chromium_dataset_specimen_from_tagged_specimen(
     }
 }
 
-fn extract_key_metrics_from_parsed_files<'a>(
-    parsed_files: &'a [ChromiumDatasetParsedFileRecord],
-) -> HashMap<&'a str, HashMap<&'static str, TenxCsvValue>> {
+fn extract_key_metrics_from_parsed_files(
+    parsed_files: &[ChromiumDatasetParsedFileRecord],
+) -> HashMap<&str, HashMap<&'static str, TenxCsvValue>> {
     // We're not typically going to have more than 32 specimens at a time
     let mut specimen_metrics = HashMap::with_capacity(32);
 
