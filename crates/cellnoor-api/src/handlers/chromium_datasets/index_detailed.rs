@@ -138,7 +138,11 @@ fn extract_key_metrics_from_parsed_files<'a>(
 }
 
 static METRICS_RENAMING: phf::Map<&'static str, &'static str> = phf::phf_map! {
+    // These keys come from cellranger multi's per_sample_outs/*/metrics_summary.csv
     "Cells per OCM barcode" => "Estimated number of cells",
+    "Cells per probe barcode" => "Estimated number of cells",
+
+    // These come from qc_sample_metrics.csv
     "GEX: Median genes per cell" => "Median genes per cell",
     // Rename to "Median UMI counts per cell"
     "GEX: Median UMI counts per cell" => "Median UMIs per cell",
@@ -151,7 +155,7 @@ static METRICS_RENAMING: phf::Map<&'static str, &'static str> = phf::phf_map! {
     // Rename to "Fraction of reads confidently mapped to intergenic regions"
     "GEX: Confidently mapped to intergenic regions" => "Confidently mapped to intergenic regions",
     // Rename to "Fraction of reads confidently mapped in cells"
-    "GEX: Confidently mapped reads in cells" => "??",
+    "GEX: Confidently mapped reads in cells" => "Reads associated with cells",
     // Rename to "Number of reads in cells"
     "GEX: Number of reads in cells" => "Total GEX Reads"
 };
@@ -323,6 +327,8 @@ fn file_path_to_link(dataset_id: Id, path: &NonemptyString) -> String {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use cellnoor_types::{
         chromium_dataset::{ChromiumDatasetParsedFileData, ChromiumDatasetParsedFileRecord},
         file_tree::{FileTreeNode, FileTreeNodeKind},
@@ -333,8 +339,29 @@ mod tests {
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 
-    use super::create_file_tree;
-    use crate::state::dev_util::ToNonemptyString;
+    use super::{PSEUDO_BARCODE, create_file_tree, extract_key_metrics_from_parsed_files};
+    use crate::{
+        handlers::chromium_datasets::upload_files::write_to_db::parse_csv,
+        state::dev_util::ToNonemptyString,
+    };
+
+    const SINGLEPLEX_QC_SAMPLE_METRICS: &[u8] = include_bytes!(
+        "upload_files/test-data/\
+         SOD1_G93A_mouse_spinal_cord_P112_specimen_1_Multiplex_qc_sample_metrics.csv"
+    );
+
+    const FLEX_METRICS_SUMMARY: &[u8] = include_bytes!(
+        "upload_files/test-data/\
+         4plex_rat_liver_kidney_lgintest_testis_CF_RatLiver_A-A03_metrics_summary.csv"
+    );
+
+    fn parsed_file(path: &str, data: &[u8]) -> ChromiumDatasetParsedFileRecord {
+        ChromiumDatasetParsedFileRecord {
+            dataset_id: Uuid::nil(),
+            path: path.to_nonempty_string(),
+            data: Json(parse_csv(data).unwrap()),
+        }
+    }
 
     #[test]
     fn file_tree() {
@@ -419,5 +446,57 @@ mod tests {
             ),
             expected
         );
+    }
+
+    #[test]
+    fn singleplex_key_metrics() {
+        let qc_sample_metrics = parsed_file("qc_sample_metrics.csv", SINGLEPLEX_QC_SAMPLE_METRICS);
+        // The rows of this file with an empty "Group Name" fall under the same
+        // key as qc_sample_metrics.csv
+        let metrics_summary = parsed_file(
+            "per_sample_outs/sample1/metrics_summary.csv",
+            FLEX_METRICS_SUMMARY,
+        );
+
+        let expected = HashMap::from([
+            ("Median genes per cell", TenxCsvValue::I64(1305)),
+            ("Median UMIs per cell", TenxCsvValue::I64(2244)),
+            (
+                "Reads associated with cells",
+                TenxCsvValue::F64(0.6847850295990157),
+            ),
+        ]);
+
+        // The database returns parsed files in no particular order
+        for parsed_files in [
+            [qc_sample_metrics.clone(), metrics_summary.clone()],
+            [metrics_summary, qc_sample_metrics],
+        ] {
+            assert_eq!(
+                extract_key_metrics_from_parsed_files(&parsed_files)[PSEUDO_BARCODE],
+                expected
+            );
+        }
+    }
+
+    #[test]
+    fn flex_key_metrics() {
+        let parsed_files = [parsed_file(
+            "per_sample_outs/sample1/metrics_summary.csv",
+            FLEX_METRICS_SUMMARY,
+        )];
+        let metrics = extract_key_metrics_from_parsed_files(&parsed_files);
+
+        for (probe_barcode, n_cells) in [
+            ("A-A03", 7942),
+            ("A-B03", 5980),
+            ("A-C03", 9271),
+            ("A-D03", 10318),
+        ] {
+            assert_eq!(
+                metrics[probe_barcode],
+                HashMap::from([("Estimated number of cells", TenxCsvValue::I64(n_cells))])
+            );
+        }
     }
 }

@@ -8505,7 +8505,7 @@ export interface components {
             type: "Fluorometric";
         });
         /** @enum {string} */
-        OcmBarcodeId: "ob1" | "ob2" | "ob3" | "ob4";
+        OcmBarcodeId: "OB1" | "OB2" | "OB3" | "OB4";
         OcmLoadedEntity: {
             ocm_barcode_id: components["schemas"]["OcmBarcodeId"];
         } | {
@@ -9813,7 +9813,7 @@ export const micrometerValues: ReadonlyArray<FlattenedDeepRequired<components>["
 export const milliliterValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Milliliter"]> = ["milliliter"];
 export const multiplexingTagTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["MultiplexingTagType"]> = ["flex_barcode", "flex_oligonucleotide_barcode", "TotalSeq-A", "TotalSeq-B", "TotalSeq-C"];
 export const nanogramValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Nanogram"]> = ["nanogram"];
-export const ocmBarcodeIdValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["OcmBarcodeId"]> = ["ob1", "ob2", "ob3", "ob4"];
+export const ocmBarcodeIdValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["OcmBarcodeId"]> = ["OB1", "OB2", "OB3", "OB4"];
 export const personFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["PersonField"]> = ["id", "name", "email", "institution_id", "is_staff", "orcid"];
 export const picogramValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Picogram"]> = ["picogram"];
 export const projectFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ProjectField"]> = ["id", "name", "created_by", "started_at", "ended_at"];
