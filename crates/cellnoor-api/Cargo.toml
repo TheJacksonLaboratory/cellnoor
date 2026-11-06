@@ -20,6 +20,7 @@ futures.workspace = true
 jiff.workspace = true
 jsonwebtoken.workspace = true
 postgres-types.workspace = true
+phf.workspace = true
 rand.workspace = true
 regex.workspace = true
 reqwest = { optional = true, workspace = true }

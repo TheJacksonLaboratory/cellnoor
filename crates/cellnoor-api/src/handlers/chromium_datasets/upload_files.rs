@@ -46,7 +46,7 @@ use crate::{
 mod allowed_content_type;
 mod error;
 mod upload_path;
-mod write_to_db;
+pub(super) mod write_to_db;
 mod write_to_disk;
 
 pub async fn upload_files(

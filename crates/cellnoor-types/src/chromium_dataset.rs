@@ -103,7 +103,20 @@ pub struct ChromiumDatasetParsedFileRecord {
     pub data: ChromiumDatasetParsedFileData,
 }
 
-#[base_model]
+// We can't use base_model for these because you can't deserialize a &'static
+// str
+#[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+pub struct ChromiumDatasetSpecimen {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub specimen: TaggedSpecimen,
+    pub key_metrics: HashMap<&'static str, TenxCsvValue>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct ChromiumDatasetDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: SavedChromiumDatasetRecord,
@@ -111,6 +124,6 @@ pub struct ChromiumDatasetDetailed {
     pub chromium_run: ChromiumRunCompact,
     pub links: ChromiumDatasetDetailedLinks,
     pub libraries: Vec<LibraryCompact>,
-    pub specimens: Vec<TaggedSpecimen>,
+    pub specimens: Vec<ChromiumDatasetSpecimen>,
     pub files: Vec<FileTreeNode<ChromiumDatasetParsedFileData>>,
 }

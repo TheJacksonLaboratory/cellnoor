@@ -37,6 +37,7 @@ deadpool-postgres = { version = "0.14.2", features = ["serde"] }
 futures = { version = "0.3.34" }
 jiff = { version = "0.2.38", features = ["serde"] }
 jsonwebtoken = { version = "11.1.0", features = ["rust_crypto"] }
+phf = { version = "0.14.0", features = ["macros", "ptrhash"] }
 postgres-types = { version = "0.2.14", features = [
     "array-impls",
     "derive",

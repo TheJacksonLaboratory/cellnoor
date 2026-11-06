@@ -120,7 +120,10 @@ impl Insert for NewParsedFile<'_> {
     }
 }
 
-fn parse_csv(data: &[u8]) -> Result<ChromiumDatasetParsedFileData, UploadFilesError> {
+// Visibility required for tests
+pub(in super::super) fn parse_csv(
+    data: &[u8],
+) -> Result<ChromiumDatasetParsedFileData, UploadFilesError> {
     type ParsedData = Vec<HashMap<String, TenxCsvValue>>;
 
     let mut reader = csv::Reader::from_reader(data);

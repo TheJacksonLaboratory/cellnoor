@@ -7648,7 +7648,7 @@ export interface components {
             libraries: components["schemas"]["LibraryCompact"][];
             links: components["schemas"]["ChromiumDatasetDetailedLinks"];
             name: string;
-            specimens: components["schemas"]["TaggedSpecimen"][];
+            specimens: components["schemas"]["ChromiumDatasetSpecimen"][];
         };
         ChromiumDatasetDetailedLinks: {
             file_dir: string;
@@ -7731,6 +7731,40 @@ export interface components {
             /** Format: date-time */
             delivered_at: string;
             name: string;
+        };
+        ChromiumDatasetSpecimen: {
+            additional_data?: unknown;
+            embedded_in?: components["schemas"]["BlockEmbeddingMatrix"] | null;
+            fixative?: components["schemas"]["Fixative"] | null;
+            host_species?: components["schemas"]["Species"] | null;
+            /** Format: uuid */
+            id: string;
+            key_metrics: {
+                [key: string]: components["schemas"]["TenxCsvValue"];
+            };
+            links: {
+                self: string;
+            };
+            multiplexing_tag?: components["schemas"]["MultiplexingTag"] | null;
+            name: string;
+            ocm_barcode_id?: components["schemas"]["OcmBarcodeId"] | null;
+            /** Format: uuid */
+            parent_specimen_id?: string | null;
+            /** Format: uuid */
+            project_id: string;
+            readable_id: string;
+            /** Format: date-time */
+            received_or_created_at: string;
+            /** Format: date-time */
+            returned_at?: string | null;
+            /** Format: uuid */
+            returned_by?: string | null;
+            species: components["schemas"]["Species"];
+            /** Format: uuid */
+            submitted_by?: string | null;
+            thermal_preservation_method?: components["schemas"]["ThermalPreservationMethod"] | null;
+            tissue: string;
+            type_: components["schemas"]["SpecimenType"];
         };
         ChromiumRunCompact: {
             additional_data?: unknown;
@@ -8471,7 +8505,7 @@ export interface components {
             type: "Fluorometric";
         });
         /** @enum {string} */
-        OcmBarcodeId: "ob1" | "ob2" | "ob3" | "ob4";
+        OcmBarcodeId: "OB1" | "OB2" | "OB3" | "OB4";
         OcmLoadedEntity: {
             ocm_barcode_id: components["schemas"]["OcmBarcodeId"];
         } | {
@@ -9571,6 +9605,7 @@ export type ChromiumDatasetPredicate = components['schemas']['ChromiumDatasetPre
 export type ChromiumDatasetPredicateFilter = components['schemas']['ChromiumDatasetPredicateFilter'];
 export type ChromiumDatasetPredicateQuery = components['schemas']['ChromiumDatasetPredicateQuery'];
 export type ChromiumDatasetRecord = components['schemas']['ChromiumDatasetRecord'];
+export type ChromiumDatasetSpecimen = components['schemas']['ChromiumDatasetSpecimen'];
 export type ChromiumRunCompact = components['schemas']['ChromiumRunCompact'];
 export type ChromiumRunDetailed = components['schemas']['ChromiumRunDetailed'];
 export type ChromiumRunField = components['schemas']['ChromiumRunField'];
@@ -9778,7 +9813,7 @@ export const micrometerValues: ReadonlyArray<FlattenedDeepRequired<components>["
 export const milliliterValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Milliliter"]> = ["milliliter"];
 export const multiplexingTagTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["MultiplexingTagType"]> = ["flex_barcode", "flex_oligonucleotide_barcode", "TotalSeq-A", "TotalSeq-B", "TotalSeq-C"];
 export const nanogramValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Nanogram"]> = ["nanogram"];
-export const ocmBarcodeIdValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["OcmBarcodeId"]> = ["ob1", "ob2", "ob3", "ob4"];
+export const ocmBarcodeIdValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["OcmBarcodeId"]> = ["OB1", "OB2", "OB3", "OB4"];
 export const personFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["PersonField"]> = ["id", "name", "email", "institution_id", "is_staff", "orcid"];
 export const picogramValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Picogram"]> = ["picogram"];
 export const projectFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ProjectField"]> = ["id", "name", "created_by", "started_at", "ended_at"];

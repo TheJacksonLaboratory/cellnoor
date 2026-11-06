@@ -1,10 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type {
-		ChromiumDatasetDetailed,
-		Person,
-		SpecimenCompact
-	} from 'cellnoor-client/cellnoor-types.ts';
+	import type { ChromiumDatasetSpecimen, Person } from 'cellnoor-client/cellnoor-types.ts';
 	import Time from './Time.svelte';
 	import { formatEmbeddingMatrix, formatEnum, formatFixative, formatSpecies } from './format.ts';
 
@@ -12,17 +8,18 @@
 		specimens,
 		people
 	}: {
-		specimens: ChromiumDatasetDetailed['specimens'];
+		specimens: ChromiumDatasetSpecimen[];
 		people: Map<string, Person>;
 	} = $props();
 
 	type Field = {
 		label: string;
-		toText: (s: SpecimenCompact) => string | null | undefined;
+		toText: (s: ChromiumDatasetSpecimen) => string | number | null | undefined;
 	};
 
 	const fields: Field[] = [
 		{ label: 'Name', toText: (s) => s.name },
+		{ label: 'Barcode', toText: (s) => s.multiplexing_tag?.tag_id || s.ocm_barcode_id },
 		{ label: 'Species', toText: (s) => formatSpecies(s.species) },
 		{ label: 'Submitted by', toText: (s) => people.get(s.submitted_by ?? '')?.name },
 		{ label: 'Type', toText: (s) => formatEnum(s.type_) },
@@ -37,6 +34,8 @@
 		},
 		{ label: 'Fixative', toText: (s) => s.fixative && formatFixative(s.fixative) }
 	];
+
+	const metricNames = $derived(Object.keys(specimens[0].key_metrics));
 
 	const isShared = ({ toText }: Field) => new Set(specimens.map(toText)).size === 1;
 
@@ -79,6 +78,9 @@
 					<th scope="col">{label}</th>
 				{/each}
 				<th scope="col">Received or created</th>
+				{#each metricNames as metricName (metricName)}
+					<th scope="col">{metricName}</th>
+				{/each}
 			</tr>
 		</thead>
 		<tbody>
@@ -93,6 +95,9 @@
 						<td>{toText(s)}</td>
 					{/each}
 					<td><Time datetime={s.received_or_created_at} /></td>
+					{#each metricNames as metricName (metricName)}
+						<td>{s.key_metrics[metricName]}</td>
+					{/each}
 				</tr>
 			{/each}
 		</tbody>
