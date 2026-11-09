@@ -6,13 +6,13 @@
   "devDependencies": {
     "@types/bun": "latest",
     "@types/pg": "^8.23.1",
-    "jose": "^6.2.15"
+    "jose": "^6.2.16"
   },
   "peerDependencies": {
     "typescript": "^7.0.2"
   },
   "dependencies": {
-    "better-auth": "^1.7.17",
+    "better-auth": "^1.7.18",
     "pg": "^8.23.1"
   }
 }

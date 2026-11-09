@@ -12,6 +12,4 @@ updates:
   - package-ecosystem: bun
     schedule:
       interval: daily
-    directories:
-      - ./packages/cellnoor-auth
-      - ./packages/cellnoor-ui
+    directory: ./packages
