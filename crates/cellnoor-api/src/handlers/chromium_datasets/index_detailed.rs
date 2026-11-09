@@ -142,22 +142,15 @@ static METRICS_RENAMING: phf::Map<&'static str, &'static str> = phf::phf_map! {
     "Cells per OCM barcode" => "Estimated number of cells",
     "Cells per probe barcode" => "Estimated number of cells",
 
-    // These come from qc_sample_metrics.csv
+    // These come from qc_sample_metrics.csv in a gene expression or multiome assay
     "GEX: Median genes per cell" => "Median genes per cell",
-    // Rename to "Median UMI counts per cell"
-    "GEX: Median UMI counts per cell" => "Median UMIs per cell",
-    // Rename to "Fraction of reads confidently mapped to transcriptome"
+    "GEX: Median UMI counts per cell" => "Median UMI counts per cell",
     "GEX: Confidently mapped to transcriptome" => "Transcriptome mapping rate",
-    // Rename to "Fraction of reads confidently mapped to exonic regions"
-    "GEX: Confidently mapped to exonic regions" => "Confidently mapped to exonic regions",
-    // Rename to "Fraction of reads confidently mapped to intronic regions"
-    "GEX: Confidently mapped to intronic regions" => "Confidently mapped to intronic regions",
-    // Rename to "Fraction of reads confidently mapped to intergenic regions"
-    "GEX: Confidently mapped to intergenic regions" => "Confidently mapped to intergenic regions",
-    // Rename to "Fraction of reads confidently mapped in cells"
-    "GEX: Confidently mapped reads in cells" => "Reads associated with cells",
-    // Rename to "Number of reads in cells"
-    "GEX: Number of reads in cells" => "Total GEX Reads"
+    "GEX: Confidently mapped to exonic regions" => "Exonic region mapping rate",
+    "GEX: Confidently mapped to intronic regions" => "Intronic region mapping rate",
+    "GEX: Confidently mapped to intergenic regions" => "Intergenic region mapping rate",
+    "GEX: Confidently mapped reads in cells" => "Fraction of transcriptomic reads in cells",
+    "GEX: Number of reads in cells" => "Number of reads in cells"
 };
 
 fn insert_key_metrics_from_multi_row_csv<'a>(
