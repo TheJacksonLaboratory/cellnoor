@@ -7,18 +7,17 @@ use axum::{
     extract::{DefaultBodyLimit, Query, State},
 };
 use cellnoor_types::chromium_dataset::{
-    ChromiumDatasetCompact, ChromiumDatasetDetailed, ChromiumDatasetQuery, SimpleChromiumDatasetQuery,
+    ChromiumDatasetCompact, ChromiumDatasetDetailed, ChromiumDatasetQuery,
+    SimpleChromiumDatasetQuery,
 };
 
 use crate::{
     auth::AuthUser,
     db::DbError,
-    handlers::{
-        chromium_datasets::{
-            create_chromium_dataset, delete_chromium_dataset, delete_files,
-            index_chromium_datasets, index_chromium_datasets_detailed, show_chromium_dataset,
-            update_chromium_dataset, upload_files,
-        },
+    handlers::chromium_datasets::{
+        create_chromium_dataset, delete_chromium_dataset, delete_files, index_chromium_datasets,
+        index_chromium_datasets_detailed, show_chromium_dataset, update_chromium_dataset,
+        upload_files,
     },
     state::AppState,
 };

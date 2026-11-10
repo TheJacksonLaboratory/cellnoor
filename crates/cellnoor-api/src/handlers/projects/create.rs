@@ -83,8 +83,6 @@ where
 #[cfg(test)]
 pub mod test {
 
-    
-
     use super::insert_test_project;
     use crate::state::dev_util::db_client_as_admin;
 

@@ -40,7 +40,7 @@ static ALLOWED_FILENAMES: phf::Set<&str> = phf::phf_set! {
 fn validate_filename_is_allowed(path: &Utf8Path) -> Result<(), UploadFilesError> {
     let filename_is_allowed = path
         .file_name()
-        .is_some_and(|filename| ALLOWED_FILENAMES.contains(&filename));
+        .is_some_and(|filename| ALLOWED_FILENAMES.contains(filename));
 
     if !filename_is_allowed {
         return Err(filename_is_not_allowed_error());
