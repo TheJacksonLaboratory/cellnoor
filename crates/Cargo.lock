@@ -291,13 +291,13 @@ dependencies = [
  "postgres-types",
  "pretty_assertions",
  "rand 0.10.3",
- "rapidhash",
  "regex",
  "reqwest",
  "schemars",
  "secrecy",
  "serde",
  "serde_json",
+ "sha2 0.11.1",
  "sha3",
  "strum",
  "tempfile",
@@ -2092,15 +2092,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "caa0f4137e1c0a72f4c651489402276c8e8e1cf081f3b0ba156d2cbeef09e86a"
 dependencies = [
  "rand_core 0.10.1",
-]
-
-[[package]]
-name = "rapidhash"
-version = "4.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5da7e78a036ce858e8d55b7e7dc8ba3a88b78350fd2155d3591bbd966b58589e"
-dependencies = [
- "rustversion",
 ]
 
 [[package]]

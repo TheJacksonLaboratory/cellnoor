@@ -15,7 +15,7 @@ pub struct FileTreeNode<T> {
 pub enum FileTreeNodeKind<T> {
     File {
         raw_file_link: String,
-        rapidhash_v3_hash: String,
+        sha256_hash: Vec<u8>,
         parsed_contents: Option<T>,
     },
     Directory {
