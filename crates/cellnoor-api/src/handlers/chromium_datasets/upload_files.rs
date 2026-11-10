@@ -133,12 +133,6 @@ pub async fn write_test_dataset_files(
                 .file_name("per_sample_outs/sample1/metrics_summary.csv"),
         )
         .part(
-            "metrics2",
-            Part::bytes(MULTI_METRICS)
-                .headers(csv_header)
-                .file_name("per_sample_outs/sample2/metrics_summary.csv"),
-        )
-        .part(
             "json_metrics",
             Part::bytes(
                 br#"{"string_key": "string_value", "number": 0, "nested": {"is_this_cool": true}}"#,

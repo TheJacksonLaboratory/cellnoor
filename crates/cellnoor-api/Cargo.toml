@@ -19,9 +19,10 @@ deadpool-postgres.workspace = true
 futures.workspace = true
 jiff.workspace = true
 jsonwebtoken.workspace = true
-postgres-types.workspace = true
 phf.workspace = true
+postgres-types.workspace = true
 rand.workspace = true
+rapidhash.workspace = true
 regex.workspace = true
 reqwest = { optional = true, workspace = true }
 schemars.workspace = true

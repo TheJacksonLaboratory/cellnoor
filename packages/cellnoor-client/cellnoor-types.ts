@@ -7684,6 +7684,8 @@ export interface components {
             path: string;
         } & ({
             parsed_contents?: components["schemas"]["ChromiumDatasetParsedFileData"] | null;
+            /** Format: int64 */
+            rapidhash_v3_hash: number;
             raw_file_link: string;
             /** @constant */
             type: "file";
