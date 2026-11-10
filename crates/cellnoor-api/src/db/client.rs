@@ -49,6 +49,24 @@ impl Pool {
         })
     }
 
+    pub async fn in_transaction<T, E>(
+        &self,
+        user: AuthUser,
+        work: impl AsyncFnOnce(&Transaction<'_>) -> Result<T, E>,
+    ) -> Result<T, E>
+    where
+        E: From<DbError>,
+    {
+        let mut client = self.get(user).await.map_err(DbError::from)?;
+        let tx = client.begin().await.map_err(DbError::from)?;
+
+        let output = work(&tx).await?;
+
+        tx.commit().await.map_err(DbError::from)?;
+
+        Ok(output)
+    }
+
     /// A connection that acts on behalf of nobody.
     ///
     /// Row-level security denies it everything, so it's only good for calling

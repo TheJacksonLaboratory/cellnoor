@@ -8,60 +8,82 @@ use crate::handlers::chromium_datasets::upload_files::UploadFilesError;
 pub(super) struct UploadPath(NonemptyString);
 
 impl UploadPath {
-    pub(super) fn new(filename: Option<&str>) -> Result<Self, UploadFilesError> {
-        const ALLOWED_FILENAMES: [&str; 7] = [
-            "metrics_summary.csv",
-            "qc_library_metrics.csv",
-            "qc_report.html",
-            "qc_sample_metrics.csv",
-            "summary.csv",
-            "summary.json",
-            "web_summary.html",
-        ];
+    pub(super) fn new(multipart_filename: Option<&str>) -> Result<Self, UploadFilesError> {
+        let path = multipart_filename
+            .map(Utf8Path::new)
+            .ok_or_else(filename_is_not_allowed_error)?;
 
-        let filename_error = Err(UploadFilesError::Filename {
-            message: format!(
-                "uploaded files must have a filename which is one of {:?}",
-                ALLOWED_FILENAMES
-            ),
-        });
+        validate_filename_is_allowed(path)?;
+        validate_every_component_is_normal(path)?;
+        validate_file_is_at_top_level_or_in_sample_directory(path)?;
 
-        let Some(path) = filename.map(Utf8Path::new) else {
-            return filename_error;
-        };
-
-        if path
-            .file_name()
-            .is_none_or(|f| !ALLOWED_FILENAMES.contains(&f))
-        {
-            return filename_error;
-        }
-
-        let components: Vec<_> = path.components().collect();
-
-        if !components
-            .iter()
-            .all(|c| matches!(c, Utf8Component::Normal(_)))
-        {
-            return Err(UploadFilesError::Filename {
-                message: "path must be relative and cannot contain '.' or '..'".to_owned(),
-            });
-        }
-
-        match components.as_slice() {
-            [_] | [Utf8Component::Normal("per_sample_outs"), _, _] => {
-                Ok(NonemptyString::new(path.to_string()).map(Self).unwrap())
-            }
-            _ => Err(UploadFilesError::Filename {
-                message: "files nested into a directory must be nested into a \
-                          'per_sample_outs/sample_name/' directory"
-                    .to_owned(),
-            }),
-        }
+        Ok(NonemptyString::new(path.to_string())
+            .map(Self)
+            .expect("we validated the filename so it's not empty"))
     }
 
     pub(super) fn as_str(&self) -> &str {
         self.0.as_ref()
+    }
+}
+
+static ALLOWED_FILENAMES: phf::Set<&str> = phf::phf_set! {
+    "metrics_summary.csv",
+    "qc_library_metrics.csv",
+    "qc_report.html",
+    "qc_sample_metrics.csv",
+    "summary.csv",
+    "summary.json",
+    "web_summary.html",
+};
+
+fn validate_filename_is_allowed(path: &Utf8Path) -> Result<(), UploadFilesError> {
+    let filename_is_allowed = path
+        .file_name()
+        .is_some_and(|filename| ALLOWED_FILENAMES.contains(&filename));
+
+    if !filename_is_allowed {
+        return Err(filename_is_not_allowed_error());
+    }
+
+    Ok(())
+}
+
+fn filename_is_not_allowed_error() -> UploadFilesError {
+    UploadFilesError::Filename {
+        message: format!(
+            "uploaded files must have a filename which is one of {:?}",
+            ALLOWED_FILENAMES
+        ),
+    }
+}
+
+fn validate_every_component_is_normal(path: &Utf8Path) -> Result<(), UploadFilesError> {
+    let every_component_is_normal = path
+        .components()
+        .all(|component| matches!(component, Utf8Component::Normal(_)));
+
+    if !every_component_is_normal {
+        return Err(UploadFilesError::Filename {
+            message: "path must be relative and cannot contain '.' or '..'".to_owned(),
+        });
+    }
+
+    Ok(())
+}
+
+fn validate_file_is_at_top_level_or_in_sample_directory(
+    path: &Utf8Path,
+) -> Result<(), UploadFilesError> {
+    let components: Vec<_> = path.components().collect();
+
+    match components.as_slice() {
+        [_] | [Utf8Component::Normal("per_sample_outs"), _, _] => Ok(()),
+        _ => Err(UploadFilesError::Filename {
+            message: "files nested into a directory must be nested into a \
+                      'per_sample_outs/sample_name/' directory"
+                .to_owned(),
+        }),
     }
 }
 

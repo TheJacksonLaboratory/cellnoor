@@ -1,6 +1,7 @@
 pub use create::create_chromium_dataset;
 #[cfg(feature = "dev")]
 pub use create::insert_test_chromium_dataset;
+pub use delete::{delete_chromium_dataset, delete_files};
 pub use index_compact::index_chromium_datasets;
 pub use index_detailed::index_chromium_datasets_detailed;
 pub use show::show_chromium_dataset;
@@ -10,6 +11,8 @@ pub use upload_files::upload_files;
 pub use upload_files::write_test_dataset_files;
 
 pub(super) mod create;
+mod dataset_directory;
+pub(super) mod delete;
 pub(super) mod index_compact;
 pub(super) mod index_detailed;
 pub(super) mod show;

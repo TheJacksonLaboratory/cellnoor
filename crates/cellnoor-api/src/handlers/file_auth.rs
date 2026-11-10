@@ -8,22 +8,18 @@ use axum::{
     response::{IntoResponse, Response},
 };
 pub use dataset_dir::authorize_dataset_dir_access;
-pub use project_dir::authorize_project_dir_access;
 
 use crate::{
     db::DbError, error::error_response, handlers::specific_error_inferred_early_responses,
 };
 
 mod dataset_dir;
-mod project_dir;
 
 #[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema, PartialEq, Eq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum FileAuthError {
     #[error("cannot access this dataset")]
     DatasetAccessDenied,
-    #[error("cannot access this project")]
-    ProjectAccessDenied,
     #[serde(untagged)]
     #[error(transparent)]
     Db(#[from] DbError),
@@ -32,7 +28,7 @@ pub enum FileAuthError {
 impl FileAuthError {
     fn status(&self) -> StatusCode {
         match self {
-            Self::DatasetAccessDenied | Self::ProjectAccessDenied => StatusCode::UNAUTHORIZED,
+            Self::DatasetAccessDenied => StatusCode::UNAUTHORIZED,
             Self::Db(e) => e.status(),
         }
     }

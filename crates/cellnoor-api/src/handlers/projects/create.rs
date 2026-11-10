@@ -98,29 +98,4 @@ pub mod test {
 
         insert_test_project(&tx, |_| ()).await.unwrap();
     }
-
-    #[tokio::test(flavor = "multi_thread")]
-    async fn name_must_be_path_component() {
-        let mut client = db_client_as_admin().await;
-
-        for name in [".", "..", "parent/child"] {
-            let tx = client.begin().await.unwrap();
-
-            let error = insert_test_project(&tx, |p| p.simple.name = name.to_nonempty_string())
-                .await
-                .unwrap_err();
-
-            assert_eq!(
-                error,
-                DbError::DataConstraint {
-                    resource: Some("project".to_owned()),
-                    field: None,
-                    message: "new row for relation \"project\" violates check constraint \
-                              \"name_is_path_component\""
-                        .to_owned(),
-                    detail: None,
-                }
-            );
-        }
-    }
 }

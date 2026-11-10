@@ -51,14 +51,7 @@ impl AppState {
     where
         E: From<DbError>,
     {
-        let mut client = self.db_client(user).await.map_err(DbError::from)?;
-        let tx = client.begin().await.map_err(DbError::from)?;
-
-        let response = work(&tx).await?;
-
-        tx.commit().await.map_err(DbError::from)?;
-
-        Ok(Json(response))
+        self.db_pool.in_transaction(user, work).await.map(Json)
     }
 }
 
