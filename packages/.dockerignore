@@ -1,0 +1,10 @@
+**/node_modules
+**/.svelte-kit
+**/build
+**/Dockerfile
+**/.dockerignore
+**/.env*
+cellnoor-auth/cellnoor-auth
+cellnoor-auth/index
+cellnoor-auth/*.map
+cellnoor-auth/*.bun-build

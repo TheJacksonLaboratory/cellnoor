@@ -3,11 +3,14 @@ FROM oven/bun:1 AS build
 WORKDIR /usr/src/app
 
 COPY . .
-RUN bun install --frozen-lockfile && bun build --compile --minify --bytecode --sourcemap --format esm --define Bun.env.CELLNOOR_AUTH__READ_SECRET_FILE=true index.ts --outfile cellnoor-auth
+RUN bun install --frozen-lockfile --filter cellnoor-auth
+
+WORKDIR /usr/src/app/cellnoor-auth
+RUN bun build --compile --minify --bytecode --sourcemap --format esm --define Bun.env.CELLNOOR_AUTH__READ_SECRET_FILE=true index.ts --outfile cellnoor-auth
 
 FROM debian:trixie AS final
 
-COPY --from=build /usr/src/app/cellnoor-auth /bin/cellnoor-auth
+COPY --from=build /usr/src/app/cellnoor-auth/cellnoor-auth /bin/cellnoor-auth
 
 # We make sure to create the socket directory and then remove the socket file if it already exists
 RUN mkdir -p /run/cellnoor-auth

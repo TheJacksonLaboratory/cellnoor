@@ -68,7 +68,8 @@ services:
       migrate:
         condition: service_completed_successfully
     build:
-      context: packages/cellnoor-auth
+      context: packages
+      dockerfile: cellnoor-auth/Dockerfile
       target: final
       tags:
         - ghcr.io/thejacksonlaboratory/cellnoor-auth:latest
@@ -117,9 +118,8 @@ services:
       retries: 10
   cellnoor-ui:
     build:
-      context: packages/cellnoor-ui
-      additional_contexts:
-        cellnoor-client: packages/cellnoor-client
+      context: packages
+      dockerfile: cellnoor-ui/Dockerfile
       target: final
       args:
         UI_DIR: &ui_dir /ui
