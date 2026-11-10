@@ -3,7 +3,7 @@ use std::io;
 use axum::extract::{Multipart, multipart::Field};
 use camino::{Utf8Path, Utf8PathBuf};
 use cellnoor_types::chromium_dataset::ChromiumDatasetParsedFileData;
-use rapidhash::v3::{DEFAULT_RAPID_SECRETS, RapidStreamHasherV3, rapidhash_v3};
+use sha2::{Digest, Sha256};
 use tokio::io::AsyncWriteExt;
 
 use crate::handlers::chromium_datasets::{
@@ -107,16 +107,16 @@ async fn write_html_to_disk(
     dest: &Utf8Path,
 ) -> Result<FileHash, UploadFilesError> {
     let mut file = tokio::fs::File::create(dest).await?;
-    let mut hasher = RapidStreamHasherV3::new(&DEFAULT_RAPID_SECRETS);
+    let mut hasher = Sha256::default();
 
     while let Some(chunk) = form_field.chunk().await? {
         file.write_all(&chunk).await?;
-        hasher.write(&chunk);
+        hasher.update(&chunk);
     }
 
     file.flush().await?;
 
-    Ok(FileHash::new(hasher.finish()))
+    Ok(FileHash::new(hasher.finalize().0))
 }
 
 async fn write_csv_or_json_to_disk(
@@ -127,18 +127,18 @@ async fn write_csv_or_json_to_disk(
     let parsed_file = parse_file(content_type, data)?;
     tokio::fs::write(&dest, &data).await?;
 
-    let hash = rapidhash_v3(data);
+    let hash = Sha256::digest(data).0;
 
     Ok((FileHash::new(hash), parsed_file))
 }
 
 #[derive(Debug, Clone, postgres_types::ToSql, postgres_types::FromSql)]
 #[postgres(transparent)]
-pub(super) struct FileHash(String);
+pub(super) struct FileHash(Vec<u8>);
 
 impl FileHash {
-    pub(super) fn new(hash: u64) -> Self {
-        Self(hash.to_string())
+    pub(super) fn new(hash: [u8; 32]) -> Self {
+        Self(hash.to_vec())
     }
 }
 

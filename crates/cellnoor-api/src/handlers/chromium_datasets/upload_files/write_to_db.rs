@@ -107,7 +107,7 @@ impl Insert for NewRawFile<'_> {
         vec![
             ("dataset_id", dataset_id),
             ("path", path),
-            ("rapidhash_v3_hash", hash),
+            ("sha256_hash", hash),
         ]
     }
 }
@@ -187,7 +187,7 @@ pub(in super::super) fn parse_csv(
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use rapidhash::v3::rapidhash_v3;
+    use sha2::{Digest, Sha256};
     use uuid::Uuid;
 
     use super::{StagedFile, UploadPath, write_files_to_db};
@@ -218,7 +218,7 @@ mod tests {
             ))
             .unwrap(),
             parsed_data: None,
-            hash: FileHash::new(rapidhash_v3(Uuid::new_v4().as_bytes())),
+            hash: FileHash::new(Sha256::digest(Uuid::new_v4().as_bytes()).0),
         };
 
         let lowercase_path = "per_sample_outs/sample1/summary.csv";

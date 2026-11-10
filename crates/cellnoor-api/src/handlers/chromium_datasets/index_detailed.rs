@@ -221,7 +221,7 @@ fn extract_renamed_metric_from_multi_metrics_row(
 struct RawFileRecord {
     dataset_id: Id,
     path: NonemptyString,
-    rapidhash_v3_hash: String,
+    sha256_hash: Vec<u8>,
 }
 
 fn create_file_tree(
@@ -238,7 +238,7 @@ fn create_file_tree(
     for RawFileRecord {
         dataset_id,
         path,
-        rapidhash_v3_hash,
+        sha256_hash,
     } in raw_files
     {
         let path_str: &str = path.as_ref();
@@ -260,7 +260,7 @@ fn create_file_tree(
             kind: FileTreeNodeKind::File {
                 raw_file_link: file_path_to_link(*dataset_id, path),
                 parsed_contents: parsed_files.remove(path),
-                rapidhash_v3_hash: rapidhash_v3_hash.to_owned(),
+                sha256_hash: sha256_hash.clone(),
             },
         });
     }
@@ -386,7 +386,7 @@ mod tests {
             kind: FileTreeNodeKind::File {
                 raw_file_link: format!("/files/chromium-datasets/{dataset_id}/{full_path}"),
                 parsed_contents,
-                rapidhash_v3_hash: "0".to_owned(),
+                sha256_hash: vec![],
             },
         };
         let dir = |full_path: &str, children| FileTreeNode {
@@ -436,7 +436,7 @@ mod tests {
         .map(|p| RawFileRecord {
             dataset_id,
             path: p.to_nonempty_string(),
-            rapidhash_v3_hash: "0".to_owned(),
+            sha256_hash: vec![],
         });
 
         assert_eq!(
