@@ -62,15 +62,14 @@ fn map_detailed_row(row: Row) -> ChromiumDatasetDetailed {
     let libraries: Vec<SavedLibraryRecord> = row.get("libraries");
     let chromium_run = row.get("chromium_run");
 
-    let mut raw_file_paths: Vec<_> = row.get("raw_file_paths");
-    raw_file_paths.sort();
+    let mut raw_files: Vec<_> = row.get("raw_files");
+    raw_files.sort_by(|p1: &RawFileRecord, p2| p1.path.cmp(&p2.path));
 
     let parsed_files: Vec<_> = row.get("parsed_files");
     let mut metrics_by_specimen = extract_key_metrics_from_parsed_files(&parsed_files);
-    let dataset_id = record.id;
 
     ChromiumDatasetDetailed {
-        links: chromium_dataset_detailed_links(record.id, &raw_file_paths),
+        links: chromium_dataset_detailed_links(record.id, &raw_files),
         record,
         assay: row.get("assay"),
         libraries: libraries.into_iter().map(library_from_record).collect(),
@@ -80,7 +79,7 @@ fn map_detailed_row(row: Row) -> ChromiumDatasetDetailed {
             .map(|sp| chromium_dataset_specimen_from_tagged_specimen(sp, &mut metrics_by_specimen))
             .collect(),
         chromium_run: chromium_run_from_record(chromium_run),
-        files: create_file_tree(dataset_id, &raw_file_paths, parsed_files),
+        files: create_file_tree(&raw_files, parsed_files),
     }
 }
 
@@ -217,9 +216,16 @@ fn extract_renamed_metric_from_multi_metrics_row(
     Some((*metric_name, metric_value.to_owned()))
 }
 
-fn create_file_tree(
+#[derive(Debug, Clone, postgres_types::FromSql)]
+#[postgres(name = "chromium_dataset_raw_file")]
+struct RawFileRecord {
     dataset_id: Id,
-    raw_file_paths: &[NonemptyString],
+    path: NonemptyString,
+    rapidhash_v3_hash: i64,
+}
+
+fn create_file_tree(
+    raw_files: &[RawFileRecord],
     parsed_files: Vec<ChromiumDatasetParsedFileRecord>,
 ) -> Vec<FileTreeNode<ChromiumDatasetParsedFileData>> {
     let mut parsed_files: HashMap<_, _> = parsed_files
@@ -229,7 +235,12 @@ fn create_file_tree(
 
     let mut root = Directory::default();
 
-    for path in raw_file_paths {
+    for RawFileRecord {
+        dataset_id,
+        path,
+        rapidhash_v3_hash,
+    } in raw_files
+    {
         let path_str: &str = path.as_ref();
         let mut name_start = 0;
 
@@ -247,8 +258,9 @@ fn create_file_tree(
             path: path.to_string(),
             name: path_str[name_start..].to_owned(),
             kind: FileTreeNodeKind::File {
-                raw_file_link: file_path_to_link(dataset_id, path),
+                raw_file_link: file_path_to_link(*dataset_id, path),
                 parsed_contents: parsed_files.remove(path),
+                rapidhash_v3_hash: *rapidhash_v3_hash,
             },
         });
     }
@@ -298,14 +310,14 @@ impl Directory {
 
 fn chromium_dataset_detailed_links(
     id: Id,
-    raw_file_paths: &[NonemptyString],
+    raw_files: &[RawFileRecord],
 ) -> ChromiumDatasetDetailedLinks {
     ChromiumDatasetDetailedLinks {
         simple: chromium_dataset_links(id),
         file_dir: dataset_id_to_file_dir(id),
-        raw_files: raw_file_paths
+        raw_files: raw_files
             .iter()
-            .map(|p| file_path_to_link(id, p))
+            .map(|p| file_path_to_link(id, &p.path))
             .collect(),
     }
 }
@@ -334,7 +346,9 @@ mod tests {
 
     use super::{PSEUDO_BARCODE, create_file_tree, extract_key_metrics_from_parsed_files};
     use crate::{
-        handlers::chromium_datasets::upload_files::write_to_db::parse_csv,
+        handlers::chromium_datasets::{
+            index_detailed::RawFileRecord, upload_files::write_to_db::parse_csv,
+        },
         state::dev_util::ToNonemptyString,
     };
 
@@ -372,6 +386,7 @@ mod tests {
             kind: FileTreeNodeKind::File {
                 raw_file_link: format!("/files/chromium-datasets/{dataset_id}/{full_path}"),
                 parsed_contents,
+                rapidhash_v3_hash: 0,
             },
         };
         let dir = |full_path: &str, children| FileTreeNode {
@@ -418,11 +433,14 @@ mod tests {
             "per_sample_outs/sample2/metrics_summary.csv",
             "per_sample_outs/sample1/metrics_summary.csv",
         ]
-        .map(|p| p.to_nonempty_string());
+        .map(|p| RawFileRecord {
+            dataset_id,
+            path: p.to_nonempty_string(),
+            rapidhash_v3_hash: 0,
+        });
 
         assert_eq!(
             create_file_tree(
-                dataset_id,
                 &paths,
                 vec![
                     ChromiumDatasetParsedFileRecord {

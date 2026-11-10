@@ -3,6 +3,7 @@ use std::io;
 use axum::extract::{Multipart, multipart::Field};
 use camino::{Utf8Path, Utf8PathBuf};
 use cellnoor_types::chromium_dataset::ChromiumDatasetParsedFileData;
+use rapidhash::v3::{DEFAULT_RAPID_SECRETS, RapidStreamHasherV3, rapidhash_v3};
 use tokio::io::AsyncWriteExt;
 
 use crate::handlers::chromium_datasets::{
@@ -22,6 +23,7 @@ pub(super) struct StagedUpload {
 pub(super) struct StagedFile {
     pub(super) path_relative_to_dataset_directory: UploadPath,
     pub(super) parsed_data: Option<ChromiumDatasetParsedFileData>,
+    pub(super) hash: FileHash,
 }
 
 impl StagedUpload {
@@ -79,11 +81,11 @@ async fn stage_file(
         .create_path_for_file(path_relative_to_dataset_directory.as_str())
         .await?;
 
-    let parsed_data = match content_type {
+    let (hash, parsed_data) = match content_type {
         AllowedContentType::Html => {
-            write_html_to_disk(&mut field, &staged_file_path).await?;
+            let hash = write_html_to_disk(&mut field, &staged_file_path).await?;
 
-            None
+            (hash, None)
         }
         AllowedContentType::Csv | AllowedContentType::Json => {
             write_csv_or_json_to_disk(content_type, &field.bytes().await?, &staged_file_path)
@@ -96,33 +98,48 @@ async fn stage_file(
     Ok(StagedFile {
         path_relative_to_dataset_directory,
         parsed_data,
+        hash,
     })
 }
 
 async fn write_html_to_disk(
     form_field: &mut Field<'_>,
     dest: &Utf8Path,
-) -> Result<(), UploadFilesError> {
+) -> Result<FileHash, UploadFilesError> {
     let mut file = tokio::fs::File::create(dest).await?;
+    let mut hasher = RapidStreamHasherV3::new(&DEFAULT_RAPID_SECRETS);
 
     while let Some(chunk) = form_field.chunk().await? {
         file.write_all(&chunk).await?;
+        hasher.write(&chunk);
     }
 
     file.flush().await?;
 
-    Ok(())
+    Ok(FileHash::new(hasher.finish()))
 }
 
 async fn write_csv_or_json_to_disk(
     content_type: AllowedContentType,
     data: &[u8],
     dest: &Utf8Path,
-) -> Result<Option<ChromiumDatasetParsedFileData>, UploadFilesError> {
+) -> Result<(FileHash, Option<ChromiumDatasetParsedFileData>), UploadFilesError> {
     let parsed_file = parse_file(content_type, data)?;
     tokio::fs::write(&dest, &data).await?;
 
-    Ok(parsed_file)
+    let hash = rapidhash_v3(data);
+
+    Ok((FileHash::new(hash), parsed_file))
+}
+
+#[derive(Debug, Clone, Copy, postgres_types::ToSql, postgres_types::FromSql)]
+#[postgres(transparent)]
+pub(super) struct FileHash(i64);
+
+impl FileHash {
+    pub(super) fn new(hash: u64) -> Self {
+        Self(hash as i64)
+    }
 }
 
 async fn write_compressed_copy_on_blocking_thread(file_path: Utf8PathBuf) -> io::Result<()> {

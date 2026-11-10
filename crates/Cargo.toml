@@ -49,6 +49,7 @@ pretty_assertions = { version = "1.4.1" }
 proc-macro2 = { version = "1.0.107" }
 quote = { version = "1.0.47" }
 rand = { version = "0.10.3" }
+rapidhash = { version = "4.5.1" }
 regex = { version = "1.13.1" }
 reqwest = { version = "0.13.5", features = ["multipart"] }
 schemars = { version = "1.2.3", features = ["jiff02", "uuid1"] }

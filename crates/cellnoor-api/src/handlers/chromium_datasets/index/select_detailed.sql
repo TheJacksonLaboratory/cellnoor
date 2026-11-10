@@ -7,9 +7,9 @@ select
     )::tagged_specimen) as specimens,
     array_agg(distinct library) as libraries,
     array(
-        select path from chromium_dataset_raw_file
+        select chromium_dataset_raw_file from chromium_dataset_raw_file
         where dataset_id = (chromium_dataset).id
-    ) as raw_file_paths,
+    ) as raw_files,
     array(
         select chromium_dataset_parsed_file from chromium_dataset_parsed_file
         where dataset_id = (chromium_dataset).id

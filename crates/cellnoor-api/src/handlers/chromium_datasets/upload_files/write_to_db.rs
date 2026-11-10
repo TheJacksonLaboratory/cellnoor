@@ -7,7 +7,9 @@ use uuid::Uuid;
 use crate::{
     db::{self, DbError, FieldValues, Insert, Sql},
     handlers::chromium_datasets::upload_files::{
-        UploadFilesError, allowed_content_type::AllowedContentType, stage_files::StagedFile,
+        UploadFilesError,
+        allowed_content_type::AllowedContentType,
+        stage_files::{FileHash, StagedFile},
         upload_path::UploadPath,
     },
 };
@@ -75,6 +77,7 @@ async fn insert_raw_files(
         .map(|staged_file| NewRawFile {
             dataset_id,
             path: &staged_file.path_relative_to_dataset_directory,
+            hash: staged_file.hash,
         })
         .collect();
 
@@ -84,6 +87,7 @@ async fn insert_raw_files(
 struct NewRawFile<'a> {
     dataset_id: Uuid,
     path: &'a UploadPath,
+    hash: FileHash,
 }
 
 impl Relation for NewRawFile<'_> {
@@ -94,9 +98,17 @@ impl Insert for NewRawFile<'_> {
     type Field = &'static str;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        let Self { dataset_id, path } = self;
+        let Self {
+            dataset_id,
+            path,
+            hash,
+        } = self;
 
-        vec![("dataset_id", dataset_id), ("path", path)]
+        vec![
+            ("dataset_id", dataset_id),
+            ("path", path),
+            ("rapidhash_v3_hash", hash),
+        ]
     }
 }
 
@@ -175,12 +187,16 @@ pub(in super::super) fn parse_csv(
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
+    use rapidhash::v3::rapidhash_v3;
+    use uuid::Uuid;
 
     use super::{StagedFile, UploadPath, write_files_to_db};
     use crate::{
         db::Sql,
         handlers::{
-            chromium_datasets::create::insert_test_chromium_dataset,
+            chromium_datasets::{
+                create::insert_test_chromium_dataset, upload_files::stage_files::FileHash,
+            },
             chromium_runs::create::TestChromiumRunKind,
         },
         state::dev_util::db_client_as_admin,
@@ -202,6 +218,7 @@ mod tests {
             ))
             .unwrap(),
             parsed_data: None,
+            hash: FileHash::new(rapidhash_v3(Uuid::new_v4().as_bytes())),
         };
 
         let lowercase_path = "per_sample_outs/sample1/summary.csv";
