@@ -8,7 +8,7 @@ use axum::{
 
 use crate::{
     auth::{AuthError, AuthUser},
-    handlers::file_auth::{authorize_dataset_dir_access, authorize_project_dir_access},
+    handlers::file_auth::authorize_dataset_dir_access,
     state::AppState,
 };
 
@@ -21,8 +21,7 @@ pub fn router(state: AppState) -> Router<AppState> {
     Router::new()
         .route("/", ok.clone())
         // As long a user is authenticated, they can access top-level directories
-        .route("/{dataset_type}", ok.clone())
-        .route("/projects", ok)
+        .route("/{dataset_type}", ok)
         // Accessing a specific dataset triggers row-level security
         .route(
             "/{dataset_type}/{dataset_id}",
@@ -31,15 +30,6 @@ pub fn router(state: AppState) -> Router<AppState> {
         .route(
             "/{dataset_type}/{dataset_id}/{*file_path}",
             get(authorize_dataset_dir_access),
-        )
-        // Accessing a specific project triggers row-level security
-        .route(
-            "/projects/{project_name}",
-            get(authorize_project_dir_access),
-        )
-        .route(
-            "/projects/{project_name}/{*file_path}",
-            get(authorize_project_dir_access),
         )
         .route_layer(axum::middleware::from_fn_with_state(
             state,

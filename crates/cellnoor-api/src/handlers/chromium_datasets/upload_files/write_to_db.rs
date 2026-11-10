@@ -5,21 +5,48 @@ use csvranger::TenxCsvValue;
 use uuid::Uuid;
 
 use crate::{
-    db::{self, DbError, FieldValues, Insert},
+    db::{self, DbError, FieldValues, Insert, Sql},
     handlers::chromium_datasets::upload_files::{
-        UploadFilesError, allowed_content_type::AllowedContentType, upload_path::UploadPath,
+        UploadFilesError, allowed_content_type::AllowedContentType, stage_files::StagedFile,
+        upload_path::UploadPath,
     },
 };
 
 pub(super) async fn write_files_to_db(
     tx: &db::Transaction<'_>,
     dataset_id: Uuid,
-    parsed_files: &[(UploadPath, Option<ChromiumDatasetParsedFileData>)],
-) -> Result<(), DbError> {
+    staged_files: &[StagedFile],
+) -> Result<Vec<String>, DbError> {
+    let overwritten_file_paths = delete_files_with_same_paths(tx, dataset_id, staged_files).await?;
     // Ensure the raw file is inserted first because the parsed file depends on
     // the raw file's existence
-    insert_raw_files(tx, dataset_id, parsed_files).await?;
-    insert_parsed_files(tx, dataset_id, parsed_files).await
+    insert_raw_files(tx, dataset_id, staged_files).await?;
+    insert_parsed_files(tx, dataset_id, staged_files).await?;
+
+    Ok(overwritten_file_paths)
+}
+
+// `path` is case-insensitive, so the returned paths can differ from the staged
+// files' paths in letter case. Parsed files are deleted along with their raw
+// file
+async fn delete_files_with_same_paths(
+    tx: &db::Transaction<'_>,
+    dataset_id: Uuid,
+    staged_files: &[StagedFile],
+) -> Result<Vec<String>, DbError> {
+    static DELETE_RAW_FILES: &str = "delete from chromium_dataset_raw_file where dataset_id = $1 \
+                                     and path = any($2) returning path";
+
+    let staged_file_paths: Vec<_> = staged_files
+        .iter()
+        .map(|staged_file| staged_file.path_relative_to_dataset_directory.as_str())
+        .collect();
+
+    tx.query_into(&Sql::new(
+        DELETE_RAW_FILES,
+        vec![&dataset_id, &staged_file_paths],
+    ))
+    .await
 }
 
 pub(super) fn parse_file(
@@ -41,19 +68,17 @@ pub(super) fn parse_file(
 async fn insert_raw_files(
     tx: &db::Transaction<'_>,
     dataset_id: Uuid,
-    paths: &[(UploadPath, Option<ChromiumDatasetParsedFileData>)],
+    staged_files: &[StagedFile],
 ) -> Result<(), DbError> {
-    let files: Vec<_> = paths
+    let records: Vec<_> = staged_files
         .iter()
-        .map(|(p, _)| NewRawFile {
+        .map(|staged_file| NewRawFile {
             dataset_id,
-            path: p,
+            path: &staged_file.path_relative_to_dataset_directory,
         })
         .collect();
 
-    tx.insert_many(&files).await?;
-
-    Ok(())
+    tx.insert_many(&records).await
 }
 
 struct NewRawFile<'a> {
@@ -78,22 +103,23 @@ impl Insert for NewRawFile<'_> {
 async fn insert_parsed_files(
     tx: &db::Transaction<'_>,
     dataset_id: Uuid,
-    parsed_files: &[(UploadPath, Option<ChromiumDatasetParsedFileData>)],
+    staged_files: &[StagedFile],
 ) -> Result<(), DbError> {
-    let records: Vec<_> = parsed_files
+    let records: Vec<_> = staged_files
         .iter()
-        .filter_map(|(path, data)| {
-            data.as_ref().map(|d| NewParsedFile {
-                dataset_id,
-                path,
-                data: postgres_types::Json(d),
-            })
+        .filter_map(|staged_file| {
+            staged_file
+                .parsed_data
+                .as_ref()
+                .map(|parsed_data| NewParsedFile {
+                    dataset_id,
+                    path: &staged_file.path_relative_to_dataset_directory,
+                    data: postgres_types::Json(parsed_data),
+                })
         })
         .collect();
 
-    tx.insert_many(&records).await?;
-
-    Ok(())
+    tx.insert_many(&records).await
 }
 
 struct NewParsedFile<'a> {
@@ -144,4 +170,63 @@ pub(in super::super) fn parse_csv(
     };
 
     Ok(parsed)
+}
+
+#[cfg(test)]
+mod tests {
+    use pretty_assertions::assert_eq;
+
+    use super::{StagedFile, UploadPath, write_files_to_db};
+    use crate::{
+        db::Sql,
+        handlers::{
+            chromium_datasets::create::insert_test_chromium_dataset,
+            chromium_runs::create::TestChromiumRunKind,
+        },
+        state::dev_util::db_client_as_admin,
+    };
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn file_whose_path_differs_in_case_replaces_existing_file() {
+        let mut client = db_client_as_admin().await;
+        let tx = client.begin().await.unwrap();
+
+        let (_, ds) = insert_test_chromium_dataset(&tx, TestChromiumRunKind::Standard, |_| ())
+            .await
+            .unwrap();
+        let dataset_id = *ds.record.id;
+
+        let staged_file_with_path = |path_relative_to_dataset_directory| StagedFile {
+            path_relative_to_dataset_directory: UploadPath::new(Some(
+                path_relative_to_dataset_directory,
+            ))
+            .unwrap(),
+            parsed_data: None,
+        };
+
+        let lowercase_path = "per_sample_outs/sample1/summary.csv";
+        let uppercase_path = "per_sample_outs/SAMPLE1/summary.csv";
+
+        let overwritten_file_paths =
+            write_files_to_db(&tx, dataset_id, &[staged_file_with_path(lowercase_path)])
+                .await
+                .unwrap();
+        assert!(overwritten_file_paths.is_empty());
+
+        let overwritten_file_paths =
+            write_files_to_db(&tx, dataset_id, &[staged_file_with_path(uppercase_path)])
+                .await
+                .unwrap();
+        assert_eq!(overwritten_file_paths, [lowercase_path]);
+
+        let stored_file_paths: Vec<String> = tx
+            .query_into(&Sql::new(
+                "select path from chromium_dataset_raw_file where dataset_id = $1",
+                vec![&dataset_id],
+            ))
+            .await
+            .unwrap();
+
+        assert_eq!(stored_file_paths, [uppercase_path]);
+    }
 }

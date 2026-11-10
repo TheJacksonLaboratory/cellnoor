@@ -1,21 +1,12 @@
-use aide::{
-    OperationOutput,
-    generate::GenContext,
-    openapi::{Operation, Response as OpenApiResponse, StatusCode as OpenApiStatusCode},
-};
+use axum::extract::{Multipart, Path, State};
 #[cfg(any(test, feature = "dev"))]
 use axum::{
     body::Body,
     extract::{DefaultBodyLimit, FromRequest},
     http::{HeaderMap, HeaderValue, Request},
 };
-use axum::{
-    extract::{Multipart, Path, State, multipart::MultipartError},
-    http::StatusCode,
-    response::{IntoResponse, Response},
-};
 use camino::Utf8Path;
-use cellnoor_types::nonempty::NonemptyString;
+pub use error::UploadFilesError;
 #[cfg(any(test, feature = "dev"))]
 use reqwest::{
     header::CONTENT_TYPE,
@@ -25,29 +16,22 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, DbError, Pool, Sql},
-    error::error_response,
+    db::Pool,
     handlers::{
         IdParam,
-        chromium_datasets::upload_files::{
-            allowed_content_type::AllowedContentType,
-            upload_path::UploadPath,
-            write_to_db::write_files_to_db,
-            write_to_disk::{
-                chromium_dataset_dir_path, compress_and_link, project_dir_paths,
-                write_csv_or_json_to_disk, write_html_to_disk,
-            },
+        chromium_datasets::{
+            dataset_directory::FinalDirectory,
+            upload_files::{stage_files::StagedUpload, write_to_db::write_files_to_db},
         },
-        specific_error_inferred_early_responses,
     },
     state::AppState,
 };
 
 mod allowed_content_type;
 mod error;
+mod stage_files;
 mod upload_path;
 pub(super) mod write_to_db;
-mod write_to_disk;
 
 pub async fn upload_files(
     State(app_state): State<AppState>,
@@ -72,140 +56,24 @@ async fn write_files_to_disk_and_db(
     static_files_dir: &Utf8Path,
     user: AuthUser,
     dataset_id: Uuid,
-    mut files: Multipart,
+    files: Multipart,
 ) -> Result<(), UploadFilesError> {
-    let DatasetWithProjectNames {
-        dataset_name,
-        project_names,
-    } = {
-        let mut client = db_pool.get(user).await.map_err(DbError::from)?;
-        let tx = client.begin().await.map_err(DbError::from)?;
+    let dataset_directory = FinalDirectory::new(static_files_dir, dataset_id);
 
-        fetch_dataset_and_project_names(&tx, &dataset_id).await?
-    };
+    // No database client is held here, because parsing and compressing files is
+    // CPU-heavy
+    let staged_upload = StagedUpload::from_multipart(dataset_directory, files).await?;
 
-    let chromium_dataset_dir = chromium_dataset_dir_path(static_files_dir, dataset_id);
-    let project_dirs = project_dir_paths(static_files_dir, &project_names, &dataset_name);
+    db_pool
+        .in_transaction(user, async |tx| {
+            let overwritten_file_paths =
+                write_files_to_db(tx, dataset_id, staged_upload.files()).await?;
 
-    let mut written_files = Vec::new();
+            staged_upload.move_files_into_final_directory(&overwritten_file_paths)?;
 
-    while let Some(mut field) = files.next_field().await? {
-        let content_type = AllowedContentType::from_multipart_form_field(&field)?;
-        let path = UploadPath::new(field.file_name())?;
-
-        let dest = chromium_dataset_dir.join(path.as_str());
-        tokio::fs::create_dir_all(dest.parent().unwrap()).await?;
-
-        let parsed_file = match content_type {
-            AllowedContentType::Html => {
-                write_html_to_disk(&mut field, &dest).await?;
-
-                None
-            }
-            AllowedContentType::Csv | AllowedContentType::Json => {
-                write_csv_or_json_to_disk(content_type, &field.bytes().await?, &dest).await?
-            }
-        };
-
-        let link_paths: Vec<_> = project_dirs.iter().map(|d| d.join(path.as_str())).collect();
-        tokio::task::spawn_blocking(move || compress_and_link(&dest, &link_paths))
-            .await
-            .map_err(std::io::Error::other)??;
-
-        written_files.push((path, parsed_file));
-    }
-
-    let mut client = db_pool.get(user).await.map_err(DbError::from)?;
-    let tx = client.begin().await.map_err(DbError::from)?;
-
-    write_files_to_db(&tx, dataset_id, &written_files).await?;
-
-    tx.commit().await.map_err(DbError::from)?;
-
-    Ok(())
-}
-
-pub(super) struct DatasetWithProjectNames {
-    pub dataset_name: NonemptyString,
-    pub project_names: Vec<NonemptyString>,
-}
-
-pub(super) async fn fetch_dataset_and_project_names(
-    tx: &db::Transaction<'_>,
-    dataset_id: &Uuid,
-) -> Result<DatasetWithProjectNames, DbError> {
-    static SELECT_PROJECT_NAMES: &str = include_str!("upload_files/select_project_names.sql");
-
-    let sql = Sql::new(SELECT_PROJECT_NAMES, vec![dataset_id]);
-
-    tx.query_one(&sql).await.map(|r| DatasetWithProjectNames {
-        dataset_name: r.get("dataset_name"),
-        project_names: r.get("project_names"),
-    })
-}
-
-#[derive(Debug, Clone, thiserror::Error, serde::Serialize, schemars::JsonSchema, PartialEq, Eq)]
-#[serde(tag = "type", rename_all = "snake_case")]
-pub enum UploadFilesError {
-    #[error("failed to read multipart form: {message}")]
-    Multipart { message: String },
-    #[error("{message}")]
-    ContentType { message: String },
-    #[error("{message}")]
-    Filename { message: String },
-    #[error("failed to parse uploaded file: {message}")]
-    Parse { message: String },
-    #[error("failed to write file to disk: {message}")]
-    Write { message: String },
-    #[serde(untagged)]
-    #[error(transparent)]
-    Db(#[from] DbError),
-}
-
-impl UploadFilesError {
-    fn status(&self) -> StatusCode {
-        match self {
-            Self::Multipart { .. }
-            | Self::ContentType { .. }
-            | Self::Filename { .. }
-            | Self::Parse { .. } => StatusCode::UNPROCESSABLE_ENTITY,
-            Self::Db(e) => e.status(),
-            Self::Write { .. } => StatusCode::INTERNAL_SERVER_ERROR,
-        }
-    }
-}
-
-impl From<MultipartError> for UploadFilesError {
-    fn from(value: MultipartError) -> Self {
-        Self::Multipart {
-            message: value.to_string(),
-        }
-    }
-}
-
-impl From<std::io::Error> for UploadFilesError {
-    fn from(value: std::io::Error) -> Self {
-        Self::Write {
-            message: value.to_string(),
-        }
-    }
-}
-
-impl IntoResponse for UploadFilesError {
-    fn into_response(self) -> Response {
-        error_response(self.status(), self)
-    }
-}
-
-impl OperationOutput for UploadFilesError {
-    type Inner = Self;
-
-    fn inferred_responses(
-        ctx: &mut GenContext,
-        operation: &mut Operation,
-    ) -> Vec<(Option<OpenApiStatusCode>, OpenApiResponse)> {
-        specific_error_inferred_early_responses::<Self>(ctx, operation)
-    }
+            Ok(())
+        })
+        .await
 }
 
 #[cfg(any(test, feature = "dev"))]
@@ -309,7 +177,8 @@ pub async fn write_test_dataset_files(
 #[cfg(test)]
 mod tests {
     use camino::Utf8Path;
-    use tempfile::{TempDir, tempdir};
+    use pretty_assertions::assert_eq;
+    use tempfile::tempdir;
 
     use crate::{
         handlers::{
@@ -330,15 +199,52 @@ mod tests {
         tx.commit().await.unwrap();
 
         let db_pool = test_db_pool();
-        write_test_dataset_files(
-            &db_pool,
-            *ds.record.id,
-            tempdir()
-                .as_ref()
-                .map(TempDir::path)
-                .map(|p| Utf8Path::from_path(p).unwrap())
-                .unwrap(),
-        )
-        .await;
+        let static_files_dir = tempdir().unwrap();
+        let static_files_dir = Utf8Path::from_path(static_files_dir.path()).unwrap();
+
+        write_test_dataset_files(&db_pool, *ds.record.id, static_files_dir).await;
+        write_test_dataset_files(&db_pool, *ds.record.id, static_files_dir).await;
+
+        let all_datasets_directory = static_files_dir.join("chromium-datasets");
+        let dataset_directory = all_datasets_directory.join(ds.record.id.to_string());
+
+        assert_eq!(
+            sorted_entry_names(&all_datasets_directory),
+            [ds.record.id.to_string()]
+        );
+        assert_eq!(
+            sorted_entry_names(&dataset_directory),
+            [
+                "per_sample_outs",
+                "qc_library_metrics.csv",
+                "qc_library_metrics.csv.zst",
+                "summary.csv",
+                "summary.csv.zst",
+            ]
+        );
+        assert_eq!(
+            sorted_entry_names(&dataset_directory.join("per_sample_outs/sample1")),
+            [
+                "metrics_summary.csv",
+                "metrics_summary.csv.zst",
+                "qc_sample_metrics.csv",
+                "qc_sample_metrics.csv.zst",
+                "summary.json",
+                "summary.json.zst",
+                "web_summary.html",
+                "web_summary.html.zst",
+            ]
+        );
+    }
+
+    pub(super) fn sorted_entry_names(directory_path: &Utf8Path) -> Vec<String> {
+        let mut entry_names: Vec<_> = directory_path
+            .read_dir_utf8()
+            .unwrap()
+            .map(|entry| entry.unwrap().file_name().to_owned())
+            .collect();
+        entry_names.sort();
+
+        entry_names
     }
 }

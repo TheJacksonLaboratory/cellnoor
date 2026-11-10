@@ -453,9 +453,9 @@ mod tests {
 
         let expected = HashMap::from([
             ("Median genes per cell", TenxCsvValue::I64(1305)),
-            ("Median UMIs per cell", TenxCsvValue::I64(2244)),
+            ("Median UMI counts per cell", TenxCsvValue::I64(2244)),
             (
-                "Reads associated with cells",
+                "Fraction of transcriptomic reads in cells",
                 TenxCsvValue::F64(0.6847850295990157),
             ),
         ]);

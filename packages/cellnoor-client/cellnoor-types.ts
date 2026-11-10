@@ -7259,12 +7259,12 @@ export interface paths {
                         "application/json": components["schemas"]["JsonRejection"];
                     };
                 };
-                422: {
+                default: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["UpdateChromiumDatasetError"];
+                        "application/json": components["schemas"]["DbError"];
                     };
                 };
             };
@@ -7297,12 +7297,12 @@ export interface paths {
                         "application/json": components["schemas"]["AuthError"];
                     };
                 };
-                default: {
+                422: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["DbError"];
+                        "application/json": components["schemas"]["DeleteChromiumDatasetError"];
                     };
                 };
             };
@@ -7896,6 +7896,11 @@ export interface components {
             /** @constant */
             type: "other";
         };
+        DeleteChromiumDatasetError: {
+            message: string;
+            /** @constant */
+            type: "remove_files";
+        } | components["schemas"]["DbError"];
         /** @enum {string} */
         DithiobisSuccinimidylpropionate: "dithiobis_succinimidylpropionate";
         Fixative: components["schemas"]["DithiobisSuccinimidylpropionate"] | components["schemas"]["FormaldehydeDerivative"];
@@ -9437,11 +9442,6 @@ export interface components {
             preservation_state: "thermally_preserved";
             thermal_preservation_method: components["schemas"]["ThermalPreservationMethod"];
         };
-        UpdateChromiumDatasetError: {
-            message: string;
-            /** @constant */
-            type: "rename_dataset_directory_failed";
-        } | components["schemas"]["DbError"];
         /** @description A simple comparison operator. */
         UuidOperator: {
             /** Format: uuid */
@@ -9618,6 +9618,7 @@ export type ControlledRateFreezing = components['schemas']['ControlledRateFreezi
 export type CountingMethod = components['schemas']['CountingMethod'];
 export type CreateChromiumDatasetError = components['schemas']['CreateChromiumDatasetError'];
 export type DbError = components['schemas']['DbError'];
+export type DeleteChromiumDatasetError = components['schemas']['DeleteChromiumDatasetError'];
 export type DithiobisSuccinimidylpropionate = components['schemas']['DithiobisSuccinimidylpropionate'];
 export type Fixative = components['schemas']['Fixative'];
 export type FixativeOperator = components['schemas']['FixativeOperator'];
@@ -9778,7 +9779,6 @@ export type ThermalPreservationMethod = components['schemas']['ThermalPreservati
 export type ThermalPreservationMethodOperator = components['schemas']['ThermalPreservationMethodOperator'];
 export type TimestampOperator = components['schemas']['TimestampOperator'];
 export type TissueFields = components['schemas']['TissueFields'];
-export type UpdateChromiumDatasetError = components['schemas']['UpdateChromiumDatasetError'];
 export type UuidOperator = components['schemas']['UuidOperator'];
 export type BooleanOperator = components['schemas']['booleanOperator'];
 export type FloatOperator = components['schemas']['floatOperator'];
