@@ -7,8 +7,7 @@ use axum::{
     extract::{DefaultBodyLimit, Query, State},
 };
 use cellnoor_types::chromium_dataset::{
-    ChromiumDatasetCompact, ChromiumDatasetDetailed, ChromiumDatasetQuery,
-    SavedChromiumDatasetRecord, SimpleChromiumDatasetQuery,
+    ChromiumDatasetCompact, ChromiumDatasetDetailed, ChromiumDatasetQuery, SimpleChromiumDatasetQuery,
 };
 
 use crate::{

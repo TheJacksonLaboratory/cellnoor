@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 
-use cellnoor_types::{
-    Relation, chromium_dataset::ChromiumDatasetParsedFileData, nonempty::NonemptyString,
-};
+use cellnoor_types::{Relation, chromium_dataset::ChromiumDatasetParsedFileData};
 use csvranger::TenxCsvValue;
 use uuid::Uuid;
 
@@ -178,14 +176,14 @@ pub(in super::super) fn parse_csv(
 mod tests {
     use pretty_assertions::assert_eq;
 
-    use super::{NonemptyString, StagedFile, UploadPath, write_files_to_db};
+    use super::{StagedFile, UploadPath, write_files_to_db};
     use crate::{
         db::Sql,
         handlers::{
             chromium_datasets::create::insert_test_chromium_dataset,
             chromium_runs::create::TestChromiumRunKind,
         },
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

@@ -1,21 +1,11 @@
-use aide::{
-    OperationOutput,
-    generate::GenContext,
-    openapi::{Operation, Response as OpenApiResponse, StatusCode as OpenApiStatusCode},
-};
 #[cfg(any(test, feature = "dev"))]
 use axum::{
     body::Body,
     extract::{DefaultBodyLimit, FromRequest},
     http::{HeaderMap, HeaderValue, Request},
 };
-use axum::{
-    extract::{Multipart, Path, State, multipart::MultipartError},
-    http::StatusCode,
-    response::{IntoResponse, Response},
-};
+use axum::extract::{Multipart, Path, State};
 use camino::Utf8Path;
-use cellnoor_types::nonempty::NonemptyString;
 #[cfg(any(test, feature = "dev"))]
 use reqwest::{
     header::CONTENT_TYPE,
@@ -25,15 +15,13 @@ use uuid::Uuid;
 
 use crate::{
     auth::AuthUser,
-    db::{self, DbError, Pool, Sql},
-    error::error_response,
+    db::Pool,
     handlers::{
         IdParam,
         chromium_datasets::{
             dataset_directory::FinalDirectory,
             upload_files::{stage_files::StagedUpload, write_to_db::write_files_to_db},
         },
-        specific_error_inferred_early_responses,
     },
     state::AppState,
 };
@@ -191,7 +179,7 @@ pub async fn write_test_dataset_files(
 mod tests {
     use camino::Utf8Path;
     use pretty_assertions::assert_eq;
-    use tempfile::{TempDir, tempdir};
+    use tempfile::tempdir;
 
     use crate::{
         handlers::{

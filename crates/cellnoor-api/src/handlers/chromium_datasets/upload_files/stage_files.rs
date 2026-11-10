@@ -1,8 +1,8 @@
-use std::{fs::File, io};
+use std::io;
 
 use axum::extract::{Multipart, multipart::Field};
 use camino::{Utf8Path, Utf8PathBuf};
-use cellnoor_types::{chromium_dataset::ChromiumDatasetParsedFileData, nonempty::NonemptyString};
+use cellnoor_types::chromium_dataset::ChromiumDatasetParsedFileData;
 use tokio::io::AsyncWriteExt;
 
 use crate::handlers::chromium_datasets::{

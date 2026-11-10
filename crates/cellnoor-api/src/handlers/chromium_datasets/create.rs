@@ -219,13 +219,12 @@ pub mod test {
 
     use super::insert_test_chromium_dataset;
     use crate::{
-        db::DbError,
         handlers::{
             chromium_datasets::create::{CreateChromiumDatasetError, insert_chromium_dataset},
             chromium_runs::create::TestChromiumRunKind,
             libraries::create::insert_test_library,
         },
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
+        state::dev_util::db_client_as_admin,
     };
 
     #[tokio::test(flavor = "multi_thread")]

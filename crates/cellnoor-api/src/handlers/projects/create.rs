@@ -83,13 +83,10 @@ where
 #[cfg(test)]
 pub mod test {
 
-    use pretty_assertions::assert_eq;
+    
 
     use super::insert_test_project;
-    use crate::{
-        db::DbError,
-        state::dev_util::{ToNonemptyString, db_client_as_admin},
-    };
+    use crate::state::dev_util::db_client_as_admin;
 
     #[tokio::test(flavor = "multi_thread")]
     async fn insert() {

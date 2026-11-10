@@ -1,10 +1,9 @@
 use std::{
-    fs::{self, File, FileType},
+    fs::{self, File},
     io,
 };
 
 use camino::{Utf8Path, Utf8PathBuf};
-use cellnoor_types::nonempty::NonemptyString;
 use tempfile::TempDir;
 use uuid::Uuid;
 
