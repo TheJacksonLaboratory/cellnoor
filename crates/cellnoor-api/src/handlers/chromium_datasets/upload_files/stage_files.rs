@@ -132,13 +132,13 @@ async fn write_csv_or_json_to_disk(
     Ok((FileHash::new(hash), parsed_file))
 }
 
-#[derive(Debug, Clone, Copy, postgres_types::ToSql, postgres_types::FromSql)]
+#[derive(Debug, Clone, postgres_types::ToSql, postgres_types::FromSql)]
 #[postgres(transparent)]
-pub(super) struct FileHash(i64);
+pub(super) struct FileHash(String);
 
 impl FileHash {
     pub(super) fn new(hash: u64) -> Self {
-        Self(hash as i64)
+        Self(hash.to_string())
     }
 }
 

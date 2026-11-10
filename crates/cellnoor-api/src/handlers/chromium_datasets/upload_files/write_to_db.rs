@@ -77,7 +77,7 @@ async fn insert_raw_files(
         .map(|staged_file| NewRawFile {
             dataset_id,
             path: &staged_file.path_relative_to_dataset_directory,
-            hash: staged_file.hash,
+            hash: &staged_file.hash,
         })
         .collect();
 
@@ -87,7 +87,7 @@ async fn insert_raw_files(
 struct NewRawFile<'a> {
     dataset_id: Uuid,
     path: &'a UploadPath,
-    hash: FileHash,
+    hash: &'a FileHash,
 }
 
 impl Relation for NewRawFile<'_> {
