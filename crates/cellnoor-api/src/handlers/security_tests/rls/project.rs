@@ -1,7 +1,10 @@
 use cellnoor_types::{
     operator::UuidOperator,
     permission::{Action, Resource},
-    project::{NewProject, ProjectDetailed, ProjectPredicate, ProjectQuery, ProjectSimpleFields},
+    project::{
+        NewProject, ProjectActivePeriod, ProjectDetailed, ProjectPredicate, ProjectQuery,
+        ProjectSimpleFields,
+    },
 };
 use jiff::Timestamp;
 use pretty_assertions::assert_eq;
@@ -43,8 +46,10 @@ pub async fn create_project_as(creator_id: Uuid, members: Vec<Uuid>) -> ProjectD
         &NewProject {
             simple: ProjectSimpleFields {
                 name: crate::db::dummy_data::random_name_for("project"),
-                started_at: Timestamp::now(),
-                ended_at: None,
+                active_period: ProjectActivePeriod {
+                    started_at: Timestamp::now(),
+                    ended_at: None,
+                },
             },
             members,
         },

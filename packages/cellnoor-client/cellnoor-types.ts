@@ -7737,6 +7737,12 @@ export interface components {
             additional_data?: unknown;
             embedded_in?: components["schemas"]["BlockEmbeddingMatrix"] | null;
             fixative?: components["schemas"]["Fixative"] | null;
+            /** Format: date-time */
+            given_at?: string | null;
+            /** Format: uuid */
+            given_by?: string | null;
+            /** Format: uuid */
+            given_to?: string | null;
             host_species?: components["schemas"]["Species"] | null;
             /** Format: uuid */
             id: string;
@@ -7756,10 +7762,6 @@ export interface components {
             readable_id: string;
             /** Format: date-time */
             received_or_created_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
             species: components["schemas"]["Species"];
             /** Format: uuid */
             submitted_by?: string | null;
@@ -8373,12 +8375,9 @@ export interface components {
             permissions_to_grant: components["schemas"]["Permission"][];
         };
         NewProject: {
-            /** Format: date-time */
-            ended_at?: string | null;
+            active_period: components["schemas"]["ProjectActivePeriod"];
             members: string[];
             name: string;
-            /** Format: date-time */
-            started_at: string;
         };
         NewSingleIndexSet: [
             string,
@@ -8391,10 +8390,7 @@ export interface components {
             readable_id: string;
             /** Format: date-time */
             received_or_created_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
+            transfer?: components["schemas"]["SpecimenTransfer"] | null;
         } & (({
             host_species?: components["schemas"]["Species"] | null;
             /** @constant */
@@ -8699,25 +8695,27 @@ export interface components {
         } | {
             suspensions: string[];
         };
-        ProjectCompact: {
-            /** Format: uuid */
-            created_by: string;
+        ProjectActivePeriod: {
             /** Format: date-time */
             ended_at?: string | null;
+            /** Format: date-time */
+            started_at: string;
+        };
+        ProjectCompact: {
+            active_period: components["schemas"]["ProjectActivePeriod"];
+            /** Format: uuid */
+            created_by: string;
             /** Format: uuid */
             id: string;
             links: {
                 self: string;
             };
             name: string;
-            /** Format: date-time */
-            started_at: string;
         };
         ProjectDetailed: {
+            active_period: components["schemas"]["ProjectActivePeriod"];
             /** Format: uuid */
             created_by: string;
-            /** Format: date-time */
-            ended_at?: string | null;
             /** Format: uuid */
             id: string;
             links: {
@@ -8725,8 +8723,6 @@ export interface components {
             };
             members: string[];
             name: string;
-            /** Format: date-time */
-            started_at: string;
         };
         /**
          * @description Auto-generated discriminant enum variants
@@ -8766,11 +8762,8 @@ export interface components {
             order_by?: components["schemas"]["OrderByProjectFieldSet"];
         };
         ProjectSimpleFields: {
-            /** Format: date-time */
-            ended_at?: string | null;
+            active_period: components["schemas"]["ProjectActivePeriod"];
             name: string;
-            /** Format: date-time */
-            started_at: string;
         };
         RemovePreparersError: {
             /** @constant */
@@ -8830,6 +8823,12 @@ export interface components {
             additional_data?: unknown;
             embedded_in?: components["schemas"]["BlockEmbeddingMatrix"] | null;
             fixative?: components["schemas"]["Fixative"] | null;
+            /** Format: date-time */
+            given_at?: string | null;
+            /** Format: uuid */
+            given_by?: string | null;
+            /** Format: uuid */
+            given_to?: string | null;
             host_species?: components["schemas"]["Species"] | null;
             /** Format: uuid */
             id: string;
@@ -8844,10 +8843,6 @@ export interface components {
             readable_id: string;
             /** Format: date-time */
             received_or_created_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
             species: components["schemas"]["Species"];
             /** Format: uuid */
             submitted_by?: string | null;
@@ -8860,6 +8855,12 @@ export interface components {
             ancestors: components["schemas"]["SpecimenCompact"][];
             embedded_in?: components["schemas"]["BlockEmbeddingMatrix"] | null;
             fixative?: components["schemas"]["Fixative"] | null;
+            /** Format: date-time */
+            given_at?: string | null;
+            /** Format: uuid */
+            given_by?: string | null;
+            /** Format: uuid */
+            given_to?: string | null;
             host_species?: components["schemas"]["Species"] | null;
             /** Format: uuid */
             id: string;
@@ -8876,10 +8877,6 @@ export interface components {
             readable_id: string;
             /** Format: date-time */
             received_or_created_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
             species: components["schemas"]["Species"];
             /** Format: uuid */
             submitted_by?: string | null;
@@ -8891,7 +8888,7 @@ export interface components {
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
-        SpecimenField: "id" | "readable_id" | "name" | "submitted_by" | "project_id" | "received_or_created_at" | "parent_specimen_id" | "species" | "host_species" | "returned_at" | "returned_by" | "type" | "embedded_in" | "fixative" | "thermal_preservation_method" | "tissue" | "additional_data";
+        SpecimenField: "id" | "readable_id" | "name" | "submitted_by" | "project_id" | "received_or_created_at" | "parent_specimen_id" | "species" | "host_species" | "given_at" | "given_by" | "given_to" | "type" | "embedded_in" | "fixative" | "thermal_preservation_method" | "tissue" | "additional_data";
         SpecimenMeasurement: {
             data: components["schemas"]["SpecimenMeasurementData"];
             /** Format: uuid */
@@ -8935,9 +8932,11 @@ export interface components {
         } | {
             host_species: components["schemas"]["SpeciesOperator"];
         } | {
-            returned_at: components["schemas"]["TimestampOperator"];
+            given_at: components["schemas"]["TimestampOperator"];
         } | {
-            returned_by: components["schemas"]["UuidOperator"];
+            given_by: components["schemas"]["UuidOperator"];
+        } | {
+            given_to: components["schemas"]["UuidOperator"];
         } | {
             type: components["schemas"]["SpecimenTypeOperator"];
         } | {
@@ -8978,10 +8977,7 @@ export interface components {
             readable_id: string;
             /** Format: date-time */
             received_or_created_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
+            transfer?: components["schemas"]["SpecimenTransfer"] | null;
         } & (({
             host_species?: components["schemas"]["Species"] | null;
             /** @constant */
@@ -9014,6 +9010,14 @@ export interface components {
             /** @constant */
             type: "tissue";
         } & components["schemas"]["TissueFields"])));
+        SpecimenTransfer: {
+            /** Format: date-time */
+            given_at: string;
+            /** Format: uuid */
+            given_by: string;
+            /** Format: uuid */
+            given_to: string;
+        };
         /**
          * @description Auto-generated discriminant enum variants
          * @enum {string}
@@ -9324,6 +9328,12 @@ export interface components {
             additional_data?: unknown;
             embedded_in?: components["schemas"]["BlockEmbeddingMatrix"] | null;
             fixative?: components["schemas"]["Fixative"] | null;
+            /** Format: date-time */
+            given_at?: string | null;
+            /** Format: uuid */
+            given_by?: string | null;
+            /** Format: uuid */
+            given_to?: string | null;
             host_species?: components["schemas"]["Species"] | null;
             /** Format: uuid */
             id: string;
@@ -9340,10 +9350,6 @@ export interface components {
             readable_id: string;
             /** Format: date-time */
             received_or_created_at: string;
-            /** Format: date-time */
-            returned_at?: string | null;
-            /** Format: uuid */
-            returned_by?: string | null;
             species: components["schemas"]["Species"];
             /** Format: uuid */
             submitted_by?: string | null;
@@ -9721,6 +9727,7 @@ export type PersonWithPermissions = components['schemas']['PersonWithPermissions
 export type Picogram = components['schemas']['Picogram'];
 export type PicogramConcentration = components['schemas']['PicogramConcentration'];
 export type PooledSuspensions = components['schemas']['PooledSuspensions'];
+export type ProjectActivePeriod = components['schemas']['ProjectActivePeriod'];
 export type ProjectCompact = components['schemas']['ProjectCompact'];
 export type ProjectDetailed = components['schemas']['ProjectDetailed'];
 export type ProjectField = components['schemas']['ProjectField'];
@@ -9744,6 +9751,7 @@ export type SpecimenPredicate = components['schemas']['SpecimenPredicate'];
 export type SpecimenPredicateFilter = components['schemas']['SpecimenPredicateFilter'];
 export type SpecimenPredicateQuery = components['schemas']['SpecimenPredicateQuery'];
 export type SpecimenSimpleFields = components['schemas']['SpecimenSimpleFields'];
+export type SpecimenTransfer = components['schemas']['SpecimenTransfer'];
 export type SpecimenType = components['schemas']['SpecimenType'];
 export type SpecimenTypeOperator = components['schemas']['SpecimenTypeOperator'];
 export type StringOperator = components['schemas']['stringOperator'];
@@ -9821,7 +9829,7 @@ export const projectFieldValues: ReadonlyArray<FlattenedDeepRequired<components>
 export const resourceValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Resource"]> = ["institution", "person", "account", "project", "specimen", "assay_constant_data", "chromium_experimental_data", "chromium_dataset"];
 export const sampleMultiplexingValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SampleMultiplexing"]> = ["cellplex", "flex_barcode", "flex_oligonucleotide_barcode", "hashtag", "on_chip_multiplexing", "singleplex"];
 export const speciesValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Species"]> = ["ambystoma_mexicanum", "canis_familiaris", "callithrix_jacchus", "drosophila_melanogaster", "gasterosteus_aculeatus", "homo_sapiens", "mus_musculus", "rattus_norvegicus", "sminthopsis_crassicaudata"];
-export const specimenFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SpecimenField"]> = ["id", "readable_id", "name", "submitted_by", "project_id", "received_or_created_at", "parent_specimen_id", "species", "host_species", "returned_at", "returned_by", "type", "embedded_in", "fixative", "thermal_preservation_method", "tissue", "additional_data"];
+export const specimenFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SpecimenField"]> = ["id", "readable_id", "name", "submitted_by", "project_id", "received_or_created_at", "parent_specimen_id", "species", "host_species", "given_at", "given_by", "given_to", "type", "embedded_in", "fixative", "thermal_preservation_method", "tissue", "additional_data"];
 export const specimenTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SpecimenType"]> = ["block", "cell_pellet", "rna_extract", "suspension", "tissue"];
 export const suspensionContentValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SuspensionContent"]> = ["cells", "nuclei"];
 export const suspensionFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["SuspensionField"]> = ["id", "readable_id", "specimen_id", "content", "created_at", "lysis_duration_minutes", "target_cell_recovery", "additional_data"];

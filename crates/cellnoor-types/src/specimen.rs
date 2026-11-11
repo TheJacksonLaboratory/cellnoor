@@ -39,8 +39,9 @@ mod record {
 
     use crate::{
         nonempty::NonemptyString,
+        project::ProjectActivePeriod,
         specimen::{
-            Fixative, Species, SpecimenType, ThermalPreservationMethod,
+            Fixative, SpecimenSpecies, SpecimenType, ThermalPreservationMethod,
             creation::block::BlockEmbeddingMatrix,
         },
     };
@@ -55,17 +56,16 @@ mod record {
         pub submitted_by: Option<Uuid>,
         pub project_id: Uuid,
         #[cfg_attr(feature = "serde", serde(skip))]
-        pub project_started_at: Timestamp,
-        #[cfg_attr(feature = "serde", serde(skip))]
-        pub project_ended_at: Option<Timestamp>,
+        pub project_active_period: ProjectActivePeriod,
         pub received_or_created_at: Timestamp,
         pub parent_specimen_id: Option<Uuid>,
         #[cfg_attr(feature = "serde", serde(skip))]
         pub parent_specimen_received_or_created_at: Option<Timestamp>,
-        pub species: Species,
-        pub host_species: Option<Species>,
-        pub returned_at: Option<Timestamp>,
-        pub returned_by: Option<Uuid>,
+        #[cfg_attr(feature = "serde", serde(flatten))]
+        pub species: SpecimenSpecies,
+        pub given_at: Option<Timestamp>,
+        pub given_by: Option<Uuid>,
+        pub given_to: Option<Uuid>,
         #[cfg_attr(feature = "postgres-types", postgres(name = "type"))]
         pub type_: SpecimenType,
         pub embedded_in: Option<BlockEmbeddingMatrix>,
@@ -74,6 +74,14 @@ mod record {
         pub tissue: NonemptyString,
         pub additional_data: Option<serde_json::Value>,
     }
+}
+
+#[select]
+#[derive(Copy)]
+#[cfg_attr(feature = "postgres-types", postgres(name = "specimen_species"))]
+pub struct SpecimenSpecies {
+    pub species: Species,
+    pub host_species: Option<Species>,
 }
 
 #[unit_enum]
