@@ -2,8 +2,8 @@ use cellnoor_types::{
     operator::UuidOperator,
     permission::{Action, Resource},
     project::{
-        NewProject, ProjectActivePeriod, ProjectDetailed,
-        ProjectPredicate, ProjectQuery, ProjectSimpleFields,
+        NewProject, ProjectActivePeriod, ProjectDetailed, ProjectPredicate, ProjectQuery,
+        ProjectSimpleFields,
     },
 };
 use jiff::Timestamp;

@@ -1,7 +1,6 @@
 use axum::{Json, extract::State};
 use cellnoor_types::project::{
-    NewProject, ProjectActivePeriod, ProjectDetailed, ProjectField,
-    ProjectSimpleFields,
+    NewProject, ProjectActivePeriod, ProjectDetailed, ProjectField, ProjectSimpleFields,
 };
 
 use crate::{
