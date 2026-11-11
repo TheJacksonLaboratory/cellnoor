@@ -4,6 +4,8 @@ updates:
     directory: ./crates
     schedule:
       interval: daily
+    cooldown:
+      default-days: 1
     groups:
       all-rust-dependencies:
         patterns:
@@ -12,10 +14,9 @@ updates:
   - package-ecosystem: bun
     schedule:
       interval: daily
-    directories:
-      - ./packages/cellnoor-ui
-      - ./packages/cellnoor-auth
-      - ./packages/cellnoor-client
+    directory: ./packages
+    cooldown:
+      default-days: 1
     groups:
       all-bun-dependencies:
         patterns:
