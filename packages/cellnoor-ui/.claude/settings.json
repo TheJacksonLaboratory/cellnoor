@@ -1,14 +1,14 @@
 {
-  "enabledPlugins": {
-    "svelte@svelte": true,
-    "frontend-design@anthropic-plugin-directory": true
-  },
-  "extraKnownMarketplaces": {
-    "svelte": {
-      "source": {
-        "source": "github",
-        "repo": "sveltejs/ai-tools"
-      }
-    }
-  }
+	"enabledPlugins": {
+		"svelte@svelte": true,
+		"frontend-design@anthropic-plugin-directory": true
+	},
+	"extraKnownMarketplaces": {
+		"svelte": {
+			"source": {
+				"source": "github",
+				"repo": "sveltejs/ai-tools"
+			}
+		}
+	}
 }
