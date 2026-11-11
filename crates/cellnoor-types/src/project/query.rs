@@ -12,7 +12,11 @@ pub enum ProjectPredicate {
     Id(UuidOperator),
     Name(StringOperator),
     CreatedBy(UuidOperator),
+    #[strum(serialize = "active_period.started_at")]
+    #[strum_discriminants(strum(serialize = "active_period.started_at"))]
     StartedAt(TimestampOperator),
+    #[strum(serialize = "active_period.ended_at")]
+    #[strum_discriminants(strum(serialize = "active_period.ended_at"))]
     EndedAt(TimestampOperator),
 }
 

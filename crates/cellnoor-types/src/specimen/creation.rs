@@ -26,13 +26,20 @@ pub struct SpecimenSimpleFields {
     pub readable_id: NonemptyString,
     pub name: NonemptyString,
     pub received_or_created_at: Timestamp,
-    pub returned_at: Option<Timestamp>,
-    pub returned_by: Option<Uuid>,
+    pub transfer: Option<SpecimenTransfer>,
     pub additional_data: Option<serde_json::Value>,
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub origin: SpecimenOrigin,
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub variable_fields: SpecimenVariableFields,
+}
+
+#[base_model]
+#[derive(Copy)]
+pub struct SpecimenTransfer {
+    pub given_at: Timestamp,
+    pub given_by: Uuid,
+    pub given_to: Uuid,
 }
 
 #[base_model]

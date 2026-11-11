@@ -7,11 +7,18 @@ use crate::{Relation, nonempty::NonemptyString, simple_links::SimpleLinks};
 
 mod query;
 
+#[select]
+#[derive(Copy, Default)]
+#[cfg_attr(feature = "postgres-types", postgres(name = "project_active_period"))]
+pub struct ProjectActivePeriod {
+    pub started_at: Timestamp,
+    pub ended_at: Option<Timestamp>,
+}
+
 #[base_model]
 pub struct ProjectSimpleFields {
     pub name: NonemptyString,
-    pub started_at: Timestamp,
-    pub ended_at: Option<Timestamp>,
+    pub active_period: ProjectActivePeriod,
 }
 
 impl Relation for ProjectSimpleFields {
@@ -33,8 +40,7 @@ pub struct SavedProjectRecord {
     pub id: Uuid,
     pub name: NonemptyString,
     pub created_by: Uuid,
-    pub started_at: Timestamp,
-    pub ended_at: Option<Timestamp>,
+    pub active_period: ProjectActivePeriod,
 }
 
 impl Relation for SavedProjectRecord {

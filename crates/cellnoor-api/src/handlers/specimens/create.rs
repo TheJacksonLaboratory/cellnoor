@@ -52,8 +52,9 @@ pub(super) struct NewSpecimenRecord {
     pub name: NonemptyString,
     pub origin: SpecimenOrigin,
     pub received_or_created_at: Timestamp,
-    pub returned_at: Option<Timestamp>,
-    pub returned_by: Option<Uuid>,
+    pub given_at: Option<Timestamp>,
+    pub given_by: Option<Uuid>,
+    pub given_to: Option<Uuid>,
     pub type_: SpecimenType,
     pub embedded_in: Option<BlockEmbeddingMatrix>,
     pub fixative: Option<Fixative>,
@@ -76,8 +77,9 @@ impl Insert for NewSpecimenRecord {
             name,
             origin,
             received_or_created_at,
-            returned_by,
-            returned_at,
+            given_at,
+            given_by,
+            given_to,
             additional_data,
             type_,
             embedded_in,
@@ -89,8 +91,9 @@ impl Insert for NewSpecimenRecord {
             (ReadableId, readable_id),
             (Name, name),
             (ReceivedOrCreatedAt, received_or_created_at),
-            (ReturnedBy, returned_by),
-            (ReturnedAt, returned_at),
+            (GivenAt, given_at),
+            (GivenBy, given_by),
+            (GivenTo, given_to),
             (AdditionalData, additional_data),
             (Type, type_),
             (EmbeddedIn, embedded_in),
@@ -162,8 +165,7 @@ where
             readable_id: crate::db::dummy_data::random_name_for("26SP"),
             name: crate::db::dummy_data::random_name_for("specimen"),
             received_or_created_at: Timestamp::now(),
-            returned_by: None,
-            returned_at: None,
+            transfer: None,
             additional_data: None,
             origin: SpecimenOrigin::Primary {
                 submitted_by: members[0],
@@ -257,18 +259,8 @@ pub mod test {
         let (parent, child) = (parent.record, child.record);
         assert_eq!(child.submitted_by, None);
         assert_eq!(
-            (
-                child.project_id,
-                child.species,
-                child.host_species,
-                child.tissue
-            ),
-            (
-                parent.project_id,
-                parent.species,
-                parent.host_species,
-                parent.tissue
-            )
+            (child.project_id, child.species, child.tissue),
+            (parent.project_id, parent.species, parent.tissue)
         );
     }
 }

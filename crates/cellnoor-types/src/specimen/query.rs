@@ -25,10 +25,15 @@ pub enum SpecimenPredicate {
     ProjectId(UuidOperator),
     ReceivedOrCreatedAt(TimestampOperator),
     ParentSpecimenId(UuidOperator),
+    #[strum(serialize = "species.species")]
+    #[strum_discriminants(strum(serialize = "species.species"))]
     Species(SpeciesOperator),
+    #[strum(serialize = "species.host_species")]
+    #[strum_discriminants(strum(serialize = "species.host_species"))]
     HostSpecies(SpeciesOperator),
-    ReturnedAt(TimestampOperator),
-    ReturnedBy(UuidOperator),
+    GivenAt(TimestampOperator),
+    GivenBy(UuidOperator),
+    GivenTo(UuidOperator),
     Type(SpecimenTypeOperator),
     EmbeddedIn(BlockEmbeddingMatrixOperator),
     Fixative(FixativeOperator),

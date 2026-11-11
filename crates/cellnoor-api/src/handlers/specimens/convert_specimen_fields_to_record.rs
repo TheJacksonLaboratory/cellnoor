@@ -1,7 +1,7 @@
 use cellnoor_types::specimen::{
     Fixative, ThermalPreservationMethod,
     creation::{
-        SpecimenSimpleFields, SpecimenVariableFields, block::BlockFields,
+        SpecimenSimpleFields, SpecimenTransfer, SpecimenVariableFields, block::BlockFields,
         suspension::SuspensionSpecimenFields, tissue::TissueFields,
     },
 };
@@ -13,14 +13,22 @@ pub fn convert_specimen_fields_to_record(
         readable_id,
         name,
         received_or_created_at,
-        returned_at,
-        returned_by,
+        transfer,
         additional_data,
         origin,
         variable_fields,
     }: SpecimenSimpleFields,
 ) -> NewSpecimenRecord {
     let type_ = variable_fields.into();
+
+    let (given_at, given_by, given_to) = match transfer {
+        Some(SpecimenTransfer {
+            given_at,
+            given_by,
+            given_to,
+        }) => (Some(given_at), Some(given_by), Some(given_to)),
+        None => (None, None, None),
+    };
 
     let embedded_in = match variable_fields {
         SpecimenVariableFields::Block(b) => Some(b.into()),
@@ -76,8 +84,9 @@ pub fn convert_specimen_fields_to_record(
         name,
         origin,
         received_or_created_at,
-        returned_at,
-        returned_by,
+        given_at,
+        given_by,
+        given_to,
         additional_data,
         embedded_in,
         fixative,

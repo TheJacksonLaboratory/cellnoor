@@ -14,7 +14,9 @@ export async function load({ url }) {
 	}
 
 	const [projectList, tenxAssayList, personList, [currentUser]] = await Promise.all([
-		cellnoorClient.GET('/projects').then(unwrap),
+		cellnoorClient
+			.GET('/projects', { params: { query: { order_by_field: 'name', order_by_desc: false } } })
+			.then(unwrap),
 		cellnoorClient.GET('/10x-assays').then(unwrap),
 		cellnoorClient.GET('/people').then(unwrap),
 		cellnoorClient

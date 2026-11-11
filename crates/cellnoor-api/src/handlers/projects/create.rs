@@ -1,5 +1,8 @@
 use axum::{Json, extract::State};
-use cellnoor_types::project::{NewProject, ProjectDetailed, ProjectField, ProjectSimpleFields};
+use cellnoor_types::project::{
+    NewProject, ProjectActivePeriod, ProjectDetailed, ProjectField,
+    ProjectSimpleFields,
+};
 
 use crate::{
     auth::AuthUser,
@@ -38,8 +41,11 @@ impl Insert for ProjectSimpleFields {
 
         let Self {
             name,
-            started_at,
-            ended_at,
+            active_period:
+                ProjectActivePeriod {
+                    started_at,
+                    ended_at,
+                },
         } = self;
 
         vec![(Name, name), (StartedAt, started_at), (EndedAt, ended_at)]
@@ -67,8 +73,10 @@ where
     let mut new = NewProject {
         simple: ProjectSimpleFields {
             name: crate::db::dummy_data::random_name_for("project"),
-            started_at: Timestamp::now(),
-            ended_at: None,
+            active_period: ProjectActivePeriod {
+                started_at: Timestamp::now(),
+                ended_at: None,
+            },
         },
         members: vec![person_id],
     };
