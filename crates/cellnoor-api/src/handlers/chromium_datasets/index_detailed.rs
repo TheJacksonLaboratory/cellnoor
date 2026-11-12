@@ -136,20 +136,47 @@ fn extract_key_metrics_from_parsed_files(
     specimen_metrics
 }
 
+const ESTIMATED_NUMBER_OF_CELLS: &'static str = "Estimated number of cells";
+const MEAN_READS_PER_CELL: &'static str = "Mean reads per cell";
+const MEDIAN_GENES_PER_CELL: &'static str = "Median genes per cell";
+const NUMBER_OF_READS: &'static str = "Number of reads";
+const SEQUENCING_SATURATION: &'static str = "Sequencing saturation";
+const INTERGENIC_REGION_MAPPING_RATE: &'static str = "Intergenic region mapping rate";
+const INTRONIC_REGION_MAPPING_RATE: &'static str = "Intronic region mapping rate";
+const EXONIC_REGION_MAPPING_RATE: &'static str = "Exonic region mapping rate";
+const TRANSCRIPTOME_MAPPING_RATE: &'static str = "Transcriptome mapping rate";
+const FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS: &'static str =
+    "Fraction of transcriptomic reads in cells";
+const MEDIAN_UMI_COUNTS_PER_CELL: &'static str = "Median UMI counts per cell";
+const NUMBER_OF_READS_IN_CELLS: &'static str = "Number of reads in cells";
+
 static METRICS_RENAMING: phf::Map<&'static str, &'static str> = phf::phf_map! {
+    // These keys come from cellranger count's metrics_summary.csv
+    "Estimated Number of Cells" => ESTIMATED_NUMBER_OF_CELLS,
+    "Mean Reads per Cell" => MEAN_READS_PER_CELL,
+    "Median Genes per Cell" => MEDIAN_GENES_PER_CELL,
+    "Number of Reads" => NUMBER_OF_READS,
+    "Sequencing Saturation" => SEQUENCING_SATURATION,
+    "Reads Mapped Confidently to Intergenic Regions" => INTERGENIC_REGION_MAPPING_RATE,
+    "Reads Mapped Confidently to Intronic Regions"	=> INTRONIC_REGION_MAPPING_RATE,
+    "Reads Mapped Confidently to Exonic Regions" => EXONIC_REGION_MAPPING_RATE,
+    "Reads Mapped Confidently to Transcriptome" => TRANSCRIPTOME_MAPPING_RATE,
+    "Fraction Reads in Cells" => FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS,
+    "Median UMI Counts per Cell" => MEDIAN_UMI_COUNTS_PER_CELL,
+
     // These keys come from cellranger multi's per_sample_outs/*/metrics_summary.csv
-    "Cells per OCM barcode" => "Estimated number of cells",
-    "Cells per probe barcode" => "Estimated number of cells",
+    "Cells per OCM barcode" => ESTIMATED_NUMBER_OF_CELLS,
+    "Cells per probe barcode" => ESTIMATED_NUMBER_OF_CELLS,
 
     // These come from qc_sample_metrics.csv in a gene expression or multiome assay
-    "GEX: Median genes per cell" => "Median genes per cell",
-    "GEX: Median UMI counts per cell" => "Median UMI counts per cell",
-    "GEX: Confidently mapped to transcriptome" => "Transcriptome mapping rate",
-    "GEX: Confidently mapped to exonic regions" => "Exonic region mapping rate",
-    "GEX: Confidently mapped to intronic regions" => "Intronic region mapping rate",
-    "GEX: Confidently mapped to intergenic regions" => "Intergenic region mapping rate",
-    "GEX: Confidently mapped reads in cells" => "Fraction of transcriptomic reads in cells",
-    "GEX: Number of reads in cells" => "Number of reads in cells"
+    "GEX: Median genes per cell" => MEDIAN_GENES_PER_CELL,
+    "GEX: Median UMI counts per cell" => MEDIAN_UMI_COUNTS_PER_CELL,
+    "GEX: Confidently mapped to transcriptome" => TRANSCRIPTOME_MAPPING_RATE,
+    "GEX: Confidently mapped to exonic regions" => EXONIC_REGION_MAPPING_RATE,
+    "GEX: Confidently mapped to intronic regions" => INTRONIC_REGION_MAPPING_RATE,
+    "GEX: Confidently mapped to intergenic regions" => INTERGENIC_REGION_MAPPING_RATE,
+    "GEX: Confidently mapped reads in cells" => FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS,
+    "GEX: Number of reads in cells" => NUMBER_OF_READS_IN_CELLS
 };
 
 fn insert_key_metrics_from_multi_row_csv<'a>(
