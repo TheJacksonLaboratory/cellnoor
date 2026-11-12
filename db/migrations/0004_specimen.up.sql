@@ -1,19 +1,22 @@
+-- As with `project_active_period`, the nullable `host_species` is grouped with `species` so that the foreign key to the
+-- parent specimen is checked even when `host_species` is null
+create type specimen_species as (species case_insensitive_text, host_species case_insensitive_text);
+
 create table specimen (
     id uuid primary key default uuidv7(),
     readable_id case_insensitive_text unique not null,
     name case_insensitive_text not null,
     submitted_by uuid references person,
     project_id uuid not null,
-    -- We denormalize the project start and end so we can constrain received_or_created_at
-    project_started_at timestamptz not null,
-    project_ended_at timestamptz,
+    -- We denormalize the project's active period so we can constrain received_or_created_at
+    project_active_period project_active_period not null,
     received_or_created_at timestamptz not null,
     parent_specimen_id uuid,
     parent_specimen_received_or_created_at timestamptz,
-    species case_insensitive_text not null,
-    host_species case_insensitive_text,
-    returned_at timestamptz,
-    returned_by uuid references person,
+    species specimen_species not null,
+    given_at timestamptz,
+    given_by uuid references person,
+    given_to uuid references person,
     type case_insensitive_text not null,
     embedded_in case_insensitive_text,
     fixative case_insensitive_text,
@@ -23,37 +26,31 @@ create table specimen (
 
     unique (id, received_or_created_at),
     unique (id, project_id, species, tissue),
-    unique (id, host_species),
-    foreign key (project_id, project_started_at, project_ended_at) references project (
-        id, started_at, ended_at
-    ) on update cascade,
+    foreign key (project_id, project_active_period) references project (id, active_period) on update cascade,
     foreign key (parent_specimen_id, parent_specimen_received_or_created_at) references specimen (
         id, received_or_created_at
     ) match full on update cascade,
     foreign key (parent_specimen_id, project_id, species, tissue) references specimen (
         id, project_id, species, tissue
     ) on update cascade,
-    -- A child with a null `host_species` is not checked against its parent, because `match simple` skips any row with a
-    -- null column
-    foreign key (parent_specimen_id, host_species) references specimen (id, host_species) on update cascade,
 
     constraint only_primary_has_submitter check ((parent_specimen_id is null) != (submitted_by is null)),
 
-    constraint received_after_project_start check (received_or_created_at >= project_started_at),
-    constraint received_before_project_end check (received_or_created_at <= project_ended_at),
-    constraint received_before_returned check (received_or_created_at < returned_at),
+    constraint received_after_project_start check (received_or_created_at >= (project_active_period).started_at),
+    constraint received_before_project_end check (received_or_created_at <= (project_active_period).ended_at),
+    constraint received_before_given check (received_or_created_at < given_at),
 
     constraint created_after_parent check (parent_specimen_received_or_created_at < received_or_created_at),
 
-    constraint return_is_fully_specified check ((returned_by is null) = (returned_at is null)),
-    constraint host_species_different_from_donor_species check (species != host_species)
+    constraint given_is_fully_specified check (num_nulls(given_at, given_by, given_to) in (0, 3)),
+    constraint species_not_null check ((species).species is not null),
+    constraint host_species_different_from_donor_species check ((species).species != (species).host_species)
 );
 
 -- To prevent polluting application-code, we write a trigger that populates a specimens's project's start and end
 create function populate_specimen_project_timestamps() returns trigger language plpgsql as $$
     begin
-        select started_at, ended_at into new.project_started_at, new.project_ended_at
-        from project where id = new.project_id;
+        select active_period into new.project_active_period from project where id = new.project_id;
 
         return new;
     end;
@@ -72,18 +69,14 @@ create function populate_specimen_inherited_fields() returns trigger language pl
         select
             received_or_created_at,
             project_id,
-            project_started_at,
-            project_ended_at,
+            project_active_period,
             species,
-            host_species,
             tissue
         into
             new.parent_specimen_received_or_created_at,
             new.project_id,
-            new.project_started_at,
-            new.project_ended_at,
+            new.project_active_period,
             new.species,
-            new.host_species,
             new.tissue
         from specimen where id = new.parent_specimen_id;
 

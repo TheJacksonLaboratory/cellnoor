@@ -30,8 +30,8 @@ create index api_key_expires_at_idx on api_key (expires_at);
 
 create index project_name_trgm_idx on project using gin (name gin_trgm_ops);
 create index project_created_by_idx on project (created_by);
-create index project_started_at_idx on project (started_at);
-create index project_ended_at_idx on project (ended_at);
+create index project_started_at_idx on project (((active_period).started_at));
+create index project_ended_at_idx on project (((active_period).ended_at));
 
 create index project_access_principal_id_idx on project_access (principal_id);
 
@@ -42,10 +42,11 @@ create index specimen_submitted_by_idx on specimen (submitted_by);
 create index specimen_project_id_idx on specimen (project_id);
 create index specimen_received_or_created_at_idx on specimen (received_or_created_at);
 create index specimen_parent_specimen_id_idx on specimen (parent_specimen_id);
-create index specimen_species_idx on specimen (species);
-create index specimen_host_species_idx on specimen (host_species);
-create index specimen_returned_at_idx on specimen (returned_at);
-create index specimen_returned_by_idx on specimen (returned_by);
+create index specimen_species_idx on specimen (((species).species));
+create index specimen_host_species_idx on specimen (((species).host_species));
+create index specimen_given_at_idx on specimen (given_at);
+create index specimen_given_by_idx on specimen (given_by);
+create index specimen_given_to_idx on specimen (given_to);
 create index specimen_type_idx on specimen (type);
 create index specimen_embedded_in_idx on specimen (embedded_in);
 create index specimen_fixative_idx on specimen (fixative);
