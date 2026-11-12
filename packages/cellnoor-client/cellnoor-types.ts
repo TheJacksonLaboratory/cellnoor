@@ -8500,11 +8500,11 @@ export interface components {
                 number
             ];
             /** @constant */
-            type: "Electrophoretic";
+            type: "electrophoretic";
         } | {
             concentration: components["schemas"]["NanogramConcentration"];
             /** @constant */
-            type: "Fluorometric";
+            type: "fluorometric";
         });
         /** @enum {string} */
         OcmBarcodeId: "OB1" | "OB2" | "OB3" | "OB4";
