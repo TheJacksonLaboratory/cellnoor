@@ -216,13 +216,15 @@ fn insert_key_metrics_from_multi_row_csv<'a>(
                 TenxCsvValue::String(bc) if !bc.is_empty() => Some(bc.as_str()),
                 _ => None,
             })
-            .unwrap_or("specimen");
+            .unwrap_or(PSEUDO_BARCODE);
 
         let specimen_metrics = renamed_specimen_metrics
             .entry(barcode)
             .or_insert_with(|| HashMap::with_capacity(32));
 
-        specimen_metrics.extend(extract_renamed_metrics_from_qc_sample_metrics_row(csv_row));
+        specimen_metrics.extend(
+            extract_renamed_metrics_from_nonmultiplexed_row_or_qc_sample_metrics_row(csv_row),
+        );
         if let Some((metric_name, metric_value)) =
             extract_renamed_metric_from_multi_metrics_row(csv_row)
         {
@@ -231,15 +233,10 @@ fn insert_key_metrics_from_multi_row_csv<'a>(
     }
 }
 
-fn extract_renamed_metrics_from_qc_sample_metrics_row(
+fn extract_renamed_metrics_from_nonmultiplexed_row_or_qc_sample_metrics_row(
     csv_row: &HashMap<String, TenxCsvValue>,
 ) -> Vec<(&'static str, TenxCsvValue)> {
     let mut extracted_metrics = Vec::with_capacity(32);
-
-    // Without this key, we can't even assign the row to a specimen
-    if csv_row.get("Sample barcodes").is_none() {
-        return extracted_metrics;
-    };
 
     for (metric_name, renamed_metric) in METRICS_RENAMING.into_iter() {
         let Some(metric_value) = csv_row.get(*metric_name) else {
