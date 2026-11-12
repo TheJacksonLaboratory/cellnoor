@@ -131,9 +131,9 @@ pub enum StringOperator {
     /// PostgreSQL `like any` only if the array is nonempty, otherwise `like
     /// all`
     LikeAnyUnlessEmpty(Vec<String>),
-    /// PostgreSQL trigram word_similar to (`%>`)
+    /// PostgreSQL trigram `word_similar` to (`%>`)
     Trgm(String),
-    /// PostgreSQL trigram word_similar to any (`%> any`)
+    /// PostgreSQL trigram `word_similar` to any (`%> any`)
     TrgmAny(Vec<String>),
     /// PostgreSQL `trgm any` only if the array is nonempty, otherwise `trgm
     /// all`

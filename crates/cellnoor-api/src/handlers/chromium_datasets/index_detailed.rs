@@ -137,29 +137,27 @@ fn extract_key_metrics_from_parsed_files(
     specimen_metrics
 }
 
-const ESTIMATED_NUMBER_OF_CELLS: &'static str = "Estimated number of cells";
-const MEAN_READS_PER_CELL: &'static str = "Mean reads per cell";
-const MEDIAN_GENES_PER_CELL: &'static str = "Median genes per cell";
-const NUMBER_OF_READS: &'static str = "Number of reads";
-const SEQUENCING_SATURATION: &'static str = "Sequencing saturation";
-const INTERGENIC_REGION_MAPPING_RATE: &'static str = "Intergenic region mapping rate";
-const INTRONIC_REGION_MAPPING_RATE: &'static str = "Intronic region mapping rate";
-const EXONIC_REGION_MAPPING_RATE: &'static str = "Exonic region mapping rate";
-const TRANSCRIPTOME_MAPPING_RATE: &'static str = "Transcriptome mapping rate";
-const FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS: &'static str =
-    "Fraction of transcriptomic reads in cells";
-const MEDIAN_UMI_COUNTS_PER_CELL: &'static str = "Median UMI counts per cell";
-const NUMBER_OF_READS_IN_CELLS: &'static str = "Number of reads in cells";
-const MEDIAN_HIGH_QUALITY_FRAGMENTS_PER_CELL: &'static str =
-    "Median high-quality fragments per cell";
-const TSS_ENRICHMENT_SCORE: &'static str = "TSS enrichment score";
-const GENOME_MAPPING_RATE: &'static str = "Genome mapping rate";
-const FRACTION_OF_TRANSPOSITION_EVENTS_IN_PEAKS_IN_CELLS: &'static str =
+const ESTIMATED_NUMBER_OF_CELLS: &str = "Estimated number of cells";
+const MEAN_READS_PER_CELL: &str = "Mean reads per cell";
+const MEDIAN_GENES_PER_CELL: &str = "Median genes per cell";
+const NUMBER_OF_READS: &str = "Number of reads";
+const SEQUENCING_SATURATION: &str = "Sequencing saturation";
+const INTERGENIC_REGION_MAPPING_RATE: &str = "Intergenic region mapping rate";
+const INTRONIC_REGION_MAPPING_RATE: &str = "Intronic region mapping rate";
+const EXONIC_REGION_MAPPING_RATE: &str = "Exonic region mapping rate";
+const TRANSCRIPTOME_MAPPING_RATE: &str = "Transcriptome mapping rate";
+const FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS: &str = "Fraction of transcriptomic reads in cells";
+const MEDIAN_UMI_COUNTS_PER_CELL: &str = "Median UMI counts per cell";
+const NUMBER_OF_READS_IN_CELLS: &str = "Number of reads in cells";
+const MEDIAN_HIGH_QUALITY_FRAGMENTS_PER_CELL: &str = "Median high-quality fragments per cell";
+const TSS_ENRICHMENT_SCORE: &str = "TSS enrichment score";
+const GENOME_MAPPING_RATE: &str = "Genome mapping rate";
+const FRACTION_OF_TRANSPOSITION_EVENTS_IN_PEAKS_IN_CELLS: &str =
     "Fraction of transposition events in peaks in cells";
-const FRACTION_OF_HIGH_QUALITY_FRAGMENTS_IN_CELLS: &'static str =
+const FRACTION_OF_HIGH_QUALITY_FRAGMENTS_IN_CELLS: &str =
     "Fraction of high-quality fragments in cells";
-const SEQUENCED_READ_PAIRS: &'static str = "Number of sequenced read pairs";
-const FRACTION_OF_GENOME_IN_PEAKS: &'static str = "Fraction of genome in peaks";
+const SEQUENCED_READ_PAIRS: &str = "Number of sequenced read pairs";
+const FRACTION_OF_GENOME_IN_PEAKS: &str = "Fraction of genome in peaks";
 
 static METRICS_RENAMING: phf::Map<&'static str, &'static str> = phf::phf_map! {
     // cellranger count (metrics_summary.csv)
