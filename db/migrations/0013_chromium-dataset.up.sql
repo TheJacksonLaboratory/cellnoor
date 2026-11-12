@@ -4,8 +4,7 @@ create table chromium_dataset (
     delivered_at timestamptz not null,
     additional_data jsonb,
 
-    unique (id, delivered_at),
-    constraint name_is_path_component check (name not in ('.', '..') and position('/' in name) = 0)
+    unique (id, delivered_at)
 );
 
 -- We don't actually store the content of the files in the database, just the path, so we can do permissions checks.
@@ -13,7 +12,9 @@ create table chromium_dataset (
 create table chromium_dataset_raw_file (
     dataset_id uuid references chromium_dataset on delete cascade not null,
     path case_insensitive_text not null,
-    primary key (dataset_id, path)
+    sha256_hash bytea not null,
+    primary key (dataset_id, path),
+    unique (dataset_id, sha256_hash)
 );
 
 -- Some files can be parsed into JSON, so we store those
