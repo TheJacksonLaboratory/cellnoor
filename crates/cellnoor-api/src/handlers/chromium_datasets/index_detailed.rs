@@ -126,7 +126,8 @@ fn extract_key_metrics_from_parsed_files(
             ChromiumDatasetParsedFileData::MultiRowCsv { data } => {
                 insert_key_metrics_from_multi_row_csv(&mut specimen_metrics, data);
             }
-            // Just skip this for now
+            // We can actually get all the metrics of interest from CSVs, no
+            // JSON required
             ChromiumDatasetParsedFileData::Json { .. } => {
                 continue;
             }
@@ -149,9 +150,19 @@ const FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS: &'static str =
     "Fraction of transcriptomic reads in cells";
 const MEDIAN_UMI_COUNTS_PER_CELL: &'static str = "Median UMI counts per cell";
 const NUMBER_OF_READS_IN_CELLS: &'static str = "Number of reads in cells";
+const MEDIAN_HIGH_QUALITY_FRAGMENTS_PER_CELL: &'static str =
+    "Median high-quality fragments per cell";
+const TSS_ENRICHMENT_SCORE: &'static str = "TSS enrichment score";
+const GENOME_MAPPING_RATE: &'static str = "Genome mapping rate";
+const FRACTION_OF_TRANSPOSITION_EVENTS_IN_PEAKS_IN_CELLS: &'static str =
+    "Fraction of transposition events in peaks in cells";
+const FRACTION_OF_HIGH_QUALITY_FRAGMENTS_IN_CELLS: &'static str =
+    "Fraction of high-quality fragments in cells";
+const SEQUENCED_READ_PAIRS: &'static str = "Number of sequenced read pairs";
+const FRACTION_OF_GENOME_IN_PEAKS: &'static str = "Fraction of genome in peaks";
 
 static METRICS_RENAMING: phf::Map<&'static str, &'static str> = phf::phf_map! {
-    // These keys come from cellranger count's metrics_summary.csv
+    // cellranger count (metrics_summary.csv)
     "Estimated Number of Cells" => ESTIMATED_NUMBER_OF_CELLS,
     "Mean Reads per Cell" => MEAN_READS_PER_CELL,
     "Median Genes per Cell" => MEDIAN_GENES_PER_CELL,
@@ -164,11 +175,11 @@ static METRICS_RENAMING: phf::Map<&'static str, &'static str> = phf::phf_map! {
     "Fraction Reads in Cells" => FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS,
     "Median UMI Counts per Cell" => MEDIAN_UMI_COUNTS_PER_CELL,
 
-    // These keys come from cellranger multi's per_sample_outs/*/metrics_summary.csv
+    // cellranger multi (per_sample_outs/*/metrics_summary.csv)
     "Cells per OCM barcode" => ESTIMATED_NUMBER_OF_CELLS,
     "Cells per probe barcode" => ESTIMATED_NUMBER_OF_CELLS,
 
-    // These come from qc_sample_metrics.csv in a gene expression or multiome assay
+    // cellranger multi (qc_sample_metrics.csv)
     "GEX: Median genes per cell" => MEDIAN_GENES_PER_CELL,
     "GEX: Median UMI counts per cell" => MEDIAN_UMI_COUNTS_PER_CELL,
     "GEX: Confidently mapped to transcriptome" => TRANSCRIPTOME_MAPPING_RATE,
@@ -176,7 +187,21 @@ static METRICS_RENAMING: phf::Map<&'static str, &'static str> = phf::phf_map! {
     "GEX: Confidently mapped to intronic regions" => INTRONIC_REGION_MAPPING_RATE,
     "GEX: Confidently mapped to intergenic regions" => INTERGENIC_REGION_MAPPING_RATE,
     "GEX: Confidently mapped reads in cells" => FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS,
-    "GEX: Number of reads in cells" => NUMBER_OF_READS_IN_CELLS
+    "GEX: Number of reads in cells" => NUMBER_OF_READS_IN_CELLS,
+
+    // cellranger-atac count (summary.csv)
+    "Estimated number of cells" => ESTIMATED_NUMBER_OF_CELLS,
+    "Confidently mapped read pairs" => GENOME_MAPPING_RATE,
+    "Fraction of genome in peaks" => FRACTION_OF_GENOME_IN_PEAKS,
+    "Fraction of high-quality fragments in cells" => FRACTION_OF_HIGH_QUALITY_FRAGMENTS_IN_CELLS,
+    "Mean raw read pairs per cell" => MEAN_READS_PER_CELL,
+    "Median high-quality fragments per cell" => MEDIAN_HIGH_QUALITY_FRAGMENTS_PER_CELL,
+    "Fraction of transposition events in peaks in cells" => FRACTION_OF_TRANSPOSITION_EVENTS_IN_PEAKS_IN_CELLS,
+    "Sequenced read pairs" => SEQUENCED_READ_PAIRS,
+    "Sequencing saturation" => SEQUENCING_SATURATION,
+    "TSS enrichment score" => TSS_ENRICHMENT_SCORE,
+
+    // TODO: cellranger-arc count (summary.csv)
 };
 
 fn insert_key_metrics_from_multi_row_csv<'a>(
