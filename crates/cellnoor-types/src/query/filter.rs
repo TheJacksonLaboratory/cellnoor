@@ -131,9 +131,9 @@ pub enum StringOperator {
     /// PostgreSQL `like any` only if the array is nonempty, otherwise `like
     /// all`
     LikeAnyUnlessEmpty(Vec<String>),
-    /// PostgreSQL trigram similar to (`%`)
+    /// PostgreSQL trigram word_similar to (`<%`)
     Trgm(String),
-    /// PostgreSQL trigram similar to any (`% any`)
+    /// PostgreSQL trigram word_similar to any (`<% any`)
     TrgmAny(Vec<String>),
     /// PostgreSQL `trgm any` only if the array is nonempty, otherwise `trgm
     /// all`
@@ -150,9 +150,9 @@ impl SqlOperator for StringOperator {
             Self::Like(s) => ("like", s),
             Self::LikeAny(s) => ("like any", s),
             Self::LikeAnyUnlessEmpty(s) => (if s.is_empty() { "like all" } else { "like any" }, s),
-            Self::Trgm(s) => ("%", s),
-            Self::TrgmAny(s) => ("% any", s),
-            Self::TrgmAnyUnlessEmpty(s) => (if s.is_empty() { "% all" } else { "% any" }, s),
+            Self::Trgm(s) => ("<%", s),
+            Self::TrgmAny(s) => ("<% any", s),
+            Self::TrgmAnyUnlessEmpty(s) => (if s.is_empty() { "<% all" } else { "<% any" }, s),
             Self::Simple(op) => op.as_sql_operator_and_value(),
         }
     }
