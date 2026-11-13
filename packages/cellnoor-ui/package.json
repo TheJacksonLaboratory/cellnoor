@@ -22,7 +22,7 @@
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.24.1",
 		"globals": "^17.14.0",
-		"prettier": "^3.9.10",
+		"prettier": "^3.10.1",
 		"prettier-plugin-svelte": "^4.1.1",
 		"svelte": "^5.57.3",
 		"svelte-check": "^4.7.8",
@@ -37,9 +37,9 @@
 		"@ark-ui/svelte": "^5.25.1",
 		"@fontsource-variable/comfortaa": "^5.3.0",
 		"@lucide/svelte": "^1.72.0",
-		"better-auth": "^1.7.20",
+		"better-auth": "^1.7.22",
 		"bits-ui": "^2.21.0",
 		"cellnoor-client": "workspace:*",
-		"papaparse": "^5.7.0"
+		"papaparse": "^5.7.1"
 	}
 }
