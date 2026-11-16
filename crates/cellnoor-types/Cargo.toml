@@ -8,13 +8,15 @@ csvranger.workspace = true
 jiff.workspace = true
 macro-attributes = { path = "macro-attributes" }
 postgres-types = { workspace = true, optional = true }
-pretty_assertions.workspace = true
 schemars = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 serde_json.workspace = true
 strum.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
+
+[dev-dependencies]
+pretty_assertions.workspace = true
 
 [lints]
 workspace = true
