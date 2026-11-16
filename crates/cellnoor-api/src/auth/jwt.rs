@@ -9,14 +9,14 @@ pub(super) fn authenticate_with_jwt(
     validation: &jsonwebtoken::Validation,
 ) -> Result<AuthUser, AuthError> {
     jsonwebtoken::decode(token, decoding_key, validation)
-        .map(AuthUser::from_token_data)
+        .map(|token| AuthUser::from_token_data(&token))
         .map_err(|e| AuthError::InvalidAuthToken {
             message: e.to_string(),
         })
 }
 
 impl AuthUser {
-    fn from_token_data(token: TokenData<Claims>) -> Self {
+    fn from_token_data(token: &TokenData<Claims>) -> Self {
         let UserClaims { id, is_staff } = token.claims.user;
         AuthUser { id, is_staff }
     }

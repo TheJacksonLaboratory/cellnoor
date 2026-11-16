@@ -35,7 +35,7 @@ async fn select_cdna_compact(
         .collect())
 }
 
-pub fn cdna_from_record(record: SavedCdnaRecord) -> CdnaCompact {
+pub(crate) fn cdna_from_record(record: SavedCdnaRecord) -> CdnaCompact {
     CdnaCompact {
         links: SimpleLinks::from_str_and_id("/cdna", record.id),
         record,

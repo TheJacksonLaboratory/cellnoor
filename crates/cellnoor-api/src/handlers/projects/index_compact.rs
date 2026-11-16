@@ -35,7 +35,7 @@ async fn select_projects_compact(
         .collect())
 }
 
-pub fn project_from_record(record: SavedProjectRecord) -> ProjectCompact {
+pub(crate) fn project_from_record(record: SavedProjectRecord) -> ProjectCompact {
     ProjectCompact {
         links: SimpleLinks::from_str_and_id("/projects", record.id.into()),
         record,

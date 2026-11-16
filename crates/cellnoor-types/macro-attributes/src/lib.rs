@@ -1,8 +1,4 @@
-//! Attribute macros that stamp out the derive groups and SQL impls used
-//! throughout `cellnoor-types`.
-//!
-//! These expand to code that refers to `crate::…`, so they only work inside
-//! `cellnoor-types`.
+#![cfg_attr(test, expect(dead_code_pub_in_binary))]
 
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
@@ -199,7 +195,7 @@ pub fn sort_field_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
     .into()
 }
 
-fn enum_sql_impls(module_name: Ident, type_name: Ident) -> proc_macro2::TokenStream {
+fn enum_sql_impls(module_name: &Ident, type_name: &Ident) -> proc_macro2::TokenStream {
     quote! {
         #[cfg(feature = "postgres-types")]
         mod #module_name {
@@ -260,7 +256,7 @@ pub fn unit_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let module_name = format_ident!("postgres_{ident}");
 
     let input: proc_macro2::TokenStream = input.into();
-    let sql_impl_mod = enum_sql_impls(module_name, ident);
+    let sql_impl_mod = enum_sql_impls(&module_name, &ident);
 
     quote! {
         #enum_derives
@@ -279,7 +275,7 @@ pub fn discriminant_unit_enum(_attr: TokenStream, input: TokenStream) -> TokenSt
     let module_name = format_ident!("postgres_{ident}");
 
     let input: proc_macro2::TokenStream = input.into();
-    let sql_impl_mod = enum_sql_impls(module_name, ident);
+    let sql_impl_mod = enum_sql_impls(&module_name, &ident);
 
     quote! {
         #[derive(Hash, ::strum::AsRefStr, ::strum::EnumString, ::strum::VariantArray)]

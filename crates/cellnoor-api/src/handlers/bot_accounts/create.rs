@@ -60,7 +60,7 @@ impl Insert for BotAccountSimpleFields {
 }
 
 #[cfg(test)]
-pub mod test {
+pub(crate) mod test {
     use cellnoor_types::bot_account::{BotAccount, BotAccountSimpleFields, NewBotAccount};
     use uuid::Uuid;
 
@@ -70,7 +70,7 @@ pub mod test {
         state::dev_util::db_client_as_admin,
     };
 
-    pub async fn insert_test_bot_account<F>(
+    pub(crate) async fn insert_test_bot_account<F>(
         tx: &db::Transaction<'_>,
         mut modify: F,
     ) -> Result<(NewBotAccount, BotAccount), DbError>

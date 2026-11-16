@@ -12,7 +12,7 @@ use crate::{
     state::AppState,
 };
 
-pub fn router(state: AppState) -> Router<AppState> {
+pub(crate) fn router(state: AppState) -> Router<AppState> {
     let ok = get(async || ());
     // We mount the same handler twice: Once for paths like
     // file-auth/chromium-datasets/{id}/ and another for paths like

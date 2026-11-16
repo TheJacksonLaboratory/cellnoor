@@ -90,11 +90,11 @@ struct NewSingleIndexSetRecord<'a> {
     sequences: [DnaSequence<'a>; 4],
 }
 
-impl<'a> Relation for NewSingleIndexSetRecord<'a> {
+impl Relation for NewSingleIndexSetRecord<'_> {
     const NAME: &'static str = "single_index_set";
 }
 
-impl<'a> Insert for NewSingleIndexSetRecord<'a> {
+impl Insert for NewSingleIndexSetRecord<'_> {
     type Field = &'static str;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
@@ -115,7 +115,7 @@ impl<'a> Insert for NewSingleIndexSetRecord<'a> {
 }
 
 #[cfg(test)]
-pub mod tests {
+pub(crate) mod tests {
 
     use cellnoor_types::index_set::NewSingleIndexSet;
 
@@ -125,7 +125,7 @@ pub mod tests {
         state::dev_util::db_client_as_admin,
     };
 
-    pub async fn insert_test_single_index_set(
+    pub(crate) async fn insert_test_single_index_set(
         tx: &db::Transaction<'_>,
     ) -> Result<String, IndexSetError> {
         let name = "SI-GA-A1".to_owned();
@@ -139,7 +139,7 @@ pub mod tests {
         )
         .await
         {
-            Ok(_) | Err(IndexSetError::Db(DbError::DataConstraint { .. })) => Ok(name),
+            Ok(()) | Err(IndexSetError::Db(DbError::DataConstraint { .. })) => Ok(name),
             Err(e) => Err(e),
         }
     }

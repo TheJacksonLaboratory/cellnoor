@@ -11,7 +11,7 @@ use crate::{
 
 type JwtDecodingInfo = (jsonwebtoken::DecodingKey, jsonwebtoken::Validation);
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AppState {
     pub db_pool: db::Pool,
     pub static_files_dir: Utf8PathBuf,
@@ -35,7 +35,7 @@ impl AppState {
         };
 
         Ok(Self {
-            db_pool: db::Pool::new(settings.db.clone(), settings.max_db_pool_size)?,
+            db_pool: db::Pool::new(&settings.db, settings.max_db_pool_size)?,
             static_files_dir: Utf8PathBuf::from(&settings.static_files_dir),
             jwt_decoding_info,
         })
@@ -71,6 +71,7 @@ pub mod dev_util {
     use crate::db;
 
     #[cfg(any(test, feature = "dev"))]
+    #[must_use]
     pub fn test_db_pool() -> db::Pool {
         // Your IDE will complain about this unless you run scripts/dev/test/sh
         #[cfg(test)]

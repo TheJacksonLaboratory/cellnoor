@@ -2,10 +2,11 @@ use std::collections::{BTreeMap, HashMap};
 
 use axum::{Json, extract::State};
 use cellnoor_types::{
+    cdna::creation::LibraryType,
     chromium_dataset::{
         ChromiumDatasetDetailed, ChromiumDatasetDetailedLinks, ChromiumDatasetParsedFileData,
         ChromiumDatasetParsedFileRecord, ChromiumDatasetQuery, ChromiumDatasetSpecimen,
-        SavedChromiumDatasetRecord,
+        SavedChromiumDatasetRecord, TransposedCsvRow,
     },
     file_tree::{FileTreeNode, FileTreeNodeKind},
     id::Id,
@@ -51,12 +52,12 @@ pub(in super::super) async fn select_chromium_datasets_detailed(
     Ok(tx
         .select_rows(&SELECT_DETAILED_CHROMIUM_DATASETS, query)
         .await?
-        .into_iter()
+        .iter()
         .map(map_detailed_row)
         .collect())
 }
 
-fn map_detailed_row(row: Row) -> ChromiumDatasetDetailed {
+fn map_detailed_row(row: &Row) -> ChromiumDatasetDetailed {
     let record: SavedChromiumDatasetRecord = row.get("chromium_dataset");
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
     let libraries: Vec<SavedLibraryRecord> = row.get("libraries");
@@ -85,16 +86,21 @@ fn map_detailed_row(row: Row) -> ChromiumDatasetDetailed {
 
 static PSEUDO_BARCODE: &str = "specimen";
 
+type KeyMetrics = HashMap<&'static str, TenxCsvValue>;
+
 fn chromium_dataset_specimen_from_tagged_specimen(
     specimen: TaggedSpecimen,
-    metrics_by_specimen: &mut HashMap<&str, HashMap<&'static str, TenxCsvValue>>,
+    metrics_by_specimen: &mut HashMap<&str, KeyMetrics>,
 ) -> ChromiumDatasetSpecimen {
     let Some(tag) = specimen
         .multiplexing_tag
         .as_ref()
         .map(|m| &m.tag_id)
         .map(NonemptyString::as_ref)
-        .or(specimen.ocm_barcode_id.as_ref().map(|b| b.as_ref()))
+        .or(specimen
+            .ocm_barcode_id
+            .as_ref()
+            .map(std::convert::AsRef::as_ref))
     else {
         return ChromiumDatasetSpecimen {
             specimen,
@@ -114,23 +120,21 @@ fn chromium_dataset_specimen_from_tagged_specimen(
 
 fn extract_key_metrics_from_parsed_files(
     parsed_files: &[ChromiumDatasetParsedFileRecord],
-) -> HashMap<&str, HashMap<&'static str, TenxCsvValue>> {
+) -> HashMap<&str, KeyMetrics> {
     // We're not typically going to have more than 32 specimens at a time
     let mut specimen_metrics = HashMap::with_capacity(32);
 
     for p in parsed_files {
         match &p.data.0 {
-            ChromiumDatasetParsedFileData::SingleRowCsv { data } => {
-                insert_key_metrics_from_multi_row_csv(&mut specimen_metrics, [data]);
+            ChromiumDatasetParsedFileData::StandardCsv { data } => {
+                insert_key_metrics_from_standard_csv(&mut specimen_metrics, data);
             }
-            ChromiumDatasetParsedFileData::MultiRowCsv { data } => {
-                insert_key_metrics_from_multi_row_csv(&mut specimen_metrics, data);
+            ChromiumDatasetParsedFileData::TransposedCsv { data } => {
+                insert_key_metrics_from_transposed_csv(&mut specimen_metrics, data);
             }
             // We can actually get all the metrics of interest from CSVs, no
             // JSON required
-            ChromiumDatasetParsedFileData::Json { .. } => {
-                continue;
-            }
+            ChromiumDatasetParsedFileData::Json { .. } => {}
         }
     }
 
@@ -166,13 +170,17 @@ const ATAC_FRACTION_OF_HIGH_QUALITY_FRAGMENTS_IN_CELLS: &str =
 const ATAC_FRACTION_OF_GENOME_IN_PEAKS: &str = "ATAC fraction of genome in peaks";
 const ATAC_PERCENT_DUPLICATES: &str = "ATAC percent duplicates";
 
-const VDJ_T_NUMBER_OF_CELLS: &str = "VDJ-T number of cells";
-const VDJ_T_FRACTION_OF_READS_IN_CELLS: &str = "VDJ-T fraction of reads in cells";
-const VDJ_T_VDJ_GENE_MAPPING_RATE: &str = "VDJ-T V(D)J gene mapping rate";
+const VDJ_B_FRACTION_OF_CELLS_WITH_PRODUCTIVE_VJ_SPANNING_PAIR: &str =
+    "VDJ B fraction of cells with productive V-J spanning pair";
+const VDJ_B_NUMBER_OF_CELLS: &str = "VDJ B number of cells";
+const VDJ_B_FRACTION_OF_READS_IN_CELLS: &str = "VDJ B fraction of reads in cells";
+const VDJ_B_VDJ_GENE_MAPPING_RATE: &str = "VDJ B V(D)J gene mapping rate";
 
-const VDJ_B_NUMBER_OF_CELLS: &str = "VDJ-B number of cells";
-const VDJ_B_FRACTION_OF_READS_IN_CELLS: &str = "VDJ-B fraction of reads in cells";
-const VDJ_B_VDJ_GENE_MAPPING_RATE: &str = "VDJ-B V(D)J gene mapping rate";
+const VDJ_T_FRACTION_OF_CELLS_WITH_PRODUCTIVE_VJ_SPANNING_PAIR: &str =
+    "VDJ T fraction of cells with productive V-J spanning pair";
+const VDJ_T_NUMBER_OF_CELLS: &str = "VDJ T number of cells";
+const VDJ_T_FRACTION_OF_READS_IN_CELLS: &str = "VDJ T fraction of reads in cells";
+const VDJ_T_VDJ_GENE_MAPPING_RATE: &str = "VDJ T V(D)J gene mapping rate";
 
 const AB_MEDIAN_UMI_COUNTS_PER_CELL: &str = "AB median UMI counts per cell";
 
@@ -254,87 +262,94 @@ static METRICS_RENAMING: phf::Map<&'static str, &'static str> = phf::phf_map! {
 };
 
 // cellranger multi (per_sample_outs/*/metrics_summary.csv)
-fn rename_multi_metric(library_type: &str, metric_name: &str) -> Option<&'static str> {
+fn rename_multi_metric(library_type: LibraryType, metric_name: &str) -> Option<&'static str> {
+    use LibraryType::{AntibodyCapture, GeneExpression, MultiplexingCapture, VdjB, VdjT};
+
     match (library_type, metric_name) {
-        ("Gene Expression", _) => METRICS_RENAMING.get(metric_name).copied(),
-        ("VDJ T", "VDJ cells") => Some(VDJ_T_NUMBER_OF_CELLS),
-        ("VDJ T", "Fraction reads in cells") => Some(VDJ_T_FRACTION_OF_READS_IN_CELLS),
-        ("VDJ T", "Reads mapped to any V(D)J gene") => Some(VDJ_T_VDJ_GENE_MAPPING_RATE),
-        ("VDJ B", "VDJ cells") => Some(VDJ_B_NUMBER_OF_CELLS),
-        ("VDJ B", "Fraction reads in cells") => Some(VDJ_B_FRACTION_OF_READS_IN_CELLS),
-        ("VDJ B", "Reads mapped to any V(D)J gene") => Some(VDJ_B_VDJ_GENE_MAPPING_RATE),
-        ("Antibody Capture", "Median UMI counts per cell") => Some(AB_MEDIAN_UMI_COUNTS_PER_CELL),
-        ("Multiplexing Capture", "Fraction reads in cell-associated barcodes") => {
+        (AntibodyCapture, "Median UMI counts per cell") => Some(AB_MEDIAN_UMI_COUNTS_PER_CELL),
+
+        (GeneExpression, _) => METRICS_RENAMING.get(metric_name).copied(),
+
+        (MultiplexingCapture, "Fraction reads in cell-associated barcodes") => {
             Some(CMO_FRACTION_OF_READS_IN_CELLS)
         }
+
+        (VdjB, "Cells with productive V-J spanning pair") => {
+            Some(VDJ_B_FRACTION_OF_CELLS_WITH_PRODUCTIVE_VJ_SPANNING_PAIR)
+        }
+        (VdjB, "Fraction reads in cells") => Some(VDJ_B_FRACTION_OF_READS_IN_CELLS),
+        (VdjB, "Reads mapped to any V(D)J gene") => Some(VDJ_B_VDJ_GENE_MAPPING_RATE),
+        (VdjB, "VDJ cells") => Some(VDJ_B_NUMBER_OF_CELLS),
+
+        (VdjT, "Cells with productive V-J spanning pair") => {
+            Some(VDJ_T_FRACTION_OF_CELLS_WITH_PRODUCTIVE_VJ_SPANNING_PAIR)
+        }
+        (VdjT, "Fraction reads in cells") => Some(VDJ_T_FRACTION_OF_READS_IN_CELLS),
+        (VdjT, "Reads mapped to any V(D)J gene") => Some(VDJ_T_VDJ_GENE_MAPPING_RATE),
+        (VdjT, "VDJ cells") => Some(VDJ_T_NUMBER_OF_CELLS),
+
         _ => None,
     }
 }
 
-fn insert_key_metrics_from_multi_row_csv<'a>(
-    renamed_specimen_metrics: &mut HashMap<&'a str, HashMap<&'static str, TenxCsvValue>>,
-    parsed_file: impl IntoIterator<Item = &'a HashMap<String, TenxCsvValue>>,
+fn insert_key_metrics_from_standard_csv<'a>(
+    renamed_specimen_metrics: &mut HashMap<&'a str, KeyMetrics>,
+    parsed_file: &'a [HashMap<String, TenxCsvValue>],
 ) {
     for csv_row in parsed_file {
-        // Depending on the type of file we're parsing, the barcode will be
-        // under one of these two keys
-        let barcode = csv_row
-            .get("Sample barcodes")
-            .or_else(|| csv_row.get("Group Name"))
-            .and_then(|bc| match bc {
-                // "---" is a special little stupid terminology that cellranger
-                // multi uses
-                TenxCsvValue::String(bc) if !bc.is_empty() && bc != "---" => Some(bc.as_str()),
-                _ => None,
-            })
-            .unwrap_or(PSEUDO_BARCODE);
+        let barcode = match csv_row.get("Sample barcodes") {
+            Some(TenxCsvValue::String(bc)) => bc,
+            _ => "",
+        };
 
-        let specimen_metrics = renamed_specimen_metrics
-            .entry(barcode)
-            .or_insert_with(|| HashMap::with_capacity(32));
+        renamed_specimen_metrics
+            .entry(specimen_key(barcode))
+            .or_default()
+            .extend(extract_renamed_metrics_from_standard_row(csv_row));
+    }
+}
 
-        specimen_metrics.extend(
-            extract_renamed_metrics_from_nonmultiplexed_row_or_qc_sample_metrics_row(csv_row),
-        );
+fn insert_key_metrics_from_transposed_csv<'a>(
+    renamed_specimen_metrics: &mut HashMap<&'a str, KeyMetrics>,
+    parsed_file: &'a [TransposedCsvRow],
+) {
+    for csv_row in parsed_file {
         if let Some((metric_name, metric_value)) =
-            extract_renamed_metric_from_multi_metrics_row(csv_row)
+            extract_renamed_metric_from_transposed_row(csv_row)
         {
-            specimen_metrics.insert(metric_name, metric_value);
+            renamed_specimen_metrics
+                .entry(specimen_key(&csv_row.group_name))
+                .or_default()
+                .insert(metric_name, metric_value);
         }
     }
 }
 
-fn extract_renamed_metrics_from_nonmultiplexed_row_or_qc_sample_metrics_row(
-    csv_row: &HashMap<String, TenxCsvValue>,
-) -> Vec<(&'static str, TenxCsvValue)> {
-    let mut extracted_metrics = Vec::with_capacity(32);
-
-    for (metric_name, renamed_metric) in METRICS_RENAMING.into_iter() {
-        let Some(metric_value) = csv_row.get(*metric_name) else {
-            continue;
-        };
-
-        extracted_metrics.push((*renamed_metric, metric_value.to_owned()));
+fn specimen_key(barcode: &str) -> &str {
+    // "---" is a special little stupid terminology that cellranger multi uses
+    if barcode.is_empty() || barcode == "---" {
+        PSEUDO_BARCODE
+    } else {
+        barcode
     }
-
-    extracted_metrics
 }
 
-fn extract_renamed_metric_from_multi_metrics_row(
+fn extract_renamed_metrics_from_standard_row(
     csv_row: &HashMap<String, TenxCsvValue>,
+) -> impl Iterator<Item = (&'static str, TenxCsvValue)> + '_ {
+    METRICS_RENAMING
+        .entries()
+        .filter_map(|(metric_name, renamed_metric)| {
+            Some((*renamed_metric, csv_row.get(*metric_name)?.clone()))
+        })
+}
+
+fn extract_renamed_metric_from_transposed_row(
+    csv_row: &TransposedCsvRow,
 ) -> Option<(&'static str, TenxCsvValue)> {
-    let TenxCsvValue::String(library_type) = csv_row.get("Library Type")? else {
-        return None;
-    };
-    let TenxCsvValue::String(metric_name) = csv_row.get("Metric Name")? else {
-        return None;
-    };
+    let metric_name = rename_multi_metric(csv_row.library_type, &csv_row.metric_name)?;
 
-    let metric_name = rename_multi_metric(library_type, metric_name)?;
-
-    let metric_value = csv_row.get("Metric Value")?;
-
-    Some((metric_name, metric_value.to_owned()))
+    Some((metric_name, csv_row.metric_value.clone()))
 }
 
 #[derive(Debug, Clone, postgres_types::FromSql)]
@@ -495,10 +510,12 @@ mod tests {
     fn file_tree() {
         let dataset_id = Id { id: Uuid::nil() };
 
-        let parsed_file_data = ChromiumDatasetParsedFileData::SingleRowCsv {
-            data: [("field".to_owned(), TenxCsvValue::I64(0))]
-                .into_iter()
-                .collect(),
+        let parsed_file_data = ChromiumDatasetParsedFileData::StandardCsv {
+            data: vec![
+                [("field".to_owned(), TenxCsvValue::I64(0))]
+                    .into_iter()
+                    .collect(),
+            ],
         };
 
         let file = |full_path: &str, parsed_contents| FileTreeNode {
@@ -514,8 +531,7 @@ mod tests {
             path: full_path.to_owned(),
             name: full_path
                 .rsplit_once('/')
-                .map(|(_, p)| p)
-                .unwrap_or(full_path)
+                .map_or(full_path, |(_, p)| p)
                 .to_owned(),
             kind: FileTreeNodeKind::Directory { children },
         };
@@ -596,7 +612,7 @@ mod tests {
             ("GEX median UMI counts per cell", TenxCsvValue::I64(2244)),
             (
                 "GEX fraction of transcriptomic reads in cells",
-                TenxCsvValue::F64(0.6847850295990157),
+                TenxCsvValue::F64(0.684_785_029_599_015_7),
             ),
         ]);
 

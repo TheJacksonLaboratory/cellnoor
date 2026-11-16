@@ -161,7 +161,7 @@ impl Insert for NewSuspensionPoolRecord {
     type Field = SuspensionPoolField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use SuspensionPoolField::*;
+        use SuspensionPoolField::{AdditionalData, Name, PooledAt, ReadableId};
 
         let Self {
             id: _,
@@ -181,7 +181,7 @@ impl Insert for NewSuspensionPoolRecord {
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn insert_test_suspension_pool_and_suspensions<F>(
+pub(crate) async fn insert_test_suspension_pool_and_suspensions<F>(
     tx: &db::Transaction<'_>,
     mut modify: F,
 ) -> Result<(NewSuspensionPool, SuspensionPoolDetailed), DbError>
@@ -259,7 +259,7 @@ where
 }
 
 #[cfg(test)]
-pub mod test {
+pub(crate) mod test {
 
     use std::collections::HashSet;
 

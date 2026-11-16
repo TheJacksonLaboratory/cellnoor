@@ -37,12 +37,12 @@ pub(in super::super) async fn select_suspension_pools_detailed(
     Ok(tx
         .select_rows(&SELECT_DETAILED_SUSPENSION_POOL, query)
         .await?
-        .into_iter()
+        .iter()
         .map(map_detailed_row)
         .collect())
 }
 
-fn map_detailed_row(row: Row) -> SuspensionPoolDetailed {
+fn map_detailed_row(row: &Row) -> SuspensionPoolDetailed {
     let record: SavedSuspensionPoolRecord = row.get("suspension_pool");
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
 

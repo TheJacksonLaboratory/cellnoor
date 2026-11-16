@@ -31,7 +31,7 @@ impl Insert for NewInstitution {
     type Field = InstitutionField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use InstitutionField::*;
+        use InstitutionField::{MicrosoftEntraTenantId, Name};
         let Self {
             id: _,
             name,
@@ -46,7 +46,7 @@ impl Insert for NewInstitution {
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn insert_test_institution<F>(
+pub(crate) async fn insert_test_institution<F>(
     tx: &db::Transaction<'_>,
     mut modify: F,
 ) -> Result<(NewInstitution, Institution), DbError>
@@ -69,7 +69,7 @@ where
 }
 
 #[cfg(test)]
-pub mod test {
+pub(crate) mod test {
 
     use super::insert_test_institution;
     use crate::state::dev_util::db_client_as_admin;

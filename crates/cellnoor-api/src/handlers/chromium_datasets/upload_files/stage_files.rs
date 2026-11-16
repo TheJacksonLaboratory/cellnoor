@@ -39,8 +39,8 @@ impl StagedUpload {
         }
 
         Ok(Self {
-            final_directory,
             staging_directory,
+            final_directory,
             files,
         })
     }

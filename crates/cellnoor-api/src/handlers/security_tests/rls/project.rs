@@ -29,7 +29,7 @@ async fn insert_accessible_project(tx: &db::Transaction<'_>) -> (NewProject, Pro
     insert_test_project(tx, |_| ()).await.unwrap()
 }
 
-pub async fn insert_inaccessible_project(
+pub(super) async fn insert_inaccessible_project(
     tx: &db::Transaction<'_>,
 ) -> (NewProject, ProjectDetailed) {
     insert_test_project(tx, |p| p.members = vec![])
@@ -37,7 +37,7 @@ pub async fn insert_inaccessible_project(
         .unwrap()
 }
 
-pub async fn create_project_as(creator_id: Uuid, members: Vec<Uuid>) -> ProjectDetailed {
+pub(super) async fn create_project_as(creator_id: Uuid, members: Vec<Uuid>) -> ProjectDetailed {
     let mut client = db_client_as_user(creator_id).await;
     let tx = client.begin().await.unwrap();
 

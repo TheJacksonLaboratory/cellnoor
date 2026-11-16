@@ -21,7 +21,7 @@ pub struct Pool(InnerPool);
 
 impl Pool {
     // Use `anyhow::Result` because we only make the pool once at app-startup
-    pub fn new(cfg: deadpool_postgres::Config, max_size: Option<usize>) -> anyhow::Result<Self> {
+    pub fn new(cfg: &deadpool_postgres::Config, max_size: Option<usize>) -> anyhow::Result<Self> {
         let mut builder = cfg.builder(deadpool_postgres::tokio_postgres::NoTls)?;
         if let Some(max_size) = max_size {
             builder = builder.max_size(max_size);
@@ -89,7 +89,7 @@ impl Client {
     ///
     /// Every row-level security policy reads `app.user_id`, which is only set
     /// for the duration of the transaction. Nothing is saved unless
-    /// [Transaction::commit] is called.
+    /// [`Transaction::commit`] is called.
     pub async fn begin(&'_ mut self) -> Result<Transaction<'_>, TokioPgError> {
         let Self { user, inner } = self;
 
@@ -105,6 +105,7 @@ impl Client {
     }
 }
 
+#[derive(Debug)]
 pub struct Transaction<'a> {
     user: AuthUser,
     inner: InnerTransaction<'a>,
@@ -310,11 +311,12 @@ impl Transaction<'_> {
     }
 }
 
-impl<'a> Transaction<'a> {
+impl Transaction<'_> {
     pub async fn commit(self) -> Result<(), TokioPgError> {
         self.inner.commit().await
     }
 
+    #[must_use]
     pub fn user(&self) -> AuthUser {
         self.user
     }

@@ -7,7 +7,7 @@ use cellnoor_types::{
     },
 };
 #[cfg(any(test, feature = "dev"))]
-pub use chromium::insert_chromium_assays;
+pub(crate) use chromium::insert_chromium_assays;
 use uuid::Uuid;
 
 use crate::{
@@ -61,11 +61,11 @@ struct NewLibraryTypeSpecificationRecord<'a> {
     spec: &'a LibraryTypeSpecification,
 }
 
-impl<'a> Relation for NewLibraryTypeSpecificationRecord<'a> {
+impl Relation for NewLibraryTypeSpecificationRecord<'_> {
     const NAME: &'static str = "library_type_specification";
 }
 
-impl<'a> Insert for NewLibraryTypeSpecificationRecord<'a> {
+impl Insert for NewLibraryTypeSpecificationRecord<'_> {
     type Field = &'static str;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {

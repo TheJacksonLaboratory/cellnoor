@@ -94,7 +94,7 @@ async fn insert_chromium_dataset(
     Ok(select_chromium_dataset_by_id(tx, id).await?)
 }
 
-pub async fn validate_libraries_have_same_gem_well(
+pub(crate) async fn validate_libraries_have_same_gem_well(
     tx: &db::Transaction<'_>,
     library_ids: &[Uuid],
 ) -> Result<(), CreateChromiumDatasetError> {
@@ -112,7 +112,9 @@ pub async fn validate_libraries_have_same_gem_well(
         return Err(CreateChromiumDatasetError::LibrariesFromDifferentGemWells);
     }
 
-    if library_ids.len() as i64 != n_library_types {
+    if i64::try_from(library_ids.len()).expect("this number is literally always less than 4")
+        != n_library_types
+    {
         return Err(CreateChromiumDatasetError::DuplicateLibraryType);
     }
 
@@ -161,7 +163,7 @@ impl Insert for NewChromiumDatasetRecord {
     type Field = ChromiumDatasetField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use ChromiumDatasetField::*;
+        use ChromiumDatasetField::{DeliveredAt, Name};
 
         let Self {
             id: _,
@@ -208,7 +210,7 @@ where
 }
 
 #[cfg(test)]
-pub mod test {
+pub(crate) mod test {
     use cellnoor_types::{
         chromium_dataset::{NewChromiumDataset, NewChromiumDatasetRecord},
         id::NoId,

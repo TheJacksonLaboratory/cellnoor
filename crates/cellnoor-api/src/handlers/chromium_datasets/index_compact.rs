@@ -42,7 +42,9 @@ pub(super) fn chromium_dataset_links(id: Id) -> SimpleLinks {
     SimpleLinks::from_str_and_id("/chromium-datasets", id)
 }
 
-pub fn chromium_dataset_from_record(record: SavedChromiumDatasetRecord) -> ChromiumDatasetCompact {
+pub(crate) fn chromium_dataset_from_record(
+    record: SavedChromiumDatasetRecord,
+) -> ChromiumDatasetCompact {
     ChromiumDatasetCompact {
         links: chromium_dataset_links(record.id),
         record,

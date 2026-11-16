@@ -49,14 +49,16 @@ pub(super) fn suspension_pool_links(id: Id) -> SuspensionPoolLinks {
     }
 }
 
-pub fn suspension_pool_from_record(record: SavedSuspensionPoolRecord) -> SuspensionPoolCompact {
+pub(crate) fn suspension_pool_from_record(
+    record: SavedSuspensionPoolRecord,
+) -> SuspensionPoolCompact {
     SuspensionPoolCompact {
         links: suspension_pool_links(record.id),
         record,
     }
 }
 
-pub fn tagged_specimen_from_record(
+pub(crate) fn tagged_specimen_from_record(
     SavedTaggedSpecimenRecord {
         specimen,
         multiplexing_tag,

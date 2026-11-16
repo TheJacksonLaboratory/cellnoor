@@ -7663,15 +7663,13 @@ export interface components {
         ChromiumDatasetParsedFileData: {
             data: {
                 [key: string]: components["schemas"]["TenxCsvValue"];
-            };
-            /** @constant */
-            format: "single_row_csv";
-        } | {
-            data: {
-                [key: string]: components["schemas"]["TenxCsvValue"];
             }[];
             /** @constant */
-            format: "multi_row_csv";
+            format: "standard_csv";
+        } | {
+            data: components["schemas"]["TransposedCsvRow"][];
+            /** @constant */
+            format: "transposed_csv";
         } | {
             data: {
                 [key: string]: unknown;
@@ -8136,7 +8134,7 @@ export interface components {
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
-        LibraryType: "antibody_capture" | "antigen_capture" | "chromatin_accessibility" | "crispr_guide_capture" | "custom" | "gene_expression" | "multiplexing_capture" | "vdj" | "vdj_b" | "vdj_t" | "vdj_t_gd";
+        LibraryType: "Antibody Capture" | "Antigen Capture" | "Chromatin Accessibility" | "CRISPR Guide Capture" | "Custom" | "Gene Expression" | "Multiplexing Capture" | "VDJ" | "VDJ B" | "VDJ T" | "VDJ T GD";
         /**
          * @description A comparison operator for array values.
          *
@@ -8254,39 +8252,39 @@ export interface components {
             readable_id: string;
         } & ({
             /** @constant */
-            library_type: "antibody_capture";
+            library_type: "Antibody Capture";
         } | {
             /** @constant */
-            library_type: "antigen_capture";
+            library_type: "Antigen Capture";
         } | {
             /** @constant */
-            library_type: "chromatin_accessibility";
+            library_type: "Chromatin Accessibility";
         } | {
             /** @constant */
-            library_type: "crispr_guide_capture";
+            library_type: "CRISPR Guide Capture";
         } | {
             /** @constant */
-            library_type: "custom";
+            library_type: "Custom";
         } | {
             /** @constant */
-            library_type: "gene_expression";
+            library_type: "Gene Expression";
             /** Format: int32 */
             n_amplification_cycles: number;
         } | {
             /** @constant */
-            library_type: "multiplexing_capture";
+            library_type: "Multiplexing Capture";
         } | {
             /** @constant */
-            library_type: "vdj";
+            library_type: "VDJ";
         } | {
             /** @constant */
-            library_type: "vdj_b";
+            library_type: "VDJ B";
         } | {
             /** @constant */
-            library_type: "vdj_t";
+            library_type: "VDJ T";
         } | {
             /** @constant */
-            library_type: "vdj_t_gd";
+            library_type: "VDJ T GD";
         });
         NewChromiumAssay: {
             chemistry_version: string;
@@ -9449,6 +9447,14 @@ export interface components {
             preservation_state: "thermally_preserved";
             thermal_preservation_method: components["schemas"]["ThermalPreservationMethod"];
         };
+        TransposedCsvRow: {
+            Category: string;
+            "Group Name": string;
+            "Grouped By": string;
+            "Library Type": components["schemas"]["LibraryType"];
+            "Metric Name": string;
+            "Metric Value": components["schemas"]["TenxCsvValue"];
+        };
         /** @description A simple comparison operator. */
         UuidOperator: {
             /** Format: uuid */
@@ -9788,6 +9794,7 @@ export type ThermalPreservationMethod = components['schemas']['ThermalPreservati
 export type ThermalPreservationMethodOperator = components['schemas']['ThermalPreservationMethodOperator'];
 export type TimestampOperator = components['schemas']['TimestampOperator'];
 export type TissueFields = components['schemas']['TissueFields'];
+export type TransposedCsvRow = components['schemas']['TransposedCsvRow'];
 export type UuidOperator = components['schemas']['UuidOperator'];
 export type BooleanOperator = components['schemas']['booleanOperator'];
 export type FloatOperator = components['schemas']['floatOperator'];
@@ -9816,7 +9823,7 @@ export const flashFreezingValues: ReadonlyArray<FlattenedDeepRequired<components
 export const formaldehydeDerivativeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["FormaldehydeDerivative"]> = ["formaldehyde_derivative"];
 export const institutionFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["InstitutionField"]> = ["id", "name", "microsoft_entra_tenant_id"];
 export const libraryFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["LibraryField"]> = ["id", "readable_id", "cdna_id", "single_index_set_name", "dual_index_set_name", "number_of_sample_index_pcr_cycles", "target_reads_per_cell", "prepared_at", "additional_data"];
-export const libraryTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["LibraryType"]> = ["antibody_capture", "antigen_capture", "chromatin_accessibility", "crispr_guide_capture", "custom", "gene_expression", "multiplexing_capture", "vdj", "vdj_b", "vdj_t", "vdj_t_gd"];
+export const libraryTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["LibraryType"]> = ["Antibody Capture", "Antigen Capture", "Chromatin Accessibility", "CRISPR Guide Capture", "Custom", "Gene Expression", "Multiplexing Capture", "VDJ", "VDJ B", "VDJ T", "VDJ T GD"];
 export const microliterValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Microliter"]> = ["microliter"];
 export const micrometerValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Micrometer"]> = ["micrometer"];
 export const milliliterValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Milliliter"]> = ["milliliter"];

@@ -91,14 +91,14 @@ impl Insert for NewChromiumAssayRecord<'_> {
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub struct TestChromiumAssayIds {
+pub(crate) struct TestChromiumAssayIds {
     pub flex: Uuid,
     pub ocm: Uuid,
     pub singleplex: Uuid,
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn insert_chromium_assays(
+pub(crate) async fn insert_chromium_assays(
     tx: &db::Transaction<'_>,
 ) -> Result<TestChromiumAssayIds, DbError> {
     use cellnoor_types::{
@@ -206,7 +206,7 @@ pub async fn insert_chromium_assays(
 }
 
 #[cfg(test)]
-pub mod tests {
+pub(super) mod tests {
 
     use super::insert_chromium_assays;
     use crate::state::dev_util::db_client_as_admin;

@@ -37,7 +37,7 @@ async fn select_suspensions_compact(
         .collect())
 }
 
-pub fn suspension_from_record(record: SavedSuspensionRecord) -> SuspensionCompact {
+pub(crate) fn suspension_from_record(record: SavedSuspensionRecord) -> SuspensionCompact {
     SuspensionCompact {
         links: SimpleLinks::from_str_and_id("/suspensions", record.id),
         record,

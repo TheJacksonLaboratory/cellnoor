@@ -63,7 +63,7 @@ async fn insert_inaccessible_cdna(tx: &db::Transaction<'_>) -> (NewCdna, CdnaDet
             .unwrap();
 
     let chromium_run = insert_test_chromium_run(tx, TestChromiumRunKind::Standard, |run| {
-        make_standard_chromium_run_inaccessible(run, *suspension.record.id)
+        make_standard_chromium_run_inaccessible(run, *suspension.record.id);
     })
     .await
     .unwrap();
@@ -71,13 +71,13 @@ async fn insert_inaccessible_cdna(tx: &db::Transaction<'_>) -> (NewCdna, CdnaDet
     let gem_well_id = *chromium_run.gem_wells[0].record.id;
 
     insert_test_cdna_and_chromium_run(tx, TestChromiumRunKind::Standard, |c| {
-        c.gem_well_id = gem_well_id
+        c.gem_well_id = gem_well_id;
     })
     .await
     .unwrap()
 }
 
-async fn get_user_id_from_cdna(cdna: &CdnaDetailed) -> Uuid {
+fn get_user_id_from_cdna(cdna: &CdnaDetailed) -> Uuid {
     cdna.preparers[0]
 }
 
@@ -111,7 +111,7 @@ async fn row_level_security_for_cdna() {
     // Insert a cDNA the user can access and one the user cannot
     let ((_, accessible_cdna), (_, inaccessible_cdna)) =
         tokio::join!(insert_accessible_cdna(&tx), insert_inaccessible_cdna(&tx));
-    let user_id = get_user_id_from_cdna(&accessible_cdna).await;
+    let user_id = get_user_id_from_cdna(&accessible_cdna);
 
     // Commit this transaction so the change persists for the next part of the
     // test
@@ -135,7 +135,7 @@ async fn only_staff_with_permission_can_change_cdna_preparers_and_measurements()
     tx.commit().await.unwrap();
 
     let id = *cdna.record.id;
-    let member_id = get_user_id_from_cdna(&cdna).await;
+    let member_id = get_user_id_from_cdna(&cdna);
     let new_preparer_id = create_test_user().await;
     let new_measurement = NewNucleicAcidMeasurement {
         measured_at: Timestamp::now(),

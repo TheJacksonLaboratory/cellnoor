@@ -15,7 +15,7 @@ use crate::{
     state::AppState,
 };
 
-pub async fn grant_permissions_to_principal(
+pub(crate) async fn grant_permissions_to_principal(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,
@@ -28,7 +28,7 @@ pub async fn grant_permissions_to_principal(
         .await
 }
 
-pub async fn revoke_permissions_from_principal(
+pub(crate) async fn revoke_permissions_from_principal(
     State(state): State<AppState>,
     user: AuthUser,
     Path(IdParam { id }): Path<IdParam>,

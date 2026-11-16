@@ -153,6 +153,6 @@ mod tests {
             .to_sql(&Type::UUID, &mut expected_params)
             .unwrap();
 
-        assert_eq!(actual_params, expected_params)
+        assert_eq!(actual_params, expected_params);
     }
 }

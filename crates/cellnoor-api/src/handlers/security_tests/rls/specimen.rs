@@ -47,7 +47,7 @@ async fn insert_inaccessible_project(tx: &db::Transaction<'_>) -> (NewProject, P
         .unwrap()
 }
 
-pub async fn insert_inaccessible_specimen(
+pub(crate) async fn insert_inaccessible_specimen(
     tx: &db::Transaction<'_>,
 ) -> (NewSpecimen, SpecimenDetailed) {
     let (_, project) = insert_inaccessible_project(tx).await;
@@ -62,7 +62,7 @@ pub async fn insert_inaccessible_specimen(
     .unwrap()
 }
 
-pub async fn get_user_id_from_specimen(
+pub(crate) async fn get_user_id_from_specimen(
     tx: &db::Transaction<'_>,
     specimen: &SpecimenDetailed,
 ) -> Uuid {

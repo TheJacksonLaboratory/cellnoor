@@ -14,6 +14,7 @@ use crate::{
     },
 };
 
+#[must_use]
 pub fn random_name_for(table: &str) -> NonemptyString {
     format!("{table}-{}", &Uuid::new_v4().to_string()[0..8]).to_nonempty_string()
 }

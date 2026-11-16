@@ -35,7 +35,7 @@ async fn select_specimens_compact(
         .collect())
 }
 
-pub fn specimen_from_record(record: SavedSpecimenRecord) -> SpecimenCompact {
+pub(crate) fn specimen_from_record(record: SavedSpecimenRecord) -> SpecimenCompact {
     SpecimenCompact {
         links: SimpleLinks::from_str_and_id("/specimens", record.id),
         record,

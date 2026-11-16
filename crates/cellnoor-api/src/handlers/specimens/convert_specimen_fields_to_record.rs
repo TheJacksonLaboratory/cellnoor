@@ -8,7 +8,7 @@ use cellnoor_types::specimen::{
 
 use crate::handlers::specimens::create::NewSpecimenRecord;
 
-pub fn convert_specimen_fields_to_record(
+pub(super) fn convert_specimen_fields_to_record(
     SpecimenSimpleFields {
         readable_id,
         name,
@@ -87,10 +87,10 @@ pub fn convert_specimen_fields_to_record(
         given_at,
         given_by,
         given_to,
-        additional_data,
+        type_,
         embedded_in,
         fixative,
         thermal_preservation_method,
-        type_,
+        additional_data,
     }
 }

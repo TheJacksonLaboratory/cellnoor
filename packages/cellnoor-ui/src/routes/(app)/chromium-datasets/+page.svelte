@@ -14,13 +14,12 @@
 	import PageSize from '#lib/filters/PageSize.svelte';
 	import type { ChromiumDatasetField } from 'cellnoor-client/cellnoor-types.ts';
 	import { FormFieldName } from './field-parsers.ts';
-	import { convertMetricsToFiles } from './convert-metrics.ts';
 
 	let { data } = $props();
 
 	const { datasets, selected, projects, projectNames, tenxAssays, orderBy, limit } = $derived(data);
 
-	const selectedDatasets = $derived(datasets.filter((ds) => selected.has(ds.id)));
+	// const selectedDatasets = $derived(datasets.filter((ds) => selected.has(ds.id)));
 
 	const sortFields = new Map<ChromiumDatasetField, string>([
 		['delivered_at', 'Date delivered'],
@@ -30,31 +29,6 @@
 	const SPECIMEN_LIMIT = 8;
 
 	const datasetCount = (n: number) => `${n} ${n === 1 ? 'dataset' : 'datasets'}`;
-
-	function download(blob: Blob, filename: string) {
-		const a = document.createElement('a');
-		a.href = URL.createObjectURL(blob);
-		a.download = filename;
-		a.click();
-		URL.revokeObjectURL(a.href);
-	}
-
-	const downloadFiles = () => {
-		const { standardMetrics, cellrangerMultiMetrics, json } =
-			convertMetricsToFiles(selectedDatasets);
-
-		if (standardMetrics) {
-			download(standardMetrics, 'datasets.csv');
-		}
-
-		if (cellrangerMultiMetrics) {
-			download(cellrangerMultiMetrics, 'multiplexed-datasets.csv');
-		}
-
-		if (json) {
-			download(json, 'datasets.json');
-		}
-	};
 </script>
 
 <FilteredList {limit} count={datasets.length}>
@@ -128,11 +102,6 @@
 		<header class="cluster">
 			<span>{datasetCount(datasets.length)}</span>
 			<SelectionToolbar {selected} ids={datasets.map((ds) => ds.id)} />
-			{#if selectedDatasets.length}
-				<button class="button" onclick={downloadFiles}
-					>Download metrics for {datasetCount(selectedDatasets.length)}</button
-				>
-			{/if}
 		</header>
 
 		<ul class="divided">

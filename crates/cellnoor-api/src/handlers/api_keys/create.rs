@@ -99,7 +99,7 @@ fn generate_secret() -> String {
 }
 
 #[cfg(test)]
-pub mod test {
+pub(crate) mod test {
     use cellnoor_types::api_key::{ApiKey, NewApiKey};
 
     use crate::{

@@ -12,6 +12,7 @@ use uuid::Uuid;
 
 use crate::{
     Relation,
+    cdna::creation::LibraryType,
     chromium_dataset::record::ChromiumDatasetRecord,
     chromium_run::ChromiumRunCompact,
     file_tree::FileTreeNode,
@@ -75,13 +76,32 @@ pub struct ChromiumDatasetDetailedLinks {
 }
 
 #[base_model]
+pub struct TransposedCsvRow {
+    #[cfg_attr(
+        feature = "serde",
+        serde(rename = "Category", alias = "Library or Sample")
+    )]
+    pub category: String,
+    #[cfg_attr(feature = "serde", serde(rename = "Library Type"))]
+    pub library_type: LibraryType,
+    #[cfg_attr(feature = "serde", serde(rename = "Grouped By"))]
+    pub grouped_by: String,
+    #[cfg_attr(feature = "serde", serde(rename = "Group Name"))]
+    pub group_name: String,
+    #[cfg_attr(feature = "serde", serde(rename = "Metric Name"))]
+    pub metric_name: String,
+    #[cfg_attr(feature = "serde", serde(rename = "Metric Value"))]
+    pub metric_value: TenxCsvValue,
+}
+
+#[base_model]
 #[cfg_attr(feature = "serde", serde(tag = "format", rename_all = "snake_case"))]
 pub enum ChromiumDatasetParsedFileData {
-    SingleRowCsv {
-        data: HashMap<String, TenxCsvValue>,
-    },
-    MultiRowCsv {
+    StandardCsv {
         data: Vec<HashMap<String, TenxCsvValue>>,
+    },
+    TransposedCsv {
+        data: Vec<TransposedCsvRow>,
     },
     Json {
         data: HashMap<String, serde_json::Value>,

@@ -9,7 +9,7 @@ use cellnoor_types::{
 };
 use uuid::Uuid;
 
-pub fn split_new_cdna_for_insertion(
+pub(super) fn split_new_cdna_for_insertion(
     NewCdna {
         simple:
             CdnaSimpleFields {

@@ -88,7 +88,10 @@ mod test {
         .await
         .unwrap();
 
-        assert!(root.ancestors.is_empty());
+        assert_eq!(
+            root.ancestors,
+            [] as [cellnoor_types::specimen::SpecimenCompact; 0]
+        );
 
         let ancestors: Vec<_> = grandchild.ancestors.into_iter().map(|a| a.record).collect();
         assert_eq!(ancestors, [child.record, root.record]);

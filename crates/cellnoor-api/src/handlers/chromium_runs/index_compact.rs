@@ -48,7 +48,7 @@ pub(super) fn chromium_run_links(id: Id) -> ChromiumRunLinks {
     }
 }
 
-pub fn chromium_run_from_record(record: SavedChromiumRunRecord) -> ChromiumRunCompact {
+pub(crate) fn chromium_run_from_record(record: SavedChromiumRunRecord) -> ChromiumRunCompact {
     ChromiumRunCompact {
         links: chromium_run_links(record.id),
         record,

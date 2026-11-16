@@ -1,7 +1,4 @@
-use std::collections::HashMap;
-
 use cellnoor_types::{Relation, chromium_dataset::ChromiumDatasetParsedFileData};
-use csvranger::TenxCsvValue;
 use uuid::Uuid;
 
 use crate::{
@@ -162,23 +159,32 @@ impl Insert for NewParsedFile<'_> {
 pub(in super::super) fn parse_csv(
     data: &[u8],
 ) -> Result<ChromiumDatasetParsedFileData, UploadFilesError> {
-    type ParsedData = Vec<HashMap<String, TenxCsvValue>>;
+    let parse_err = |e: csv::Error| UploadFilesError::Parse {
+        message: format!("failed to parse CSV: {e}"),
+    };
 
     let mut reader = csv::Reader::from_reader(data);
 
-    let mut parsed = reader
-        .deserialize()
-        .collect::<Result<ParsedData, _>>()
-        .map_err(|e| UploadFilesError::Parse {
-            message: format!("failed to parse CSV: {e}"),
-        })?;
+    let is_transposed = reader
+        .headers()
+        .map_err(parse_err)?
+        .iter()
+        .any(|h| h == "Metric Name");
 
-    let parsed = if parsed.len() == 1 {
-        ChromiumDatasetParsedFileData::SingleRowCsv {
-            data: parsed.swap_remove(0),
+    let parsed = if is_transposed {
+        ChromiumDatasetParsedFileData::TransposedCsv {
+            data: reader
+                .deserialize()
+                .collect::<Result<_, _>>()
+                .map_err(parse_err)?,
         }
     } else {
-        ChromiumDatasetParsedFileData::MultiRowCsv { data: parsed }
+        ChromiumDatasetParsedFileData::StandardCsv {
+            data: reader
+                .deserialize()
+                .collect::<Result<_, _>>()
+                .map_err(parse_err)?,
+        }
     };
 
     Ok(parsed)
@@ -228,7 +234,7 @@ mod tests {
             write_files_to_db(&tx, dataset_id, &[staged_file_with_path(lowercase_path)])
                 .await
                 .unwrap();
-        assert!(overwritten_file_paths.is_empty());
+        assert_eq!(overwritten_file_paths, [] as [std::string::String; 0]);
 
         let overwritten_file_paths =
             write_files_to_db(&tx, dataset_id, &[staged_file_with_path(uppercase_path)])

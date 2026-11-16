@@ -1,4 +1,5 @@
-#![allow(uncommon_codepoints)]
+#![expect(uncommon_codepoints)]
+#![cfg_attr(test, expect(dead_code_pub_in_binary))]
 
 pub mod api;
 pub mod auth;

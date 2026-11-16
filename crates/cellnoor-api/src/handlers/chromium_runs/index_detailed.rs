@@ -38,12 +38,12 @@ pub(in super::super) async fn select_chromium_runs_detailed(
     Ok(tx
         .select_rows(&SELECT_DETAILED_CHROMIUM_RUNS, query)
         .await?
-        .into_iter()
+        .iter()
         .map(map_detailed_row)
         .collect())
 }
 
-fn map_detailed_row(row: Row) -> ChromiumRunDetailed {
+fn map_detailed_row(row: &Row) -> ChromiumRunDetailed {
     let record: SavedChromiumRunRecord = row.get("chromium_run");
     let assay = row.get("tenx_assay");
     let gem_wells: Vec<SavedGemWellWithSpecimensRecord> = row.get("gem_wells");
@@ -155,7 +155,7 @@ mod test {
         assert_ne!(
             specimens[0].ocm_barcode_id.unwrap(),
             specimens[1].ocm_barcode_id.unwrap()
-        )
+        );
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -267,7 +267,7 @@ mod test {
         let person_id = s1.specimen.record.submitted_by.unwrap();
 
         let new = NewChromiumRun {
-            record: new_record(assay_id, person_id).await,
+            record: new_record(assay_id, person_id),
             gem_wells: ChromiumRunGemWells::OnChipMultiplexing {
                 gem_wells: NonemptyBoundedVec::new(vec![NewOcmGemWell {
                     readable_id: crate::db::dummy_data::random_name_for("gem_well"),
@@ -292,7 +292,7 @@ mod test {
         };
 
         let run = insert_test_chromium_run(&tx, TestChromiumRunKind::OnChipMultiplexing, |run| {
-            *run = new.clone()
+            *run = new.clone();
         })
         .await
         .unwrap();

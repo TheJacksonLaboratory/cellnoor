@@ -70,6 +70,6 @@ mod test {
 
         let selected = select_project_by_id(&tx, id).await.unwrap();
 
-        assert!(selected.record.members.is_empty());
+        assert_eq!(selected.record.members, [] as [uuid::Uuid; 0]);
     }
 }
