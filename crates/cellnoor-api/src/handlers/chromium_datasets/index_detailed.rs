@@ -97,7 +97,10 @@ fn chromium_dataset_specimen_from_tagged_specimen(
         .as_ref()
         .map(|m| &m.tag_id)
         .map(NonemptyString::as_ref)
-        .or(specimen.ocm_barcode_id.as_ref().map(std::convert::AsRef::as_ref))
+        .or(specimen
+            .ocm_barcode_id
+            .as_ref()
+            .map(std::convert::AsRef::as_ref))
     else {
         return ChromiumDatasetSpecimen {
             specimen,
@@ -167,13 +170,17 @@ const ATAC_FRACTION_OF_HIGH_QUALITY_FRAGMENTS_IN_CELLS: &str =
 const ATAC_FRACTION_OF_GENOME_IN_PEAKS: &str = "ATAC fraction of genome in peaks";
 const ATAC_PERCENT_DUPLICATES: &str = "ATAC percent duplicates";
 
-const VDJ_T_NUMBER_OF_CELLS: &str = "VDJ-T number of cells";
-const VDJ_T_FRACTION_OF_READS_IN_CELLS: &str = "VDJ-T fraction of reads in cells";
-const VDJ_T_VDJ_GENE_MAPPING_RATE: &str = "VDJ-T V(D)J gene mapping rate";
+const VDJ_B_FRACTION_OF_CELLS_WITH_PRODUCTIVE_VJ_SPANNING_PAIR: &str =
+    "VDJ B fraction of cells with productive V-J spanning pair";
+const VDJ_B_NUMBER_OF_CELLS: &str = "VDJ B number of cells";
+const VDJ_B_FRACTION_OF_READS_IN_CELLS: &str = "VDJ B fraction of reads in cells";
+const VDJ_B_VDJ_GENE_MAPPING_RATE: &str = "VDJ B V(D)J gene mapping rate";
 
-const VDJ_B_NUMBER_OF_CELLS: &str = "VDJ-B number of cells";
-const VDJ_B_FRACTION_OF_READS_IN_CELLS: &str = "VDJ-B fraction of reads in cells";
-const VDJ_B_VDJ_GENE_MAPPING_RATE: &str = "VDJ-B V(D)J gene mapping rate";
+const VDJ_T_FRACTION_OF_CELLS_WITH_PRODUCTIVE_VJ_SPANNING_PAIR: &str =
+    "VDJ T fraction of cells with productive V-J spanning pair";
+const VDJ_T_NUMBER_OF_CELLS: &str = "VDJ T number of cells";
+const VDJ_T_FRACTION_OF_READS_IN_CELLS: &str = "VDJ T fraction of reads in cells";
+const VDJ_T_VDJ_GENE_MAPPING_RATE: &str = "VDJ T V(D)J gene mapping rate";
 
 const AB_MEDIAN_UMI_COUNTS_PER_CELL: &str = "AB median UMI counts per cell";
 
@@ -259,17 +266,28 @@ fn rename_multi_metric(library_type: LibraryType, metric_name: &str) -> Option<&
     use LibraryType::{AntibodyCapture, GeneExpression, MultiplexingCapture, VdjB, VdjT};
 
     match (library_type, metric_name) {
-        (GeneExpression, _) => METRICS_RENAMING.get(metric_name).copied(),
-        (VdjT, "VDJ cells") => Some(VDJ_T_NUMBER_OF_CELLS),
-        (VdjT, "Fraction reads in cells") => Some(VDJ_T_FRACTION_OF_READS_IN_CELLS),
-        (VdjT, "Reads mapped to any V(D)J gene") => Some(VDJ_T_VDJ_GENE_MAPPING_RATE),
-        (VdjB, "VDJ cells") => Some(VDJ_B_NUMBER_OF_CELLS),
-        (VdjB, "Fraction reads in cells") => Some(VDJ_B_FRACTION_OF_READS_IN_CELLS),
-        (VdjB, "Reads mapped to any V(D)J gene") => Some(VDJ_B_VDJ_GENE_MAPPING_RATE),
         (AntibodyCapture, "Median UMI counts per cell") => Some(AB_MEDIAN_UMI_COUNTS_PER_CELL),
+
+        (GeneExpression, _) => METRICS_RENAMING.get(metric_name).copied(),
+
         (MultiplexingCapture, "Fraction reads in cell-associated barcodes") => {
             Some(CMO_FRACTION_OF_READS_IN_CELLS)
         }
+
+        (VdjB, "Cells with productive V-J spanning pair") => {
+            Some(VDJ_B_FRACTION_OF_CELLS_WITH_PRODUCTIVE_VJ_SPANNING_PAIR)
+        }
+        (VdjB, "Fraction reads in cells") => Some(VDJ_B_FRACTION_OF_READS_IN_CELLS),
+        (VdjB, "Reads mapped to any V(D)J gene") => Some(VDJ_B_VDJ_GENE_MAPPING_RATE),
+        (VdjB, "VDJ cells") => Some(VDJ_B_NUMBER_OF_CELLS),
+
+        (VdjT, "Cells with productive V-J spanning pair") => {
+            Some(VDJ_T_FRACTION_OF_CELLS_WITH_PRODUCTIVE_VJ_SPANNING_PAIR)
+        }
+        (VdjT, "Fraction reads in cells") => Some(VDJ_T_FRACTION_OF_READS_IN_CELLS),
+        (VdjT, "Reads mapped to any V(D)J gene") => Some(VDJ_T_VDJ_GENE_MAPPING_RATE),
+        (VdjT, "VDJ cells") => Some(VDJ_T_NUMBER_OF_CELLS),
+
         _ => None,
     }
 }
