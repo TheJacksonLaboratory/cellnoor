@@ -1,0 +1,46 @@
+Category,Library Type,Grouped By,Group Name,Metric Name,Metric Value
+Cells,Gene Expression,,,Cells,6079
+Cells,Gene Expression,,,Confidently mapped antisense,0.013048888380263373
+Cells,Gene Expression,,,Confidently mapped reads in cells,0.9154445844025864
+Cells,Gene Expression,,,Confidently mapped to exonic regions,0.7328267013185282
+Cells,Gene Expression,,,Confidently mapped to genome,0.9505472948016448
+Cells,Gene Expression,,,Confidently mapped to intergenic regions,0.04830542693569737
+Cells,Gene Expression,,,Confidently mapped to intronic regions,0.16941516654741912
+Cells,Gene Expression,,,Confidently mapped to transcriptome,0.7003361292048069
+Cells,Gene Expression,,,Mapped to genome,0.9706831197270704
+Cells,Gene Expression,,,Median UMI counts per cell,6283
+Cells,Gene Expression,,,Median genes per cell,2164
+Cells,Gene Expression,,,Number of reads in cells,264381371
+Cells,Gene Expression,,,Total genes detected,17581
+Library,Gene Expression,Fastq ID,26CH129-L1_GT26-26236_AGAATGGTTT-TCCCACCCTC,Number of reads analyzed,1551769790
+Library,Gene Expression,Fastq ID,26CH129-L1_GT26-26236_AGAATGGTTT-TCCCACCCTC,Number of short reads skipped,0
+Library,Gene Expression,Fastq ID,26CH129-L1_GT26-26236_AGAATGGTTT-TCCCACCCTC,Q30 RNA read,0.9482181145618657
+Library,Gene Expression,Fastq ID,26CH129-L1_GT26-26236_AGAATGGTTT-TCCCACCCTC,Q30 UMI,0.9693904733215923
+Library,Gene Expression,Fastq ID,26CH129-L1_GT26-26236_AGAATGGTTT-TCCCACCCTC,Q30 barcodes,0.963712379238201
+Library,Gene Expression,OCM Barcode ID,OB1,Cells per OCM barcode,6081
+Library,Gene Expression,OCM Barcode ID,OB1,Sample ID,IFA17-5
+Library,Gene Expression,OCM Barcode ID,OB1,UMIs per OCM barcode,44504069
+Library,Gene Expression,OCM Barcode ID,OB2,Cells per OCM barcode,5704
+Library,Gene Expression,OCM Barcode ID,OB2,Sample ID,IFA18-4
+Library,Gene Expression,OCM Barcode ID,OB2,UMIs per OCM barcode,49294589
+Library,Gene Expression,OCM Barcode ID,OB3,Cells per OCM barcode,6256
+Library,Gene Expression,OCM Barcode ID,OB3,Sample ID,IFA18-15
+Library,Gene Expression,OCM Barcode ID,OB3,UMIs per OCM barcode,50507829
+Library,Gene Expression,OCM Barcode ID,OB4,Cells per OCM barcode,6079
+Library,Gene Expression,OCM Barcode ID,OB4,Sample ID,IFA17-15
+Library,Gene Expression,OCM Barcode ID,OB4,UMIs per OCM barcode,46821022
+Library,Gene Expression,Physical library ID,GEX_1,Cells,24120
+Library,Gene Expression,Physical library ID,GEX_1,Confidently mapped antisense,0.01667961070436872
+Library,Gene Expression,Physical library ID,GEX_1,Confidently mapped reads in cells,0.8772469501300031
+Library,Gene Expression,Physical library ID,GEX_1,Confidently mapped to exonic regions,0.5922684678633936
+Library,Gene Expression,Physical library ID,GEX_1,Confidently mapped to genome,0.927507158133295
+Library,Gene Expression,Physical library ID,GEX_1,Confidently mapped to intergenic regions,0.09423578480671414
+Library,Gene Expression,Physical library ID,GEX_1,Confidently mapped to intronic regions,0.24100290546318728
+Library,Gene Expression,Physical library ID,GEX_1,Confidently mapped to transcriptome,0.5571175605886747
+Library,Gene Expression,Physical library ID,GEX_1,Mapped to genome,0.94981429236356
+Library,Gene Expression,Physical library ID,GEX_1,Mean reads per cell,64335
+Library,Gene Expression,Physical library ID,GEX_1,Number of reads,1551769790
+Library,Gene Expression,Physical library ID,GEX_1,Number of reads in the library,1551769790
+Library,Gene Expression,Physical library ID,GEX_1,Sequencing saturation,0.7637121410051199
+Library,Gene Expression,Physical library ID,GEX_1,Valid UMI Sequences,0.9568267848544724
+Library,Gene Expression,Physical library ID,GEX_1,Valid barcodes,0.9381751161684878

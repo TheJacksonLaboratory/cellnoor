@@ -138,88 +138,107 @@ fn extract_key_metrics_from_parsed_files(
 }
 
 const ESTIMATED_NUMBER_OF_CELLS: &str = "Estimated number of cells";
-const MEAN_READS_PER_CELL: &str = "Mean reads per cell";
-const MEDIAN_GENES_PER_CELL: &str = "Median genes per cell";
-const NUMBER_OF_READS: &str = "Number of reads";
-const SEQUENCING_SATURATION: &str = "Sequencing saturation";
-const INTERGENIC_REGION_MAPPING_RATE: &str = "Intergenic region mapping rate";
-const INTRONIC_REGION_MAPPING_RATE: &str = "Intronic region mapping rate";
-const EXONIC_REGION_MAPPING_RATE: &str = "Exonic region mapping rate";
-const TRANSCRIPTOME_MAPPING_RATE: &str = "Transcriptome mapping rate";
-const FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS: &str = "Fraction of transcriptomic reads in cells";
-const MEDIAN_UMI_COUNTS_PER_CELL: &str = "Median UMI counts per cell";
-const NUMBER_OF_READS_IN_CELLS: &str = "Number of reads in cells";
-const MEDIAN_HIGH_QUALITY_FRAGMENTS_PER_CELL: &str = "Median high-quality fragments per cell";
-const TSS_ENRICHMENT_SCORE: &str = "TSS enrichment score";
-const GENOME_MAPPING_RATE: &str = "Genome mapping rate";
-const FRACTION_OF_TRANSPOSITION_EVENTS_IN_PEAKS_IN_CELLS: &str =
-    "Fraction of transposition events in peaks in cells";
-const FRACTION_OF_HIGH_QUALITY_FRAGMENTS_IN_CELLS: &str =
-    "Fraction of high-quality fragments in cells";
-const SEQUENCED_READ_PAIRS: &str = "Number of sequenced read pairs";
-const FRACTION_OF_GENOME_IN_PEAKS: &str = "Fraction of genome in peaks";
-const PERCENT_DUPLICATES: &str = "Percent duplicates";
 
-// TODO: ATAC-ify/GEX-ify metrics
-// TODO: harmonize all pipelines to display the superset of all the metrics
+const GEX_MEAN_READS_PER_CELL: &str = "GEX Mean reads per cell";
+const GEX_MEDIAN_GENES_PER_CELL: &str = "GEX Median genes per cell";
+const GEX_SEQUENCED_READ_PAIRS: &str = "GEX Number of sequenced read pairs";
+const GEX_SEQUENCING_SATURATION: &str = "GEX Sequencing saturation";
+const GEX_INTERGENIC_REGION_MAPPING_RATE: &str = "GEX Intergenic region mapping rate";
+const GEX_INTRONIC_REGION_MAPPING_RATE: &str = "GEX Intronic region mapping rate";
+const GEX_EXONIC_REGION_MAPPING_RATE: &str = "GEX Exonic region mapping rate";
+const GEX_TRANSCRIPTOME_MAPPING_RATE: &str = "GEX Transcriptome mapping rate";
+const GEX_GENOME_MAPPING_RATE: &str = "GEX Genome mapping rate";
+const GEX_FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS: &str =
+    "GEX Fraction of transcriptomic reads in cells";
+const GEX_MEDIAN_UMI_COUNTS_PER_CELL: &str = "GEX Median UMI counts per cell";
+const GEX_NUMBER_OF_READS_IN_CELLS: &str = "GEX Number of reads in cells";
+
+const ATAC_MEAN_READS_PER_CELL: &str = "ATAC Mean reads per cell";
+const ATAC_SEQUENCED_READ_PAIRS: &str = "ATAC Number of sequenced read pairs";
+const ATAC_GENOME_MAPPING_RATE: &str = "ATAC Genome mapping rate";
+const ATAC_MEDIAN_HIGH_QUALITY_FRAGMENTS_PER_CELL: &str =
+    "ATAC Median high-quality fragments per cell";
+const ATAC_TSS_ENRICHMENT_SCORE: &str = "ATAC TSS enrichment score";
+const ATAC_FRACTION_OF_TRANSPOSITION_EVENTS_IN_PEAKS_IN_CELLS: &str =
+    "ATAC Fraction of transposition events in peaks in cells";
+const ATAC_FRACTION_OF_HIGH_QUALITY_FRAGMENTS_IN_CELLS: &str =
+    "ATAC Fraction of high-quality fragments in cells";
+const ATAC_FRACTION_OF_GENOME_IN_PEAKS: &str = "ATAC Fraction of genome in peaks";
+const ATAC_PERCENT_DUPLICATES: &str = "ATAC Percent duplicates";
+
 static METRICS_RENAMING: phf::Map<&'static str, &'static str> = phf::phf_map! {
     // cellranger count (metrics_summary.csv)
     "Estimated Number of Cells" => ESTIMATED_NUMBER_OF_CELLS,
-    "Mean Reads per Cell" => MEAN_READS_PER_CELL,
-    "Median Genes per Cell" => MEDIAN_GENES_PER_CELL,
-    "Number of Reads" => NUMBER_OF_READS,
-    "Sequencing Saturation" => SEQUENCING_SATURATION,
-    "Reads Mapped Confidently to Intergenic Regions" => INTERGENIC_REGION_MAPPING_RATE,
-    "Reads Mapped Confidently to Intronic Regions"	=> INTRONIC_REGION_MAPPING_RATE,
-    "Reads Mapped Confidently to Exonic Regions" => EXONIC_REGION_MAPPING_RATE,
-    "Reads Mapped Confidently to Transcriptome" => TRANSCRIPTOME_MAPPING_RATE,
-    "Fraction Reads in Cells" => FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS,
-    "Median UMI Counts per Cell" => MEDIAN_UMI_COUNTS_PER_CELL,
+    "Mean Reads per Cell" => GEX_MEAN_READS_PER_CELL,
+    "Median Genes per Cell" => GEX_MEDIAN_GENES_PER_CELL,
+    // "Number of Reads" counts read pairs, the same as cellranger-arc's "GEX Sequenced read pairs":
+    // https://www.10xgenomics.com/support/software/cell-ranger/latest/analysis/outputs/cr-3p-outputs-metrics-count
+    // https://www.10xgenomics.com/support/software/cell-ranger-arc/latest/analysis/outputs/metrics
+    "Number of Reads" => GEX_SEQUENCED_READ_PAIRS,
+    "Sequencing Saturation" => GEX_SEQUENCING_SATURATION,
+    "Reads Mapped Confidently to Genome" => GEX_GENOME_MAPPING_RATE,
+    "Reads Mapped Confidently to Intergenic Regions" => GEX_INTERGENIC_REGION_MAPPING_RATE,
+    "Reads Mapped Confidently to Intronic Regions" => GEX_INTRONIC_REGION_MAPPING_RATE,
+    "Reads Mapped Confidently to Exonic Regions" => GEX_EXONIC_REGION_MAPPING_RATE,
+    "Reads Mapped Confidently to Transcriptome" => GEX_TRANSCRIPTOME_MAPPING_RATE,
+    "Fraction Reads in Cells" => GEX_FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS,
+    "Median UMI Counts per Cell" => GEX_MEDIAN_UMI_COUNTS_PER_CELL,
 
     // cellranger multi (per_sample_outs/*/metrics_summary.csv)
     "Cells per OCM barcode" => ESTIMATED_NUMBER_OF_CELLS,
     "Cells per probe barcode" => ESTIMATED_NUMBER_OF_CELLS,
 
     // cellranger multi (qc_sample_metrics.csv)
-    "GEX: Median genes per cell" => MEDIAN_GENES_PER_CELL,
-    "GEX: Median UMI counts per cell" => MEDIAN_UMI_COUNTS_PER_CELL,
-    "GEX: Confidently mapped to transcriptome" => TRANSCRIPTOME_MAPPING_RATE,
-    "GEX: Confidently mapped to exonic regions" => EXONIC_REGION_MAPPING_RATE,
-    "GEX: Confidently mapped to intronic regions" => INTRONIC_REGION_MAPPING_RATE,
-    "GEX: Confidently mapped to intergenic regions" => INTERGENIC_REGION_MAPPING_RATE,
-    "GEX: Confidently mapped reads in cells" => FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS,
-    "GEX: Number of reads in cells" => NUMBER_OF_READS_IN_CELLS,
+    "GEX: Cells" => ESTIMATED_NUMBER_OF_CELLS,
+    "GEX: Median genes per cell" => GEX_MEDIAN_GENES_PER_CELL,
+    "GEX: Median UMI counts per cell" => GEX_MEDIAN_UMI_COUNTS_PER_CELL,
+    "GEX: Confidently mapped to genome" => GEX_GENOME_MAPPING_RATE,
+    "GEX: Confidently mapped to transcriptome" => GEX_TRANSCRIPTOME_MAPPING_RATE,
+    "GEX: Confidently mapped to exonic regions" => GEX_EXONIC_REGION_MAPPING_RATE,
+    "GEX: Confidently mapped to intronic regions" => GEX_INTRONIC_REGION_MAPPING_RATE,
+    "GEX: Confidently mapped to intergenic regions" => GEX_INTERGENIC_REGION_MAPPING_RATE,
+    "GEX: Confidently mapped reads in cells" => GEX_FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS,
+    "GEX: Number of reads in cells" => GEX_NUMBER_OF_READS_IN_CELLS,
 
     // cellranger-atac count (summary.csv)
     "Estimated number of cells" => ESTIMATED_NUMBER_OF_CELLS,
-    "Confidently mapped read pairs" => GENOME_MAPPING_RATE,
-    "Fraction of genome in peaks" => FRACTION_OF_GENOME_IN_PEAKS,
-    "Fraction of high-quality fragments in cells" => FRACTION_OF_HIGH_QUALITY_FRAGMENTS_IN_CELLS,
-    "Mean raw read pairs per cell" => MEAN_READS_PER_CELL,
-    "Median high-quality fragments per cell" => MEDIAN_HIGH_QUALITY_FRAGMENTS_PER_CELL,
-    "Fraction of transposition events in peaks in cells" => FRACTION_OF_TRANSPOSITION_EVENTS_IN_PEAKS_IN_CELLS,
-    "Sequenced read pairs" => SEQUENCED_READ_PAIRS,
-    "Sequencing saturation" => SEQUENCING_SATURATION,
-    "TSS enrichment score" => TSS_ENRICHMENT_SCORE,
+    "Confidently mapped read pairs" => ATAC_GENOME_MAPPING_RATE,
+    "Fraction of genome in peaks" => ATAC_FRACTION_OF_GENOME_IN_PEAKS,
+    "Fraction of high-quality fragments in cells" => ATAC_FRACTION_OF_HIGH_QUALITY_FRAGMENTS_IN_CELLS,
+    "Mean raw read pairs per cell" => ATAC_MEAN_READS_PER_CELL,
+    "Median high-quality fragments per cell" => ATAC_MEDIAN_HIGH_QUALITY_FRAGMENTS_PER_CELL,
+    "Fraction of transposition events in peaks in cells" => ATAC_FRACTION_OF_TRANSPOSITION_EVENTS_IN_PEAKS_IN_CELLS,
+    "Percent duplicates" => ATAC_PERCENT_DUPLICATES,
+    "Sequenced read pairs" => ATAC_SEQUENCED_READ_PAIRS,
+    "TSS enrichment score" => ATAC_TSS_ENRICHMENT_SCORE,
 
     // cellranger-arc count (summary.csv)
     // Note that cellranger-arc count outputs "Estimated number of cells", but that's caught above
-    "ATAC Confidently mapped read pairs" => GENOME_MAPPING_RATE,
-    "ATAC Median high-quality fragments per cell" => MEDIAN_HIGH_QUALITY_FRAGMENTS_PER_CELL,
-    "ATAC Percent duplicates" => PERCENT_DUPLICATES,
-    "ATAC Sequenced read pairs" => SEQUENCED_READ_PAIRS,
-    "ATAC TSS enrichment score" => TSS_ENRICHMENT_SCORE,
-    "ATAC Fraction of high-quality fragments in cells" => FRACTION_OF_HIGH_QUALITY_FRAGMENTS_IN_CELLS,
-    "GEX Fraction of transcriptomic reads in cells" => FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS,
-    "GEX Mean raw reads per cell" => MEAN_READS_PER_CELL,
-    "GEX Median UMI counts per cell" => MEDIAN_UMI_COUNTS_PER_CELL,
-    "GEX Median genes per cell" => MEDIAN_GENES_PER_CELL,
-    "GEX Reads mapped confidently to exonic regions" => EXONIC_REGION_MAPPING_RATE,
-    "GEX Reads mapped confidently to genome" => GENOME_MAPPING_RATE,
-    "GEX Reads mapped confidently to intergenic regions" => INTERGENIC_REGION_MAPPING_RATE,
-    "GEX Reads mapped confidently to intronic regions" => INTRONIC_REGION_MAPPING_RATE,
-    "GEX Reads mapped confidently to transcriptome" => TRANSCRIPTOME_MAPPING_RATE,
-    "GEX Sequenced read pairs" => SEQUENCED_READ_PAIRS
+    "ATAC Confidently mapped read pairs" => ATAC_GENOME_MAPPING_RATE,
+    "ATAC Fraction of genome in peaks" => ATAC_FRACTION_OF_GENOME_IN_PEAKS,
+    "ATAC Fraction of high-quality fragments in cells" => ATAC_FRACTION_OF_HIGH_QUALITY_FRAGMENTS_IN_CELLS,
+    "ATAC Fraction of transposition events in peaks in cells" => ATAC_FRACTION_OF_TRANSPOSITION_EVENTS_IN_PEAKS_IN_CELLS,
+    "ATAC Mean raw read pairs per cell" => ATAC_MEAN_READS_PER_CELL,
+    "ATAC Median high-quality fragments per cell" => ATAC_MEDIAN_HIGH_QUALITY_FRAGMENTS_PER_CELL,
+    "ATAC Percent duplicates" => ATAC_PERCENT_DUPLICATES,
+    "ATAC Sequenced read pairs" => ATAC_SEQUENCED_READ_PAIRS,
+    "ATAC TSS enrichment score" => ATAC_TSS_ENRICHMENT_SCORE,
+    "GEX Fraction of transcriptomic reads in cells" => GEX_FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS,
+    "GEX Mean raw reads per cell" => GEX_MEAN_READS_PER_CELL,
+    "GEX Median UMI counts per cell" => GEX_MEDIAN_UMI_COUNTS_PER_CELL,
+    "GEX Median genes per cell" => GEX_MEDIAN_GENES_PER_CELL,
+    // TODO: verify this claude-slop is correct
+    // cellranger-arc defines GEX "Percent duplicates" as the fraction of reads originating from an
+    // already-observed UMI, which is how cellranger count defines "Sequencing Saturation":
+    // https://www.10xgenomics.com/support/software/cell-ranger-arc/latest/analysis/outputs/metrics
+    // https://www.10xgenomics.com/support/software/cell-ranger/latest/analysis/outputs/cr-3p-outputs-metrics-count
+    "GEX Percent duplicates" => GEX_SEQUENCING_SATURATION,
+    "GEX Reads mapped confidently to exonic regions" => GEX_EXONIC_REGION_MAPPING_RATE,
+    "GEX Reads mapped confidently to genome" => GEX_GENOME_MAPPING_RATE,
+    "GEX Reads mapped confidently to intergenic regions" => GEX_INTERGENIC_REGION_MAPPING_RATE,
+    "GEX Reads mapped confidently to intronic regions" => GEX_INTRONIC_REGION_MAPPING_RATE,
+    "GEX Reads mapped confidently to transcriptome" => GEX_TRANSCRIPTOME_MAPPING_RATE,
+    "GEX Sequenced read pairs" => GEX_SEQUENCED_READ_PAIRS
 };
 
 fn insert_key_metrics_from_multi_row_csv<'a>(
@@ -537,10 +556,11 @@ mod tests {
         );
 
         let expected = HashMap::from([
-            ("Median genes per cell", TenxCsvValue::I64(1305)),
-            ("Median UMI counts per cell", TenxCsvValue::I64(2244)),
+            ("Estimated number of cells", TenxCsvValue::I64(16410)),
+            ("GEX Median genes per cell", TenxCsvValue::I64(1305)),
+            ("GEX Median UMI counts per cell", TenxCsvValue::I64(2244)),
             (
-                "Fraction of transcriptomic reads in cells",
+                "GEX Fraction of transcriptomic reads in cells",
                 TenxCsvValue::F64(0.6847850295990157),
             ),
         ]);
