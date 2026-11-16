@@ -71,6 +71,7 @@ pub mod dev_util {
     use crate::db;
 
     #[cfg(any(test, feature = "dev"))]
+    #[must_use]
     pub fn test_db_pool() -> db::Pool {
         // Your IDE will complain about this unless you run scripts/dev/test/sh
         #[cfg(test)]

@@ -80,6 +80,6 @@ mod test {
             .await
             .unwrap();
 
-        assert!(selected.members.is_empty());
+        assert_eq!(selected.members, [] as [uuid::Uuid; 0]);
     }
 }

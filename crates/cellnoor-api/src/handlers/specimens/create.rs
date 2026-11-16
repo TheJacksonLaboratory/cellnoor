@@ -70,7 +70,7 @@ impl Insert for NewSpecimenRecord {
     type Field = SpecimenField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use SpecimenField::*;
+        use SpecimenField::{ReadableId, Name, ReceivedOrCreatedAt, GivenAt, GivenBy, GivenTo, AdditionalData, Type, EmbeddedIn, Fixative, ThermalPreservationMethod, SubmittedBy, ParentSpecimenId, ProjectId, Species, HostSpecies, Tissue};
 
         let Self {
             readable_id,
@@ -131,7 +131,7 @@ impl Insert for NewSpecimenRecord {
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn insert_test_specimen_and_project<F>(
+pub(crate) async fn insert_test_specimen_and_project<F>(
     tx: &db::Transaction<'_>,
     mut modify: F,
 ) -> Result<(NewSpecimen, SpecimenDetailed), DbError>
@@ -198,7 +198,7 @@ where
 }
 
 #[cfg(test)]
-pub mod test {
+pub(crate) mod test {
 
     use cellnoor_types::specimen::{Species, creation::SpecimenOrigin};
     use jiff::Timestamp;
@@ -220,7 +220,7 @@ pub mod test {
         let tx = client.begin().await.unwrap();
 
         let error = insert_test_specimen_and_project(&tx, |sp| {
-            sp.simple.received_or_created_at = Timestamp::from_second(0).unwrap()
+            sp.simple.received_or_created_at = Timestamp::from_second(0).unwrap();
         })
         .await
         .unwrap_err();

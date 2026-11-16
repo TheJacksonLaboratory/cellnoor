@@ -70,10 +70,10 @@ where
         .await
 }
 
-/// Set whether a person or bot_account is staff.
+/// Set whether a person or `bot_account` is staff.
 ///
 /// `is_staff` lives on the `principal` table, whose row is created by a trigger
-/// when the person or bot_account is inserted, so it's always a separate
+/// when the person or `bot_account` is inserted, so it's always a separate
 /// statement.
 pub(crate) async fn set_is_staff(
     tx: &db::Transaction<'_>,

@@ -11,6 +11,7 @@ use postgres_types::ToSql;
 pub struct Sql<'a>(pub(super) String, pub(super) Vec<&'a (dyn ToSql + Sync)>);
 
 impl<'a> Sql<'a> {
+    #[must_use]
     pub fn new(stmt: &str, params: Vec<&'a (dyn ToSql + Sync)>) -> Self {
         Self(stmt.to_owned(), params)
     }
@@ -47,6 +48,7 @@ const fn placeholder_index(base_sql: &str, placeholder: &str) -> usize {
 impl FilterableSqlBuilder {
     // We can use this function at compile-time to make sure every SQL statement
     // has "/* {where} */" in it!
+    #[must_use]
     pub const fn new(base_sql: &'static str) -> Self {
         const PLACEHOLDER: &str = "/* {where} */";
 

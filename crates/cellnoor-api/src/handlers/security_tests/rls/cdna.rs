@@ -63,7 +63,7 @@ async fn insert_inaccessible_cdna(tx: &db::Transaction<'_>) -> (NewCdna, CdnaDet
             .unwrap();
 
     let chromium_run = insert_test_chromium_run(tx, TestChromiumRunKind::Standard, |run| {
-        make_standard_chromium_run_inaccessible(run, *suspension.record.id)
+        make_standard_chromium_run_inaccessible(run, *suspension.record.id);
     })
     .await
     .unwrap();
@@ -71,7 +71,7 @@ async fn insert_inaccessible_cdna(tx: &db::Transaction<'_>) -> (NewCdna, CdnaDet
     let gem_well_id = *chromium_run.gem_wells[0].record.id;
 
     insert_test_cdna_and_chromium_run(tx, TestChromiumRunKind::Standard, |c| {
-        c.gem_well_id = gem_well_id
+        c.gem_well_id = gem_well_id;
     })
     .await
     .unwrap()

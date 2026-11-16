@@ -90,7 +90,7 @@ impl Insert for NewLibraryRecord {
     type Field = LibraryField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use LibraryField::*;
+        use LibraryField::{ReadableId, CdnaId, SingleIndexSetName, DualIndexSetName, NumberOfSampleIndexPcrCycles, TargetReadsPerCell, PreparedAt, AdditionalData};
 
         let Self {
             id: _,
@@ -123,7 +123,7 @@ impl Insert for NewLibraryRecord {
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn insert_test_library<F>(
+pub(crate) async fn insert_test_library<F>(
     tx: &db::Transaction<'_>,
     run_kind: TestChromiumRunKind,
     mut modify: F,
@@ -199,7 +199,7 @@ where
 }
 
 #[cfg(test)]
-pub mod test {
+pub(crate) mod test {
 
     use super::insert_test_library;
     use crate::{

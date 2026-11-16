@@ -89,7 +89,7 @@ impl Insert for NewSuspensionRecord {
     type Field = SuspensionField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use SuspensionField::*;
+        use SuspensionField::{ReadableId, SpecimenId, Content, CreatedAt, LysisDurationMinutes, TargetCellRecovery, AdditionalData};
 
         let Self {
             id: _,
@@ -117,7 +117,7 @@ impl Insert for NewSuspensionRecord {
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn insert_test_suspension_and_specimen<F>(
+pub(crate) async fn insert_test_suspension_and_specimen<F>(
     tx: &db::Transaction<'_>,
     mut modify: F,
 ) -> Result<(NewSuspension, SuspensionDetailed), DbError>
@@ -177,7 +177,7 @@ where
 }
 
 #[cfg(test)]
-pub mod test {
+pub(crate) mod test {
 
     use super::insert_test_suspension_and_specimen;
     use crate::state::dev_util::db_client_as_admin;

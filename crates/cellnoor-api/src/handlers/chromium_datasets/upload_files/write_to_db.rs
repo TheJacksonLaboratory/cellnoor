@@ -1,10 +1,8 @@
-use std::collections::HashMap;
 
 use cellnoor_types::{
     Relation,
-    chromium_dataset::{ChromiumDatasetParsedFileData, TransposedCsvRow},
+    chromium_dataset::ChromiumDatasetParsedFileData,
 };
-use csvranger::TenxCsvValue;
 use uuid::Uuid;
 
 use crate::{
@@ -240,7 +238,7 @@ mod tests {
             write_files_to_db(&tx, dataset_id, &[staged_file_with_path(lowercase_path)])
                 .await
                 .unwrap();
-        assert!(overwritten_file_paths.is_empty());
+        assert_eq!(overwritten_file_paths, [] as [std::string::String; 0]);
 
         let overwritten_file_paths =
             write_files_to_db(&tx, dataset_id, &[staged_file_with_path(uppercase_path)])

@@ -52,8 +52,7 @@ fn validate_filename_is_allowed(path: &Utf8Path) -> Result<(), UploadFilesError>
 fn filename_is_not_allowed_error() -> UploadFilesError {
     UploadFilesError::Filename {
         message: format!(
-            "uploaded files must have a filename which is one of {:?}",
-            ALLOWED_FILENAMES
+            "uploaded files must have a filename which is one of {ALLOWED_FILENAMES:?}"
         ),
     }
 }

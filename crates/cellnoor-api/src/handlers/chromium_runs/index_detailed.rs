@@ -155,7 +155,7 @@ mod test {
         assert_ne!(
             specimens[0].ocm_barcode_id.unwrap(),
             specimens[1].ocm_barcode_id.unwrap()
-        )
+        );
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -292,7 +292,7 @@ mod test {
         };
 
         let run = insert_test_chromium_run(&tx, TestChromiumRunKind::OnChipMultiplexing, |run| {
-            *run = new.clone()
+            *run = new.clone();
         })
         .await
         .unwrap();

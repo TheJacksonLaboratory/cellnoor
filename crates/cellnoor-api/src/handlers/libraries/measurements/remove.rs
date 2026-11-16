@@ -93,7 +93,7 @@ mod test {
             .await
             .unwrap();
 
-        assert!(selected.measurements.is_empty());
+        assert_eq!(selected.measurements, [] as [cellnoor_types::library::measurement::LibraryMeasurement; 0]);
         assert_eq!(other_selected.measurements, other_library.measurements);
     }
 }

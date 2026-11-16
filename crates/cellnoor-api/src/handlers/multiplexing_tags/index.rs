@@ -16,7 +16,7 @@ pub async fn index_multiplexing_tags(
         .await
 }
 
-pub async fn select_multiplexing_tags(
+pub(crate) async fn select_multiplexing_tags(
     tx: &db::Transaction<'_>,
 ) -> Result<Vec<MultiplexingTag>, DbError> {
     static SELECT_MULTIPLEXING_TAGS: &str = include_str!("index/select.sql");

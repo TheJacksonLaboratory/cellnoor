@@ -86,18 +86,18 @@ mod index_set_name {
 
     #[derive(Clone, Copy, Debug, ToSql)]
     #[postgres(transparent)]
-    pub struct IndexSetName<'a>(&'a str);
+    pub(super) struct IndexSetName<'a>(&'a str);
 
     #[derive(Clone, Copy, Debug, PartialEq, Eq, ToSql)]
     #[postgres(transparent)]
-    pub struct IndexKitName<'a>(&'a str);
+    pub(super) struct IndexKitName<'a>(&'a str);
 
     #[derive(Clone, Copy, Debug, ToSql)]
     #[postgres(transparent)]
-    pub struct IndexSetWellName<'a>(&'a str);
+    pub(super) struct IndexSetWellName<'a>(&'a str);
 
     impl<'a> IndexSetName<'a> {
-        pub fn new(index_set_name: &'a str) -> Result<Self, IndexSetError> {
+        pub(super) fn new(index_set_name: &'a str) -> Result<Self, IndexSetError> {
             if !INDEX_SET_NAME_REGEX.is_match(index_set_name) {
                 return Err(IndexSetError::MalformedName {
                     name: index_set_name.to_owned(),
@@ -108,11 +108,11 @@ mod index_set_name {
             Ok(Self(index_set_name))
         }
 
-        pub fn kit_name(&self) -> IndexKitName<'a> {
+        pub(super) fn kit_name(&self) -> IndexKitName<'a> {
             IndexKitName(&self.0[3..5])
         }
 
-        pub fn well_name(&self) -> IndexSetWellName<'a> {
+        pub(super) fn well_name(&self) -> IndexSetWellName<'a> {
             IndexSetWellName(&self.0[6..])
         }
     }
@@ -131,10 +131,10 @@ mod sequence {
 
     #[derive(Clone, Copy, Debug, ToSql)]
     #[postgres(transparent)]
-    pub struct DnaSequence<'a>(&'a str);
+    pub(super) struct DnaSequence<'a>(&'a str);
 
     impl<'a> DnaSequence<'a> {
-        pub fn new(sequence: &'a str) -> Result<Self, IndexSetError> {
+        pub(super) fn new(sequence: &'a str) -> Result<Self, IndexSetError> {
             if !DNA_REGEX.is_match(sequence) {
                 return Err(IndexSetError::MalformedSequence {
                     sequence: sequence.to_owned(),

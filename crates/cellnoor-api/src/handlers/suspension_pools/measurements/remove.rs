@@ -97,7 +97,7 @@ mod test {
             .await
             .unwrap();
 
-        assert!(selected.measurements.is_empty());
+        assert_eq!(selected.measurements, [] as [cellnoor_types::suspension_pool::measurement::SuspensionPoolMeasurement; 0]);
         assert_eq!(
             other_selected.measurements,
             other_suspension_pool.measurements

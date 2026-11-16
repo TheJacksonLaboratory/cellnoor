@@ -80,7 +80,7 @@ impl Insert for CdnaSimpleFields {
     type Field = CdnaField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use CdnaField::*;
+        use CdnaField::{ReadableId, PreparedAt, AdditionalData};
 
         let Self {
             readable_id,
@@ -100,7 +100,7 @@ impl Insert for NewCdnaRecord {
     type Field = CdnaField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use CdnaField::*;
+        use CdnaField::{ReadableId, LibraryType, PreparedAt, GemWellId, NAmplificationCycles, AdditionalData};
 
         let Self {
             id: _,
@@ -126,7 +126,7 @@ impl Insert for NewCdnaRecord {
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn insert_test_cdna_and_chromium_run<F>(
+pub(crate) async fn insert_test_cdna_and_chromium_run<F>(
     tx: &db::Transaction<'_>,
     run_kind: crate::handlers::chromium_runs::create::TestChromiumRunKind,
     mut modify: F,
@@ -191,7 +191,7 @@ where
 }
 
 #[cfg(test)]
-pub mod test {
+pub(crate) mod test {
 
     use super::insert_test_cdna_and_chromium_run;
     use crate::{

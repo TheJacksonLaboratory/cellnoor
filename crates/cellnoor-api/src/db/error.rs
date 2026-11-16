@@ -34,7 +34,7 @@ pub enum DbError {
     },
     #[error("permission denied")]
     PermissionDenied { message: String },
-    #[error("{message} (SQL State - {})", sql_state.as_ref().map(|s| s.code()).unwrap_or_default())]
+    #[error("{message} (SQL State - {})", sql_state.as_ref().map_or_default(deadpool_postgres::tokio_postgres::error::SqlState::code))]
     Other {
         #[serde(skip)]
         message: String,

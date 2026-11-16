@@ -32,7 +32,7 @@ async fn insert_multiplexing_tag(
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn insert_test_multiplexing_tag(
+pub(crate) async fn insert_test_multiplexing_tag(
     tx: &db::Transaction<'_>,
 ) -> Result<MultiplexingTag, DbError> {
     use cellnoor_types::suspension_pool::MultiplexingTagType;
@@ -46,7 +46,7 @@ pub async fn insert_test_multiplexing_tag(
 }
 
 #[cfg(test)]
-pub mod tests {
+pub(crate) mod tests {
 
     use super::insert_test_multiplexing_tag;
     use crate::state::dev_util::db_client_as_admin;

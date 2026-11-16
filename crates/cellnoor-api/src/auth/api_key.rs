@@ -55,6 +55,7 @@ async fn fetch_api_key_record_by_hash(
     Ok(row.get(0))
 }
 
+#[must_use]
 pub fn hash_api_key(api_key: &[u8]) -> [u8; 32] {
     let mut hasher = sha3::Sha3_256::new();
 

@@ -10,7 +10,7 @@ use crate::{
     state::AppState,
 };
 
-pub fn library_from_record(record: SavedLibraryRecord) -> LibraryCompact {
+pub(crate) fn library_from_record(record: SavedLibraryRecord) -> LibraryCompact {
     LibraryCompact {
         links: SimpleLinks::from_str_and_id("/libraries", record.id),
         record,

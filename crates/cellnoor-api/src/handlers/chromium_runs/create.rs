@@ -96,7 +96,7 @@ impl Insert for NewChromiumRunRecord {
     type Field = ChromiumRunField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use ChromiumRunField::*;
+        use ChromiumRunField::{ReadableId, AssayId, RunAt, RunBy, Succeeded, AdditionalData};
 
         let Self {
             id: _,
@@ -166,7 +166,7 @@ async fn insert_suspensions_in_same_project(
     let insertions = specimens.iter().map(|sp| {
         insert_test_suspension_and_specimen(tx, |sus| {
             sus.record.specimen_id = *sp.record.id;
-            sus.preparers = NonemptyVec::new(vec![sp.record.submitted_by.unwrap()]).unwrap()
+            sus.preparers = NonemptyVec::new(vec![sp.record.submitted_by.unwrap()]).unwrap();
         })
     });
 
@@ -398,12 +398,12 @@ pub enum TestChromiumRunKind {
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn insert_test_chromium_run(
+pub(crate) async fn insert_test_chromium_run(
     tx: &db::Transaction<'_>,
     kind: TestChromiumRunKind,
     modify: impl FnMut(&mut NewChromiumRun),
 ) -> Result<ChromiumRunDetailed, DbError> {
-    use TestChromiumRunKind::*;
+    use TestChromiumRunKind::{Standard, Mixed, OnChipMultiplexing, Flex};
 
     let (_, run) = match kind {
         Standard => insert_test_standard_chromium_run(tx, modify).await?,
@@ -416,7 +416,7 @@ pub async fn insert_test_chromium_run(
 }
 
 #[cfg(test)]
-pub mod test {
+pub(crate) mod test {
     use super::{
         insert_test_flex_chromium_run, insert_test_mixed_chromium_run,
         insert_test_ocm_chromium_run, insert_test_standard_chromium_run,

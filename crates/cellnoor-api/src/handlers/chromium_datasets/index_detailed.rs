@@ -97,7 +97,7 @@ fn chromium_dataset_specimen_from_tagged_specimen(
         .as_ref()
         .map(|m| &m.tag_id)
         .map(NonemptyString::as_ref)
-        .or(specimen.ocm_barcode_id.as_ref().map(|b| b.as_ref()))
+        .or(specimen.ocm_barcode_id.as_ref().map(std::convert::AsRef::as_ref))
     else {
         return ChromiumDatasetSpecimen {
             specimen,
@@ -515,8 +515,7 @@ mod tests {
             path: full_path.to_owned(),
             name: full_path
                 .rsplit_once('/')
-                .map(|(_, p)| p)
-                .unwrap_or(full_path)
+                .map_or(full_path, |(_, p)| p)
                 .to_owned(),
             kind: FileTreeNodeKind::Directory { children },
         };

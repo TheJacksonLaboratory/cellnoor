@@ -68,9 +68,9 @@ async fn insert_account(
                 auth_provider: account.as_ref(),
                 auth_provider_user_id: microsoft_entra_oid.to_string(),
             })
-            .await?
+            .await?;
         }
-    };
+    }
 
     Ok(())
 }
@@ -112,7 +112,7 @@ pub(super) fn validate_email(email: &str) -> Result<(), PersonError> {
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub async fn insert_test_person_and_institution<F>(
+pub(crate) async fn insert_test_person_and_institution<F>(
     tx: &db::Transaction<'_>,
     mut modify: F,
 ) -> Result<(NewPerson, Person), PersonError>
@@ -148,7 +148,7 @@ where
 }
 
 #[cfg(test)]
-pub mod test {
+pub(crate) mod test {
     use pretty_assertions::assert_eq;
     use uuid::Uuid;
 

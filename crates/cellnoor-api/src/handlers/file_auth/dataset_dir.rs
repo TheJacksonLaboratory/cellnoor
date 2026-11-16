@@ -14,7 +14,7 @@ use crate::{
 #[serde(rename_all = "kebab-case")]
 #[schemars(inline)]
 #[strum(serialize_all = "snake_case")]
-pub enum DatasetType {
+pub(super) enum DatasetType {
     ChromiumDatasets,
 }
 

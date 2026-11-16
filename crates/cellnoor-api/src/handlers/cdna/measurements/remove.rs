@@ -93,7 +93,7 @@ mod test {
         let selected = select_cdna_by_id(&tx, *cdna.record.id).await.unwrap();
         let other_selected = select_cdna_by_id(&tx, *other_cdna.record.id).await.unwrap();
 
-        assert!(selected.measurements.is_empty());
+        assert_eq!(selected.measurements, [] as [cellnoor_types::cdna::measurement::CdnaMeasurement; 0]);
         assert_eq!(other_selected.measurements, other_cdna.measurements);
     }
 }

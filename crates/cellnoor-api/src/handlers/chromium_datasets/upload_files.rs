@@ -6,7 +6,7 @@ use axum::{
     http::{HeaderMap, HeaderValue, Request},
 };
 use camino::Utf8Path;
-pub use error::UploadFilesError;
+pub(crate) use error::UploadFilesError;
 #[cfg(any(test, feature = "dev"))]
 use reqwest::{
     header::CONTENT_TYPE,

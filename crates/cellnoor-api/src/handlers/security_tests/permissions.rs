@@ -36,11 +36,11 @@ use crate::{
     state::dev_util::{db_client_as_admin, db_client_as_user},
 };
 
-pub async fn create_test_user() -> Uuid {
+pub(super) async fn create_test_user() -> Uuid {
     create_test_user_with(false, Vec::new()).await
 }
 
-pub async fn create_test_user_with(is_staff: bool, permissions: Vec<Permission>) -> Uuid {
+pub(super) async fn create_test_user_with(is_staff: bool, permissions: Vec<Permission>) -> Uuid {
     let mut client = db_client_as_admin().await;
     let tx = client.begin().await.unwrap();
 
@@ -56,7 +56,7 @@ pub async fn create_test_user_with(is_staff: bool, permissions: Vec<Permission>)
     person.record.id
 }
 
-pub fn may(resource: Resource, actions: &[Action]) -> Vec<Permission> {
+pub(super) fn may(resource: Resource, actions: &[Action]) -> Vec<Permission> {
     actions
         .iter()
         .map(|&action| Permission { resource, action })
@@ -67,7 +67,7 @@ pub fn may(resource: Resource, actions: &[Action]) -> Vec<Permission> {
 // its resource, and removing one needs `delete` or `update`. Only staff may do
 // either. `add` and `remove` each change one of the parent's children, and
 // `member_id` can see the parent
-pub async fn assert_only_staff_with_permission_can_change_children<A, R, E>(
+pub(super) async fn assert_only_staff_with_permission_can_change_children<A, R, E>(
     resource: Resource,
     member_id: Uuid,
     add: A,

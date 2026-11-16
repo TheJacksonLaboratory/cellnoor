@@ -88,7 +88,7 @@ mod test {
             .await
             .unwrap();
 
-        assert!(selected.measurements.is_empty());
+        assert_eq!(selected.measurements, [] as [cellnoor_types::specimen::measurement::SpecimenMeasurement; 0]);
         assert_eq!(other_selected.measurements, other_specimen.measurements);
     }
 }

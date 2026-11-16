@@ -36,7 +36,7 @@ impl Insert for ProjectSimpleFields {
     type Field = ProjectField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use ProjectField::*;
+        use ProjectField::{Name, StartedAt, EndedAt};
 
         let Self {
             name,
@@ -53,7 +53,7 @@ impl Insert for ProjectSimpleFields {
 
 // This one returns a `Result` because a different test needs that
 #[cfg(any(test, feature = "dev"))]
-pub async fn insert_test_project<F>(
+pub(crate) async fn insert_test_project<F>(
     tx: &db::Transaction<'_>,
     mut modify: F,
 ) -> Result<(NewProject, ProjectDetailed), DbError>
@@ -88,7 +88,7 @@ where
 }
 
 #[cfg(test)]
-pub mod test {
+pub(crate) mod test {
 
     use super::insert_test_project;
     use crate::state::dev_util::db_client_as_admin;

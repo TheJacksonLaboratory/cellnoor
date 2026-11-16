@@ -97,11 +97,11 @@ struct NewDualIndexSetRecord<'a> {
     index2_workflow_b_i5: DnaSequence<'a>,
 }
 
-impl<'a> Relation for NewDualIndexSetRecord<'a> {
+impl Relation for NewDualIndexSetRecord<'_> {
     const NAME: &'static str = "dual_index_set";
 }
 
-impl<'a> Insert for NewDualIndexSetRecord<'a> {
+impl Insert for NewDualIndexSetRecord<'_> {
     type Field = &'static str;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
@@ -180,7 +180,7 @@ pub async fn insert_test_dual_index_sets(tx: &db::Transaction<'_>) -> Result<(),
 }
 
 #[cfg(test)]
-pub mod tests {
+pub(crate) mod tests {
 
     use super::insert_test_dual_index_sets;
     use crate::state::dev_util::db_client_as_admin;

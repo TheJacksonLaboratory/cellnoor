@@ -20,7 +20,7 @@ mod api_key;
 mod error;
 mod jwt;
 
-/// The principal (a person or a bot_account) on whose behalf a request runs.
+/// The principal (a person or a `bot_account`) on whose behalf a request runs.
 ///
 /// Outside of tests, the only way to construct an `AuthUser` is through its
 /// `axum::extract::FromRequestParts` implementation.
@@ -41,14 +41,17 @@ impl AuthUser {
     }
 
     #[cfg(any(test, feature = "dev"))]
+    #[must_use]
     pub fn dev_admin() -> Self {
         Self::admin()
     }
 
+    #[must_use]
     pub fn id(&self) -> Uuid {
         self.id
     }
 
+    #[must_use]
     pub fn is_staff(&self) -> bool {
         self.is_staff
     }
@@ -112,7 +115,7 @@ fn read_chunked_jwt(cookies: &CookieJar) -> String {
                 .starts_with("__Secure-cellnoor-auth.session_data")
                 || cookie.name().starts_with("cellnoor-auth.session_data")
         })
-        .map(|cookie| cookie.name_value())
+        .map(axum_extra::extract::cookie::Cookie::name_value)
         .collect();
 
     let number_part = |(_, n): (&str, &str)| u8::from_str(n).ok();
@@ -124,6 +127,7 @@ fn read_chunked_jwt(cookies: &CookieJar) -> String {
 
 #[cfg(test)]
 impl AuthUser {
+    #[must_use]
     pub fn new_as_user(id: Uuid) -> Self {
         Self {
             id,
