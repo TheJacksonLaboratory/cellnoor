@@ -158,7 +158,10 @@ const FRACTION_OF_HIGH_QUALITY_FRAGMENTS_IN_CELLS: &str =
     "Fraction of high-quality fragments in cells";
 const SEQUENCED_READ_PAIRS: &str = "Number of sequenced read pairs";
 const FRACTION_OF_GENOME_IN_PEAKS: &str = "Fraction of genome in peaks";
+const PERCENT_DUPLICATES: &str = "Percent duplicates";
 
+// TODO: ATAC-ify/GEX-ify metrics
+// TODO: harmonize all pipelines to display the superset of all the metrics
 static METRICS_RENAMING: phf::Map<&'static str, &'static str> = phf::phf_map! {
     // cellranger count (metrics_summary.csv)
     "Estimated Number of Cells" => ESTIMATED_NUMBER_OF_CELLS,
@@ -199,7 +202,24 @@ static METRICS_RENAMING: phf::Map<&'static str, &'static str> = phf::phf_map! {
     "Sequencing saturation" => SEQUENCING_SATURATION,
     "TSS enrichment score" => TSS_ENRICHMENT_SCORE,
 
-    // TODO: cellranger-arc count (summary.csv)
+    // cellranger-arc count (summary.csv)
+    // Note that cellranger-arc count outputs "Estimated number of cells", but that's caught above
+    "ATAC Confidently mapped read pairs" => GENOME_MAPPING_RATE,
+    "ATAC Median high-quality fragments per cell" => MEDIAN_HIGH_QUALITY_FRAGMENTS_PER_CELL,
+    "ATAC Percent duplicates" => PERCENT_DUPLICATES,
+    "ATAC Sequenced read pairs" => SEQUENCED_READ_PAIRS,
+    "ATAC TSS enrichment score" => TSS_ENRICHMENT_SCORE,
+    "ATAC Fraction of high-quality fragments in cells" => FRACTION_OF_HIGH_QUALITY_FRAGMENTS_IN_CELLS,
+    "GEX Fraction of transcriptomic reads in cells" => FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS,
+    "GEX Mean raw reads per cell" => MEAN_READS_PER_CELL,
+    "GEX Median UMI counts per cell" => MEDIAN_UMI_COUNTS_PER_CELL,
+    "GEX Median genes per cell" => MEDIAN_GENES_PER_CELL,
+    "GEX Reads mapped confidently to exonic regions" => EXONIC_REGION_MAPPING_RATE,
+    "GEX Reads mapped confidently to genome" => GENOME_MAPPING_RATE,
+    "GEX Reads mapped confidently to intergenic regions" => INTERGENIC_REGION_MAPPING_RATE,
+    "GEX Reads mapped confidently to intronic regions" => INTRONIC_REGION_MAPPING_RATE,
+    "GEX Reads mapped confidently to transcriptome" => TRANSCRIPTOME_MAPPING_RATE,
+    "GEX Sequenced read pairs" => SEQUENCED_READ_PAIRS
 };
 
 fn insert_key_metrics_from_multi_row_csv<'a>(
