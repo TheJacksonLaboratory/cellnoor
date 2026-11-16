@@ -1,0 +1,134 @@
+Category,Library Type,Grouped By,Group Name,Metric Name,Metric Value
+Cells,Gene Expression,,,Cells,"4,416"
+Cells,Gene Expression,,,Confidently mapped antisense,3.3%
+Cells,Gene Expression,,,Confidently mapped reads in cells,96.9%
+Cells,Gene Expression,,,Confidently mapped to exonic regions,63.6%
+Cells,Gene Expression,,,Confidently mapped to genome,85.7%
+Cells,Gene Expression,,,Confidently mapped to intergenic regions,9.6%
+Cells,Gene Expression,,,Confidently mapped to intronic regions,12.6%
+Cells,Gene Expression,,,Confidently mapped to transcriptome,72.4%
+Cells,Gene Expression,,,Mapped to genome,93.5%
+Cells,Gene Expression,,,Mean reads per cell,"23,235"
+Cells,Gene Expression,,,Median UMI counts per cell,"7,045"
+Cells,Gene Expression,,,Median genes per cell,"2,607"
+Cells,Gene Expression,,,Number of reads from cells called from this sample,"102,604,490"
+Cells,Gene Expression,,,Total genes detected,"21,383"
+Cells,Gene Expression,Physical library ID,GEX_1,Cells detected in other samples,"15,778 (78.1%)"
+Cells,Gene Expression,Physical library ID,GEX_1,Cells detected in this sample,"4,416 (21.9%)"
+Cells,VDJ B,,,Cells with productive IGH contig,92.0%
+Cells,VDJ B,,,Cells with productive IGK contig,91.9%
+Cells,VDJ B,,,Cells with productive IGL contig,8.7%
+Cells,VDJ B,,,"Cells with productive V-J spanning (IGK, IGH) pair",84.5%
+Cells,VDJ B,,,"Cells with productive V-J spanning (IGL, IGH) pair",8.0%
+Cells,VDJ B,,,Cells with productive V-J spanning pair,91.1%
+Cells,VDJ B,,,Fraction reads in cells,91.2%
+Cells,VDJ B,,,Median IGH UMIs per Cell,21
+Cells,VDJ B,,,Median IGK UMIs per Cell,67
+Cells,VDJ B,,,Median IGL UMIs per Cell,51
+Cells,VDJ B,,,Number of cells with productive V-J spanning pair,"2,070"
+Cells,VDJ B,,,Paired clonotype diversity,"1,746.51"
+Cells,VDJ B,,,VDJ cells,"2,271"
+Cells,VDJ B,Physical library ID,---,Reads mapped to IGH,24.4%
+Cells,VDJ B,Physical library ID,---,Reads mapped to IGK,41.7%
+Cells,VDJ B,Physical library ID,---,Reads mapped to IGL,24.0%
+Cells,VDJ B,Physical library ID,---,Reads mapped to any V(D)J gene,90.1%
+Cells,VDJ T,,,Cells with productive TRA contig,84.4%
+Cells,VDJ T,,,Cells with productive TRB contig,97.6%
+Cells,VDJ T,,,"Cells with productive V-J spanning (TRA, TRB) pair",82.0%
+Cells,VDJ T,,,Cells with productive V-J spanning pair,82.0%
+Cells,VDJ T,,,Fraction reads in cells,88.8%
+Cells,VDJ T,,,Median TRA UMIs per Cell,6
+Cells,VDJ T,,,Median TRB UMIs per Cell,15
+Cells,VDJ T,,,Number of cells with productive V-J spanning pair,609
+Cells,VDJ T,,,Paired clonotype diversity,642.66
+Cells,VDJ T,,,VDJ cells,743
+Cells,VDJ T,Physical library ID,---,Reads mapped to TRA,21.0%
+Cells,VDJ T,Physical library ID,---,Reads mapped to TRB,62.4%
+Cells,VDJ T,Physical library ID,---,Reads mapped to any V(D)J gene,83.4%
+Library,Gene Expression,Fastq ID,20k_Mouse_PBMC_Splenocyte_5p_gem-x_multiplex_GEX,Number of reads,"584,109,020"
+Library,Gene Expression,Fastq ID,20k_Mouse_PBMC_Splenocyte_5p_gem-x_multiplex_GEX,Number of short reads skipped,0
+Library,Gene Expression,Fastq ID,20k_Mouse_PBMC_Splenocyte_5p_gem-x_multiplex_GEX,Q30 RNA read,90.8%
+Library,Gene Expression,Fastq ID,20k_Mouse_PBMC_Splenocyte_5p_gem-x_multiplex_GEX,Q30 UMI,94.2%
+Library,Gene Expression,Fastq ID,20k_Mouse_PBMC_Splenocyte_5p_gem-x_multiplex_GEX,Q30 barcodes,94.1%
+Library,Gene Expression,OCM Barcode ID,OB1,Cells per OCM barcode,"4,416 (21.9%)"
+Library,Gene Expression,OCM Barcode ID,OB1,Sample ID,5k_Mouse_PBMCs_5p_gem-x_Rep1
+Library,Gene Expression,OCM Barcode ID,OB1,UMIs per OCM barcode,"38,194,972 (21.9%)"
+Library,Gene Expression,OCM Barcode ID,OB2,Cells per OCM barcode,"5,763 (28.5%)"
+Library,Gene Expression,OCM Barcode ID,OB2,Sample ID,5k_Mouse_Splenocytes_5p_gem-x_Rep1
+Library,Gene Expression,OCM Barcode ID,OB2,UMIs per OCM barcode,"50,089,664 (28.7%)"
+Library,Gene Expression,OCM Barcode ID,OB3,Cells per OCM barcode,"4,873 (24.1%)"
+Library,Gene Expression,OCM Barcode ID,OB3,Sample ID,5k_Mouse_PBMCs_5p_gem-x_Rep2
+Library,Gene Expression,OCM Barcode ID,OB3,UMIs per OCM barcode,"43,642,564 (25.0%)"
+Library,Gene Expression,OCM Barcode ID,OB4,Cells per OCM barcode,"5,142 (25.5%)"
+Library,Gene Expression,OCM Barcode ID,OB4,Sample ID,5k_Mouse_Splenocytes_5p_gem-x_Rep2
+Library,Gene Expression,OCM Barcode ID,OB4,UMIs per OCM barcode,"42,875,166 (24.5%)"
+Library,Gene Expression,Physical library ID,GEX_1,Cells,"20,194"
+Library,Gene Expression,Physical library ID,GEX_1,Confidently mapped antisense,5.5%
+Library,Gene Expression,Physical library ID,GEX_1,Confidently mapped reads in cells,96.1%
+Library,Gene Expression,Physical library ID,GEX_1,Confidently mapped to exonic regions,55.6%
+Library,Gene Expression,Physical library ID,GEX_1,Confidently mapped to genome,82.2%
+Library,Gene Expression,Physical library ID,GEX_1,Confidently mapped to intergenic regions,13.8%
+Library,Gene Expression,Physical library ID,GEX_1,Confidently mapped to intronic regions,12.8%
+Library,Gene Expression,Physical library ID,GEX_1,Confidently mapped to transcriptome,62.5%
+Library,Gene Expression,Physical library ID,GEX_1,Mapped to genome,90.9%
+Library,Gene Expression,Physical library ID,GEX_1,Mean reads per cell,"28,925"
+Library,Gene Expression,Physical library ID,GEX_1,Number of reads,"584,109,020"
+Library,Gene Expression,Physical library ID,GEX_1,Number of reads in the library,"584,109,020"
+Library,Gene Expression,Physical library ID,GEX_1,Sequencing saturation,50.6%
+Library,Gene Expression,Physical library ID,GEX_1,Valid UMIs,99.8%
+Library,Gene Expression,Physical library ID,GEX_1,Valid barcodes,90.1%
+Library,VDJ B,Fastq ID,20k_Mouse_PBMC_Splenocyte_5p_gem-x_multiplex_BCR,Number of reads,"156,048,766"
+Library,VDJ B,Fastq ID,20k_Mouse_PBMC_Splenocyte_5p_gem-x_multiplex_BCR,Number of short reads skipped,0
+Library,VDJ B,Fastq ID,20k_Mouse_PBMC_Splenocyte_5p_gem-x_multiplex_BCR,Q30 RNA read,92.6%
+Library,VDJ B,Fastq ID,20k_Mouse_PBMC_Splenocyte_5p_gem-x_multiplex_BCR,Q30 UMI,93.9%
+Library,VDJ B,Fastq ID,20k_Mouse_PBMC_Splenocyte_5p_gem-x_multiplex_BCR,Q30 barcodes,94.1%
+Library,VDJ B,OCM Barcode ID,OB1,Sample ID,5k_Mouse_PBMCs_5p_gem-x_Rep1
+Library,VDJ B,OCM Barcode ID,OB1,VDJ cells,"2,271 (21.3%)"
+Library,VDJ B,OCM Barcode ID,OB2,Sample ID,5k_Mouse_Splenocytes_5p_gem-x_Rep1
+Library,VDJ B,OCM Barcode ID,OB2,VDJ cells,"3,138 (29.4%)"
+Library,VDJ B,OCM Barcode ID,OB3,Sample ID,5k_Mouse_PBMCs_5p_gem-x_Rep2
+Library,VDJ B,OCM Barcode ID,OB3,VDJ cells,"2,474 (23.2%)"
+Library,VDJ B,OCM Barcode ID,OB4,Sample ID,5k_Mouse_Splenocytes_5p_gem-x_Rep2
+Library,VDJ B,OCM Barcode ID,OB4,VDJ cells,"2,786 (26.1%)"
+Library,VDJ B,Physical library ID,VDJB_1,Cells with productive IGH contig,93.0%
+Library,VDJ B,Physical library ID,VDJB_1,Cells with productive IGK contig,91.0%
+Library,VDJ B,Physical library ID,VDJB_1,Cells with productive IGL contig,9.7%
+Library,VDJ B,Physical library ID,VDJB_1,"Cells with productive V-J spanning (IGK, IGH) pair",84.7%
+Library,VDJ B,Physical library ID,VDJB_1,"Cells with productive V-J spanning (IGL, IGH) pair",9.0%
+Library,VDJ B,Physical library ID,VDJB_1,Cells with productive V-J spanning pair,92.1%
+Library,VDJ B,Physical library ID,VDJB_1,Fraction reads in cells,88.5%
+Library,VDJ B,Physical library ID,VDJB_1,Mean reads per cell,"14,626"
+Library,VDJ B,Physical library ID,VDJB_1,Mean used reads per cell,"7,373"
+Library,VDJ B,Physical library ID,VDJB_1,Number of reads,"156,048,766"
+Library,VDJ B,Physical library ID,VDJB_1,Reads mapped to IGH,24.3%
+Library,VDJ B,Physical library ID,VDJB_1,Reads mapped to IGK,38.5%
+Library,VDJ B,Physical library ID,VDJB_1,Reads mapped to IGL,26.4%
+Library,VDJ B,Physical library ID,VDJB_1,Reads mapped to any V(D)J gene,89.1%
+Library,VDJ B,Physical library ID,VDJB_1,VDJ Cells,"10,669"
+Library,VDJ B,Physical library ID,VDJB_1,Valid barcodes,95.5%
+Library,VDJ T,Fastq ID,20k_Mouse_PBMC_Splenocyte_5p_gem-x_multiplex_TCR,Number of reads,"144,886,269"
+Library,VDJ T,Fastq ID,20k_Mouse_PBMC_Splenocyte_5p_gem-x_multiplex_TCR,Number of short reads skipped,0
+Library,VDJ T,Fastq ID,20k_Mouse_PBMC_Splenocyte_5p_gem-x_multiplex_TCR,Q30 RNA read,92.1%
+Library,VDJ T,Fastq ID,20k_Mouse_PBMC_Splenocyte_5p_gem-x_multiplex_TCR,Q30 UMI,94.5%
+Library,VDJ T,Fastq ID,20k_Mouse_PBMC_Splenocyte_5p_gem-x_multiplex_TCR,Q30 barcodes,94.4%
+Library,VDJ T,OCM Barcode ID,OB1,Sample ID,5k_Mouse_PBMCs_5p_gem-x_Rep1
+Library,VDJ T,OCM Barcode ID,OB1,VDJ cells,743 (17.9%)
+Library,VDJ T,OCM Barcode ID,OB2,Sample ID,5k_Mouse_Splenocytes_5p_gem-x_Rep1
+Library,VDJ T,OCM Barcode ID,OB2,VDJ cells,"1,415 (34.1%)"
+Library,VDJ T,OCM Barcode ID,OB3,Sample ID,5k_Mouse_PBMCs_5p_gem-x_Rep2
+Library,VDJ T,OCM Barcode ID,OB3,VDJ cells,806 (19.4%)
+Library,VDJ T,OCM Barcode ID,OB4,Sample ID,5k_Mouse_Splenocytes_5p_gem-x_Rep2
+Library,VDJ T,OCM Barcode ID,OB4,VDJ cells,"1,190 (28.6%)"
+Library,VDJ T,Physical library ID,VDJT_1,Cells with productive TRA contig,88.2%
+Library,VDJ T,Physical library ID,VDJT_1,Cells with productive TRB contig,98.2%
+Library,VDJ T,Physical library ID,VDJT_1,"Cells with productive V-J spanning (TRA, TRB) pair",86.4%
+Library,VDJ T,Physical library ID,VDJT_1,Cells with productive V-J spanning pair,86.4%
+Library,VDJ T,Physical library ID,VDJT_1,Fraction reads in cells,76.2%
+Library,VDJ T,Physical library ID,VDJT_1,Mean reads per cell,"34,879"
+Library,VDJ T,Physical library ID,VDJT_1,Mean used reads per cell,"21,181"
+Library,VDJ T,Physical library ID,VDJT_1,Number of reads,"144,886,269"
+Library,VDJ T,Physical library ID,VDJT_1,Reads mapped to TRA,18.5%
+Library,VDJ T,Physical library ID,VDJT_1,Reads mapped to TRB,53.3%
+Library,VDJ T,Physical library ID,VDJT_1,Reads mapped to any V(D)J gene,71.9%
+Library,VDJ T,Physical library ID,VDJT_1,VDJ Cells,"4,154"
+Library,VDJ T,Physical library ID,VDJT_1,Valid barcodes,90.5%

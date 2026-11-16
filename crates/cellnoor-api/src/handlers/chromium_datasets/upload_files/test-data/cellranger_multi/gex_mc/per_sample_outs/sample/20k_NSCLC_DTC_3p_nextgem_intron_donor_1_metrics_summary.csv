@@ -1,0 +1,145 @@
+Library or Sample,Library Type,Grouped By,Group Name,Metric Name,Metric Value
+Library,Antibody Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_antibody,Number of reads,"88,742,269"
+Library,Antibody Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_antibody,Number of short reads skipped,0
+Library,Antibody Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_antibody,Q30 RNA read,95.0%
+Library,Antibody Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_antibody,Q30 UMI,95.9%
+Library,Antibody Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_antibody,Q30 barcodes,95.7%
+Library,Antibody Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_antibody (2),Number of reads,"97,331,108"
+Library,Antibody Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_antibody (2),Number of short reads skipped,0
+Library,Antibody Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_antibody (2),Q30 RNA read,95.0%
+Library,Antibody Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_antibody (2),Q30 UMI,95.1%
+Library,Antibody Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_antibody (2),Q30 barcodes,94.5%
+Library,Antibody Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_antibody (3),Number of reads,"98,591,240"
+Library,Antibody Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_antibody (3),Number of short reads skipped,0
+Library,Antibody Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_antibody (3),Q30 RNA read,93.9%
+Library,Antibody Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_antibody (3),Q30 UMI,95.1%
+Library,Antibody Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_antibody (3),Q30 barcodes,94.8%
+Library,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Cell-associated barcodes identified as multiplets,3245 (15.85%)
+Library,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Cell-associated barcodes not assigned any CMOs,1608 (7.86%)
+Library,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Cells assigned to a sample,15618 (76.29%)
+Library,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Estimated number of cells,"20,471"
+Library,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Fraction antibody reads,95.67%
+Library,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Fraction antibody reads in aggregate barcodes,2.20%
+Library,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Fraction antibody reads usable,77.37%
+Library,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Fraction reads in cells,81.53%
+Library,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Fraction unrecognized antibody,4.33%
+Library,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Mean reads per cell,"13,906"
+Library,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Number of reads,"284,664,617"
+Library,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Sequencing saturation,84.39%
+Library,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Valid UMIs,99.94%
+Library,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Valid barcodes,99.08%
+Library,Gene Expression,Fastq ID,20k_NSCLC_DTC_3p_nextgem_gex,Number of reads,"444,736,314"
+Library,Gene Expression,Fastq ID,20k_NSCLC_DTC_3p_nextgem_gex,Number of short reads skipped,0
+Library,Gene Expression,Fastq ID,20k_NSCLC_DTC_3p_nextgem_gex,Q30 RNA read,89.9%
+Library,Gene Expression,Fastq ID,20k_NSCLC_DTC_3p_nextgem_gex,Q30 UMI,93.0%
+Library,Gene Expression,Fastq ID,20k_NSCLC_DTC_3p_nextgem_gex,Q30 barcodes,94.3%
+Library,Gene Expression,Fastq ID,20k_NSCLC_DTC_3p_nextgem_gex (2),Number of reads,"348,398,650"
+Library,Gene Expression,Fastq ID,20k_NSCLC_DTC_3p_nextgem_gex (2),Number of short reads skipped,0
+Library,Gene Expression,Fastq ID,20k_NSCLC_DTC_3p_nextgem_gex (2),Q30 RNA read,89.4%
+Library,Gene Expression,Fastq ID,20k_NSCLC_DTC_3p_nextgem_gex (2),Q30 UMI,92.3%
+Library,Gene Expression,Fastq ID,20k_NSCLC_DTC_3p_nextgem_gex (2),Q30 barcodes,93.4%
+Library,Gene Expression,Fastq ID,20k_NSCLC_DTC_3p_nextgem_gex (3),Number of reads,"377,158,768"
+Library,Gene Expression,Fastq ID,20k_NSCLC_DTC_3p_nextgem_gex (3),Number of short reads skipped,0
+Library,Gene Expression,Fastq ID,20k_NSCLC_DTC_3p_nextgem_gex (3),Q30 RNA read,87.3%
+Library,Gene Expression,Fastq ID,20k_NSCLC_DTC_3p_nextgem_gex (3),Q30 UMI,91.5%
+Library,Gene Expression,Fastq ID,20k_NSCLC_DTC_3p_nextgem_gex (3),Q30 barcodes,93.1%
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Cell-associated barcodes identified as multiplets,3245 (15.85%)
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Cell-associated barcodes not assigned any CMOs,1608 (7.86%)
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Cells assigned to a sample,15618 (76.29%)
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Confidently mapped antisense,9.74%
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Confidently mapped to exonic regions,58.83%
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Confidently mapped to genome,93.09%
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Confidently mapped to intergenic regions,5.99%
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Confidently mapped to intronic regions,28.28%
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Confidently mapped to transcriptome,76.69%
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Estimated number of cells,"20,471"
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Fraction reads in cells,92.29%
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Mapped to genome,96.35%
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Mean reads per cell,"57,168"
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Number of reads,"1,170,293,732"
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Number of reads in the library,"1,170,293,732"
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Sequencing saturation,53.85%
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Valid UMIs,99.95%
+Library,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Valid barcodes,98.06%
+Library,Multiplexing Capture,,,Cell-associated barcodes identified as multiplets,3245 (15.85%)
+Library,Multiplexing Capture,,,Cells assigned to a sample,15618 (76.29%)
+Library,Multiplexing Capture,,,Estimated number of cell-associated barcodes,"20,471"
+Library,Multiplexing Capture,,,Median CMO UMIs per cell,"10,235"
+Library,Multiplexing Capture,,,Number of samples assigned at least one cell,7
+Library,Multiplexing Capture,,,Singlet capture ratio,0.91
+Library,Multiplexing Capture,CMO Name,CMO301,CMO signal-to-noise ratio,6.59
+Library,Multiplexing Capture,CMO Name,CMO301,Cells assigned to CMO,12.17%
+Library,Multiplexing Capture,CMO Name,CMO301,Fraction reads in cell-associated barcodes,70.65%
+Library,Multiplexing Capture,CMO Name,CMO302,CMO signal-to-noise ratio,4.46
+Library,Multiplexing Capture,CMO Name,CMO302,Cells assigned to CMO,15.11%
+Library,Multiplexing Capture,CMO Name,CMO302,Fraction reads in cell-associated barcodes,51.60%
+Library,Multiplexing Capture,CMO Name,CMO303,CMO signal-to-noise ratio,7.10
+Library,Multiplexing Capture,CMO Name,CMO303,Cells assigned to CMO,10.80%
+Library,Multiplexing Capture,CMO Name,CMO303,Fraction reads in cell-associated barcodes,80.92%
+Library,Multiplexing Capture,CMO Name,CMO304,CMO signal-to-noise ratio,7.18
+Library,Multiplexing Capture,CMO Name,CMO304,Cells assigned to CMO,13.31%
+Library,Multiplexing Capture,CMO Name,CMO304,Fraction reads in cell-associated barcodes,69.18%
+Library,Multiplexing Capture,CMO Name,CMO306,CMO signal-to-noise ratio,5.72
+Library,Multiplexing Capture,CMO Name,CMO306,Cells assigned to CMO,16.76%
+Library,Multiplexing Capture,CMO Name,CMO306,Fraction reads in cell-associated barcodes,76.41%
+Library,Multiplexing Capture,CMO Name,CMO307,CMO signal-to-noise ratio,5.26
+Library,Multiplexing Capture,CMO Name,CMO307,Cells assigned to CMO,21.24%
+Library,Multiplexing Capture,CMO Name,CMO307,Fraction reads in cell-associated barcodes,74.08%
+Library,Multiplexing Capture,CMO Name,CMO308,CMO signal-to-noise ratio,6.01
+Library,Multiplexing Capture,CMO Name,CMO308,Cells assigned to CMO,10.62%
+Library,Multiplexing Capture,CMO Name,CMO308,Fraction reads in cell-associated barcodes,76.31%
+Library,Multiplexing Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_cmo,Number of reads,"178,521,140"
+Library,Multiplexing Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_cmo,Number of short reads skipped,0
+Library,Multiplexing Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_cmo,Q30 RNA read,95.4%
+Library,Multiplexing Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_cmo,Q30 UMI,96.3%
+Library,Multiplexing Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_cmo,Q30 barcodes,96.0%
+Library,Multiplexing Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_cmo (2),Number of reads,"198,056,269"
+Library,Multiplexing Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_cmo (2),Number of short reads skipped,0
+Library,Multiplexing Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_cmo (2),Q30 RNA read,95.6%
+Library,Multiplexing Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_cmo (2),Q30 UMI,95.6%
+Library,Multiplexing Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_cmo (2),Q30 barcodes,94.9%
+Library,Multiplexing Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_cmo (3),Number of reads,"205,532,475"
+Library,Multiplexing Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_cmo (3),Number of short reads skipped,0
+Library,Multiplexing Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_cmo (3),Q30 RNA read,94.4%
+Library,Multiplexing Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_cmo (3),Q30 UMI,95.6%
+Library,Multiplexing Capture,Fastq ID,20k_NSCLC_DTC_3p_nextgem_cmo (3),Q30 barcodes,95.1%
+Library,Multiplexing Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_cmo,Cell-associated barcodes identified as multiplets,3245 (15.85%)
+Library,Multiplexing Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_cmo,Cell-associated barcodes not assigned any CMOs,1608 (7.86%)
+Library,Multiplexing Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_cmo,Cells assigned to a sample,15618 (76.29%)
+Library,Multiplexing Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_cmo,Estimated number of cell-associated barcodes,"20,471"
+Library,Multiplexing Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_cmo,Fraction CMO reads,97.89%
+Library,Multiplexing Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_cmo,Fraction CMO reads usable,67.55%
+Library,Multiplexing Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_cmo,Fraction reads from multiplets,19.44%
+Library,Multiplexing Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_cmo,Fraction reads in cell-associated barcodes,69.37%
+Library,Multiplexing Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_cmo,Fraction unrecognized CMO,2.11%
+Library,Multiplexing Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_cmo,Mean reads per cell-associated barcode,"27,690"
+Library,Multiplexing Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_cmo,Median CMO UMIs per cell-associated barcode,"11,310"
+Library,Multiplexing Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_cmo,Number of reads,"582,109,884"
+Library,Multiplexing Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_cmo,Samples assigned at least one cell,7
+Library,Multiplexing Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_cmo,Sequencing saturation,7.96%
+Library,Multiplexing Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_cmo,Valid UMIs,99.99%
+Library,Multiplexing Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_cmo,Valid barcodes,99.52%
+Sample,Antibody Capture,,,Antibody reads usable per cell,"5,611"
+Sample,Antibody Capture,,,Cells,"1,901"
+Sample,Antibody Capture,,,Median UMI counts per cell,518
+Sample,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Cell-associated barcodes identified as multiplets,3245 (15.85%)
+Sample,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Cell-associated barcodes not assigned any CMOs,1608 (7.86%)
+Sample,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Cells assigned to other samples,13717 (67.01%)
+Sample,Antibody Capture,Physical library ID,20k_NSCLC_DTC_3p_nextgem_antibody,Cells assigned to this sample,1901 (9.29%)
+Sample,Gene Expression,,,Cells,"1,901"
+Sample,Gene Expression,,,Confidently mapped antisense,10.39%
+Sample,Gene Expression,,,Confidently mapped to exonic regions,57.82%
+Sample,Gene Expression,,,Confidently mapped to genome,93.36%
+Sample,Gene Expression,,,Confidently mapped to intergenic regions,6.38%
+Sample,Gene Expression,,,Confidently mapped to intronic regions,29.17%
+Sample,Gene Expression,,,Confidently mapped to transcriptome,75.89%
+Sample,Gene Expression,,,Mapped to genome,96.85%
+Sample,Gene Expression,,,Median UMI counts per cell,"6,913"
+Sample,Gene Expression,,,Median genes per cell,"2,501"
+Sample,Gene Expression,,,Median reads per cell,"20,842"
+Sample,Gene Expression,,,Number of reads assigned to the sample,"80,699,263"
+Sample,Gene Expression,,,Total genes detected,"29,870"
+Sample,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Cell-associated barcodes identified as multiplets,3245 (15.85%)
+Sample,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Cell-associated barcodes not assigned any CMOs,1608 (7.86%)
+Sample,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Cells assigned to other samples,13717 (67.01%)
+Sample,Gene Expression,Physical library ID,20k_NSCLC_DTC_3p_nextgem_gex,Cells assigned to this sample,1901 (9.29%)

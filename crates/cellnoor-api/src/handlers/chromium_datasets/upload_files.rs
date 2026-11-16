@@ -83,7 +83,7 @@ pub async fn write_test_dataset_files(
     static_files_dir: &Utf8Path,
 ) {
     const MULTI_METRICS: &[u8] = include_bytes!(
-        "upload_files/test-data/\
+        "upload_files/test-data/cellranger_multi/gex/per_sample_outs/sample/\
          4plex_rat_liver_kidney_lgintest_testis_CF_RatLiver_A-A03_metrics_summary.csv"
     );
 
@@ -95,7 +95,7 @@ pub async fn write_test_dataset_files(
         .part(
             "web_summary",
             Part::bytes(include_bytes!(
-                "upload_files/test-data/\
+                "upload_files/test-data/cellranger_multi/gex/per_sample_outs/sample/\
                  4plex_rat_liver_kidney_lgintest_testis_CF_RatLiver_A-A03_web_summary.html"
             ))
             .headers(
@@ -108,7 +108,7 @@ pub async fn write_test_dataset_files(
         .part(
             "qc_sample_metrics",
             Part::bytes(include_bytes!(
-                "upload_files/test-data/\
+                "upload_files/test-data/cellranger_multi/gex/\
                  SOD1_G93A_mouse_spinal_cord_P112_specimen_1_Multiplex_qc_sample_metrics.csv"
             ))
             .headers(csv_header.clone())
