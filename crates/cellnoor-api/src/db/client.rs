@@ -21,7 +21,7 @@ pub struct Pool(InnerPool);
 
 impl Pool {
     // Use `anyhow::Result` because we only make the pool once at app-startup
-    pub fn new(cfg: deadpool_postgres::Config, max_size: Option<usize>) -> anyhow::Result<Self> {
+    pub fn new(cfg: &deadpool_postgres::Config, max_size: Option<usize>) -> anyhow::Result<Self> {
         let mut builder = cfg.builder(deadpool_postgres::tokio_postgres::NoTls)?;
         if let Some(max_size) = max_size {
             builder = builder.max_size(max_size);
@@ -105,6 +105,7 @@ impl Client {
     }
 }
 
+#[derive(Debug)]
 pub struct Transaction<'a> {
     user: AuthUser,
     inner: InnerTransaction<'a>,

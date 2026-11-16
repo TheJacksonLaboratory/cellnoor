@@ -23,7 +23,7 @@ pub(super) enum DatasetType {
 pub struct DatasetDir {
     dataset_type: DatasetType,
     dataset_id: Uuid,
-    _file_path: Option<String>,
+    file_path: Option<String>,
 }
 
 #[axum::debug_handler]
@@ -33,13 +33,13 @@ pub async fn authorize_dataset_dir_access(
     Path(DatasetDir {
         dataset_type,
         dataset_id,
-        _file_path,
+        file_path,
     }): Path<DatasetDir>,
 ) -> Result<(), FileAuthError> {
     tracing::debug!(
         %dataset_type,
         %dataset_id,
-        file_path = _file_path.unwrap_or_default()
+        file_path = file_path.unwrap_or_default()
     );
 
     // If we know the user is staff, we can just return early

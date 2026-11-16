@@ -36,6 +36,7 @@ async fn insert_chip_loading(
     tx.insert(chip_loading).await
 }
 
+#[expect(clippy::struct_field_names)]
 #[derive(Clone, Debug, PartialEq)]
 struct NewChipLoadingRecord {
     gem_well_id: Uuid,

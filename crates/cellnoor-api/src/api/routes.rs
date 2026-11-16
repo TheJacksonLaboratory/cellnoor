@@ -54,6 +54,7 @@ pub fn router() -> (OpenApi, Router<AppState>) {
 
     let mut api_docs = OpenApi::default();
 
+    #[expect(clippy::default_trait_access)]
     let router = router.finish_api_with(&mut api_docs, |api_docs| {
         api_docs
             .title("cellnoor RESTful API")

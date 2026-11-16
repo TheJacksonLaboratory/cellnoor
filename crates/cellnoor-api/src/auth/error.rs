@@ -21,7 +21,12 @@ pub enum AuthError {
 
 impl AuthError {
     fn status(&self) -> StatusCode {
-        StatusCode::UNAUTHORIZED
+        match self {
+            Self::ExpiredApiKey { .. }
+            | Self::InvalidAuthToken { .. }
+            | Self::NoAuthFound { .. }
+            | Self::Db(_) => StatusCode::UNAUTHORIZED,
+        }
     }
 }
 

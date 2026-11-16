@@ -112,7 +112,9 @@ pub(crate) async fn validate_libraries_have_same_gem_well(
         return Err(CreateChromiumDatasetError::LibrariesFromDifferentGemWells);
     }
 
-    if library_ids.len() as i64 != n_library_types {
+    if i64::try_from(library_ids.len()).expect("this number is literally always less than 4")
+        != n_library_types
+    {
         return Err(CreateChromiumDatasetError::DuplicateLibraryType);
     }
 
@@ -161,7 +163,7 @@ impl Insert for NewChromiumDatasetRecord {
     type Field = ChromiumDatasetField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use ChromiumDatasetField::{Name, DeliveredAt};
+        use ChromiumDatasetField::{DeliveredAt, Name};
 
         let Self {
             id: _,

@@ -73,8 +73,8 @@ pub(super) async fn assert_only_staff_with_permission_can_change_children<A, R, 
     add: A,
     remove: R,
 ) where
-    A: AsyncFn(&db::Transaction) -> Result<(), DbError>,
-    R: AsyncFn(&db::Transaction) -> Result<(), E>,
+    A: AsyncFn(&db::Transaction<'_>) -> Result<(), DbError>,
+    R: AsyncFn(&db::Transaction<'_>) -> Result<(), E>,
     E: From<DbError> + PartialEq + Debug,
 {
     let mut admin = db_client_as_admin().await;
@@ -138,7 +138,7 @@ pub(super) async fn assert_only_staff_with_permission_can_change_children<A, R, 
 async fn assert_is_ok<F, Pred, Order, Ret>(tx: &db::Transaction<'_>, select_fn: F)
 where
     Order: OrderField,
-    F: AsyncFn(&db::Transaction, &ComplexQuery<Pred, Order>) -> Result<Ret, DbError>,
+    F: AsyncFn(&db::Transaction<'_>, &ComplexQuery<Pred, Order>) -> Result<Ret, DbError>,
     Ret: Debug,
 {
     assert_matches!(select_fn(tx, &ComplexQuery::default()).await, Ok(_));

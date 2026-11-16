@@ -34,12 +34,12 @@ pub(in super::super) async fn select_cdna_detailed(
     Ok(tx
         .select_rows(&SELECT_DETAILED_CDNA, query)
         .await?
-        .into_iter()
+        .iter()
         .map(map_detailed_row)
         .collect())
 }
 
-fn map_detailed_row(row: Row) -> CdnaDetailed {
+fn map_detailed_row(row: &Row) -> CdnaDetailed {
     let record: SavedCdnaRecord = row.get("cdna");
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
 

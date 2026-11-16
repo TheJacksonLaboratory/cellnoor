@@ -120,7 +120,7 @@ impl Insert for NewChromiumRunRecord {
 }
 
 #[cfg(any(test, feature = "dev"))]
-pub(super) async fn new_record(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRecord {
+pub(super) fn new_record(assay_id: Uuid, run_by: Uuid) -> NewChromiumRunRecord {
     use cellnoor_types::id::NoId;
     use jiff::Timestamp;
 
@@ -241,7 +241,7 @@ where
     };
 
     let mut new = NewChromiumRun {
-        record: new_record(assay_id, person_id).await,
+        record: new_record(assay_id, person_id),
         gem_wells: ChromiumRunGemWells::Standard {
             gem_wells: NonemptyBoundedVec::new(vec![gem_well1, gem_well2]).unwrap(),
         },
@@ -297,7 +297,7 @@ where
         },
     ];
     let mut new = NewChromiumRun {
-        record: new_record(assay_id, person_id).await,
+        record: new_record(assay_id, person_id),
         gem_wells: ChromiumRunGemWells::OnChipMultiplexing {
             gem_wells: NonemptyBoundedVec::new(gem_wells).unwrap(),
         },
@@ -325,7 +325,7 @@ where
     let assay_id = insert_chromium_assays(tx).await?.ocm;
 
     let mut new = NewChromiumRun {
-        record: new_record(assay_id, person_id).await,
+        record: new_record(assay_id, person_id),
         gem_wells: ChromiumRunGemWells::Mixed {
             gem_wells: NonemptyBoundedVec::new(vec![
                 NewStandardOrOcmGemWell::Standard(NewStandardGemWell {
@@ -370,7 +370,7 @@ where
     let assay_id = insert_chromium_assays(tx).await?.flex;
 
     let mut new = NewChromiumRun {
-        record: new_record(assay_id, person_id).await,
+        record: new_record(assay_id, person_id),
         gem_wells: ChromiumRunGemWells::Standard {
             gem_wells: NonemptyBoundedVec::new(vec![NewStandardGemWell {
                 readable_id: crate::db::dummy_data::random_name_for("gem_well"),
@@ -389,7 +389,7 @@ where
 }
 
 #[cfg(any(test, feature = "dev"))]
-#[derive(Clone, Copy, strum::VariantArray)]
+#[derive(Clone, Copy, Debug, strum::VariantArray)]
 pub enum TestChromiumRunKind {
     Standard,
     Mixed,

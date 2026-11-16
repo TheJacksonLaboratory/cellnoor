@@ -15,6 +15,7 @@ use crate::{
     state::AppState,
 };
 
+#[expect(clippy::implicit_hasher)]
 pub async fn create_dual_index_sets(
     State(state): State<AppState>,
     user: AuthUser,

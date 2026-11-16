@@ -52,12 +52,12 @@ pub(in super::super) async fn select_chromium_datasets_detailed(
     Ok(tx
         .select_rows(&SELECT_DETAILED_CHROMIUM_DATASETS, query)
         .await?
-        .into_iter()
+        .iter()
         .map(map_detailed_row)
         .collect())
 }
 
-fn map_detailed_row(row: Row) -> ChromiumDatasetDetailed {
+fn map_detailed_row(row: &Row) -> ChromiumDatasetDetailed {
     let record: SavedChromiumDatasetRecord = row.get("chromium_dataset");
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
     let libraries: Vec<SavedLibraryRecord> = row.get("libraries");
@@ -131,9 +131,7 @@ fn extract_key_metrics_from_parsed_files(
             }
             // We can actually get all the metrics of interest from CSVs, no
             // JSON required
-            ChromiumDatasetParsedFileData::Json { .. } => {
-                continue;
-            }
+            ChromiumDatasetParsedFileData::Json { .. } => {}
         }
     }
 
@@ -596,7 +594,7 @@ mod tests {
             ("GEX median UMI counts per cell", TenxCsvValue::I64(2244)),
             (
                 "GEX fraction of transcriptomic reads in cells",
-                TenxCsvValue::F64(0.6847850295990157),
+                TenxCsvValue::F64(0.684_785_029_599_015_7),
             ),
         ]);
 

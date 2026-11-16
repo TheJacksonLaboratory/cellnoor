@@ -34,12 +34,12 @@ pub(in super::super) async fn select_libraries_detailed(
     Ok(tx
         .select_rows(&SELECT_DETAILED_LIBRARIES, query)
         .await?
-        .into_iter()
+        .iter()
         .map(map_detailed_row)
         .collect())
 }
 
-fn map_detailed_row(row: Row) -> LibraryDetailed {
+fn map_detailed_row(row: &Row) -> LibraryDetailed {
     let record: SavedLibraryRecord = row.get("library");
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
 

@@ -94,11 +94,11 @@ pub(crate) async fn set_is_staff(
 
 fn specific_error_inferred_early_responses<T: JsonSchema>(
     ctx: &mut GenContext,
-    _operation: &mut Operation,
+    operation: &mut Operation,
 ) -> Vec<(Option<aide::openapi::StatusCode>, aide::openapi::Response)> {
     vec![(
         Some(aide::openapi::StatusCode::Code(422)),
-        axum::Json::<T>::operation_response(ctx, _operation)
+        axum::Json::<T>::operation_response(ctx, operation)
             .expect("the implementation of axum::Json::<T>::operation_response does not fail"),
     )]
 }

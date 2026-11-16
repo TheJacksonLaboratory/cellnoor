@@ -51,7 +51,7 @@ async fn insert_inaccessible_suspension(
         .unwrap()
 }
 
-async fn get_user_id_from_suspension(suspension: &SuspensionDetailed) -> Uuid {
+fn get_user_id_from_suspension(suspension: &SuspensionDetailed) -> Uuid {
     suspension.preparers[0]
 }
 
@@ -92,7 +92,7 @@ async fn row_level_security_for_suspensions() {
         insert_accessible_suspension(&tx),
         insert_inaccessible_suspension(&tx)
     );
-    let user_id = get_user_id_from_suspension(&accessible_suspension).await;
+    let user_id = get_user_id_from_suspension(&accessible_suspension);
 
     // Commit this transaction so the change persists for the next part of the
     // test
@@ -116,7 +116,7 @@ async fn only_staff_with_permission_can_change_suspension_preparers_and_measurem
     tx.commit().await.unwrap();
 
     let id = *suspension.record.id;
-    let member_id = get_user_id_from_suspension(&suspension).await;
+    let member_id = get_user_id_from_suspension(&suspension);
     let new_preparer_id = create_test_user().await;
     let new_measurement = NewSuspensionMeasurement {
         measured_at: Timestamp::now(),

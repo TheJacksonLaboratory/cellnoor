@@ -17,7 +17,7 @@ impl<'a> Sql<'a> {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct FilterableSqlBuilder {
     prefix: &'static str,
     suffix: &'static str,
