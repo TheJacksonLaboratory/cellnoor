@@ -7,10 +7,6 @@
 
 	const format = $derived(file.parsed_contents?.format);
 	const data = $derived(file.parsed_contents?.data);
-
-	const rows = $derived(Array.isArray(data) ? data : data ? [data] : []);
-	// Sort the columns to make comparing different files of the same type easier
-	const columns = $derived([...new Set(rows.flatMap(Object.keys))].toSorted());
 </script>
 
 <section class="stack card card-body">
@@ -34,21 +30,23 @@
 				{/snippet}
 			</JsonTreeView.Tree>
 		</JsonTreeView.Root>
-	{:else}
+		<!-- We actually know at this point that it's an array, but stupid TypeScript makes us put this check here -->
+	{:else if Array.isArray(data)}
 		<div class="scroll-x">
 			<table>
 				<thead>
 					<tr>
-						{#each columns as column (column)}
+						{#each Object.keys(data[0]) as column (column)}
 							<th scope="col">{column}</th>
 						{/each}
 					</tr>
 				</thead>
 				<tbody>
-					{#each rows as row (row)}
+					<!-- ts-expect-error -->
+					{#each data as row (row)}
 						<tr>
-							{#each columns as column (column)}
-								<td>{row[column]}</td>
+							{#each Object.values(row) as val (val)}
+								<td>val</td>
 							{/each}
 						</tr>
 					{/each}
