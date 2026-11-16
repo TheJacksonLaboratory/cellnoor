@@ -21,14 +21,18 @@ pub struct AppState {
 
 impl AppState {
     pub fn initialize(settings: &Settings) -> anyhow::Result<Self> {
-        let jwt_decoding_info = settings.auth.then(|| {
-            &*Box::leak(Box::new((
+        let jwt_decoding_info = if settings.auth {
+            let info = (
                 jsonwebtoken::DecodingKey::from_secret(
                     settings.auth_secret.expose_secret().as_bytes(),
-                ),
+                )?,
                 jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::HS256),
-            )))
-        });
+            );
+
+            Some(&*Box::leak(Box::new(info)))
+        } else {
+            None
+        };
 
         Ok(Self {
             db_pool: db::Pool::new(settings.db.clone(), settings.max_db_pool_size)?,
