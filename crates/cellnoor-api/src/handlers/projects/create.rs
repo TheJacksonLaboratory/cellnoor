@@ -36,7 +36,7 @@ impl Insert for ProjectSimpleFields {
     type Field = ProjectField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use ProjectField::{Name, StartedAt, EndedAt};
+        use ProjectField::{EndedAt, Name, StartedAt};
 
         let Self {
             name,

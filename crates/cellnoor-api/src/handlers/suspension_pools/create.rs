@@ -161,7 +161,7 @@ impl Insert for NewSuspensionPoolRecord {
     type Field = SuspensionPoolField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use SuspensionPoolField::{ReadableId, Name, PooledAt, AdditionalData};
+        use SuspensionPoolField::{AdditionalData, Name, PooledAt, ReadableId};
 
         let Self {
             id: _,

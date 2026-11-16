@@ -90,7 +90,10 @@ impl Insert for NewLibraryRecord {
     type Field = LibraryField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use LibraryField::{ReadableId, CdnaId, SingleIndexSetName, DualIndexSetName, NumberOfSampleIndexPcrCycles, TargetReadsPerCell, PreparedAt, AdditionalData};
+        use LibraryField::{
+            AdditionalData, CdnaId, DualIndexSetName, NumberOfSampleIndexPcrCycles, PreparedAt,
+            ReadableId, SingleIndexSetName, TargetReadsPerCell,
+        };
 
         let Self {
             id: _,

@@ -49,7 +49,9 @@ pub(super) fn suspension_pool_links(id: Id) -> SuspensionPoolLinks {
     }
 }
 
-pub(crate) fn suspension_pool_from_record(record: SavedSuspensionPoolRecord) -> SuspensionPoolCompact {
+pub(crate) fn suspension_pool_from_record(
+    record: SavedSuspensionPoolRecord,
+) -> SuspensionPoolCompact {
     SuspensionPoolCompact {
         links: suspension_pool_links(record.id),
         record,

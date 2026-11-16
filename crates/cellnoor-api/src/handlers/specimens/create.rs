@@ -70,7 +70,11 @@ impl Insert for NewSpecimenRecord {
     type Field = SpecimenField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use SpecimenField::{ReadableId, Name, ReceivedOrCreatedAt, GivenAt, GivenBy, GivenTo, AdditionalData, Type, EmbeddedIn, Fixative, ThermalPreservationMethod, SubmittedBy, ParentSpecimenId, ProjectId, Species, HostSpecies, Tissue};
+        use SpecimenField::{
+            AdditionalData, EmbeddedIn, Fixative, GivenAt, GivenBy, GivenTo, HostSpecies, Name,
+            ParentSpecimenId, ProjectId, ReadableId, ReceivedOrCreatedAt, Species, SubmittedBy,
+            ThermalPreservationMethod, Tissue, Type,
+        };
 
         let Self {
             readable_id,

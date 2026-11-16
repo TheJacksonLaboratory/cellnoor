@@ -80,7 +80,7 @@ impl Insert for CdnaSimpleFields {
     type Field = CdnaField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use CdnaField::{ReadableId, PreparedAt, AdditionalData};
+        use CdnaField::{AdditionalData, PreparedAt, ReadableId};
 
         let Self {
             readable_id,
@@ -100,7 +100,9 @@ impl Insert for NewCdnaRecord {
     type Field = CdnaField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use CdnaField::{ReadableId, LibraryType, PreparedAt, GemWellId, NAmplificationCycles, AdditionalData};
+        use CdnaField::{
+            AdditionalData, GemWellId, LibraryType, NAmplificationCycles, PreparedAt, ReadableId,
+        };
 
         let Self {
             id: _,

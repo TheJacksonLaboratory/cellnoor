@@ -31,7 +31,7 @@ impl Insert for NewInstitution {
     type Field = InstitutionField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use InstitutionField::{Name, MicrosoftEntraTenantId};
+        use InstitutionField::{MicrosoftEntraTenantId, Name};
         let Self {
             id: _,
             name,

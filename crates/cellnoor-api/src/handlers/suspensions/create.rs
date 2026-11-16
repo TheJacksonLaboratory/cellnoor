@@ -89,7 +89,10 @@ impl Insert for NewSuspensionRecord {
     type Field = SuspensionField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use SuspensionField::{ReadableId, SpecimenId, Content, CreatedAt, LysisDurationMinutes, TargetCellRecovery, AdditionalData};
+        use SuspensionField::{
+            AdditionalData, Content, CreatedAt, LysisDurationMinutes, ReadableId, SpecimenId,
+            TargetCellRecovery,
+        };
 
         let Self {
             id: _,

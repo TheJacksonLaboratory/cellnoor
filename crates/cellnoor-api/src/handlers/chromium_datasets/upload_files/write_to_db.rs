@@ -1,8 +1,4 @@
-
-use cellnoor_types::{
-    Relation,
-    chromium_dataset::ChromiumDatasetParsedFileData,
-};
+use cellnoor_types::{Relation, chromium_dataset::ChromiumDatasetParsedFileData};
 use uuid::Uuid;
 
 use crate::{

@@ -96,7 +96,7 @@ impl Insert for NewChromiumRunRecord {
     type Field = ChromiumRunField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use ChromiumRunField::{ReadableId, AssayId, RunAt, RunBy, Succeeded, AdditionalData};
+        use ChromiumRunField::{AdditionalData, AssayId, ReadableId, RunAt, RunBy, Succeeded};
 
         let Self {
             id: _,
@@ -403,7 +403,7 @@ pub(crate) async fn insert_test_chromium_run(
     kind: TestChromiumRunKind,
     modify: impl FnMut(&mut NewChromiumRun),
 ) -> Result<ChromiumRunDetailed, DbError> {
-    use TestChromiumRunKind::{Standard, Mixed, OnChipMultiplexing, Flex};
+    use TestChromiumRunKind::{Flex, Mixed, OnChipMultiplexing, Standard};
 
     let (_, run) = match kind {
         Standard => insert_test_standard_chromium_run(tx, modify).await?,

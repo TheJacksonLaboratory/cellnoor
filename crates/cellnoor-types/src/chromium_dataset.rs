@@ -77,7 +77,10 @@ pub struct ChromiumDatasetDetailedLinks {
 
 #[base_model]
 pub struct TransposedCsvRow {
-    #[cfg_attr(feature = "serde", serde(rename = "Category", alias = "Library or Sample"))]
+    #[cfg_attr(
+        feature = "serde",
+        serde(rename = "Category", alias = "Library or Sample")
+    )]
     pub category: String,
     #[cfg_attr(feature = "serde", serde(rename = "Library Type"))]
     pub library_type: LibraryType,
