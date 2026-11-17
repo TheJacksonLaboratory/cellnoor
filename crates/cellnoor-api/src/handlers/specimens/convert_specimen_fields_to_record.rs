@@ -61,7 +61,10 @@ pub(super) fn convert_specimen_fields_to_record(
         }
         SpecimenVariableFields::Suspension(SuspensionSpecimenFields::ThermallyPreserved {
             ..
-        }) => (None, Some(ThermalPreservationMethod::ControlledRateFreezing)),
+        }) => (
+            None,
+            Some(ThermalPreservationMethod::ControlledRateFreezing),
+        ),
         SpecimenVariableFields::Tissue(TissueFields::ThermallyPreserved {
             thermal_preservation_method,
         }) => (None, Some(thermal_preservation_method)),

@@ -1,12 +1,5 @@
-#[cfg(feature = "postgres-types")]
-use std::str::FromStr;
-
-#[cfg(feature = "postgres-types")]
-use bytes::BytesMut;
 pub use creation::SpecimenType;
 use macro_attributes::{base_model, select, sql_enum};
-#[cfg(feature = "postgres-types")]
-use postgres_types::{FromSql, ToSql, to_sql_checked};
 pub use query::{
     BlockEmbeddingMatrixOperator, FixativeOperator, SimpleSpecimenQuery, SpeciesOperator,
     SpecimenField, SpecimenPredicate, SpecimenQuery, SpecimenTypeOperator,
@@ -18,14 +11,7 @@ use crate::{
     id::Id,
     project::{ProjectCompact, SavedProjectRecord},
     simple_links::SimpleLinks,
-    specimen::{
-        creation::{
-            ControlledRateFreezing, DithiobisSuccinimidylpropionate, FlashFreezing,
-            FormaldehydeDerivative,
-        },
-        measurement::SpecimenMeasurement,
-        record::SpecimenRecord,
-    },
+    specimen::{measurement::SpecimenMeasurement, record::SpecimenRecord},
 };
 
 pub mod creation;
@@ -135,7 +121,10 @@ pub struct SpecimenDetailed {
 }
 
 #[sql_enum]
-#[cfg_attr(feature = "postgres-types", postgres(name = "thermal_preservation_method"))]
+#[cfg_attr(
+    feature = "postgres-types",
+    postgres(name = "thermal_preservation_method")
+)]
 pub enum ThermalPreservationMethod {
     ControlledRateFreezing,
     FlashFreezing,

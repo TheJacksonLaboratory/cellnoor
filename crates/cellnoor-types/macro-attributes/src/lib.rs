@@ -1,7 +1,7 @@
 #![cfg_attr(test, expect(dead_code_pub_in_binary))]
 
 use proc_macro::TokenStream;
-use quote::{format_ident, quote};
+use quote::quote;
 use syn::{Fields, Ident, ItemEnum, Type, parse_macro_input};
 
 fn base_derives() -> proc_macro2::TokenStream {

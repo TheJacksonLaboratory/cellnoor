@@ -139,7 +139,6 @@ pub struct SuspensionPoolDetailed {
 #[cfg(all(test, feature = "serde"))]
 mod tests {
     use jiff::Timestamp;
-    use strum::VariantArray;
     use uuid::Uuid;
 
     use crate::suspension_pool::{MultiplexingTagType, NewSuspensionPool};

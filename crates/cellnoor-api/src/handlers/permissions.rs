@@ -93,7 +93,9 @@ pub(crate) async fn revoke_permissions(
     principal_id: Uuid,
     permissions: &[Permission],
 ) -> Result<(), DbError> {
-    static REVOKE_PERMISSIONS: &str = "delete from permission where principal_id = $1 and (action, resource) in (select * from unnest($2::action[], $3::resource[]))";
+    static REVOKE_PERMISSIONS: &str = "delete from permission where principal_id = $1 and \
+                                       (action, resource) in (select * from unnest($2::action[], \
+                                       $3::resource[]))";
 
     // A delete matches a set of rows rather than adding them, so the
     // permissions go down as two parallel arrays
