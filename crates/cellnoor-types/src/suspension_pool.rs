@@ -1,4 +1,4 @@
-use macro_attributes::{base_model, select, unit_enum};
+use macro_attributes::{base_model, select, sql_enum};
 pub use query::{
     MultiplexingTagField, MultiplexingTagPredicate, MultiplexingTagTypeOperator,
     SimpleSuspensionPoolQuery, SuspensionPoolField, SuspensionPoolPredicate,
@@ -45,19 +45,19 @@ impl<T> Relation for SuspensionPoolRecord<T> {
 
 pub type NewSuspensionPoolRecord = SuspensionPoolRecord<NoId>;
 
-#[unit_enum]
-#[derive(strum::VariantArray)]
+#[sql_enum]
+#[cfg_attr(feature = "postgres-types", postgres(name = "multiplexing_tag_type"))]
 pub enum MultiplexingTagType {
     FlexBarcode,
     FlexOligonucleotideBarcode,
     #[cfg_attr(feature = "serde", serde(rename = "TotalSeq-A"))]
-    #[strum(serialize = "TotalSeq-A")]
+    #[cfg_attr(feature = "postgres-types", postgres(name = "TotalSeq-A"))]
     TotalSeqA,
     #[cfg_attr(feature = "serde", serde(rename = "TotalSeq-B"))]
-    #[strum(serialize = "TotalSeq-B")]
+    #[cfg_attr(feature = "postgres-types", postgres(name = "TotalSeq-B"))]
     TotalSeqB,
     #[cfg_attr(feature = "serde", serde(rename = "TotalSeq-C"))]
-    #[strum(serialize = "TotalSeq-C")]
+    #[cfg_attr(feature = "postgres-types", postgres(name = "TotalSeq-C"))]
     TotalSeqC,
 }
 
@@ -168,18 +168,6 @@ mod tests {
     #[test]
     fn suspension_pool_deserializes_correctly() {
         serde_json::from_value::<NewSuspensionPool>(pool()).unwrap();
-    }
-
-    #[test]
-    fn multiplexing_tag_type_strum_and_serde_match() {
-        for ty in MultiplexingTagType::VARIANTS {
-            let serde = serde_json::to_string(ty).unwrap();
-            let strum: &str = ty.as_ref();
-
-            // Wrap the strum serialization in double quotes because it's
-            // supposed to be JSON
-            pretty_assertions::assert_eq!(serde, format!(r#""{strum}""#));
-        }
     }
 
     #[test]

@@ -34,8 +34,8 @@ create view bot_account_public with (security_invoker = true) as (
 
 -- A permission without the principal it belongs to, so that it can be aggregated per principal
 create type granted_permission as (
-    resource case_insensitive_text,
-    action case_insensitive_text
+    resource resource,
+    action action
 );
 
 create view person_with_permissions with (security_invoker = true) as (

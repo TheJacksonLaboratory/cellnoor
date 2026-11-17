@@ -43,9 +43,13 @@ create table suspension_pool_preparer (
     primary key (pool_id, prepared_by)
 );
 
+create type multiplexing_tag_type as enum (
+    'flex_barcode', 'flex_oligonucleotide_barcode', 'TotalSeq-A', 'TotalSeq-B', 'TotalSeq-C'
+);
+
 create table multiplexing_tag (
     tag_id case_insensitive_text not null,
-    type case_insensitive_text not null,
+    type multiplexing_tag_type not null,
 
     primary key (tag_id, type)
 );
@@ -58,7 +62,7 @@ create table suspension_pooling (
     suspension_id uuid not null,
     suspension_created_at timestamptz not null,
     tag_id case_insensitive_text,
-    tag_type case_insensitive_text,
+    tag_type multiplexing_tag_type,
 
     foreign key (pool_id, pool_pooled_at) references suspension_pool (
         id, pooled_at

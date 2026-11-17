@@ -6,6 +6,10 @@ use crate::specimen::creation::common::{FlashFreezing, FormaldehydeDerivative};
 #[derive(Copy, strum::EnumDiscriminants)]
 #[strum_discriminants(name(BlockEmbeddingMatrix), discriminant_unit_enum)]
 #[cfg_attr(
+    feature = "postgres-types",
+    strum_discriminants(postgres(name = "block_embedding_matrix"))
+)]
+#[cfg_attr(
     feature = "serde",
     serde(rename_all = "snake_case", tag = "embedded_in")
 )]

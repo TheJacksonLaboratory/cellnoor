@@ -69,8 +69,11 @@ pub type SpecimenUpdate = SpecimenSimpleFields;
 #[base_model]
 #[derive(Copy, strum::EnumDiscriminants)]
 #[cfg_attr(feature = "serde", serde(rename_all = "snake_case", tag = "type"))]
-#[strum(serialize_all = "snake_case")]
 #[strum_discriminants(name(SpecimenType), discriminant_unit_enum)]
+#[cfg_attr(
+    feature = "postgres-types",
+    strum_discriminants(postgres(name = "specimen_type"))
+)]
 pub enum SpecimenVariableFields {
     Block(BlockFields),
     CellPellet {

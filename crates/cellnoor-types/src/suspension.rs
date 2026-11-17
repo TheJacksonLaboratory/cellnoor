@@ -1,4 +1,4 @@
-use macro_attributes::{base_model, select, unit_enum};
+use macro_attributes::{base_model, select, sql_enum};
 pub use query::{
     SimpleSuspensionQuery, SuspensionContentOperator, SuspensionField, SuspensionPredicate,
     SuspensionPredicateInner, SuspensionQuery,
@@ -53,7 +53,8 @@ pub type NewSuspensionRecord = SuspensionRecord<NoId>;
 
 pub type SavedSuspensionRecord = SuspensionRecord<Id>;
 
-#[unit_enum]
+#[sql_enum]
+#[cfg_attr(feature = "postgres-types", postgres(name = "suspension_content"))]
 pub enum SuspensionContent {
     Cells,
     Nuclei,

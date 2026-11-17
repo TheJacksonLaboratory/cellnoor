@@ -11,7 +11,7 @@ $$;
 -- A permission is granted on a resource, which is a group of tables. A child table holds rows that hang off an entity,
 -- like measurements and preparers, so whoever may update the entity may also insert and delete them
 create temp table resource_table (
-    resource text primary key, entity_tables text[] not null, child_tables text[] not null
+    resource resource primary key, entity_tables text[] not null, child_tables text[] not null
 );
 
 insert into resource_table (resource, entity_tables, child_tables) values
@@ -92,7 +92,7 @@ select
     resource,
     action
 from resource_table
-cross join unnest(array['create', 'update', 'delete']) as action;
+cross join unnest('{create, update, delete}'::action[]) as action;
 -- noqa: enable=AL03
 
 drop table resource_table;

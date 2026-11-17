@@ -1,7 +1,7 @@
 create table cdna (
     id uuid primary key default uuidv7(),
     readable_id case_insensitive_text unique not null,
-    library_type case_insensitive_text not null,
+    library_type library_type not null,
     prepared_at timestamptz not null,
     gem_well_id uuid,
     -- We denormalize the GEM well's Chromium run time so we can constrain prepared_at to being after it. `match full`

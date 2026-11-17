@@ -1,13 +1,15 @@
-use macro_attributes::{select, unit_enum};
+use macro_attributes::{select, sql_enum};
 
-#[unit_enum]
+#[sql_enum]
+#[cfg_attr(feature = "postgres-types", postgres(name = "action"))]
 pub enum Action {
     Create,
     Update,
     Delete,
 }
 
-#[unit_enum]
+#[sql_enum]
+#[cfg_attr(feature = "postgres-types", postgres(name = "resource"))]
 pub enum Resource {
     Institution,
     Person,

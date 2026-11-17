@@ -33,19 +33,27 @@ $$;
 create trigger gem_well_chromium_run_timestamps before insert or update of chromium_run_id on gem_well
 for each row execute function populate_gem_well_chromium_run_timestamps();
 
+create type ocm_barcode_id as enum ('OB1', 'OB2', 'OB3', 'OB4');
+
 create table chip_loading (
     id uuid primary key default uuidv7(),
     gem_well_id uuid not null,
     run_at timestamptz not null,
-    -- Both parents' timestamps are not null, so each pair below is null together or not at all. `match full` enforces
-    -- that, which means each composite foreign key validates its own id column
+
+    -- 1. In the table suspension, created_at is not null
+    -- 2. In the table suspension_pool, pooled_at is also not null
+    -- 3. We want to use our foreign-key technique to ensure that this chip loading occurs after both of those values
+    -- 4. Both the suspension_id and suspension_pool_id are nullable in a chip loading, with exactly one of them
+    -- necessarily specified
+    -- 5. By default, postgres does not enforce composite foreign keys if one of the values in the composite is null
+    --
+    -- As such, we use the match full keyword - that way either (suspension_id, suspension_created_at) == (null, null),
+    -- or both values are filled. Same goes for (suspension_pool_id, suspension_pool_pooled_at)
     suspension_id uuid,
     suspension_created_at timestamptz,
     suspension_pool_id uuid,
     suspension_pool_pooled_at timestamptz,
-    -- There are only 4 allowed OCM barcode IDs, but we let the application restrict this so there is only one source
-    -- of truth (and so that we don't need a database migration if things change)
-    ocm_barcode_id case_insensitive_text,
+    ocm_barcode_id ocm_barcode_id,
 
     unique nulls not distinct (gem_well_id, ocm_barcode_id),
     foreign key (gem_well_id, run_at) references gem_well (id, run_at) on update cascade on delete cascade,

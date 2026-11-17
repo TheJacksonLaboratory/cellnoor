@@ -7,7 +7,7 @@ create function current_user_is_staff() returns boolean language sql stable as $
     select coalesce((select is_staff from principal where id = app_user_id()), false)
 $$;
 
-create function current_user_can(action_ text, resource_ text) returns boolean language sql stable as $$
+create function current_user_can(action_ action, resource_ resource) returns boolean language sql stable as $$
     select exists (
         select 1 from permission
         where principal_id = app_user_id() and resource = resource_ and action = action_

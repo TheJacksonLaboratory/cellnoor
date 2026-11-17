@@ -1,4 +1,4 @@
-use macro_attributes::{select, unit_enum};
+use macro_attributes::{select, sql_enum};
 pub use query::{SampleMultiplexingOperator, TenxAssayField, TenxAssayPredicate};
 use uuid::Uuid;
 
@@ -7,7 +7,8 @@ use crate::{Relation, cdna::creation::LibraryType, nonempty::NonemptyString};
 pub mod creation;
 mod query;
 
-#[unit_enum]
+#[sql_enum]
+#[cfg_attr(feature = "postgres-types", postgres(name = "sample_multiplexing"))]
 pub enum SampleMultiplexing {
     Cellplex,
     FlexBarcode,

@@ -4,7 +4,7 @@ use std::str::FromStr;
 #[cfg(feature = "postgres-types")]
 use bytes::BytesMut;
 pub use creation::SpecimenType;
-use macro_attributes::{base_model, select, unit_enum};
+use macro_attributes::{base_model, select, sql_enum};
 #[cfg(feature = "postgres-types")]
 use postgres_types::{FromSql, ToSql, to_sql_checked};
 pub use query::{
@@ -84,7 +84,8 @@ pub struct SpecimenSpecies {
     pub host_species: Option<Species>,
 }
 
-#[unit_enum]
+#[sql_enum]
+#[cfg_attr(feature = "postgres-types", postgres(name = "species"))]
 pub enum Species {
     AmbystomaMexicanum,
     CanisFamiliaris,
@@ -133,123 +134,16 @@ pub struct SpecimenDetailed {
     pub ancestors: Vec<SpecimenCompact>,
 }
 
-#[base_model]
-#[derive(Copy)]
-#[cfg_attr(feature = "serde", serde(untagged))]
+#[sql_enum]
+#[cfg_attr(feature = "postgres-types", postgres(name = "thermal_preservation_method"))]
 pub enum ThermalPreservationMethod {
-    Crf(ControlledRateFreezing),
-    Ff(FlashFreezing),
+    ControlledRateFreezing,
+    FlashFreezing,
 }
 
-#[cfg(feature = "postgres-types")]
-impl<'a> FromSql<'a> for ThermalPreservationMethod {
-    fn from_sql(
-        ty: &postgres_types::Type,
-        raw: &'a [u8],
-    ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
-        let s = <crate::nonempty::NonemptyString as FromSql>::from_sql(ty, raw)?;
-        let s = s.as_ref();
-
-        let controlled_rate_freezing = ControlledRateFreezing::from_str(s).map(Self::Crf);
-        let flash_freezing = FlashFreezing::from_str(s).map(Self::Ff);
-
-        controlled_rate_freezing
-            .or(flash_freezing)
-            .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Sync + Send>)
-    }
-
-    fn accepts(ty: &postgres_types::Type) -> bool {
-        use postgres_types::FromSql;
-
-        <crate::nonempty::NonemptyString as FromSql>::accepts(ty)
-    }
-}
-
-#[cfg(feature = "postgres-types")]
-impl ToSql for ThermalPreservationMethod {
-    to_sql_checked!();
-
-    fn to_sql(
-        &self,
-        ty: &postgres_types::Type,
-        out: &mut BytesMut,
-    ) -> Result<postgres_types::IsNull, Box<dyn std::error::Error + Sync + Send>>
-    where
-        Self: Sized,
-    {
-        let value = match self {
-            Self::Crf(c) => c.as_ref(),
-            Self::Ff(f) => f.as_ref(),
-        };
-
-        <&str as ToSql>::to_sql(&value, ty, out)
-    }
-
-    fn accepts(ty: &postgres_types::Type) -> bool
-    where
-        Self: Sized,
-    {
-        <crate::nonempty::NonemptyString as ToSql>::accepts(ty) || <&str as ToSql>::accepts(ty)
-    }
-}
-
-#[base_model]
-#[derive(Copy)]
-#[cfg_attr(feature = "serde", serde(untagged))]
+#[sql_enum]
+#[cfg_attr(feature = "postgres-types", postgres(name = "fixative"))]
 pub enum Fixative {
-    DithiobisSuccinimidylpropionate(DithiobisSuccinimidylpropionate),
-    FormaldehydeDerivative(FormaldehydeDerivative),
-}
-
-#[cfg(feature = "postgres-types")]
-impl<'a> FromSql<'a> for Fixative {
-    fn from_sql(
-        ty: &postgres_types::Type,
-        raw: &'a [u8],
-    ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
-        let s = <crate::nonempty::NonemptyString as FromSql>::from_sql(ty, raw)?;
-        let s = s.as_ref();
-
-        let dsp =
-            DithiobisSuccinimidylpropionate::from_str(s).map(Self::DithiobisSuccinimidylpropionate);
-        let formaldehyde_derivative =
-            FormaldehydeDerivative::from_str(s).map(Self::FormaldehydeDerivative);
-
-        dsp.or(formaldehyde_derivative)
-            .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Sync + Send>)
-    }
-
-    fn accepts(ty: &postgres_types::Type) -> bool {
-        use postgres_types::FromSql;
-
-        <crate::nonempty::NonemptyString as FromSql>::accepts(ty)
-    }
-}
-
-#[cfg(feature = "postgres-types")]
-impl ToSql for Fixative {
-    to_sql_checked!();
-
-    fn to_sql(
-        &self,
-        ty: &postgres_types::Type,
-        out: &mut BytesMut,
-    ) -> Result<postgres_types::IsNull, Box<dyn std::error::Error + Sync + Send>>
-    where
-        Self: Sized,
-    {
-        let value = match self {
-            Self::DithiobisSuccinimidylpropionate(c) => c.as_ref(),
-            Self::FormaldehydeDerivative(f) => f.as_ref(),
-        };
-
-        <&str as ToSql>::to_sql(&value, ty, out)
-    }
-
-    fn accepts(ty: &postgres_types::Type) -> bool
-    where
-        Self: Sized,
-    {
-        <crate::nonempty::NonemptyString as ToSql>::accepts(ty) || <&str as ToSql>::accepts(ty)
-    }
+    DithiobisSuccinimidylpropionate,
+    FormaldehydeDerivative,
 }

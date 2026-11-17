@@ -128,7 +128,7 @@ pub(crate) async fn insert_chromium_assays(
     ) -> Result<Uuid, DbError> {
         static SELECT_ID: &str =
             "select id from tenx_assay where name = $1::case_insensitive_text and \
-             sample_multiplexing = $2::case_insensitive_text and chemistry_version = \
+             sample_multiplexing = $2::sample_multiplexing and chemistry_version = \
              $3::case_insensitive_text and chromium_chip = $4::case_insensitive_text";
 
         let sql = Sql::new(
