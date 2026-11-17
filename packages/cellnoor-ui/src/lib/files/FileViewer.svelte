@@ -46,7 +46,7 @@
 					{#each data as row (row)}
 						<tr>
 							{#each Object.values(row) as val (val)}
-								<td>val</td>
+								<td>{val}</td>
 							{/each}
 						</tr>
 					{/each}
