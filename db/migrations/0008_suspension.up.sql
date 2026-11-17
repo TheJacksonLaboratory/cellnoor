@@ -1,9 +1,11 @@
+create type suspension_content as enum ('cells', 'nuclei');
+
 create table suspension (
     id uuid primary key default uuidv7(),
     readable_id case_insensitive_text unique not null,
     specimen_id uuid not null,
     specimen_received_or_created_at timestamptz not null,
-    content case_insensitive_text not null,
+    content suspension_content not null,
     created_at timestamptz not null,
     lysis_duration_minutes real,
     target_cell_recovery bigint,

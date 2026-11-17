@@ -2,7 +2,7 @@
 create type tagged_specimen as (
     specimen specimen,
     multiplexing_tag multiplexing_tag,
-    ocm_barcode_id case_insensitive_text
+    ocm_barcode_id ocm_barcode_id
 );
 
 create view suspension_pool_to_specimen with (security_invoker = true) as (

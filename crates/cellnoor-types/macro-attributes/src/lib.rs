@@ -1,7 +1,7 @@
 #![cfg_attr(test, expect(dead_code_pub_in_binary))]
 
 use proc_macro::TokenStream;
-use quote::{format_ident, quote};
+use quote::quote;
 use syn::{Fields, Ident, ItemEnum, Type, parse_macro_input};
 
 fn base_derives() -> proc_macro2::TokenStream {
@@ -195,97 +195,62 @@ pub fn sort_field_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
     .into()
 }
 
-fn enum_sql_impls(module_name: &Ident, type_name: &Ident) -> proc_macro2::TokenStream {
+fn unit_enum_derives() -> proc_macro2::TokenStream {
+    let base_derives = base_derives();
+
     quote! {
-        #[cfg(feature = "postgres-types")]
-        mod #module_name {
-            use ::std::str::FromStr;
+        #base_derives
+        #[derive(Copy, Eq, Hash)]
+        #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
+    }
+}
 
-            use ::bytes::BytesMut;
-            use ::postgres_types::{FromSql, ToSql, to_sql_checked};
-
-            use super::#type_name;
-
-            impl<'a> FromSql<'a> for #type_name {
-                fn from_sql(
-                    ty: &postgres_types::Type,
-                    raw: &'a [u8],
-                ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
-                    let value = <crate::nonempty::NonemptyString as FromSql>::from_sql(ty, raw)?;
-
-                    Ok(Self::from_str(value.as_ref())?)
-                }
-
-                fn accepts(ty: &postgres_types::Type) -> bool {
-                    <crate::nonempty::NonemptyString as FromSql>::accepts(ty)
-                }
-            }
-
-            impl ToSql for #type_name {
-                to_sql_checked!();
-
-                fn to_sql(
-                    &self,
-                    ty: &postgres_types::Type,
-                    out: &mut BytesMut,
-                ) -> Result<postgres_types::IsNull, Box<dyn std::error::Error + Sync + Send>>
-                where
-                    Self: Sized,
-                {
-                    let value: &str = self.as_ref();
-                    <&str as ToSql>::to_sql(&value, ty, out)
-                }
-
-                fn accepts(ty: &postgres_types::Type) -> bool
-                where
-                    Self: Sized,
-                {
-                    <crate::nonempty::NonemptyString as ToSql>::accepts(ty) || <&str as ToSql>::accepts(ty)
-                }
-            }
-        }
+fn sql_enum_derives() -> proc_macro2::TokenStream {
+    quote! {
+        #[derive(::strum::VariantArray)]
+        #[cfg_attr(feature = "postgres-types", derive(postgres_types::ToSql, postgres_types::FromSql))]
+        #[cfg_attr(feature = "postgres-types", postgres(rename_all = "snake_case"))]
     }
 }
 
 #[proc_macro_attribute]
 pub fn unit_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let enum_derives = enum_derives();
-
-    let cloned = input.clone();
-    let ItemEnum { ident, .. } = parse_macro_input!(cloned as ItemEnum);
-    let module_name = format_ident!("postgres_{ident}");
-
+    let unit_enum_derives = unit_enum_derives();
     let input: proc_macro2::TokenStream = input.into();
-    let sql_impl_mod = enum_sql_impls(&module_name, &ident);
 
     quote! {
-        #enum_derives
-        #[derive(Copy, Eq, Hash, ::strum::EnumString)]
+        #unit_enum_derives
         #input
+    }
+    .into()
+}
 
-        #sql_impl_mod
+#[proc_macro_attribute]
+pub fn sql_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    let unit_enum_derives = unit_enum_derives();
+    let sql_enum_derives = sql_enum_derives();
+    let input: proc_macro2::TokenStream = input.into();
+
+    quote! {
+        #unit_enum_derives
+        #sql_enum_derives
+        #input
     }
     .into()
 }
 
 #[proc_macro_attribute]
 pub fn discriminant_unit_enum(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let cloned = input.clone();
-    let ItemEnum { ident, .. } = parse_macro_input!(cloned as ItemEnum);
-    let module_name = format_ident!("postgres_{ident}");
-
+    let sql_enum_derives = sql_enum_derives();
     let input: proc_macro2::TokenStream = input.into();
-    let sql_impl_mod = enum_sql_impls(&module_name, &ident);
 
     quote! {
-        #[derive(Hash, ::strum::AsRefStr, ::strum::EnumString, ::strum::VariantArray)]
-        #[strum(serialize_all = "snake_case")]
+        #[derive(Hash)]
         #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
         #[cfg_attr(feature = "serde", serde(rename_all = "snake_case"))]
         #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+        #sql_enum_derives
         #input
-
-        #sql_impl_mod
     }
     .into()
 }

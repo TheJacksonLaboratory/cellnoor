@@ -40,27 +40,18 @@ pub(super) fn convert_specimen_fields_to_record(
 
     let (fixative, thermal_preservation_method) = match variable_fields {
         SpecimenVariableFields::Block(
-            BlockFields::CarboxymethylCellulose {
-                fixative,
-                thermal_preservation_method,
-            }
-            | BlockFields::OptimalCuttingTemperatureCompound {
-                fixative,
-                thermal_preservation_method,
-            },
+            BlockFields::CarboxymethylCellulose { fixative, .. }
+            | BlockFields::OptimalCuttingTemperatureCompound { fixative, .. },
         ) => (
-            fixative.map(Fixative::FormaldehydeDerivative),
-            Some(ThermalPreservationMethod::Ff(thermal_preservation_method)),
+            fixative.map(|_| Fixative::FormaldehydeDerivative),
+            Some(ThermalPreservationMethod::FlashFreezing),
         ),
-        SpecimenVariableFields::Block(BlockFields::Paraffin { fixative }) => {
-            (Some(Fixative::FormaldehydeDerivative(fixative)), None)
+        SpecimenVariableFields::Block(BlockFields::Paraffin { .. }) => {
+            (Some(Fixative::FormaldehydeDerivative), None)
         }
-        SpecimenVariableFields::CellPellet {
-            thermal_preservation_method,
-        } => (
-            None,
-            Some(ThermalPreservationMethod::Ff(thermal_preservation_method)),
-        ),
+        SpecimenVariableFields::CellPellet { .. } => {
+            (None, Some(ThermalPreservationMethod::FlashFreezing))
+        }
         SpecimenVariableFields::RnaExtract
         | SpecimenVariableFields::Suspension(SuspensionSpecimenFields::Fresh)
         | SpecimenVariableFields::Tissue(TissueFields::Fresh) => (None, None),
@@ -69,10 +60,10 @@ pub(super) fn convert_specimen_fields_to_record(
             (Some(fixative), None)
         }
         SpecimenVariableFields::Suspension(SuspensionSpecimenFields::ThermallyPreserved {
-            thermal_preservation_method,
+            ..
         }) => (
             None,
-            Some(ThermalPreservationMethod::Crf(thermal_preservation_method)),
+            Some(ThermalPreservationMethod::ControlledRateFreezing),
         ),
         SpecimenVariableFields::Tissue(TissueFields::ThermallyPreserved {
             thermal_preservation_method,

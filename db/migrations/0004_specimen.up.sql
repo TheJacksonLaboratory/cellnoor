@@ -1,6 +1,28 @@
 -- As with `project_active_period`, the nullable `host_species` is grouped with `species` so that the foreign key to the
 -- parent specimen is checked even when `host_species` is null
-create type specimen_species as (species case_insensitive_text, host_species case_insensitive_text);
+create type species as enum (
+    'ambystoma_mexicanum',
+    'canis_familiaris',
+    'callithrix_jacchus',
+    'drosophila_melanogaster',
+    'gasterosteus_aculeatus',
+    'homo_sapiens',
+    'mus_musculus',
+    'rattus_norvegicus',
+    'sminthopsis_crassicaudata'
+);
+
+create type specimen_species as (species species, host_species species);
+
+create type specimen_type as enum ('block', 'cell_pellet', 'rna_extract', 'suspension', 'tissue');
+
+create type block_embedding_matrix as enum (
+    'carboxymethyl_cellulose', 'optimal_cutting_temperature_compound', 'paraffin'
+);
+
+create type fixative as enum ('dithiobis_succinimidylpropionate', 'formaldehyde_derivative');
+
+create type thermal_preservation_method as enum ('controlled_rate_freezing', 'flash_freezing');
 
 create table specimen (
     id uuid primary key default uuidv7(),
@@ -17,10 +39,10 @@ create table specimen (
     given_at timestamptz,
     given_by uuid references person,
     given_to uuid references person,
-    type case_insensitive_text not null,
-    embedded_in case_insensitive_text,
-    fixative case_insensitive_text,
-    thermal_preservation_method case_insensitive_text,
+    type specimen_type not null,
+    embedded_in block_embedding_matrix,
+    fixative fixative,
+    thermal_preservation_method thermal_preservation_method,
     tissue case_insensitive_text not null,
     additional_data jsonb,
 

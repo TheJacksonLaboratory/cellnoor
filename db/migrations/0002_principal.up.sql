@@ -8,10 +8,23 @@ create table principal (
     unique (id, is_staff)
 );
 
+create type action as enum ('create', 'update', 'delete');
+
+create type resource as enum (
+    'institution',
+    'person',
+    'account',
+    'project',
+    'specimen',
+    'assay_constant_data',
+    'chromium_experimental_data',
+    'chromium_dataset'
+);
+
 create table permission (
     principal_id uuid references principal on delete cascade not null,
-    action case_insensitive_text not null,
-    resource case_insensitive_text not null,
+    action action not null,
+    resource resource not null,
 
     primary key (principal_id, resource, action)
 );
