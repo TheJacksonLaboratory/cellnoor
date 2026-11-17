@@ -45,7 +45,7 @@
 					<!-- ts-expect-error -->
 					{#each data as row (row)}
 						<tr>
-							{#each Object.values(row) as val (val)}
+							{#each Object.values(row) as val, i (`${i}${val}`)}
 								<td>{val}</td>
 							{/each}
 						</tr>
