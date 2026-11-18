@@ -7627,6 +7627,7 @@ export interface components {
         ChromiumDatasetDetailed: {
             additional_data?: unknown;
             assay: components["schemas"]["TenxAssay"];
+            cdna: components["schemas"]["CdnaCompact"][];
             chromium_run: components["schemas"]["ChromiumRunCompact"];
             /** Format: date-time */
             delivered_at: string;
@@ -8082,6 +8083,8 @@ export interface components {
         };
         LibraryPredicate: {
             specimen: components["schemas"]["SpecimenPredicate"];
+        } | {
+            cdna: components["schemas"]["CdnaPredicate"];
         } | ({
             id: components["schemas"]["UuidOperator"];
         } | {

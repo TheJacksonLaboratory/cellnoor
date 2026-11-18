@@ -12,7 +12,7 @@ use uuid::Uuid;
 
 use crate::{
     Relation,
-    cdna::creation::LibraryType,
+    cdna::{CdnaCompact, creation::LibraryType},
     chromium_dataset::record::ChromiumDatasetRecord,
     chromium_run::ChromiumRunCompact,
     file_tree::FileTreeNode,
@@ -150,6 +150,7 @@ pub struct ChromiumDatasetDetailed {
     pub chromium_run: ChromiumRunCompact,
     pub links: ChromiumDatasetDetailedLinks,
     pub libraries: Vec<LibraryCompact>,
+    pub cdna: Vec<CdnaCompact>,
     pub specimens: Vec<ChromiumDatasetSpecimen>,
     pub files: Vec<FileTreeNode<ChromiumDatasetParsedFileData>>,
 }

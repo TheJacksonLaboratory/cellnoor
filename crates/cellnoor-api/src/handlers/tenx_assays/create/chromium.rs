@@ -1,6 +1,4 @@
-use cellnoor_types::{
-    Relation, cdna::creation::LibraryType, tenx_assay::creation::NewChromiumAssay,
-};
+use cellnoor_types::{Relation, tenx_assay::creation::NewChromiumAssay};
 use uuid::Uuid;
 
 use crate::{
@@ -87,6 +85,7 @@ pub(crate) async fn insert_chromium_assays(
     tx: &db::Transaction<'_>,
 ) -> Result<TestChromiumAssayIds, DbError> {
     use cellnoor_types::{
+        cdna::creation::LibraryType,
         nonempty::NonemptyBoundedVec,
         positive::PositiveI32,
         tenx_assay::{

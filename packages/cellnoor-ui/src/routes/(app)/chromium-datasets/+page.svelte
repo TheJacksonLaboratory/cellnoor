@@ -49,6 +49,11 @@
 				to={FormFieldName.DeliveredTo}
 				label="Date delivered"
 			/>
+			<MultiSelectFilter
+				name={FormFieldName.CdnaLibraryType}
+				label="Library type"
+				options={options.libraryTypes}
+			/>
 		</FilterGroup>
 		<FilterGroup label="Assay">
 			<MultiSelectFilter name={FormFieldName.AssayName} label="Name" options={tenxAssays} />
@@ -56,11 +61,6 @@
 				name={FormFieldName.AssayMultiplexingType}
 				label="Multiplexing type"
 				options={options.multiplexingTypes}
-			/>
-			<MultiSelectFilter
-				name={FormFieldName.AssayLibraryType}
-				label="Library type"
-				options={options.libraryTypes}
 			/>
 		</FilterGroup>
 		<FilterGroup label="Specimen">

@@ -6,7 +6,7 @@
 	import type { FileLeaf } from '#lib/files/file-tree.ts';
 	import SpecimenList from '#lib/SpecimenList.svelte';
 	import Time from '#lib/Time.svelte';
-	import { formatEnum, formatSampleMultiplexing } from '#lib/format.ts';
+	import { formatSampleMultiplexing } from '#lib/format.ts';
 
 	let { data } = $props();
 
@@ -14,7 +14,7 @@
 	const project = $derived(data.projects.get(data.dataset.specimens[0].project_id)!);
 
 	// Chromium datasets always have library types
-	const libraryTypes = $derived(data.dataset.assay.library_types!.map(formatEnum).join(', '));
+	const libraryTypes = $derived(data.dataset.cdna.map((c) => c.library_type));
 
 	// Chromium datasets always have some kind of multiplexing
 	const multiplexing = $derived(formatSampleMultiplexing(data.dataset.assay.sample_multiplexing!));
