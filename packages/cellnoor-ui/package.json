@@ -36,7 +36,7 @@
 	"dependencies": {
 		"@ark-ui/svelte": "^5.25.1",
 		"@fontsource-variable/comfortaa": "^5.3.0",
-		"@lucide/svelte": "^1.73.0",
+		"@lucide/svelte": "^1.74.0",
 		"better-auth": "^1.7.25",
 		"bits-ui": "^2.21.0",
 		"cellnoor-client": "workspace:*",
