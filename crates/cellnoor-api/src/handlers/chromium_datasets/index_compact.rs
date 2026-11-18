@@ -59,6 +59,7 @@ mod test {
         },
         library::LibraryField,
         operator::UuidOperator,
+        reference_package::ReferencePackageField,
         specimen::SpecimenField,
         tenx_assay::TenxAssayField,
     };
@@ -111,6 +112,7 @@ mod test {
             ensure_fields_are_selectable::<TenxAssayField>(&tx, view),
             ensure_fields_are_selectable::<LibraryField>(&tx, view),
             ensure_fields_are_selectable::<ChromiumDatasetField>(&tx, view),
+            ensure_fields_are_selectable::<ReferencePackageField>(&tx, view),
         );
     }
 }

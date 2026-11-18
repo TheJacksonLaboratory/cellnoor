@@ -62,6 +62,10 @@ mod tests {
             id: NoId,
             name: "newname".to_nonempty_string(),
             delivered_at: ds.record.delivered_at,
+            reference_package_name: ds.record.reference_package_name,
+            pipeline_name: ds.record.pipeline_name,
+            pipeline_command: ds.record.pipeline_command,
+            pipeline_version: ds.record.pipeline_version,
             additional_data: None,
         };
 

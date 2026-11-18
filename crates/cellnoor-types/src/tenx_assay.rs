@@ -23,12 +23,10 @@ pub enum SampleMultiplexing {
 pub struct TenxAssay {
     pub id: Uuid,
     pub name: NonemptyString,
-    pub library_types: Option<Vec<LibraryType>>,
     pub sample_multiplexing: Option<SampleMultiplexing>,
     pub chemistry_version: NonemptyString,
     pub protocol_url: NonemptyString,
     pub chromium_chip: Option<NonemptyString>,
-    pub cmdlines: Option<Vec<NonemptyString>>,
 }
 
 impl Relation for TenxAssay {

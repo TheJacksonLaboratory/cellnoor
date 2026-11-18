@@ -72,6 +72,7 @@ fn map_detailed_row(row: &Row) -> ChromiumDatasetDetailed {
     ChromiumDatasetDetailed {
         links: chromium_dataset_detailed_links(record.id, &raw_files),
         record,
+        reference_package: row.get("reference_package"),
         assay: row.get("assay"),
         libraries: libraries.into_iter().map(library_from_record).collect(),
         specimens: specimens

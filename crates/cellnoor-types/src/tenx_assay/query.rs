@@ -3,11 +3,8 @@ use macro_attributes::{predicate_enum, sort_field_enum};
 use crate::{
     Relation,
     operator::{StringOperator, UuidOperator},
-    query::{
-        Field, OrderField,
-        filter::{ArrayOperator, Operator},
-    },
-    tenx_assay::{LibraryType, SampleMultiplexing, TenxAssay},
+    query::{Field, OrderField, filter::Operator},
+    tenx_assay::{SampleMultiplexing, TenxAssay},
 };
 
 pub type SampleMultiplexingOperator = Operator<SampleMultiplexing>;
@@ -16,7 +13,6 @@ pub type SampleMultiplexingOperator = Operator<SampleMultiplexing>;
 pub enum TenxAssayPredicate {
     Id(UuidOperator),
     Name(StringOperator),
-    LibraryTypes(ArrayOperator<LibraryType>),
     SampleMultiplexing(SampleMultiplexingOperator),
     ChemistryVersion(StringOperator),
     ChromiumChip(StringOperator),

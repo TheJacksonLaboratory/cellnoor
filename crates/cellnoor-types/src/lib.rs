@@ -24,6 +24,7 @@ pub mod person;
 pub mod positive;
 pub mod project;
 pub mod query;
+pub mod reference_package;
 pub mod relation;
 pub(crate) mod simple_links;
 pub mod specimen;

@@ -1,5 +1,6 @@
 select
     chromium_dataset,
+    reference_package,
     tenx_assay as assay,
     chromium_run,
     array_agg(distinct(
@@ -16,4 +17,4 @@ select
     ) as parsed_files
 from chromium_dataset_to_specimen
 /* {where} */
-group by chromium_dataset, assay, chromium_run
+group by chromium_dataset, reference_package, assay, chromium_run

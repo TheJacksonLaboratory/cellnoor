@@ -6,6 +6,7 @@ use crate::{
     library::LibraryPredicate,
     operator::{StringOperator, TimestampOperator, UuidOperator},
     query::{ComplexQuery, Field, OrderField, SimpleQuery},
+    reference_package::ReferencePackagePredicate,
     specimen::SpecimenPredicate,
     tenx_assay::TenxAssayPredicate,
 };
@@ -16,12 +17,18 @@ pub enum ChromiumDatasetPredicateInner {
     Id(UuidOperator),
     Name(StringOperator),
     DeliveredAt(TimestampOperator),
+    ReferencePackageName(StringOperator),
+    PipelineName(StringOperator),
+    PipelineCommand(StringOperator),
+    PipelineVersion(StringOperator),
 }
 
 #[predicate_enum_wrapper]
 pub enum ChromiumDatasetPredicate {
     #[strum(transparent)]
     Specimen(SpecimenPredicate),
+    #[strum(transparent)]
+    ReferencePackage(ReferencePackagePredicate),
     #[strum(transparent)]
     TenxAssay(TenxAssayPredicate),
     #[strum(transparent)]

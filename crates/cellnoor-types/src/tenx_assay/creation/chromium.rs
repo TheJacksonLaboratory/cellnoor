@@ -1,7 +1,7 @@
 use macro_attributes::base_model;
 
 use crate::{
-    nonempty::{NonemptyBoundedVec, NonemptyString, NonemptyVec},
+    nonempty::{NonemptyBoundedVec, NonemptyString},
     tenx_assay::{SampleMultiplexing, creation::LibraryTypeSpecification},
 };
 
@@ -12,6 +12,5 @@ pub struct NewChromiumAssay {
     pub protocol_url: NonemptyString,
     pub sample_multiplexing: SampleMultiplexing,
     pub chromium_chip: NonemptyString,
-    pub cmdlines: NonemptyVec<NonemptyString>,
     pub library_type_specifications: NonemptyBoundedVec<LibraryTypeSpecification, 4>,
 }

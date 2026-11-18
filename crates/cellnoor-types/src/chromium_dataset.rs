@@ -19,6 +19,7 @@ use crate::{
     id::{Id, NoId},
     library::LibraryCompact,
     nonempty::{NonemptyString, NonemptyVec},
+    reference_package::ReferencePackage,
     simple_links::SimpleLinks,
     suspension_pool::TaggedSpecimen,
     tenx_assay::TenxAssay,
@@ -39,6 +40,10 @@ mod record {
         pub id: T,
         pub name: NonemptyString,
         pub delivered_at: Timestamp,
+        pub reference_package_name: NonemptyString,
+        pub pipeline_name: NonemptyString,
+        pub pipeline_command: NonemptyString,
+        pub pipeline_version: NonemptyString,
         pub additional_data: Option<serde_json::Value>,
     }
 }
@@ -140,6 +145,7 @@ pub struct ChromiumDatasetSpecimen {
 pub struct ChromiumDatasetDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: SavedChromiumDatasetRecord,
+    pub reference_package: ReferencePackage,
     pub assay: TenxAssay,
     pub chromium_run: ChromiumRunCompact,
     pub links: ChromiumDatasetDetailedLinks,
