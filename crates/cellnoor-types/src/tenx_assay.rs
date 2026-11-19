@@ -28,7 +28,6 @@ pub struct TenxAssay {
     pub chemistry_version: NonemptyString,
     pub protocol_url: NonemptyString,
     pub chromium_chip: Option<NonemptyString>,
-    pub cmdlines: Option<Vec<NonemptyString>>,
 }
 
 impl Relation for TenxAssay {

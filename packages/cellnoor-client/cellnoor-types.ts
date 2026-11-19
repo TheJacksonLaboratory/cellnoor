@@ -7635,6 +7635,10 @@ export interface components {
                 self: string;
             };
             name: string;
+            pipeline_command: string;
+            pipeline_name: string;
+            pipeline_version: string;
+            reference_package_name: string;
         };
         ChromiumDatasetDetailed: {
             additional_data?: unknown;
@@ -7645,10 +7649,28 @@ export interface components {
             files: components["schemas"]["ChromiumDatasetParsedFileDataFileTree"][];
             /** Format: uuid */
             id: string;
+            key_metrics: {
+                "Antibody Capture"?: components["schemas"]["KeySpecimenMetrics"][];
+                "Antigen Capture"?: components["schemas"]["KeySpecimenMetrics"][];
+                "CRISPR Guide Capture"?: components["schemas"]["KeySpecimenMetrics"][];
+                "Chromatin Accessibility"?: components["schemas"]["KeySpecimenMetrics"][];
+                Custom?: components["schemas"]["KeySpecimenMetrics"][];
+                "Gene Expression"?: components["schemas"]["KeySpecimenMetrics"][];
+                "Multiplexing Capture"?: components["schemas"]["KeySpecimenMetrics"][];
+                VDJ?: components["schemas"]["KeySpecimenMetrics"][];
+                "VDJ B"?: components["schemas"]["KeySpecimenMetrics"][];
+                "VDJ T"?: components["schemas"]["KeySpecimenMetrics"][];
+                "VDJ T GD"?: components["schemas"]["KeySpecimenMetrics"][];
+            };
             libraries: components["schemas"]["LibraryCompact"][];
             links: components["schemas"]["ChromiumDatasetDetailedLinks"];
             name: string;
-            specimens: components["schemas"]["ChromiumDatasetSpecimen"][];
+            pipeline_command: string;
+            pipeline_name: string;
+            pipeline_version: string;
+            reference_package: components["schemas"]["ReferencePackage"];
+            reference_package_name: string;
+            specimens: components["schemas"]["TaggedSpecimen"][];
         };
         ChromiumDatasetDetailedLinks: {
             file_dir: string;
@@ -7659,8 +7681,9 @@ export interface components {
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
-        ChromiumDatasetField: "id" | "name" | "delivered_at";
+        ChromiumDatasetField: "id" | "name" | "delivered_at" | "reference_package_name" | "pipeline_name" | "pipeline_command" | "pipeline_version";
         ChromiumDatasetParsedFileData: {
+            columns: string[];
             data: {
                 [key: string]: components["schemas"]["TenxCsvValue"];
             }[];
@@ -7694,6 +7717,8 @@ export interface components {
         ChromiumDatasetPredicate: {
             specimen: components["schemas"]["SpecimenPredicate"];
         } | {
+            reference_package: components["schemas"]["ReferencePackagePredicate"];
+        } | {
             tenx_assay: components["schemas"]["TenxAssayPredicate"];
         } | {
             library: components["schemas"]["LibraryPredicate"];
@@ -7703,6 +7728,14 @@ export interface components {
             name: components["schemas"]["StringOperator"];
         } | {
             delivered_at: components["schemas"]["TimestampOperator"];
+        } | {
+            reference_package_name: components["schemas"]["StringOperator"];
+        } | {
+            pipeline_name: components["schemas"]["StringOperator"];
+        } | {
+            pipeline_command: components["schemas"]["StringOperator"];
+        } | {
+            pipeline_version: components["schemas"]["StringOperator"];
         });
         ChromiumDatasetPredicateFilter: {
             all_of: components["schemas"]["ChromiumDatasetPredicateFilter"][];
@@ -7730,42 +7763,10 @@ export interface components {
             /** Format: date-time */
             delivered_at: string;
             name: string;
-        };
-        ChromiumDatasetSpecimen: {
-            additional_data?: unknown;
-            embedded_in?: components["schemas"]["BlockEmbeddingMatrix"] | null;
-            fixative?: components["schemas"]["Fixative"] | null;
-            /** Format: date-time */
-            given_at?: string | null;
-            /** Format: uuid */
-            given_by?: string | null;
-            /** Format: uuid */
-            given_to?: string | null;
-            host_species?: components["schemas"]["Species"] | null;
-            /** Format: uuid */
-            id: string;
-            key_metrics: {
-                [key: string]: components["schemas"]["TenxCsvValue"];
-            };
-            links: {
-                self: string;
-            };
-            multiplexing_tag?: components["schemas"]["MultiplexingTag"] | null;
-            name: string;
-            ocm_barcode_id?: components["schemas"]["OcmBarcodeId"] | null;
-            /** Format: uuid */
-            parent_specimen_id?: string | null;
-            /** Format: uuid */
-            project_id: string;
-            readable_id: string;
-            /** Format: date-time */
-            received_or_created_at: string;
-            species: components["schemas"]["Species"];
-            /** Format: uuid */
-            submitted_by?: string | null;
-            thermal_preservation_method?: components["schemas"]["ThermalPreservationMethod"] | null;
-            tissue: string;
-            type_: components["schemas"]["SpecimenType"];
+            pipeline_command: string;
+            pipeline_name: string;
+            pipeline_version: string;
+            reference_package_name: string;
         };
         ChromiumRunCompact: {
             additional_data?: unknown;
@@ -8016,6 +8017,15 @@ export interface components {
             /** Format: uint16 */
             status: number;
         };
+        KeySpecimenMetrics: {
+            renamed_metrics: {
+                [key: string]: components["schemas"]["TenxCsvValue"];
+            };
+            /** Format: uuid */
+            specimen_id: string;
+            specimen_name: string;
+            specimen_readable_id: string;
+        };
         LibraryCompact: {
             additional_data?: unknown;
             /** Format: uuid */
@@ -8075,6 +8085,8 @@ export interface components {
         };
         LibraryPredicate: {
             specimen: components["schemas"]["SpecimenPredicate"];
+        } | {
+            cdna: components["schemas"]["CdnaPredicate"];
         } | ({
             id: components["schemas"]["UuidOperator"];
         } | {
@@ -8133,7 +8145,7 @@ export interface components {
          * @description Auto-generated discriminant enum variants
          * @enum {string}
          */
-        LibraryType: "Antibody Capture" | "Antigen Capture" | "Chromatin Accessibility" | "CRISPR Guide Capture" | "Custom" | "Gene Expression" | "Multiplexing Capture" | "VDJ" | "VDJ B" | "VDJ T" | "VDJ T GD";
+        LibraryType: "Gene Expression" | "Antibody Capture" | "Antigen Capture" | "Chromatin Accessibility" | "CRISPR Guide Capture" | "Custom" | "Multiplexing Capture" | "VDJ" | "VDJ B" | "VDJ T" | "VDJ T GD";
         /**
          * @description A comparison operator for array values.
          *
@@ -8149,6 +8161,8 @@ export interface components {
             is_contained_in: components["schemas"]["LibraryType"][];
         } | {
             overlaps: components["schemas"]["LibraryType"][];
+        } | {
+            overlaps_unless_empty: components["schemas"]["LibraryType"][];
         } | components["schemas"]["Array_of_LibraryTypeOperator"];
         /** @description A simple comparison operator. */
         LibraryTypeOperator: {
@@ -8251,6 +8265,11 @@ export interface components {
             readable_id: string;
         } & ({
             /** @constant */
+            library_type: "Gene Expression";
+            /** Format: int32 */
+            n_amplification_cycles: number;
+        } | {
+            /** @constant */
             library_type: "Antibody Capture";
         } | {
             /** @constant */
@@ -8264,11 +8283,6 @@ export interface components {
         } | {
             /** @constant */
             library_type: "Custom";
-        } | {
-            /** @constant */
-            library_type: "Gene Expression";
-            /** Format: int32 */
-            n_amplification_cycles: number;
         } | {
             /** @constant */
             library_type: "Multiplexing Capture";
@@ -8288,7 +8302,6 @@ export interface components {
         NewChromiumAssay: {
             chemistry_version: string;
             chromium_chip: string;
-            cmdlines: string[];
             library_type_specifications: components["schemas"]["LibraryTypeSpecification"][];
             name: string;
             protocol_url: string;
@@ -8300,6 +8313,10 @@ export interface components {
             delivered_at: string;
             library_ids: string[];
             name: string;
+            pipeline_command: string;
+            pipeline_name: string;
+            pipeline_version: string;
+            reference_package_name: string;
         };
         NewChromiumRun: {
             additional_data?: unknown;
@@ -8761,6 +8778,30 @@ export interface components {
         ProjectSimpleFields: {
             active_period: components["schemas"]["ProjectActivePeriod"];
             name: string;
+        };
+        ReferencePackage: {
+            annotation_release: string;
+            annotation_source: string;
+            assembly_release: string;
+            assembly_source: string;
+            genome_assembly: string;
+            package_name: string;
+            tenx_reference_version?: string | null;
+        };
+        ReferencePackagePredicate: {
+            package_name: components["schemas"]["StringOperator"];
+        } | {
+            genome_assembly: components["schemas"]["StringOperator"];
+        } | {
+            tenx_reference_version: components["schemas"]["StringOperator"];
+        } | {
+            assembly_source: components["schemas"]["StringOperator"];
+        } | {
+            assembly_release: components["schemas"]["StringOperator"];
+        } | {
+            annotation_source: components["schemas"]["StringOperator"];
+        } | {
+            annotation_release: components["schemas"]["StringOperator"];
         };
         RemovePreparersError: {
             /** @constant */
@@ -9362,7 +9403,6 @@ export interface components {
         TenxAssay: {
             chemistry_version: string;
             chromium_chip?: string | null;
-            cmdlines?: string[] | null;
             /** Format: uuid */
             id: string;
             library_types?: components["schemas"]["LibraryType"][] | null;
@@ -9375,9 +9415,9 @@ export interface components {
         } | {
             name: components["schemas"]["StringOperator"];
         } | {
-            library_types: components["schemas"]["LibraryTypeArrayOperator"];
-        } | {
             sample_multiplexing: components["schemas"]["SampleMultiplexingOperator"];
+        } | {
+            library_types: components["schemas"]["LibraryTypeArrayOperator"];
         } | {
             chemistry_version: components["schemas"]["StringOperator"];
         } | {
@@ -9618,7 +9658,6 @@ export type ChromiumDatasetPredicate = components['schemas']['ChromiumDatasetPre
 export type ChromiumDatasetPredicateFilter = components['schemas']['ChromiumDatasetPredicateFilter'];
 export type ChromiumDatasetPredicateQuery = components['schemas']['ChromiumDatasetPredicateQuery'];
 export type ChromiumDatasetRecord = components['schemas']['ChromiumDatasetRecord'];
-export type ChromiumDatasetSpecimen = components['schemas']['ChromiumDatasetSpecimen'];
 export type ChromiumRunCompact = components['schemas']['ChromiumRunCompact'];
 export type ChromiumRunDetailed = components['schemas']['ChromiumRunDetailed'];
 export type ChromiumRunField = components['schemas']['ChromiumRunField'];
@@ -9645,6 +9684,7 @@ export type InstitutionPredicateFilter = components['schemas']['InstitutionPredi
 export type InstitutionPredicateQuery = components['schemas']['InstitutionPredicateQuery'];
 export type JsonOperator = components['schemas']['JsonOperator'];
 export type JsonRejection = components['schemas']['JsonRejection'];
+export type KeySpecimenMetrics = components['schemas']['KeySpecimenMetrics'];
 export type LibraryCompact = components['schemas']['LibraryCompact'];
 export type LibraryDetailed = components['schemas']['LibraryDetailed'];
 export type LibraryField = components['schemas']['LibraryField'];
@@ -9740,6 +9780,8 @@ export type ProjectPredicate = components['schemas']['ProjectPredicate'];
 export type ProjectPredicateFilter = components['schemas']['ProjectPredicateFilter'];
 export type ProjectPredicateQuery = components['schemas']['ProjectPredicateQuery'];
 export type ProjectSimpleFields = components['schemas']['ProjectSimpleFields'];
+export type ReferencePackage = components['schemas']['ReferencePackage'];
+export type ReferencePackagePredicate = components['schemas']['ReferencePackagePredicate'];
 export type RemovePreparersError = components['schemas']['RemovePreparersError'];
 export type Resource = components['schemas']['Resource'];
 export type SampleMultiplexing = components['schemas']['SampleMultiplexing'];
@@ -9813,7 +9855,7 @@ export const apiKeyFieldValues: ReadonlyArray<FlattenedDeepRequired<components>[
 export const blockEmbeddingMatrixValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["BlockEmbeddingMatrix"]> = ["carboxymethyl_cellulose", "optimal_cutting_temperature_compound", "paraffin"];
 export const botAccountFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["BotAccountField"]> = ["id", "description", "owned_by", "is_staff", "created_at"];
 export const cdnaFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["CdnaField"]> = ["id", "readable_id", "library_type", "prepared_at", "gem_well_id", "n_amplification_cycles", "additional_data"];
-export const chromiumDatasetFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ChromiumDatasetField"]> = ["id", "name", "delivered_at"];
+export const chromiumDatasetFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ChromiumDatasetField"]> = ["id", "name", "delivered_at", "reference_package_name", "pipeline_name", "pipeline_command", "pipeline_version"];
 export const chromiumRunFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ChromiumRunField"]> = ["id", "readable_id", "assay_id", "run_at", "run_by", "succeeded", "additional_data"];
 export const controlledRateFreezingValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["ControlledRateFreezing"]> = ["controlled_rate_freezing"];
 export const countingMethodValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["CountingMethod"]> = ["bright_field", "acridine_orange_propidium_iodide", "trypan_blue"];
@@ -9822,7 +9864,7 @@ export const flashFreezingValues: ReadonlyArray<FlattenedDeepRequired<components
 export const formaldehydeDerivativeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["FormaldehydeDerivative"]> = ["formaldehyde_derivative"];
 export const institutionFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["InstitutionField"]> = ["id", "name", "microsoft_entra_tenant_id"];
 export const libraryFieldValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["LibraryField"]> = ["id", "readable_id", "cdna_id", "single_index_set_name", "dual_index_set_name", "number_of_sample_index_pcr_cycles", "target_reads_per_cell", "prepared_at", "additional_data"];
-export const libraryTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["LibraryType"]> = ["Antibody Capture", "Antigen Capture", "Chromatin Accessibility", "CRISPR Guide Capture", "Custom", "Gene Expression", "Multiplexing Capture", "VDJ", "VDJ B", "VDJ T", "VDJ T GD"];
+export const libraryTypeValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["LibraryType"]> = ["Gene Expression", "Antibody Capture", "Antigen Capture", "Chromatin Accessibility", "CRISPR Guide Capture", "Custom", "Multiplexing Capture", "VDJ", "VDJ B", "VDJ T", "VDJ T GD"];
 export const microliterValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Microliter"]> = ["microliter"];
 export const micrometerValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Micrometer"]> = ["micrometer"];
 export const milliliterValues: ReadonlyArray<FlattenedDeepRequired<components>["schemas"]["Milliliter"]> = ["milliliter"];

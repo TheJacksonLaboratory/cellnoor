@@ -183,6 +183,8 @@ pub enum ArrayOperator<T> {
     IsContainedIn(Vec<T>),
     /// PostgreSQL overlaps (`&&`)
     Overlaps(Vec<T>),
+    /// PostgreSQL overlaps only if the array is nonempty, otherwise contains
+    OverlapsUnlessEmpty(Vec<T>),
     /// All other operators
     #[cfg_attr(feature = "serde", serde(untagged))]
     Simple(SimpleArrayOperator<T>),
@@ -198,6 +200,7 @@ where
             Self::Contains(v) => ("@>", v),
             Self::IsContainedIn(v) => ("<@", v),
             Self::Overlaps(v) => ("&&", v),
+            Self::OverlapsUnlessEmpty(v) => (if v.is_empty() { "@>" } else { "&&" }, v),
             Self::Simple(op) => op.as_sql_operator_and_value(),
         }
     }

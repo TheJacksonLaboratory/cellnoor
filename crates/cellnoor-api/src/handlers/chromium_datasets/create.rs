@@ -163,16 +163,29 @@ impl Insert for NewChromiumDatasetRecord {
     type Field = ChromiumDatasetField;
 
     fn fields(&self) -> FieldValues<'_, Self::Field> {
-        use ChromiumDatasetField::{DeliveredAt, Name};
+        use ChromiumDatasetField::{
+            DeliveredAt, Name, PipelineCommand, PipelineName, PipelineVersion, ReferencePackageName,
+        };
 
         let Self {
             id: _,
             name,
             delivered_at,
+            reference_package_name,
+            pipeline_name,
+            pipeline_command,
+            pipeline_version,
             additional_data: _,
         } = self;
 
-        vec![(Name, name), (DeliveredAt, delivered_at)]
+        vec![
+            (Name, name),
+            (DeliveredAt, delivered_at),
+            (ReferencePackageName, reference_package_name),
+            (PipelineName, pipeline_name),
+            (PipelineCommand, pipeline_command),
+            (PipelineVersion, pipeline_version),
+        ]
     }
 }
 
@@ -188,7 +201,9 @@ where
     use cellnoor_types::{id::NoId, nonempty::NonemptyVec};
     use jiff::Timestamp;
 
-    use crate::handlers::libraries::create::insert_test_library;
+    use crate::{
+        handlers::libraries::create::insert_test_library, state::dev_util::ToNonemptyString,
+    };
 
     let (_, library) = insert_test_library(tx, run_kind, |_| ()).await?;
 
@@ -197,6 +212,10 @@ where
             id: NoId,
             name: crate::db::dummy_data::random_name_for("chromium_dataset"),
             delivered_at: Timestamp::now(),
+            reference_package_name: "refdata-gex-GRCh38-2024-A".to_nonempty_string(),
+            pipeline_name: "cellranger".to_nonempty_string(),
+            pipeline_command: "multi".to_nonempty_string(),
+            pipeline_version: "10.1.0".to_nonempty_string(),
             additional_data: None,
         },
         library_ids: NonemptyVec::new(vec![*library.record.id]).unwrap(),
@@ -226,7 +245,7 @@ pub(crate) mod test {
             chromium_runs::create::TestChromiumRunKind,
             libraries::create::insert_test_library,
         },
-        state::dev_util::db_client_as_admin,
+        state::dev_util::{ToNonemptyString, db_client_as_admin},
     };
 
     #[tokio::test(flavor = "multi_thread")]
@@ -256,6 +275,10 @@ pub(crate) mod test {
                 id: NoId,
                 name: crate::db::dummy_data::random_name_for("chromium_dataset"),
                 delivered_at: Timestamp::now(),
+                reference_package_name: "refdata-gex-GRCh38-2024-A".to_nonempty_string(),
+                pipeline_name: "cellranger".to_nonempty_string(),
+                pipeline_command: "multi".to_nonempty_string(),
+                pipeline_version: "10.1.0".to_nonempty_string(),
                 additional_data: None,
             },
             library_ids: NonemptyVec::new(vec![*library1.record.id, *library2.record.id]).unwrap(),

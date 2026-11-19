@@ -2,6 +2,7 @@ create view chromium_library_to_specimen with (security_invoker = true) as (
     select
         library,
         -- Bring the following columns forward because they're useful
+        cdna_ts.cdna,
         cdna_ts.specimen,
         cdna_ts.tenx_assay,
         cdna_ts.chromium_run,

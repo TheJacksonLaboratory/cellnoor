@@ -5,8 +5,9 @@
 	import FileViewer from '#lib/files/FileViewer.svelte';
 	import type { FileLeaf } from '#lib/files/file-tree.ts';
 	import SpecimenList from '#lib/SpecimenList.svelte';
+	import SpecimenMetricsList from '#lib/SpecimenMetricsList.svelte';
 	import Time from '#lib/Time.svelte';
-	import { formatEnum, formatSampleMultiplexing } from '#lib/format.ts';
+	import { formatSampleMultiplexing } from '#lib/format.ts';
 
 	let { data } = $props();
 
@@ -14,7 +15,7 @@
 	const project = $derived(data.projects.get(data.dataset.specimens[0].project_id)!);
 
 	// Chromium datasets always have library types
-	const libraryTypes = $derived(data.dataset.assay.library_types!.map(formatEnum).join(', '));
+	const libraryTypes = $derived((data.dataset.assay.library_types ?? []).join(', '));
 
 	// Chromium datasets always have some kind of multiplexing
 	const multiplexing = $derived(formatSampleMultiplexing(data.dataset.assay.sample_multiplexing!));
@@ -42,14 +43,15 @@
 				<thead>
 					<tr>
 						<th scope="col">Project</th>
-						<th scope="col">Delivered</th>
 						<th scope="col">Chromium run</th>
+						<th scope="col">Delivered</th>
 						<th scope="col">Assay</th>
 						<th scope="col">Library types</th>
 						<th scope="col">Multiplexing</th>
 						{#if iLabRequestIds}
 							<th scope="col">iLab Request IDs</th>
 						{/if}
+						<th scope="col">Pipeline</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -59,8 +61,8 @@
 								>{project.name}</a
 							></td
 						>
-						<td><Time datetime={dataset.delivered_at} /></td>
 						<td><Time datetime={dataset.chromium_run.run_at}></Time></td>
+						<td><Time datetime={dataset.delivered_at} /></td>
 						<td
 							><a href={dataset.assay.protocol_url} rel="external" class="link-arrow"
 								>{`${dataset.assay.name} (${dataset.assay.chemistry_version})`}</a
@@ -71,6 +73,12 @@
 						{#if iLabRequestIds}
 							<td>{iLabRequestIds.join(' | ')}</td>
 						{/if}
+						<td
+							><code
+								>{dataset.pipeline_name}
+								{dataset.pipeline_command} v{dataset.pipeline_version}</code
+							></td
+						>
 					</tr>
 				</tbody>
 			</table>
@@ -85,4 +93,6 @@
 		<h2 class="heading">Specimens</h2>
 		<SpecimenList specimens={dataset.specimens} people={data.people} />
 	</section>
+
+	<SpecimenMetricsList keyMetrics={dataset.key_metrics} />
 </SidebarLayout>

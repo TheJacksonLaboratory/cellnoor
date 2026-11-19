@@ -36,7 +36,7 @@ export const datasetFilterFieldParsers: Record<FormFieldName, Parser<ChromiumDat
 		tenx_assay: { sample_multiplexing: { in_unless_empty: v as SampleMultiplexing[] } }
 	}),
 	'assay.library_type': (v) => ({
-		tenx_assay: { library_types: { contains: v as LibraryType[] } }
+		tenx_assay: { library_types: { overlaps_unless_empty: v as LibraryType[] } }
 	}),
 	delivered_from: (v) => onOrAfter(v).map((exp) => ({ delivered_at: exp })),
 	delivered_to: (v) => onOrBefore(v).map((exp) => ({ delivered_at: exp })),

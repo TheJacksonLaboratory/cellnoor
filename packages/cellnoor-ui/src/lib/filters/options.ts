@@ -24,7 +24,8 @@ function toDisplayMap<T extends string>(
 
 export const multiplexingTypes = toDisplayMap(sampleMultiplexingValues, formatSampleMultiplexing);
 
-export const libraryTypes = toDisplayMap(libraryTypeValues);
+// Library types are already well-formatted
+export const libraryTypes = toDisplayMap(libraryTypeValues, (v) => v);
 
 export const specimenTypes = toDisplayMap(specimenTypeValues);
 

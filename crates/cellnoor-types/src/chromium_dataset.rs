@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use csvranger::TenxCsvValue;
+use indexmap::IndexMap;
 use macro_attributes::{base_model, select};
 #[cfg(all(feature = "postgres-types", feature = "schemars"))]
 use postgres_types::Json;
@@ -19,6 +20,7 @@ use crate::{
     id::{Id, NoId},
     library::LibraryCompact,
     nonempty::{NonemptyString, NonemptyVec},
+    reference_package::ReferencePackage,
     simple_links::SimpleLinks,
     suspension_pool::TaggedSpecimen,
     tenx_assay::TenxAssay,
@@ -39,6 +41,10 @@ mod record {
         pub id: T,
         pub name: NonemptyString,
         pub delivered_at: Timestamp,
+        pub reference_package_name: NonemptyString,
+        pub pipeline_name: NonemptyString,
+        pub pipeline_command: NonemptyString,
+        pub pipeline_version: NonemptyString,
         pub additional_data: Option<serde_json::Value>,
     }
 }
@@ -98,6 +104,9 @@ pub struct TransposedCsvRow {
 #[cfg_attr(feature = "serde", serde(tag = "format", rename_all = "snake_case"))]
 pub enum ChromiumDatasetParsedFileData {
     StandardCsv {
+        // We have to store the column order because postgres JSONB columns
+        // don't preserve key order
+        columns: Vec<String>,
         data: Vec<HashMap<String, TenxCsvValue>>,
     },
     TransposedCsv {
@@ -128,10 +137,12 @@ pub struct ChromiumDatasetParsedFileRecord {
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
-pub struct ChromiumDatasetSpecimen {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub specimen: TaggedSpecimen,
-    pub key_metrics: HashMap<&'static str, TenxCsvValue>,
+pub struct KeySpecimenMetrics {
+    pub specimen_id: Uuid,
+    pub specimen_readable_id: NonemptyString,
+    pub specimen_name: NonemptyString,
+    // IndexMap so that order is maintained when serializing
+    pub renamed_metrics: IndexMap<&'static str, TenxCsvValue>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -140,10 +151,13 @@ pub struct ChromiumDatasetSpecimen {
 pub struct ChromiumDatasetDetailed {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub record: SavedChromiumDatasetRecord,
+    pub reference_package: ReferencePackage,
     pub assay: TenxAssay,
     pub chromium_run: ChromiumRunCompact,
     pub links: ChromiumDatasetDetailedLinks,
     pub libraries: Vec<LibraryCompact>,
-    pub specimens: Vec<ChromiumDatasetSpecimen>,
+    pub specimens: Vec<TaggedSpecimen>,
+    // IndexMap so that order is maintained when serializing
+    pub key_metrics: IndexMap<LibraryType, Vec<KeySpecimenMetrics>>,
     pub files: Vec<FileTreeNode<ChromiumDatasetParsedFileData>>,
 }

@@ -2,6 +2,7 @@ use macro_attributes::{predicate_enum, predicate_enum_wrapper, sort_field_enum};
 
 use crate::{
     Relation,
+    cdna::CdnaPredicate,
     library::SavedLibraryRecord,
     operator::{
         I32Operator, I64Operator, JsonOperator, StringOperator, TimestampOperator, UuidOperator,
@@ -28,6 +29,8 @@ pub enum LibraryPredicateInner {
 pub enum LibraryPredicate {
     #[strum(transparent)]
     Specimen(SpecimenPredicate),
+    #[strum(transparent)]
+    Cdna(CdnaPredicate),
     #[cfg_attr(feature = "serde", serde(untagged))]
     #[strum(transparent)]
     Library(LibraryPredicateInner),

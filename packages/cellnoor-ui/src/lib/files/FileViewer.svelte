@@ -1,12 +1,27 @@
 <script lang="ts">
 	import { JsonTreeView } from '@ark-ui/svelte/json-tree-view';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
+	import type { TenxCsvValue } from 'cellnoor-client/cellnoor-types.ts';
 	import type { FileLeaf } from './file-tree.ts';
 
 	let { file, onclose }: { file: FileLeaf; onclose: () => void } = $props();
 
 	const format = $derived(file.parsed_contents?.format);
 	const data = $derived(file.parsed_contents?.data);
+
+	const table = $derived.by(
+		(): { columns: string[]; rows: { [key: string]: TenxCsvValue }[] } | undefined => {
+			switch (file.parsed_contents?.format) {
+				case 'standard_csv':
+					return { columns: file.parsed_contents.columns, rows: file.parsed_contents.data };
+				case 'transposed_csv':
+					return {
+						columns: Object.keys(file.parsed_contents.data[0]),
+						rows: file.parsed_contents.data
+					};
+			}
+		}
+	);
 </script>
 
 <section class="stack card card-body">
@@ -30,23 +45,21 @@
 				{/snippet}
 			</JsonTreeView.Tree>
 		</JsonTreeView.Root>
-		<!-- We actually know at this point that it's an array, but stupid TypeScript makes us put this check here -->
-	{:else if Array.isArray(data)}
+	{:else if table}
 		<div class="scroll-x">
 			<table>
 				<thead>
 					<tr>
-						{#each Object.keys(data[0]) as column (column)}
+						{#each table.columns as column (column)}
 							<th scope="col">{column}</th>
 						{/each}
 					</tr>
 				</thead>
 				<tbody>
-					<!-- ts-expect-error -->
-					{#each data as row (row)}
+					{#each table.rows as row (row)}
 						<tr>
-							{#each Object.values(row) as val, i (`${i}${val}`)}
-								<td>{val}</td>
+							{#each table.columns as col, i (`${i}${row[col]}`)}
+								<td>{row[col]}</td>
 							{/each}
 						</tr>
 					{/each}

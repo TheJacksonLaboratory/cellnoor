@@ -71,7 +71,6 @@ impl Insert for NewChromiumAssayRecord<'_> {
                     protocol_url,
                     sample_multiplexing,
                     chromium_chip,
-                    cmdlines,
                     library_type_specifications: _,
                 },
 
@@ -84,7 +83,6 @@ impl Insert for NewChromiumAssayRecord<'_> {
             ("protocol_url", protocol_url),
             ("sample_multiplexing", sample_multiplexing),
             ("chromium_chip", chromium_chip),
-            ("cmdlines", cmdlines),
             ("library_types", library_types),
         ]
     }
@@ -102,7 +100,7 @@ pub(crate) async fn insert_chromium_assays(
     tx: &db::Transaction<'_>,
 ) -> Result<TestChromiumAssayIds, DbError> {
     use cellnoor_types::{
-        nonempty::{NonemptyBoundedVec, NonemptyVec},
+        nonempty::NonemptyBoundedVec,
         positive::PositiveI32,
         tenx_assay::{
             SampleMultiplexing,
@@ -170,11 +168,6 @@ pub(crate) async fn insert_chromium_assays(
         protocol_url: "https://www.10xgenomics.com/support/universal-three-prime-gene-expression/documentation/steps/library-prep/chromium-gem-x-single-cell-3-v4-gene-expression-user-guide".to_nonempty_string(),
         sample_multiplexing: SampleMultiplexing::Singleplex,
         chromium_chip: "GEM-X 3'".to_nonempty_string(),
-        cmdlines: NonemptyVec::new(vec![
-            "cellranger count".to_nonempty_string(),
-            "cellranger multi".to_nonempty_string(),
-        ])
-        .unwrap(),
         library_type_specifications: gene_expression.clone(),
     };
 
@@ -184,7 +177,6 @@ pub(crate) async fn insert_chromium_assays(
         protocol_url: "https://www.10xgenomics.com/support/flex-gene-expression/documentation/steps/library-prep/gem-x-flex-v2-for-multiplexed-samples".to_nonempty_string(),
         sample_multiplexing: SampleMultiplexing::FlexOligonucleotideBarcode,
         chromium_chip: "GEM-X FX".to_nonempty_string(),
-        cmdlines: NonemptyVec::new(vec!["cellranger multi".to_nonempty_string()]).unwrap(),
         library_type_specifications: NonemptyBoundedVec::new(vec![LibraryTypeSpecification{library_type: LibraryType::GeneExpression, index_kit: FLEX_DUAL_INDEX_SET_NAME[3..5].to_owned(), cdna_volume_µl: PositiveI32::new(100).unwrap(), library_volume_µl: PositiveI32::new(40).unwrap()}]).unwrap(),
     };
 
@@ -194,7 +186,6 @@ pub(crate) async fn insert_chromium_assays(
         protocol_url: "https://www.10xgenomics.com/support/universal-three-prime-gene-expression/documentation/steps/library-prep/gem-x-universal-3-prime-gene-expression-v-4-4-plex-reagent-kits".to_nonempty_string(),
         sample_multiplexing: SampleMultiplexing::OnChipMultiplexing,
         chromium_chip: "GEM-X OCM 3'".to_nonempty_string(),
-        cmdlines: NonemptyVec::new(vec!["cellranger multi".to_nonempty_string()]).unwrap(),
         library_type_specifications: gene_expression,
     };
 
