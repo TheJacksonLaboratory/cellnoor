@@ -53,6 +53,7 @@ create table chromium_data_processing_pipeline (
     primary key (pipeline_name, command, version)
 );
 
+-- noqa: disable=AL03
 insert into chromium_data_processing_pipeline (pipeline_name, command, version)
 select
     'cellranger',
@@ -71,6 +72,7 @@ select
     'cellranger-atac',
     'count',
     unnest('{2.1.0, 2.2.0}'::text[]);
+-- noqa: enable=AL03
 
 create table chromium_dataset (
     id uuid primary key default uuidv7(),

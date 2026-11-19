@@ -2,7 +2,8 @@ use macro_attributes::{predicate_enum, sort_field_enum};
 
 use crate::{
     Relation,
-    operator::{StringOperator, UuidOperator},
+    cdna::creation::LibraryType,
+    operator::{ArrayOperator, StringOperator, UuidOperator},
     query::{Field, OrderField, filter::Operator},
     tenx_assay::{SampleMultiplexing, TenxAssay},
 };
@@ -14,6 +15,7 @@ pub enum TenxAssayPredicate {
     Id(UuidOperator),
     Name(StringOperator),
     SampleMultiplexing(SampleMultiplexingOperator),
+    LibraryTypes(ArrayOperator<LibraryType>),
     ChemistryVersion(StringOperator),
     ChromiumChip(StringOperator),
     ProtocolUrl(StringOperator),

@@ -13,7 +13,7 @@ use uuid::Uuid;
 
 use crate::{
     Relation,
-    cdna::{CdnaCompact, creation::LibraryType},
+    cdna::creation::LibraryType,
     chromium_dataset::record::ChromiumDatasetRecord,
     chromium_run::ChromiumRunCompact,
     file_tree::FileTreeNode,
@@ -156,7 +156,6 @@ pub struct ChromiumDatasetDetailed {
     pub chromium_run: ChromiumRunCompact,
     pub links: ChromiumDatasetDetailedLinks,
     pub libraries: Vec<LibraryCompact>,
-    pub cdna: Vec<CdnaCompact>,
     pub specimens: Vec<TaggedSpecimen>,
     // IndexMap so that order is maintained when serializing
     pub key_metrics: IndexMap<LibraryType, Vec<KeySpecimenMetrics>>,

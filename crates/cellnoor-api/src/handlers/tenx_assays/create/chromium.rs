@@ -1,4 +1,6 @@
-use cellnoor_types::{Relation, tenx_assay::creation::NewChromiumAssay};
+use cellnoor_types::{
+    Relation, cdna::creation::LibraryType, tenx_assay::creation::NewChromiumAssay,
+};
 use uuid::Uuid;
 
 use crate::{
@@ -12,7 +14,16 @@ pub(super) async fn insert_chromium_assay(
     tx: &db::Transaction<'_>,
     assay: &NewChromiumAssay,
 ) -> Result<Uuid, DbError> {
-    let record = NewChromiumAssayRecord { inner: assay };
+    let library_types: Vec<_> = assay
+        .library_type_specifications
+        .iter()
+        .map(|s| s.library_type)
+        .collect();
+
+    let record = NewChromiumAssayRecord {
+        inner: assay,
+        library_types,
+    };
 
     let assay_id = insert_chromium_assay_record(tx, &record).await?;
 
@@ -41,6 +52,7 @@ async fn insert_chromium_assay_record(
 
 struct NewChromiumAssayRecord<'a> {
     inner: &'a NewChromiumAssay,
+    library_types: Vec<LibraryType>,
 }
 
 impl Relation for NewChromiumAssayRecord<'_> {
@@ -61,6 +73,8 @@ impl Insert for NewChromiumAssayRecord<'_> {
                     chromium_chip,
                     library_type_specifications: _,
                 },
+
+            library_types,
         } = self;
 
         vec![
@@ -69,6 +83,7 @@ impl Insert for NewChromiumAssayRecord<'_> {
             ("protocol_url", protocol_url),
             ("sample_multiplexing", sample_multiplexing),
             ("chromium_chip", chromium_chip),
+            ("library_types", library_types),
         ]
     }
 }
@@ -85,7 +100,6 @@ pub(crate) async fn insert_chromium_assays(
     tx: &db::Transaction<'_>,
 ) -> Result<TestChromiumAssayIds, DbError> {
     use cellnoor_types::{
-        cdna::creation::LibraryType,
         nonempty::NonemptyBoundedVec,
         positive::PositiveI32,
         tenx_assay::{

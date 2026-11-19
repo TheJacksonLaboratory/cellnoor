@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 
 use axum::{Json, extract::State};
 use cellnoor_types::{
-    cdna::{SavedCdnaRecord, creation::LibraryType},
+    cdna::creation::LibraryType,
     chromium_dataset::{
         ChromiumDatasetDetailed, ChromiumDatasetDetailedLinks, ChromiumDatasetParsedFileData,
         ChromiumDatasetParsedFileRecord, ChromiumDatasetQuery, KeySpecimenMetrics,
@@ -25,7 +25,6 @@ use crate::{
     auth::AuthUser,
     db::{self, DbError, FilterableSqlBuilder},
     handlers::{
-        cdna::index_compact::cdna_from_record,
         chromium_datasets::{
             index_compact::chromium_dataset_links,
             index_detailed::{
@@ -76,7 +75,6 @@ fn map_detailed_row(row: &Row) -> ChromiumDatasetDetailed {
     let record: SavedChromiumDatasetRecord = row.get("chromium_dataset");
     let specimens: Vec<SavedTaggedSpecimenRecord> = row.get("specimens");
     let libraries: Vec<SavedLibraryRecord> = row.get("libraries");
-    let cdna: Vec<SavedCdnaRecord> = row.get("cdna");
     let chromium_run = row.get("chromium_run");
 
     let mut raw_files: Vec<_> = row.get("raw_files");
@@ -98,7 +96,6 @@ fn map_detailed_row(row: &Row) -> ChromiumDatasetDetailed {
         reference_package: row.get("reference_package"),
         assay: row.get("assay"),
         libraries: libraries.into_iter().map(library_from_record).collect(),
-        cdna: cdna.into_iter().map(cdna_from_record).collect(),
         specimens: specimens
             .into_iter()
             .map(tagged_specimen_from_record)

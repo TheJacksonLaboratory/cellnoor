@@ -15,7 +15,7 @@
 	const project = $derived(data.projects.get(data.dataset.specimens[0].project_id)!);
 
 	// Chromium datasets always have library types
-	const libraryTypes = $derived(data.dataset.cdna.map((c) => c.library_type));
+	const libraryTypes = $derived((data.dataset.assay.library_types ?? []).join(', '));
 
 	// Chromium datasets always have some kind of multiplexing
 	const multiplexing = $derived(formatSampleMultiplexing(data.dataset.assay.sample_multiplexing!));

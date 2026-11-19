@@ -7391,6 +7391,22 @@ export interface components {
             /** Format: date-time */
             expires_at?: string | null;
         };
+        /** @description A simple comparison operator. */
+        Array_of_LibraryTypeOperator: {
+            eq: components["schemas"]["LibraryType"][];
+        } | {
+            lt: components["schemas"]["LibraryType"][];
+        } | {
+            lte: components["schemas"]["LibraryType"][];
+        } | {
+            gt: components["schemas"]["LibraryType"][];
+        } | {
+            gte: components["schemas"]["LibraryType"][];
+        } | {
+            in: components["schemas"]["LibraryType"][][];
+        } | {
+            in_unless_empty: components["schemas"]["LibraryType"][][];
+        } | components["schemas"]["LibraryType"][];
         AuthAccount: {
             /** @constant */
             auth_provider: "microsoft";
@@ -7627,7 +7643,6 @@ export interface components {
         ChromiumDatasetDetailed: {
             additional_data?: unknown;
             assay: components["schemas"]["TenxAssay"];
-            cdna: components["schemas"]["CdnaCompact"][];
             chromium_run: components["schemas"]["ChromiumRunCompact"];
             /** Format: date-time */
             delivered_at: string;
@@ -8131,6 +8146,24 @@ export interface components {
          * @enum {string}
          */
         LibraryType: "Gene Expression" | "Antibody Capture" | "Antigen Capture" | "Chromatin Accessibility" | "CRISPR Guide Capture" | "Custom" | "Multiplexing Capture" | "VDJ" | "VDJ B" | "VDJ T" | "VDJ T GD";
+        /**
+         * @description A comparison operator for array values.
+         *
+         *     This is a superset of the basic operators and adds the following
+         *     array-specific methods present in PostgreSQL (<https://www.postgresql.org/docs/current/functions-array.html#FUNCTIONS-ARRAY)>:
+         *     1. contains (`@>`)
+         *     2. is contained in (`<@`)
+         *     3. overlaps with (`&&`)
+         */
+        LibraryTypeArrayOperator: {
+            contains: components["schemas"]["LibraryType"][];
+        } | {
+            is_contained_in: components["schemas"]["LibraryType"][];
+        } | {
+            overlaps: components["schemas"]["LibraryType"][];
+        } | {
+            overlaps_unless_empty: components["schemas"]["LibraryType"][];
+        } | components["schemas"]["Array_of_LibraryTypeOperator"];
         /** @description A simple comparison operator. */
         LibraryTypeOperator: {
             eq: components["schemas"]["LibraryType"];
@@ -9372,6 +9405,7 @@ export interface components {
             chromium_chip?: string | null;
             /** Format: uuid */
             id: string;
+            library_types?: components["schemas"]["LibraryType"][] | null;
             name: string;
             protocol_url: string;
             sample_multiplexing?: components["schemas"]["SampleMultiplexing"] | null;
@@ -9382,6 +9416,8 @@ export interface components {
             name: components["schemas"]["StringOperator"];
         } | {
             sample_multiplexing: components["schemas"]["SampleMultiplexingOperator"];
+        } | {
+            library_types: components["schemas"]["LibraryTypeArrayOperator"];
         } | {
             chemistry_version: components["schemas"]["StringOperator"];
         } | {
@@ -9590,6 +9626,7 @@ export type ApiKeyPredicate = components['schemas']['ApiKeyPredicate'];
 export type ApiKeyPredicateFilter = components['schemas']['ApiKeyPredicateFilter'];
 export type ApiKeyPredicateQuery = components['schemas']['ApiKeyPredicateQuery'];
 export type ApiKeyUpdate = components['schemas']['ApiKeyUpdate'];
+export type ArrayOfLibraryTypeOperator = components['schemas']['Array_of_LibraryTypeOperator'];
 export type AuthAccount = components['schemas']['AuthAccount'];
 export type AuthError = components['schemas']['AuthError'];
 export type BlockEmbeddingMatrix = components['schemas']['BlockEmbeddingMatrix'];
@@ -9657,6 +9694,7 @@ export type LibraryPredicateFilter = components['schemas']['LibraryPredicateFilt
 export type LibraryPredicateQuery = components['schemas']['LibraryPredicateQuery'];
 export type LibraryRecord = components['schemas']['LibraryRecord'];
 export type LibraryType = components['schemas']['LibraryType'];
+export type LibraryTypeArrayOperator = components['schemas']['LibraryTypeArrayOperator'];
 export type LibraryTypeOperator = components['schemas']['LibraryTypeOperator'];
 export type LibraryTypeSpecification = components['schemas']['LibraryTypeSpecification'];
 export type MeanDiameter = components['schemas']['MeanDiameter'];

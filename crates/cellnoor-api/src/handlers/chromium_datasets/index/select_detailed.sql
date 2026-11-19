@@ -6,7 +6,6 @@ select
     array_agg(distinct(
         specimen, multiplexing_tag, ocm_barcode_id
     )::tagged_specimen) as specimens,
-    array_agg(distinct cdna) as cdna,
     array_agg(distinct library) as libraries,
     -- TODO: sort these by path
     array(

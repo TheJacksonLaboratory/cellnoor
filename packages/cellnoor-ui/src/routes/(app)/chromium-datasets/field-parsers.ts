@@ -15,6 +15,7 @@ export enum FormFieldName {
 	SpecimenProjectId = 'specimen.project_id',
 	AssayName = 'assay.name',
 	AssayMultiplexingType = 'assay.multiplexing_type',
+	AssayLibraryType = 'assay.library_type',
 	DeliveredFrom = 'delivered_from',
 	DeliveredTo = 'delivered_to',
 	SpecimenName = 'specimen.name',
@@ -24,8 +25,7 @@ export enum FormFieldName {
 	SpecimenFixative = 'specimen.fixative',
 	SpecimenThermalPreservationMethod = 'specimen.thermal_preservation_method',
 	SpecimenReceivedFrom = 'specimen.received_or_created_from',
-	SpecimenReceivedTo = 'specimen.received_or_created_to',
-	CdnaLibraryType = 'cdna.library_types'
+	SpecimenReceivedTo = 'specimen.received_or_created_to'
 }
 
 export const datasetFilterFieldParsers: Record<FormFieldName, Parser<ChromiumDatasetPredicate>> = {
@@ -35,8 +35,8 @@ export const datasetFilterFieldParsers: Record<FormFieldName, Parser<ChromiumDat
 	'assay.multiplexing_type': (v) => ({
 		tenx_assay: { sample_multiplexing: { in_unless_empty: v as SampleMultiplexing[] } }
 	}),
-	'cdna.library_types': (v) => ({
-		library: { cdna: { library_type: { in_unless_empty: v as LibraryType[] } } }
+	'assay.library_type': (v) => ({
+		tenx_assay: { library_types: { overlaps_unless_empty: v as LibraryType[] } }
 	}),
 	delivered_from: (v) => onOrAfter(v).map((exp) => ({ delivered_at: exp })),
 	delivered_to: (v) => onOrBefore(v).map((exp) => ({ delivered_at: exp })),
