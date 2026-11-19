@@ -87,14 +87,13 @@ fn map_detailed_row(row: &Row) -> ChromiumDatasetDetailed {
 
     let parsed_files: Vec<_> = row.get("parsed_files");
 
-    let mut library_type_specimen_metrics_map =
-        create_library_type_specimen_metrics_map(&specimens);
+    let library_type_specimen_metrics_map = create_library_type_specimen_metrics_map(&specimens);
     let extracted_metrics = extract_metrics_from_parsed_files(
         &parsed_files,
         record.pipeline_name.as_ref(),
         record.pipeline_command.as_ref(),
     );
-    let key_metrics = build_key_metrics(&mut library_type_specimen_metrics_map, extracted_metrics);
+    let key_metrics = build_key_metrics(library_type_specimen_metrics_map, extracted_metrics);
 
     ChromiumDatasetDetailed {
         links: chromium_dataset_detailed_links(record.id, &raw_files),
@@ -117,7 +116,7 @@ static PSEUDO_BARCODE: &str = "specimen";
 
 fn create_library_type_specimen_metrics_map<'a>(
     specimens: &'a [SavedTaggedSpecimenRecord],
-) -> HashMap<(LibraryType, &'a str), KeySpecimenMetrics> {
+) -> IndexMap<(LibraryType, &'a str), KeySpecimenMetrics> {
     let extract_tag = |SavedTaggedSpecimenRecord {
                            specimen:
                                SavedSpecimenRecord {
@@ -146,7 +145,7 @@ fn create_library_type_specimen_metrics_map<'a>(
     };
 
     let barcode_specimen_map = specimens.iter().map(extract_tag);
-    let mut metrics_map = HashMap::with_capacity(LibraryType::VARIANTS.len() * specimens.len());
+    let mut metrics_map = IndexMap::with_capacity(LibraryType::VARIANTS.len() * specimens.len());
 
     for lt in LibraryType::VARIANTS {
         for (bc, sp) in barcode_specimen_map.clone() {
@@ -192,7 +191,7 @@ fn extract_metrics_from_parsed_files<'a>(
 }
 
 fn build_key_metrics<'a>(
-    library_type_specimen_metrics_map: &mut HashMap<(LibraryType, &'a str), KeySpecimenMetrics>,
+    mut library_type_specimen_metrics_map: IndexMap<(LibraryType, &'a str), KeySpecimenMetrics>,
     extracted_metrics: impl Iterator<Item = MetricsExtractedCsvRow<'a>>,
 ) -> IndexMap<LibraryType, Vec<KeySpecimenMetrics>> {
     // We already know this has the order we want because GeneExpression is the
@@ -210,15 +209,19 @@ fn build_key_metrics<'a>(
         metric_value,
     } in extracted_metrics
     {
-        let Some(mut specimen_metrics) =
-            library_type_specimen_metrics_map.remove(&(library_type, specimen_barcode))
-        else {
-            continue;
-        };
+        if let Some(specimen_metrics) =
+            library_type_specimen_metrics_map.get_mut(&(library_type, specimen_barcode))
+        {
+            specimen_metrics
+                .renamed_metrics
+                .insert(renamed_metric, metric_value.clone());
+        }
+    }
 
-        specimen_metrics
-            .renamed_metrics
-            .insert(renamed_metric, metric_value.clone());
+    for ((library_type, _), specimen_metrics) in library_type_specimen_metrics_map {
+        if specimen_metrics.renamed_metrics.is_empty() {
+            continue;
+        }
 
         let lib_type_key_metrics = key_metrics
             .entry(library_type)
@@ -349,16 +352,24 @@ mod tests {
     use std::collections::HashMap;
 
     use cellnoor_types::{
-        chromium_dataset::{ChromiumDatasetParsedFileData, ChromiumDatasetParsedFileRecord},
+        cdna::creation::LibraryType::{self, ChromatinAccessibility, GeneExpression},
+        chromium_dataset::{
+            ChromiumDatasetParsedFileData, ChromiumDatasetParsedFileRecord, KeySpecimenMetrics,
+        },
         file_tree::{FileTreeNode, FileTreeNodeKind},
         id::Id,
     };
     use csvranger::TenxCsvValue;
+    use indexmap::IndexMap;
     use postgres_types::Json;
     use pretty_assertions::assert_eq;
+    use strum::VariantArray;
     use uuid::Uuid;
 
-    use super::{PSEUDO_BARCODE, create_file_tree};
+    use super::{
+        PSEUDO_BARCODE, build_key_metrics, create_file_tree, extract_metrics_from_parsed_files,
+        renamed_metrics::*,
+    };
     use crate::{
         handlers::chromium_datasets::{
             index_detailed::RawFileRecord, upload_files::write_to_db::parse_csv,
@@ -382,6 +393,177 @@ mod tests {
             path: path.to_nonempty_string(),
             data: Json(parse_csv(data).unwrap()),
         }
+    }
+
+    const ATAC_SUMMARY: &[u8] = include_bytes!(
+        "upload_files/test-data/cellranger-atac_count/\
+         8k_mouse_cortex_ATACv2_nextgem_Chromium_Controller_summary.csv"
+    );
+
+    const ARC_SUMMARY: &[u8] = include_bytes!(
+        "upload_files/test-data/cellranger-arc_count/5k_Mouse_Kidney_MO_gemx_summary.csv"
+    );
+
+    fn key_metric_names(
+        pipeline: &str,
+        pipeline_command: &str,
+        file: &[u8],
+        barcodes: &[&'static str],
+    ) -> IndexMap<LibraryType, Vec<(String, Vec<&'static str>)>> {
+        let parsed_files = [parsed_file("metrics.csv", file)];
+
+        let specimen_metrics_map = LibraryType::VARIANTS
+            .iter()
+            .flat_map(|lt| {
+                barcodes.iter().map(|bc| {
+                    let specimen_metrics = KeySpecimenMetrics {
+                        specimen_id: Uuid::nil(),
+                        specimen_readable_id: bc.to_nonempty_string(),
+                        specimen_name: bc.to_nonempty_string(),
+                        renamed_metrics: IndexMap::new(),
+                    };
+                    ((*lt, *bc), specimen_metrics)
+                })
+            })
+            .collect();
+
+        let extracted_metrics =
+            extract_metrics_from_parsed_files(&parsed_files, pipeline, pipeline_command);
+
+        build_key_metrics(specimen_metrics_map, extracted_metrics)
+            .into_iter()
+            .filter(|(_, specimens)| !specimens.is_empty())
+            .map(|(lt, specimens)| {
+                let specimens = specimens
+                    .into_iter()
+                    .map(|s| {
+                        (
+                            s.specimen_readable_id.to_string(),
+                            s.renamed_metrics.keys().copied().collect(),
+                        )
+                    })
+                    .collect();
+                (lt, specimens)
+            })
+            .collect()
+    }
+
+    #[test]
+    fn cellranger_atac_count_key_metrics() {
+        let expected = IndexMap::from([(
+            ChromatinAccessibility,
+            vec![(
+                PSEUDO_BARCODE.to_owned(),
+                vec![
+                    ESTIMATED_NUMBER_OF_CELLS,
+                    GENOME_MAPPING_RATE,
+                    FRACTION_OF_GENOME_IN_PEAKS,
+                    FRACTION_OF_HIGH_QUALITY_FRAGMENTS_IN_CELLS,
+                    MEAN_READS_PER_CELL,
+                    MEDIAN_HIGH_QUALITY_FRAGMENTS_PER_CELL,
+                    FRACTION_OF_TRANSPOSITION_EVENTS_IN_PEAKS_IN_CELLS,
+                    PERCENT_DUPLICATES,
+                    SEQUENCED_READ_PAIRS,
+                    TSS_ENRICHMENT_SCORE,
+                ],
+            )],
+        )]);
+
+        assert_eq!(
+            key_metric_names("cellranger-atac", "count", ATAC_SUMMARY, &[PSEUDO_BARCODE]),
+            expected
+        );
+    }
+
+    #[test]
+    fn cellranger_arc_count_key_metrics() {
+        let expected = IndexMap::from([
+            (
+                GeneExpression,
+                vec![(
+                    PSEUDO_BARCODE.to_owned(),
+                    vec![
+                        ESTIMATED_NUMBER_OF_CELLS,
+                        FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS,
+                        MEAN_READS_PER_CELL,
+                        MEDIAN_UMI_COUNTS_PER_CELL,
+                        MEDIAN_GENES_PER_CELL,
+                        SEQUENCING_SATURATION,
+                        EXONIC_REGION_MAPPING_RATE,
+                        GENOME_MAPPING_RATE,
+                        INTERGENIC_REGION_MAPPING_RATE,
+                        INTRONIC_REGION_MAPPING_RATE,
+                        TRANSCRIPTOME_MAPPING_RATE,
+                        SEQUENCED_READ_PAIRS,
+                    ],
+                )],
+            ),
+            (
+                ChromatinAccessibility,
+                vec![(
+                    PSEUDO_BARCODE.to_owned(),
+                    vec![
+                        GENOME_MAPPING_RATE,
+                        FRACTION_OF_GENOME_IN_PEAKS,
+                        FRACTION_OF_HIGH_QUALITY_FRAGMENTS_IN_CELLS,
+                        FRACTION_OF_TRANSPOSITION_EVENTS_IN_PEAKS_IN_CELLS,
+                        MEAN_READS_PER_CELL,
+                        MEDIAN_HIGH_QUALITY_FRAGMENTS_PER_CELL,
+                        PERCENT_DUPLICATES,
+                        SEQUENCED_READ_PAIRS,
+                        TSS_ENRICHMENT_SCORE,
+                    ],
+                )],
+            ),
+        ]);
+
+        assert_eq!(
+            key_metric_names("cellranger-arc", "count", ARC_SUMMARY, &[PSEUDO_BARCODE]),
+            expected
+        );
+    }
+
+    #[test]
+    fn cellranger_multi_singleplex_key_metrics() {
+        let expected = IndexMap::from([(
+            GeneExpression,
+            vec![(
+                PSEUDO_BARCODE.to_owned(),
+                vec![
+                    ESTIMATED_NUMBER_OF_CELLS,
+                    MEDIAN_GENES_PER_CELL,
+                    MEDIAN_UMI_COUNTS_PER_CELL,
+                    FRACTION_OF_TRANSCRIPTOMIC_READS_IN_CELLS,
+                ],
+            )],
+        )]);
+
+        assert_eq!(
+            key_metric_names(
+                "cellranger",
+                "multi",
+                SINGLEPLEX_QC_SAMPLE_METRICS,
+                &[PSEUDO_BARCODE]
+            ),
+            expected
+        );
+    }
+
+    #[test]
+    fn cellranger_multi_flex_key_metrics() {
+        let barcodes = ["A-A03", "A-B03", "A-C03", "A-D03"];
+
+        let expected = IndexMap::from([(
+            GeneExpression,
+            barcodes
+                .map(|bc| (bc.to_owned(), vec![ESTIMATED_NUMBER_OF_CELLS]))
+                .to_vec(),
+        )]);
+
+        assert_eq!(
+            key_metric_names("cellranger", "multi", FLEX_METRICS_SUMMARY, &barcodes),
+            expected
+        );
     }
 
     #[test]
