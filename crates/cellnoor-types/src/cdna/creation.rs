@@ -20,12 +20,24 @@ pub struct NewCdna {
 #[base_model]
 #[derive(Copy, strum::EnumDiscriminants)]
 #[cfg_attr(feature = "serde", serde(tag = "library_type"))]
-#[strum_discriminants(name(LibraryType), discriminant_unit_enum)]
+#[strum_discriminants(name(LibraryType), discriminant_unit_enum, derive(strum::AsRefStr))]
 #[cfg_attr(
     feature = "postgres-types",
     strum_discriminants(postgres(name = "library_type"))
 )]
 pub enum CdnaVariableFields {
+    // Define Gene Expression first so that it appears first in all downstream
+    // operations
+    #[cfg_attr(feature = "serde", serde(rename = "Gene Expression"))]
+    #[cfg_attr(
+        feature = "serde",
+        strum_discriminants(serde(rename = "Gene Expression"))
+    )]
+    #[cfg_attr(
+        feature = "postgres-types",
+        strum_discriminants(postgres(name = "Gene Expression"))
+    )]
+    GeneExpression { n_amplification_cycles: PositiveI32 },
     #[cfg_attr(feature = "serde", serde(rename = "Antibody Capture"))]
     #[cfg_attr(
         feature = "serde",
@@ -73,16 +85,6 @@ pub enum CdnaVariableFields {
         strum_discriminants(postgres(name = "Custom"))
     )]
     Custom,
-    #[cfg_attr(feature = "serde", serde(rename = "Gene Expression"))]
-    #[cfg_attr(
-        feature = "serde",
-        strum_discriminants(serde(rename = "Gene Expression"))
-    )]
-    #[cfg_attr(
-        feature = "postgres-types",
-        strum_discriminants(postgres(name = "Gene Expression"))
-    )]
-    GeneExpression { n_amplification_cycles: PositiveI32 },
     #[cfg_attr(feature = "serde", serde(rename = "Multiplexing Capture"))]
     #[cfg_attr(
         feature = "serde",

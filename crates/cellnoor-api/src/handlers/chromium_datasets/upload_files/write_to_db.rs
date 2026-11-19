@@ -165,11 +165,9 @@ pub(in super::super) fn parse_csv(
 
     let mut reader = csv::Reader::from_reader(data);
 
-    let is_transposed = reader
-        .headers()
-        .map_err(parse_err)?
-        .iter()
-        .any(|h| h == "Metric Name");
+    let columns = reader.headers().map_err(parse_err)?;
+
+    let is_transposed = columns.iter().any(|h| h == "Metric Name");
 
     let parsed = if is_transposed {
         ChromiumDatasetParsedFileData::TransposedCsv {
@@ -180,6 +178,7 @@ pub(in super::super) fn parse_csv(
         }
     } else {
         ChromiumDatasetParsedFileData::StandardCsv {
+            columns: columns.iter().map(str::to_owned).collect(),
             data: reader
                 .deserialize()
                 .collect::<Result<_, _>>()

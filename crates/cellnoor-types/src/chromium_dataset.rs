@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use csvranger::TenxCsvValue;
+use indexmap::IndexMap;
 use macro_attributes::{base_model, select};
 #[cfg(all(feature = "postgres-types", feature = "schemars"))]
 use postgres_types::Json;
@@ -14,10 +15,11 @@ use crate::{
     Relation,
     cdna::{CdnaCompact, creation::LibraryType},
     chromium_dataset::record::ChromiumDatasetRecord,
-    chromium_run::ChromiumRunCompact,
+    chromium_run::{ChromiumRunCompact, creation::ocm::OcmBarcodeId},
     file_tree::FileTreeNode,
     id::{Id, NoId},
     library::LibraryCompact,
+    multiplexing_tag::MultiplexingTag,
     nonempty::{NonemptyString, NonemptyVec},
     reference_package::ReferencePackage,
     simple_links::SimpleLinks,
@@ -103,6 +105,9 @@ pub struct TransposedCsvRow {
 #[cfg_attr(feature = "serde", serde(tag = "format", rename_all = "snake_case"))]
 pub enum ChromiumDatasetParsedFileData {
     StandardCsv {
+        // We have to store the column order because postgres JSONB columns
+        // don't preserve key order
+        columns: Vec<String>,
         data: Vec<HashMap<String, TenxCsvValue>>,
     },
     TransposedCsv {
@@ -133,10 +138,12 @@ pub struct ChromiumDatasetParsedFileRecord {
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
-pub struct ChromiumDatasetSpecimen {
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub specimen: TaggedSpecimen,
-    pub key_metrics: HashMap<&'static str, TenxCsvValue>,
+pub struct KeySpecimenMetrics {
+    pub specimen_id: Uuid,
+    pub specimen_readable_id: NonemptyString,
+    pub specimen_name: NonemptyString,
+    // IndexMap so that order is maintained when serializing
+    pub renamed_metrics: IndexMap<&'static str, TenxCsvValue>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -151,6 +158,8 @@ pub struct ChromiumDatasetDetailed {
     pub links: ChromiumDatasetDetailedLinks,
     pub libraries: Vec<LibraryCompact>,
     pub cdna: Vec<CdnaCompact>,
-    pub specimens: Vec<ChromiumDatasetSpecimen>,
+    pub specimens: Vec<TaggedSpecimen>,
+    // IndexMap so that order is maintained when serializing
+    pub key_metrics: IndexMap<LibraryType, Vec<KeySpecimenMetrics>>,
     pub files: Vec<FileTreeNode<ChromiumDatasetParsedFileData>>,
 }

@@ -8,10 +8,12 @@ select
     )::tagged_specimen) as specimens,
     array_agg(distinct cdna) as cdna,
     array_agg(distinct library) as libraries,
+    -- TODO: sort these by path
     array(
         select chromium_dataset_raw_file from chromium_dataset_raw_file
         where dataset_id = (chromium_dataset).id
     ) as raw_files,
+    -- TODO: sort these by path
     array(
         select chromium_dataset_parsed_file from chromium_dataset_parsed_file
         where dataset_id = (chromium_dataset).id
