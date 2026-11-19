@@ -7,6 +7,17 @@
 
 	const format = $derived(file.parsed_contents?.format);
 	const data = $derived(file.parsed_contents?.data);
+
+	const columns = () => {
+		switch (file.parsed_contents?.format) {
+			case 'standard_csv':
+				return file.parsed_contents.columns;
+			case 'transposed_csv':
+				return Object.keys(file.parsed_contents.data[0]);
+			default:
+				return [];
+		}
+	};
 </script>
 
 <section class="stack card card-body">
@@ -36,7 +47,7 @@
 			<table>
 				<thead>
 					<tr>
-						{#each Object.keys(data[0]) as column (column)}
+						{#each columns() as column (column)}
 							<th scope="col">{column}</th>
 						{/each}
 					</tr>

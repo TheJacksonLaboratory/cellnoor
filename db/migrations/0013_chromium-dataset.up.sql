@@ -92,8 +92,7 @@ create table chromium_dataset_raw_file (
     dataset_id uuid references chromium_dataset on delete cascade not null,
     path case_insensitive_text not null,
     sha256_hash bytea not null,
-    primary key (dataset_id, path),
-    unique (dataset_id, sha256_hash)
+    primary key (dataset_id, path)
 );
 
 -- Some files can be parsed into JSON, so we store those

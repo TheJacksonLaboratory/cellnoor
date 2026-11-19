@@ -1,7 +1,4 @@
-use std::{
-    collections::{BTreeMap, HashMap},
-    slice::Iter,
-};
+use std::collections::{BTreeMap, HashMap};
 
 use axum::{Json, extract::State};
 use cellnoor_types::{
@@ -168,7 +165,7 @@ fn extract_metrics_from_parsed_files<'a>(
     pipeline: &str,
     pipeline_command: &str,
 ) -> impl Iterator<Item = MetricsExtractedCsvRow<'a>> {
-    use ChromiumDatasetParsedFileData::*;
+    use ChromiumDatasetParsedFileData::{Json, StandardCsv, TransposedCsv};
 
     let extract = |ChromiumDatasetParsedFileRecord {
                        data: postgres_types::Json(d),
@@ -187,7 +184,7 @@ fn extract_metrics_from_parsed_files<'a>(
         }
     };
 
-    parsed_files.iter().flat_map(extract).flatten()
+    parsed_files.iter().filter_map(extract).flatten()
 }
 
 fn build_key_metrics<'a>(
@@ -227,7 +224,7 @@ fn build_key_metrics<'a>(
             .entry(library_type)
             .or_insert_with(|| Vec::with_capacity(16));
 
-        lib_type_key_metrics.push(specimen_metrics)
+        lib_type_key_metrics.push(specimen_metrics);
     }
 
     key_metrics
@@ -349,7 +346,6 @@ fn file_path_to_link(dataset_id: Id, path: &NonemptyString) -> String {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
 
     use cellnoor_types::{
         cdna::creation::LibraryType::{self, ChromatinAccessibility, GeneExpression},

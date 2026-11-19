@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use LibraryType::*;
+use LibraryType::{ChromatinAccessibility, GeneExpression};
 use cellnoor_types::cdna::creation::LibraryType;
 use csvranger::TenxCsvValue;
 
@@ -15,7 +15,7 @@ pub(super) fn extract_key_metrics_from_standard_csv<'a>(
     let metric_renaming = STANDARD_CSV_METRICS_RENAMING.get(&(pipeline, pipeline_command))?;
 
     let processed = csv
-        .into_iter()
+        .iter()
         .flat_map(|row| extract_info_from_row(row, metric_renaming));
 
     Some(processed)
@@ -46,12 +46,13 @@ fn extract_info_from_row<'a>(
         .filter_map(old_name_to_parsed_row)
 }
 
+type Pipeline = (&'static str, &'static str);
+
+type OldNameLibraryTypeNewName = (&'static str, LibraryType, &'static str);
+
 // We could easily store this in the database, but it's a bit easier to edit and
 // sort when it's in application code
-static STANDARD_CSV_METRICS_RENAMING: phf::Map<
-    (&'static str, &'static str),
-    &'static [(&'static str, LibraryType, &'static str)],
-> = phf::phf_map! {
+static STANDARD_CSV_METRICS_RENAMING: phf::Map<Pipeline, &'static [OldNameLibraryTypeNewName]> = phf::phf_map! {
     ("cellranger", "count") => &[
         ("Estimated Number of Cells", GeneExpression, ESTIMATED_NUMBER_OF_CELLS),
         ("Mean Reads per Cell", GeneExpression, MEAN_READS_PER_CELL),
